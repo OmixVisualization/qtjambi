@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -42,28 +42,12 @@ enum class jValueType;
 class QtJambiScope;
 
 namespace QtJambiAPI{
-enum ConstructorOptions : int;
+enum ConstructorOptions : uchar;
 typedef void (*ConstructorFn)(void*, JNIEnv*, jobject, jvalue*, QtJambiAPI::ConstructorOptions);
 }
 
 namespace RegistryAPI{
 
-class QtJambiTypeInfo
-{
-public:
-    template<typename T>
-    static constexpr QtJambiTypeInfo of(){
-        return {
-#if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
-                QTypeInfo<T>::isPointer
-#else
-                std::is_pointer<T>::value
-#endif
-            };
-    }
-
-    uint isPointer : 1;
-};
 struct SignalMetaInfo
 {
     typedef int(*SignalMethodIndexProviderFn)();
@@ -140,7 +124,7 @@ struct QMetaTypeInterfaceFunctions
 };
 } // end of namespace QtJambiPrivate
 
-typedef void (*AfterRegistrationFunction)(int);
+typedef void (*AfterRegistrationFunction)(const QtPrivate::QMetaTypeInterface *);
 typedef AbstractContainerAccess*(*NewContainerAccessFunction)();
 typedef bool (*PolymorphyHandler)(void *object, qintptr& offset);
 typedef jobject(* FunctionalResolver)(JNIEnv*,const void*,bool*);
@@ -162,61 +146,61 @@ QTJAMBI_EXPORT void registerMetaObject(const std::type_info& typeId, const QMeta
 QTJAMBI_EXPORT void registerFunctionInfos(const std::type_info& typeId, std::initializer_list<FunctionInfo> virtualFunctions);
 QTJAMBI_EXPORT void registerConstructorInfos(const std::type_info& typeId, uint returnScopes, DestructorFn destructor, std::initializer_list<ConstructorInfo> constructors);
 QTJAMBI_EXPORT void registerMediaControlInfo(const std::type_info& typeId, const char *media_control_iid);
-QTJAMBI_EXPORT void registerMetaTypeID(const std::type_info& typeId, int qtMetaType);
+QTJAMBI_EXPORT void registerMetaType(const std::type_info& typeId, const QMetaType& qtMetaType);
 
-QTJAMBI_EXPORT int registerMetaType( const std::type_info& typeId,
-                                     const std::type_info& nonPointerTypeId,
-                                     const char *typeName,
-                                     QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
-                                     QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
-                                     QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
-                                     QtPrivate::QMetaTypeInterface::DtorFn dtor,
-                                     QtPrivate::QMetaTypeInterface::EqualsFn equals,
-                                     QtPrivate::QMetaTypeInterface::LessThanFn lessThan,
-                                     QtPrivate::QMetaTypeInterface::DebugStreamFn debugStream,
-                                     QtPrivate::QMetaTypeInterface::DataStreamOutFn dataStreamOutFn,
-                                     QtPrivate::QMetaTypeInterface::DataStreamInFn dataStreamInFn,
-                                     QtPrivate::QMetaTypeInterface::LegacyRegisterOp legacyRegisterOp,
-                                     uint size,
-                                     ushort align,
-                                     int builtInTypeId,
-                                     QMetaType::TypeFlags flags,
-                                     const QMetaObject *metaObject,
-                                     AfterRegistrationFunction afterRegistrationFunction);
+QTJAMBI_EXPORT QMetaType registerMetaType( const std::type_info& typeId,
+                                         const std::type_info& nonPointerTypeId,
+                                         const char *typeName,
+                                         QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
+                                         QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
+                                         QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
+                                         QtPrivate::QMetaTypeInterface::DtorFn dtor,
+                                         QtPrivate::QMetaTypeInterface::EqualsFn equals,
+                                         QtPrivate::QMetaTypeInterface::LessThanFn lessThan,
+                                         QtPrivate::QMetaTypeInterface::DebugStreamFn debugStream,
+                                         QtPrivate::QMetaTypeInterface::DataStreamOutFn dataStreamOutFn,
+                                         QtPrivate::QMetaTypeInterface::DataStreamInFn dataStreamInFn,
+                                         QtPrivate::QMetaTypeInterface::LegacyRegisterOp legacyRegisterOp,
+                                         uint size,
+                                         ushort align,
+                                         int builtInTypeId,
+                                         QMetaType::TypeFlags flags,
+                                         const QMetaObject *metaObject,
+                                         AfterRegistrationFunction afterRegistrationFunction);
 
-QTJAMBI_EXPORT int registerMetaType( const std::type_info& typeId,
-                                     const std::type_info& nonPointerTypeId,
-                                     const QByteArray& typeName,
-                                     QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
-                                     QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
-                                     QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
-                                     QtPrivate::QMetaTypeInterface::DtorFn dtor,
-                                     QtPrivate::QMetaTypeInterface::EqualsFn equals,
-                                     QtPrivate::QMetaTypeInterface::LessThanFn lessThan,
-                                     QtPrivate::QMetaTypeInterface::DebugStreamFn debugStream,
-                                     QtPrivate::QMetaTypeInterface::DataStreamOutFn dataStreamOutFn,
-                                     QtPrivate::QMetaTypeInterface::DataStreamInFn dataStreamInFn,
-                                     QtPrivate::QMetaTypeInterface::LegacyRegisterOp legacyRegisterOp,
-                                     uint size,
-                                     ushort align,
-                                     int builtInTypeId,
-                                     QMetaType::TypeFlags flags,
-                                     const QMetaObject *metaObject,
-                                     AfterRegistrationFunction afterRegistrationFunction,
-                                     AbstractContainerAccess* access = nullptr);
+QTJAMBI_EXPORT QMetaType registerMetaType( const std::type_info& typeId,
+                                         const std::type_info& nonPointerTypeId,
+                                         const QByteArray& typeName,
+                                         QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
+                                         QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
+                                         QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
+                                         QtPrivate::QMetaTypeInterface::DtorFn dtor,
+                                         QtPrivate::QMetaTypeInterface::EqualsFn equals,
+                                         QtPrivate::QMetaTypeInterface::LessThanFn lessThan,
+                                         QtPrivate::QMetaTypeInterface::DebugStreamFn debugStream,
+                                         QtPrivate::QMetaTypeInterface::DataStreamOutFn dataStreamOutFn,
+                                         QtPrivate::QMetaTypeInterface::DataStreamInFn dataStreamInFn,
+                                         QtPrivate::QMetaTypeInterface::LegacyRegisterOp legacyRegisterOp,
+                                         uint size,
+                                         ushort align,
+                                         int builtInTypeId,
+                                         QMetaType::TypeFlags flags,
+                                         const QMetaObject *metaObject,
+                                         AfterRegistrationFunction afterRegistrationFunction,
+                                         AbstractContainerAccess* access = nullptr);
 
 template<typename T>
-int registerMetaTypeNoMetaObject(const char *typeName,
-                                  QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
-                                  QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
-                                  QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
-                                  QtPrivate::QMetaTypeInterface::DtorFn dtor,
-                                  QtPrivate::QMetaTypeInterface::EqualsFn equals,
-                                  QtPrivate::QMetaTypeInterface::LessThanFn lessThan,
-                                  QtPrivate::QMetaTypeInterface::DebugStreamFn debugStream,
-                                  QtPrivate::QMetaTypeInterface::DataStreamOutFn dataStreamOutFn,
-                                  QtPrivate::QMetaTypeInterface::DataStreamInFn dataStreamInFn
-                                )
+QMetaType registerMetaTypeNoMetaObject(const char *typeName,
+                                          QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
+                                          QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
+                                          QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
+                                          QtPrivate::QMetaTypeInterface::DtorFn dtor,
+                                          QtPrivate::QMetaTypeInterface::EqualsFn equals,
+                                          QtPrivate::QMetaTypeInterface::LessThanFn lessThan,
+                                          QtPrivate::QMetaTypeInterface::DebugStreamFn debugStream,
+                                          QtPrivate::QMetaTypeInterface::DataStreamOutFn dataStreamOutFn,
+                                          QtPrivate::QMetaTypeInterface::DataStreamInFn dataStreamInFn
+                                       )
 {
     registerOperators<T>();
     return registerMetaType(typeid(T),
@@ -240,20 +224,19 @@ int registerMetaTypeNoMetaObject(const char *typeName,
 #else
                               QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<T>::flags()),
 #endif
-                              nullptr, [](int id){
-                                            Q_UNUSED(id)
-                                            QtPrivate::SequentialContainerTransformationHelper<T>::registerConverter();
-                                            QtPrivate::AssociativeContainerTransformationHelper<T>::registerConverter();
-                                            QtPrivate::SequentialContainerTransformationHelper<T>::registerMutableView();
-                                            QtPrivate::AssociativeContainerTransformationHelper<T>::registerMutableView();
-                                            QtPrivate::MetaTypePairHelper<T>::registerConverter();
-                                            QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter();
-
-                                });
+                              nullptr,
+                              [](const QtPrivate::QMetaTypeInterface *){
+                                    QtPrivate::SequentialContainerTransformationHelper<T>::registerConverter();
+                                    QtPrivate::AssociativeContainerTransformationHelper<T>::registerConverter();
+                                    QtPrivate::SequentialContainerTransformationHelper<T>::registerMutableView();
+                                    QtPrivate::AssociativeContainerTransformationHelper<T>::registerMutableView();
+                                    QtPrivate::MetaTypePairHelper<T>::registerConverter();
+                                    QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter();
+                              });
 }
 
 template<typename T>
-int registerMetaTypeNoMetaObject(const char *typeName,
+QMetaType registerMetaTypeNoMetaObject(const char *typeName,
                                   QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
                                   QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
                                   QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
@@ -274,7 +257,7 @@ int registerMetaTypeNoMetaObject(const char *typeName,
 }
 
 template<typename T>
-int registerMetaTypeNoMetaObject(const char *typeName)
+QMetaType registerMetaTypeNoMetaObject(const char *typeName)
 {
     return registerMetaTypeNoMetaObject<T>(typeName,
                                QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::defaultCtr,
@@ -290,7 +273,7 @@ int registerMetaTypeNoMetaObject(const char *typeName)
 }
 
 template<typename T>
-int registerMetaTypeNoMetaObject(const char *typeName,
+QMetaType registerMetaTypeNoMetaObject(const char *typeName,
                                   QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
                                   QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
                                   QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr
@@ -306,7 +289,7 @@ int registerMetaTypeNoMetaObject(const char *typeName,
 }
 
 template<typename T>
-int registerMetaType(const char *typeName,
+QMetaType registerMetaType(const char *typeName,
                                    QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
                                    QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
                                    QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
@@ -341,8 +324,7 @@ int registerMetaType(const char *typeName,
                               QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<T>::flags()),
 #endif
                               QtPrivate::MetaObjectForType<T>::value(),
-                              [](int id){
-                                    Q_UNUSED(id)
+                              [](const QtPrivate::QMetaTypeInterface *){
                                     QtPrivate::SequentialContainerTransformationHelper<T>::registerConverter();
                                     QtPrivate::AssociativeContainerTransformationHelper<T>::registerConverter();
                                     QtPrivate::SequentialContainerTransformationHelper<T>::registerMutableView();
@@ -354,7 +336,7 @@ int registerMetaType(const char *typeName,
 }
 
 template<typename T>
-int registerMetaType(const char *typeName,
+QMetaType registerMetaType(const char *typeName,
                                    QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
                                    QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
                                    QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
@@ -375,7 +357,7 @@ int registerMetaType(const char *typeName,
 }
 
 template<typename T>
-int registerMetaType(const char *typeName,
+QMetaType registerMetaType(const char *typeName,
                                    QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
                                    QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
                                    QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr)
@@ -418,7 +400,7 @@ struct PolymorphicTypeInfoSupplier<T,false>{
 
 template<typename T, bool = QMetaTypeId<T>::Defined>
 struct MetaTypeUtil{
-    static int registerMetaType(const char *typeName){
+    static QMetaType registerMetaType(const char *typeName){
         return RegistryAPI::registerMetaType<T>(typeName,
                                   QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::defaultCtr,
                                   QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::copyCtr,
@@ -434,23 +416,24 @@ struct MetaTypeUtil{
 
 template<typename T>
 struct MetaTypeUtil<T,true>{
-    static int registerMetaType(const char *){
+    static QMetaType registerMetaType(const char *){
         registerOperators<T>();
-        registerMetaTypeID(typeid(T), QMetaTypeId<T>::qt_metatype_id());
-        return QMetaTypeId<T>::qt_metatype_id();
+        QMetaType mt(QMetaTypeId<T>::qt_metatype_id());
+        RegistryAPI::registerMetaType(typeid(T), mt);
+        return mt;
     }
 };
 
 }
 
 template<typename T>
-int registerMetaType(const char *typeName)
+QMetaType registerMetaType(const char *typeName)
 {
     return Private::MetaTypeUtil<T>::registerMetaType(typeName);
 }
 
 template<typename T>
-int registerMetaType(const QByteArray& typeName,
+QMetaType registerMetaType(const QByteArray& typeName,
                                    QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
                                    QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
                                    QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
@@ -484,8 +467,7 @@ int registerMetaType(const QByteArray& typeName,
                               QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<T>::flags()),
 #endif
                               QtPrivate::MetaObjectForType<T>::value(),
-                              [](int id){
-                                    Q_UNUSED(id)
+                              [](const QtPrivate::QMetaTypeInterface *){
                                     QtPrivate::SequentialContainerTransformationHelper<T>::registerConverter();
                                     QtPrivate::AssociativeContainerTransformationHelper<T>::registerConverter();
                                     QtPrivate::SequentialContainerTransformationHelper<T>::registerMutableView();
@@ -497,7 +479,7 @@ int registerMetaType(const QByteArray& typeName,
 }
 
 template<typename T>
-int registerMetaType(const QByteArray& typeName,
+QMetaType registerMetaType(const QByteArray& typeName,
                      QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
                      QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
                      QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
@@ -532,8 +514,7 @@ int registerMetaType(const QByteArray& typeName,
                             QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<T>::flags()),
 #endif
                             QtPrivate::MetaObjectForType<T>::value(),
-                            [](int id){
-                                Q_UNUSED(id)
+                            [](const QtPrivate::QMetaTypeInterface *){
                                 QtPrivate::SequentialContainerTransformationHelper<T>::registerConverter();
                                 QtPrivate::AssociativeContainerTransformationHelper<T>::registerConverter();
                                 QtPrivate::SequentialContainerTransformationHelper<T>::registerMutableView();
@@ -546,7 +527,7 @@ int registerMetaType(const QByteArray& typeName,
 }
 
 template<typename T>
-int registerMetaType(const QByteArray& typeName)
+QMetaType registerMetaType(const QByteArray& typeName)
 {
     return registerMetaType<T>(typeName,
                               QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::defaultCtr,
@@ -562,7 +543,7 @@ int registerMetaType(const QByteArray& typeName)
 }
 
 template<typename T>
-int registerMetaType(const QByteArray& typeName, AbstractContainerAccess* access)
+QMetaType registerMetaType(const QByteArray& typeName, AbstractContainerAccess* access)
 {
     return registerMetaType<T>(typeName,
                                QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::defaultCtr,
@@ -578,18 +559,18 @@ int registerMetaType(const QByteArray& typeName, AbstractContainerAccess* access
 }
 
 QTJAMBI_EXPORT void registerContainerAccessFactory(const std::type_info& typeId, NewContainerAccessFunction factory);
-QTJAMBI_EXPORT void registerValueTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name);
-QTJAMBI_EXPORT void registerObjectTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name);
-QTJAMBI_EXPORT void registerQObjectTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name);
-QTJAMBI_EXPORT void registerInterfaceTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, const char *interface_iid);
-QTJAMBI_EXPORT void registerInterfaceValueTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, const char *interface_iid);
-QTJAMBI_EXPORT void registerFunctionalTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, int metaType,
-                                               size_t size, size_t alignment, size_t sizeOfShell, FunctionalResolver resolver, uint returnScopes,
+QTJAMBI_EXPORT void registerValueTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name);
+QTJAMBI_EXPORT void registerObjectTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name);
+QTJAMBI_EXPORT void registerQObjectTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name);
+QTJAMBI_EXPORT void registerInterfaceTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, const char *interface_iid);
+QTJAMBI_EXPORT void registerInterfaceValueTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, const char *interface_iid);
+QTJAMBI_EXPORT void registerFunctionalTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, bool isFunctionPointer, const QMetaType& metaType,
+                                               size_t size, size_t alignment, size_t sizeOfShell, size_t alignmentOfShell, FunctionalResolver resolver, uint returnScopes,
                                                RegistryAPI::DestructorFn destructor, std::initializer_list<ConstructorInfo> constructors, PtrDeleterFunction deleter, std::initializer_list<FunctionInfo> virtualFunctions);
-QTJAMBI_EXPORT void registerEnumTypeInfo(const std::type_info& enumTypeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name);
-QTJAMBI_EXPORT void registerEnumTypeInfo(const std::type_info& enumTypeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, const std::type_info& flagsTypeId, QtJambiTypeInfo flagsInfo, const char *flags_qt_name, const char *flags_qt_name_alias, const char *flags_java_name);
-QTJAMBI_EXPORT void registerUnspecificTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name);
-QTJAMBI_EXPORT void registerPrimitiveTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name);
+QTJAMBI_EXPORT void registerEnumTypeInfo(const std::type_info& enumTypeId, const char *qt_name, const char *java_name);
+QTJAMBI_EXPORT void registerEnumTypeInfo(const std::type_info& enumTypeId, const char *qt_name, const char *java_name, const std::type_info& flagsTypeId, const char *flags_qt_name, const char *flags_qt_name_alias, const char *flags_java_name);
+QTJAMBI_EXPORT void registerUnspecificTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name);
+QTJAMBI_EXPORT void registerPrimitiveTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name);
 QTJAMBI_EXPORT void registerInterfaceID(const std::type_info& typeId, const char *interface_iid);
 
 QTJAMBI_EXPORT void registerNamespaceTypeInfo(const char *qt_name, const char *java_name, const QMetaObject* namespaceMetaObject);
@@ -603,11 +584,9 @@ QTJAMBI_EXPORT void registerOwnerFunction(const std::type_info& typeId, PtrOwner
 
 QTJAMBI_EXPORT void registerPolymorphyHandler(const std::type_info& typeId, const std::type_info& targetTypeId, PolymorphyHandler handler);
 
-QTJAMBI_EXPORT void registerSizeOfType(const std::type_info& typeId, size_t size);
+QTJAMBI_EXPORT void registerSizeOfType(const std::type_info& typeId, size_t size, size_t alignment);
 
-QTJAMBI_EXPORT void registerAlignmentOfType(const std::type_info& typeId, size_t size);
-
-QTJAMBI_EXPORT void registerSizeOfShell(const std::type_info& typeId, size_t size);
+QTJAMBI_EXPORT void registerSizeOfShell(const std::type_info& typeId, size_t size, size_t alignment);
 
 QTJAMBI_EXPORT void registerInterfaceOffset(const std::type_info& qt_base, const std::type_info& qt_interface, int offset);
 
@@ -634,9 +613,8 @@ template<typename T>
 const std::type_info& registerValueTypeInfo(const char *qt_name, const char *java_name)
 {
     const std::type_info& id = typeid(T);
-    registerValueTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name);
-    registerSizeOfType(id, sizeof(T));
-    registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerValueTypeInfo(id, qt_name, java_name);
+    registerSizeOfType(id, sizeof(T), alignof(T));
     registerTypeInfoSupplier(id, Private::PolymorphicTypeInfoSupplier<T>::value);
     return id;
 }
@@ -645,9 +623,8 @@ template<typename T>
 const std::type_info& registerObjectTypeInfo(const char *qt_name, const char *java_name)
 {
     const std::type_info& id = typeid(T);
-    registerObjectTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name);
-    registerSizeOfType(id, sizeof(T));
-    registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerObjectTypeInfo(id, qt_name, java_name);
+    registerSizeOfType(id, sizeof(T), alignof(T));
     registerTypeInfoSupplier(id, Private::PolymorphicTypeInfoSupplier<T>::value);
     return id;
 }
@@ -656,9 +633,8 @@ template<typename T>
 const std::type_info& registerQObjectTypeInfo(const char *qt_name, const char *java_name)
 {
     const std::type_info& id = typeid(T);
-    registerQObjectTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name);
-    registerSizeOfType(id, sizeof(T));
-    registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerQObjectTypeInfo(id, qt_name, java_name);
+    registerSizeOfType(id, sizeof(T), alignof(T));
     registerTypeInfoSupplier(id, Private::PolymorphicTypeInfoSupplier<T>::value);
     return id;
 }
@@ -667,9 +643,8 @@ template<typename T>
 const std::type_info& registerInterfaceTypeInfo(const char *qt_name, const char *java_name)
 {
     const std::type_info& id = typeid(T);
-    registerInterfaceTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name, QtJambiPrivate::interfaceIID<T>());
-    registerSizeOfType(id, sizeof(T));
-    registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerInterfaceTypeInfo(id, qt_name, java_name, QtJambiPrivate::interfaceIID<T>());
+    registerSizeOfType(id, sizeof(T), alignof(T));
     registerTypeInfoSupplier(id, Private::PolymorphicTypeInfoSupplier<T>::value);
     return id;
 }
@@ -678,9 +653,8 @@ template<typename T>
 const std::type_info& registerInterfaceValueTypeInfo(const char *qt_name, const char *java_name)
 {
     const std::type_info& id = typeid(T);
-    registerInterfaceValueTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name, QtJambiPrivate::interfaceIID<T>());
-    registerSizeOfType(id, sizeof(T));
-    registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerInterfaceValueTypeInfo(id, qt_name, java_name, QtJambiPrivate::interfaceIID<T>());
+    registerSizeOfType(id, sizeof(T), alignof(T));
     registerTypeInfoSupplier(id, Private::PolymorphicTypeInfoSupplier<T>::value);
     return id;
 }
@@ -690,7 +664,6 @@ const std::type_info& registerFunctionalTypeInfo(const char *qt_name, const char
 {
     const std::type_info& id = typeid(T);
     QMetaType metaType = QMetaType::fromType<T>();
-    int metaid = metaType.id();
     if(metaType.name()!=QByteArrayView(qt_name)){
         const QtPrivate::QMetaTypeInterface *iface = metaType.iface();
         QtPrivate::QMetaTypeInterface* metaTypeInterface = new QtPrivate::QMetaTypeInterface{
@@ -712,15 +685,15 @@ const std::type_info& registerFunctionalTypeInfo(const char *qt_name, const char
             iface->dataStreamIn,
             iface->legacyRegisterOp
         };
-        metaid = QMetaType(metaTypeInterface).id();
+        metaType = QMetaType(metaTypeInterface);
     }
-    registerFunctionalTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name, metaid,
-                               sizeof(T), Q_ALIGNOF(T), 0, nullptr,
+    registerFunctionalTypeInfo(id, qt_name, java_name, std::is_function_v<std::remove_pointer_t<T>>, metaType,
+                               sizeof(T), alignof(T), 0, 0, nullptr,
                                0, nullptr, {}, nullptr, {});
     return id;
 }
 
-template<typename T,typename Tshell>
+template<typename T, typename Tshell>
 const std::type_info& registerFunctionalTypeInfo(const char *qt_name, const char *java_name, bool needsReturnScope,
                                                  PtrDeleterFunction deleter,
                                                  DestructorFn destructor, std::initializer_list<ConstructorInfo> constructors,
@@ -728,7 +701,6 @@ const std::type_info& registerFunctionalTypeInfo(const char *qt_name, const char
 {
     const std::type_info& id = typeid(T);
     QMetaType metaType = QMetaType::fromType<T>();
-    int metaid = metaType.id();
     if(metaType.name()!=QByteArrayView(qt_name)){
         const QtPrivate::QMetaTypeInterface *iface = metaType.iface();
         QtPrivate::QMetaTypeInterface* metaTypeInterface = new QtPrivate::QMetaTypeInterface{
@@ -750,10 +722,10 @@ const std::type_info& registerFunctionalTypeInfo(const char *qt_name, const char
             iface->dataStreamIn,
             iface->legacyRegisterOp
         };
-        metaid = QMetaType(metaTypeInterface).id();
+        metaType = QMetaType(metaTypeInterface);
     }
-    registerFunctionalTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name, metaid,
-                               sizeof(T), Q_ALIGNOF(T), sizeof(Tshell), &Tshell::resolveFunctional,
+    registerFunctionalTypeInfo(id, qt_name, java_name, std::is_function_v<std::remove_pointer_t<T>>, metaType,
+                               sizeof(T), alignof(T), sizeof(Tshell), alignof(Tshell), &Tshell::resolveFunctional,
                                needsReturnScope ? 1 : 0, destructor, constructors, deleter, virtualFunctions);
     return id;
 }
@@ -762,12 +734,14 @@ template<typename T>
 const std::type_info& registerEnumTypeInfo(const char *qt_name, const char *java_name)
 {
     const std::type_info& id = typeid(T);
-    registerEnumTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name);
-    registerSizeOfType(id, sizeof(T));
-    registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerEnumTypeInfo(id, qt_name, java_name);
+    registerSizeOfType(id, sizeof(T), alignof(T));
     {
-        int metaid = qRegisterMetaType<T>(qt_name);
-        registerMetaTypeID(id, metaid);
+        QMetaType metaType = QMetaType::fromType<T>();
+        if(QByteArrayView(metaType.name())!=qt_name){
+            QMetaType::registerNormalizedTypedef(qt_name, metaType);
+        }
+        registerMetaType(id, metaType);
     }
     registerOperators<T>();
     return id;
@@ -778,19 +752,22 @@ const std::type_info& registerEnumTypeInfo(const char *qt_name, const char *java
 {
     const std::type_info& id = typeid(T);
     const std::type_info& fid = typeid(QFlags<T>);
-    registerEnumTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name, fid, QtJambiTypeInfo::of<QFlags<T>>(), flags_qt_name, flags_qt_name_alias, flags_java_name);
-    registerSizeOfType(fid, sizeof(QFlags<T>));
-    registerAlignmentOfType(fid, Q_ALIGNOF(QFlags<T>));
+    registerEnumTypeInfo(id, qt_name, java_name, fid, flags_qt_name, flags_qt_name_alias, flags_java_name);
+    registerSizeOfType(fid, sizeof(QFlags<T>), alignof(QFlags<T>));
     {
-        int metaid = qRegisterMetaType<QFlags<T>>(flags_qt_name);
-        registerMetaTypeID(fid, metaid);
-        QMetaType::registerNormalizedTypedef(flags_qt_name_alias, QMetaType(metaid));
+        QMetaType metaType = QMetaType::fromType<QFlags<T>>();
+        if(QByteArrayView(metaType.name())!=flags_qt_name){
+            QMetaType::registerNormalizedTypedef(flags_qt_name, metaType);
+        }
+        registerMetaType(fid, metaType);
     }
-    registerSizeOfType(id, sizeof(T));
-    registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerSizeOfType(id, sizeof(T), alignof(T));
     {
-        int metaid = qRegisterMetaType<T>(qt_name);
-        registerMetaTypeID(id, metaid);
+        QMetaType metaType = QMetaType::fromType<T>();
+        if(QByteArrayView(metaType.name())!=qt_name){
+            QMetaType::registerNormalizedTypedef(qt_name, metaType);
+        }
+        registerMetaType(id, metaType);
     }
     registerOperators<T>();
     registerOperators<QFlags<T>>();
@@ -801,39 +778,37 @@ template<typename T>
 const std::type_info& registerEnumTypeInfoNoMetaObject(const char *qt_name, const char *java_name)
 {
     const std::type_info& id = typeid(T);
-    registerEnumTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name);
-    registerSizeOfType(id, sizeof(T));
-    registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerEnumTypeInfo(id, qt_name, java_name);
+    registerSizeOfType(id, sizeof(T), alignof(T));
     {
-        int metaid = registerMetaType(id,
-                         id,
-                         qt_name,
-                         /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::defaultCtr,
-                         /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::copyCtr,
-                         /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::moveCtr,
-                         /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::dtor,
-                         /*.equals=*/ QtPrivate::QEqualityOperatorForType<T>::equals,
-                         /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<T>::lessThan,
-                         /*.debugStream=*/ nullptr,
-                         /*.dataStreamOutFn=*/ QtPrivate::QDataStreamOperatorForType<T>::dataStreamOut,
-                         /*.dataStreamInFn=*/ QtPrivate::QDataStreamOperatorForType<T>::dataStreamIn,
-                         /*.legacyRegisterOp=*/ nullptr,
-                         /*.size=*/ sizeof(T),
-                         /*.alignment=*/ alignof(T),
-                         /*.typeId=*/ QtPrivate::BuiltinMetaType<T>::value,
-                         /*.flags=*/ QMetaType::RelocatableType | QMetaType::IsEnumeration,
-                         nullptr,
-                          [](int id){
-                                Q_UNUSED(id)
-                                QtPrivate::SequentialContainerTransformationHelper<T>::registerConverter();
-                                QtPrivate::AssociativeContainerTransformationHelper<T>::registerConverter();
-                                QtPrivate::SequentialContainerTransformationHelper<T>::registerMutableView();
-                                QtPrivate::AssociativeContainerTransformationHelper<T>::registerMutableView();
-                                QtPrivate::MetaTypePairHelper<T>::registerConverter();
-                                QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter();
-                            }
-                         );
-        registerMetaTypeID(id, metaid);
+        QMetaType metaType = registerMetaType(id,
+                                 id,
+                                 qt_name,
+                                 /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::defaultCtr,
+                                 /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::copyCtr,
+                                 /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::moveCtr,
+                                 /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::dtor,
+                                 /*.equals=*/ QtPrivate::QEqualityOperatorForType<T>::equals,
+                                 /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<T>::lessThan,
+                                 /*.debugStream=*/ nullptr,
+                                 /*.dataStreamOutFn=*/ QtPrivate::QDataStreamOperatorForType<T>::dataStreamOut,
+                                 /*.dataStreamInFn=*/ QtPrivate::QDataStreamOperatorForType<T>::dataStreamIn,
+                                 /*.legacyRegisterOp=*/ nullptr,
+                                 /*.size=*/ sizeof(T),
+                                 /*.alignment=*/ alignof(T),
+                                 /*.typeId=*/ QtPrivate::BuiltinMetaType<T>::value,
+                                 /*.flags=*/ QMetaType::RelocatableType | QMetaType::IsEnumeration,
+                                 nullptr,
+                                 [](const QtPrivate::QMetaTypeInterface *){
+                                        QtPrivate::SequentialContainerTransformationHelper<T>::registerConverter();
+                                        QtPrivate::AssociativeContainerTransformationHelper<T>::registerConverter();
+                                        QtPrivate::SequentialContainerTransformationHelper<T>::registerMutableView();
+                                        QtPrivate::AssociativeContainerTransformationHelper<T>::registerMutableView();
+                                        QtPrivate::MetaTypePairHelper<T>::registerConverter();
+                                        QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter();
+                                    }
+                            );
+        registerMetaType(id, metaType);
     }
     registerOperators<T>();
     return id;
@@ -844,11 +819,10 @@ const std::type_info& registerEnumTypeInfoNoMetaObject(const char *qt_name, cons
 {
     const std::type_info& id = typeid(T);
     const std::type_info& fid = typeid(QFlags<T>);
-    registerEnumTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name, fid, QtJambiTypeInfo::of<QFlags<T>>(), flags_qt_name, flags_qt_name_alias, flags_java_name);
-    registerSizeOfType(fid, sizeof(QFlags<T>));
-    registerAlignmentOfType(fid, Q_ALIGNOF(QFlags<T>));
+    registerEnumTypeInfo(id, qt_name, java_name, fid, flags_qt_name, flags_qt_name_alias, flags_java_name);
+    registerSizeOfType(fid, sizeof(QFlags<T>), alignof(QFlags<T>));
     {
-        int metaid = registerMetaType(id,
+        QMetaType metaType = registerMetaType(id,
                                       id,
                                       flags_qt_name,
                                       /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<QFlags<T>>::defaultCtr,
@@ -865,9 +839,8 @@ const std::type_info& registerEnumTypeInfoNoMetaObject(const char *qt_name, cons
                                       /*.alignment=*/ alignof(QFlags<T>),
                                       /*.typeId=*/ QtPrivate::BuiltinMetaType<QFlags<T>>::value,
                                       /*.flags=*/ QMetaType::RelocatableType | QMetaType::IsEnumeration,
-                                        nullptr,
-                                      [](int id){
-                                            Q_UNUSED(id)
+                                      nullptr,
+                                      [](const QtPrivate::QMetaTypeInterface *){
                                             QtPrivate::SequentialContainerTransformationHelper<QFlags<T>>::registerConverter();
                                             QtPrivate::AssociativeContainerTransformationHelper<QFlags<T>>::registerConverter();
                                             QtPrivate::SequentialContainerTransformationHelper<QFlags<T>>::registerMutableView();
@@ -876,42 +849,39 @@ const std::type_info& registerEnumTypeInfoNoMetaObject(const char *qt_name, cons
                                             QtPrivate::MetaTypeSmartPointerHelper<QFlags<T>>::registerConverter();
                                         }
                                     );
-
-        registerMetaTypeID(fid, metaid);
-        QMetaType::registerNormalizedTypedef(flags_qt_name_alias, QMetaType(metaid));
+        registerMetaType(fid, metaType);
+        QMetaType::registerNormalizedTypedef(flags_qt_name_alias, metaType);
     }
-    registerSizeOfType(id, sizeof(T));
-    registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerSizeOfType(id, sizeof(T), alignof(T));
     {
-        int metaid = registerMetaType(id,
-                         id,
-                         qt_name,
-                         /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::defaultCtr,
-                         /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::copyCtr,
-                         /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::moveCtr,
-                         /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::dtor,
-                         /*.equals=*/ QtPrivate::QEqualityOperatorForType<T>::equals,
-                         /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<T>::lessThan,
-                         /*.debugStream=*/ nullptr,
-                         /*.dataStreamOutFn=*/ QtPrivate::QDataStreamOperatorForType<T>::dataStreamOut,
-                         /*.dataStreamInFn=*/ QtPrivate::QDataStreamOperatorForType<T>::dataStreamIn,
-                         /*.legacyRegisterOp=*/ nullptr,
-                         /*.size=*/ sizeof(T),
-                         /*.alignment=*/ alignof(T),
-                         /*.typeId=*/ QtPrivate::BuiltinMetaType<T>::value,
-                         /*.flags=*/ QMetaType::RelocatableType | QMetaType::IsEnumeration,
-                         nullptr,
-                          [](int id){
-                                Q_UNUSED(id)
-                                QtPrivate::SequentialContainerTransformationHelper<T>::registerConverter();
-                                QtPrivate::AssociativeContainerTransformationHelper<T>::registerConverter();
-                                QtPrivate::SequentialContainerTransformationHelper<T>::registerMutableView();
-                                QtPrivate::AssociativeContainerTransformationHelper<T>::registerMutableView();
-                                QtPrivate::MetaTypePairHelper<T>::registerConverter();
-                                QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter();
-                            }
-                         );
-        registerMetaTypeID(id, metaid);
+        QMetaType metaType = registerMetaType(id,
+                                     id,
+                                     qt_name,
+                                     /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::defaultCtr,
+                                     /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::copyCtr,
+                                     /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::moveCtr,
+                                     /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<T>::dtor,
+                                     /*.equals=*/ QtPrivate::QEqualityOperatorForType<T>::equals,
+                                     /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<T>::lessThan,
+                                     /*.debugStream=*/ nullptr,
+                                     /*.dataStreamOutFn=*/ QtPrivate::QDataStreamOperatorForType<T>::dataStreamOut,
+                                     /*.dataStreamInFn=*/ QtPrivate::QDataStreamOperatorForType<T>::dataStreamIn,
+                                     /*.legacyRegisterOp=*/ nullptr,
+                                     /*.size=*/ sizeof(T),
+                                     /*.alignment=*/ alignof(T),
+                                     /*.typeId=*/ QtPrivate::BuiltinMetaType<T>::value,
+                                     /*.flags=*/ QMetaType::RelocatableType | QMetaType::IsEnumeration,
+                                     nullptr,
+                                     [](const QtPrivate::QMetaTypeInterface *){
+                                            QtPrivate::SequentialContainerTransformationHelper<T>::registerConverter();
+                                            QtPrivate::AssociativeContainerTransformationHelper<T>::registerConverter();
+                                            QtPrivate::SequentialContainerTransformationHelper<T>::registerMutableView();
+                                            QtPrivate::AssociativeContainerTransformationHelper<T>::registerMutableView();
+                                            QtPrivate::MetaTypePairHelper<T>::registerConverter();
+                                            QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter();
+                                        }
+                                     );
+        registerMetaType(id, metaType);
     }
     registerOperators<T>();
     registerOperators<QFlags<T>>();
@@ -922,9 +892,8 @@ template<typename T>
 const std::type_info& registerPrimitiveTypeInfo(const char *qt_name, const char *java_name)
 {
     const std::type_info& id = typeid(T);
-    registerPrimitiveTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name);
-    registerAlignmentOfType(id, Q_ALIGNOF(T));
-    registerSizeOfType(id, sizeof(T));
+    registerPrimitiveTypeInfo(id, qt_name, java_name);
+    registerSizeOfType(id, sizeof(T), alignof(T));
     registerOperators<T>();
     return id;
 }
@@ -933,9 +902,8 @@ template<typename T>
 const std::type_info& registerUnspecificTypeInfo(const char *qt_name, const char *java_name)
 {
     const std::type_info& id = typeid(T);
-    registerUnspecificTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name);
-    registerSizeOfType(id, sizeof(T));
-    registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerUnspecificTypeInfo(id, qt_name, java_name);
+    registerSizeOfType(id, sizeof(T), alignof(T));
     registerTypeInfoSupplier(id, Private::PolymorphicTypeInfoSupplier<T>::value);
     return id;
 }

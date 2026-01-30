@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -109,9 +109,7 @@ QString JString2QChars::toString() const {
 
 const QChar* JString2QChars::constData() const {return reinterpret_cast<const QChar*>(m_data);}
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 JString2QChars::operator const char16_t*() const {return reinterpret_cast<const char16_t*>(m_data);}
-#endif
 
 int JString2QChars::length() const {return m_length;}
 
@@ -148,8 +146,6 @@ QString PersistentJString2QChars::toString() const {
 
 const QChar* PersistentJString2QChars::constData() const {return m_data ? reinterpret_cast<const QChar*>(m_data->m_data) : nullptr;}
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 PersistentJString2QChars::operator const char16_t*() const {return m_data ? reinterpret_cast<const char16_t*>(m_data->m_data) : nullptr;}
-#endif
 
 int PersistentJString2QChars::length() const {return m_data ? m_data->m_length : 0;}

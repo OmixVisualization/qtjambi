@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -210,8 +210,12 @@ AutoSpanAccess* AutoSpanAccess::clone(){
     return new AutoSpanAccess(*this);
 }
 
-size_t AutoSpanAccess::sizeOf() {
+size_t AutoSpanAccess::sizeOf() const {
     return sizeof(QtJambiSpan);
+}
+
+size_t AutoSpanAccess::alignOf() const {
+    return alignof(QtJambiSpan);
 }
 
 void* AutoSpanAccess::constructContainer(JNIEnv*, void* result, const ConstContainerAndAccessInfo& container) {
@@ -332,13 +336,10 @@ AutoSpanAccess::iterator AutoSpanAccess::iterator::operator--(int){
     return _this;
 }
 
-typedef QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface> MetaSequenceHash;
-
-QReadWriteLock* containerAccessLock();
-QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface>& metaSequenceHash();
+typedef QMap<const QtPrivate::QMetaTypeInterface *, QtMetaContainerPrivate::QMetaSequenceInterface> MetaSequenceHash;
 
 QSharedPointer<class AutoSpanAccess> getSpanAccess(const QtPrivate::QMetaTypeInterface *iface){
-    return findContainerAccess(iface->typeId.loadAcquire()).dynamicCast<AutoSpanAccess>();
+    return findContainerAccess(QMetaType(iface)).dynamicCast<AutoSpanAccess>();
 }
 void AutoSpanAccess::defaultCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr){
     if(QSharedPointer<class AutoSpanAccess> access = getSpanAccess(iface)){
@@ -372,20 +373,20 @@ void AutoSpanAccess::debugStreamFn(const QtPrivate::QMetaTypeInterface *iface, Q
     }
 }
 
-QtMetaContainerPrivate::QMetaSequenceInterface* AutoSpanAccess::createMetaSequenceInterface(int newMetaType){
+QtMetaContainerPrivate::QMetaSequenceInterface* AutoSpanAccess::createMetaSequenceInterface(QMetaType newMetaType){
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(containerAccessLock());
-        Q_UNUSED(locker)
-        if(metaSequenceHash().contains(newMetaType))
-           return &metaSequenceHash()[newMetaType];
+        QReadLocker locker(storage->lock());
+        if(storage->metaSequencesByMetaType().contains(newMetaType.iface()))
+           return &storage->metaSequencesByMetaType()[newMetaType.iface()];
     }
     using namespace QtMetaContainerPrivate;
     QMetaSequenceInterface* metaSequenceInterface;
     {
-        QWriteLocker locker(containerAccessLock());
-        metaSequenceInterface = &metaSequenceHash()[newMetaType];
+        QWriteLocker locker(storage->lock());
+        metaSequenceInterface = &storage->metaSequencesByMetaType()[newMetaType.iface()];
     }
-    QSharedPointer<class AutoSpanAccess> access = getSpanAccess(QMetaType(newMetaType).iface());
+    QSharedPointer<class AutoSpanAccess> access = getSpanAccess(newMetaType.iface());
     metaSequenceInterface->valueMetaType = access->m_elementMetaType.iface();
     metaSequenceInterface->iteratorCapabilities = InputCapability | ForwardCapability | BiDirectionalCapability;
     metaSequenceInterface->addRemoveCapabilities = CanAddAtBegin|CanRemoveAtBegin|CanAddAtEnd|CanRemoveAtEnd;
@@ -406,7 +407,7 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoSpanAccess::createMetaSequen
                 [newMetaType](void *c, QMetaContainerInterface::Position p) -> void* {
                         if(!c)
                             return nullptr;
-                        QSharedPointer<class AutoSpanAccess> access = getSpanAccess(QMetaType(newMetaType).iface());
+                        QSharedPointer<class AutoSpanAccess> access = getSpanAccess(newMetaType.iface());
                         if(!access)
                             return nullptr;
                         const QtJambiSpan* ap = reinterpret_cast<const QtJambiSpan*>(c);
@@ -421,7 +422,7 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoSpanAccess::createMetaSequen
                             break;
                         }
                         return nullptr;
-                    }, newMetaType);
+        }, size_t(newMetaType.iface()));
     metaSequenceInterface->destroyIteratorFn = [](const void *i) {
                     delete static_cast<const MetaIterator *>(i);
                 };
@@ -456,7 +457,7 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoSpanAccess::createMetaSequen
         void* ptr = reinterpret_cast<char*>(const_cast<void*>(p->begin)) + index * access->m_offset;
         access->m_elementMetaType.destruct(r);
         access->m_elementMetaType.construct(r, ptr);
-    }, newMetaType);
+    }, size_t(newMetaType.iface()));
     metaSequenceInterface->setValueAtIndexFn = qtjambi_function_pointer<16,void(void *, qsizetype, const void *)>([newMetaType](void *container, qsizetype index, const void *e) {
         if(!container)
             return;
@@ -468,7 +469,7 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoSpanAccess::createMetaSequen
         void* target = reinterpret_cast<char*>(const_cast<void*>(p->begin)) + index * access->m_offset;
         access->m_elementMetaType.destruct(target);
         access->m_elementMetaType.construct(target, e);
-    }, newMetaType);
+    }, size_t(newMetaType.iface()));
     metaSequenceInterface->addValueFn = nullptr;
     metaSequenceInterface->removeValueFn = nullptr;
     metaSequenceInterface->valueAtIteratorFn = [](const void *i, void *r) {
@@ -488,10 +489,10 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoSpanAccess::createMetaSequen
     return metaSequenceInterface;
 }
 
-int AutoSpanAccess::registerContainer(const QByteArray& typeName)
+QMetaType AutoSpanAccess::registerContainer(const QByteArray& typeName)
 {
-    int newMetaType = QMetaType::fromName(typeName).id();
-    if(newMetaType==QMetaType::UnknownType){
+    QMetaType newMetaType = QMetaType::fromName(typeName);
+    if(!newMetaType.isValid()){
         QSharedPointer<AutoSpanAccess> access(new AutoSpanAccess(*this), &containerDisposer);
         auto iface = m_elementMetaType.iface();
         newMetaType = registerContainerMetaType(typeName,
@@ -519,7 +520,7 @@ int AutoSpanAccess::registerContainer(const QByteArray& typeName)
                                        nullptr,
                                        access);
         if(m_hashFunction){
-            insertHashFunctionByMetaType(newMetaType,
+            insertHashFunctionByMetaType(newMetaType.iface(),
                                             [access]
                                             (const void* ptr, size_t seed)->size_t{
                                                 if(ptr){
@@ -535,17 +536,20 @@ int AutoSpanAccess::registerContainer(const QByteArray& typeName)
                                                 }
                                             });
         }
-        {
-            const QMetaType to = QMetaType::fromType<QSequentialIterable>();
-            QMetaType::registerMutableViewFunction([newMetaType](void *src, void *target)->bool{
-                new(target) QIterable<QMetaSequence>(QMetaSequence(createMetaSequenceInterface(newMetaType)), reinterpret_cast<void **>(src));
-                return true;
-            }, QMetaType(newMetaType), to);
-            QMetaType::registerConverterFunction([newMetaType](const void *src, void *target)->bool{
-                new(target) QIterable<QMetaSequence>(QMetaSequence(createMetaSequenceInterface(newMetaType)), reinterpret_cast<void const*const*>(src));
-                return true;
-            }, QMetaType(newMetaType), to);
-        }
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+        typedef QMetaSequence::Iterable SequentialIterable;
+#else
+        typedef QSequentialIterable SequentialIterable;
+#endif
+        const QMetaType to = QMetaType::fromType<SequentialIterable>();
+        QMetaType::registerMutableViewFunction([newMetaType](void *src, void *target)->bool{
+            new(target) SequentialIterable(QMetaSequence(createMetaSequenceInterface(newMetaType)), reinterpret_cast<void **>(src));
+            return true;
+        }, QMetaType(newMetaType), to);
+        QMetaType::registerConverterFunction([newMetaType](const void *src, void *target)->bool{
+            new(target) SequentialIterable(QMetaSequence(createMetaSequenceInterface(newMetaType)), reinterpret_cast<void const*const*>(src));
+            return true;
+        }, QMetaType(newMetaType), to);
     }else{
         registerContainerAccess(newMetaType, this);
     }

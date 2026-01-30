@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -31,6 +31,7 @@
 #define QMLAPI_H
 
 #include "qtjambiapi.h"
+#include "objectdata.h"
 
 class QObject;
 struct QMetaObject;
@@ -57,10 +58,10 @@ QTJAMBI_EXPORT QObject* createQmlErrorDummyObject(const QMetaObject* metaObject,
 
 QTJAMBI_EXPORT size_t extendedSizeForClass(JNIEnv *env, jclass object_class);
 
-QTJAMBI_EXPORT int registerMetaType(JNIEnv *env, jclass clazz, const QString& javaClassName);
+QTJAMBI_EXPORT QMetaType registerMetaType(JNIEnv *env, jclass clazz, const QString& javaClassName);
 
-QTJAMBI_EXPORT int registerMetaType(JNIEnv *env, SequentialContainerType containerType, const QMetaType& elementType);
-QTJAMBI_EXPORT int registerQmlMetaType(JNIEnv *env, jclass clazz,
+QTJAMBI_EXPORT QMetaType registerMetaType(JNIEnv *env, SequentialContainerType containerType, const QMetaType& elementType);
+QTJAMBI_EXPORT QMetaType registerQmlMetaType(JNIEnv *env, jclass clazz,
                                              const QByteArray& typeName,
                                              QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
                                              QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
@@ -91,6 +92,29 @@ struct InPlaceConstructorInfo{
 QTJAMBI_EXPORT InPlaceConstructorInfo findInPlaceConstructor(JNIEnv *env, jclass type, const QMetaObject *meta_object);
 QTJAMBI_EXPORT void* beginInPlaceConstruction(void* placement, const QMetaObject *meta_object, QtJambiAPI::ConstructorFn constructorFunction);
 QTJAMBI_EXPORT void endInPlaceConstruction(JNIEnv *env, jobject object, void* pointer);
+
+enum class ConstructorKind{
+    NoConstructor,
+    DefaultConstructor,
+    PrivateConstructor,
+    InPlaceConstructor,
+    DeclarativeConstructor
+};
+
+struct CreatorFunctionMetaData : QSharedData{
+    jclass clazz;
+    const QMetaObject *meta_object;
+    jmethodID constructor;
+    QmlAPI::ConstructorKind constructorKind;
+    QtJambiAPI::ConstructorFn constructorFunction;
+    size_t objectSize;
+    int psCast;
+    int vsCast;
+    int viCast;
+    int fhCast;
+};
+
+QTJAMBI_EXPORT QExplicitlySharedDataPointer<QmlAPI::CreatorFunctionMetaData> creatorFunctionMetaData(JNIEnv * env, const QMetaObject *meta_object, jclass clazz, jmethodID constructor, QmlAPI::ConstructorKind constructorKind, QtJambiAPI::ConstructorFn constructorFunction, size_t objectSize, int psCast, int vsCast, int viCast, int fhCast);
 }
 
 #endif // QMLAPI_H

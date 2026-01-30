@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -262,7 +262,7 @@ class QAudioFormat__{
     }
 }// class
 
-class QAudioBuffer__6_{
+class QAudioBuffer__{
 
     public final @NonNull QAudioFrame.AsByte dataAsU8M(){
         return QAudioFrame.dataAsAudioFrame(dataAsBuffer(), QAudioFormat.ChannelConfig.ChannelConfigMono);
@@ -307,6 +307,20 @@ class QCamera__{
         setViewfinderImpl((io.qt.core.QObject)viewfinder);
     }
     
+}// class
+
+class QAudioSink__{
+    public interface FloatConsumer extends java.util.function.Consumer<io.qt.core.@NonNull QSpan<Float>>{}
+    public interface IntConsumer extends java.util.function.Consumer<io.qt.core.@NonNull QSpan<Integer>>{}
+    public interface ShortConsumer extends java.util.function.Consumer<io.qt.core.@NonNull QSpan<Short>>{}
+    public interface ByteConsumer extends java.util.function.Consumer<io.qt.core.@NonNull QSpan<Byte>>{}
+}// class
+
+class QAudioSource__{
+    public interface FloatConsumer extends java.util.function.Consumer<io.qt.core.@NonNull QConstSpan<Float>>{}
+    public interface IntConsumer extends java.util.function.Consumer<io.qt.core.@NonNull QConstSpan<Integer>>{}
+    public interface ShortConsumer extends java.util.function.Consumer<io.qt.core.@NonNull QConstSpan<Short>>{}
+    public interface ByteConsumer extends java.util.function.Consumer<io.qt.core.@NonNull QConstSpan<Byte>>{}
 }// class
 
 class QMediaPlayer__{

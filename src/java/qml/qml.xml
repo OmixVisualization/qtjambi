@@ -1,6 +1,6 @@
 <!--===============================================================================================
 ==
-== Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+== Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ==
 == This file is part of Qt Jambi.
 ==
@@ -233,10 +233,10 @@
                 <attribute name="Bundle-Name"             value="QtJambi Common API Bundle (${qtjambi.osname} ${qtjambi.configuration})"/>
                 <attribute name="Bundle-RequiredExecutionEnvironment" value="${minimum.java.version}"/>
                 <attribute name="Bundle-SymbolicName"     value="io.qt.qtjambi.${qtjambi.osname}${qtjambi.configuration.osgi};singleton:=true"/>
-                <attribute name="Bundle-Version"          value="${qtjambi.version.bundle}"/>
+                <attribute name="Bundle-Version"          value="${qtjambi.jar.version}"/>
                 <attribute name="X-QtJambi-Arch"          value="${qtjambi.osname}"/>
                 <attribute name="X-QtJambi-Build"         value="${qtjambi.configuration}"/><!-- release debug test -->
-                <attribute name="X-QtJambi-Version"       value="${qtjambi.version.bundle}"/>
+                <attribute name="X-QtJambi-Version"       value="${qtjambi.jar.version}"/>
                 <attribute name="X-QtJambi-SoName-Version" value="${qtjambi.soname.version.major}"/>
             </manifest>
             <fileset dir="${java.outdir}/qml/${module}"/>
@@ -380,7 +380,7 @@
 								<attribute name="Bundle-Name"      value="QtJambi ${module}"/>
 								<attribute name="Bundle-Description"      value="QtJambi ${module}"/>
 								<attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999"/>
-								<attribute name="Bundle-Version"         value="${qtjambi.version.bundle}"/>
+								<attribute name="Bundle-Version"         value="${qtjambi.jar.version}"/>
 								<attribute name="Bundle-ManifestVersion" value="2"/>
 							</manifest>
 							<zipfileset includes="**/*class" excludes="META-INF" src="${outputDir}/${targetdirname}/tests/${module}.jar"/>
@@ -457,7 +457,7 @@
 						<attribute name="Bundle-Name"      value="QtJambi ${module} plugin platform bundle"/>
 						<attribute name="Bundle-Description"      value="QtJambi ${module} plugin platform bundle"/>
 						<attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999"/>
-						<attribute name="Bundle-Version"         value="${qtjambi.version.bundle}"/>
+						<attribute name="Bundle-Version"         value="${qtjambi.jar.version}"/>
 						<attribute name="Bundle-ManifestVersion" value="2"/>
 					</manifest>
 					<fileset dir="${qmltargetdir}/${subdir}" includes="${jar-includes}"/>

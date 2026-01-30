@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -59,6 +59,7 @@ private:
     const char* m_data;
     JNIEnv* m_env;
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
     Q_DISABLE_COPY_MOVE(J2CStringBuffer)
 };
@@ -113,6 +114,7 @@ private:
     const jchar* m_data;
     JNIEnv* m_env;
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
     Q_DISABLE_COPY_MOVE(JString2QChars)
 };

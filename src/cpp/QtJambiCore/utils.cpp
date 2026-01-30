@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -244,6 +244,9 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QRangeModel$TreeRowInterface,
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(setParentRow,(Lio/qt/core/QRangeModel$TreeRowInterface;)V)
                                 )
 #endif
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QStringConverter$FinalizeResult,QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(SB))
+#endif
 namespace Internal
 {
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core/internal,QAbstractFileEngineHandler,
@@ -298,6 +301,20 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QFlags,)
 }
 
 namespace Runtime{
+#if defined(Q_OS_ANDROID)
+#define QTJAMBI_REPOSITORY_DEFINE_RENAMED_FIELD(handle, field_name, signature)\
+this->__##handle = env->GetFieldID(this->class_ref, #field_name, #signature);\
+    QtJambiPrivate::javaExceptionCheck(env);\
+    Q_ASSERT(this->__##handle);
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/io,FileDescriptor,
+                                QTJAMBI_REPOSITORY_DEFINE_RENAMED_FIELD(fd, descriptor, I)
+                                )
+#else
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/io,FileDescriptor,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(fd, I)
+                                )
+#endif
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/math,BigInteger,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(I[B)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(abs,()Ljava/math/BigInteger;)
@@ -309,6 +326,13 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/math,BigInteger,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,DirectByteBuffer,
                                 QTJAMBI_REPOSITORY_DEFINE_FIELD(att,Ljava/lang/Object;)
                                 )
+
+namespace Private{
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,Buffer,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(position,()I)
+                                QTJAMBI_REPOSITORY_DEFINE_RENAMED_METHOD(setPosition,position,(I)Ljava/nio/Buffer;))
+}
+
 }
 
 }

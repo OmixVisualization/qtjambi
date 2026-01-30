@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -65,22 +65,12 @@ void registerPlugin(QtPluginInstanceFunction instanceFunction, const QString& cl
         rawMetaData.append(char(QT_VERSION_MINOR));
         rawMetaData.append(char(qPluginArchRequirements()));
         rawMetaData.append(cborData);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         QtPluginMetaDataFunction rawMetaDataFunction = qtjambi_function_pointer<16,QPluginMetaData()>(
                     [rawMetaData]() -> QPluginMetaData{
                         return QPluginMetaData{reinterpret_cast<const uchar *>(rawMetaData.data()), size_t(rawMetaData.size())};
                     }
                 , qHash(rawMetaData));
         QStaticPlugin staticPlugin(instanceFunction, rawMetaDataFunction);
-#else
-        QStaticPlugin staticPlugin;
-        staticPlugin.instance = instanceFunction;
-        staticPlugin.rawMetaData = qtjambi_function_pointer<16,const char*()>(
-                    [rawMetaData]() -> const char*{
-                        return rawMetaData;
-                    }
-                , qHash(rawMetaData));
-#endif
         qRegisterStaticPluginFunction(staticPlugin);
     }
 }

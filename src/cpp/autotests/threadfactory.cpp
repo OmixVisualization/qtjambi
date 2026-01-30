@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -123,18 +123,21 @@ QThread* ThreadFactory::createQLoopThread(){
 
 void SignalReceiver::receiveSignal(){
     setReceived(true);
+    m_semaphore.release();
+}
+
+void SignalReceiver::waitForReleased(int timeout) const{
+    m_semaphore.tryAcquire(timeout);
 }
 
 bool SignalReceiver::received() const
 {
-    QReadLocker locker(&m_lock);
     return m_received;
 }
 
 void SignalReceiver::setReceived(bool newReceived)
 {
     {
-        QWriteLocker locker(&m_lock);
         if (m_received == newReceived)
             return;
         m_received = newReceived;

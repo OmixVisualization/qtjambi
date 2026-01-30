@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -213,6 +213,7 @@ void QGenericTableItemModelImpl<GenericTable>::initializeTable(QRangeModel *item
         if(model.is_mutable_row){
             if(model.is_list_range){
                 if(model.is_list_row){
+#if QT_VERSION < QT_VERSION_CHECK(6,11,0)
                     switch(model.rowType){
                     case RowType::Data:
                         initializeTable<true,true,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
@@ -426,6 +427,7 @@ void QGenericTableItemModelImpl<GenericTable>::initializeTable(QRangeModel *item
                         initializeTable<false,false,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
                         break;
                     }
+#endif //QT_VERSION < QT_VERSION_CHECK(6,11,0)
                 }
             }
         }

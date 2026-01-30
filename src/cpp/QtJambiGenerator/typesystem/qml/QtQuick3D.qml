@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -50,15 +50,8 @@ TypeSystem{
     }
     
     RequiredLibrary{
-        name: "QtQuick3DRender"
-        mode: RequiredLibrary.Optional
-        until: 5
-    }
-    
-    RequiredLibrary{
         name: "QtShaderTools"
         mode: RequiredLibrary.Optional
-        since: 6
         until: [6, 2]
     }
     
@@ -109,7 +102,6 @@ TypeSystem{
                 name: "Semantic"
                 RejectEnumValue{
                     name: "TexCoord0Semantic"
-                    since: 6
                 }
             }
 
@@ -151,7 +143,6 @@ TypeSystem{
         EnumType{
             name: "Format"
         }
-        since: 6
     }
 
     Rejection{className: "QSSGRenderGraphObject"}

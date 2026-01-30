@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -100,12 +100,12 @@ typedef const std::type_info* (*TypeInfoSupplier)(const void *object);
 
 namespace QtJambiAPI{
 
-enum ConstructorOptions : int{
+enum ConstructorOptions : uchar{
     NoConstructorOption = 0,
     HasDerivedMetaObject = 0x01,
     HasOverrides = 0x02,
     IsNativeConstruction = 0x04,
-    IsQmlConstruction = 0x08 | IsNativeConstruction,
+    IsQmlConstruction = 0x08 | IsNativeConstruction
 };
 typedef void (*ConstructorFn)(void*, JNIEnv*, jobject, jvalue*, QtJambiAPI::ConstructorOptions);
 
@@ -521,11 +521,19 @@ QTJAMBI_EXPORT jobject convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(J
 
 QTJAMBI_EXPORT jobject convertNativeToJavaObjectAsCopy(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *nativeTypeName = nullptr);
 
+QTJAMBI_EXPORT jobject convertNativeToJavaObjectAsCopy(JNIEnv *env, void *qt_object, const std::type_info& typeId, const char *nativeTypeName = nullptr);
+
 QTJAMBI_EXPORT jobject convertNativeToJavaObjectAsCopy(JNIEnv *env, const void *qt_object, jclass clazz);
+
+QTJAMBI_EXPORT jobject convertModelIndexToJavaObject(JNIEnv *env, class QModelIndex&& index);
 
 QTJAMBI_EXPORT jobject convertModelIndexToJavaObject(JNIEnv *env, const class QModelIndex& index);
 
+QTJAMBI_EXPORT jobject convertModelIndexToJavaObject(JNIEnv *env, const class QModelIndex* index);
+
 QTJAMBI_EXPORT jobject convertModelIndexToEphemeralJavaObject(JNIEnv *env, QtJambiScope& scope, const class QModelIndex* index);
+
+QTJAMBI_EXPORT jobject convertModelIndexToEphemeralJavaObject(JNIEnv *env, QtJambiScope& scope, const class QModelIndex& index);
 
 QTJAMBI_EXPORT bool convertJavaToModelIndex(JNIEnv *env, jobject java_object, class QModelIndex& output);
 
@@ -896,19 +904,11 @@ QTJAMBI_EXPORT jobject convertQSpanToJavaObject(JNIEnv *env,
                                                 jlong size
                                                 );
 
-template<typename T, bool t_is_const, std::size_t E>
-jobject convertQSpanToJavaObject(JNIEnv *env,
-                                 const QSpan<typename std::conditional<t_is_const, typename std::add_const<T>::type, T>::type,E>& span,
-                                 QtJambiNativeID owner = InvalidNativeID);
-
 QTJAMBI_EXPORT jobject convertQSpanFromQListToJavaObject(JNIEnv *env,
                                                 const void* span,
                                                 CopyFunction copyFunction,
                                                 PtrDeleterFunction destructor_function,
                                                 AbstractListAccess* containerAccess, bool isConst);
-
-template<typename T, std::size_t E>
-jobject convertQSpanToDetachedJavaObject(JNIEnv *env, const QSpan<T,E>& span);
 #endif
 
 QTJAMBI_EXPORT jobject convertQAssociativeIteratorToJavaObject(JNIEnv *env,

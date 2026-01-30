@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -1068,12 +1068,10 @@ public:
     static jobject createBuffer(JNIEnv *env, const QChar* data, qsizetype capacity);
     static jobject createBuffer(JNIEnv *env, wchar_t* data, qsizetype capacity);
     static jobject createBuffer(JNIEnv *env, const wchar_t* data, qsizetype capacity);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     static jobject createBuffer(JNIEnv *env, char16_t* data, qsizetype capacity);
     static jobject createBuffer(JNIEnv *env, const char16_t* data, qsizetype capacity);
     static jobject createBuffer(JNIEnv *env, char32_t* data, qsizetype capacity);
     static jobject createBuffer(JNIEnv *env, const char32_t* data, qsizetype capacity);
-#endif
 };
 
 jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, void* data, qsizetype capacity) {
@@ -1274,7 +1272,6 @@ jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, const wchar_t* data, qsiz
     return buffer_object;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, char32_t* data, qsizetype capacity)
 {
     jobject buffer_object = createBuffer(env, reinterpret_cast<void*>(data), capacity*sizeof(char32_t));
@@ -1304,7 +1301,6 @@ jobject AbstractDataJBuffer::createBuffer(JNIEnv *env, const char16_t* data, qsi
         buffer_object = Java::Runtime::ByteBuffer::asCharBuffer(env, buffer_object);
     return buffer_object;
 }
-#endif
 
 void DataJBuffer::setLimit(JNIEnv *env, jobject buffer, jsize limit){
     if(buffer)
@@ -1439,7 +1435,6 @@ DataJBuffer::DataJBuffer(JNIEnv *env, const wchar_t* data, qsizetype capacity)
 {
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 DataJBuffer::DataJBuffer(JNIEnv *env, char16_t* data, qsizetype capacity)
     : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
@@ -1456,7 +1451,6 @@ DataJBuffer::DataJBuffer(JNIEnv *env, const char32_t* data, qsizetype capacity)
     : m_env(env), m_buffer_object(AbstractDataJBuffer::createBuffer(env, data, capacity))
 {
 }
-#endif
 
 DataJBuffer::~DataJBuffer(){
     try{
@@ -1607,7 +1601,6 @@ PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, const QChar* data, qsi
 {
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, char16_t* data, qsizetype capacity)
     : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
@@ -1624,7 +1617,6 @@ PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, const char32_t* data, 
     : m_data(new PersistentDataJBufferPrivate{AbstractDataJBuffer::createBuffer(env, data, capacity)})
 {
 }
-#endif
 
 PersistentDataJBuffer::~PersistentDataJBuffer(){
     if(Q_LIKELY(m_data) && m_data->m_buffer){

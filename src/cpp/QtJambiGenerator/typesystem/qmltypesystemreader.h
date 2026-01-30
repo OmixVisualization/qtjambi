@@ -42,9 +42,11 @@ namespace TS{
     class TypeDatabase;
 }
 
+class QQmlEngine;
+
 class QmlTypeSystemReader {
 public:
-    QmlTypeSystemReader(TS::TypeDatabase *database, bool generate, const QVersionNumber& qtVersion);
+    QmlTypeSystemReader(QQmlEngine* engine, TS::TypeDatabase *database, bool generate, const QVersionNumber& qtVersion);
     ~QmlTypeSystemReader();
     void parse(const QString &filepath);
     void setImportInputDirectoryList(const QStringList &importInputDirectoryList);

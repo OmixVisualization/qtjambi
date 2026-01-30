@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -46,6 +46,10 @@ TypeSystem{
         Text{content: "initialize_meta_info_QtDBus();"}
     }
     
+    Rejection{
+        className: "QDBusReply<void>"
+    }
+
     Rejection{
         className: "QDBusPendingReply"
     }
@@ -137,23 +141,8 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "asyncCall(const QString &, const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "call(const QString &, const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
             signature: "call(const QString &)"
             remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "call(QDBus::CallMode, const QString &, const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &)"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "call(QDBus::CallMode, const QString &)"
@@ -411,7 +400,6 @@ TypeSystem{
                 position: Position.Beginning
                 Text{content: "qtjambi_dbus_check_write_argument(%env, __qt_this);"}
             }
-            since: 6
         }
         ModifyFunction{
             signature: "beginMap(int,int)"
@@ -428,7 +416,6 @@ TypeSystem{
                 position: Position.Beginning
                 Text{content: "qtjambi_dbus_check_write_argument(%env, __qt_this);"}
             }
-            since: 6
         }
         ModifyFunction{
             signature: "operator<<(int)"
@@ -974,7 +961,6 @@ TypeSystem{
                 position: Position.Beginning
                 Text{content: "qtjambi_dbus_check_write_argument(%env, __qt_this);"}
             }
-            since: 6
         }
         ModifyFunction{
             signature: "operator>>(QDBusArgument,QDate &)"
@@ -1728,7 +1714,6 @@ TypeSystem{
         ModifyFunction{
             signature: "operator=(QDBusPendingCall &&)"
             remove: RemoveFlag.All
-            since: [5, 14]
         }
         ModifyFunction{
             signature: "QDBusPendingCall(const QDBusPendingCall &)"
@@ -1848,36 +1833,6 @@ TypeSystem{
     GlobalFunction{
         signature: "operator>><T1,T2>(QDBusArgument,std::pair<T1,T2>&)"
         remove: RemoveFlag.All
-    }
-
-    GlobalFunction{
-        signature: "operator<<<T1,T2>(QDBusArgument&,QPair<T1,T2>)"
-        remove: RemoveFlag.All
-        until: 5
-    }
-
-    GlobalFunction{
-        signature: "operator>><T1,T2>(QDBusArgument,QPair<T1,T2>&)"
-        remove: RemoveFlag.All
-        until: 5
-    }
-
-    GlobalFunction{
-        signature: "operator>><Key,T>(QDBusArgument,QHash<Key,T>&)"
-        remove: RemoveFlag.All
-        until: 5
-    }
-
-    GlobalFunction{
-        signature: "operator>><T>(QDBusArgument,QList<T>&)"
-        remove: RemoveFlag.All
-        until: 5
-    }
-
-    GlobalFunction{
-        signature: "operator>><Key,T>(QDBusArgument,QMap<Key,T>&)"
-        remove: RemoveFlag.All
-        until: 5
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Object type 'QDBusPendingCall' passed as value. Resulting code will not compile.*"}

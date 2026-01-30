@@ -1,6 +1,7 @@
+
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -46,29 +47,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "containeraccess_set.h"
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
 
-Q_GLOBAL_STATIC(QReadWriteLock, gContainerAccessLock)
-QReadWriteLock* containerAccessLock(){
-    return gContainerAccessLock();
-}
-typedef SecureContainer<QMap<int, QtMetaContainerPrivate::QMetaAssociationInterface>, gContainerAccessLock> MetaAssociationHash;
-Q_GLOBAL_STATIC(MetaAssociationHash, gMetaAssociationHash)
-typedef SecureContainer<QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface>, gContainerAccessLock> MetaSequenceHash;
-Q_GLOBAL_STATIC(MetaSequenceHash, gMetaSequenceHash)
-
-QMap<int, QtMetaContainerPrivate::QMetaAssociationInterface>& metaAssociationHash(){
-    return *gMetaAssociationHash;
-}
-
-QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface>& metaSequenceHash(){
-    return *gMetaSequenceHash();
-}
-
 #if defined(QTJAMBI_GENERIC_ACCESS)
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, gContainerAccessLoader, ("io.qt.qtjambi.ContainerAccess", QLatin1String("/containeraccess"), Qt::CaseInsensitive))
-typedef SecureContainer<QMap<size_t, ContainerAccessAPI::SequentialContainerAccessFactory>, gContainerAccessLock> SequentialContainerAccessFactoryHash;
-typedef SecureContainer<QMap<size_t, ContainerAccessAPI::AssociativeContainerAccessFactory>, gContainerAccessLock> AssociativeContainerAccessFactoryHash;
-Q_GLOBAL_STATIC(SequentialContainerAccessFactoryHash, gSequentialContainerAccessFactoryHash)
-Q_GLOBAL_STATIC(AssociativeContainerAccessFactoryHash, gAssociativeContainerAccessFactoryHash)
 
 inline size_t qHash(SequentialContainerType containerType, size_t align, size_t size
 ) {
@@ -136,35 +115,49 @@ ContainerAccessAPI::SequentialContainerAccessFactory findContainerAccessFactory(
         align = qMin<size_t>(size, alignof(std::max_align_t));
     }
     size_t id = qHash(containerType, align, size);
-    QWriteLocker lock(gContainerAccessLock());
-    ContainerAccessAPI::SequentialContainerAccessFactory result = gSequentialContainerAccessFactoryHash->value(id, nullptr);
-    if(!result && size==0){
-        size = sizeof(void*);
-        align = alignof(void*);
-        result = gSequentialContainerAccessFactoryHash->value(id = qHash(containerType, align, size), nullptr);
-    }
-    if(!result){
-        QString containerName;
-        switch(containerType){
-        case SequentialContainerType::QSet: containerName = "QSet"; break;
-        case SequentialContainerType::QStack:
-        case SequentialContainerType::QQueue:
-        case SequentialContainerType::QList: containerName = "QList"; break;
+    ContainerAccessAPI::SequentialContainerAccessFactory result{nullptr};
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        {
+            QReadLocker lock(storage->lock());
+            result = storage->sequentialContainerAccessFactoryHash().value(id, nullptr);
         }
-        QString lib = QString("%1Access_S%2_A%3").arg(containerName, QString::number(size), QString::number(align));
-        Java::QtJambi::LibraryUtility::extractContainerAccessLib(env, qtjambi_cast<jstring>(env, lib));
-        gContainerAccessLoader->update();
-        int idx = gContainerAccessLoader->indexOf(lib);
-        if(idx>=0){
-            gContainerAccessLoader->instance(idx);
-            if(!(result = gSequentialContainerAccessFactoryHash->value(id, nullptr))){
-                occurredException = JavaException(env, Java::Runtime::RuntimeException::newInstance(env, qtjambi_cast<jstring>(env, QStringLiteral("Unable to load container access plugin %1.").arg(lib))));
+        if(!result && size==0){
+            size = sizeof(void*);
+            align = alignof(void*);
+            id = qHash(containerType, align, size);
+            {
+                QReadLocker lock(storage->lock());
+                result = storage->sequentialContainerAccessFactoryHash().value(id, nullptr);
             }
-        }else{
-            occurredException = JavaException(env, Java::Runtime::MissingResourceException::newInstance(env,
-                                                                                qtjambi_cast<jstring>(env, QStringLiteral("Container access plugin %1Access_S%2_A%3 missing.").arg(containerName, QString::number(size), QString::number(align))),
-                                                                                qtjambi_cast<jstring>(env, containerName),
-                                                                                env->NewStringUTF("")));
+        }
+        if(!result){
+            QString containerName;
+            switch(containerType){
+            case SequentialContainerType::QSet: containerName = "QSet"; break;
+            case SequentialContainerType::QStack:
+            case SequentialContainerType::QQueue:
+            case SequentialContainerType::QList: containerName = "QList"; break;
+            }
+            QString lib = QString("%1Access_S%2_A%3").arg(containerName, QString::number(size), QString::number(align));
+            Java::QtJambi::LibraryUtility::extractContainerAccessLib(env, qtjambi_cast<jstring>(env, lib));
+            gContainerAccessLoader->update();
+            int idx = gContainerAccessLoader->indexOf(lib);
+            if(idx>=0){
+                gContainerAccessLoader->instance(idx);
+                {
+                    QReadLocker lock(storage->lock());
+                    result = storage->sequentialContainerAccessFactoryHash().value(id, nullptr);
+                }
+                if(!result){
+                    occurredException = JavaException(env, Java::Runtime::RuntimeException::newInstance(env, qtjambi_cast<jstring>(env, QStringLiteral("Unable to load container access plugin %1.").arg(lib))));
+                }
+            }else{
+                occurredException = JavaException(env, Java::Runtime::MissingResourceException::newInstance(env,
+                                                                                    qtjambi_cast<jstring>(env, QStringLiteral("Container access plugin %1Access_S%2_A%3 missing.").arg(containerName, QString::number(size), QString::number(align))),
+                                                                                    qtjambi_cast<jstring>(env, containerName),
+                                                                                    env->NewStringUTF("")));
+            }
         }
     }
     return result;
@@ -178,56 +171,81 @@ ContainerAccessAPI::AssociativeContainerAccessFactory findContainerAccessFactory
         align2 = qMin<size_t>(size2, alignof(std::max_align_t));
     }
     size_t id = qHash(containerType, align1, size1, align2, size2);
-    QWriteLocker lock(gContainerAccessLock());
-    ContainerAccessAPI::AssociativeContainerAccessFactory result = gAssociativeContainerAccessFactoryHash->value(id, nullptr);
-    if(!result && size1==0)
-        result = gAssociativeContainerAccessFactoryHash->value(id = qHash(containerType, alignof(void*), sizeof(void*), align2, size2), nullptr);
-    if(!result && size2==0){
-        align2 = alignof(void*);
-        size2 = sizeof(void*);
-        result = gAssociativeContainerAccessFactoryHash->value(id = qHash(containerType, align1, size1, align2, size2), nullptr);
-    }
-    if(!result && size1==0){
-        align1 = alignof(void*);
-        size1 = sizeof(void*);
-        result = gAssociativeContainerAccessFactoryHash->value(id = qHash(containerType, align1, size1, align2, size2), nullptr);
-    }
-    if(!result){
-        QString containerName;
-        switch(containerType){
-        case AssociativeContainerType::QMap: containerName = "QMap"; break;
-        case AssociativeContainerType::QHash: containerName = "QHash"; break;
-        case AssociativeContainerType::QMultiMap: containerName = "QMultiMap"; break;
-        case AssociativeContainerType::QMultiHash: containerName = "QMultiHash"; break;
-        case AssociativeContainerType::QPair: containerName = "QPair"; break;
+    ContainerAccessAPI::AssociativeContainerAccessFactory result{nullptr};
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        {
+            QReadLocker lock(storage->lock());
+            result = storage->associativeContainerAccessFactoryHash().value(id, nullptr);
         }
-        QString lib = QString("%1Access_S%2_A%3_S%4_A%5").arg(containerName, QString::number(size1), QString::number(align1), QString::number(size2), QString::number(align2));
-        Java::QtJambi::LibraryUtility::extractContainerAccessLib(env, qtjambi_cast<jstring>(env, lib));
-        gContainerAccessLoader->update();
-        int idx = gContainerAccessLoader->indexOf(lib);
-        if(idx>=0){
-            gContainerAccessLoader->instance(idx);
-            if(!(result = gAssociativeContainerAccessFactoryHash->value(id, nullptr))){
-                occurredException = JavaException(env, Java::Runtime::RuntimeException::newInstance(env, qtjambi_cast<jstring>(env, QStringLiteral("Unable to load container access plugin %1.").arg(lib))));
+        if(!result && size1==0){
+            id = qHash(containerType, alignof(void*);
+            QReadLocker lock(storage->lock());
+            result = storage->associativeContainerAccessFactoryHash().value(id, sizeof(void*), align2, size2), nullptr);
+        }
+        if(!result && size2==0){
+            align2 = alignof(void*);
+            size2 = sizeof(void*);
+            id = qHash(containerType, align1, size1, align2, size2);
+            QReadLocker lock(storage->lock());
+            result = storage->associativeContainerAccessFactoryHash().value(id, nullptr);
+        }
+        if(!result && size1==0){
+            align1 = alignof(void*);
+            size1 = sizeof(void*);
+            id = qHash(containerType, align1, size1, align2, size2);
+            QReadLocker lock(storage->lock());
+            result = storage->associativeContainerAccessFactoryHash().value(id, nullptr);
+        }
+        if(!result){
+            QString containerName;
+            switch(containerType){
+            case AssociativeContainerType::QMap: containerName = "QMap"; break;
+            case AssociativeContainerType::QHash: containerName = "QHash"; break;
+            case AssociativeContainerType::QMultiMap: containerName = "QMultiMap"; break;
+            case AssociativeContainerType::QMultiHash: containerName = "QMultiHash"; break;
+            case AssociativeContainerType::QPair: containerName = "QPair"; break;
             }
-        }else{
-            occurredException = JavaException(env, Java::Runtime::MissingResourceException::newInstance(env,
-                                                                                qtjambi_cast<jstring>(env, QStringLiteral("Container access plugin %1Access_S%2_A%3_S%4_A%5 missing.").arg(containerName, QString::number(size1), QString::number(align1), QString::number(size2), QString::number(align2))),
-                                                                                qtjambi_cast<jstring>(env, containerName),
-                                                                                env->NewStringUTF("")));
+            QString lib = QString("%1Access_S%2_A%3_S%4_A%5").arg(containerName, QString::number(size1), QString::number(align1), QString::number(size2), QString::number(align2));
+            Java::QtJambi::LibraryUtility::extractContainerAccessLib(env, qtjambi_cast<jstring>(env, lib));
+            gContainerAccessLoader->update();
+            int idx = gContainerAccessLoader->indexOf(lib);
+            if(idx>=0){
+                gContainerAccessLoader->instance(idx);
+                {
+                    QReadLocker lock(storage->lock());
+                    result = storage->associativeContainerAccessFactoryHash().value(id, nullptr);
+                }
+                if(!result){
+                    occurredException = JavaException(env, Java::Runtime::RuntimeException::newInstance(env, qtjambi_cast<jstring>(env, QStringLiteral("Unable to load container access plugin %1.").arg(lib))));
+                }
+            }else{
+                occurredException = JavaException(env, Java::Runtime::MissingResourceException::newInstance(env,
+                                                                                    qtjambi_cast<jstring>(env, QStringLiteral("Container access plugin %1Access_S%2_A%3_S%4_A%5 missing.").arg(containerName, QString::number(size1), QString::number(align1), QString::number(size2), QString::number(align2))),
+                                                                                    qtjambi_cast<jstring>(env, containerName),
+                                                                                    env->NewStringUTF("")));
+            }
         }
     }
     return result;
 }
 
 void ContainerAccessAPI::registerAccessFactory(SequentialContainerType containerType, size_t align, size_t size, bool, SequentialContainerAccessFactory factory){
-    QWriteLocker lock(gContainerAccessLock());
-    gSequentialContainerAccessFactoryHash->insert(qHash(containerType, align, size), factory);
+    auto hash = qHash(containerType, align, size);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker lock(storage->lock());
+        storage->sequentialContainerAccessFactoryHash().insert(hash, factory);
+    }
 }
 
 void ContainerAccessAPI::registerAccessFactory(AssociativeContainerType containerType, size_t align1, size_t size1, size_t align2, size_t size2, AssociativeContainerAccessFactory factory){
-    QWriteLocker lock(gContainerAccessLock());
-    gAssociativeContainerAccessFactoryHash->insert(qHash(containerType, align1, size1, align2, size2), factory);
+    auto hash = qHash(containerType, align1, size1, align2, size2);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker lock(storage->lock());
+        storage->associativeContainerAccessFactoryHash().insert(hash, factory);
+    }
 }
 
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
@@ -485,8 +503,12 @@ void WrapperListAccess::assign(JNIEnv * env, const ContainerInfo& container, con
     m_containerAccess->assign(env, container, container2);
 }
 
-size_t WrapperListAccess::sizeOf() {
+size_t WrapperListAccess::sizeOf() const {
     return m_containerAccess->sizeOf();
+}
+
+size_t WrapperListAccess::alignOf() const {
+    return m_containerAccess->alignOf();
 }
 
 void* WrapperListAccess::constructContainer(void* container) {
@@ -513,7 +535,7 @@ bool WrapperListAccess::destructContainer(void* container) {
     return m_containerAccess->destructContainer(container);
 }
 
-int WrapperListAccess::registerContainer(const QByteArray& containerTypeName) {
+QMetaType WrapperListAccess::registerContainer(const QByteArray& containerTypeName) {
     return m_containerAccess->registerContainer(containerTypeName);
 }
 
@@ -751,15 +773,19 @@ void WrapperSetAccess::assign(JNIEnv * env, const ContainerInfo& container, cons
     m_containerAccess->assign(env, container, container2);
 }
 
-size_t WrapperSetAccess::sizeOf() {
+size_t WrapperSetAccess::sizeOf() const {
     return m_containerAccess->sizeOf();
+}
+
+size_t WrapperSetAccess::alignOf() const {
+    return m_containerAccess->alignOf();
 }
 
 bool WrapperSetAccess::destructContainer(void* container) {
     return m_containerAccess->destructContainer(container);
 }
 
-int WrapperSetAccess::registerContainer(const QByteArray& containerTypeName) {
+QMetaType WrapperSetAccess::registerContainer(const QByteArray& containerTypeName) {
     return m_containerAccess->registerContainer(containerTypeName);
 }
 
@@ -932,15 +958,19 @@ void* WrapperMapAccess::constructContainer(JNIEnv * env, void* container, const 
     return m_containerAccess->constructContainer(env, container, move);
 }
 
-size_t WrapperMapAccess::sizeOf() {
+size_t WrapperMapAccess::sizeOf() const {
     return m_containerAccess->sizeOf();
+}
+
+size_t WrapperMapAccess::alignOf() const {
+    return m_containerAccess->alignOf();
 }
 
 bool WrapperMapAccess::destructContainer(void* container) {
     return m_containerAccess->destructContainer(container);
 }
 
-int WrapperMapAccess::registerContainer(const QByteArray& containerTypeName) {
+QMetaType WrapperMapAccess::registerContainer(const QByteArray& containerTypeName) {
     return m_containerAccess->registerContainer(containerTypeName);
 }
 
@@ -1174,15 +1204,19 @@ void* WrapperMultiMapAccess::constructContainer(JNIEnv * env, void* container, c
     return m_containerAccess->constructContainer(env, container, move);
 }
 
-size_t WrapperMultiMapAccess::sizeOf() {
+size_t WrapperMultiMapAccess::sizeOf() const {
     return m_containerAccess->sizeOf();
+}
+
+size_t WrapperMultiMapAccess::alignOf() const {
+    return m_containerAccess->alignOf();
 }
 
 bool WrapperMultiMapAccess::destructContainer(void* container) {
     return m_containerAccess->destructContainer(container);
 }
 
-int WrapperMultiMapAccess::registerContainer(const QByteArray& containerTypeName) {
+QMetaType WrapperMultiMapAccess::registerContainer(const QByteArray& containerTypeName) {
     return m_containerAccess->registerContainer(containerTypeName);
 }
 
@@ -1457,15 +1491,19 @@ void* WrapperHashAccess::constructContainer(JNIEnv * env, void* container, const
     return m_containerAccess->constructContainer(env, container, move);
 }
 
-size_t WrapperHashAccess::sizeOf() {
+size_t WrapperHashAccess::sizeOf() const {
     return m_containerAccess->sizeOf();
+}
+
+size_t WrapperHashAccess::alignOf() const {
+    return m_containerAccess->alignOf();
 }
 
 bool WrapperHashAccess::destructContainer(void* container) {
     return m_containerAccess->destructContainer(container);
 }
 
-int WrapperHashAccess::registerContainer(const QByteArray& containerTypeName) {
+QMetaType WrapperHashAccess::registerContainer(const QByteArray& containerTypeName) {
     return m_containerAccess->registerContainer(containerTypeName);
 }
 
@@ -1676,15 +1714,19 @@ void* WrapperMultiHashAccess::constructContainer(JNIEnv * env, void* container, 
     return m_containerAccess->constructContainer(env, container, move);
 }
 
-size_t WrapperMultiHashAccess::sizeOf() {
+size_t WrapperMultiHashAccess::sizeOf() const {
     return m_containerAccess->sizeOf();
+}
+
+size_t WrapperMultiHashAccess::alignOf() const {
+    return m_containerAccess->alignOf();
 }
 
 bool WrapperMultiHashAccess::destructContainer(void* container) {
     return m_containerAccess->destructContainer(container);
 }
 
-int WrapperMultiHashAccess::registerContainer(const QByteArray& containerTypeName) {
+QMetaType WrapperMultiHashAccess::registerContainer(const QByteArray& containerTypeName) {
     return m_containerAccess->registerContainer(containerTypeName);
 }
 
@@ -1868,8 +1910,8 @@ bool AbstractContainerAccess::isPointerType(const QMetaType& metaType){
     return metaType.flags().testFlag(QMetaType::IsPointer);
 }
 
-std::function<AbstractContainerAccess*()> getSequentialContainerAccessFactory(SequentialContainerType containerType, const QMetaType& type);
-std::function<AbstractContainerAccess*()> getSequentialContainerAccessFactory(AssociativeContainerType containerType, const QMetaType& keyType, const QMetaType& valueType);
+std::function<AbstractContainerAccess*()> getContainerAccessFactory(SequentialContainerType containerType, const QMetaType& type);
+std::function<AbstractContainerAccess*()> getContainerAccessFactory(AssociativeContainerType containerType, const QMetaType& keyType, const QMetaType& valueType);
 void registerContainerAccessFactory(SequentialContainerType containerType, const QMetaType& elementType, std::function<AbstractContainerAccess*()>&& factory);
 void registerContainerAccessFactory(AssociativeContainerType containerType, const QMetaType& keyType, const QMetaType& valueType, std::function<AbstractContainerAccess*()>&& factory);
 
@@ -2152,7 +2194,7 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
         break;
     }
     if(!containerAccess){
-        if(std::function<AbstractContainerAccess*()> containerAccessFactory = getSequentialContainerAccessFactory(containerType, memberMetaType))
+        if(std::function<AbstractContainerAccess*()> containerAccessFactory = getContainerAccessFactory(containerType, memberMetaType))
             containerAccess = containerAccessFactory();
     }
     return containerAccess;
@@ -2160,7 +2202,7 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
 
 AbstractContainerAccess* createContainerAccess(AssociativeContainerType mapType, const QMetaType& memberMetaType1, const QMetaType& memberMetaType2){
     AbstractContainerAccess* containerAccess = nullptr;
-    if(std::function<AbstractContainerAccess*()> containerAccessFactory = getSequentialContainerAccessFactory(mapType, memberMetaType1, memberMetaType2))
+    if(std::function<AbstractContainerAccess*()> containerAccessFactory = getContainerAccessFactory(mapType, memberMetaType1, memberMetaType2))
         containerAccess = containerAccessFactory();
     return containerAccess;
 }
@@ -3267,47 +3309,84 @@ AbstractContainerAccess::~AbstractContainerAccess(){}
 void AbstractContainerAccess::dispose(){}
 void* AbstractContainerAccess::createContainer(void* moved){
     size_t sz = sizeOf();
+    size_t al = alignOf();
     if(sz>0){
-        return constructContainer(operator new(sz), moved);
+        if (al > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+            return constructContainer(operator new(sz, std::align_val_t(al)), moved);
+        else
+            return constructContainer(operator new(sz), moved);
     }else{
         return nullptr;
     }
 }
 void* AbstractContainerAccess::createContainer(JNIEnv *env, const ContainerAndAccessInfo& moved){
     size_t sz = sizeOf();
+    size_t al = alignOf();
     if(sz>0){
-        return constructContainer(env, operator new(sz), moved);
+        if (al > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+            return constructContainer(env, operator new(sz, std::align_val_t(al)), moved);
+        else
+            return constructContainer(env, operator new(sz), moved);
     }else{
         return nullptr;
     }
 }
 void* AbstractContainerAccess::createContainer(){
     size_t sz = sizeOf();
+    size_t al = alignOf();
     if(sz>0){
-        return constructContainer(operator new(sz));
+        if (al > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+            return constructContainer(operator new(sz, std::align_val_t(al)));
+        else
+            return constructContainer(operator new(sz));
     }else{
         return nullptr;
     }
 }
 void* AbstractContainerAccess::createContainer(const void* copy){
     size_t sz = sizeOf();
+    size_t al = alignOf();
     if(sz>0){
-        return constructContainer(operator new(sz), copy);
+        if (al > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+            return constructContainer(operator new(sz, std::align_val_t(al)), copy);
+        else
+            return constructContainer(operator new(sz), copy);
     }else{
         return nullptr;
     }
 }
 void* AbstractContainerAccess::createContainer(JNIEnv *env, const ConstContainerAndAccessInfo& copy){
     size_t sz = sizeOf();
+    size_t al = alignOf();
     if(sz>0){
-        return constructContainer(env, operator new(sz), copy);
+        if (al > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+            return constructContainer(env, operator new(sz, std::align_val_t(al)), copy);
+        else
+            return constructContainer(env, operator new(sz), copy);
     }else{
         return nullptr;
     }
 }
 void AbstractContainerAccess::deleteContainer(void* container){
-    if(destructContainer(container))
-        operator delete(container);
+    if(destructContainer(container)){
+#ifdef __cpp_sized_deallocation
+        size_t sz = sizeOf();
+#endif
+        size_t al = alignOf();
+        if (al > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+#ifdef __cpp_sized_deallocation
+            operator delete(container, sz, std::align_val_t(al));
+#else
+            operator delete(container, std::align_val_t(al));
+#endif
+        } else {
+#ifdef __cpp_sized_deallocation
+            operator delete(container, sz);
+#else
+            operator delete(container);
+#endif
+        }
+    }
 }
 AbstractSequentialConstIteratorAccess::~AbstractSequentialConstIteratorAccess(){}
 AbstractSequentialConstIteratorAccess::AbstractSequentialConstIteratorAccess(){}
@@ -3315,14 +3394,15 @@ const QObject* AbstractContainerAccess::getOwner(const void*){ return nullptr; }
 bool AbstractContainerAccess::hasOwnerFunction(){ return false; }
 void AbstractSequentialConstIteratorAccess::assign(void*, const void*) {}
 void AbstractSequentialConstIteratorAccess::assign(JNIEnv*, const ContainerInfo&, const ConstContainerAndAccessInfo&) {}
-size_t AbstractSequentialConstIteratorAccess::sizeOf() {return 0;}
+size_t AbstractSequentialConstIteratorAccess::sizeOf() const {return 0;}
+size_t AbstractSequentialConstIteratorAccess::alignOf() const {return 0;}
 void* AbstractSequentialConstIteratorAccess::constructContainer(void*) {return nullptr;}
 void* AbstractSequentialConstIteratorAccess::constructContainer(void*,const void*) {return nullptr;}
 void* AbstractSequentialConstIteratorAccess::constructContainer(JNIEnv *,void*,const ConstContainerAndAccessInfo&) {return nullptr;}
 void* AbstractSequentialConstIteratorAccess::constructContainer(void*,void*) {return nullptr;}
 void* AbstractSequentialConstIteratorAccess::constructContainer(JNIEnv *,void*,const ContainerAndAccessInfo&) {return nullptr;}
 bool AbstractSequentialConstIteratorAccess::destructContainer(void*) {return false;}
-int AbstractSequentialConstIteratorAccess::registerContainer(const QByteArray&) {return QMetaType::UnknownType;}
+QMetaType AbstractSequentialConstIteratorAccess::registerContainer(const QByteArray&) {return QMetaType(QMetaType::UnknownType);}
 
 AbstractAssociativeConstIteratorAccess::~AbstractAssociativeConstIteratorAccess(){}
 AbstractAssociativeConstIteratorAccess::AbstractAssociativeConstIteratorAccess(){}
@@ -3617,8 +3697,12 @@ AbstractReferenceCountingContainer::~AbstractReferenceCountingContainer(){}
 
 bool hasReferenceCounts(JNIEnv * env, jobject container){
     if(Java::QtCore::AbstractContainer::isInstanceOf(env, container)){
-        QReadLocker lock(gContainerAccessLock());
-        jobject rc = Java::QtCore::AbstractContainer::__rcContainer(env, container);
+        QtJambiStorage* storage = getQtJambiStorage();
+        jobject rc;
+        {
+            QReadLocker lock(storage->lock());
+            rc = Java::QtCore::AbstractContainer::__rcContainer(env, container);
+        }
         if(Java::Runtime::Collection::isInstanceOf(env, rc))
             return Java::Runtime::Collection::size(env, rc)>0;
         if(Java::Runtime::Map::isInstanceOf(env, rc))
@@ -3686,9 +3770,10 @@ void AbstractReferenceCountingContainer::unfoldAndAddContainer(JNIEnv * env, job
 void AbstractReferenceCountingContainer::unfoldAndAddContainer(JNIEnv * env, jobject set, jobject value){
     if(set){
         if(Java::QtCore::AbstractContainer::isInstanceOf(env, value)){
-            jobject rc;
+            jobject rc{nullptr};
+            QtJambiStorage* storage = getQtJambiStorage();
             {
-                QReadLocker lock(gContainerAccessLock());
+                QReadLocker lock(storage->lock());
                 rc = Java::QtCore::AbstractContainer::__rcContainer(env, value);
             }
             if(rc)
@@ -3719,10 +3804,11 @@ void ReferenceCountingSetContainer::addNestedValueRC(JNIEnv * env, jobject conta
     case AbstractContainerAccess::Value:
         if(isContainer){
             if(Java::QtCore::AbstractContainer::isInstanceOf(env, value)){
-                jobject otherRC;
-                jobject set;
+                jobject otherRC{nullptr};
+                jobject set{nullptr};
+                QtJambiStorage* storage = getQtJambiStorage();
                 {
-                    QReadLocker lock(gContainerAccessLock());
+                    QReadLocker lock(storage->lock());
                     otherRC = Java::QtCore::AbstractContainer::__rcContainer(env, value);
                     set = Java::QtCore::AbstractContainer::__rcContainer(env, container);
                 }
@@ -3786,22 +3872,28 @@ void ReferenceCountingSetContainer::addNestedValueRC(JNIEnv * env, jobject conta
 
 void AbstractReferenceCountingContainer::swapRC(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
     if(container.object && container2.object){
-        QWriteLocker lock(gContainerAccessLock());
-        JniLocalFrame frame(env, 200);
-        Q_ASSERT(container.object);
-        Q_ASSERT(container2.object);
-        jobject tmp = Java::QtCore::AbstractContainer::__rcContainer(env, container.object);
-        jobject tmp2 = Java::QtCore::AbstractContainer::__rcContainer(env, container2.object);
-        Java::QtCore::AbstractContainer::set___rcContainer(env, container.object, tmp2);
-        Java::QtCore::AbstractContainer::set___rcContainer(env, container2.object, tmp);
+        QtJambiStorage* storage = getQtJambiStorage();
+        {
+            JniLocalFrame frame(env, 200);
+            Q_ASSERT(container.object);
+            Q_ASSERT(container2.object);
+            QWriteLocker lock(storage->lock());
+            jobject tmp = Java::QtCore::AbstractContainer::__rcContainer(env, container.object);
+            jobject tmp2 = Java::QtCore::AbstractContainer::__rcContainer(env, container2.object);
+            Java::QtCore::AbstractContainer::set___rcContainer(env, container.object, tmp2);
+            Java::QtCore::AbstractContainer::set___rcContainer(env, container2.object, tmp);
+        }
     }
 }
 
 jobject AbstractReferenceCountingContainer::findContainer(JNIEnv * env, jobject container){
     jobject result{nullptr};
     if(Java::QtCore::AbstractContainer::isInstanceOf(env, container)){
-        QReadLocker lock(gContainerAccessLock());
-        result = Java::QtCore::AbstractContainer::__rcContainer(env, container);
+        QtJambiStorage* storage = getQtJambiStorage();
+        {
+            QReadLocker lock(storage->lock());
+            result = Java::QtCore::AbstractContainer::__rcContainer(env, container);
+        }
     }
     return result;
 }
@@ -3809,15 +3901,17 @@ jobject AbstractReferenceCountingContainer::findContainer(JNIEnv * env, jobject 
 jobject ReferenceCountingSetContainer::rcContainer(JNIEnv * env, jobject container){
     jobject result{nullptr};
     if(Java::QtCore::AbstractContainer::isInstanceOf(env, container)){
+        QtJambiStorage* storage = getQtJambiStorage();
         {
-            QReadLocker lock(gContainerAccessLock());
+            QReadLocker lock(storage->lock());
             result = Java::QtCore::AbstractContainer::__rcContainer(env, container);
         }
         if(!result){
-            QWriteLocker lock(gContainerAccessLock());
+            jobject newInstance = Java::QtJambi::ReferenceUtility$RCSet::newInstance(env);
+            QWriteLocker lock(storage->lock());
             result = Java::QtCore::AbstractContainer::__rcContainer(env, container);
             if(!result){
-                result = Java::QtJambi::ReferenceUtility$RCSet::newInstance(env);
+                result = newInstance;
                 Java::QtCore::AbstractContainer::set___rcContainer(env, container, result);
             }
         }
@@ -3828,15 +3922,17 @@ jobject ReferenceCountingSetContainer::rcContainer(JNIEnv * env, jobject contain
 jobject ReferenceCountingMapContainer::rcContainer(JNIEnv * env, jobject container){
     jobject result{nullptr};
     if(Java::QtCore::AbstractContainer::isInstanceOf(env, container)){
+        QtJambiStorage* storage = getQtJambiStorage();
         {
-            QReadLocker lock(gContainerAccessLock());
+            QReadLocker lock(storage->lock());
             result = Java::QtCore::AbstractContainer::__rcContainer(env, container);
         }
         if(!result){
-            QWriteLocker lock(gContainerAccessLock());
+            jobject newInstance = Java::QtJambi::ReferenceUtility$RCMap::newInstance(env);
+            QWriteLocker lock(storage->lock());
             result = Java::QtCore::AbstractContainer::__rcContainer(env, container);
             if(!result){
-                result = Java::QtJambi::ReferenceUtility$RCMap::newInstance(env);
+                result = newInstance;
                 Java::QtCore::AbstractContainer::set___rcContainer(env, container, result);
             }
         }
@@ -3851,15 +3947,17 @@ jobject ReferenceCountingMultiMapContainer::newRCMultiMap(JNIEnv * env){
 jobject ReferenceCountingMultiMapContainer::rcContainer(JNIEnv * env, jobject container){
     jobject result{nullptr};
     if(Java::QtCore::AbstractContainer::isInstanceOf(env, container)){
+        QtJambiStorage* storage = getQtJambiStorage();
         {
-            QReadLocker lock(gContainerAccessLock());
+            QReadLocker lock(storage->lock());
             result = Java::QtCore::AbstractContainer::__rcContainer(env, container);
         }
         if(!result){
-            QWriteLocker lock(gContainerAccessLock());
+            jobject newInstance = Java::QtJambi::ReferenceUtility$RCMultiMap::newInstance(env);
+            QWriteLocker lock(storage->lock());
             result = Java::QtCore::AbstractContainer::__rcContainer(env, container);
             if(!result){
-                result = Java::QtJambi::ReferenceUtility$RCMultiMap::newInstance(env);
+                result = newInstance;
                 Java::QtCore::AbstractContainer::set___rcContainer(env, container, result);
             }
         }
@@ -6148,7 +6246,9 @@ namespace QtJambiPrivate{
 
 thread_local QList<std::pair<const QtPrivate::QMetaTypeInterface *,const QtPrivate::QMetaTypeInterface *>> Ref::refMetaTypes;
 
-Ref::Ref(const QtPrivate::QMetaTypeInterface *_iface) : iface(_iface), ptr(operator new(iface->size)) {
+Ref::Ref(const QtPrivate::QMetaTypeInterface *_iface) : iface(_iface), ptr(iface->alignment > __STDCPP_DEFAULT_NEW_ALIGNMENT__
+                                                                           ? operator new(iface->size, std::align_val_t(iface->alignment))
+                                                                           : operator new(iface->size)) {
 }
 
 Ref::Ref() : Ref(refMetaTypes.constLast().first) {

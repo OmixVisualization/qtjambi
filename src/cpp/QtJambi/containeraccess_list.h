@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -99,8 +99,11 @@ public:
     GenericListAccess<_align, _size, _isStatic>* clone() override{
         return new GenericListAccess<_align, _size, _isStatic>(*this);
     }
-    size_t sizeOf() override {
+    size_t sizeOf() const override {
         return sizeof(QList<T>);
+    }
+    size_t alignOf() const override {
+        return alignof(QList<T>);
     }
     void* constructContainer(void* placement) override {
         QTJAMBI_ELEMENT_LOCKER(this);
@@ -133,7 +136,7 @@ public:
         QTJAMBI_ELEMENT_LOCKER(this);
             (*reinterpret_cast<QList<T>*>(container)) = (*reinterpret_cast<const QList<T>*>(other));
     }
-    int registerContainer(const QByteArray& containerTypeName) override {
+    QMetaType registerContainer(const QByteArray& containerTypeName) override {
         return QtJambiPrivate::registerSequentialContainerType<QList<T>, _size>(containerTypeName, m_elementMetaTypeInfo.metaType(), this);
     }
     const QMetaType& elementMetaType() override {
@@ -346,7 +349,7 @@ public:
     void replace(void* container, qsizetype index, const void* value) override {
         QTJAMBI_ELEMENT_LOCKER(this);
         {
-            reinterpret_cast<QList<T> *>(container.container)->replace(index, *reinterpret_cast<const T *>(value));
+            reinterpret_cast<QList<T> *>(container)->replace(index, *reinterpret_cast<const T *>(value));
         }
     }
 
@@ -581,8 +584,8 @@ public:
         using Container = std::conditional_t<is_const, const QList<T>, QList<T>>;
         using iterator = decltype(std::declval<Container>().begin());
         GenericListAccess* access;
-        typename iterator current;
-        typename iterator end;
+        iterator current;
+        iterator end;
         ElementIterator(const ElementIterator& other)
             :access(other.access),
             current(other.current),
@@ -616,7 +619,7 @@ public:
         const void* constNext() override {
             void* pointer = *current;
             ++current;
-            return result;
+            return pointer;
         }
         void* mutableNext() override {
             if constexpr(is_const){
@@ -624,7 +627,7 @@ public:
             }else{
                 void* pointer = *current;
                 ++current;
-                return result;
+                return pointer;
             }
         }
         bool operator==(const AbstractSequentialAccess::ElementIterator& other) const override {

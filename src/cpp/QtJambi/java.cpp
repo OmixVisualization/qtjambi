@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -720,16 +720,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaType$GenericFlags,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaType$GenericLongFlags,
                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(IJ)
                                 )
-#endif
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QLinkedList,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
-)
-
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVector,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
-)
 #endif
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QStringList,

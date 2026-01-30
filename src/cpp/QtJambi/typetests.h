@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -241,6 +241,16 @@ template<typename T, class = decltype(std::declval<T>().values() )>
 std::true_type  supports_values_test(const T&);
 std::false_type supports_values_test(...);
 template<typename T> struct supports_values : decltype(supports_values_test(std::declval<T>())){};
+
+template<typename T, class = decltype(std::declval<T>().key() )>
+std::true_type  supports_key_test(const T&);
+std::false_type supports_key_test(...);
+template<typename T> struct supports_key : decltype(supports_key_test(std::declval<T>())){};
+
+template<typename T, class = decltype(std::declval<T>().value() )>
+std::true_type  supports_value_test(const T&);
+std::false_type supports_value_test(...);
+template<typename T> struct supports_value : decltype(supports_value_test(std::declval<T>())){};
 
 template<template<typename K, typename T> class Container, typename K, typename T, class = decltype(std::declval<Container<K,T>>().values(std::declval<K>()) )>
 std::true_type  supports_map_values_by_key_test(const Container<T,K>&,const K&,const T&);

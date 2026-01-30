@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,6 +34,7 @@
 
 #include <QThread>
 #include <QRunnable>
+#include <QSemaphore>
 #include <QReadWriteLock>
 
 class ThreadFactory
@@ -56,15 +57,15 @@ public:
     ~SignalReceiver() override = default;
     bool received() const;
     void setReceived(bool newReceived);
-
+    void waitForReleased(int timeout) const;
 public slots:
     void receiveSignal();
 signals:
     void receivedChanged();
 
 private:
-    mutable QReadWriteLock m_lock;
-    bool m_received = false;
+    std::atomic_bool m_received = false;
+    mutable QSemaphore m_semaphore;
     Q_PROPERTY(bool received READ received WRITE setReceived NOTIFY receivedChanged FINAL)
 };
 

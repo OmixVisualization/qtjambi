@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,13 +34,40 @@
 #include <typeinfo>
 #include "global.h"
 
+struct QtJambiObjectData;
+struct QtJambiObjectDataReadLockPrivate;
+struct QtJambiObjectDataWriteLockPrivate;
+
+struct QtJambiObjectDataReadLock{
+    QTJAMBI_EXPORT ~QtJambiObjectDataReadLock();
+    QTJAMBI_EXPORT void unlock();
+    QTJAMBI_EXPORT void relock();
+    QtJambiObjectDataReadLock(QtJambiObjectDataReadLockPrivate&);
+private:
+    friend QtJambiObjectData;
+    struct QtJambiObjectDataReadLockPrivate* p = nullptr;
+};
+
+struct QtJambiObjectDataWriteLock{
+    QTJAMBI_EXPORT ~QtJambiObjectDataWriteLock();
+    QTJAMBI_EXPORT void unlock();
+    QTJAMBI_EXPORT void relock();
+    QtJambiObjectDataWriteLock(QtJambiObjectDataWriteLockPrivate&);
+private:
+    friend QtJambiObjectData;
+    QtJambiObjectDataWriteLockPrivate* p = nullptr;
+};
+
 struct QTJAMBI_EXPORT QtJambiObjectData{
 protected:
     QtJambiObjectData();
 public:
     virtual ~QtJambiObjectData();
     static QtJambiObjectData* userData(const QObject* object, const std::type_info& id);
-    static void setUserData(QObject* object, const std::type_info& id, QtJambiObjectData* data);
+    static QtJambiObjectData* setUserData(QObject* object, const std::type_info& id, QtJambiObjectData* data);
+
+    static QtJambiObjectDataWriteLock writeLock();
+    static QtJambiObjectDataReadLock readLock();
 
     template<typename T>
     static T* userData(const QObject* object){
@@ -48,19 +75,12 @@ public:
     }
 
     template<typename T>
-    static void setUserData(QObject* object, T* data){
-        setUserData(object, typeid(T), data);
+    static T* setUserData(QObject* object, T* data){
+        return static_cast<T*>(setUserData(object, typeid(T), data));
     }
 
     static bool isRejectedUserProperty(const QObject* object, const char * propertyName);
     Q_DISABLE_COPY_MOVE(QtJambiObjectData)
 };
-#define QTJAMBI_OBJECTUSERDATA_TYPE_ID(TYPE) typeid(TYPE)
-#define QTJAMBI_OBJECTUSERDATA_ID_TYPE const std::type_info&
-#define QTJAMBI_OBJECTUSERDATA_ID_DECL
-#define QTJAMBI_OBJECTUSERDATA_ID_IMPL(STATIC,SCOPE)
-#define QTJAMBI_GET_OBJECTUSERDATA(TYPE, object) QtJambiObjectData::userData<TYPE>(object)
-#define QTJAMBI_SET_OBJECTUSERDATA(TYPE, object, data) QtJambiObjectData::setUserData<TYPE>(object, data)
-#define QTJAMBI_SET_OBJECTUSERDATA_ID(ID, object, data) QtJambiObjectData::setUserData(object, ID, data)
 
 #endif // QTJAMBI_OBJECTDATA_H

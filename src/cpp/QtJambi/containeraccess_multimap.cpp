@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,9 +34,6 @@
 QT_WARNING_DISABLE_GCC("-Winaccessible-base")
 QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-bool isEquals(const QMetaType& keyMetaType, const void * ptr, const void* ptr2);
-#else
 struct Container{
     const void *ptr;
     AutoMapAccess* access;
@@ -52,8 +49,6 @@ void AutoMultiMapAccess::debugStream(QDebug &dbg, const void *ptr){
 
 void* AutoMultiMapAccess::constructContainer(JNIEnv* env, void* result, const ContainerAndAccessInfo& container) {return AutoMapAccess::constructContainer(env, result, container);}
 void* AutoMultiMapAccess::constructContainer(void* result, void* container) {return AutoMapAccess::constructContainer(result, container);}
-#endif
-
 
 AutoMultiMapAccess::AutoMultiMapAccess(const AutoMultiMapAccess & other)
     : AbstractMultiMapAccess(), AutoMapAccess(other)
@@ -63,24 +58,14 @@ AutoMultiMapAccess::AutoMultiMapAccess(const AutoMultiMapAccess & other)
 AutoMultiMapAccess::~AutoMultiMapAccess(){}
 
 AutoMultiMapAccess::AutoMultiMapAccess(
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                int keyMetaType,
-                size_t keyAlign,
-#else
                 const QMetaType& keyMetaType,
-#endif
                 const QtJambiUtils::QHashFunction& keyHashFunction,
                 const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
                 const QtJambiUtils::ExternalToInternalConverter& keyExternalToInternalConverter,
                 const QSharedPointer<AbstractContainerAccess>& keyNestedContainerAccess,
                 PtrOwnerFunction keyOwnerFunction,
                 AbstractContainerAccess::DataType keyDataType,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                int valueMetaType,
-                size_t valueAlign,
-#else
                 const QMetaType& valueMetaType,
-#endif
                 const QtJambiUtils::QHashFunction& valueHashFunction,
                 const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
                 const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter,
@@ -91,9 +76,6 @@ AutoMultiMapAccess::AutoMultiMapAccess(
     : AbstractMultiMapAccess(),
       AutoMapAccess(
           keyMetaType,
-    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          keyAlign,
-    #endif
           keyHashFunction,
           keyInternalToExternalConverter,
           keyExternalToInternalConverter,
@@ -101,9 +83,6 @@ AutoMultiMapAccess::AutoMultiMapAccess(
           keyOwnerFunction,
           keyDataType,
           valueMetaType,
-    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          valueAlign,
-    #endif
           valueHashFunction,
           valueInternalToExternalConverter,
           valueExternalToInternalConverter,
@@ -119,7 +98,7 @@ void* AutoMultiMapAccess::constructContainer(void* result, const void* container
 void AutoMultiMapAccess::assign(void* container, const void* other){AutoMapAccess::assign(container, other);}
 void AutoMultiMapAccess::assign(JNIEnv *env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other){AutoMapAccess::assign(env, container, other);}
 bool AutoMultiMapAccess::destructContainer(void* container) {return AutoMapAccess::destructContainer(container);}
-int AutoMultiMapAccess::registerContainer(const QByteArray& containerTypeName) {return AutoMapAccess::registerContainer(containerTypeName);}
+QMetaType AutoMultiMapAccess::registerContainer(const QByteArray& containerTypeName) {return AutoMapAccess::registerContainer(containerTypeName);}
 void AutoMultiMapAccess::dispose() {delete this;}
 const QMetaType& AutoMultiMapAccess::keyMetaType() {return AutoMapAccess::keyMetaType();}
 const QMetaType& AutoMultiMapAccess::valueMetaType() {return AutoMapAccess::valueMetaType();}
@@ -158,53 +137,12 @@ void AutoMultiMapAccess::insert(JNIEnv *env, const ContainerInfo& container, job
     void* akey = nullptr;
     QtJambiScope scope;
     if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)        
-        detach(container);
-        QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container.container);
-        QMapDataBase*& d = *map;
-
-
-        Node *n = rootNode(map);
-        Node *y = endNode(map);
-        bool  left = true;
-        while (n) {
-            y = n;
-            left = !qMapLessThanKey(*n, akey);
-            n = left ? n->left : n->right;
-        }
-        Node* newNode = d->createNode(int(m_size), int(m_align), y, left);
-        char* newNodeData = reinterpret_cast<char*>(newNode);
-        m_keyMetaType.construct(newNodeData + m_offset1, akey);
-        m_valueMetaType.construct(newNodeData + m_offset2);
-        assignValue(env, value, newNode);
-#else
         insertOrAssign(AutoMapAccess::detach(*reinterpret_cast<MapDataPointer*>(container.container)), akey, env, value);
-#endif
     }
 }
 
 void AutoMultiMapAccess::insert(void* container, const void* key, const void* value){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    detach(container);
-    QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container.container);
-    QMapDataBase*& d = *map;
-
-
-    Node *n = rootNode(map);
-    Node *y = endNode(map);
-    bool  left = true;
-    while (n) {
-        y = n;
-        left = !qMapLessThanKey(*n, key);
-        n = left ? n->left : n->right;
-    }
-    Node* newNode = d->createNode(int(m_size), int(m_align), y, left);
-    char* newNodeData = reinterpret_cast<char*>(newNode);
-    m_keyMetaType.construct(newNodeData + m_offset1, key);
-    m_valueMetaType.construct(newNodeData + m_offset2, value);
-#else
     insertOrAssign(AutoMapAccess::detach(*reinterpret_cast<MapDataPointer*>(container)), key, value);
-#endif
 }
 
 IsBiContainerFunction AutoMultiMapAccess::getIsBiContainerFunction(){
@@ -242,14 +180,8 @@ ContainerAndAccessInfo AutoMultiMapAccess::uniqueKeys(JNIEnv *env, const ConstCo
         env,
         SequentialContainerType::QList,
         m_keyMetaType,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        m_keyAlign,
-        m_keyMetaType.sizeOf(),
-        AbstractContainerAccess::isStaticType(m_keyMetaType),
-#else
         m_keyMetaType.alignOf(),
         m_keyMetaType.sizeOf(),
-#endif
         AbstractContainerAccess::isPointerType(m_keyMetaType),
         m_keyHashFunction,
         m_keyInternalToExternalConverter,
@@ -263,25 +195,6 @@ ContainerAndAccessInfo AutoMultiMapAccess::uniqueKeys(JNIEnv *env, const ConstCo
         result.object = ContainerAPI::objectFromQList(env, result.container, listAccess);
         result.access = listAccess;
         jint idx = listAccess->size(env, result.container);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container.container);
-        QMapDataBase* d = *map;
-        Node *firstNode(beginNode(map));
-        Node *lastNode(endNode(map));
-        listAccess->reserve(env, result, d->size);
-        while(firstNode != lastNode){
-            void* key1 = reinterpret_cast<char*>(firstNode)+m_offset1;
-            if(listAccess->append(result.container, key1)){
-                idx++;
-            }else{
-                listAccess->insert(env, result, idx++, 1, nodeKey(env, firstNode));
-            }
-            firstNode = firstNode->nextNode();
-            while(firstNode != lastNode && !qMapLessThanKey(key1, *firstNode)){
-                firstNode = firstNode->nextNode();
-            }
-        }
-#else
         if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
             listAccess->reserve(env, result, d->size);
             node_iterator end1 = AutoMapAccess::end(*d);
@@ -305,7 +218,6 @@ ContainerAndAccessInfo AutoMultiMapAccess::uniqueKeys(JNIEnv *env, const ConstCo
                 }
             }
         }
-#endif
     }
     return result;
 }
@@ -314,31 +226,6 @@ void AutoMultiMapAccess::unite(JNIEnv *env, const ContainerInfo& container, Cont
 {
     if (ContainerAPI::getAsQMultiMap(env, other.object, keyMetaType(), valueMetaType(), other.container, other.access)
             || ContainerAPI::getAsQMap(env, other.object, keyMetaType(), valueMetaType(), other.container, other.access)) {
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container.container);
-        QMapDataBase*& d = *map;
-        QMapDataBase *const* map2 = reinterpret_cast<QMapDataBase *const*>(other.container);
-        Node *firstNode2(beginNode(map2));
-        Node *lastNode2(endNode(map2));
-        while (firstNode2 != lastNode2) {
-            void* key2 = reinterpret_cast<char*>(firstNode2)+m_offset1;
-            void* value2 = reinterpret_cast<char*>(firstNode2)+m_offset2;
-
-            Node *n = rootNode(map);
-            Node *y = endNode(map);
-            bool  left = true;
-            while (n) {
-                y = n;
-                left = !qMapLessThanKey(*n, key2);
-                n = left ? n->left : n->right;
-            }
-            Node* newNode = d->createNode(int(m_size), int(m_align), y, left);
-            char* newNodeData = reinterpret_cast<char*>(newNode);
-            m_keyMetaType.construct(newNodeData + m_offset1, key2);
-            m_valueMetaType.construct(newNodeData + m_offset2, value2);
-            firstNode2 = firstNode2->nextNode();
-        }
-#else
         MapData& d = AutoMapAccess::detach(*reinterpret_cast<MapDataPointer*>(container.container));
         if(const MapDataPointer& d2 = *reinterpret_cast<const MapDataPointer*>(other.container)){
             node_iterator end2 = AutoMapAccess::end(*d2);
@@ -348,7 +235,6 @@ void AutoMultiMapAccess::unite(JNIEnv *env, const ContainerInfo& container, Cont
                 ++iter;
             }
         }
-#endif
     }else{
         jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, other.object);
         while(QtJambiAPI::hasJavaIteratorNext(env, iterator)){
@@ -377,14 +263,8 @@ ContainerAndAccessInfo AutoMultiMapAccess::values(JNIEnv *env, const ConstContai
             env,
             SequentialContainerType::QList,
             m_valueMetaType,
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            m_valueAlign,
-            m_valueMetaType.sizeOf(),
-            AbstractContainerAccess::isStaticType(m_valueMetaType),
-#else
             m_valueMetaType.alignOf(),
             m_valueMetaType.sizeOf(),
-#endif
             AbstractContainerAccess::isPointerType(m_valueMetaType),
             m_valueHashFunction,
             m_valueInternalToExternalConverter,
@@ -398,21 +278,6 @@ ContainerAndAccessInfo AutoMultiMapAccess::values(JNIEnv *env, const ConstContai
             result.object = ContainerAPI::objectFromQList(env, result.container, listAccess);
             result.access = listAccess;
             jint idx = listAccess->size(env, result.container);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container.container);
-            QMapDataBase* d = *map;
-            if(Node *firstNode = findNode(d, akey)){
-                Node *lastNode(endNode(map));
-                do{
-                    if(listAccess->append(result.container, reinterpret_cast<char*>(firstNode)+m_offset2)){
-                        idx++;
-                    }else{
-                        listAccess->insert(env, result, idx++, 1, nodeValue(env, firstNode));
-                    }
-                    firstNode = firstNode->nextNode();
-                }while(firstNode != lastNode && !qMapLessThanKey(akey, *firstNode));
-            }
-#else
             if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
                 node_iterator i = AutoMapAccess::find(*d, akey);
                 node_iterator begin1 = AutoMapAccess::begin(*d);
@@ -446,7 +311,6 @@ ContainerAndAccessInfo AutoMultiMapAccess::values(JNIEnv *env, const ConstContai
                     }
                 }
             }
-#endif
         }
     }
     return result;
@@ -461,18 +325,6 @@ jboolean AutoMultiMapAccess::contains(JNIEnv *env, const void* container, jobjec
         jv.l = value;
         void* avalue = nullptr;
         if(m_valueExternalToInternalConverter(env, &scope, jv, avalue, jValueType::l)){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
-            QMapDataBase* d = *map;
-            if(Node *firstNode = findNode(d, akey)){
-                Node *lastNode(endNode(map));
-                do{
-                    if(isEquals(m_valueMetaType, avalue, reinterpret_cast<char*>(firstNode)+m_offset2))
-                        return true;
-                    firstNode = firstNode->nextNode();
-                }while(firstNode != lastNode && !qMapLessThanKey(akey, *firstNode));
-            }
-#else
             if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container)){
                 node_iterator i = AutoMapAccess::find(*d, akey);
                 node_iterator end1 = AutoMapAccess::end(*d);
@@ -484,7 +336,6 @@ jboolean AutoMultiMapAccess::contains(JNIEnv *env, const void* container, jobjec
                         break;
                 }
             }
-#endif
         }
     }
     return false;
@@ -501,18 +352,6 @@ jint AutoMultiMapAccess::count(JNIEnv *env, const void* container, jobject key, 
         jv.l = value;
         void* avalue = nullptr;
         if(m_valueExternalToInternalConverter(env, &scope, jv, avalue, jValueType::l)){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
-            QMapDataBase* d = *map;
-            if(Node *firstNode = findNode(d, akey)){
-                Node *lastNode(endNode(map));
-                do{
-                    if(isEquals(m_valueMetaType, avalue, reinterpret_cast<char*>(firstNode)+m_offset2))
-                        ++c;
-                    firstNode = firstNode->nextNode();
-                }while(firstNode != lastNode && !qMapLessThanKey(akey, *firstNode));
-            }
-#else
             if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container)){
                 node_iterator i = AutoMapAccess::find(*d, akey);
                 node_iterator end1 = AutoMapAccess::end(*d);
@@ -524,7 +363,6 @@ jint AutoMultiMapAccess::count(JNIEnv *env, const void* container, jobject key, 
                         break;
                 }
             }
-#endif
         }
     }
     return c;
@@ -540,19 +378,6 @@ jobject AutoMultiMapAccess::find(JNIEnv *env, const ExtendedContainerInfo& conta
         jv.l = value;
         void* avalue = nullptr;
         if(m_valueExternalToInternalConverter(env, &scope, jv, avalue, jValueType::l)){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            detach(container);
-            QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container.container);
-            QMapDataBase* d = *map;
-            if(Node *firstNode = findNode(d, akey)){
-                Node *lastNode(endNode(map));
-                do{
-                    if(isEquals(m_valueMetaType, avalue, reinterpret_cast<char*>(firstNode)+m_offset2))
-                        return createIterator(env, container.nativeId, new void*(firstNode));
-                    firstNode = firstNode->nextNode();
-                }while(firstNode != lastNode && !qMapLessThanKey(akey, *firstNode));
-            }
-#else
             if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
                 node_iterator i = AutoMapAccess::find(*d, akey);
                 node_iterator end1 = AutoMapAccess::end(*d);
@@ -564,7 +389,6 @@ jobject AutoMultiMapAccess::find(JNIEnv *env, const ExtendedContainerInfo& conta
                         break;
                 }
             }
-#endif
         }
     }
     return end(env, container);
@@ -580,18 +404,6 @@ jobject AutoMultiMapAccess::constFind(JNIEnv *env, const ConstExtendedContainerI
         jv.l = value;
         void* avalue = nullptr;
         if(m_valueExternalToInternalConverter(env, &scope, jv, avalue, jValueType::l)){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container.container);
-            QMapDataBase* d = *map;
-            if(Node *firstNode = findNode(d, akey)){
-                Node *lastNode(endNode(map));
-                do{
-                    if(isEquals(m_valueMetaType, avalue, reinterpret_cast<char*>(firstNode)+m_offset2))
-                        return createConstIterator(env, container.nativeId, new void*(firstNode));
-                    firstNode = firstNode->nextNode();
-                }while(firstNode != lastNode && !qMapLessThanKey(akey, *firstNode));
-            }
-#else
             if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
                 node_iterator i = AutoMapAccess::find(*d, akey);
                 node_iterator end1 = AutoMapAccess::end(*d);
@@ -603,7 +415,6 @@ jobject AutoMultiMapAccess::constFind(JNIEnv *env, const ConstExtendedContainerI
                         break;
                 }
             }
-#endif
         }
     }
     return constEnd(env, container);
@@ -620,27 +431,6 @@ jint AutoMultiMapAccess::remove(JNIEnv *env, const ContainerInfo& container, job
         jv.l = value;
         void* avalue = nullptr;
         if(m_valueExternalToInternalConverter(env, &scope, jv, avalue, jValueType::l)){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            detach(container);
-            QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container.container);
-            QMapDataBase*& d = *map;
-            bool found;
-            do{
-                found = false;
-                if(Node *firstNode = findNode(d, akey)){
-                    Node *lastNode(endNode(map));
-                    do{
-                        if(isEquals(m_valueMetaType, avalue, reinterpret_cast<char*>(firstNode)+m_offset2)){
-                            ++c;
-                            deleteNode(d, firstNode);
-                            found = true;
-                            break;
-                        }
-                        firstNode = firstNode->nextNode();
-                    }while(firstNode != lastNode && !qMapLessThanKey(akey, *firstNode));
-                }
-            }while(found);
-#else
             if(MapDataPointer& d = *reinterpret_cast<MapDataPointer*>(container.container)){
                 if(!d.isShared()){
                     c = jint(erase(*d, akey, avalue));
@@ -650,7 +440,6 @@ jint AutoMultiMapAccess::remove(JNIEnv *env, const ContainerInfo& container, job
                     d.reset(newData);
                 }
             }
-#endif
         }
     }
     return c;
@@ -662,43 +451,6 @@ void AutoMultiMapAccess::replace(JNIEnv *env, const ContainerInfo& container, jo
     void* akey = nullptr;
     QtJambiScope scope;
     if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        detach(container);
-        QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container.container);
-        QMapDataBase*& d = *map;
-
-        {
-            Node *n = findNode(d, akey);
-            Node *y = endNode(map);
-            if(n!=y){
-                assignValue(env, value, n);
-            }else{
-                n = rootNode(map);
-                Node *lastNode = nullptr;
-                bool  left = true;
-                while (n) {
-                    y = n;
-                    if (!qMapLessThanKey(*n, akey)) {
-                        lastNode = n;
-                        left = true;
-                        n = n->left;
-                    } else {
-                        left = false;
-                        n = n->right;
-                    }
-                }
-                if (lastNode && !qMapLessThanKey(akey, *lastNode)) {
-                    assignValue(env, value, lastNode);
-                    return;
-                }
-                Node* newNode = d->createNode(int(m_size), int(m_align), y, left);
-                char* newNodeData = reinterpret_cast<char*>(newNode);
-                m_keyMetaType.construct(newNodeData + m_offset1, akey);
-                m_valueMetaType.construct(newNodeData + m_offset2);
-                assignValue(env, value, newNode);
-            }
-        }
-#else
         MapData& data = AutoMapAccess::detach(*reinterpret_cast<MapDataPointer*>(container.container));
         AutoMapAccess::node_iterator iter = AutoMapAccess::find(data, akey);
         if(iter!=AutoMapAccess::end(data)){
@@ -708,16 +460,15 @@ void AutoMultiMapAccess::replace(JNIEnv *env, const ContainerInfo& container, jo
         }else{
             insertOrAssign(data, akey, env, value);
         }
-#endif
     }
 }
 
-size_t AutoMultiMapAccess::sizeOf() {
+size_t AutoMultiMapAccess::sizeOf() const{
     return sizeof(QMultiMap<char,char>);
 }
 
-ushort AutoMultiMapAccess::alignOf() const{
-    return ushort(sizeof(QMultiMap<char,char>));
+size_t AutoMultiMapAccess::alignOf() const{
+    return alignof(QMultiMap<char,char>);
 }
 
 KeyPointerRCAutoMultiMapAccess::KeyPointerRCAutoMultiMapAccess(KeyPointerRCAutoMultiMapAccess& other)

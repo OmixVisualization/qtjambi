@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -38,6 +38,22 @@ class JObjectWrapperData : public QSharedData{
 protected:
     JObjectWrapperData() = default;
 public:
+    enum Type{
+        None,
+        JObjectRef,
+        JValueRef,
+        JCollectionRef,
+        JMapRef,
+        JBooleanArrayRef,
+        JIntArrayRef,
+        JByteArrayRef,
+        JShortArrayRef,
+        JLongArrayRef,
+        JDoubleArrayRef,
+        JFloatArrayRef,
+        JCharArrayRef,
+        JObjectArrayRef
+    };
     virtual ~JObjectWrapperData() = default;
     virtual void clear(JNIEnv *env) = 0;
     virtual bool isNull() const = 0;
@@ -47,7 +63,18 @@ public:
     virtual void* array() = 0;
     virtual void commitArray() = 0;
     virtual jsize arrayLength() const = 0;
+    virtual QString toString(JNIEnv *env, bool * ok = nullptr) const = 0;
+    virtual Type type() const = 0;
+    virtual bool isRefViaJava() const = 0;
+    virtual bool isWeak() const = 0;
+    static bool isJObjectValueWrapper(const JObjectWrapper& wrapper){
+        return wrapper.m_data->type()==JValueRef;
+    }
 };
+
+bool isJObjectValueWrapper(const JObjectWrapper& wrapper){
+    return JObjectWrapperData::isJObjectValueWrapper(wrapper);
+}
 
 template<typename Cleanup>
 void reference_cleanup(jobject object){
@@ -104,13 +131,28 @@ struct JObjectWeakWrapperUtil{
     constexpr static bool isGlobal = false;
 };
 
-template<typename Cleanup>
+template<typename Cleanup, int t = 0>
 class JObjectRefWrapperData : public JObjectWrapperData{
 public:
+    Type type() const override {
+        if constexpr(t==1){
+            return JObjectWrapperData::JCollectionRef;
+        }else if constexpr(t==2){
+            return JObjectWrapperData::JMapRef;
+        }else if constexpr(t==3){
+            return JObjectWrapperData::JObjectArrayRef;
+        }else if constexpr(t==4){
+            return JObjectWrapperData::JValueRef;
+        }else{
+            return JObjectWrapperData::JObjectRef;
+        }
+    };
+    bool isRefViaJava() const override { return false; }
+    bool isWeak() const override { return std::is_same_v<Cleanup,JObjectWeakWrapperUtil>; }
     JObjectRefWrapperData() = default;
     JObjectRefWrapperData(JNIEnv* env, jobject object)
         : JObjectWrapperData()
-        , pointer( (env->*Cleanup::NewRef)(object) ), m_isNull(env->IsSameObject(object, nullptr)){}
+        , pointer( !object || env->IsSameObject(object, nullptr) ? nullptr : (env->*Cleanup::NewRef)(object) ){}
 
     ~JObjectRefWrapperData() override{
     }
@@ -131,9 +173,9 @@ public:
 
     bool isNull() const override {
         if constexpr(Cleanup::isGlobal){
-            return m_isNull;
+            return !pointer.data();
         }else{
-            if(!m_isNull){
+            if(pointer.data()){
                 if(DefaultJniEnvironment env{16}){
                     return env->IsSameObject(pointer.data(), nullptr);
                 }
@@ -147,63 +189,126 @@ public:
     }
 
     jobject data(JNIEnv *env) const override {
-        return env->NewLocalRef(pointer.data());
+        return pointer.data() ? env->NewLocalRef(pointer.data()) : nullptr;
     }
     const void* array() const override {return nullptr;}
     void* array() override {return nullptr;}
     void commitArray() override {}
     jsize arrayLength() const override {return 0;}
+    QString toString(JNIEnv *env, bool * ok) const override {
+        jobject _object = data(env);
+        if(_object){
+            if(ok){
+                if (Java::QtCore::QMetaType$GenericTypeInterface::isInstanceOf(env, _object)) {
+                    QVariant variant = QtJambiAPI::convertJavaObjectToQVariant(env, _object);
+                    *ok = true;
+                    return variant.toString();
+                }else if (Java::QtJambi::QtObjectInterface::isInstanceOf(env, _object)) {
+                    jstring strg = Java::QtJambi::ClassAnalyzerUtility::objectToString(env, _object);
+                    *ok = strg;
+                    return qtjambi_cast<QString>(env, strg);
+                }else{
+                    return qtjambi_cast<QString>(env, Java::Runtime::Object::toString(env, _object));
+                }
+            }else{
+                return qtjambi_cast<QString>(env, Java::Runtime::Object::toString(env, _object));
+            }
+        }
+        if(ok)
+            *ok = true;
+        return "null";
+    }
 private:
     QScopedPointer<_jobject, Cleanup> pointer;
-    bool m_isNull = true;
 };
 
 template<typename Cleanup>
-class JObjectArrayRefWrapperData : public JObjectRefWrapperData<Cleanup>{
+class JObjectArrayRefWrapperData : public JObjectRefWrapperData<Cleanup,3>{
 public:
+    JObjectArrayRefWrapperData() = default;
     JObjectArrayRefWrapperData(JNIEnv* env, jarray object)
-        : JObjectRefWrapperData<Cleanup>(env, object)
+        : JObjectRefWrapperData<Cleanup,3>(env, object)
         , m_arrayLength( object ? env->GetArrayLength(object) : 0 ){}
     jsize arrayLength() const override {return m_arrayLength;}
+    QString toString(JNIEnv *env, bool * ok) const override {
+        if(ok)
+            *ok = true;
+        QString result = QLatin1String("[");
+        jobjectArray object = jobjectArray(JObjectRefWrapperData<Cleanup,3>::data(env));
+        jsize length = object ? env->GetArrayLength(object) : 0;
+        for(jsize i=0; i<length; ++i){
+            if(i>0)
+                result += QLatin1String(",");
+            jobject value = env->GetObjectArrayElement(object, i);
+            JavaException::check(env QTJAMBI_STACKTRACEINFO );
+            result += JObjectWrapper(env, value).toString(ok);
+            if(ok && !*ok)
+                return QString();
+        }
+        result += QLatin1String("]");
+        return result;
+    }
 private:
-    jsize m_arrayLength;
+    jsize m_arrayLength = 0;
 };
 
-
 typedef JObjectRefWrapperData<JObjectGlobalWrapperUtil> JObjectGlobalWrapperData;
+typedef JObjectRefWrapperData<JObjectGlobalWrapperUtil,4> JValueGlobalWrapperData;
 typedef JObjectRefWrapperData<JObjectWeakWrapperUtil> JObjectWeakWrapperData;
+typedef JObjectRefWrapperData<JObjectGlobalWrapperUtil,1> JCollectionGlobalWrapperData;
+typedef JObjectRefWrapperData<JObjectWeakWrapperUtil,1> JCollectionWeakWrapperData;
+typedef JObjectRefWrapperData<JObjectGlobalWrapperUtil,2> JMapGlobalWrapperData;
+typedef JObjectRefWrapperData<JObjectWeakWrapperUtil,2> JMapWeakWrapperData;
 typedef JObjectArrayRefWrapperData<JObjectGlobalWrapperUtil> JObjectArrayGlobalWrapperData;
 typedef JObjectArrayRefWrapperData<JObjectWeakWrapperUtil> JObjectArrayWeakWrapperData;
 
-template<typename Cleanup>
+template<typename Cleanup, int t = 0>
 class JObjectRefViaJavaWrapperData : public JObjectWrapperData{
 public:
+    Type type() const override {
+        if constexpr(t==1){
+            return JObjectWrapperData::JCollectionRef;
+        }else if constexpr(t==2){
+            return JObjectWrapperData::JMapRef;
+        }else if constexpr(t==3){
+            return JObjectWrapperData::JObjectArrayRef;
+        }else if constexpr(t==4){
+            return JObjectWrapperData::JValueRef;
+        }else{
+            return JObjectWrapperData::JObjectRef;
+        }
+    };
+    bool isRefViaJava() const override { return true; }
+    bool isWeak() const override { return std::is_same_v<Cleanup,JObjectWeakWrapperUtil>; }
     JObjectRefViaJavaWrapperData() = default;
     JObjectRefViaJavaWrapperData(JNIEnv* env, jobject object)
-        : JObjectWrapperData(), m_isNull(env->IsSameObject(object, nullptr))
+        : JObjectWrapperData(), m_isNull(!object || env->IsSameObject(object, nullptr))
     {
-        Cleanup::PushRef(env, jlong(reinterpret_cast<void*>(this)), object);
+        if(!m_isNull)
+            Cleanup::PushRef(env, jlong(reinterpret_cast<void*>(this)), object);
     }
 
     ~JObjectRefViaJavaWrapperData() override{
         try{
-            if(!QCoreApplication::closingDown()){
+            if(!m_isNull && !QCoreApplication::closingDown()){
                 if(DefaultJniEnvironment env{0}){
-                    JObjectRefViaJavaWrapperData<Cleanup>::clear(env);
+                    JObjectRefViaJavaWrapperData<Cleanup,t>::clear(env);
                 }
             }
         }catch(...){}
     }
     void clear(JNIEnv *env) override{
-        jthrowable throwable = nullptr;
-        if(env->ExceptionCheck()){
-            throwable = env->ExceptionOccurred();
-            env->ExceptionClear();
-        }
-        Cleanup::ReleaseRef(env, jlong(reinterpret_cast<void*>(this)));
-        if(throwable){
-            env->Throw(throwable);
-            env->DeleteLocalRef(throwable);
+        if(!m_isNull){
+            jthrowable throwable = nullptr;
+            if(env->ExceptionCheck()){
+                throwable = env->ExceptionOccurred();
+                env->ExceptionClear();
+            }
+            Cleanup::ReleaseRef(env, jlong(reinterpret_cast<void*>(this)));
+            if(throwable){
+                env->Throw(throwable);
+                env->DeleteLocalRef(throwable);
+            }
         }
     }
 
@@ -231,30 +336,34 @@ public:
     }
 
     jobject data() const override {
-        if(DefaultJniEnvironment env{0}){
-            env->PushLocalFrame(24);
-            jthrowable throwable = nullptr;
-            if(env->ExceptionCheck()){
-                throwable = env->ExceptionOccurred();
-                env->ExceptionClear();
+        if(!m_isNull){
+            if(DefaultJniEnvironment env{0}){
+                env->PushLocalFrame(24);
+                jthrowable throwable = nullptr;
+                if(env->ExceptionCheck()){
+                    throwable = env->ExceptionOccurred();
+                    env->ExceptionClear();
+                }
+                jobject obj = Cleanup::GetRef(env, jlong(reinterpret_cast<const void*>(this)));
+                if(throwable){
+                    env->Throw(throwable);
+                    env->DeleteLocalRef(throwable);
+                }
+                return env->PopLocalFrame(obj);
             }
-            jobject obj = Cleanup::GetRef(env, jlong(reinterpret_cast<const void*>(this)));
-            if(throwable){
-                env->Throw(throwable);
-                env->DeleteLocalRef(throwable);
-            }
-            return env->PopLocalFrame(obj);
         }
         return nullptr;
     }
 
     jobject data(JNIEnv *env) const override {
+        if(m_isNull)
+            return  nullptr;
         jthrowable throwable = nullptr;
         if(env->ExceptionCheck()){
             throwable = env->ExceptionOccurred();
             env->ExceptionClear();
         }
-        jobject obj = Cleanup::GetRef(env, jlong(reinterpret_cast<const void*>(this)));
+        jobject obj = m_isNull ? nullptr : Cleanup::GetRef(env, jlong(reinterpret_cast<const void*>(this)));
         if(throwable){
             env->Throw(throwable);
             env->DeleteLocalRef(throwable);
@@ -265,77 +374,198 @@ public:
     void* array() override {return nullptr;}
     void commitArray() override {}
     jsize arrayLength() const override {return 0;}
+    QString toString(JNIEnv *env, bool * ok) const override {
+        jobject _object = data(env);
+        if(_object){
+            if(ok){
+                if (Java::QtCore::QMetaType$GenericTypeInterface::isInstanceOf(env, _object)) {
+                    QVariant variant = QtJambiAPI::convertJavaObjectToQVariant(env, _object);
+                    *ok = true;
+                    return variant.toString();
+                }else if (Java::QtJambi::QtObjectInterface::isInstanceOf(env, _object)) {
+                    jstring strg = Java::QtJambi::ClassAnalyzerUtility::objectToString(env, _object);
+                    *ok = strg;
+                    return qtjambi_cast<QString>(env, strg);
+                }else{
+                    return qtjambi_cast<QString>(env, Java::Runtime::Object::toString(env, _object));
+                }
+            }else{
+                return qtjambi_cast<QString>(env, Java::Runtime::Object::toString(env, _object));
+            }
+        }
+        if(ok)
+            *ok = true;
+        return "null";
+    }
     bool m_isNull = true;
 };
 
 template<typename Cleanup>
-class JObjectArrayRefViaJavaWrapperData : public JObjectRefViaJavaWrapperData<Cleanup>{
+class JObjectArrayRefViaJavaWrapperData : public JObjectRefViaJavaWrapperData<Cleanup,3>{
 public:
+    JObjectArrayRefViaJavaWrapperData() = default;
     JObjectArrayRefViaJavaWrapperData(JNIEnv* env, jarray object)
-        : JObjectRefViaJavaWrapperData<Cleanup>(env, object)
+        : JObjectRefViaJavaWrapperData<Cleanup,3>(env, object)
         , m_arrayLength( object ? env->GetArrayLength(object) : 0 ){}
     jsize arrayLength() const override {return m_arrayLength;}
+    QString toString(JNIEnv *env, bool * ok) const override {
+        if(ok)
+            *ok = true;
+        QString result = QLatin1String("[");
+        jobjectArray object = jobjectArray(JObjectRefViaJavaWrapperData<Cleanup,3>::data(env));
+        jsize length = object ? env->GetArrayLength(object) : 0;
+        for(jsize i=0; i<length; ++i){
+            if(i>0)
+                result += QLatin1String(",");
+            jobject value = env->GetObjectArrayElement(object, i);
+            JavaException::check(env QTJAMBI_STACKTRACEINFO );
+            result += JObjectWrapper(env, value).toString(ok);
+            if(ok && !*ok)
+                return QString();
+        }
+        result += QLatin1String("]");
+        return result;
+    }
 private:
-    jsize m_arrayLength;
+    jsize m_arrayLength = 0;
 };
 
 typedef JObjectRefViaJavaWrapperData<JObjectGlobalWrapperUtil> JObjectGlobalViaJavaWrapperData;
+typedef JObjectRefViaJavaWrapperData<JObjectGlobalWrapperUtil,4> JValueGlobalViaJavaWrapperData;
 typedef JObjectRefViaJavaWrapperData<JObjectWeakWrapperUtil> JObjectWeakViaJavaWrapperData;
+typedef JObjectRefViaJavaWrapperData<JObjectGlobalWrapperUtil,1> JCollectionGlobalViaJavaWrapperData;
+typedef JObjectRefViaJavaWrapperData<JObjectWeakWrapperUtil,1> JCollectionWeakViaJavaWrapperData;
+typedef JObjectRefViaJavaWrapperData<JObjectGlobalWrapperUtil,2> JMapGlobalViaJavaWrapperData;
+typedef JObjectRefViaJavaWrapperData<JObjectWeakWrapperUtil,2> JMapWeakViaJavaWrapperData;
 typedef JObjectArrayRefViaJavaWrapperData<JObjectGlobalWrapperUtil> JObjectArrayGlobalViaJavaWrapperData;
 typedef JObjectArrayRefViaJavaWrapperData<JObjectWeakWrapperUtil> JObjectArrayWeakViaJavaWrapperData;
 
-template<typename JType, typename Cleanup>
+template<typename ArrayType>
+struct JArrayRuntime{
+};
+
+template<>
+struct JArrayRuntime<jintArray>{
+    constexpr static auto isPrimitiveType = Java::Runtime::Integer::isPrimitiveType;
+    constexpr static auto GetArrayElements = &JNIEnv::GetIntArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv::ReleaseIntArrayElements;
+    constexpr static auto ArrayRef = JObjectWrapperData::JIntArrayRef;
+};
+
+template<>
+struct JArrayRuntime<jbyteArray>{
+    constexpr static auto isPrimitiveType = Java::Runtime::Byte::isPrimitiveType;
+    constexpr static auto GetArrayElements = &JNIEnv::GetByteArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv::ReleaseByteArrayElements;
+    constexpr static auto ArrayRef = JObjectWrapperData::JByteArrayRef;
+};
+
+template<>
+struct JArrayRuntime<jlongArray>{
+    constexpr static auto isPrimitiveType = Java::Runtime::Long::isPrimitiveType;
+    constexpr static auto GetArrayElements = &JNIEnv::GetLongArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv::ReleaseLongArrayElements;
+    constexpr static auto ArrayRef = JObjectWrapperData::JLongArrayRef;
+};
+
+template<>
+struct JArrayRuntime<jshortArray>{
+    constexpr static auto isPrimitiveType = Java::Runtime::Short::isPrimitiveType;
+    constexpr static auto GetArrayElements = &JNIEnv::GetShortArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv::ReleaseShortArrayElements;
+    constexpr static auto ArrayRef = JObjectWrapperData::JShortArrayRef;
+};
+
+template<>
+struct JArrayRuntime<jcharArray>{
+    constexpr static auto isPrimitiveType = Java::Runtime::Character::isPrimitiveType;
+    constexpr static auto GetArrayElements = &JNIEnv::GetCharArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv::ReleaseCharArrayElements;
+    constexpr static auto ArrayRef = JObjectWrapperData::JCharArrayRef;
+};
+
+template<>
+struct JArrayRuntime<jbooleanArray>{
+    constexpr static auto isPrimitiveType = Java::Runtime::Boolean::isPrimitiveType;
+    constexpr static auto GetArrayElements = &JNIEnv::GetBooleanArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv::ReleaseBooleanArrayElements;
+    constexpr static auto ArrayRef = JObjectWrapperData::JBooleanArrayRef;
+};
+
+template<>
+struct JArrayRuntime<jfloatArray>{
+    constexpr static auto isPrimitiveType = Java::Runtime::Float::isPrimitiveType;
+    constexpr static auto GetArrayElements = &JNIEnv::GetFloatArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv::ReleaseFloatArrayElements;
+    constexpr static auto ArrayRef = JObjectWrapperData::JFloatArrayRef;
+};
+
+template<>
+struct JArrayRuntime<jdoubleArray>{
+    constexpr static auto isPrimitiveType = Java::Runtime::Double::isPrimitiveType;
+    constexpr static auto GetArrayElements = &JNIEnv::GetDoubleArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv::ReleaseDoubleArrayElements;
+    constexpr static auto ArrayRef = JObjectWrapperData::JDoubleArrayRef;
+};
+
+template<typename ArrayType, typename Cleanup>
 class JArrayWrapperData : public JObjectWrapperData{
 protected:
-    typedef typename JArray<JType>::Type ArrayType;
+    typedef typename QtJambiPrivate::jni_type<ArrayType>::ElementType ElementType;
 public:
+    Type type() const override { return JArrayRuntime<ArrayType>::ArrayRef; };
+    bool isRefViaJava() const override { return false; }
+    bool isWeak() const override { return std::is_same_v<Cleanup,JObjectWeakWrapperUtil>; }
     JArrayWrapperData() = default;
     JArrayWrapperData(JNIEnv* env, ArrayType object)
         :
-          pointer( (env->*Cleanup::NewRef)(object) ),
+          pointer( !object || env->IsSameObject(object, nullptr) ? nullptr : (env->*Cleanup::NewRef)(object) ),
           m_isCopy(false),
-          m_length( object ? env->GetArrayLength(object) : 0 ),
-          m_array( object ? (env->*JArray<JType>::GetArrayElements)(object, &m_isCopy) : nullptr ),
-          m_isNull(env->IsSameObject(object, nullptr))
+          m_length( !object || env->IsSameObject(object, nullptr) ? 0 : env->GetArrayLength(object) ),
+          m_array( !object || env->IsSameObject(object, nullptr) ? nullptr : (env->*JArrayRuntime<ArrayType>::GetArrayElements)(object, &m_isCopy) )
     {
     }
 
     ~JArrayWrapperData() override{
-        try{
-            if(DefaultJniEnvironment env{500}){
-                JArrayWrapperData<JType,Cleanup>::clear(env);
-            }
-        } catch (const std::exception& e) {
-            qCWarning(DebugAPI::internalCategory, "%s", e.what());
-        }catch(...){}
+        if(pointer.data()){
+            try{
+                if(DefaultJniEnvironment env{500}){
+                    JArrayWrapperData<ArrayType,Cleanup>::clear(env);
+                }
+            } catch (const std::exception& e) {
+                qCWarning(DebugAPI::internalCategory, "%s", e.what());
+            }catch(...){}
+        }
     }
     void clear(JNIEnv *env) override{
-        ArrayType array = JArrayWrapperData<JType,Cleanup>::data(env);
-        if(array){
-            (env->*JArray<JType>::ReleaseArrayElements)(array, m_array, 0);
-            m_array = nullptr;
-            m_length = 0;
-            jthrowable throwable = nullptr;
-            if(env->ExceptionCheck()){
-                throwable = env->ExceptionOccurred();
-                env->ExceptionClear();
+        if(pointer.data()){
+            ArrayType array = JArrayWrapperData<ArrayType,Cleanup>::data(env);
+            if(array){
+                (env->*JArrayRuntime<ArrayType>::ReleaseArrayElements)(array, m_array, 0);
+                m_array = nullptr;
+                m_length = 0;
+                jthrowable throwable = nullptr;
+                if(env->ExceptionCheck()){
+                    throwable = env->ExceptionOccurred();
+                    env->ExceptionClear();
+                }
+                (env->*Cleanup::DeleteRef)(pointer.take());
+                env->DeleteLocalRef(array);
+                if(throwable)
+                    env->Throw(throwable);
             }
-            (env->*Cleanup::DeleteRef)(pointer.take());
-            env->DeleteLocalRef(array);
-            if(throwable)
-                env->Throw(throwable);
         }
     }
 
     ArrayType data(JNIEnv* env) const override {
-        return ArrayType(env->NewLocalRef(pointer.data()));
+        return pointer.data() ? ArrayType(env->NewLocalRef(pointer.data())) : nullptr;
     }
 
     bool isNull() const override {
         if constexpr(Cleanup::isGlobal){
-            return m_isNull;
+            return !pointer.data();
         }else{
-            if(!m_isNull){
+            if(pointer.data()){
                 if(DefaultJniEnvironment env{16}){
                     return env->IsSameObject(pointer.data(), nullptr);
                 }
@@ -345,7 +575,7 @@ public:
     }
 
     ArrayType data() const override {
-        return ArrayType(pointer.data());
+        return pointer.data() ? ArrayType(pointer.data()) : nullptr;
     }
     const void* array() const override  {return m_array;}
     void* array() override  {return m_array;}
@@ -353,62 +583,81 @@ public:
     void commitArray() override {
         if(m_isCopy){
             if(JniEnvironment env{500}){
-                ArrayType array = JArrayWrapperData<JType,Cleanup>::data(env);
+                ArrayType array = JArrayWrapperData<ArrayType,Cleanup>::data(env);
                 if(array){
-                    (env->*JArray<JType>::ReleaseArrayElements)(array, m_array, 0);
-                    m_array = (env->*JArray<JType>::GetArrayElements)(array, &m_isCopy);
+                    (env->*JArrayRuntime<ArrayType>::ReleaseArrayElements)(array, m_array, 0);
+                    m_array = (env->*JArrayRuntime<ArrayType>::GetArrayElements)(array, &m_isCopy);
                 }
             }
         }
+    }
+    QString toString(JNIEnv*, bool * ok) const override {
+        QString result = QLatin1String("[");
+        for(jsize i=0; i<m_length; ++i){
+            if(i>0)
+                result += QLatin1String(",");
+            ElementType value = m_array[i];
+            result += QString::number(value);
+        }
+        result += QLatin1String("]");
+        if(ok)
+            *ok = true;
+        return result;
     }
 private:
     QScopedPointer<_jobject, Cleanup> pointer;
     jboolean m_isCopy = false;
     jsize m_length = 0;
-    JType* m_array = nullptr;
-    bool m_isNull = true;
+    ElementType* m_array = nullptr;
 };
 
-template<typename JType, typename Cleanup>
+template<typename ArrayType, typename Cleanup>
 class JArrayViaJavaWrapperData : public JObjectWrapperData{
 protected:
-    typedef typename JArray<JType>::Type ArrayType;
+    typedef typename QtJambiPrivate::jni_type<ArrayType>::ElementType ElementType;
 public:
+    Type type() const override { return JArrayRuntime<ArrayType>::ArrayRef; };
+    bool isRefViaJava() const override { return true; }
+    bool isWeak() const override { return std::is_same_v<Cleanup,JObjectWeakWrapperUtil>; }
     JArrayViaJavaWrapperData() = default;
     JArrayViaJavaWrapperData(JNIEnv* env, ArrayType object)
         :
+        m_isNull(!object || env->IsSameObject(object, nullptr)),
         m_isCopy(false),
-        m_length( object ? env->GetArrayLength(object) : 0 ),
-        m_array( object ? (env->*JArray<JType>::GetArrayElements)(object, &m_isCopy) : nullptr ),
-        m_isNull(env->IsSameObject(object, nullptr))
+        m_length( m_isNull ? 0 : env->GetArrayLength(object) ),
+        m_array( m_isNull ? nullptr : (env->*JArrayRuntime<ArrayType>::GetArrayElements)(object, &m_isCopy) )
     {
         Cleanup::PushRef(env, jlong(reinterpret_cast<void*>(this)), object);
     }
 
     ~JArrayViaJavaWrapperData() override{
-        try{
-            if(DefaultJniEnvironment env{500}){
-                JArrayViaJavaWrapperData<JType,Cleanup>::clear(env);
-            }
-        } catch (const std::exception& e) {
-            qCWarning(DebugAPI::internalCategory, "%s", e.what());
-        }catch(...){}
+        if(!m_isNull){
+            try{
+                if(DefaultJniEnvironment env{500}){
+                    JArrayViaJavaWrapperData<ArrayType,Cleanup>::clear(env);
+                }
+            } catch (const std::exception& e) {
+                qCWarning(DebugAPI::internalCategory, "%s", e.what());
+            }catch(...){}
+        }
     }
     void clear(JNIEnv *env) override{
-        ArrayType array = JArrayViaJavaWrapperData<JType,Cleanup>::data(env);
-        if(array){
-            (env->*JArray<JType>::ReleaseArrayElements)(array, m_array, 0);
-            m_array = nullptr;
-            m_length = 0;
-            jthrowable throwable = nullptr;
-            if(env->ExceptionCheck()){
-                throwable = env->ExceptionOccurred();
-                env->ExceptionClear();
+        if(!m_isNull){
+            ArrayType array = JArrayViaJavaWrapperData<ArrayType,Cleanup>::data(env);
+            if(array){
+                (env->*JArrayRuntime<ArrayType>::ReleaseArrayElements)(array, m_array, 0);
+                m_array = nullptr;
+                m_length = 0;
+                jthrowable throwable = nullptr;
+                if(env->ExceptionCheck()){
+                    throwable = env->ExceptionOccurred();
+                    env->ExceptionClear();
+                }
+                Cleanup::ReleaseRef(env, jlong(reinterpret_cast<void*>(this)));
+                env->DeleteLocalRef(array);
+                if(throwable)
+                    env->Throw(throwable);
             }
-            Cleanup::ReleaseRef(env, jlong(reinterpret_cast<void*>(this)));
-            env->DeleteLocalRef(array);
-            if(throwable)
-                env->Throw(throwable);
         }
     }
 
@@ -436,24 +685,28 @@ public:
     }
 
     ArrayType data() const override {
-        if(DefaultJniEnvironment env{0}){
-            env->PushLocalFrame(24);
-            jthrowable throwable = nullptr;
-            if(env->ExceptionCheck()){
-                throwable = env->ExceptionOccurred();
-                env->ExceptionClear();
+        if(!m_isNull){
+            if(DefaultJniEnvironment env{0}){
+                env->PushLocalFrame(24);
+                jthrowable throwable = nullptr;
+                if(env->ExceptionCheck()){
+                    throwable = env->ExceptionOccurred();
+                    env->ExceptionClear();
+                }
+                jobject obj = Cleanup::GetRef(env, jlong(reinterpret_cast<const void*>(this)));
+                if(throwable){
+                    env->Throw(throwable);
+                    env->DeleteLocalRef(throwable);
+                }
+                return ArrayType(env->PopLocalFrame(obj));
             }
-            jobject obj = Cleanup::GetRef(env, jlong(reinterpret_cast<const void*>(this)));
-            if(throwable){
-                env->Throw(throwable);
-                env->DeleteLocalRef(throwable);
-            }
-            return ArrayType(env->PopLocalFrame(obj));
         }
         return nullptr;
     }
 
     ArrayType data(JNIEnv *env) const override {
+        if(m_isNull)
+            return nullptr;
         jthrowable throwable = nullptr;
         if(env->ExceptionCheck()){
             throwable = env->ExceptionOccurred();
@@ -473,44 +726,289 @@ public:
     void commitArray() override {
         if(m_isCopy){
             if(JniEnvironment env{500}){
-                ArrayType array = JArrayViaJavaWrapperData<JType,Cleanup>::data(env);
+                ArrayType array = JArrayViaJavaWrapperData<ArrayType,Cleanup>::data(env);
                 if(array){
-                    (env->*JArray<JType>::ReleaseArrayElements)(array, m_array, 0);
-                    m_array = (env->*JArray<JType>::GetArrayElements)(array, &m_isCopy);
+                    (env->*JArrayRuntime<ArrayType>::ReleaseArrayElements)(array, m_array, 0);
+                    m_array = (env->*JArrayRuntime<ArrayType>::GetArrayElements)(array, &m_isCopy);
                 }
             }
         }
     }
+    QString toString(JNIEnv*, bool * ok) const override {
+        QString result = QLatin1String("[");
+        for(jsize i=0; i<m_length; ++i){
+            if(i>0)
+                result += QLatin1String(",");
+            ElementType value = m_array[i];
+            result += QString::number(value);
+        }
+        result += QLatin1String("]");
+        if(ok)
+            *ok = true;
+        return result;
+    }
 private:
+    bool m_isNull = true;
     jboolean m_isCopy = false;
     jsize m_length = 0;
-    JType* m_array = nullptr;
-    bool m_isNull = true;
+    ElementType* m_array = nullptr;
 };
 
-template<typename JType>
-struct JArrayGlobalWrapperData : JArrayWrapperData<JType,JObjectGlobalWrapperUtil>{
+template<typename ArrayType>
+struct JArrayGlobalWrapperData : JArrayWrapperData<ArrayType,JObjectGlobalWrapperUtil>{
     JArrayGlobalWrapperData() = default;
-    JArrayGlobalWrapperData(JNIEnv* env, typename JArrayWrapperData<JType,JObjectGlobalWrapperUtil>::ArrayType object) : JArrayWrapperData<JType,JObjectGlobalWrapperUtil>(env, object){}
+    JArrayGlobalWrapperData(JNIEnv* env, ArrayType object) : JArrayWrapperData<ArrayType,JObjectGlobalWrapperUtil>(env, object){}
 };
 
-template<typename JType>
-struct JArrayWeakWrapperData : JArrayWrapperData<JType,JObjectWeakWrapperUtil>{
+template<typename ArrayType>
+struct JArrayWeakWrapperData : JArrayWrapperData<ArrayType,JObjectWeakWrapperUtil>{
     JArrayWeakWrapperData() = default;
-    JArrayWeakWrapperData(JNIEnv* env, typename JArrayWrapperData<JType,JObjectWeakWrapperUtil>::ArrayType object) : JArrayWrapperData<JType,JObjectWeakWrapperUtil>(env, object){}
+    JArrayWeakWrapperData(JNIEnv* env, ArrayType object) : JArrayWrapperData<ArrayType,JObjectWeakWrapperUtil>(env, object){}
 };
 
-template<typename JType>
-struct JArrayGlobalViaJavaWrapperData : JArrayViaJavaWrapperData<JType,JObjectGlobalWrapperUtil>{
+template<typename ArrayType>
+struct JArrayGlobalViaJavaWrapperData : JArrayViaJavaWrapperData<ArrayType,JObjectGlobalWrapperUtil>{
     JArrayGlobalViaJavaWrapperData() = default;
-    JArrayGlobalViaJavaWrapperData(JNIEnv* env, typename JArrayViaJavaWrapperData<JType,JObjectGlobalWrapperUtil>::ArrayType object) : JArrayViaJavaWrapperData<JType,JObjectGlobalWrapperUtil>(env, object){}
+    JArrayGlobalViaJavaWrapperData(JNIEnv* env, ArrayType object) : JArrayViaJavaWrapperData<ArrayType,JObjectGlobalWrapperUtil>(env, object){}
 };
 
-template<typename JType>
-struct JArrayWeakViaJavaWrapperData : JArrayViaJavaWrapperData<JType,JObjectWeakWrapperUtil>{
+template<typename ArrayType>
+struct JArrayWeakViaJavaWrapperData : JArrayViaJavaWrapperData<ArrayType,JObjectWeakWrapperUtil>{
     JArrayWeakViaJavaWrapperData() = default;
-    JArrayWeakViaJavaWrapperData(JNIEnv* env, typename JArrayViaJavaWrapperData<JType,JObjectWeakWrapperUtil>::ArrayType object) : JArrayViaJavaWrapperData<JType,JObjectWeakWrapperUtil>(env, object){}
+    JArrayWeakViaJavaWrapperData(JNIEnv* env, ArrayType object) : JArrayViaJavaWrapperData<ArrayType,JObjectWeakWrapperUtil>(env, object){}
 };
+
+template<typename ArrayType>
+ArrayType filterPrimitiveArray(JNIEnv *env, jobject object){
+    if(object){
+        jclass cls = env->GetObjectClass(object);
+        if(Java::Runtime::Class::isArray(env, cls)){
+            jclass componentType = Java::Runtime::Class::getComponentType(env, cls);
+            if(JArrayRuntime<ArrayType>::isPrimitiveType(env, componentType)){
+                return ArrayType(object);
+            }
+        }
+    }
+    return nullptr;
+}
+
+template<typename ArrayType>
+JObjectWrapperData* createJArrayWrapperData(JNIEnv *env, jobject obj, bool globalRefs = true){
+    if(env && env->ExceptionCheck()){
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
+    ArrayType objArray = filterPrimitiveArray<ArrayType>(env, obj);
+    if(avoidJNIGlobalRefs(env)){
+        if(globalRefs){
+            return new JArrayGlobalViaJavaWrapperData<ArrayType>(env, objArray);
+        }else{
+            return new JArrayWeakViaJavaWrapperData<ArrayType>(env, objArray);
+        }
+    }else{
+        if(globalRefs){
+            return new JArrayGlobalWrapperData<ArrayType>(env, objArray);
+        }else{
+            return new JArrayWeakWrapperData<ArrayType>(env, objArray);
+        }
+    }
+}
+
+template<typename ArrayType>
+JObjectWrapperData* createJArrayWrapperData(JNIEnv *env, ArrayType objArray, bool globalRefs = true){
+    if(env && env->ExceptionCheck()){
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
+    if(avoidJNIGlobalRefs(env)){
+        if(globalRefs){
+            return new JArrayGlobalViaJavaWrapperData<ArrayType>(env, objArray);
+        }else{
+            return new JArrayWeakViaJavaWrapperData<ArrayType>(env, objArray);
+        }
+    }else{
+        if(globalRefs){
+            return new JArrayGlobalWrapperData<ArrayType>(env, objArray);
+        }else{
+            return new JArrayWeakWrapperData<ArrayType>(env, objArray);
+        }
+    }
+}
+
+template<typename ArrayType>
+JObjectWrapperData* createJArrayWrapperData(bool globalRefs = true){
+    if(avoidJNIGlobalRefs()){
+        if(globalRefs){
+            return new JArrayGlobalViaJavaWrapperData<ArrayType>();
+        }else{
+            return new JArrayWeakViaJavaWrapperData<ArrayType>();
+        }
+    }else{
+        if(globalRefs){
+            return new JArrayGlobalWrapperData<ArrayType>();
+        }else{
+            return new JArrayWeakWrapperData<ArrayType>();
+        }
+    }
+}
+
+jobjectArray filterObjectArray(JNIEnv *env, jobject object){
+    if(object){
+        jclass cls = env->GetObjectClass(object);
+        if(Java::Runtime::Class::isArray(env, cls)){
+            jclass componentType = Java::Runtime::Class::getComponentType(env, cls);
+            if(!Java::Runtime::Class::isPrimitive(env, componentType)){
+                return jobjectArray(object);
+            }
+        }
+    }
+    return nullptr;
+}
+
+JObjectWrapperData* createJObjectArrayWrapperData(JNIEnv *env, jobject obj, bool globalRefs = true){
+    if(env && env->ExceptionCheck()){
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
+    jobjectArray objArray = filterObjectArray(env, obj);
+    if(avoidJNIGlobalRefs(env)){
+        if(globalRefs){
+            return new JObjectArrayGlobalViaJavaWrapperData(env, objArray);
+        }else{
+            return new JObjectArrayWeakViaJavaWrapperData(env, objArray);
+        }
+    }else{
+        if(globalRefs){
+            return new JObjectArrayGlobalWrapperData(env, objArray);
+        }else{
+            return new JObjectArrayWeakWrapperData(env, objArray);
+        }
+    }
+}
+
+JObjectWrapperData* createJObjectArrayWrapperData(JNIEnv *env, jobjectArray objArray, bool globalRefs = true){
+    if(env && env->ExceptionCheck()){
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
+    if(avoidJNIGlobalRefs(env)){
+        if(globalRefs){
+            return new JObjectArrayGlobalViaJavaWrapperData(env, objArray);
+        }else{
+            return new JObjectArrayWeakViaJavaWrapperData(env, objArray);
+        }
+    }else{
+        if(globalRefs){
+            return new JObjectArrayGlobalWrapperData(env, objArray);
+        }else{
+            return new JObjectArrayWeakWrapperData(env, objArray);
+        }
+    }
+}
+
+JObjectWrapperData* createJObjectArrayWrapperData(bool globalRefs = true){
+    if(avoidJNIGlobalRefs()){
+        if(globalRefs){
+            return new JObjectArrayGlobalViaJavaWrapperData();
+        }else{
+            return new JObjectArrayWeakViaJavaWrapperData();
+        }
+    }else{
+        if(globalRefs){
+            return new JObjectArrayGlobalWrapperData();
+        }else{
+            return new JObjectArrayWeakWrapperData();
+        }
+    }
+}
+
+jobject filterMap(JNIEnv *env, jobject object){
+    if(object && Java::Runtime::Map::isInstanceOf(env, object)){
+        return object;
+    }
+    return nullptr;
+}
+
+JObjectWrapperData* createJMapWrapperData(JNIEnv *env, jobject obj, bool globalRefs = true){
+    if(env && env->ExceptionCheck()){
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
+    obj = filterMap(env, obj);
+    if(avoidJNIGlobalRefs(env)){
+        if(globalRefs){
+            return new JMapGlobalViaJavaWrapperData(env, obj);
+        }else{
+            return new JMapWeakViaJavaWrapperData(env, obj);
+        }
+    }else{
+        if(globalRefs){
+            return new JMapGlobalWrapperData(env, obj);
+        }else{
+            return new JMapWeakWrapperData(env, obj);
+        }
+    }
+}
+
+JObjectWrapperData* createJMapWrapperData(bool globalRefs = true){
+    if(avoidJNIGlobalRefs()){
+        if(globalRefs){
+            return new JMapGlobalViaJavaWrapperData();
+        }else{
+            return new JMapWeakViaJavaWrapperData();
+        }
+    }else{
+        if(globalRefs){
+            return new JMapGlobalWrapperData();
+        }else{
+            return new JMapWeakWrapperData();
+        }
+    }
+}
+
+jobject filterCollection(JNIEnv *env, jobject object){
+    if(object && Java::Runtime::Collection::isInstanceOf(env, object)){
+        return object;
+    }
+    return nullptr;
+}
+
+JObjectWrapperData* createJCollectionWrapperData(JNIEnv *env, jobject obj, bool globalRefs = true){
+    if(env && env->ExceptionCheck()){
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
+    obj = filterCollection(env, obj);
+    if(avoidJNIGlobalRefs(env)){
+        if(globalRefs){
+            return new JCollectionGlobalViaJavaWrapperData(env, obj);
+        }else{
+            return new JCollectionWeakViaJavaWrapperData(env, obj);
+        }
+    }else{
+        if(globalRefs){
+            return new JCollectionGlobalWrapperData(env, obj);
+        }else{
+            return new JCollectionWeakWrapperData(env, obj);
+        }
+    }
+}
+
+JObjectWrapperData* createJCollectionWrapperData(bool globalRefs = true){
+    if(avoidJNIGlobalRefs()){
+        if(globalRefs){
+            return new JCollectionGlobalViaJavaWrapperData();
+        }else{
+            return new JCollectionWeakViaJavaWrapperData();
+        }
+    }else{
+        if(globalRefs){
+            return new JCollectionGlobalWrapperData();
+        }else{
+            return new JCollectionWeakWrapperData();
+        }
+    }
+}
 
 bool JObjectWrapper::compareEqual(JNIEnv *env, const JObjectWrapper &other) const{
     return (*this)==other.object(env);
@@ -649,6 +1147,14 @@ JObjectWrapper::JObjectWrapper(jobject obj)
     }
 }
 
+JObjectWrapperData* createJObjectValueWrapperData(JNIEnv *env, jobject obj){
+    if(avoidJNIGlobalRefs(env)){
+        return new JObjectGlobalViaJavaWrapperData(env, obj);
+    }else{
+        return new JObjectGlobalWrapperData(env, obj);
+    }
+}
+
 JObjectWrapper::JObjectWrapper(JNIEnv *env, jobject obj, bool globalRefs)
     : m_data()
 {
@@ -665,469 +1171,9 @@ JObjectWrapper::JObjectWrapper(JNIEnv *env, jobject obj, bool globalRefs)
     }
 }
 
-JObjectWrapper::JObjectWrapper(JNIEnv *env, jobject obj, bool globalRefs, const std::type_info& typeId)
- : m_data()
-{
-    if(env->ExceptionCheck()){
-        env->ExceptionDescribe();
-        env->ExceptionClear();
-    }
-    if(!env->IsSameObject(obj, nullptr)){
-        if(avoidJNIGlobalRefs(env)){
-            if(globalRefs){
-                if(typeid_equals(typeId, typeid(jint))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jint>(env, jintArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jbyte))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jbyte>(env, jbyteArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jshort))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jshort>(env, jshortArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jlong))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jlong>(env, jlongArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jchar))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jchar>(env, jcharArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jboolean))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jboolean>(env, jbooleanArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jfloat))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jfloat>(env, jfloatArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jdouble))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jdouble>(env, jdoubleArray(obj)));
-                }else{
-                    m_data = static_cast<JObjectWrapperData*>(new JObjectArrayGlobalViaJavaWrapperData(env, jarray(obj)));
-                }
-            }else{
-                if(typeid_equals(typeId, typeid(jint))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jint>(env, jintArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jbyte))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jbyte>(env, jbyteArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jshort))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jshort>(env, jshortArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jlong))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jlong>(env, jlongArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jchar))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jchar>(env, jcharArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jboolean))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jboolean>(env, jbooleanArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jfloat))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jfloat>(env, jfloatArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jdouble))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jdouble>(env, jdoubleArray(obj)));
-                }else{
-                    m_data = static_cast<JObjectWrapperData*>(new JObjectArrayWeakViaJavaWrapperData(env, jarray(obj)));
-                }
-            }
-        }else{
-            if(globalRefs){
-                if(typeid_equals(typeId, typeid(jint))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jint>(env, jintArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jbyte))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jbyte>(env, jbyteArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jshort))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jshort>(env, jshortArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jlong))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jlong>(env, jlongArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jchar))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jchar>(env, jcharArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jboolean))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jboolean>(env, jbooleanArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jfloat))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jfloat>(env, jfloatArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jdouble))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jdouble>(env, jdoubleArray(obj)));
-                }else{
-                    m_data = static_cast<JObjectWrapperData*>(new JObjectArrayGlobalWrapperData(env, jarray(obj)));
-                }
-            }else{
-                if(typeid_equals(typeId, typeid(jint))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jint>(env, jintArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jbyte))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jbyte>(env, jbyteArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jshort))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jshort>(env, jshortArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jlong))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jlong>(env, jlongArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jchar))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jchar>(env, jcharArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jboolean))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jboolean>(env, jbooleanArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jfloat))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jfloat>(env, jfloatArray(obj)));
-                }else if(typeid_equals(typeId, typeid(jdouble))){
-                    m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jdouble>(env, jdoubleArray(obj)));
-                }else{
-                    m_data = static_cast<JObjectWrapperData*>(new JObjectArrayWeakWrapperData(env, jarray(obj)));
-                }
-            }
-        }
-    }
-}
-
-void JObjectWrapper::assign(JNIEnv* env, const JObjectWrapper& wrapper, const std::type_info& typeId)
-{
-    if(QExplicitlySharedDataPointer<JObjectWrapperData> wrappersData = QExplicitlySharedDataPointer<JObjectWrapperData>(wrapper.m_data)){
-        JObjectWrapperData* wd = wrappersData.data();
-        const std::type_info* dataTypeIdPtr = QtJambiPrivate::CheckPointer<JObjectWrapperData>::trySupplyType(wd);
-        if(!dataTypeIdPtr){
-            m_data.reset();
-        }else{
-            const std::type_info& dataTypeId = *dataTypeIdPtr;
-            if(avoidJNIGlobalRefs(env)){
-                if(typeid_equals(typeId, typeid(jint))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jint>(env, jintArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jint>(env, jintArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalViaJavaWrapperData<jint>)) || typeid_equals(dataTypeId, typeid(JArrayWeakViaJavaWrapperData<jint>))){
-                        m_data = wrappersData;
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jbyte))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jbyte>(env, jbyteArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jbyte>(env, jbyteArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalViaJavaWrapperData<jbyte>)) || typeid_equals(dataTypeId, typeid(JArrayWeakViaJavaWrapperData<jbyte>))){
-                        m_data = wrappersData;
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jshort))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jshort>(env, jshortArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jshort>(env, jshortArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalViaJavaWrapperData<jshort>)) || typeid_equals(dataTypeId, typeid(JArrayWeakViaJavaWrapperData<jshort>))){
-                        m_data = wrappersData;
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jlong))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jlong>(env, jlongArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jlong>(env, jlongArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalViaJavaWrapperData<jlong>)) || typeid_equals(dataTypeId, typeid(JArrayWeakViaJavaWrapperData<jlong>))){
-                        m_data = wrappersData;
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jchar))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jchar>(env, jcharArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jchar>(env, jcharArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalViaJavaWrapperData<jchar>)) || typeid_equals(dataTypeId, typeid(JArrayWeakViaJavaWrapperData<jchar>))){
-                        m_data = wrappersData;
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jboolean))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jboolean>(env, jbooleanArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jboolean>(env, jbooleanArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalViaJavaWrapperData<jboolean>)) || typeid_equals(dataTypeId, typeid(JArrayWeakViaJavaWrapperData<jboolean>))){
-                        m_data = wrappersData;
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jfloat))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jfloat>(env, jfloatArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jfloat>(env, jfloatArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalViaJavaWrapperData<jfloat>)) || typeid_equals(dataTypeId, typeid(JArrayWeakViaJavaWrapperData<jfloat>))){
-                        m_data = wrappersData;
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jdouble))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jdouble>(env, jdoubleArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jdouble>(env, jdoubleArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalViaJavaWrapperData<jdouble>)) || typeid_equals(dataTypeId, typeid(JArrayWeakViaJavaWrapperData<jdouble>))){
-                        m_data = wrappersData;
-                    }else{
-                        m_data.reset();
-                    }
-                }else{
-                    m_data.reset();
-                }
-            }else{
-                if(typeid_equals(typeId, typeid(jint))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jint>(env, jintArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jint>(env, jintArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jint>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jint>))){
-                        m_data = wrappersData;
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jbyte))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jbyte>(env, jbyteArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jbyte>(env, jbyteArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jbyte>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jbyte>))){
-                        m_data = wrappersData;
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jshort))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jshort>(env, jshortArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jshort>(env, jshortArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jshort>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jshort>))){
-                        m_data = wrappersData;
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jlong))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jlong>(env, jlongArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jlong>(env, jlongArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jlong>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jlong>))){
-                        m_data = wrappersData;
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jchar))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jchar>(env, jcharArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jchar>(env, jcharArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jchar>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jchar>))){
-                        m_data = wrappersData;
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jboolean))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jboolean>(env, jbooleanArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jboolean>(env, jbooleanArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jboolean>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jboolean>))){
-                        m_data = wrappersData;
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jfloat))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jfloat>(env, jfloatArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jfloat>(env, jfloatArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jfloat>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jfloat>))){
-                        m_data = wrappersData;
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jdouble))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jdouble>(env, jdoubleArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jdouble>(env, jdoubleArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jdouble>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jdouble>))){
-                        m_data = wrappersData;
-                    }else{
-                        m_data.reset();
-                    }
-                }else{
-                    m_data.reset();
-                }
-            }
-        }
-    }else{
-        m_data.reset();
-    }
-}
-
-void JObjectWrapper::assign(JNIEnv* env, JObjectWrapper&& wrapper, const std::type_info& typeId)
-{
-    if(QExplicitlySharedDataPointer<JObjectWrapperData> wrappersData = QExplicitlySharedDataPointer<JObjectWrapperData>(std::move(wrapper.m_data))){
-        JObjectWrapperData* wd = wrappersData.data();
-        const std::type_info* dataTypeIdPtr = QtJambiPrivate::CheckPointer<JObjectWrapperData>::trySupplyType(wd);
-        if(!dataTypeIdPtr){
-            m_data.reset();
-        }else{
-            const std::type_info& dataTypeId = *dataTypeIdPtr;
-            if(avoidJNIGlobalRefs(env)){
-                if(typeid_equals(typeId, typeid(jint))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jint>(env, jintArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jint>(env, jintArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalViaJavaWrapperData<jint>)) || typeid_equals(dataTypeId, typeid(JArrayWeakViaJavaWrapperData<jint>))){
-                        m_data = std::move(wrappersData);
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jbyte))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jbyte>(env, jbyteArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jbyte>(env, jbyteArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalViaJavaWrapperData<jbyte>)) || typeid_equals(dataTypeId, typeid(JArrayWeakViaJavaWrapperData<jbyte>))){
-                        m_data = std::move(wrappersData);
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jshort))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jshort>(env, jshortArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jshort>(env, jshortArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalViaJavaWrapperData<jshort>)) || typeid_equals(dataTypeId, typeid(JArrayWeakViaJavaWrapperData<jshort>))){
-                        m_data = std::move(wrappersData);
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jlong))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jlong>(env, jlongArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jlong>(env, jlongArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalViaJavaWrapperData<jlong>)) || typeid_equals(dataTypeId, typeid(JArrayWeakViaJavaWrapperData<jlong>))){
-                        m_data = std::move(wrappersData);
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jchar))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jchar>(env, jcharArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jchar>(env, jcharArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalViaJavaWrapperData<jchar>)) || typeid_equals(dataTypeId, typeid(JArrayWeakViaJavaWrapperData<jchar>))){
-                        m_data = std::move(wrappersData);
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jboolean))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jboolean>(env, jbooleanArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jboolean>(env, jbooleanArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalViaJavaWrapperData<jboolean>)) || typeid_equals(dataTypeId, typeid(JArrayWeakViaJavaWrapperData<jboolean>))){
-                        m_data = std::move(wrappersData);
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jfloat))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jfloat>(env, jfloatArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jfloat>(env, jfloatArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalViaJavaWrapperData<jfloat>)) || typeid_equals(dataTypeId, typeid(JArrayWeakViaJavaWrapperData<jfloat>))){
-                        m_data = std::move(wrappersData);
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jdouble))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalViaJavaWrapperData<jdouble>(env, jdoubleArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakViaJavaWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakViaJavaWrapperData<jdouble>(env, jdoubleArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalViaJavaWrapperData<jdouble>)) || typeid_equals(dataTypeId, typeid(JArrayWeakViaJavaWrapperData<jdouble>))){
-                        m_data = std::move(wrappersData);
-                    }else{
-                        m_data.reset();
-                    }
-                }else{
-                    m_data.reset();
-                }
-            }else{
-                if(typeid_equals(typeId, typeid(jint))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jint>(env, jintArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jint>(env, jintArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jint>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jint>))){
-                        m_data = std::move(wrappersData);
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jbyte))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jbyte>(env, jbyteArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jbyte>(env, jbyteArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jbyte>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jbyte>))){
-                        m_data = std::move(wrappersData);
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jshort))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jshort>(env, jshortArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jshort>(env, jshortArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jshort>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jshort>))){
-                        m_data = std::move(wrappersData);
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jlong))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jlong>(env, jlongArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jlong>(env, jlongArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jlong>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jlong>))){
-                        m_data = std::move(wrappersData);
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jchar))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jchar>(env, jcharArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jchar>(env, jcharArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jchar>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jchar>))){
-                        m_data = std::move(wrappersData);
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jboolean))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jboolean>(env, jbooleanArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jboolean>(env, jbooleanArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jboolean>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jboolean>))){
-                        m_data = std::move(wrappersData);
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jfloat))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jfloat>(env, jfloatArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jfloat>(env, jfloatArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jfloat>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jfloat>))){
-                        m_data = std::move(wrappersData);
-                    }else{
-                        m_data.reset();
-                    }
-                }else if(typeid_equals(typeId, typeid(jdouble))){
-                    if(typeid_equals(dataTypeId, typeid(JObjectGlobalWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayGlobalWrapperData<jdouble>(env, jdoubleArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JObjectWeakWrapperData))){
-                        m_data = static_cast<JObjectWrapperData*>(new JArrayWeakWrapperData<jdouble>(env, jdoubleArray(wrapper.object(env))));
-                    }else if(typeid_equals(dataTypeId, typeid(JArrayGlobalWrapperData<jdouble>)) || typeid_equals(dataTypeId, typeid(JArrayWeakWrapperData<jdouble>))){
-                        m_data = std::move(wrappersData);
-                    }else{
-                        m_data.reset();
-                    }
-                }else{
-                    m_data.reset();
-                }
-            }
-        }
-    }else{
-        m_data.reset();
-    }
-}
+JObjectWrapper::JObjectWrapper(JObjectWrapperData* data)
+    : m_data(data)
+{}
 
 const void* JObjectWrapper::array() const
 {
@@ -1160,56 +1206,72 @@ jsize JObjectWrapper::arrayLength() const {
 
 JObjectWrapper& JObjectWrapper::operator=(jobject object) {
     if(JniEnvironment env{500}){
-        assign(env, object);
+        assign(env, object, true);
     }
     return *this;
 }
 
-void JObjectWrapper::assign(JNIEnv *env, jobject object) {
+void JObjectWrapper::assign(JNIEnv *env, jobject object, bool globalRefs) {
     if(env->ExceptionCheck()){
         env->ExceptionDescribe();
         env->ExceptionClear();
     }
-    if(env->IsSameObject(object, nullptr)){
-        m_data.reset();
-    }else if(Java::Runtime::Enum::isInstanceOf(env, object)
-       || Java::QtJambi::QtEnumerator::isInstanceOf(env, object)
-       || Java::QtJambi::QtShortEnumerator::isInstanceOf(env, object)
-       || Java::QtJambi::QtByteEnumerator::isInstanceOf(env, object)
-       || Java::QtJambi::QtLongEnumerator::isInstanceOf(env, object)){
-       *this = JEnumWrapper(env, object);
-    }else if(Java::Runtime::Collection::isInstanceOf(env, object)){
-        *this = JCollectionWrapper(env, object);
-    }else if(Java::Runtime::Map::isInstanceOf(env, object)){
-        *this = JMapWrapper(env, object);
-    }else if(Java::Runtime::Iterator::isInstanceOf(env, object)){
-        *this = JIteratorWrapper(env, object);
-    }else{
-        jclass cls = env->GetObjectClass(object);
-        if(Java::Runtime::Class::isArray(env, cls)){
-            jclass componentType = Java::Runtime::Class::getComponentType(env, cls);
-            if(Java::Runtime::Integer::isPrimitiveType(env, componentType)){
-                *this = JIntArrayWrapper(env, jintArray(object));
-            }else if(Java::Runtime::Byte::isPrimitiveType(env, componentType)){
-                *this = JByteArrayWrapper(env, jbyteArray(object));
-            }else if(Java::Runtime::Short::isPrimitiveType(env, componentType)){
-                *this = JShortArrayWrapper(env, jshortArray(object));
-            }else if(Java::Runtime::Long::isPrimitiveType(env, componentType)){
-                *this = JLongArrayWrapper(env, jlongArray(object));
-            }else if(Java::Runtime::Character::isPrimitiveType(env, componentType)){
-                *this = JCharArrayWrapper(env, jcharArray(object));
-            }else if(Java::Runtime::Boolean::isPrimitiveType(env, componentType)){
-                *this = JBooleanArrayWrapper(env, jbooleanArray(object));
-            }else if(Java::Runtime::Float::isPrimitiveType(env, componentType)){
-                *this = JFloatArrayWrapper(env, jfloatArray(object));
-            }else if(Java::Runtime::Double::isPrimitiveType(env, componentType)){
-                *this = JDoubleArrayWrapper(env, jdoubleArray(object));
-            }else{
-                *this = JObjectArrayWrapper(env, jobjectArray(object));
-            }
+    JObjectWrapperData::Type type = JObjectWrapperData::None;
+    if(m_data)
+        type = m_data->type();
+    switch(type){
+    case JObjectWrapperData::JCollectionRef:
+        m_data.reset(createJCollectionWrapperData(env, object, globalRefs));
+        break;
+    case JObjectWrapperData::JMapRef:
+        m_data.reset(createJMapWrapperData(env, object, globalRefs));
+        break;
+    case JObjectWrapperData::JBooleanArrayRef:
+        m_data.reset(createJArrayWrapperData<jbooleanArray>(env, object, globalRefs));
+        break;
+    case JObjectWrapperData::JIntArrayRef:
+        m_data.reset(createJArrayWrapperData<jintArray>(env, object, globalRefs));
+        break;
+    case JObjectWrapperData::JByteArrayRef:
+        m_data.reset(createJArrayWrapperData<jbyteArray>(env, object, globalRefs));
+        break;
+    case JObjectWrapperData::JShortArrayRef:
+        m_data.reset(createJArrayWrapperData<jshortArray>(env, object, globalRefs));
+        break;
+    case JObjectWrapperData::JLongArrayRef:
+        m_data.reset(createJArrayWrapperData<jlongArray>(env, object, globalRefs));
+        break;
+    case JObjectWrapperData::JDoubleArrayRef:
+        m_data.reset(createJArrayWrapperData<jdoubleArray>(env, object, globalRefs));
+        break;
+    case JObjectWrapperData::JFloatArrayRef:
+        m_data.reset(createJArrayWrapperData<jfloatArray>(env, object, globalRefs));
+        break;
+    case JObjectWrapperData::JCharArrayRef:
+        m_data.reset(createJArrayWrapperData<jcharArray>(env, object, globalRefs));
+        break;
+    case JObjectWrapperData::JObjectArrayRef:
+        m_data.reset(createJObjectArrayWrapperData(env, object, globalRefs));
+        break;
+    default:
+        if(env->IsSameObject(object, nullptr)){
+            m_data.reset();
         }else{
-            *this = JObjectWrapper(env, object);
+            if(avoidJNIGlobalRefs(env)){
+                if(globalRefs){
+                    m_data.reset(new JObjectGlobalViaJavaWrapperData(env, object));
+                }else{
+                    m_data.reset(new JObjectWeakViaJavaWrapperData(env, object));
+                }
+            }else{
+                if(globalRefs){
+                    m_data.reset(new JObjectGlobalWrapperData(env, object));
+                }else{
+                    m_data.reset(new JObjectWeakWrapperData(env, object));
+                }
+            }
         }
+        break;
     }
 }
 
@@ -1219,25 +1281,42 @@ JObjectWrapper& JObjectWrapper::operator=(const JObjectWrapper &wrapper) {
 }
 
 void JObjectWrapper::assign(const JObjectWrapper &wrapper) {
-    m_data = wrapper.m_data;
+    JObjectWrapperData::Type type1 = m_data ? m_data->type() : JObjectWrapperData::None;
+    JObjectWrapperData::Type type2 = wrapper.m_data ? wrapper.m_data->type() : JObjectWrapperData::None;
+    if(type1==type2
+        || (type1==JObjectWrapperData::None && type2==JObjectWrapperData::JObjectRef)
+        || (type2==JObjectWrapperData::None && type1==JObjectWrapperData::JObjectRef)){
+        m_data = wrapper.m_data;
+    }else{
+        m_data.reset();
+        if(wrapper.m_data){
+            if(JniEnvironment env{500}){
+                assign(env, wrapper.object(env), !wrapper.m_data->isWeak());
+            }
+        }
+    }
 }
 
 JObjectWrapper& JObjectWrapper::operator=(JObjectWrapper &&wrapper) {
-    const std::type_info* thisId = QtJambiPrivate::CheckPointer<JObjectWrapper>::trySupplyType(this);
-    const std::type_info* thatId = QtJambiPrivate::CheckPointer<JObjectWrapper>::trySupplyType(&wrapper);
-    if(thisId && thatId && JObjectWrapper::isEquals(*thisId, *thatId)){
-        m_data = std::move(wrapper.m_data);
-    }else if(JniEnvironment env{200}){
-        assign(env, std::move(wrapper));
-    }
+    assign(std::move(wrapper));
     return *this;
 }
 
-void JObjectWrapper::assign(JNIEnv *env, JObjectWrapper &&wrapper) {
-    const std::type_info* thisId = QtJambiPrivate::CheckPointer<JObjectWrapper>::trySupplyType(this);
-    const std::type_info* thatId = QtJambiPrivate::CheckPointer<JObjectWrapper>::trySupplyType(&wrapper);
-    if((thisId && thatId && JObjectWrapper::isEquals(*thisId, *thatId)) || !wrapper.object(env)){
+void JObjectWrapper::assign(JObjectWrapper &&wrapper) {
+    JObjectWrapperData::Type type1 = m_data ? m_data->type() : JObjectWrapperData::None;
+    JObjectWrapperData::Type type2 = wrapper.m_data ? wrapper.m_data->type() : JObjectWrapperData::None;
+    if(type1==type2
+        || (type1==JObjectWrapperData::None && type2==JObjectWrapperData::JObjectRef)
+        || (type2==JObjectWrapperData::None && type1==JObjectWrapperData::JObjectRef)){
         m_data = std::move(wrapper.m_data);
+    }else{
+        m_data.reset();
+        if(wrapper.m_data){
+            if(JniEnvironment env{500}){
+                assign(env, wrapper.object(env), !wrapper.m_data->isWeak());
+                wrapper.m_data.reset();
+            }
+        }
     }
 }
 
@@ -1285,27 +1364,7 @@ JObjectWrapper::~JObjectWrapper(){
 }
 
 QString JObjectWrapper::toString(JNIEnv *env, bool * ok) const {
-    jobject _object = object(env);
-    if(_object){
-        if(ok){
-            if (Java::QtCore::QMetaType$GenericTypeInterface::isInstanceOf(env, _object)) {
-                QVariant variant = QtJambiAPI::convertJavaObjectToQVariant(env, _object);
-                *ok = true;
-                return variant.toString();
-            }else if (Java::QtJambi::QtObjectInterface::isInstanceOf(env, _object)) {
-                jstring strg = Java::QtJambi::ClassAnalyzerUtility::objectToString(env, _object);
-                *ok = strg;
-                return qtjambi_cast<QString>(env, strg);
-            }else{
-                return qtjambi_cast<QString>(env, Java::Runtime::Object::toString(env, _object));
-            }
-        }else{
-            return qtjambi_cast<QString>(env, Java::Runtime::Object::toString(env, _object));
-        }
-    }
-    if(ok)
-        *ok = true;
-    return "null";
+    return m_data->toString(env, ok);
 }
 
 QString JObjectWrapper::toString(bool * ok) const {
@@ -1319,360 +1378,60 @@ bool JObjectWrapper::isEquals(const std::type_info& typeId1, const std::type_inf
     return typeid_equals(typeId1, typeId2);
 }
 
-jobject JObjectWrapper::filterPrimitiveArray(JNIEnv *env, jobject object, const std::type_info& typeId){
-    if(object){
-        jclass cls = env->GetObjectClass(object);
-        if(Java::Runtime::Class::isArray(env, cls)){
-            jclass componentType = Java::Runtime::Class::getComponentType(env, cls);
-            if(typeid_equals(typeId, typeid(jint)) && Java::Runtime::Integer::isPrimitiveType(env, componentType)){
-                return object;
-            }else if(typeid_equals(typeId, typeid(jbyte)) && Java::Runtime::Byte::isPrimitiveType(env, componentType)){
-                return object;
-            }else if(typeid_equals(typeId, typeid(jshort)) && Java::Runtime::Short::isPrimitiveType(env, componentType)){
-                return object;
-            }else if(typeid_equals(typeId, typeid(jlong)) && Java::Runtime::Long::isPrimitiveType(env, componentType)){
-                return object;
-            }else if(typeid_equals(typeId, typeid(jchar)) && Java::Runtime::Character::isPrimitiveType(env, componentType)){
-                return object;
-            }else if(typeid_equals(typeId, typeid(jboolean)) && Java::Runtime::Boolean::isPrimitiveType(env, componentType)){
-                return object;
-            }else if(typeid_equals(typeId, typeid(jfloat)) && Java::Runtime::Float::isPrimitiveType(env, componentType)){
-                return object;
-            }else if(typeid_equals(typeId, typeid(jdouble)) && Java::Runtime::Double::isPrimitiveType(env, componentType)){
-                return object;
-            }
-        }
-    }
-    return nullptr;
-}
-
-jobject filterObjectArray(JNIEnv *env, jobject object){
-    if(object){
-        jclass cls = env->GetObjectClass(object);
-        if(Java::Runtime::Class::isArray(env, cls)){
-            jclass componentType = Java::Runtime::Class::getComponentType(env, cls);
-            if(!Java::Runtime::Class::isPrimitive(env, componentType)){
-               return object;
-            }
-        }
-    }
-    return nullptr;
-}
-
-jobject filterObjectArray(jobject object){
-    if(JniEnvironment env{500}){
-        return filterObjectArray(env, object);
-    }
-    return nullptr;
-}
-
-jobject filterIterator(JNIEnv *env, jobject object){
-    if(Java::Runtime::Iterator::isInstanceOf(env, object)){
-       return object;
-    }
-    return nullptr;
-}
-
-jobject filterIterator(jobject object){
-    if(JniEnvironment env{500}){
-        return filterIterator(env, object);
-    }
-    return nullptr;
-}
-
-jobject filterCollection(JNIEnv *env, jobject object){
-    if(Java::Runtime::Collection::isInstanceOf(env, object)){
-       return object;
-    }
-    return nullptr;
-}
-
-jobject filterCollection(jobject object){
-    if(JniEnvironment env{500}){
-        return filterCollection(env, object);
-    }
-    return nullptr;
-}
-
-jobject filterMap(JNIEnv *env, jobject object){
-    if(Java::Runtime::Map::isInstanceOf(env, object)){
-       return object;
-    }
-    return nullptr;
-}
-
-jobject filterMap(jobject object){
-    if(JniEnvironment env{500}){
-        return filterMap(env, object);
-    }
-    return nullptr;
-}
-
-jobject filterEnum(JNIEnv *env, jobject object){
-    if(Java::Runtime::Enum::isInstanceOf(env, object)
-        || Java::QtJambi::QtEnumerator::isInstanceOf(env, object)
-        || Java::QtJambi::QtShortEnumerator::isInstanceOf(env, object)
-        || Java::QtJambi::QtByteEnumerator::isInstanceOf(env, object)
-        || Java::QtJambi::QtLongEnumerator::isInstanceOf(env, object)){
-       return object;
-    }
-    return nullptr;
-}
-
-jobject filterEnum(jobject object){
-    if(JniEnvironment env{500}){
-        return filterEnum(env, object);
-    }
-    return nullptr;
-}
-
-JEnumWrapper::JEnumWrapper(JNIEnv *env, jobject obj, bool globalRefs)
-    : JObjectWrapper(env, filterEnum(env, obj), globalRefs) {}
-
-JEnumWrapper::JEnumWrapper(jobject obj)
-    : JObjectWrapper(filterEnum(obj)) {}
-
-void JEnumWrapper::assign(JNIEnv *env, jobject object) {
-    object = filterEnum(env, object);
-    if(object){
-        if(avoidJNIGlobalRefs(env)){
-            m_data = static_cast<JObjectWrapperData*>(new JObjectGlobalViaJavaWrapperData(env, object));
-        }else{
-            m_data = static_cast<JObjectWrapperData*>(new JObjectGlobalWrapperData(env, object));
-        }
-    }else{
-        m_data.reset();
-    }
-}
-
-void JEnumWrapper::assign(const JObjectWrapper &wrapper) {
-    if(JniEnvironment env{500}){
-        if(filterEnum(env, wrapper.object(env))){
-            m_data = wrapper.m_data;
-        }else{
-            m_data.reset();
-        }
-    }
-}
-
-void JEnumWrapper::assign(JNIEnv *env, JObjectWrapper &&wrapper) {
-    if(filterEnum(env, wrapper.object(env))){
-        m_data = std::move(wrapper.m_data);
-    }else{
-        m_data.reset();
-    }
-}
-
-JEnumWrapper& JEnumWrapper::operator=(const JObjectWrapper &wrapper) {
-    if(JniEnvironment env{500}){
-        if(filterEnum(env, wrapper.object(env))){
-            m_data = wrapper.m_data;
-        }else{
-            m_data.reset();
-        }
-    }
-    return *this;
-}
-
-JEnumWrapper& JEnumWrapper::operator=(JObjectWrapper &&wrapper) {
-    if(JniEnvironment env{500}){
-        if(filterEnum(env, wrapper.object(env))){
-            m_data = std::move(wrapper.m_data);
-        }else{
-            m_data.reset();
-        }
-    }
-    return *this;
-}
-
-JEnumWrapper& JEnumWrapper::operator=(const JEnumWrapper &wrapper) {
-    m_data = wrapper.m_data;
-    return *this;
-}
-
-JEnumWrapper& JEnumWrapper::operator=(JEnumWrapper &&wrapper) {
-    m_data = std::move(wrapper.m_data);
-    return *this;
-}
-
-#undef filterEnum
-
-qint32 JEnumWrapper::ordinal() const {
-    if(JniEnvironment env{500}){
-        return JEnumWrapper::ordinal(env);
-    }
-    return -1;
-}
-
-qint32 JEnumWrapper::ordinal(JNIEnv *env) const {
-    jobject _object = object(env);
-    if(_object){
-        return Java::Runtime::Enum::ordinal(env, _object);
-    }
-    return -1;
-}
-
-JIteratorWrapper::JIteratorWrapper(JNIEnv *env, jobject obj, bool globalRefs)
-    : JObjectWrapper(env, filterIterator(env, obj), globalRefs) {}
-
-JIteratorWrapper::JIteratorWrapper(jobject obj)
-    : JObjectWrapper(filterIterator(obj)) {}
-
-void JIteratorWrapper::assign(JNIEnv *env, jobject object) {
-    object = filterIterator(env, object);
-    if(object){
-        if(avoidJNIGlobalRefs(env)){
-            m_data = static_cast<JObjectWrapperData*>(new JObjectGlobalViaJavaWrapperData(env, object));
-        }else{
-            m_data = static_cast<JObjectWrapperData*>(new JObjectGlobalWrapperData(env, object));
-        }
-    }else{
-        m_data.reset();
-    }
-}
-
-void JIteratorWrapper::assign(const JObjectWrapper &wrapper) {
-    if(JniEnvironment env{500}){
-        if(filterIterator(env, wrapper.object(env))){
-            m_data = wrapper.m_data;
-        }else{
-            m_data.reset();
-        }
-    }
-}
-
-void JIteratorWrapper::assign(JNIEnv *env, JObjectWrapper &&wrapper) {
-    if(filterIterator(env, wrapper.object(env))){
-        m_data = std::move(wrapper.m_data);
-    }else{
-        m_data.reset();
-    }
-}
-
-JIteratorWrapper& JIteratorWrapper::operator=(const JIteratorWrapper &wrapper) {
-    m_data = wrapper.m_data;
-    return *this;
-}
-
-JIteratorWrapper& JIteratorWrapper::operator=(JIteratorWrapper &&wrapper) {
-    m_data = std::move(wrapper.m_data);
-    return *this;
-}
-
-JIteratorWrapper& JIteratorWrapper::operator=(const JObjectWrapper &wrapper) {
-    if(JniEnvironment env{500}){
-        if(filterIterator(env, wrapper.object(env))){
-            m_data = wrapper.m_data;
-        }else{
-            m_data.reset();
-        }
-    }
-    return *this;
-}
-
-JIteratorWrapper& JIteratorWrapper::operator=(JObjectWrapper &&wrapper) {
-    if(JniEnvironment env{500}){
-        if(filterIterator(env, wrapper.object(env))){
-            m_data = std::move(wrapper.m_data);
-        }else{
-            m_data.reset();
-        }
-    }
-    return *this;
-}
-
-bool JIteratorWrapper::hasNext() const {
-    if(JniEnvironment env{500}){
-        JIteratorWrapper::hasNext(env);
-    }
-    return false;
-}
-
-bool JIteratorWrapper::hasNext(JNIEnv *env) const {
-    jobject _object = object(env);
-    if(_object){
-        return Java::Runtime::Iterator::hasNext(env, _object);
-    }
-    return false;
-}
-
-JObjectWrapper JIteratorWrapper::next() const {
-    if(JniEnvironment env{500}){
-        return JIteratorWrapper::next(env);
-    }else{
-        return JObjectWrapper();
-    }
-}
-
-JObjectWrapper JIteratorWrapper::next(JNIEnv *env) const {
-    return JObjectWrapper(env, _next(env));
-}
-
-jobject JIteratorWrapper::_next(JNIEnv *env) const {
-    jobject _object = object(env);
-    if(_object){
-        return Java::Runtime::Iterator::next(env, _object);
-    }else{
-        return nullptr;
-    }
-}
-
 JCollectionWrapper::JCollectionWrapper(JNIEnv *env, jobject obj, bool globalRefs)
-    : JObjectWrapper(env, filterCollection(env, obj), globalRefs) {}
+    : JObjectWrapper(createJCollectionWrapperData(env, obj, globalRefs)) {}
 
 JCollectionWrapper::JCollectionWrapper(jobject obj)
-    : JObjectWrapper(filterCollection(obj)) {}
+    : JCollectionWrapper(JniEnvironment{128}, obj) {}
 
-void JCollectionWrapper::assign(JNIEnv *env, jobject object) {
-    object = filterCollection(env, object);
-    if(object){
-        if(avoidJNIGlobalRefs(env)){
-            m_data = static_cast<JObjectWrapperData*>(new JObjectGlobalViaJavaWrapperData(env, object));
-        }else{
-            m_data = static_cast<JObjectWrapperData*>(new JObjectGlobalWrapperData(env, object));
-        }
-    }else{
-        m_data.reset();
-    }
+JCollectionWrapper::JCollectionWrapper()
+    : JObjectWrapper(createJCollectionWrapperData()) {}
+
+void JCollectionWrapper::assign(JNIEnv *env, jobject object, bool globalRefs) {
+    m_data.reset(createJCollectionWrapperData(env, object, globalRefs));
 }
 
 void JCollectionWrapper::assign(const JObjectWrapper &wrapper) {
-    if(JniEnvironment env{500}){
-        if(filterCollection(env, wrapper.object(env))){
-            m_data = wrapper.m_data;
-        }else{
-            m_data.reset();
+    switch(wrapper.m_data->type()){
+    case JObjectWrapperData::JCollectionRef:
+        m_data = wrapper.m_data;
+        break;
+    case JObjectWrapperData::JObjectRef:
+    case JObjectWrapperData::JValueRef:
+        if(JniEnvironment env{500}){
+            assign(env, wrapper.object(env), wrapper.m_data->isWeak());
         }
+        break;
+    default:
+        m_data.reset();
+        break;
     }
 }
 
-void JCollectionWrapper::assign(JNIEnv *env, JObjectWrapper &&wrapper) {
-    if(filterCollection(env, wrapper.object(env))){
+void JCollectionWrapper::assign(JObjectWrapper &&wrapper) {
+    switch(wrapper.m_data->type()){
+    case JObjectWrapperData::JCollectionRef:
         m_data = std::move(wrapper.m_data);
-    }else{
+        break;
+    case JObjectWrapperData::JObjectRef:
+    case JObjectWrapperData::JValueRef:
+        if(JniEnvironment env{500}){
+            assign(env, wrapper.object(env), wrapper.m_data->isWeak());
+        }
+        break;
+    default:
         m_data.reset();
+        break;
     }
 }
 
 JCollectionWrapper& JCollectionWrapper::operator=(const JObjectWrapper &wrapper) {
-    if(JniEnvironment env{500}){
-        if(filterCollection(env, wrapper.object(env))){
-            m_data = wrapper.m_data;
-        }else{
-            m_data.reset();
-        }
-    }
+    assign(wrapper);
     return *this;
 }
 
 JCollectionWrapper& JCollectionWrapper::operator=(JObjectWrapper &&wrapper) {
-    if(JniEnvironment env{500}){
-        if(filterCollection(env, wrapper.object(env))){
-            m_data = std::move(wrapper.m_data);
-        }else{
-            m_data.reset();
-        }
-    }
+    assign(std::move(wrapper));
     return *this;
 }
 
@@ -1696,20 +1455,45 @@ int JCollectionWrapper::size() const {
     return 0;
 }
 
-JIteratorWrapper JCollectionWrapper::iterator() const {
-    if(JniEnvironment env{200}){
-        JCollectionWrapper::iterator(env);
+jobject JCollectionWrapper::at(JNIEnv *env, jsize index) const{
+    if(jobject obj = object(env)){
+        jobject value = nullptr;
+        if(index<0 || index>=Java::Runtime::Collection::size(env, obj)){
+            JavaException::raiseIndexOutOfBoundsException(env, QString::number(index) QTJAMBI_STACKTRACEINFO);
+        }else if(Java::Runtime::List::isInstanceOf(env, obj)){
+            value = Java::Runtime::List::get(env, obj, index);
+        }else{
+            jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, obj);
+            for(int i=0; i<index; ++i){
+                QtJambiAPI::nextOfJavaIterator(env, iterator);
+            }
+            value = QtJambiAPI::nextOfJavaIterator(env, iterator);
+        }
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+        return value;
+    }else{
+        JavaException::raiseNullPointerException(env, "collection is null" QTJAMBI_STACKTRACEINFO );
     }
-    return JIteratorWrapper();
+    return nullptr;
 }
 
-JIteratorWrapper JCollectionWrapper::iterator(JNIEnv *env) const {
-    jobject _object = object(env);
-    if(_object){
-        jobject iter = Java::Runtime::Collection::iterator(env, _object);
-        return JIteratorWrapper(env, iter);
+JObjectWrapper JCollectionWrapper::operator[](jsize index) const{
+    if(JniEnvironment env{500}){
+        jobject value = at(env, index);
+        return JObjectWrapper(env, value);
     }
-    return JIteratorWrapper();
+    return JObjectWrapper();
+}
+
+JObjectWrapperRef JCollectionWrapper::operator[](jsize index){
+    if(JniEnvironment env{500}){
+        if(jobject obj = object(env)){
+            if(index<0 || index>=Java::Runtime::Collection::size(env, obj)){
+                JavaException::raiseIndexOutOfBoundsException(env, QString::number(index) QTJAMBI_STACKTRACEINFO);
+            }
+        }
+    }
+    return JObjectWrapperRef(*this, index);
 }
 
 QList<QVariant> JCollectionWrapper::toList() const {
@@ -1721,8 +1505,9 @@ QList<QVariant> JCollectionWrapper::toList() const {
 
 QList<QVariant> JCollectionWrapper::toList(JNIEnv *env) const {
     QList<QVariant> list;
-    for (JIteratorWrapper iter = iterator(env); iter.hasNext(env);) {
-        jobject o = iter._next(env);
+    jobject iter = Java::Runtime::Collection::iterator(env, object(env));
+    while(Java::Runtime::Iterator::hasNext(env, iter)){
+        jobject o = Java::Runtime::Iterator::next(env, iter);
         list << QtJambiAPI::convertJavaObjectToQVariant(env, o);
     }
     return list;
@@ -1738,47 +1523,59 @@ QStringList JCollectionWrapper::toStringList(bool * ok) const {
 
 QStringList JCollectionWrapper::toStringList(JNIEnv *env, bool * ok) const {
     QStringList list;
-    for (JIteratorWrapper iter = iterator(env); iter.hasNext(env);) {
-        list << qtjambi_cast<QString>(env, iter._next(env));
+    jobject iter = Java::Runtime::Collection::iterator(env, object(env));
+    while(Java::Runtime::Iterator::hasNext(env, iter)){
+        jobject o = Java::Runtime::Iterator::next(env, iter);
+        list << qtjambi_cast<QString>(env, o);
     }
     if(ok) ok[0] = true;
     return list;
 }
 
+JMapWrapper::JMapWrapper()
+    : JObjectWrapper(createJMapWrapperData()) {}
+
 JMapWrapper::JMapWrapper(JNIEnv *env, jobject obj, bool globalRefs)
-    : JObjectWrapper(env, filterMap(env, obj), globalRefs) {}
+    : JObjectWrapper(createJMapWrapperData(env, obj, globalRefs)) {}
 
 JMapWrapper::JMapWrapper(jobject obj)
-    : JObjectWrapper(filterMap(obj)) {}
+    : JMapWrapper(JniEnvironment{128}, obj) {}
 
-void JMapWrapper::assign(JNIEnv *env, jobject object) {
-    object = filterMap(env, object);
-    if(object){
-        if(avoidJNIGlobalRefs(env)){
-            m_data = static_cast<JObjectWrapperData*>(new JObjectGlobalViaJavaWrapperData(env, object));
-        }else{
-            m_data = static_cast<JObjectWrapperData*>(new JObjectGlobalWrapperData(env, object));
-        }
-    }else{
-        m_data.reset();
-    }
+void JMapWrapper::assign(JNIEnv *env, jobject object, bool globalRefs) {
+    m_data.reset(createJMapWrapperData(env, object, globalRefs));
 }
 
 void JMapWrapper::assign(const JObjectWrapper &wrapper) {
-    if(JniEnvironment env{500}){
-        if(filterMap(env, wrapper.object(env))){
-            m_data = wrapper.m_data;
-        }else{
-            m_data.reset();
+    switch(wrapper.m_data->type()){
+    case JObjectWrapperData::JMapRef:
+        m_data = wrapper.m_data;
+        break;
+    case JObjectWrapperData::JObjectRef:
+    case JObjectWrapperData::JValueRef:
+        if(JniEnvironment env{500}){
+            assign(env, wrapper.object(env), wrapper.m_data->isWeak());
         }
+        break;
+    default:
+        m_data.reset();
+        break;
     }
 }
 
-void JMapWrapper::assign(JNIEnv *env, JObjectWrapper &&wrapper) {
-    if(filterMap(env, wrapper.object(env))){
+void JMapWrapper::assign(JObjectWrapper &&wrapper) {
+    switch(wrapper.m_data->type()){
+    case JObjectWrapperData::JMapRef:
         m_data = std::move(wrapper.m_data);
-    }else{
+        break;
+    case JObjectWrapperData::JObjectRef:
+    case JObjectWrapperData::JValueRef:
+        if(JniEnvironment env{500}){
+            assign(env, wrapper.object(env), wrapper.m_data->isWeak());
+        }
+        break;
+    default:
         m_data.reset();
+        break;
     }
 }
 
@@ -1793,24 +1590,12 @@ JMapWrapper& JMapWrapper::operator=(JMapWrapper &&wrapper) {
 }
 
 JMapWrapper& JMapWrapper::operator=(const JObjectWrapper &wrapper) {
-    if(JniEnvironment env{500}){
-        if(filterMap(env, wrapper.object(env))){
-            m_data = wrapper.m_data;
-        }else{
-            m_data.reset();
-        }
-    }
+    assign(wrapper);
     return *this;
 }
 
 JMapWrapper& JMapWrapper::operator=(JObjectWrapper &&wrapper) {
-    if(JniEnvironment env{500}){
-        if(filterMap(env, wrapper.object(env))){
-            m_data = std::move(wrapper.m_data);
-        }else{
-            m_data.reset();
-        }
-    }
+    assign(std::move(wrapper));
     return *this;
 }
 
@@ -1832,8 +1617,9 @@ QMap<QVariant,QVariant> JMapWrapper::toMap() const {
     QMap<QVariant,QVariant> map;
     if(JniEnvironment env{200}){
         int type = QMetaType::UnknownType;
-        for(JIteratorWrapper iter = entrySet().iterator(); iter.hasNext();){
-            jobject entry = iter._next(env);
+        jobject iter = Java::Runtime::Collection::iterator(env, _entrySet(env));
+        while(Java::Runtime::Iterator::hasNext(env, iter)){
+            jobject entry = Java::Runtime::Iterator::next(env, iter);
             jobject key = Java::Runtime::Map$Entry::getKey(env, entry);
             jobject value = Java::Runtime::Map$Entry::getValue(env, entry);
             QVariant k(QtJambiAPI::convertJavaObjectToQVariant(env, key));
@@ -1854,8 +1640,9 @@ QMap<QVariant,QVariant> JMapWrapper::toMap() const {
 QVariantMap JMapWrapper::toStringMap(bool* ok) const {
     QVariantMap map;
     if(JniEnvironment env{200}){
-        for(JIteratorWrapper iter = entrySet().iterator(); iter.hasNext();){
-            jobject entry = iter._next(env);
+        jobject iter = Java::Runtime::Collection::iterator(env, _entrySet(env));
+        while(Java::Runtime::Iterator::hasNext(env, iter)){
+            jobject entry = Java::Runtime::Iterator::next(env, iter);
             jobject key = Java::Runtime::Map$Entry::getKey(env, entry);
             if(ok && key && !Java::Runtime::String::isInstanceOf(env, key)){
                 ok[0] = false;
@@ -1875,8 +1662,9 @@ QVariantMap JMapWrapper::toStringMap(bool* ok) const {
 QVariantHash JMapWrapper::toStringHash(bool* ok) const {
     QVariantHash map;
     if(JniEnvironment env{200}){
-        for(JIteratorWrapper iter = entrySet().iterator(); iter.hasNext();){
-            jobject entry = iter._next(env);
+        jobject iter = Java::Runtime::Collection::iterator(env, _entrySet(env));
+        while(Java::Runtime::Iterator::hasNext(env, iter)){
+            jobject entry = Java::Runtime::Iterator::next(env, iter);
             jobject key = Java::Runtime::Map$Entry::getKey(env, entry);
             if(ok && key && !Java::Runtime::String::isInstanceOf(env, key)){
                 ok[0] = false;
@@ -1893,15 +1681,12 @@ QVariantHash JMapWrapper::toStringHash(bool* ok) const {
     return map;
 }
 
-JObjectWrapperRef::JObjectWrapperRef(const JObjectWrapper& arrayWrapper, jsize index) : m_arrayWrapper(arrayWrapper), m_index(index) {}
+JObjectWrapperRef::JObjectWrapperRef(const JObjectWrapper& containerWrapper, jsize index) : m_containerWrapper(containerWrapper), m_index(index) {}
 
 JObjectWrapperRef& JObjectWrapperRef::operator=(jobject newValue)
 {
     if(JniEnvironment env{200}){
-        if(m_arrayWrapper.object(env)){
-            env->SetObjectArrayElement(jobjectArray(m_arrayWrapper.object(env)), m_index, newValue);
-            JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        }
+        assign(env, newValue);
     }
     return *this;
 }
@@ -1909,20 +1694,66 @@ JObjectWrapperRef& JObjectWrapperRef::operator=(jobject newValue)
 JObjectWrapperRef& JObjectWrapperRef::operator=(const JObjectWrapper &newValue)
 {
     if(JniEnvironment env{200}){
-        if(m_arrayWrapper.object(env)){
-            env->SetObjectArrayElement(jobjectArray(m_arrayWrapper.object(env)), m_index, newValue.object(env));
-            JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        }
+        assign(env, newValue);
     }
     return *this;
+}
+
+void JObjectWrapperRef::assign(JNIEnv *env, jobject newValue)
+{
+    if(jobject object = m_containerWrapper.object(env)){
+        switch(m_containerWrapper.m_data->type()){
+        case JObjectWrapperData::JObjectArrayRef:
+            env->SetObjectArrayElement(jobjectArray(object), m_index, newValue);
+            JavaException::check(env QTJAMBI_STACKTRACEINFO );
+            break;
+        case JObjectWrapperData::JCollectionRef:
+            Java::Runtime::List::set(env, object, m_index, newValue);
+            break;
+        default: break;
+        }
+    }
+}
+
+void JObjectWrapperRef::assign(JNIEnv *env, const JObjectWrapper &newValue)
+{
+    if(jobject object = m_containerWrapper.object(env)){
+        switch(m_containerWrapper.m_data->type()){
+        case JObjectWrapperData::JObjectArrayRef:
+            env->SetObjectArrayElement(jobjectArray(object), m_index, newValue.object(env));
+            JavaException::check(env QTJAMBI_STACKTRACEINFO );
+            break;
+        case JObjectWrapperData::JCollectionRef:
+            Java::Runtime::List::set(env, object, m_index, newValue.object(env));
+            break;
+        default: break;
+        }
+    }
 }
 
 JObjectWrapperRef::operator JObjectWrapper() const
 {
     if(JniEnvironment env{200}){
-        if(m_arrayWrapper.object(env)){
-            jobject value = env->GetObjectArrayElement(jobjectArray(m_arrayWrapper.object(env)), m_index);
-            JavaException::check(env QTJAMBI_STACKTRACEINFO );
+        if(jobject object = m_containerWrapper.object(env)){
+            jobject value = nullptr;
+            switch(m_containerWrapper.m_data->type()){
+            case JObjectWrapperData::JObjectArrayRef:
+                value = env->GetObjectArrayElement(jobjectArray(object), m_index);
+                JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                break;
+            case JObjectWrapperData::JCollectionRef:
+                if(Java::Runtime::List::isInstanceOf(env, object)){
+                    value = Java::Runtime::List::get(env, object, m_index);
+                }else{
+                    jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, object);
+                    for(int i=0; i<m_index; ++i){
+                        QtJambiAPI::nextOfJavaIterator(env, iterator);
+                    }
+                    value = QtJambiAPI::nextOfJavaIterator(env, iterator);
+                }
+                break;
+            default: break;
+            }
             return JObjectWrapper(env, value);
         }
     }
@@ -1932,64 +1763,99 @@ JObjectWrapperRef::operator JObjectWrapper() const
 JObjectWrapperRef::operator jobject() const
 {
     if(JniEnvironment env{0}){
-        if(m_arrayWrapper.object(env)){
-            env->PushLocalFrame(200);
-            jobject value = env->GetObjectArrayElement(jobjectArray(m_arrayWrapper.object(env)), m_index);
-            JavaException::check(env QTJAMBI_STACKTRACEINFO );
-            return env->PopLocalFrame(value);
+        jobject value{nullptr};
+        env->PushLocalFrame(200);
+        if(jobject object = m_containerWrapper.object(env)){
+            switch(m_containerWrapper.m_data->type()){
+            case JObjectWrapperData::JObjectArrayRef:
+                value = env->GetObjectArrayElement(jobjectArray(object), m_index);
+                JavaException::check(env QTJAMBI_STACKTRACEINFO );
+            break;
+            case JObjectWrapperData::JCollectionRef:
+                if(Java::Runtime::List::isInstanceOf(env, object)){
+                    value = Java::Runtime::List::get(env, object, m_index);
+                }else{
+                    jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, object);
+                    for(int i=0; i<m_index; ++i){
+                        QtJambiAPI::nextOfJavaIterator(env, iterator);
+                    }
+                    value = QtJambiAPI::nextOfJavaIterator(env, iterator);
+                }
+                break;
+            default: break;
+            }
         }
+        return env->PopLocalFrame(value);
     }
     return nullptr;
 }
 
+JObjectArrayWrapper::JObjectArrayWrapper()
+    : JObjectWrapper(createJObjectArrayWrapperData()) {}
+
 JObjectArrayWrapper::JObjectArrayWrapper(JNIEnv *env, jobjectArray obj, bool globalRefs)
-    : JObjectWrapper(env, filterObjectArray(env, obj), globalRefs, typeid(jobject)) {}
+    : JObjectWrapper(createJObjectArrayWrapperData(env, obj, globalRefs)) {}
 
 JObjectArrayWrapper::JObjectArrayWrapper(jobjectArray obj)
-    : JObjectWrapper() {
-    if(JniEnvironment env{500}){
-        assign(env, obj);
-    }
+    : JObjectArrayWrapper(JniEnvironment{128}, obj, true) {}
+
+void JObjectArrayWrapper::assign(JNIEnv *env, jobject object, bool globalRefs) {
+    m_data.reset(createJObjectArrayWrapperData(env, object, globalRefs));
 }
 
-void JObjectArrayWrapper::assign(JNIEnv *env, jobject object) {
-    object = filterObjectArray(env, object);
-    if(object){
-        if(avoidJNIGlobalRefs(env)){
-            m_data = static_cast<JObjectWrapperData*>(new JObjectArrayWeakViaJavaWrapperData(env, jarray(object)));
-        }else{
-            m_data = static_cast<JObjectWrapperData*>(new JObjectArrayGlobalWrapperData(env, jarray(object)));
-        }
-    }else{
-        m_data.reset();
-    }
+void JObjectArrayWrapper::assign(JNIEnv *env, jobjectArray object, bool globalRefs) {
+    m_data.reset(createJObjectArrayWrapperData(env, object, globalRefs));
+}
+
+void JObjectArrayWrapper::assign(const JObjectArrayWrapper &wrapper) {
+    m_data = wrapper.m_data;
+}
+
+void JObjectArrayWrapper::assign(JObjectArrayWrapper &&wrapper) {
+    m_data = std::move(wrapper.m_data);
 }
 
 void JObjectArrayWrapper::assign(const JObjectWrapper &wrapper) {
-    if(JniEnvironment env{500}){
-        if(filterObjectArray(env, wrapper.object(env))){
-            if(dynamic_cast<JObjectArrayGlobalWrapperData*>(wrapper.m_data.data())
-                || dynamic_cast<JObjectArrayWeakViaJavaWrapperData*>(wrapper.m_data.data()))
-                m_data = wrapper.m_data;
-            else
-                assign(env, wrapper.object(env));
-        }else{
-            m_data.reset();
+    if(wrapper.m_data){
+        switch(wrapper.m_data->type()){
+        case JObjectWrapperData::JObjectArrayRef:
+            m_data = wrapper.m_data;
+            break;
+        case JObjectWrapperData::JObjectRef:
+        case JObjectWrapperData::JValueRef:
+            if(JniEnvironment env{500}){
+                assign(env, wrapper.object(env), !wrapper.m_data->isWeak());
+            }
+            break;
+        default:
+            m_data.reset(createJObjectArrayWrapperData());
+            break;
         }
+    }else{
+        m_data.reset(createJObjectArrayWrapperData());
     }
 }
 
-void JObjectArrayWrapper::assign(JNIEnv *env, JObjectWrapper &&wrapper) {
-    if(filterObjectArray(env, wrapper.object(env))){
-        if(dynamic_cast<JObjectArrayGlobalWrapperData*>(wrapper.m_data.data())
-            || dynamic_cast<JObjectArrayWeakViaJavaWrapperData*>(wrapper.m_data.data())){
+void JObjectArrayWrapper::assign(JObjectWrapper &&wrapper) {
+    if(wrapper.m_data){
+        switch(wrapper.m_data->type()){
+        case JObjectWrapperData::JObjectArrayRef:
             m_data = std::move(wrapper.m_data);
-        }else{
-            assign(env, wrapper.object(env));
-            wrapper.m_data.reset();
+            wrapper.m_data.reset(createJObjectArrayWrapperData());
+            break;
+        case JObjectWrapperData::JObjectRef:
+        case JObjectWrapperData::JValueRef:
+            if(JniEnvironment env{500}){
+                assign(env, wrapper.object(env), !wrapper.m_data->isWeak());
+                wrapper.m_data.reset();
+            }
+            break;
+        default:
+            m_data.reset(createJObjectArrayWrapperData());
+            break;
         }
     }else{
-        m_data.reset();
+        m_data.reset(createJObjectArrayWrapperData());
     }
 }
 
@@ -2004,12 +1870,26 @@ JObjectArrayWrapper& JObjectArrayWrapper::operator=(JObjectWrapper &&wrapper) {
 }
 
 JObjectArrayWrapper& JObjectArrayWrapper::operator=(const JObjectArrayWrapper &wrapper) {
-    m_data = wrapper.m_data;
+    assign(wrapper);
     return *this;
 }
 
 JObjectArrayWrapper& JObjectArrayWrapper::operator=(JObjectArrayWrapper &&wrapper) {
-    m_data = std::move(wrapper.m_data);
+    assign(std::move(wrapper));
+    return *this;
+}
+
+JObjectArrayWrapper& JObjectArrayWrapper::operator=(jobject object) {
+    if(JniEnvironment env{500}){
+        assign(env, object);
+    }
+    return *this;
+}
+
+JObjectArrayWrapper& JObjectArrayWrapper::operator=(jobjectArray object) {
+    if(JniEnvironment env{500}){
+        assign(env, object);
+    }
     return *this;
 }
 
@@ -2028,11 +1908,13 @@ jobject JObjectArrayWrapper::at(JNIEnv *env, jsize index) const{
 
 JObjectWrapper JObjectArrayWrapper::operator[](jsize index) const{
     if(JniEnvironment env{500}){
-        if(!object(env))
+        if(jobjectArray obj = object(env)){
+            jobject value = env->GetObjectArrayElement(obj, index);
+            JavaException::check(env QTJAMBI_STACKTRACEINFO );
+            return JObjectWrapper(env, value);
+        }else{
             JavaException::raiseIndexOutOfBoundsException(env, QString::number(index) QTJAMBI_STACKTRACEINFO);
-        jobject value = env->GetObjectArrayElement(object(env), index);
-        JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        return JObjectWrapper(env, value);
+        }
     }
     return JObjectWrapper();
 }
@@ -2044,24 +1926,6 @@ JObjectWrapperRef JObjectArrayWrapper::operator[](jsize index){
         JavaException::raiseIndexOutOfBoundsException(env, QString::number(index) QTJAMBI_STACKTRACEINFO);
     }
     return JObjectWrapperRef(JObjectWrapper(), 0);
-}
-
-QString JObjectArrayWrapper::toString(JNIEnv *env, bool * ok) const{
-    if(ok)
-        *ok = true;
-    QString result = QLatin1String("[");
-    jsize length = object(env) ? env->GetArrayLength(object(env)) : 0;
-    for(jsize i=0; i<length; ++i){
-        if(i>0)
-            result += QLatin1String(",");
-        jobject value = env->GetObjectArrayElement(object(env), i);
-        JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        result += JObjectWrapper(env, value).toString(ok);
-        if(ok && !*ok)
-            return QString();
-    }
-    result += QLatin1String("]");
-    return result;
 }
 
 QDataStream &operator<<(QDataStream &out, const JObjectWrapper &myObj){
@@ -2094,19 +1958,11 @@ QDataStream &operator>>(QDataStream &in, JObjectWrapper &myObj){
             QTJAMBI_INVALIDATE_AFTER_USE(env, jstream);
             jobject res = Java::QtJambi::MetaTypeUtility::readSerializableJavaObject(env, jstream);
             if(!res){
-                myObj = JCollectionWrapper();
+                myObj = JObjectWrapper();
             }else if(Java::Runtime::Collection::isInstanceOf(env, res)){
                 myObj = JCollectionWrapper(env, res);
-            }else if(Java::Runtime::Iterator::isInstanceOf(env, res)){
-                myObj = JIteratorWrapper(env, res);
             }else if(Java::Runtime::Map::isInstanceOf(env, res)){
                 myObj = JMapWrapper(env, res);
-            }else if(Java::Runtime::Enum::isInstanceOf(env, res)
-                     || Java::QtJambi::QtEnumerator::isInstanceOf(env, res)
-                     || Java::QtJambi::QtShortEnumerator::isInstanceOf(env, res)
-                     || Java::QtJambi::QtByteEnumerator::isInstanceOf(env, res)
-                     || Java::QtJambi::QtLongEnumerator::isInstanceOf(env, res)){
-                myObj = JEnumWrapper(env, res);
             }else{
                 jclass cls = env->GetObjectClass(res);
                 if(Java::Runtime::Class::isArray(env, cls)){
@@ -2185,59 +2041,53 @@ size_t qHash(const JObjectWrapper &value, size_t seed)
 
 
 
-template<typename JType>
-JArrayWrapper<JType>::JArrayWrapper(): JObjectWrapper() {}
+template<typename ArrayType>
+JArrayWrapper<ArrayType>::JArrayWrapper()
+    : JObjectWrapper(createJArrayWrapperData<ArrayType>()) {}
 
-template<typename JType>
-JArrayWrapper<JType>::JArrayWrapper(JNIEnv *env, ArrayType obj, bool globalRefs)
-    : JObjectWrapper(env, obj, globalRefs, typeid(JType)) {
-      };
+template<typename ArrayType>
+JArrayWrapper<ArrayType>::JArrayWrapper(JNIEnv *env, ArrayType obj, bool globalRefs)
+    : JObjectWrapper(createJArrayWrapperData<ArrayType>(env, obj, globalRefs)) {}
 
-template<typename JType>
-JArrayWrapper<JType>::JArrayWrapper(ArrayType obj)
-    : JObjectWrapper() {
-    if(JniEnvironment env{500}){
-        JArrayWrapper<JType>::assign(env, obj);
-    }
+template<typename ArrayType>
+JArrayWrapper<ArrayType>::JArrayWrapper(ArrayType obj)
+    : JArrayWrapper(JniEnvironment{500}, obj, true) {}
+
+template<typename ArrayType>
+JArrayWrapper<ArrayType>::JArrayWrapper(const JArrayWrapper& other): JObjectWrapper(other) {}
+
+template<typename ArrayType>
+JArrayWrapper<ArrayType>::JArrayWrapper(JArrayWrapper&& other): JObjectWrapper(std::move(other)) {}
+
+template<typename ArrayType>
+JArrayWrapper<ArrayType>::JArrayWrapper(const JObjectWrapper& wrapper): JObjectWrapper() {
+    JArrayWrapper<ArrayType>::assign(wrapper);
 }
 
-template<typename JType>
-JArrayWrapper<JType>::JArrayWrapper(const JArrayWrapper& other): JObjectWrapper(other) {}
-
-template<typename JType>
-JArrayWrapper<JType>::JArrayWrapper(JArrayWrapper&& other): JObjectWrapper(std::move(other)) {}
-
-template<typename JType>
-JArrayWrapper<JType>::JArrayWrapper(const JObjectWrapper& wrapper): JObjectWrapper() {
-    JArrayWrapper<JType>::assign(wrapper);
+template<typename ArrayType>
+JArrayWrapper<ArrayType>::JArrayWrapper(JObjectWrapper&& wrapper): JObjectWrapper() {
+    JArrayWrapper<ArrayType>::assign(std::move(wrapper));
 }
 
-template<typename JType>
-JArrayWrapper<JType>::JArrayWrapper(JObjectWrapper&& wrapper): JObjectWrapper() {
-    if(JniEnvironment env{500}){
-        JArrayWrapper<JType>::assign(env, std::move(wrapper));
-    }
-}
+template<typename ArrayType>
+JArrayWrapper<ArrayType>::~JArrayWrapper() {}
 
-template<typename JType>
-JArrayWrapper<JType>::~JArrayWrapper() {}
-
-template<typename JType>
-jsize JArrayWrapper<JType>::length() const{
+template<typename ArrayType>
+jsize JArrayWrapper<ArrayType>::length() const{
     return JObjectWrapper::arrayLength();
 }
 
-template<typename JType>
-JType JArrayWrapper<JType>::operator[](jsize index) const{
+template<typename ArrayType>
+typename JArrayWrapper<ArrayType>::ElementType JArrayWrapper<ArrayType>::operator[](jsize index) const{
     if(JniEnvironment env{500}){
-        typename JArrayWrapper<JType>::ArrayType obj = object(env);
+        ArrayType obj = object(env);
         if(index>=0 && index < env->GetArrayLength(obj)){
-            const JType* _array = array();
-            JType result;
+            const ElementType* _array = array();
+            ElementType result;
             if(!_array){
-                JType* array = (env->*JArray<JType>::GetArrayElements)(obj, nullptr);
+                ElementType* array = (env->*JArrayRuntime<ArrayType>::GetArrayElements)(obj, nullptr);
                 result = array[index];
-                (env->*JArray<JType>::ReleaseArrayElements)(obj, array, 0);
+                (env->*JArrayRuntime<ArrayType>::ReleaseArrayElements)(obj, array, 0);
             }else{
                 result = _array[index];
             }
@@ -2247,148 +2097,156 @@ JType JArrayWrapper<JType>::operator[](jsize index) const{
     return 0;
 }
 
-template<typename JType>
-JArrayAccessRef<JType> JArrayWrapper<JType>::operator[](jsize index){
+template<typename ArrayType>
+JArrayAccessRef<ArrayType> JArrayWrapper<ArrayType>::operator[](jsize index){
     if(index>=0 && index < length()){
-        return JArrayAccessRef<JType>(*this, index);
+        return JArrayAccessRef<ArrayType>(*this, index);
     }
-    return JArrayAccessRef<JType>(JObjectWrapper(), 0);
+    return JArrayAccessRef<ArrayType>(JObjectWrapper(), 0);
 }
 
-template<typename JType>
-QString JArrayWrapper<JType>::toString(JNIEnv*, bool * ok) const{
-    QString result = QLatin1String("[");
-    jsize _length = length();
-    for(jsize i=0; i<_length; ++i){
-        if(i>0)
-            result += QLatin1String(",");
-        JType value = (*this)[i];
-        result += QString::number(value);
-    }
-    result += QLatin1String("]");
-    if(ok)
-        *ok = true;
-    return result;
+template<typename ArrayType>
+void JArrayWrapper<ArrayType>::assign(JNIEnv* env, jobject object, bool globalRefs){
+    m_data.reset(createJArrayWrapperData<ArrayType>(env, object, globalRefs));
 }
 
-template<typename JType>
-void JArrayWrapper<JType>::assign(JNIEnv* env, jobject object){
-        object = filterPrimitiveArray(env, object, typeid(JType));
-        if(object){
-            m_data = std::move(JArrayWrapper<JType>(env, ArrayType(object)).m_data);
-        }else{
-            m_data.reset();
-        }
+template<typename ArrayType>
+void JArrayWrapper<ArrayType>::assign(JNIEnv* env, ArrayType object, bool globalRefs){
+    m_data.reset(createJArrayWrapperData<ArrayType>(env, object, globalRefs));
 }
 
-template<typename JType>
-void JArrayWrapper<JType>::assign(const JObjectWrapper &wrapper){
-    if(JniEnvironment env{500}){
-        if(filterPrimitiveArray(env, wrapper.object(env), typeid(JType))){
-            const std::type_info* thisId = QtJambiPrivate::CheckPointer<JObjectWrapper>::trySupplyType(this);
-            const std::type_info* thatId = QtJambiPrivate::CheckPointer<JObjectWrapper>::trySupplyType(&wrapper);
-            if(!m_data && thisId && thatId && JObjectWrapper::isEquals(*thisId, *thatId)){
-                m_data = wrapper.m_data;
-            }else if(JObjectWrapper::isEquals(typeid(wrapper), typeid(JObjectWrapper))){
-                JObjectWrapper::assign(env, wrapper, typeid(JType));
-            }else{
-                m_data.reset();
+template<typename ArrayType>
+void JArrayWrapper<ArrayType>::assign(const JObjectWrapper &wrapper){
+    if(wrapper.m_data){
+        switch(wrapper.m_data->type()){
+        case JArrayRuntime<ArrayType>::ArrayRef:
+            m_data = wrapper.m_data;
+            break;
+        case JObjectWrapperData::JObjectRef:
+        case JObjectWrapperData::JValueRef:
+            if(JniEnvironment env{500}){
+                assign(env, wrapper.object(env), !wrapper.m_data->isWeak());
             }
-        }else{
-            m_data.reset();
-        }
-    }
-}
-
-template<typename JType>
-void JArrayWrapper<JType>::assign(JNIEnv *env, JObjectWrapper &&wrapper){
-    if(filterPrimitiveArray(env, wrapper.object(env), typeid(JType))){
-        const std::type_info* thisId = QtJambiPrivate::CheckPointer<JObjectWrapper>::trySupplyType(this);
-        const std::type_info* thatId = QtJambiPrivate::CheckPointer<JObjectWrapper>::trySupplyType(&wrapper);
-        if(!m_data && thisId && thatId && JObjectWrapper::isEquals(*thisId, *thatId)){
-            m_data = std::move(wrapper.m_data);
-        }else if(JObjectWrapper::isEquals(typeid(wrapper), typeid(JObjectWrapper))){
-            JObjectWrapper::assign(env, wrapper, typeid(JType));
-        }else{
-            m_data.reset();
+            break;
+        default:
+            m_data.reset(createJArrayWrapperData<ArrayType>());
+            break;
         }
     }else{
-        m_data.reset();
+        m_data.reset(createJArrayWrapperData<ArrayType>());
     }
 }
 
-template<typename JType>
-const JType* JArrayWrapper<JType>::array() const
-{
-    return reinterpret_cast<const JType*>(JObjectWrapper::array());
-}
-
-template<typename JType>
-JType* JArrayWrapper<JType>::array()
-{
-    return reinterpret_cast<JType*>(JObjectWrapper::array());
-}
-
-template<typename JType>
-JArrayWrapper<JType>::operator const JType*() const{return array();}
-
-template<typename JType>
-JArrayWrapper<JType>::operator JType*(){return array();}
-
-template<typename JType>
-typename JArrayWrapper<JType>::ArrayType JArrayWrapper<JType>::object(JNIEnv *env) const { return ArrayType(JObjectWrapper::object(env)); }
-
-template<typename JType>
-JArrayWrapper<JType>::operator ArrayType() const{ return ArrayType(JObjectWrapper::operator jobject()); }
-
-template<typename JType>
-JArrayWrapper<JType>& JArrayWrapper<JType>::operator=(const JArrayWrapper &wrapper){
-    m_data = wrapper.m_data;
-    return *this;
-}
-
-template<typename JType>
-JArrayWrapper<JType>& JArrayWrapper<JType>::operator=(JArrayWrapper &&wrapper){
-    m_data = std::move(wrapper.m_data);
-    return *this;
-}
-
-template<typename JType>
-JArrayWrapper<JType>& JArrayWrapper<JType>::operator=(const JObjectWrapper &wrapper) {
-    if(JniEnvironment env{500}){
-        if(filterPrimitiveArray(env, wrapper.object(env), typeid(JType))){
-            m_data = wrapper.m_data;
-        }else{
-            m_data.reset();
-        }
-    }
-    return *this;
-}
-
-template<typename JType>
-JArrayWrapper<JType>& JArrayWrapper<JType>::operator=(JObjectWrapper &&wrapper) {
-    if(JniEnvironment env{500}){
-        if(filterPrimitiveArray(env, wrapper.object(env), typeid(JType))){
+template<typename ArrayType>
+void JArrayWrapper<ArrayType>::assign(JObjectWrapper &&wrapper){
+    if(wrapper.m_data){
+        switch(wrapper.m_data->type()){
+        case JArrayRuntime<ArrayType>::ArrayRef:
             m_data = std::move(wrapper.m_data);
-        }else{
-            m_data.reset();
+            wrapper.m_data.reset(createJArrayWrapperData<ArrayType>());
+            break;
+        case JObjectWrapperData::JObjectRef:
+        case JObjectWrapperData::JValueRef:
+            if(JniEnvironment env{500}){
+                assign(env, wrapper.object(env), !wrapper.m_data->isWeak());
+                wrapper.m_data.reset();
+            }
+            break;
+        default:
+            m_data.reset(createJArrayWrapperData<ArrayType>());
+            break;
         }
+    }else{
+        m_data.reset(createJArrayWrapperData<ArrayType>());
+    }
+}
+
+template<typename ArrayType>
+void JArrayWrapper<ArrayType>::assign(const JArrayWrapper &wrapper){
+    m_data = wrapper.m_data;
+}
+
+template<typename ArrayType>
+void JArrayWrapper<ArrayType>::assign(JArrayWrapper &&wrapper){
+    m_data = std::move(wrapper.m_data);
+}
+
+template<typename ArrayType>
+const typename JArrayWrapper<ArrayType>::ElementType* JArrayWrapper<ArrayType>::array() const
+{
+    return reinterpret_cast<const typename JArrayWrapper<ArrayType>::ElementType*>(JObjectWrapper::array());
+}
+
+template<typename ArrayType>
+typename JArrayWrapper<ArrayType>::ElementType* JArrayWrapper<ArrayType>::array()
+{
+    return reinterpret_cast<typename JArrayWrapper<ArrayType>::ElementType*>(JObjectWrapper::array());
+}
+
+template<typename ArrayType>
+JArrayWrapper<ArrayType>::operator const typename JArrayWrapper<ArrayType>::ElementType*() const{return array();}
+
+template<typename ArrayType>
+JArrayWrapper<ArrayType>::operator typename JArrayWrapper<ArrayType>::ElementType*(){return array();}
+
+template<typename ArrayType>
+ArrayType JArrayWrapper<ArrayType>::object(JNIEnv *env) const { return ArrayType(JObjectWrapper::object(env)); }
+
+template<typename ArrayType>
+JArrayWrapper<ArrayType>::operator ArrayType() const{ return ArrayType(JObjectWrapper::operator jobject()); }
+
+template<typename ArrayType>
+JArrayWrapper<ArrayType>& JArrayWrapper<ArrayType>::operator=(const JArrayWrapper &wrapper){
+    assign(wrapper);
+    return *this;
+}
+
+template<typename ArrayType>
+JArrayWrapper<ArrayType>& JArrayWrapper<ArrayType>::operator=(JArrayWrapper &&wrapper){
+    assign(std::move(wrapper));
+    return *this;
+}
+
+template<typename ArrayType>
+JArrayWrapper<ArrayType>& JArrayWrapper<ArrayType>::operator=(const JObjectWrapper &wrapper) {
+    assign(wrapper);
+    return *this;
+}
+
+template<typename ArrayType>
+JArrayWrapper<ArrayType>& JArrayWrapper<ArrayType>::operator=(JObjectWrapper &&wrapper) {
+    assign(std::move(wrapper));
+    return *this;
+}
+
+template<typename ArrayType>
+JArrayWrapper<ArrayType>& JArrayWrapper<ArrayType>::operator=(jobject object) {
+    if(JniEnvironment env{500}){
+        assign(env, object);
     }
     return *this;
 }
 
-template class QTJAMBI_EXPORT JArrayWrapper<jint>;
+template<typename ArrayType>
+JArrayWrapper<ArrayType>& JArrayWrapper<ArrayType>::operator=(ArrayType object) {
+    if(JniEnvironment env{500}){
+        assign(env, object);
+    }
+    return *this;
+}
 
-template class QTJAMBI_EXPORT JArrayWrapper<jlong>;
+template class QTJAMBI_EXPORT JArrayWrapper<jintArray>;
 
-template class QTJAMBI_EXPORT JArrayWrapper<jshort>;
+template class QTJAMBI_EXPORT JArrayWrapper<jlongArray>;
 
-template class QTJAMBI_EXPORT JArrayWrapper<jbyte>;
+template class QTJAMBI_EXPORT JArrayWrapper<jshortArray>;
 
-template class QTJAMBI_EXPORT JArrayWrapper<jboolean>;
+template class QTJAMBI_EXPORT JArrayWrapper<jbyteArray>;
 
-template class QTJAMBI_EXPORT JArrayWrapper<jchar>;
+template class QTJAMBI_EXPORT JArrayWrapper<jbooleanArray>;
 
-template class QTJAMBI_EXPORT JArrayWrapper<jfloat>;
+template class QTJAMBI_EXPORT JArrayWrapper<jcharArray>;
 
-template class QTJAMBI_EXPORT JArrayWrapper<jdouble>;
+template class QTJAMBI_EXPORT JArrayWrapper<jfloatArray>;
+
+template class QTJAMBI_EXPORT JArrayWrapper<jdoubleArray>;

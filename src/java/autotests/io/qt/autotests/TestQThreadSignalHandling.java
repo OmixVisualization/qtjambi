@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,7 +35,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -45,17 +44,9 @@ import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
 import io.qt.core.QObject;
 import io.qt.core.QThread;
-import io.qt.internal.TestUtility;
 
 public class TestQThreadSignalHandling extends ApplicationInitializer{
 	
-    @Before
-    public void setUp() {
-        // This class is known to fail when we messed with this setting in a previous testcase running in the same JVM
-        // The method run_pingPongSignalSlot() in particular
-        assertEquals("getObjectCacheMode != DEFAULT", TestUtility.objectCacheMode(), TestUtility.OBJECT_CACHE_MODE_DEFAULT);
-    }
-    
     @BeforeClass
 	public static void testInitialize() throws Exception {
 		ApplicationInitializer.testInitializeWithWidgets();

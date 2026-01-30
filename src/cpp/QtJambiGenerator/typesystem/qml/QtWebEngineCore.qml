@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -35,14 +35,9 @@ TypeSystem{
     qtLibrary: "QtWebEngineCore"
     module: "qtjambi.webenginecore"
     precompiledHeader: "pch_p.h"
-    Description{
-        text: "Provides public API shared by both modules {@code qtjambi.webengine} and {@code qtjambi.webenginewidgets}."
-        until: 5
-    }
 
     Description{
         text: "Provides public API shared by both modules {@code qtjambi.webenginequick} and {@code qtjambi.webenginewidgets}."
-        since: 6
     }
 
     Template{
@@ -152,7 +147,6 @@ if(%in){
             name: "ResourceType"
             RejectEnumValue{
                 name: "ResourceTypeLast"
-                since: [5, 14]
             }
         }
     }
@@ -1049,7 +1043,6 @@ bool operator==(const QWebEngineFullScreenRequest& arg1, const QWebEngineFullScr
                 deprecated: true
             }
         }
-        since: [5, 14]
     }
     
     ObjectType{
@@ -1219,7 +1212,6 @@ size_t qHash(const QWebEngineFrame &value, size_t seed = 0){
     GlobalFunction{
         signature: "qWebEngineProcessName()"
         targetType: "QtWebEngineCore"
-        //since: 6.7
     }
 
     ObjectType{
@@ -1270,5 +1262,5 @@ size_t qHash(const QWebEnginePermission &value, size_t seed = 0){
     SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QWebEngineFullScreenRequest' is missing a default constructor. If possible, use CustomConstructor{} element to specify default construction."}
     SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QWebEngineFileSystemAccessRequest' is missing a default constructor. If possible, use CustomConstructor{} element to specify default construction."}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QWebEngineDownloadRequest' set to non-final, as it is extended by other classes"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping signal 'QWebEnginePage::fileSystemAccessRequested(QWebEngineFileSystemAccessRequest) -> void', unmatched parameter type 'QWebEngineFileSystemAccessRequest'"; since: 6; until: 6.2}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping signal 'QWebEnginePage::fileSystemAccessRequested(QWebEngineFileSystemAccessRequest) -> void', unmatched parameter type 'QWebEngineFileSystemAccessRequest'"; until: 6.2}
 }

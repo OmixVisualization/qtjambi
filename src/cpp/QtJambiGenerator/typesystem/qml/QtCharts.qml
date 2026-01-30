@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -37,21 +37,7 @@ TypeSystem{
     description: "UI Components for displaying visually pleasing charts, driven by static or dynamic data models."
     NamespacePrefix{
         prefix: "QtCharts"
-        namespace: "QtCharts"
-        namingPolicy: NamespacePrefix.Cut
-        until: 5
-    }
-    
-    NamespacePrefix{
-        prefix: "QtCharts"
         namespace: ""
-        since: 6
-    }
-    
-    NamespaceType{
-        name: "QtCharts"
-        generate: false
-        until: 5
     }
     LoadTypeSystem{name: "QtCore";              unless: "QTJAMBI_NO_CORE"; since: 6.6}
     LoadTypeSystem{name: "QtOpenGL";            unless: "QTJAMBI_NO_OPENGL"; since: 6.6}
@@ -1205,11 +1191,6 @@ TypeSystem{
             signature: "setMarkerSize(qreal)"
             access: Modification.NonFinal
             since: [6, 2]
-        }
-        ModifyFunction{
-            signature: "replace(QVector<QPointF>)"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "operator<<(QList<QPointF>)"

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,10 +33,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.NonNull;
 import io.qt.QtObject;
 import io.qt.autotests.TestMetaObject.*;
 import io.qt.autotests.generated.*;
 import io.qt.core.*;
+import io.qt.qml.QQmlComponent;
+import io.qt.qml.QQmlEngine;
+import io.qt.qml.QQmlIncubationController;
+import io.qt.qml.QQmlIncubator;
 
 public class TestMetacalls extends ApplicationInitializer {
 	
@@ -92,6 +97,158 @@ public class TestMetacalls extends ApplicationInitializer {
 		Assert.assertTrue(property.writeOnGadget(nonQtType, "Test3"));
 		Assert.assertEquals("Test3", nonQtType.getText());
     }
+	
+	static class SuperClass extends QObject{
+		static final RuntimeException exn = new RuntimeException();
+		public String getText() {
+			throw exn;
+		}
+		public String invoke() {
+			throw exn;
+		}
+	}
+	
+	static class SubClass extends SuperClass{
+//		private int number = 5;
+//
+//		public int getNumber() {
+//			return number;
+//		}
+//
+//		public void setNumber(int number) {
+//			this.number = number;
+//		}
+		private String text2 = "SubClassTest";
+
+		public String getText2() {
+			return text2;
+		}
+
+		public void setText2(String text2) {
+			this.text2 = text2;
+		}
+		public String invoke2() {
+			return getText2();
+		}
+	}
+	
+	@Test
+    public void testMethodException() {
+		Throwable[] thrown = {null};
+		Thread.currentThread().setUncaughtExceptionHandler((Thread t, Throwable e)->{
+			thrown[0] = e;
+		});
+		try{
+			SubClass subClass = new SubClass();
+			QQmlEngine engine = new QQmlEngine();
+			class PeriodicIncubationController extends QObject implements QQmlIncubationController {
+				private final int timer;
+				public PeriodicIncubationController() {
+					timer = startTimer(16);
+				}
+				public void stop() {
+					killTimer(timer);
+					disposeLater();
+				}
+				protected void timerEvent(QTimerEvent e){
+					incubateFor(5);
+				}
+			};
+			PeriodicIncubationController control = new PeriodicIncubationController();
+			engine.setIncubationController(control);
+			engine.rootContext().setContextProperty("SubClass", subClass);
+			QQmlComponent component = new QQmlComponent(engine);
+			component.setData("import QtQml; QtObject{property var prop : SubClass.invoke();}", ":/");
+			Assert.assertFalse(component.errorString(), component.isError());
+			QEventLoop loop = new QEventLoop();
+			QQmlIncubator incubator = new QQmlIncubator(QQmlIncubator.IncubationMode.Asynchronous){
+				@Override
+				protected void statusChanged(@NonNull Status status) {
+					switch(status) {
+					case Loading:
+						break;
+					case Null:
+						break;
+					case Error:
+					case Ready:
+						loop.quit();
+						break;
+					default:
+						break;
+					}
+				}
+			};
+			component.create(incubator);
+			if(incubator.isLoading())
+				loop.exec();
+			engine.setIncubationController(null);
+			control.stop();
+			QObject object = incubator.object();
+			Assert.assertEquals("", object.property("prop"));
+			Assert.assertEquals(SuperClass.exn, thrown[0]);
+		}finally {
+			Thread.currentThread().setUncaughtExceptionHandler(null);
+		}
+	}
+	
+	@Test
+    public void testPropertyException() {
+		Throwable[] thrown = {null};
+		Thread.currentThread().setUncaughtExceptionHandler((Thread t, Throwable e)->{
+			thrown[0] = e;
+		});
+		try{
+			SubClass subClass = new SubClass();
+			QQmlEngine engine = new QQmlEngine();
+			class PeriodicIncubationController extends QObject implements QQmlIncubationController {
+				private final int timer;
+				public PeriodicIncubationController() {
+					timer = startTimer(16);
+				}
+				public void stop() {
+					killTimer(timer);
+					disposeLater();
+				}
+				protected void timerEvent(QTimerEvent e){
+					incubateFor(5);
+				}
+			};
+			PeriodicIncubationController control = new PeriodicIncubationController();
+			engine.setIncubationController(control);
+			engine.rootContext().setContextProperty("SubClass", subClass);
+			QQmlComponent component = new QQmlComponent(engine);
+			component.setData("import QtQml; QtObject{property var prop : SubClass.text;}", ":/");
+			Assert.assertFalse(component.errorString(), component.isError());
+			QEventLoop loop = new QEventLoop();
+			QQmlIncubator incubator = new QQmlIncubator(QQmlIncubator.IncubationMode.Asynchronous){
+				@Override
+				protected void statusChanged(@NonNull Status status) {
+					switch(status) {
+					case Loading:
+						break;
+					case Null:
+						break;
+					case Error:
+					case Ready:
+						loop.quit();
+						break;
+					default:
+						break;
+					}
+				}
+			};
+			component.create(incubator);
+			if(incubator.isLoading())
+				loop.exec();
+			engine.setIncubationController(null);
+			control.stop();
+			QObject object = incubator.object();
+			Assert.assertEquals("", object.property("prop"));
+			Assert.assertEquals(SuperClass.exn, thrown[0]);
+		}finally {
+			Thread.currentThread().setUncaughtExceptionHandler(null);
+		}
+	}
 
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestMetacalls.class.getName());

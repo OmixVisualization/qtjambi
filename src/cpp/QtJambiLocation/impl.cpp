@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -42,10 +42,8 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/location,QGeoServiceProviderFactory$Result
 }
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 namespace QtJambiLocationPrivate{
 size_t variantHash(const QVariant& v, size_t seed){
     return CoreAPI::computeHash(v.metaType(), v.constData(), seed);
 }
 }
-#endif

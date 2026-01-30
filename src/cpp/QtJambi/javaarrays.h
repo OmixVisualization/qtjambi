@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -137,6 +137,7 @@ protected:
     CType* m_pointer;
 private:
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -811,6 +812,7 @@ private:
     std::function<void(T&,JNIEnv *,jobject)> m_setter;
 private:
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -865,6 +867,7 @@ public:
                             std::function<jobject(JNIEnv *,const T&)> getter);
 private:
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -1150,6 +1153,7 @@ private:\
     using JArrayPointer<jArray>::JArrayType;\
     using JArrayPointer<jArray>::ElementType;\
     void* operator new(size_t) = delete;\
+    void* operator new(size_t,size_t) = delete;\
     void* operator new[](size_t) = delete;\
 };\
 \
@@ -1170,6 +1174,7 @@ private:\
     using JArrayPointer<jArray>::JArrayType;\
     using JArrayPointer<jArray>::ElementType;\
     void* operator new(size_t) = delete;\
+    void* operator new(size_t,size_t) = delete;\
     void* operator new[](size_t) = delete;\
 };\
 \
@@ -1354,6 +1359,7 @@ public:
         return QtJambiAPI::createIterable<std::initializer_list<const Type>>(m_array_elements, m_size);
     }
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -1388,6 +1394,7 @@ public:
         return m_env->GetObjectArrayElement(m_array, index);
     }
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -1422,6 +1429,7 @@ public:
         return jclass(m_env->GetObjectArrayElement(m_array, index));
     }
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -1456,6 +1464,7 @@ public:
         return jobjectArray(m_env->GetObjectArrayElement(m_array, index));
     }
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -1490,6 +1499,7 @@ public:
         return jstring(m_env->GetObjectArrayElement(m_array, index));
     }
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -1561,6 +1571,7 @@ public:
         return QtJambiAPI::createIterable<std::initializer_list<const Type>>(m_array_elements, m_size);
     }
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 private:
     std::function<jobject(JNIEnv *,const Type&)> m_getter;
@@ -1612,6 +1623,7 @@ public:
         return jobjectRef{this, index};
     }
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -1661,6 +1673,7 @@ public:
         return jobjectRef{this, index};
     }
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -1710,6 +1723,7 @@ public:
         return jobjectRef{this, index};
     }
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -1759,6 +1773,7 @@ public:
         return jobjectRef{this, index};
     }
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 

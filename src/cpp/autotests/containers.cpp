@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,7 +30,7 @@
 ****************************************************************************/
 
 #include <QtCore/QtGlobal>
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 size_t qHash(const std::pair<float,double>& value, size_t seed = 0);
 #endif
 
@@ -39,27 +39,14 @@ size_t qHash(const std::pair<float,double>& value, size_t seed = 0);
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/Cast>
 
-#include <QtCore/QSequentialIterable>
-#include <QtCore/QAssociativeIterable>
+#include <QtCore/QtCore>
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 inline size_t qHash(const std::pair<float,double>& value, size_t seed){
     QtPrivate::QHashCombine hash;
     seed = hash(seed, value.first);
     seed = hash(seed, value.second);
     return seed;
-}
-#endif
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-uint qHash(const std::pair<const int&,const int&>& pair){
-    return qHash(pair, 0);
-}
-uint qHash(const std::pair<const float&,const double&>& pair){
-    return qHash(pair, 0);
-}
-uint qHash(const std::pair<const short&,const double&>& pair){
-    return qHash(pair, 0);
 }
 #endif
 
@@ -193,18 +180,30 @@ void readQMultiMapShortDouble(QDataStream &s, QMultiMap<short,double>& container
     s >> container;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+typedef QMetaSequence::Iterable SequentialIterable;
+typedef QMetaAssociation::Iterable AssociativeIterable;
+#else
+typedef QSequentialIterable SequentialIterable;
+typedef QAssociativeIterable AssociativeIterable;
+#endif
+
 void copyFromIterable(const QVariant& variant, jobject results){
     if(JniEnvironment env{200}){
-        if (variant.canConvert<QVariantList>()) {
-            QSequentialIterable iterable = variant.value<QSequentialIterable>();
-            for(QVariant v : iterable){
-                QtJambiAPI::addToJavaCollection(env, results, QtJambiAPI::convertQVariantToJavaObject(env, v));
+        if (variant.canConvert<SequentialIterable>()) {
+            const SequentialIterable iterable = variant.value<SequentialIterable>();
+            auto begin = iterable.begin();
+            auto end = iterable.end();
+            while(begin!=end){
+                QVariant value = *begin;
+                QtJambiAPI::addToJavaCollection(env, results, QtJambiAPI::convertQVariantToJavaObject(env, value));
+                ++begin;
             }
         }
-        else if (variant.canConvert<QVariantHash>()) {
-            QAssociativeIterable iterable = variant.value<QAssociativeIterable>();
-            QAssociativeIterable::const_iterator begin = iterable.begin();
-            QAssociativeIterable::const_iterator end = iterable.end();
+        else if (variant.canConvert<AssociativeIterable>()) {
+            const AssociativeIterable iterable = variant.value<AssociativeIterable>();
+            auto begin = iterable.begin();
+            auto end = iterable.end();
             while(begin!=end){
                 QVariant key = begin.key();
                 QVariant value = begin.value();
@@ -215,100 +214,115 @@ void copyFromIterable(const QVariant& variant, jobject results){
     }
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 QVariant sequentialAt(const QVariant& variant, int index){
-    if (variant.canConvert<QVariantList>()) {
-        QSequentialIterable iterable = variant.value<QSequentialIterable>();
+    if (variant.canConvert<SequentialIterable>()) {
+        const SequentialIterable iterable = variant.value<SequentialIterable>();
         return iterable.at(index);
     }else{
-        return QVariant(QString("cannot convert %1 to QVariantList").arg(variant.metaType().name()));
+        return QVariant(QString("cannot convert %1 to sequential iterable").arg(variant.metaType().name()));
     }
 }
 
 QVariant sequentialRemoveFirst(QVariant variant){
-    if (variant.canConvert<QVariantList>()) {
-        QSequentialIterable iterable = variant.view<QSequentialIterable>();
-        iterable.removeValue(QSequentialIterable::AtBegin);
+    if (variant.canConvert<SequentialIterable>()) {
+        SequentialIterable iterable = variant.view<SequentialIterable>();
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+        iterable.removeFirst();
+#else
+        iterable.removeValue(SequentialIterable::AtBegin);
+#endif
     }else{
-        return QVariant(QString("cannot convert %1 to QVariantList").arg(variant.metaType().name()));
+        return QVariant(QString("cannot convert %1 to sequential iterable").arg(variant.metaType().name()));
     }
     return variant;
 }
 
 QVariant sequentialRemoveLast(QVariant variant){
-    if (variant.canConvert<QVariantList>()) {
-        QSequentialIterable iterable = variant.view<QSequentialIterable>();
-        iterable.removeValue(QSequentialIterable::AtEnd);
+    if (variant.canConvert<SequentialIterable>()) {
+        SequentialIterable iterable = variant.view<SequentialIterable>();
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+        iterable.removeLast();
+#else
+        iterable.removeValue(SequentialIterable::AtEnd);
+#endif
     }else{
-        return QVariant(QString("cannot convert %1 to QVariantList").arg(variant.metaType().name()));
+        return QVariant(QString("cannot convert %1 to sequential iterable").arg(variant.metaType().name()));
     }
     return variant;
 }
 
 QVariant sequentialSetAt(QVariant variant, int index, const QVariant& value){
-    if (variant.canConvert<QVariantList>()) {
-        QSequentialIterable iterable = variant.view<QSequentialIterable>();
+    if (variant.canConvert<SequentialIterable>()) {
+        SequentialIterable iterable = variant.view<SequentialIterable>();
         iterable.set(index, value);
     }else{
-        return QVariant(QString("cannot convert %1 to QVariantList").arg(variant.metaType().name()));
+        return QVariant(QString("cannot convert %1 to sequential iterable").arg(variant.metaType().name()));
     }
     return variant;
 }
 
 QVariant sequentialAppend(QVariant variant, const QVariant& value){
-    if (variant.canConvert<QVariantList>()) {
-        QSequentialIterable iterable = variant.view<QSequentialIterable>();
+    if (variant.canConvert<SequentialIterable>()) {
+        SequentialIterable iterable = variant.view<SequentialIterable>();
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+        iterable.append(value);
+#else
         iterable.addValue(value, QSequentialIterable::AtEnd);
+#endif
     }else{
-        return QVariant(QString("cannot convert %1 to QVariantList").arg(variant.metaType().name()));
+        return QVariant(QString("cannot convert %1 to sequential iterable").arg(variant.metaType().name()));
     }
     return variant;
 }
 
 QVariant sequentialPrepend(QVariant variant, const QVariant& value){
-    if (variant.canConvert<QVariantList>()) {
-        QSequentialIterable iterable = variant.view<QSequentialIterable>();
+    if (variant.canConvert<SequentialIterable>()) {
+        SequentialIterable iterable = variant.view<SequentialIterable>();
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+        iterable.prepend(value);
+#else
         iterable.addValue(value, QSequentialIterable::AtBegin);
+#endif
     }else{
-        return QVariant(QString("cannot convert %1 to QVariantList").arg(variant.metaType().name()));
+        return QVariant(QString("cannot convert %1 to sequential iterable").arg(variant.metaType().name()));
     }
     return variant;
 }
 
 QVariant associativeSetValue(QVariant variant, const QVariant& key, const QVariant& value){
-    if (variant.canConvert<QVariantHash>()) {
-        QAssociativeIterable iterable = variant.view<QAssociativeIterable>();
+    if (variant.canConvert<AssociativeIterable>()) {
+        AssociativeIterable iterable = variant.view<AssociativeIterable>();
         iterable.setValue(key, value);
     }else{
-        return QVariant(QString("cannot convert %1 to QVariantHash").arg(variant.metaType().name()));
+        return QVariant(QString("cannot convert %1 to associative iterable").arg(variant.metaType().name()));
     }
     return variant;
 }
 
 QVariant associativeInsertKey(QVariant variant, const QVariant& key){
-    if (variant.canConvert<QVariantHash>()) {
-        QAssociativeIterable iterable = variant.view<QAssociativeIterable>();
+    if (variant.canConvert<AssociativeIterable>()) {
+        AssociativeIterable iterable = variant.view<AssociativeIterable>();
         iterable.insertKey(key);
     }else{
-        return QVariant(QString("cannot convert %1 to QVariantHash").arg(variant.metaType().name()));
+        return QVariant(QString("cannot convert %1 to associative iterable").arg(variant.metaType().name()));
     }
     return variant;
 }
 
 QVariant associativeRemoveKey(QVariant variant, const QVariant& key){
-    if (variant.canConvert<QVariantHash>()) {
-        QAssociativeIterable iterable = variant.view<QAssociativeIterable>();
+    if (variant.canConvert<AssociativeIterable>()) {
+        AssociativeIterable iterable = variant.view<AssociativeIterable>();
         iterable.removeKey(key);
     }else{
-        return QVariant(QString("cannot convert %1 to QVariantHash").arg(variant.metaType().name()));
+        return QVariant(QString("cannot convert %1 to associative iterable").arg(variant.metaType().name()));
     }
     return variant;
 }
 
 QPair<QVariant,QVariant> associativeFindAndReplace(QVariant variant, const QVariant& key, const QVariant& value){
-    if (variant.canConvert<QVariantHash>()) {
-        QAssociativeIterable iterable = variant.view<QAssociativeIterable>();
-        QAssociativeIterable::iterator it = iterable.mutableFind(key);
+    if (variant.canConvert<AssociativeIterable>()) {
+        AssociativeIterable iterable = variant.view<AssociativeIterable>();
+        auto it = iterable.mutableFind(key);
         if(it!=iterable.mutableEnd()){
             QVariant r = it.value();
             it.value() = value;
@@ -323,54 +337,40 @@ QPair<QVariant,QVariant> associativeFindAndReplace(QVariant variant, const QVari
             return {variant,QVariant(QString("found iterator == end"))};
         }
     }else{
-        return {variant,QVariant(QString("cannot convert %1 to QVariantHash").arg(variant.metaType().name()))};
+        return {variant,QVariant(QString("cannot convert %1 to associative iterable").arg(variant.metaType().name()))};
     }
     return {variant,QVariant()};
 }
 
-#endif
-
 bool associativeFind(const QVariant& variant, const QVariant& key){
-    if (variant.canConvert<QVariantHash>()) {
-        QAssociativeIterable iterable = variant.value<QAssociativeIterable>();
+    if (variant.canConvert<AssociativeIterable>()) {
+        AssociativeIterable iterable = variant.value<AssociativeIterable>();
         return iterable.find(key) != iterable.end();
     }else{
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-        qWarning() << "cannot convert" << variant.metaType().name() << " to QVariantHash";
-#else
-        qWarning() << "cannot convert" << QMetaType::typeName(variant.userType()) << " to QVariantHash";
-#endif
+        qWarning() << "cannot convert" << variant.metaType().name() << " to associative iterable";
     }
     return false;
 }
 
 QVariant associativeValue(const QVariant& variant, const QVariant& key){
-    if (variant.canConvert<QVariantHash>()) {
-        QAssociativeIterable iterable = variant.value<QAssociativeIterable>();
+    if (variant.canConvert<AssociativeIterable>()) {
+        AssociativeIterable iterable = variant.value<AssociativeIterable>();
         return iterable.value(key);
     }else{
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-        qWarning() << "cannot convert" << variant.metaType().name() << " to QVariantHash";
-#else
-        qWarning() << "cannot convert" << QMetaType::typeName(variant.userType()) << " to QVariantHash";
-#endif
+        qWarning() << "cannot convert" << variant.metaType().name() << " to associative iterable";
     }
     return QVariant();
 }
 
 qsizetype containerSize(const QVariant& variant){
-    if (variant.canConvert<QVariantList>()) {
-        QSequentialIterable iterable = variant.value<QSequentialIterable>();
+    if (variant.canConvert<SequentialIterable>()) {
+        const SequentialIterable iterable = variant.value<SequentialIterable>();
         return iterable.size();
-    }else if (variant.canConvert<QVariantHash>()) {
-        QAssociativeIterable iterable = variant.value<QAssociativeIterable>();
+    }else if (variant.canConvert<AssociativeIterable>()) {
+        const AssociativeIterable iterable = variant.value<AssociativeIterable>();
         return iterable.size();
     }else{
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-        qWarning() << "cannot convert" << variant.metaType().name() << " to QVariantHash or QVariantList";
-#else
-        qWarning() << "cannot convert" << QMetaType::typeName(variant.userType()) << " to QVariantHash or QVariantList";
-#endif
+        qWarning() << "cannot convert" << variant.metaType().name() << " to associative or sequential iterable";
         return 0;
     }
 }

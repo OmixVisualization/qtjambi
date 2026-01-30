@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -64,6 +64,7 @@ protected:
     JniEnvironment(int, int capacity);
     void initialize(JNIEnv *env, bool requiresDetach, int capacity);
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
     JNIEnv *m_env = nullptr;
     quint8 m_flags = 0;
@@ -83,6 +84,7 @@ public:
 private:
     quint8 data;
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
     Q_DISABLE_COPY_MOVE(JniEnvironmentExceptionHandler)
     friend class JniEnvironmentExceptionHandlerAndBlocker;
@@ -99,6 +101,7 @@ public:
 private:
     quint8 data;
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
     Q_DISABLE_COPY_MOVE(JniEnvironmentExceptionInhibitor)
     friend class JniEnvironmentExceptionInhibitorAndBlocker;
@@ -110,6 +113,7 @@ public:
     ~JniEnvironmentExceptionHandlerAndBlocker();
     void releaseException();
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -119,6 +123,7 @@ public:
     ~JniEnvironmentExceptionInhibitorAndBlocker();
     void releaseException();
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -132,6 +137,7 @@ public:
     jobject getJavaObjectLocalRef();
 private:
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
     QtJambiScope m_scope;
     Q_DISABLE_COPY_MOVE(JniEnvironmentScope)
@@ -145,6 +151,7 @@ public:
     jobject getJavaObjectLocalRef();
 private:
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
     QtJambiScope m_scope;
     Q_DISABLE_COPY_MOVE(JniEnvironmentScopeExceptionHandler)
@@ -158,6 +165,7 @@ public:
     jobject getJavaObjectLocalRef();
 private:
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
     QtJambiScope m_scope;
     Q_DISABLE_COPY_MOVE(JniEnvironmentScopeExceptionInhibitor)
@@ -171,6 +179,7 @@ public:
     jobject getJavaObjectLocalRef();
 private:
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
     QtJambiScope m_scope;
     Q_DISABLE_COPY_MOVE(JniEnvironmentScopeExceptionHandlerAndBlocker)
@@ -184,6 +193,7 @@ public:
     jobject getJavaObjectLocalRef();
 private:
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
     QtJambiScope m_scope;
     Q_DISABLE_COPY_MOVE(JniEnvironmentScopeExceptionInhibitorAndBlocker)
@@ -196,6 +206,7 @@ public:
 private:
     JNIEnv *m_env;
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
     Q_DISABLE_COPY_MOVE(JniLocalFrame)
 };

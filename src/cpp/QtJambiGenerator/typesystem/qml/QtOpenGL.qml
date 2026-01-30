@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -4827,7 +4827,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 index: 13
                 AsBuffer{}
             }
-            since: [5, 14]
         }
         ModifyFunction{
             signature: "setData(int, int, int, int, int, int, int, int, QOpenGLTexture::CubeMapFace, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)"
@@ -4835,7 +4834,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 index: 12
                 AsBuffer{}
             }
-            since: [5, 14]
         }
         ModifyFunction{
             signature: "setData(int, int, int, int, int, int, int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)"
@@ -4843,7 +4841,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 index: 11
                 AsBuffer{}
             }
-            since: [5, 14]
         }
         ModifyFunction{
             signature: "setData(int, int, int, int, int, int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)"
@@ -4851,7 +4848,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 index: 10
                 AsBuffer{}
             }
-            since: [5, 14]
         }
         ModifyFunction{
             signature: "setData(int, int, int, int, int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)"
@@ -4859,7 +4855,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 index: 9
                 AsBuffer{}
             }
-            since: [5, 14]
         }
         ModifyFunction{
             signature: "setData(int, int, QOpenGLTexture::CubeMapFace, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)"

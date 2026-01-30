@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -595,43 +595,7 @@ class QTest__{
             io.qt.core.QCoreApplication.shutdown();
         return result;
     }
-    
-}// class
-
-class QTest_5__{
-
-    /**
-     * <p>See <a href="@docRoot/qtest.html#touchEvent-1"><code>QTest::touchEvent(QWindow *window, QTouchDevice *device, bool autoCommit = true)</code></a></p>
-     */
-    @QtUninvokable
-    public static io.qt.test.QTest.QTouchEventSequence touchEvent(io.qt.gui.QWindow window, io.qt.gui.QTouchDevice device) {
-        return touchEvent(window, device, true);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtest.html#touchEvent-1"><code>QTest::touchEvent(QWindow *window, QTouchDevice *device, bool autoCommit = true)</code></a></p>
-     */
-    @QtUninvokable
-    public static native io.qt.test.QTest.QTouchEventSequence touchEvent(io.qt.gui.QWindow window, io.qt.gui.QTouchDevice device, boolean autoCommit);
-    
-    /**
-     * <p>See <a href="@docRoot/qtest.html#touchEvent"><code>QTest::touchEvent(QWidget *widget, QTouchDevice *device, bool autoCommit = true)</code></a></p>
-     */
-    @QtUninvokable
-    public static io.qt.test.QTest.QTouchEventSequence touchEvent(io.qt.widgets.QWidget window, io.qt.gui.QTouchDevice device) {
-        return touchEvent(window, device, true);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtest.html#touchEvent"><code>QTest::touchEvent(QWidget *widget, QTouchDevice *device, bool autoCommit = true)</code></a></p>
-     */
-    @QtUninvokable
-    public static native io.qt.test.QTest.QTouchEventSequence touchEvent(io.qt.widgets.QWidget window, io.qt.gui.QTouchDevice device, boolean autoCommit);
-    
-}// class
-
-class QTest_6__{
-    
+        
     /**
      * <p>See <a href="@docRoot/qtest.html#touchEvent"><code>QTest::touchEvent(QWidget *widget, QPointingDevice *device, bool autoCommit = true)</code></a></p>
      */
@@ -1509,19 +1473,6 @@ class QSignalSpy__{
     public final java.util.List<java.lang.Object> removeLast() {
         return list().removeLast();
     }
-}// class
-
-class QSignalSpy_5_{
-    /**
-     * @see io.qt.core.QList#toSet()
-     */
-    @QtUninvokable
-    public final QSet<java.util.List<java.lang.Object>> toSet()    {
-        return list().toSet();
-    }
-}// class
-
-class QSignalSpy_6_{
     /**
      * @see io.qt.core.QList#fill(java.lang.Object)
      */

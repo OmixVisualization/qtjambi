@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -322,7 +322,8 @@ public:
     virtual AbstractContainerAccess* clone() = 0;
     virtual void assign(void* container, const void* other) = 0;
     virtual void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) = 0;
-    virtual size_t sizeOf() = 0;
+    virtual size_t sizeOf() const = 0;
+    virtual size_t alignOf() const = 0;
     virtual void* constructContainer(void* placement) = 0;
     virtual void* constructContainer(void* placement, const void* copyOf) = 0;
     virtual void* constructContainer(JNIEnv * env, void* placement, const ConstContainerAndAccessInfo& copyOf) = 0;
@@ -331,7 +332,7 @@ public:
     void* createContainer(void* moved);
     void* createContainer(JNIEnv *env, const ContainerAndAccessInfo& moved);
     virtual bool destructContainer(void* container) = 0;
-    virtual int registerContainer(const QByteArray& containerTypeName) = 0;
+    virtual QMetaType registerContainer(const QByteArray& containerTypeName) = 0;
     virtual const QObject* getOwner(const void* container);
     virtual bool hasOwnerFunction();
     void* createContainer();
@@ -412,7 +413,8 @@ public:
     virtual jboolean equals(JNIEnv * env, const void* iterator, const void* other) = 0;
     virtual const QMetaType& valueMetaType() = 0;
 private:
-    size_t sizeOf() final override;
+    size_t sizeOf() const final override;
+    size_t alignOf() const final override;
     void* constructContainer(void* placement) final override;
     void* constructContainer(void* placement, const void* copyOf) final override;
     void* constructContainer(JNIEnv *, void* result, const ConstContainerAndAccessInfo& container) final override;
@@ -421,7 +423,7 @@ private:
     bool destructContainer(void* container) final override;
     void assign(void*, const void* ) final override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) final override;
-    int registerContainer(const QByteArray&) final override;
+    QMetaType registerContainer(const QByteArray&) final override;
     Q_DISABLE_COPY_MOVE(AbstractSequentialConstIteratorAccess)
 };
 
@@ -841,7 +843,7 @@ typedef bool(*MetaAssociationIteratorFactory)(void *src, void *target, const QtM
 typedef bool(*MetaAssociationConstIteratorFactory)(const void *src, void *target, const QtMetaContainerPrivate::QMetaAssociationInterface* iface);
 typedef bool(*PairAccessFactory)(const void *src, void *target, const QMetaType& metaType1, const QMetaType& metaType2);
 
-QTJAMBI_EXPORT int registerSequentialContainerType(const QByteArray& typeName,
+QTJAMBI_EXPORT QMetaType registerSequentialContainerType(const QByteArray& typeName,
                                                    size_t containerSize, size_t containerAlign,
                                                    bool isPointer, const QMetaType& metaType,
                                                    QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
@@ -859,7 +861,7 @@ QTJAMBI_EXPORT int registerSequentialContainerType(const QByteArray& typeName,
                                                    HashWrapper hashWrapper,
                                                    AbstractSequentialAccess* access);
 
-QTJAMBI_EXPORT int registerAssociativeContainerType(const QByteArray& typeName,
+QTJAMBI_EXPORT QMetaType registerAssociativeContainerType(const QByteArray& typeName,
                                                     size_t containerSize, size_t containerAlign,
                                                     bool isPointer1, const QMetaType& metaType1,
                                                     bool isPointer2, const QMetaType& metaType2,
@@ -880,9 +882,9 @@ QTJAMBI_EXPORT int registerAssociativeContainerType(const QByteArray& typeName,
                                                     AbstractContainerAccess* access);
 
 template<typename Container, size_t size>
-int registerSequentialContainerType(const QByteArray& typeName, const QMetaType& metaType, AbstractSequentialAccess* access){
-    int newMetaType = QMetaType::fromName(typeName).id();
-    if(newMetaType==QMetaType::UnknownType){
+QMetaType registerSequentialContainerType(const QByteArray& typeName, const QMetaType& metaType, AbstractSequentialAccess* access){
+    QMetaType newMetaType = QMetaType::fromName(typeName);
+    if(!newMetaType.isValid()){
         static const QtMetaContainerPrivate::QMetaSequenceInterface defaultInterface = QtMetaContainerPrivate::QMetaSequenceInterface(QtMetaContainerPrivate::QMetaSequenceForContainer<Container>());
         newMetaType = registerSequentialContainerType(typeName, sizeof(Container), Q_ALIGNOF(Container), size==0, metaType,
                                                 QMetaTypeInterfaceFunctions<Container>::defaultCtr,
@@ -911,9 +913,9 @@ int registerSequentialContainerType(const QByteArray& typeName, const QMetaType&
 }
 
 template<typename Container, size_t size1, size_t size2>
-int registerAssociativeContainerType(const QByteArray& typeName, const QMetaType& metaType1, const QMetaType& metaType2, AbstractAssociativeAccess* access){
-    int newMetaType = QMetaType::fromName(typeName).id();
-    if(newMetaType==QMetaType::UnknownType){
+QMetaType registerAssociativeContainerType(const QByteArray& typeName, const QMetaType& metaType1, const QMetaType& metaType2, AbstractAssociativeAccess* access){
+    QMetaType newMetaType = QMetaType::fromName(typeName);
+    if(!newMetaType.isValid()){
         static const QtMetaContainerPrivate::QMetaAssociationInterface defaultInterface = QtMetaContainerPrivate::QMetaAssociationInterface(QtMetaContainerPrivate::QMetaAssociationForContainer<Container>());
         newMetaType = registerAssociativeContainerType(typeName, sizeof(Container), Q_ALIGNOF(Container), size1==0, metaType1, size2==0, metaType2,
                                                         QMetaTypeInterfaceFunctions<Container>::defaultCtr,
@@ -943,9 +945,9 @@ int registerAssociativeContainerType(const QByteArray& typeName, const QMetaType
 }
 
 template<typename Container, size_t size1, size_t size2>
-static int registerQPairType(const QByteArray& typeName, const QMetaType& metaType1, const QMetaType& metaType2, AbstractPairAccess* access){
-    int newMetaType = QMetaType::fromName(typeName).id();
-    if(newMetaType==QMetaType::UnknownType){
+static QMetaType registerQPairType(const QByteArray& typeName, const QMetaType& metaType1, const QMetaType& metaType2, AbstractPairAccess* access){
+    QMetaType newMetaType = QMetaType::fromName(typeName);
+    if(!newMetaType.isValid()){
         newMetaType = registerAssociativeContainerType(typeName, sizeof(Container), Q_ALIGNOF(Container), size1==0, metaType1, size2==0, metaType2,
                                                         QMetaTypeInterfaceFunctions<Container>::defaultCtr,
                                                         QMetaTypeInterfaceFunctions<Container>::copyCtr,

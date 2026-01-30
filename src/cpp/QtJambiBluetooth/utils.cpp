@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,13 +43,8 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/bluetooth,QBluetoothDeviceInfo$ServiceUuid
 
 #if defined(Q_OS_ANDROID)
 void initialize_meta_info_QtBluetooth(){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-#define ORG_QTPROJECT_QT "org/qtproject/qt/"
-#else
-#define ORG_QTPROJECT_QT "org/qtproject/qt5/"
-#endif
     if(JniEnvironment env{200}){
-        jclass cls = env->FindClass(ORG_QTPROJECT_QT "android/bluetooth/QtBluetoothBroadcastReceiver");
+        jclass cls = env->FindClass("org/qtproject/qt/android/bluetooth/QtBluetoothBroadcastReceiver");
         if(env->ExceptionCheck())
             env->ExceptionClear();
         if(cls){

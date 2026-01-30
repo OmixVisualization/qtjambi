@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -60,6 +60,7 @@ public class TestInitializationWebEngineWidgets extends UnitTestInitializer {
 	    	window.show();
 	    	QTimer.singleShot(500, QApplication.instance(), QApplication::quit);
 	    	QApplication.exec();
+	    	window.dispose();
 	    }
     	QApplication.shutdown();
     }

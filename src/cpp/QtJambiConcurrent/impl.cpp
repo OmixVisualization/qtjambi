@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -65,7 +65,6 @@ namespace QtConcurrent{
                   QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(run))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConcurrent$Runnable5,
                   QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(run))
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConcurrent$Runnable6,
                   QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(run))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConcurrent$Runnable7,
@@ -74,7 +73,6 @@ namespace QtConcurrent{
                   QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(run))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConcurrent$Runnable9,
                   QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(run))
-#endif
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConcurrent$Callable1,
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(call))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConcurrent$Callable2,
@@ -85,7 +83,6 @@ namespace QtConcurrent{
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(call))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConcurrent$Callable5,
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(call))
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConcurrent$Callable6,
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(call))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConcurrent$Callable7,
@@ -134,7 +131,6 @@ namespace QtConcurrent{
                   QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(run))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConcurrent$RunnableWithVoidPromise9,
                   QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(run))
-#endif
 
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent,
         QTJAMBI_REPOSITORY_DEFINE_METHOD(computeDefaultResult,(Lio/qt/concurrent/QtConcurrent$ReduceFunctor;)Ljava/lang/Object;)
@@ -176,7 +172,6 @@ namespace QtConcurrent{
         QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
     )
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$Runnable6,
         QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
     )
@@ -272,7 +267,6 @@ namespace QtConcurrent{
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$RunnableWithVoidPromise9,
         QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
     )
-#endif
 
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$Callable1,
         QTJAMBI_REPOSITORY_DEFINE_METHOD(call,(Ljava/lang/Object;)Ljava/lang/Object;)
@@ -294,7 +288,6 @@ namespace QtConcurrent{
         QTJAMBI_REPOSITORY_DEFINE_METHOD(call,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;)
     )
 
-    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$Callable6,
         QTJAMBI_REPOSITORY_DEFINE_METHOD(call,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;)
     )
@@ -310,7 +303,6 @@ namespace QtConcurrent{
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$Callable9,
         QTJAMBI_REPOSITORY_DEFINE_METHOD(call,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;)
     )
-#endif
 }
 namespace Runtime{
     QTJAMBI_REPOSITORY_DECLARE_CLASS(Callable,
@@ -404,32 +396,16 @@ public:
 
 class ReduceFunctor: public Functor {
 public:
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    ReduceFunctor(JNIEnv *env, jobject javaReduceFunctor, JObjectWrapper&& initialValue) : Functor(env, javaReduceFunctor), m_initialValue(new JObjectWrapper(std::move(initialValue))) {}
-    ReduceFunctor(const ReduceFunctor &other) : Functor(other), m_initialValue(other.m_initialValue) {}
-    ReduceFunctor(ReduceFunctor &&other) : Functor(std::move(other)), m_initialValue(std::move(other.m_initialValue)) {}
-#else
     ReduceFunctor(JNIEnv *env, jobject javaReduceFunctor) : Functor(env, javaReduceFunctor) {}
     ReduceFunctor(const ReduceFunctor &other) : Functor(other) {}
     ReduceFunctor(ReduceFunctor &&other) : Functor(std::move(other)) {}
-#endif
     void operator()(QVariant &result, const QVariant &wrapper)
     {
         if(JniEnvironment env{200}){
             if(jobject functor = m_functor.object(env)){
                 // reduce() is synchronous, so while this data is static in terms
                 // of the map/reduce operation, it does not need to be protected
-                jobject javaResult = nullptr;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                if (m_initialValue) {
-                    javaResult = env->NewLocalRef(m_initialValue->object(env));
-                    m_initialValue.reset();
-                }else
-#endif
-                {
-                    javaResult = qtjambi_cast<jobject>(env, std::move(result));
-                }
-
+                jobject javaResult = qtjambi_cast<jobject>(env, std::move(result));
                 try {
                     javaResult = Java::QtConcurrent::QtConcurrent$ReduceFunctor::reduce(env, functor, javaResult, qtjambi_cast<jobject>(env, wrapper));
                 } catch (const JavaException& exn) {
@@ -441,10 +417,8 @@ public:
             }
         }
     }
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 private:
     QSharedPointer<JObjectWrapper> m_initialValue;
-#endif
 };
 
 class FilteredFunctor: public Functor {
@@ -472,11 +446,9 @@ public:
 };
 
 enum class PromisePolicy{
-    NoPromise
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    ,VoidPromise,
+    NoPromise,
+    VoidPromise,
     TypedPromise
-#endif
 };
 
 template<int i, PromisePolicy promise>
@@ -509,7 +481,6 @@ template<>
 struct RunFunctorInvoker<5,PromisePolicy::NoPromise> : Java::QtConcurrent::QtConcurrent$Runnable5{
 };
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 template<>
 struct RunFunctorInvoker<6,PromisePolicy::NoPromise> : Java::QtConcurrent::QtConcurrent$Runnable6{
 };
@@ -605,9 +576,8 @@ struct RunFunctorInvoker<8,PromisePolicy::TypedPromise> : Java::QtConcurrent::Qt
 template<>
 struct RunFunctorInvoker<9,PromisePolicy::TypedPromise> : Java::QtConcurrent::QtConcurrent$RunnableWithPromise9{
 };
-#endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && (defined(Q_OS_ANDROID) /*|| defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)*/)
+#if (defined(Q_OS_ANDROID) /*|| defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)*/)
 #define HANDLE_EXCEPTION
 #endif
 
@@ -622,7 +592,6 @@ struct RunFunctorInvocationDecider : RunFunctorInvoker<sizeof...(Args),PromisePo
 #endif
 };
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 template<typename ...Args>
 struct RunFunctorInvocationDecider<QPromise<void>&, Args...> : RunFunctorInvoker<sizeof...(Args),PromisePolicy::VoidPromise>{
 #if defined(HANDLE_EXCEPTION)
@@ -642,7 +611,6 @@ struct RunFunctorInvocationDecider<QPromise<T>&, Args...> : RunFunctorInvoker<si
     }
 #endif
 };
-#endif
 
 template<typename ...Args>
 class RunFunctor: public Functor {
@@ -710,7 +678,6 @@ template<>
 struct CallableFunctorInvoker<5> : Java::QtConcurrent::QtConcurrent$Callable5{
 };
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 template<>
 struct CallableFunctorInvoker<6> : Java::QtConcurrent::QtConcurrent$Callable6{
 };
@@ -726,7 +693,6 @@ struct CallableFunctorInvoker<8> : Java::QtConcurrent::QtConcurrent$Callable8{
 template<>
 struct CallableFunctorInvoker<9> : Java::QtConcurrent::QtConcurrent$Callable9{
 };
-#endif
 
 template<typename ...Args>
 class CallableFunctor: public Functor {
@@ -798,10 +764,12 @@ struct JavaSequence{
             return !(*this == o);
         }
     private:
-        const_iterator(const JCollectionWrapper& collection, int cursor = 0);
-        JCollectionWrapper m_collection;
+        const_iterator(JNIEnv* env, const JObjectWrapper& collection, int cursor = 0);
+        JObjectWrapper m_collection;
+        int m_size;
         int m_cursor;
         mutable QVariant m_current;
+        bool m_isList;
         friend JavaSequence;
     };
 
@@ -829,40 +797,44 @@ struct JavaSequence{
     jobject object(JNIEnv* env) const;
 private:
     bool m_canOverwrite;
-    mutable JCollectionWrapper m_collection;
+    mutable JObjectWrapper m_collection;
 };
 
 JavaSequence::JavaSequence() : m_collection() {}
 
 JavaSequence::JavaSequence(const JavaSequence& other) : m_canOverwrite(other.m_canOverwrite), m_collection(other.m_collection){}
 
-JavaSequence::JavaSequence(JavaSequence&& other) : m_canOverwrite(other.m_canOverwrite), m_collection(std::move(other.m_collection)){}
+JavaSequence::JavaSequence(JavaSequence&& other) : m_canOverwrite(other.m_canOverwrite), m_collection(std::move(other.m_collection)) {}
 
 JavaSequence::JavaSequence(JNIEnv* env, jobject collection, bool canOverwrite) : m_canOverwrite(canOverwrite), m_collection(env, collection) {}
 
 jobject JavaSequence::object(JNIEnv* env) const{
     jobject object = m_collection.object(env);
-    if(!object){
-        m_collection = JCollectionWrapper(env, QtJambiAPI::newJavaArrayList(env, 0));
-        object = m_collection.object(env);
+    if(!Java::Runtime::Collection::isInstanceOf(env, object)){
+        m_collection.assign(env, object = QtJambiAPI::newJavaArrayList(env, 0));
     }
     return object;
 }
 
 JavaSequence& JavaSequence::operator=(const JavaSequence& other){
-    if(m_canOverwrite){
-        if(JniEnvironment env{200}){
-            jobject _object = object(env);
-            QtJambiAPI::clearJavaCollection(env, _object);
-            if(other.m_collection.object(env)){
-                jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, other.m_collection.object(env));
-                while(QtJambiAPI::hasJavaIteratorNext(env, iterator)){
-                    QtJambiAPI::addToJavaCollection(env, _object, QtJambiAPI::nextOfJavaIterator(env, iterator));
+    if(&other!=this){
+        if(m_canOverwrite){
+            if(JniEnvironment env{200}){
+                jobject _object = object(env);
+                jobject otherObject = other.m_collection.object(env);
+                if(!env->IsSameObject(_object, otherObject)){
+                    QtJambiAPI::clearJavaCollection(env, _object);
+                    if(otherObject){
+                        jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, otherObject);
+                        while(QtJambiAPI::hasJavaIteratorNext(env, iterator)){
+                            QtJambiAPI::addToJavaCollection(env, _object, QtJambiAPI::nextOfJavaIterator(env, iterator));
+                        }
+                    }
                 }
             }
+        }else{
+            m_collection = other.m_collection;
         }
-    }else{
-        m_collection = other.m_collection;
     }
     return *this;
 }
@@ -886,19 +858,23 @@ void JavaSequence::push_back(const QVariant& value){
 }
 
 JavaSequence::const_iterator JavaSequence::begin() const {
-    (void)object(JniEnvironment());
-    return JavaSequence::const_iterator(m_collection, 0);
+    if(JniEnvironment env{128}){
+        (void)object(env);
+        return JavaSequence::const_iterator(env, m_collection, 0);
+    }else return {};
 }
 
 JavaSequence::const_iterator JavaSequence::end() const {
-    (void)object(JniEnvironment());
-    return JavaSequence::const_iterator(m_collection, -1);
+    if(JniEnvironment env{128}){
+        (void)object(env);
+        return JavaSequence::const_iterator(env, m_collection, -1);
+    }else return {};
 }
 
 JavaSequence::const_iterator JavaSequence::const_iterator::operator ++(int){
     JavaSequence::const_iterator result(*this);
     ++m_cursor;
-    if(m_cursor>=m_collection.size()){
+    if(m_cursor>=m_size){
         m_cursor = -1;
     }
     return result;
@@ -906,7 +882,7 @@ JavaSequence::const_iterator JavaSequence::const_iterator::operator ++(int){
 
 JavaSequence::const_iterator& JavaSequence::const_iterator::operator ++(){
     ++m_cursor;
-    if(m_cursor>=m_collection.size()){
+    if(m_cursor>=m_size){
         m_cursor = -1;
     }
     return *this;
@@ -916,7 +892,7 @@ JavaSequence::const_iterator JavaSequence::const_iterator::operator --(int){
     JavaSequence::const_iterator result(*this);
     if(m_cursor>0){
         --m_cursor;
-        if(m_cursor>=m_collection.size()){
+        if(m_cursor>=m_size){
             m_cursor = -1;
         }
     }
@@ -926,7 +902,7 @@ JavaSequence::const_iterator JavaSequence::const_iterator::operator --(int){
 JavaSequence::const_iterator& JavaSequence::const_iterator::operator --(){
     if(m_cursor>0){
         --m_cursor;
-        if(m_cursor>=m_collection.size()){
+        if(m_cursor>=m_size){
             m_cursor = -1;
         }
     }
@@ -934,20 +910,20 @@ JavaSequence::const_iterator& JavaSequence::const_iterator::operator --(){
 }
 
 const QVariant &JavaSequence::const_iterator::operator*() const{
-    if(m_cursor>=0 && m_cursor<m_collection.size()){
+    if(m_cursor>=0 && m_cursor<m_size){
         if(JniEnvironment env{200}){
             jobject _object = m_collection.object(env);
             if(_object){
                 jobject result = nullptr;
-                QTJAMBI_TRY{
+                if(m_isList){
                     result = Java::Runtime::List::get(env, _object, m_cursor);
-                }QTJAMBI_CATCH(const JavaException&){
+                }else{
                     jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, _object);
                     for(int i=0; i<m_cursor; ++i){
                         QtJambiAPI::nextOfJavaIterator(env, iterator);
                     }
                     result = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                }QTJAMBI_TRY_END
+                }
                 m_current = QVariant::fromValue(JObjectWrapper(env, result));
             }else{
                 m_current = QVariant();
@@ -1016,13 +992,16 @@ bool JavaSequence::const_iterator::operator>=(const JavaSequence::const_iterator
 }
 
 JavaSequence::const_iterator::const_iterator()
-    : m_collection(), m_cursor(-1), m_current() {}
+    : m_collection(), m_cursor(-1), m_current(), m_isList(false) {}
 
 JavaSequence::const_iterator::const_iterator(const JavaSequence::const_iterator& other)
-    : m_collection(other.m_collection), m_cursor(other.m_cursor), m_current() {}
+    : m_collection(other.m_collection), m_size(other.m_size), m_cursor(other.m_cursor), m_current(other.m_current), m_isList(other.m_isList) {}
 
-JavaSequence::const_iterator::const_iterator(const JCollectionWrapper& collection, int cursor)
-    : m_collection(collection), m_cursor(cursor), m_current() {}
+JavaSequence::const_iterator::const_iterator(JNIEnv* env, const JObjectWrapper& collection, int cursor)
+    : m_collection(collection),
+      m_size(Java::Runtime::Collection::size(env, collection.object(env))),
+      m_cursor(cursor),
+      m_current(), m_isList(Java::Runtime::List::isInstanceOf(env, collection.object(env))) {}
 
 struct ThreadEngineStarterInterface{
     virtual ~ThreadEngineStarterInterface();
@@ -1058,15 +1037,10 @@ FutureWatcher<T>::FutureWatcher(JNIEnv* env, jobject collection, bool canOverwri
 
 template<typename T>
 void FutureWatcher<T>::setFuture(const QFuture<T>& future){
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     if(future.isValid()){
         QObject::connect(this, &QFutureWatcherBase::finished, this, &FutureWatcher<T>::onTermination, Qt::DirectConnection);
         QObject::connect(this, &QFutureWatcherBase::canceled, this, &FutureWatcher<T>::onTermination, Qt::DirectConnection);
     }
-#else
-    QObject::connect(this, &QFutureWatcherBase::finished, this, &FutureWatcher<T>::onTermination, Qt::DirectConnection);
-    QObject::connect(this, &QFutureWatcherBase::canceled, this, &FutureWatcher<T>::onTermination, Qt::DirectConnection);
-#endif
     QFutureWatcher<T>::setFuture(future);
 }
 
@@ -1106,18 +1080,11 @@ jobject FutureWatcherStarter<T>::startAsynchronously(JNIEnv* env){
         QFuture<T> future = starter->startAsynchronously();
         if(watcher)
             watcher->setFuture(future);
-        return qtjambi_cast<jobject>(env, future);
+        return qtjambi_cast<jobject>(env, std::move(future));
     }else{
-        QFuture<T> future;
-        return qtjambi_cast<jobject>(env, future);
+        return qtjambi_cast<jobject>(env, QFuture<T>());
     }
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-#define THREADPOOL(_threadPool) Q_UNUSED(_threadPool)
-#else
-#define THREADPOOL(_threadPool) QThreadPool *threadPool = QtJambiAPI::objectFromNativeId<QThreadPool>(_threadPool);
-#endif
 
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024ThreadEngineStarter_startAsynchronously(JNIEnv *env, jclass, QtJambiNativeID thisId){
     try{
@@ -1137,15 +1104,11 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_startMap
  jobject javaMapFunctor)
 {
     try{
-        THREADPOOL(_threadPool)
+        QThreadPool *threadPool = QtJambiAPI::objectFromNativeId<QThreadPool>(_threadPool);
         FutureWatcherStarter<void>* watcher = new FutureWatcherStarter<void>(env, javaSequence, true);
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         if(!threadPool)
             threadPool = QThreadPool::globalInstance();
         watcher->setStarter(QtConcurrent::startMap(threadPool, watcher->sequence().begin(), watcher->sequence().end(), MapFunctor(env, javaMapFunctor)));
-#else
-        watcher->setStarter(QtConcurrent::startMap(watcher->sequence().begin(), watcher->sequence().end(), MapFunctor(env, javaMapFunctor)));
-#endif
         return qtjambi_cast<jobject>(env, static_cast<ThreadEngineStarterInterface *>(watcher));
     } catch (const JavaException& exn) {
         exn.raiseInJava(env);
@@ -1161,15 +1124,11 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_startMap
  jobject javaMappedFunctor)
 {
     try{
-        THREADPOOL(_threadPool)
+        QThreadPool *threadPool = QtJambiAPI::objectFromNativeId<QThreadPool>(_threadPool);
         FutureWatcherStarter<QVariant>* watcher = new FutureWatcherStarter<QVariant>();
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         if(!threadPool)
             threadPool = QThreadPool::globalInstance();
         watcher->setStarter(QtConcurrent::startMapped<QVariant>(threadPool, JavaSequence(env, javaSequence), MappedFunctor(env, javaMappedFunctor)));
-#else
-        watcher->setStarter(QtConcurrent::startMapped<QVariant>(JavaSequence(env, javaSequence), MappedFunctor(env, javaMappedFunctor)));
-#endif
         return qtjambi_cast<jobject>(env, static_cast<ThreadEngineStarterInterface *>(watcher));
     } catch (const JavaException& exn) {
         exn.raiseInJava(env);
@@ -1188,9 +1147,8 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_startMap
  jint options)
 {
     try{
-        THREADPOOL(_threadPool)
+        QThreadPool *threadPool = QtJambiAPI::objectFromNativeId<QThreadPool>(_threadPool);
         FutureWatcherStarter<QVariant>* watcher = new FutureWatcherStarter<QVariant>();
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         if(!threadPool)
             threadPool = QThreadPool::globalInstance();
         watcher->setStarter(QtConcurrent::startMappedReduced<QVariant, QVariant>(
@@ -1200,13 +1158,6 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_startMap
                                                             ReduceFunctor(env, javaReduceFunctor),
                                                             QVariant::fromValue(JObjectWrapper(env, initialValue)),
                                                             QtConcurrent::ReduceOptions(options)));
-#else
-        watcher->setStarter(QtConcurrent::startMappedReduced<QVariant, QVariant>(
-                                JavaSequence(env, javaSequence),
-                                MappedFunctor(env, javaMappedFunctor),
-                                ReduceFunctor(env, javaReduceFunctor, JObjectWrapper(env, initialValue)),
-                                QtConcurrent::ReduceOptions(options)));
-#endif
         return qtjambi_cast<jobject>(env, static_cast<ThreadEngineStarterInterface *>(watcher));
     } catch (const JavaException& exn) {
         exn.raiseInJava(env);
@@ -1222,15 +1173,11 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_startFil
  jobject javaFilteredFunctor)
 {
     try{
-        THREADPOOL(_threadPool)
+        QThreadPool *threadPool = QtJambiAPI::objectFromNativeId<QThreadPool>(_threadPool);
         FutureWatcherStarter<QVariant>* watcher = new FutureWatcherStarter<QVariant>();
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         if(!threadPool)
             threadPool = QThreadPool::globalInstance();
         watcher->setStarter(QtConcurrent::startFiltered(threadPool, JavaSequence(env, javaSequence), FilteredFunctor(env, javaFilteredFunctor)));
-#else
-        watcher->setStarter(QtConcurrent::startFiltered(JavaSequence(env, javaSequence), FilteredFunctor(env, javaFilteredFunctor)));
-#endif
         return qtjambi_cast<jobject>(env, static_cast<ThreadEngineStarterInterface *>(watcher));
     } catch (const JavaException& exn) {
         exn.raiseInJava(env);
@@ -1249,9 +1196,8 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_startFil
  jint options)
 {
     try{
-        THREADPOOL(_threadPool)
+        QThreadPool *threadPool = QtJambiAPI::objectFromNativeId<QThreadPool>(_threadPool);
         FutureWatcherStarter<QVariant>* watcher = new FutureWatcherStarter<QVariant>();
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         if(!threadPool)
             threadPool = QThreadPool::globalInstance();
         watcher->setStarter(QtConcurrent::startFilteredReduced<QVariant>(
@@ -1261,13 +1207,6 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_startFil
                                                             ReduceFunctor(env, javaReduceFunctor),
                                                             QVariant::fromValue(JObjectWrapper(env, initialValue)),
                                                             QtConcurrent::ReduceOptions(options)));
-#else
-        watcher->setStarter(QtConcurrent::startFilteredReduced<QVariant>(
-                                JavaSequence(env, javaSequence),
-                                FilteredFunctor(env, javaFilteredFunctor),
-                                ReduceFunctor(env, javaReduceFunctor, JObjectWrapper(env, initialValue)),
-                                QtConcurrent::ReduceOptions(options)));
-#endif
         return qtjambi_cast<jobject>(env, static_cast<ThreadEngineStarterInterface *>(watcher));
     } catch (const JavaException& exn) {
         exn.raiseInJava(env);
@@ -1283,14 +1222,12 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_filter
  jobject javaFilteredFunctor)
 {
     try{
-        THREADPOOL(_threadPool)
+        QThreadPool *threadPool = QtJambiAPI::objectFromNativeId<QThreadPool>(_threadPool);
         FutureWatcher<void>* watcher = new FutureWatcher<void>(env, javaSequence);
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         if(threadPool)
             watcher->setFuture(QtConcurrent::filter(threadPool, watcher->sequence, FilteredFunctor(env, javaFilteredFunctor)));
         else
-#endif
-        watcher->setFuture(QtConcurrent::filter(watcher->sequence, FilteredFunctor(env, javaFilteredFunctor)));
+            watcher->setFuture(QtConcurrent::filter(watcher->sequence, FilteredFunctor(env, javaFilteredFunctor)));
         return qtjambi_cast<jobject>(env, watcher->future());
     } catch (const JavaException& exn) {
         exn.raiseInJava(env);
@@ -1429,7 +1366,6 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runVoid5
     return nullptr;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runVoid6
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
 {
@@ -1557,7 +1493,6 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_runVoid9
     }
     return nullptr;
 }
-#endif
 
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_run0
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaCallable)
@@ -1689,8 +1624,6 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_run5
     }
     return nullptr;
 }
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_run6
 (JNIEnv *env, jclass, jobject _threadPool, jobject javaRunnable, jobject a, jobject b, jobject c, jobject d, jobject e, jobject f)
@@ -3374,8 +3307,6 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_concurrent_QtConcurrent_00024QTy
     }
     return nullptr;
 }
-
-#endif //QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
 #endif // QT_NO_CONCURRENT
 

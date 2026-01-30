@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -80,22 +80,6 @@ TypeSystem{
             target: CodeClass.Native
             position: Position.Beginning
             Text{
-                until: 5
-                content: String.raw`inline size_t qHash(const QMap<QString, QUrl> &value, size_t seed = 0){
-#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
-    QtPrivate::QHashCombineCommutative hash;
-#else
-    QtPrivate::QHashCombineCommutative hash(seed);
-#endif
-    seed = hash(seed, value.size());
-    for(const QString& key : value.keys()){
-        seed = hash(seed, key);
-        seed = hash(seed, value.value(key));
-    }
-    return seed;
-}`}
-            Text{
-                since: 6
                 until: 6.7
                 content: String.raw`inline size_t qHash(const QMultiMap<QString, QUrl> &value, size_t seed = 0){
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
@@ -249,12 +233,10 @@ TypeSystem{
                 location: Include.Local
             }
         }
-        since: [5, 13]
     }
     
     ValueType{
         name: "QHelpLink"
-        since: [5, 15]
     }
     
     ObjectType{
@@ -277,17 +259,14 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 15]
     }
     
     ValueType{
         name: "QCompressedHelpInfo"
-        since: [5, 13]
     }
     
     ValueType{
         name: "QHelpFilterData"
-        since: [5, 13]
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QHelpContentItem::QHelpContentItem', unmatched parameter type 'QHelpDBReader*'"}

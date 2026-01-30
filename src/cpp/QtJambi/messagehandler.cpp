@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,17 +29,15 @@
 
 #include "pch_p.h"
 
-Q_GLOBAL_STATIC(QReadWriteLock, gMessageHandlerLock)
-typedef SecureContainer<QSet<QtMsgType>,gMessageHandlerLock> Messages;
-Q_GLOBAL_STATIC(Messages, gEnabledMessages)
 static bool messageHandlerInstalled = false;
 
 void qtjambi_messagehandler_proxy(QtMsgType type, const QMessageLogContext & context, const QString & message)
 {
-    if(!gEnabledMessages.isDestroyed()){
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
         {
-            QReadLocker locker(gMessageHandlerLock());
-            if(!gEnabledMessages->contains(type))
+            QReadLocker locker(storage->lock());
+            if(!storage->supportedMessageTypes().contains(type))
                 return;
         }
         if(JniEnvironmentExceptionInhibitor env{500}){
@@ -85,33 +83,36 @@ jobject CoreAPI::installMessageHandler(JNIEnv *env, jobject supportedMessageType
     QtMessageHandler messageHandler = qtjambi_cast<QtMessageHandler>(env, handler, "QtMessageHandler");
     QtMessageHandler oldHandler;
     jobject result{nullptr};
-    if(enabledMessages.size()==5){
-        {
-            QWriteLocker locker(gMessageHandlerLock());
-            gEnabledMessages->clear();
-            messageHandlerInstalled = messageHandler!=nullptr;
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        if(enabledMessages.size()==5){
+            {
+                QWriteLocker locker(storage->lock());
+                storage->supportedMessageTypes().clear();
+                messageHandlerInstalled = messageHandler!=nullptr;
+            }
             oldHandler = qInstallMessageHandler(messageHandler);
-        }
-        if(oldHandler==messageHandler){
-            result = handler;
+            if(oldHandler==messageHandler){
+                result = handler;
+            }else{
+                if(oldHandler==&qtjambi_messagehandler_proxy){
+                    result = nullptr;
+                }else{
+                    result = qtjambi_cast<jobject>(env, oldHandler, "QtMessageHandler");
+                }
+            }
         }else{
+            {
+                QWriteLocker locker(storage->lock());
+                storage->supportedMessageTypes().swap(enabledMessages);
+                messageHandlerInstalled = true;
+            }
+            oldHandler = qInstallMessageHandler(&qtjambi_messagehandler_proxy);
             if(oldHandler==&qtjambi_messagehandler_proxy){
                 result = nullptr;
             }else{
                 result = qtjambi_cast<jobject>(env, oldHandler, "QtMessageHandler");
             }
-        }
-    }else{
-        {
-            QWriteLocker locker(gMessageHandlerLock());
-            gEnabledMessages->swap(enabledMessages);
-            messageHandlerInstalled = true;
-            oldHandler = qInstallMessageHandler(&qtjambi_messagehandler_proxy);
-        }
-        if(oldHandler==&qtjambi_messagehandler_proxy){
-            result = nullptr;
-        }else{
-            result = qtjambi_cast<jobject>(env, oldHandler, "QtMessageHandler");
         }
     }
     return result;
@@ -119,14 +120,8 @@ jobject CoreAPI::installMessageHandler(JNIEnv *env, jobject supportedMessageType
 
 
 void clearMessageHandlerAtShutdown(JNIEnv * env){
-    {
-        QWriteLocker locker(gMessageHandlerLock());
-        if(messageHandlerInstalled){
-            gEnabledMessages->clear();
-            qInstallMessageHandler(nullptr);
-            messageHandlerInstalled = false;
-        }
-    }
+    if(messageHandlerInstalled)
+        qInstallMessageHandler(nullptr);
     if(env){
         Java::QtCore::QLogging::shutdown(env);
     }

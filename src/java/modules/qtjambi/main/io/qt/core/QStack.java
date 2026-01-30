@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -72,7 +72,7 @@ public class QStack<T> extends QList<T> implements Queue<T>
      * <p>See <code><a href="https://doc.qt.io/qt/qstack.html">QStack::<wbr>QStack(const QStack&lt;T> &amp;)</a></code></p>
      * @param other container
      */
-    public QStack(@StrictNonNull Collection<T> other) {
+    public QStack(@StrictNonNull Collection<? extends T> other) {
         super(other);
     }
     

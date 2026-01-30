@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,7 +36,6 @@ import org.junit.*;
 
 import io.qt.autotests.generated.*;
 import io.qt.core.*;
-import io.qt.internal.*;
 
 public class TestDestruction extends ApplicationInitializer {
     private static ReferenceQueue<OrdinaryDestroyed> weakReferenceQueue = new ReferenceQueue<>();
@@ -49,8 +48,6 @@ public class TestDestruction extends ApplicationInitializer {
 
     @Before
     public void setUp() {
-        // This class is known to fail when we messed with this setting in a previous testcase running in the same JVM
-        assertEquals("getObjectCacheMode != DEFAULT", TestUtility.objectCacheMode(), TestUtility.OBJECT_CACHE_MODE_DEFAULT);
         QCoreApplication.processEvents();
         clearGcReferences();
     }

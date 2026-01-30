@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -305,14 +305,12 @@ PersistentConstFloatPointerArray::PersistentConstFloatPointerArray(JNIEnv *env, 
 
 PersistentConstQCharPointerArray::PersistentConstQCharPointerArray(JNIEnv *env, const QChar* pointer, jsize size) PointerArrayINIT(Char,char)
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 PersistentChar16PointerArray::PersistentChar16PointerArray(JNIEnv *env, char16_t* pointer, jsize size) PointerArrayINIT(Char,char)
 PersistentChar16PointerArray::~PersistentChar16PointerArray() PointerArrayDEL(Char,char)
 PersistentConstChar16PointerArray::PersistentConstChar16PointerArray(JNIEnv *env, const char16_t* pointer, jsize size) PointerArrayINIT(Char,char)
 PersistentChar32PointerArray::PersistentChar32PointerArray(JNIEnv *env, char32_t* pointer, jsize size) PointerArrayINIT(Int,int)
 PersistentChar32PointerArray::~PersistentChar32PointerArray() PointerArrayDEL(Int,int)
 PersistentConstChar32PointerArray::PersistentConstChar32PointerArray(JNIEnv *env, const char32_t* pointer, jsize size) PointerArrayINIT(Int,int)
-#endif
 
 #undef PointerArrayINIT
 #undef PointerArrayDEL
@@ -476,16 +474,6 @@ bool PersistentJ##Type##ArrayPointer::isValidArray(JNIEnv *env, jobject object){
     const type* array = reinterpret_cast<const type*>(m_array_elements);\
 return QtJambiAPI::createIterable<std::initializer_list<_const type>>(array, size())
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-#define CHAR32 , char32_t
-#define CHAR16 , char16_t
-#define STD_BYTE , std::byte
-#else
-#define CHAR32
-#define CHAR16
-#define STD_BYTE
-#endif
-
 #define PointerArrayOperatorImpl(Type,type)\
 JConst##Type##ArrayPointer::operator const type* () const { return reinterpret_cast<const type*>(m_array_elements); }\
 JConst##Type##ArrayPointer::operator std::initializer_list<type> () const { PointerArrayInitializerList(,type); }\
@@ -550,15 +538,14 @@ PersistentJ##Type##ArrayPointer::operator QSpan<type> () { return m_array_elemen
     ArrayPointerStructors(Type, type)\
     PointerArrayOperators(Type, __VA_ARGS__)
 
-PointerArrayDeclaration(Byte, byte, char, qint8, quint8 STD_BYTE )
-PointerArrayDeclaration(Int, int, int, uint CHAR32 )
+PointerArrayDeclaration(Byte, byte, char, qint8, quint8, std::byte )
+PointerArrayDeclaration(Int, int, int, uint, char32_t )
 PointerArrayDeclaration(Long, long, qint64, quint64)
 PointerArrayDeclaration(Float, float, float)
 PointerArrayDeclaration(Double, double, double)
 PointerArrayDeclaration(Short, short, short)
-PointerArrayDeclaration(Char, char, qint16, quint16, wchar_t, QChar CHAR16 )
+PointerArrayDeclaration(Char, char, qint16, quint16, wchar_t, QChar, char16_t )
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 JConstByteArrayPointer::operator QByteArrayView() const { return QByteArrayView(reinterpret_cast<const char*>(m_array_elements), size()); }
 JByteArrayPointer::operator QByteArrayView() const { return QByteArrayView(reinterpret_cast<const char*>(m_array_elements), size()); }
 JConstCharArrayPointer::operator QStringView() const { return QStringView(reinterpret_cast<const QChar*>(m_array_elements), size()); }
@@ -567,7 +554,6 @@ PersistentJConstByteArrayPointer::operator QByteArrayView() const { return QByte
 PersistentJByteArrayPointer::operator QByteArrayView() const { return QByteArrayView(reinterpret_cast<const char*>(m_array_elements), size()); }
 PersistentJConstCharArrayPointer::operator QStringView() const { return QStringView(reinterpret_cast<const QChar*>(m_array_elements), size()); }
 PersistentJCharArrayPointer::operator QStringView() const { return QStringView(reinterpret_cast<const QChar*>(m_array_elements), size()); }
-#endif
 JConstByteArrayPointer::operator QByteArray() const { return QByteArray(reinterpret_cast<const char*>(m_array_elements), size()); }
 JByteArrayPointer::operator QByteArray() const { return QByteArray(reinterpret_cast<const char*>(m_array_elements), size()); }
 JConstCharArrayPointer::operator QString() const { return QString(reinterpret_cast<const QChar*>(m_array_elements), size()); }
@@ -699,5 +685,3 @@ const jboolean* PersistentJBooleanArrayPointer::booleanArray() const{
 #undef ArrayPointerINIT
 #undef ArrayPointerDEL
 #undef PersistentArrayPointerDEL
-#undef CHAR32
-#undef CHAR16

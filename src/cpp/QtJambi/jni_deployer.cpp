@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -31,7 +31,7 @@
 
 #include "pch_p.h"
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 namespace QtJambiPrivate{
 template<>
 struct supports_qHash<QMap<QString,QPair<size_t,size_t>>> : std::false_type{};

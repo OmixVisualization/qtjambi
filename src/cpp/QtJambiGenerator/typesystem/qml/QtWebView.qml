@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -43,17 +43,6 @@ TypeSystem{
     RequiredLibrary{
         name: "QtWebEngineQuick"
         mode: RequiredLibrary.ProvideOnly
-        since: 6
-    }
-    RequiredLibrary{
-        name: "QtWebEngine"
-        mode: RequiredLibrary.ProvideOnly
-        until: 5
-    }
-    RequiredLibrary{
-        name: "QtQuick"
-        mode: RequiredLibrary.Mandatory
-        until: 5
     }
     
     NamespaceType{

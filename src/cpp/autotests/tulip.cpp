@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,11 +35,6 @@ QList<int> Tulip::do_QList_of_int(const QList<int> &l) { return l; }
 
 QStringList Tulip::do_QStringList(const QStringList &l) { return l; }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-QLinkedList<int> Tulip::do_QLinkedList_of_int(const QLinkedList<int> &l) { return l; }
-QVector<int> Tulip::do_QVector_of_int(const QVector<int> &l) { return l; }
-#endif
-
 QStack<int> Tulip::do_QStack_of_int(const QStack<int> &s) { return s; }
 
 QQueue<int> Tulip::do_QQueue_of_int(const QQueue<int> &q) { return q; }
@@ -66,13 +61,6 @@ QSet<QString>& Tulip::setRef() {return m_set;}
 
 const QStack<QPair<int,QString>>& Tulip::constStack() const {return m_stack;}
 QStack<QPair<int,QString>>& Tulip::stackRef() {return m_stack;}
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-const QLinkedList<QPoint>& Tulip::constLinkedList() const {return m_linkedlist;}
-QLinkedList<QPoint>& Tulip::linkedListRef() {return m_linkedlist;}
-const QVector<double>& Tulip::constVector() const {return m_vector;}
-QVector<double>& Tulip::vectorRef() {return m_vector;}
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
 
 const QMap<QString,QPoint>& Tulip::constMap() const {return m_map;}
 QMap<QString,QPoint>& Tulip::mapRef() {return m_map;}
@@ -112,54 +100,6 @@ void Tulip::testStdFunctions(const QList<Tulip::TestStdFunction>& functions){
         }
     }
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QVector<QRunnable*> Tulip::createVectorOfRunnables() {return {};}
-QVector<QEasingCurve::EasingFunction> Tulip::createVectorOfEasingFunctions() {return {[](qreal r) -> qreal { return r; }};}
-void Tulip::testEasingFunctions(const QVector<QEasingCurve::EasingFunction>& functions){
-    int i=0;
-    for(QEasingCurve::EasingFunction fun : functions){
-        if(fun)
-            fun(i++);
-    }
-}
-QVector<Tulip::TestStdFunction> Tulip::createVectorOfStdFunctions() {return {[](int,bool,double){}};}
-void Tulip::testStdFunctions(const QVector<Tulip::TestStdFunction>& functions){
-    int i=0;
-    for(Tulip::TestStdFunction fun : functions){
-        if(fun){
-            fun(i, i%2==1, i);
-            ++i;
-        }
-    }
-}
-QLinkedList<QRunnable*> Tulip::createLinkedListOfRunnables() {return {};}
-QLinkedList<QEasingCurve::EasingFunction> Tulip::createLinkedListOfEasingFunctions() {return {[](qreal r) -> qreal { return r; }};}
-void Tulip::testEasingFunctions(const QLinkedList<QEasingCurve::EasingFunction>& functions){
-    int i=0;
-    for(QEasingCurve::EasingFunction fun : functions){
-        if(fun)
-            fun(i++);
-    }
-}
-QLinkedList<Tulip::TestStdFunction> Tulip::createLinkedListOfStdFunctions() {return {[](int,bool,double){}};}
-void Tulip::testStdFunctions(const QLinkedList<Tulip::TestStdFunction>& functions){
-    int i=0;
-    for(Tulip::TestStdFunction fun : functions){
-        if(fun){
-            fun(i, i%2==1, i);
-            ++i;
-        }
-    }
-}
-QVector<QObject*> Tulip::createVectorOfObjects() {return {};}
-QVector<QVector<QRunnable*>> Tulip::createVectorOfVectorOfRunnables() {return {};}
-QVector<QVector<QObject*>> Tulip::createVectorOfVectorOfObjects() {return {};}
-QLinkedList<QObject*> Tulip::createLinkedListOfObjects() {return {};}
-QLinkedList<QLinkedList<QRunnable*>> Tulip::createLinkedListOfLinkedListOfRunnables() {return {};}
-QLinkedList<QLinkedList<QObject*>> Tulip::createLinkedListOfLinkedListOfObjects() {return {};}
-#endif
-
 
 void Tulip::consumeIntList(const QList<int>& list){list.size();};//for (int i = 0; i < list.size(); i++) {list.at(i);}}
 void Tulip::consumeStringList(const QList<QString>& list){list.size();};//for (int i = 0; i < list.size(); i++) {list.at(i);}}

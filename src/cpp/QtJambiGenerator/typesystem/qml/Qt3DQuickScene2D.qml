@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -63,12 +63,6 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "entities()"
-            remove: RemoveFlag.All
-            since: [5, 15]
-            until: [6, 0, 0]
-        }
-        ModifyFunction{
             signature: "addEntity(Qt3DCore::QEntity*)"
             ModifyArgument{
                 index: 1
@@ -104,6 +98,5 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 11]
     }
 }

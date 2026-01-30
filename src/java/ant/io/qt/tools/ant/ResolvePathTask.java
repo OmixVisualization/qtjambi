@@ -2,7 +2,7 @@
 **
 ** Copyright (C) 2011 Darryl L. Miles.  All rights reserved.
 ** Copyright (C) 2011 D L Miles Consulting Ltd.  All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **

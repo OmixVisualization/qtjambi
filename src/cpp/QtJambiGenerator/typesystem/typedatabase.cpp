@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ** (in parts)
 **
 ** This file is part of QtJambi.
@@ -42,10 +42,9 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <QtXml>
+#include <QQmlEngine>
 #include <QtCore>
 #include "qmltypesystemreader.h"
-#include "xmltypesystemreader.h"
-#include "xmltoqmlconverter.h"
 #include "../reporthandler.h"
 
 namespace TS{
@@ -300,7 +299,7 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
             addType(e);
         }
 
-        if(m_qtVersion < QVersionNumber(6,0,0)){
+        {
             // We need the generator to perform type conversion in C++ with the
             //  construct:
             // QString qstring = QString("string"); QStringRef(&qstring)"
@@ -346,18 +345,6 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
             addType(wrapper);
 
             wrapper = new JWrapperTypeEntry(TypeEntry::JCollectionWrapperType, "JCollectionWrapper", QLatin1String("java.util"), QLatin1String("Collection"));
-            wrapper->setCodeGeneration(TypeEntry::GenerateNothing);
-            addType(wrapper);
-
-            wrapper = new JWrapperTypeEntry(TypeEntry::JIteratorWrapperType, "JIteratorWrapper", QLatin1String("java.util"), QLatin1String("Iterator"));
-            wrapper->setCodeGeneration(TypeEntry::GenerateNothing);
-            addType(wrapper);
-
-            wrapper = new JWrapperTypeEntry(TypeEntry::JEnumWrapperType, "JEnumWrapper", QLatin1String("java.lang"), QLatin1String("Enum"));
-            wrapper->setCodeGeneration(TypeEntry::GenerateNothing);
-            addType(wrapper);
-
-            wrapper = new JWrapperTypeEntry(TypeEntry::JQFlagsWrapperType, "JQFlagsWrapper", QLatin1String("io.qt"), QLatin1String("QFlags"));
             wrapper->setCodeGeneration(TypeEntry::GenerateNothing);
             addType(wrapper);
         }
@@ -489,7 +476,7 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
             removeFunction(entry, "toVector() const");
             protectedAccess(entry, "begin() const");
             protectedAccess(entry, "end() const");
-            if(qtVersion >= QVersionNumber(6,0,0)){
+            {
                 rename(entry, "size() const", "longSize");
                 rename(entry, "indexOf(const T &, qsizetype) const", "longIndexOf");
                 rename(entry, "lastIndexOf(const T &, qsizetype) const", "lastLongIndexOf");
@@ -531,7 +518,7 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
             stringListEntry->setInclude(Include(Include::IncludePath, "QtCore/QStringList"));
             stringListEntry->addExtraInclude(Include(Include::IncludePath, "QtCore/QList"));
             stringListEntry->setTargetTypeSystem("io.qt.core");
-            if(qtVersion < QVersionNumber(6,0,0)){
+            {
                 removeFunction(stringListEntry, "contains(QLatin1String, Qt::CaseSensitivity) const");
                 removeFunction(stringListEntry, "contains(QStringView, Qt::CaseSensitivity) const");
                 removeFunction(stringListEntry, "operator+(const QStringList &) const");
@@ -549,7 +536,7 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
             }
             addType(stringListEntry);
         }
-        if(qtVersion < QVersionNumber(6,0,0)){
+        {
             ContainerTypeEntry* entry = new ContainerTypeEntry("QLinkedList", ContainerTypeEntry::LinkedListContainer);
             entry->setInclude(Include(Include::IncludePath, "QtCore/QLinkedList"));
             removeFunction(entry, "swap(QLinkedList<T> &)");
@@ -633,7 +620,6 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
             iteratorEntry->setInclude(Include(Include::IncludePath, "QtCore/QVector"));
             iteratorEntry->addExtraInclude(Include(Include::IncludePath, "QtCore/QStack"));
         }
-        //if(qtVersion < QVersionNumber(6,0,0))
         {
             ContainerTypeEntry* entry = new ContainerTypeEntry("QVector", ContainerTypeEntry::VectorContainer);
             entry->setInclude(Include(Include::IncludePath, "QtCore/QVector"));
@@ -853,9 +839,7 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
                 mod.signature = QMetaObject::normalizedSignature("unite(const QMap<Key, T> &)");
                 entry->addFunctionModification(mod);
             }
-            if(qtVersion >= QVersionNumber(6,0,0)){
-                rename(entry, "size()const", "longSize");
-            }
+            rename(entry, "size()const", "longSize");
             addType(createListIterator(entry, true));
             addType(entry);
         }
@@ -928,11 +912,9 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
                 mod.signature = QMetaObject::normalizedSignature("unite(const QMap<Key, T> &)");
                 entry->addFunctionModification(mod);
             }
-            if(qtVersion >= QVersionNumber(6,0,0)){
-                removeFunction(entry, "equal_range(const Key &)const");
-                rename(entry, "size()const", "longSize");
-                addType(createListIterator(entry, true));
-            }
+            removeFunction(entry, "equal_range(const Key &)const");
+            rename(entry, "size()const", "longSize");
+            addType(createListIterator(entry, true));
             addType(entry);
         }
         {
@@ -966,9 +948,7 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
                 mod.signature = QMetaObject::normalizedSignature("unite(const QHash<K, V>  &)");
                 entry->addFunctionModification(mod);
             }
-            if(qtVersion >= QVersionNumber(6,0,0)){
-                rename(entry, "size()const", "longSize");
-            }
+            rename(entry, "size()const", "longSize");
             addType(createListIterator(entry, true));
             addType(entry);
         }
@@ -1014,19 +994,19 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
             }
     //        removeFunction(entry, "begin() const");
     //        removeFunction(entry, "end() const");
-            if(qtVersion >= QVersionNumber(6,0,0)){
-                removeFunction(entry, "equal_range(const Key &)const");
-                removeFunction(entry, "keys(T)const");
-                rename(entry, "size()const", "longSize");
-                rename(entry, "size()const", "longSize");
-                addType(createListIterator(entry, true));
-            }
+            removeFunction(entry, "equal_range(const Key &)const");
+            removeFunction(entry, "keys(T)const");
+            rename(entry, "size()const", "longSize");
+            rename(entry, "size()const", "longSize");
+            addType(createListIterator(entry, true));
             addType(entry);
         }
         addType(new ContainerTypeEntry("QQmlListProperty", ContainerTypeEntry::QQmlListPropertyContainer));
-        ContainerTypeEntry* pair = new ContainerTypeEntry("QPair", ContainerTypeEntry::PairContainer);
-        addType(pair);
-        m_entries["std::pair"].append(pair);
+        {
+            ContainerTypeEntry* pair = new ContainerTypeEntry("QPair", ContainerTypeEntry::PairContainer);
+            addType(pair);
+            m_entries["std::pair"].append(pair);
+        }
         addType(new ContainerTypeEntry("std::atomic", ContainerTypeEntry::std_atomic));
         addType(new ContainerTypeEntry("std::optional", ContainerTypeEntry::std_optional));
         {
@@ -1077,7 +1057,8 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
             addType(cronoType);
         }
     }
-    if(!parseFile(filename, importInputDirectoryList, typeystemDirectory, generate)){
+    QQmlEngine engine;
+    if(!parseFile(&engine, filename, importInputDirectoryList, typeystemDirectory, generate)){
         std::exit(-1);
     }
     if(stringListEntry){
@@ -1086,7 +1067,7 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
     }
 }
 
-bool TypeDatabase::parseFile(const QString &filename, const QStringList &importInputDirectoryList, const QStringList &typeystemDirectoryList, bool generate, bool optional) {
+bool TypeDatabase::parseFile(QQmlEngine* engine, const QString &filename, const QStringList &importInputDirectoryList, const QStringList &typeystemDirectoryList, bool generate, bool optional) {
     const QString &filepath = resolveFilePath(filename, 1, typeystemDirectoryList);
     qDebug() << "Resolving file: " << qPrintable(filename) << " => \"" << qPrintable(filepath) << "\"";
     if(optional && filepath.trimmed().isNull()) {
@@ -1099,18 +1080,10 @@ bool TypeDatabase::parseFile(const QString &filename, const QStringList &importI
 
     qsizetype count = m_entries.size();
 
-    if(filename.endsWith(".xml")){
-        XmlTypeSystemReader handler(this, generate, m_qtVersion);
-        handler.setImportInputDirectoryList(importInputDirectoryList);
-        handler.setTypesystemsDirectoryList(typeystemDirectoryList);
-        handler.parse(filepath);
-        //return false;
-    }else{
-        QmlTypeSystemReader handler(this, generate, m_qtVersion);
-        handler.setImportInputDirectoryList(importInputDirectoryList);
-        handler.setTypesystemsDirectoryList(typeystemDirectoryList);
-        handler.parse(filepath);
-    }
+    QmlTypeSystemReader handler(engine, this, generate, m_qtVersion);
+    handler.setImportInputDirectoryList(importInputDirectoryList);
+    handler.setTypesystemsDirectoryList(typeystemDirectoryList);
+    handler.parse(filepath);
 
     qsizetype newCount = m_entries.size();
     QString string = QString::fromLatin1("File parsed: '%1', %2 new entries")

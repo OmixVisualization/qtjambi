@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -35,73 +35,6 @@ TypeSystem{
     qtLibrary: "QtSensors"
     module: "qtjambi.sensors"
     description: "Provides access to sensor hardware and motion gesture recognition."
-
-    ObjectType{
-        name: "QSensorGesture"
-        ExtraIncludes{
-            Include{
-                fileName: "utils_p.h"
-                location: Include.Local
-            }
-        }
-        ModifyFunction{
-            signature: "gestureSignals() const"
-            ModifyArgument{
-                index: 0
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "for(int i=0; i<%in.size(); ++i){\n"+
-                                  "    if(%in[i].endsWith(\"(QString)\")){\n"+
-                                  "        %in[i].replace(\"QString\", \"java.lang.String\");\n"+
-                                  "    }else if(!%in[i].endsWith(\"()\")){\n"+
-                                  "        const QObject* obj = __qt_this;\n"+
-                                  "        int idx = obj->metaObject()->indexOfMethod(qPrintable(%in[i]));\n"+
-                                  "        if(idx>=0){\n"+
-                                  "            QMetaMethod method = obj->metaObject()->method(idx);\n"+
-                                  "            jobject methodObject = qtjambi_cast<jobject>(%env, method);\n"+
-                                  "            jstring sig = Java::QtCore::QMetaMethod::methodSignature(%env, methodObject);\n"+
-                                  "            %in[i] = qtjambi_cast<QString>(%env, sig);\n"+
-                                  "        }else{\n"+
-                                  "            %in[i].replace(\"QString\", \"java.lang.String\");\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QSensorGestureManager"
-        ModifyFunction{
-            signature: "recognizerSignals(QString) const"
-            ModifyArgument{
-                index: 0
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "for(int i=0; i<%in.size(); ++i){\n"+
-                                  "    if(!%in[i].endsWith(\"()\")){\n"+
-                                  "        %in[i].replace(\"QString\", \"java.lang.String\");\n"+
-                                  "    }\n"+
-                                  "}\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
-        until: 5
-    }
-    
-    InterfaceType{
-        name: "QSensorGesturePluginInterface"
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QSensorGestureRecognizer"
-        until: 5
-    }
     
     ObjectType{
         name: "QAccelerometer"
@@ -464,7 +397,6 @@ TypeSystem{
     
     ObjectType{
         name: "QLightReading"
-        since: [5, 15]
     }
     
     ObjectType{
@@ -477,7 +409,6 @@ TypeSystem{
             name: "sensorType"
             read: false
         }
-        since: [5, 15]
     }
     
     ValueType{
@@ -635,7 +566,6 @@ TypeSystem{
     
     InterfaceType{
         name: "QLightFilter"
-        since: [5, 15]
     }
     
     InterfaceType{

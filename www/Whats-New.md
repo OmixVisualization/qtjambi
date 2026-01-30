@@ -1,4 +1,16 @@
-# What's new in QtJambi 6.10.1
+# What's new in QtJambi 6.10.2
+
+Solved issue:
+* [Issue 234](../../../issues/234): [BUG] getOpenFileName returns null
+* Bugfix: Crash after throwing exception in property getter
+
+* improved performance
+* improved internal cache access
+* Ready for Qt 6.11
+
+# History
+
+## What's new in QtJambi 6.10.1
 
 * Removing Qt5 backward compatibility
 * QFuture and QPromise are now native wrapper types
@@ -6,8 +18,6 @@
 * `QQmlInfo` now mirrors native API entirely.
 * All appearances of quint16 http ports now map to Java's int type.
 * Fixed memory leak in using function pointers.
-
-# History
 
 ## What's new in QtJambi 6.10.0
 
@@ -32,7 +42,7 @@ This will be the last release with Maven-published binaries for Qt 6.9.
 
 ## What's new in QtJambi 6.9.2
 
-* 6.8.7 linux libraries are based on GLIBC 2.29 again
+* 6.8.8 linux libraries are based on GLIBC 2.29 again
 * Ready for Qt 6.10
 
 ## What's new in QtJambi 6.9.1

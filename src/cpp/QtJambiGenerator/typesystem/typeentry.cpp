@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ** (in parts)
 **
 ** This file is part of QtJambi.
@@ -960,20 +960,15 @@ QString ContainerTypeEntry::targetLangName() const {
 
     switch (m_type) {
         case StringListContainer: return "QStringList";
-        case ByteArrayListContainer: return "QList";
-        case ListContainer: return "QList";
+        case ByteArrayListContainer:
+        case ListContainer:
+        case VectorContainer: return "QList";
         case std_array: return "[";
         case std_vector: return "List";
         case QModelRoleDataSpanContainer: return "Map";
         case QPropertyBindingContainer: return "QPropertyBinding";
         case QBindableContainer: return "QBindable";
         case LinkedListContainer: return "QLinkedList";
-        case VectorContainer:
-            if(TypeDatabase::instance()->qtVersion() < QVersionNumber(6,0,0)){
-                return "QVector";
-            }else{
-                return "QList";
-            }
         case QArrayDataContainer: return "Collection";
         case QTypedArrayDataContainer: return "Collection";
         case StackContainer: return "QStack";

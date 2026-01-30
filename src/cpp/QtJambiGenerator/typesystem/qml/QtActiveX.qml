@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -82,16 +82,6 @@ TypeSystem{
         Text{content: "#if defined(Q_OS_WIN)\n"+
                       "RegistryAPI::registerMetaType<HRESULT>(\"HRESULT\");\n"+
                       "RegistryAPI::registerPrimitiveTypeInfo<HRESULT>(\"HRESULT\", \"int\");\n"+
-                      "#endif"}
-    }
-    
-    InjectCode{
-        target: CodeClass.MetaInfo
-        position: Position.End
-        until: [5, 15]
-        Text{content: "#if defined(Q_OS_WIN)\n"+
-                      "RegistryAPI::registerMetaObject(typeid(QAxObject), QAxObject::staticMetaObject, false);\n"+
-                      "RegistryAPI::registerMetaObject(typeid(QAxWidget), QAxWidget::staticMetaObject, false);\n"+
                       "#endif"}
     }
     
@@ -211,7 +201,6 @@ TypeSystem{
             signature: "signal(QString, int, void *)"
             access: Modification.Private
         }
-        since: 6
     }
     
     ObjectType{
@@ -224,7 +213,6 @@ TypeSystem{
             signature: "signal(QString, int, void *)"
             access: Modification.Private
         }
-        since: 6
     }
     
     ObjectType{
@@ -236,11 +224,6 @@ TypeSystem{
         ModifyFunction{
             signature: "qt_static_metacall(QObject *, QMetaObject::Call, int, void **)"
             remove: RemoveFlag.All
-            since: 6
-        }
-        InjectCode{
-            until: [5, 15]
-            Text{content: "public static final io.qt.core.QMetaObject staticMetaObject = io.qt.core.QMetaObject.forType(QAxWidget.class);"}
         }
     }
     
@@ -280,11 +263,6 @@ TypeSystem{
         ModifyFunction{
             signature: "qt_static_metacall(QObject *, QMetaObject::Call, int, void **)"
             remove: RemoveFlag.All
-            since: 6
-        }
-        InjectCode{
-            until: [5, 15]
-            Text{content: "public static final io.qt.core.QMetaObject staticMetaObject = io.qt.core.QMetaObject.forType(QAxObject.class);"}
         }
     }
     

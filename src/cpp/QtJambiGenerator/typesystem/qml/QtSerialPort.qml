@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -76,11 +76,6 @@ TypeSystem{
         ModifyFunction{
             signature: "handle()const"
             remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "sendBreak(int)"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "bindableStopBits(Qt::Disambiguated_t)"

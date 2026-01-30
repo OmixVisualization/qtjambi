@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -60,15 +60,7 @@ TypeSystem{
     
     NamespacePrefix{
         prefix: "QtDataVisualization"
-        namespace: "QtDataVisualization"
-        namingPolicy: NamespacePrefix.Cut
-        until: 5
-    }
-    
-    NamespacePrefix{
-        prefix: "QtDataVisualization"
         namespace: ""
-        since: 6
     }
     
     NamespaceType{
@@ -84,7 +76,6 @@ TypeSystem{
     GlobalFunction{
         signature: "qDefaultSurfaceFormat(bool)"
         targetType: "QtDataVisualization"
-        since: 6
     }
     
     ObjectType{

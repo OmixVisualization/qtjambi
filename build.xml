@@ -1,6 +1,6 @@
 <!--===============================================================================================
 ==
-== Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+== Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ==
 == This file is part of Qt Jambi.
 ==
@@ -637,6 +637,11 @@ Further options:
         <foreach-version targets="tests.generate-impl"/>
     </target>
 
+    <target name="tests.generate.only" depends="tests.import"
+         description="Generates and builds all tests">
+        <foreach-version targets="tests.generate.only-impl"/>
+    </target>
+
     <target name="tests.compile" depends="tests.import"
           description="Builds all tests without recalling generator">
         <foreach-version targets="tests.compile-impl"/>
@@ -645,6 +650,16 @@ Further options:
     <target name="tests.compile.native" depends="tests.import"
           description="Builds native test components">
         <foreach-version targets="tests.compile.native-impl"/>
+    </target>
+
+    <target name="tests.compile.native.qmake" depends="tests.import"
+          description="Runs qmake on native test components">
+        <foreach-version targets="tests.compile.native.qmake-impl"/>
+    </target>
+
+    <target name="tests.compile.native.make" depends="tests.import"
+          description="Runs make on native test components">
+        <foreach-version targets="tests.compile.native.make-impl"/>
     </target>
 
     <target name="tests.compile.java" depends="tests.import"

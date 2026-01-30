@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -585,7 +585,7 @@ public class TestQProperty extends ApplicationInitializer {
     }
     
     @Test
-	@SuppressWarnings({ "rawtypes", "serial", "unchecked" })
+	@SuppressWarnings({ "rawtypes", "unchecked" })
     public void testQProperty_QVariant() {
     	QProperty<Integer> p1 = new QProperty<Integer>(5);
     	QProperty<Integer> p2 = new QProperty<Integer>(5);    	

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -119,12 +119,10 @@ TypeSystem{
     
     EnumType{
         name: "QAlertLevel"
-        since: 6
     }
     
     EnumType{
         name: "QAlertType"
-        since: 6
     }
     
     NamespaceType{
@@ -285,16 +283,6 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "connectToHost(QString, quint16, QIODevice::OpenMode,QAbstractSocket::NetworkLayerProtocol)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "int"
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "connectToHost(QString, quint16, QIODeviceBase::OpenMode,QAbstractSocket::NetworkLayerProtocol)"
             ModifyArgument{
                 index: 2
@@ -302,17 +290,6 @@ TypeSystem{
                     modifiedType: "int"
                 }
             }
-            since: 6
-        }
-        ModifyFunction{
-            signature: "connectToHost(QHostAddress, quint16, QIODevice::OpenMode)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "int"
-                }
-            }
-            until: 5
         }
         ModifyFunction{
             signature: "connectToHost(QHostAddress, quint16, QIODeviceBase::OpenMode)"
@@ -322,7 +299,6 @@ TypeSystem{
                     modifiedType: "int"
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "abort()"
@@ -337,14 +313,8 @@ TypeSystem{
             access: Modification.NonFinal
         }
         ModifyFunction{
-            signature: "setSocketDescriptor(qintptr,QAbstractSocket::SocketState,QIODevice::OpenMode)"
-            access: Modification.NonFinal
-            until: 5
-        }
-        ModifyFunction{
             signature: "setSocketDescriptor(qintptr,QAbstractSocket::SocketState,QIODeviceBase::OpenMode)"
             access: Modification.NonFinal
-            since: 6
         }
         ModifyFunction{
             signature: "waitForConnected(int)"
@@ -1011,7 +981,6 @@ TypeSystem{
 
         EnumType{
             name: "ConversionModeFlag"
-            since: [5, 8]
         }
 
         EnumType{
@@ -1039,18 +1008,8 @@ TypeSystem{
             since: [6, 2]
         }
         ModifyFunction{
-            signature: "QHostAddress(quint8*)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
             signature: "QHostAddress(const quint8*)"
             remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setAddress(quint8*)"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "setAddress(const quint8*)"
@@ -1708,12 +1667,10 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
 
         EnumType{
             name: "RedirectPolicy"
-            since: [5, 9]
         }
 
         EnumType{
             name: "TransferTimeoutConstant"
-            since: [5, 15]
         }
 
         EnumType{
@@ -1721,11 +1678,9 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
             extensible: true
             RejectEnumValue{
                 name: "HTTP2AllowedAttribute"
-                since: [5, 15]
             }
             RejectEnumValue{
                 name: "HTTP2WasUsedAttribute"
-                since: [5, 15]
             }
         }
 
@@ -1916,13 +1871,6 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
             write: false
             access: Modification.Private
         }
-        ModifyField{
-            name: "NextProtocolSpdy3_0"
-            read: true
-            write: false
-            access: Modification.Private
-            until: 5
-        }
         InjectCode{
             Text{content: "public static final String ALPNProtocolHTTP2;\n"+
                           "public static final String NextProtocolHttp1_1;\n"+
@@ -1936,18 +1884,6 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
                           "    }\n"+
                           "    ALPNProtocolHTTP2 = _ALPNProtocolHTTP2;\n"+
                           "    NextProtocolHttp1_1 = _NextProtocolHttp1_1;\n"+
-                          "}"}
-        }
-        InjectCode{
-            until: 5
-            Text{content: "public static final String NextProtocolSpdy3_0;\n"+
-                          "static{\n"+
-                          "    String _NextProtocolSpdy3_0 = null;\n"+
-                          "    try{\n"+
-                          "    _NextProtocolSpdy3_0 = NextProtocolSpdy3_0();\n"+
-                          "    }catch(Throwable t){\n"+
-                          "    }\n"+
-                          "    NextProtocolSpdy3_0 = _NextProtocolSpdy3_0;\n"+
                           "}"}
         }
         ModifyFunction{
@@ -1990,57 +1926,6 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
                 }
             }
         }
-    }
-    
-    ValueType{
-        name: "QNetworkConfiguration"
-
-        EnumType{
-            name: "BearerType"
-        }
-
-        EnumType{
-            name: "Purpose"
-        }
-
-        EnumType{
-            name: "StateFlag"
-        }
-
-        EnumType{
-            name: "Type"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QNetworkConfigurationManager"
-        EnumType{
-            name: "Capability"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QNetworkSession"
-        EnumType{
-            name: "SessionError"
-        }
-        EnumType{
-            name: "State"
-        }
-        EnumType{
-            name: "UsagePolicy"
-        }
-        ModifyFunction{
-            signature: "interface()const"
-            rename: "getInterface"
-        }
-        ModifyFunction{
-            signature: "interface()const"
-            rename: "getInterface"
-        }
-        until: 5
     }
     
     ObjectType{
@@ -2131,40 +2016,33 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
         EnumType{
             name: "PolicyFlag"
         }
-        since: [5, 9]
     }
     
     ValueType{
         name: "QOcspResponse"
-        since: [5, 13]
     }
     
     EnumType{
         name: "QDtlsError"
-        since: [5, 12]
     }
     
     EnumType{
         name: "QOcspCertificateStatus"
-        since: [5, 12]
     }
     
     EnumType{
         name: "QOcspRevocationReason"
-        since: [5, 12]
     }
     
     ObjectType{
         name: "QDtls"
         EnumType{
             name: "HandshakeState"
-            since: [5, 12]
         }
         ValueType{
             name: "GeneratorParameters"
             javaName: "QDtlsClientVerifier.GeneratorParameters"
             generate: false
-            since: [5, 12]
         }
         ModifyFunction{
             signature: "peerPort()const"
@@ -2229,7 +2107,6 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
                 }
             }
         }
-        since: [5, 12]
     }
     
     ObjectType{
@@ -2246,12 +2123,10 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
                 }
             }
         }
-        since: [5, 12]
     }
     
     ValueType{
         name: "QHttp2Configuration"
-        since: [5, 14]
     }
 
     ValueType{

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -67,11 +67,6 @@ TypeSystem{
     
     Rejection{
         className: "QTestData"
-    }
-
-    Rejection{
-        className: "QEventSizeOfChecker"
-        until: [5, 15]
     }
     
     NamespaceType{
@@ -144,6 +139,22 @@ TypeSystem{
             remove: RemoveFlag.All
         }
 
+        ModifyField{
+            name: "defaultTryTimeout"
+            ReplaceType{
+                modifiedType: "java.time.temporal.@NonNull TemporalAmount"
+            }
+            ConversionRule{
+                codeClass: CodeClass.NativeGetter
+                Text{content: "%out = qtjambi_cast<jobject>(%env, %in.load());"}
+            }
+            ConversionRule{
+                codeClass: CodeClass.NativeSetter
+                Text{content: String.raw`std::chrono::milliseconds %out = qtjambi_cast<std::chrono::milliseconds>(%env, %in);`}
+            }
+            since: [6,11]
+        }
+
         ModifyFunction{
             signature: "qRun()"
             noExcept: true
@@ -155,24 +166,12 @@ TypeSystem{
             blockExceptions: true
         }
         ModifyFunction{
-            signature: "touchEvent(QWindow *, QTouchDevice *, bool)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "touchEvent(QWidget *, QTouchDevice *, bool)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
             signature: "touchEvent(QWindow *, QPointingDevice *, bool)"
             remove: RemoveFlag.All
-            since: 6
         }
         ModifyFunction{
             signature: "touchEvent(QWidget *, QPointingDevice *, bool)"
             remove: RemoveFlag.All
-            since: 6
         }
         ModifyFunction{
             signature: "formatString(const char *, const char *, size_t)"
@@ -230,14 +229,8 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "qFindTestData(const char*, const char*, int, const char*)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
             signature: "qFindTestData(const char*, const char*, int, const char*, const char*)"
             remove: RemoveFlag.All
-            since: 6
         }
         ModifyFunction{
             signature: "qCompare(QStringView, QLatin1StringView, const char *, const char *, const char *, int)"
@@ -310,12 +303,10 @@ TypeSystem{
         ModifyFunction{
             signature: "qCompare<T,N>(QList<T>, std::initializer_list<T>, const char *, const char *, const char *, int)"
             remove: RemoveFlag.All
-            since: 6
         }
         ModifyFunction{
             signature: "qCompare<T,N>(const QList<T>&,const T(&)[N],const char*,const char*,const char*,int)"
             remove: RemoveFlag.All
-            since: 6
         }
         ModifyFunction{
             signature: "qCompare<T1,T2>(T1*,T2*,const char*,const char*,const char*,int)"
@@ -334,14 +325,8 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "qCompare<T>(T,T,const char*,const char*,const char*,int)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
             signature: "qCompare<T>(const T*,const T*,const char*,const char*,const char*,int)"
             remove: RemoveFlag.All
-            since: 6
         }
         ModifyFunction{
             signature: "qCompare<T1,T2>(T1,T2,const char*,const char*,const char*,int)"
@@ -360,22 +345,6 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
-        }
-        ModifyFunction{
-            signature: "createTouchDevice(QTouchDevice::DeviceType)"
-            ModifyArgument{
-                index: "return"
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Shell
-                    ownership: Ownership.Cpp
-                }
-            }
-            until: 5
         }
         ModifyFunction{
             signature: "qInit(QObject *, int, char **)"
@@ -576,7 +545,7 @@ TypeSystem{
                     }
                     ConversionRule{
                         codeClass: CodeClass.Native
-                        Text{content: "int %out = CoreAPI::metaTypeId(%env, type, instantiations);"}
+                        Text{content: "int %out = CoreAPI::registeredMetaType(%env, type, instantiations).id();"}
                     }
                 }
             }
@@ -588,7 +557,6 @@ TypeSystem{
                     type: "QString"
                     isImplicit: true
                 }
-                since: 6
             }
             Instantiation{
                 Argument{
@@ -648,12 +616,6 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant variant_%in(%2, %in);\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, variant_%in);"}
-                    until: 5
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
                     Text{content: "#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)\n"+
                                   "if(!QMetaType(%2).iface()->copyCtr\n"+
                                   "            || (!%in && !QMetaType(%2).iface()->defaultCtr)){\n"+
@@ -662,7 +624,6 @@ TypeSystem{
                                   "#endif\n"+
                                   "QVariant variant_%in(QMetaType(%2), %in);\n"+
                                   "%out = qtjambi_cast<jobject>(%env, variant_%in);"}
-                    since: 6
                 }
             }
         }
@@ -675,12 +636,6 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant variant_%in(%2, %in);\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, variant_%in);"}
-                    until: 5
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
                     Text{content: "#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)\n"+
                                   "if(!QMetaType(%2).iface()->copyCtr\n"+
                                   "                || (!%in && !QMetaType(%2).iface()->defaultCtr)){\n"+
@@ -689,7 +644,6 @@ TypeSystem{
                                   "#endif\n"+
                                   "QVariant variant_%in(QMetaType(%2), %in);\n"+
                                   "%out = qtjambi_cast<jobject>(%env, variant_%in);"}
-                    since: 6
                 }
             }
         }
@@ -702,12 +656,6 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant variant_%in(%2, %in);\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, variant_%in);"}
-                    until: 5
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
                     Text{content: "#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)\n"+
                                   "if(!QMetaType(%2).iface()->copyCtr\n"+
                                   "                || (!%in && !QMetaType(%2).iface()->defaultCtr)){\n"+
@@ -716,7 +664,6 @@ TypeSystem{
                                   "#endif\n"+
                                   "QVariant variant_%in(QMetaType(%2), %in);\n"+
                                   "%out = qtjambi_cast<jobject>(%env, variant_%in);"}
-                    since: 6
                 }
             }
         }
@@ -1043,21 +990,6 @@ TypeSystem{
                 quoteAfterLine: "class QTest__"
                 quoteBeforeLine: "}// class"
             }
-        }
-        InjectCode{
-            target: CodeClass.Java
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiTest.java"
-                quoteAfterLine: "class QTest_5__"
-                quoteBeforeLine: "}// class"
-                until: 5
-            }
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiTest.java"
-                quoteAfterLine: "class QTest_6__"
-                quoteBeforeLine: "}// class"
-                since: 6
-            }
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiTest.java"
                 quoteAfterLine: "class QTest_64__"
@@ -1106,7 +1038,6 @@ TypeSystem{
         ModifyFunction{
             signature: "QTouchEventSequence(QWindow *, QPointingDevice *, bool)"
             access: Modification.Friendly
-            since: 6
         }
         ModifyFunction{
             signature: "point(int)"
@@ -1127,33 +1058,6 @@ TypeSystem{
                     ownership: Ownership.Dependent
                 }
             }
-        }
-        ModifyFunction{
-            signature: "move(int, QPoint, QWidget *)"
-            ModifyArgument{
-                index: 3
-                RemoveDefaultExpression{
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "press(int, QPoint, QWidget *)"
-            ModifyArgument{
-                index: 3
-                RemoveDefaultExpression{
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "release(int, QPoint, QWidget *)"
-            ModifyArgument{
-                index: 3
-                RemoveDefaultExpression{
-                }
-            }
-            until: 5
         }
         ModifyField{
             name: "device"
@@ -1203,7 +1107,6 @@ TypeSystem{
                 }
             }
         }
-        since: 6
     }
     
     
@@ -1297,19 +1200,6 @@ TypeSystem{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiTest.java"
                 quoteAfterLine: "class QSignalSpy__"
                 quoteBeforeLine: "}// class"
-                until: 6.7
-            }
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiTest.java"
-                quoteAfterLine: "class QSignalSpy_5_"
-                quoteBeforeLine: "}// class"
-                until: 5
-            }
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiTest.java"
-                quoteAfterLine: "class QSignalSpy_6_"
-                quoteBeforeLine: "}// class"
-                since: 6
                 until: 6.7
             }
         }

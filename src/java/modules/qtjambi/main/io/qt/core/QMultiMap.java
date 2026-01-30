@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -138,7 +138,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#QMultiMap-2">QMultiMap::<wbr>QMultiMap(const QMap&lt;Key, T> &amp;)</a></code></p>
      * @param other map
      */
-    public QMultiMap(Map<Key,List<T>> other) {
+    public QMultiMap(Map<? extends Key,? extends List<? extends T>> other) {
 		super(null);
 		QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
 		initialize(metaTypes.first.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.first), metaTypes.second.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.second), other);
@@ -180,7 +180,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	}
     
     @QtUninvokable
-    private native void initialize(Class<?> keyType, long keyMetaType, Class<?> valueType, long valueMetaType, Map<Key, List<T>> other);
+    private native void initialize(Class<?> keyType, long keyMetaType, Class<?> valueType, long valueMetaType, Map<?,?> other);
     
     /**
      * Creates and returns a copy of this object.
@@ -1258,21 +1258,21 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
         return result;
     }
     
-    private static <Key,T> QPair<QMetaType,QMetaType> findMapMetaType(Map<Key,List<T>> elements){
+	static QPair<QMetaType,QMetaType> findMapMetaType(Map<?,? extends List<?>> elements){
         if(elements.getClass()==QMap.class) {
             return new QPair<>(((QMap<?,?>)elements).keyMetaType(), ((QMap<?,?>)elements).valueMetaType());
         }else if(elements.getClass()==QHash.class) {
             return new QPair<>(((QHash<?,?>)elements).keyMetaType(), ((QHash<?,?>)elements).valueMetaType());
         }else if(elements.getClass()==QMultiMap.class) {
-            return new QPair<>(((QMultiMap<Key,T>)elements).keyMetaType(), ((QMultiMap<Key,T>)elements).valueMetaType());
+            return new QPair<>(((QMultiMap<?,?>)elements).keyMetaType(), ((QMultiMap<?,?>)elements).valueMetaType());
         }else if(elements.getClass()==QMultiHash.class) {
-            return new QPair<>(((QMultiHash<Key,T>)elements).keyMetaType(), ((QMultiHash<Key,T>)elements).valueMetaType());
+            return new QPair<>(((QMultiHash<?,?>)elements).keyMetaType(), ((QMultiHash<?,?>)elements).valueMetaType());
         }else {
         	QMetaType keyMetaType = new QMetaType();
         	Class<?> keyType = null;
         	QMetaType valueMetaType = new QMetaType();
         	Class<?> valueType = null;
-        	for(Entry<Key,List<T>> entry : elements.entrySet()) {
+        	for(Entry<?,? extends List<?>> entry : elements.entrySet()) {
         		Object key = entry.getKey();
         		if(keyMetaType!=null) {
     	    		QMetaType _result = QList.getMetaType(key);

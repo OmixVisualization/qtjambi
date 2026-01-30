@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -109,11 +109,22 @@ namespace QtQml {
 #if defined(QTJAMBI_GENERATOR_RUNNING) && QT_VERSION >= QT_VERSION_CHECK(6,7,0)
 template <typename T>
 int qmlRegisterSingletonType(
-    const char *uri, int versionMajor, int versionMinor,  const char *typeName,
+    const char *uri, int versionMajor, int versionMinor, const char *typeName,
     QObject*(*callback)(QQmlEngine*,QJSEngine*));
 int qmlRegisterSingletonType(
     const char *uri, int versionMajor, int versionMinor, const char *typeName,
-    QJSValue(*callback)(QQmlEngine *, QJSEngine *))
+    QJSValue(*callback)(QQmlEngine *, QJSEngine *));
 #endif
+
+inline size_t qHash(const QJSValue &value, size_t seed = 0)
+{
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
+    QtPrivate::QHashCombine hash;
+#else
+    QtPrivate::QHashCombine hash(seed);
+#endif
+    seed = hash(seed, reinterpret_cast<const quint64&>(value));
+    return seed;
+}
 
 #endif // QTJAMBIQML_HASHES_H

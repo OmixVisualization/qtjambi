@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -135,6 +135,16 @@ public class TestContainers extends ApplicationInitializer {
     public void testStringList(){
     	Object container = new QString("A::B").split("::");
     	assertTrue(container instanceof QStringList);
+    	QStringList list = (QStringList)container;
+		List<QString> qStringList = new ArrayList<QString>();
+    	qStringList.add(new QString("C"));
+    	qStringList.add(new QString("D"));
+    	qStringList.add(new QString("E"));
+    	list.addAllStrings(qStringList);
+    	list.add(new QString("F"));
+    	assertEquals(Arrays.asList("A", "B", "C", "D", "E", "F"), list);
+    	assertEquals(QList.of("A", "B", "C", "D", "E", "F"), list);
+    	assertEquals(QList.of(new QString("A"), new QString("B"), new QString("C"), new QString("D"), new QString("E"), new QString("F")), list);
     }
 
     @Test

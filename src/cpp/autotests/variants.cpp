@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -39,14 +39,12 @@ Q_DECLARE_METATYPE(QRunnable*);
 Q_DECLARE_METATYPE(QPaintDevice*);
 Q_DECLARE_METATYPE(QEvent*);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 static const bool initialized = []()->bool{
         qRegisterMetaType<UnknownEnum>("UnknownEnum");
         qRegisterMetaType<UnknownValue>("UnknownValue");
         qRegisterMetaType<VariantTestObject*>("VariantTestObject*");
         return true;
 }();
-#endif
 
 inline bool operator<(const QRectF& r1, const QRectF& r2) {return qHash(r1) < qHash(r2);}
 
@@ -155,22 +153,6 @@ QVariant Variants::getIntMultiMap(){
     return QVariant();
 }
 
-QVariant Variants::getIntVector(){
-    QVector<int> vec;
-    vec << 1 << 2 << 3 << 4;
-    return QVariant::fromValue(vec);
-}
-
-QVariant Variants::getIntLinkedList(){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QLinkedList<int> vec;
-    vec << 1 << 2 << 3 << 4;
-    return QVariant::fromValue(vec);
-#else
-    return QVariant();
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
-}
-
 QVariant Variants::getIntList(){
     QList<int> vec;
     vec << 1 << 2 << 3 << 4;
@@ -255,22 +237,6 @@ QVariant Variants::getInt64MultiHash(){
     return QVariant::fromValue(vec);
 }
 
-QVariant Variants::getStringVector(){
-    QVector<QString> vec;
-    vec << "S1" << "S2" << "S3" << "S4";
-    return QVariant::fromValue(vec);
-}
-
-QVariant Variants::getStringLinkedList(){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QLinkedList<QString> vec;
-    vec << "S1" << "S2" << "S3" << "S4";
-    return QVariant::fromValue(vec);
-#else
-    return QVariant();
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
-}
-
 QVariant Variants::getStringList(){
     QList<QString> vec;
     vec << "S1" << "S2" << "S3" << "S4";
@@ -293,22 +259,6 @@ QVariant Variants::getStringStack(){
     QStack<QString> vec;
     vec << "S1" << "S2" << "S3" << "S4";
     return QVariant::fromValue(vec);
-}
-
-QVariant Variants::getUnknownEnumVector(){
-    QVector<UnknownEnum> vec;
-    vec << UnknownEnum::E1 << UnknownEnum::E2 << UnknownEnum::E3 << UnknownEnum::E4;
-    return QVariant::fromValue(vec);
-}
-
-QVariant Variants::getUnknownEnumLinkedList(){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QLinkedList<UnknownEnum> vec;
-    vec << UnknownEnum::E1 << UnknownEnum::E2 << UnknownEnum::E3 << UnknownEnum::E4;
-    return QVariant::fromValue(vec);
-#else
-    return QVariant();
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
 }
 
 QVariant Variants::getUnknownEnumList(){
@@ -335,22 +285,6 @@ QVariant Variants::getUnknownEnumStack(){
     return QVariant::fromValue(vec);
 }
 
-QVariant Variants::getUnknownValueVector(){
-    QVector<UnknownValue> vec;
-    vec << UnknownValue{};
-    return QVariant::fromValue(vec);
-}
-
-QVariant Variants::getUnknownValueLinkedList(){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QLinkedList<UnknownValue> vec;
-    vec << UnknownValue{};
-    return QVariant::fromValue(vec);
-#else
-    return QVariant();
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
-}
-
 QVariant Variants::getUnknownValueList(){
     QList<UnknownValue> vec;
     vec << UnknownValue{};
@@ -375,22 +309,6 @@ QVariant Variants::getUnknownValueStack(){
     return QVariant::fromValue(vec);
 }
 
-QVariant Variants::getDirVector(){
-    QVector<QDir> vec;
-    vec << QDir("/") << QDir("/home");
-    return QVariant::fromValue(vec);
-}
-
-QVariant Variants::getDirLinkedList(){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QLinkedList<QDir> vec;
-    vec << QDir("/") << QDir("/home");
-    return QVariant::fromValue(vec);
-#else
-    return QVariant();
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
-}
-
 QVariant Variants::getDirList(){
     QList<QDir> vec;
     vec << QDir("/") << QDir("/home");
@@ -413,22 +331,6 @@ QVariant Variants::getDirStack(){
     QStack<QDir> vec;
     vec << QDir("/") << QDir("/home");
     return QVariant::fromValue(vec);
-}
-
-QVariant Variants::getTestObjectVector(){
-    QVector<VariantTestObject*> vec;
-    vec << new VariantTestObject(1) << new VariantTestObject(2) << new VariantTestObject(3) << new VariantTestObject(4);
-    return QVariant::fromValue(vec);
-}
-
-QVariant Variants::getTestObjectLinkedList(){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QLinkedList<VariantTestObject*> vec;
-    vec << new VariantTestObject(1) << new VariantTestObject(2) << new VariantTestObject(3) << new VariantTestObject(4);
-    return QVariant::fromValue(vec);
-#else
-    return QVariant();
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
 }
 
 QVariant Variants::getTestObjectList(){
@@ -637,18 +539,11 @@ QVariant Variants::getSpinBox(){
 #endif
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 QMetaType Variants::propertyType(const QObject* object, const QString& propertyName){
     QVariant variant = object->property(qPrintable(propertyName));
     return variant.metaType();
     return QMetaType(variant.userType());
 }
-#else
-int Variants::propertyType(const QObject* object, const QString& propertyName){
-    QVariant variant = object->property(qPrintable(propertyName));
-    return variant.userType();
-}
-#endif
 
 QColor Variants::fetchColorProperty(const QObject* object, const QString& propertyName){
     QVariant variant = object->property(qPrintable(propertyName));
@@ -692,20 +587,6 @@ bool Variants::compare(QObject* object, const QString& property, const QList<QOb
     QList<QObject*> list1 = variant.value<QList<QObject*>>();
     return list1==list2;
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-bool Variants::compare(QObject* object, const QString& property, const QVector<QObject*>& list2){
-    QVariant variant = object->property(qPrintable(property));
-    QVector<QObject*> list1 = variant.value<QVector<QObject*>>();
-    return list1==list2;
-}
-bool Variants::compare(QObject* object, const QString& property, const QLinkedList<QObject*>& list2){
-    QVariant variant = object->property(qPrintable(property));
-    QLinkedList<QObject*> list1 = variant.value<QLinkedList<QObject*>>();
-    return list1==list2;
-}
-#endif
-
 
 bool Variants::compare(QObject* object, const QString& property, const QPair<QObject*,QObject*>& pair2){
     QVariant variant = object->property(qPrintable(property));

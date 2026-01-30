@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -688,6 +688,66 @@ TypeSystem{
                               "}"}
             }
         }
+        ModifyFunction{
+            signature: "setColumnAxis(QCategory3DAxis*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcColumnAxis"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "releaseColumnAxis()"
+            InjectCode{
+                position: Position.End
+                Text{content: String.raw`__rcColumnAxis = null;`}
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "setRowAxis(QCategory3DAxis*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcRowAxis"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "releaseRowAxis()"
+            InjectCode{
+                position: Position.End
+                Text{content: String.raw`__rcRowAxis = null;`}
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "setValueAxis(QValue3DAxis*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcValueAxis"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "releaseValueAxis()"
+            InjectCode{
+                position: Position.End
+                Text{content: String.raw`__rcValueAxis = null;`}
+            }
+            since: [6,11]
+        }
     }
     
     ValueType{
@@ -996,6 +1056,66 @@ TypeSystem{
                               "}"}
             }
         }
+        ModifyFunction{
+            signature: "setAxisX(QValue3DAxis*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcAxisX"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "releaseAxisX()"
+            InjectCode{
+                position: Position.End
+                Text{content: String.raw`__rcAxisX = null;`}
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "setAxisY(QValue3DAxis*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcAxisY"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "releaseAxisY()"
+            InjectCode{
+                position: Position.End
+                Text{content: String.raw`__rcAxisY = null;`}
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "setAxisZ(QValue3DAxis*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcAxisZ"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "releaseAxisZ()"
+            InjectCode{
+                position: Position.End
+                Text{content: String.raw`__rcAxisZ = null;`}
+            }
+            since: [6,11]
+        }
     }
 
     ObjectType{
@@ -1091,6 +1211,66 @@ TypeSystem{
                               "    }\n"+
                               "}"}
             }
+        }
+        ModifyFunction{
+            signature: "setAxisX(QValue3DAxis*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcAxisX"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "releaseAxisX()"
+            InjectCode{
+                position: Position.End
+                Text{content: String.raw`__rcAxisX = null;`}
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "setAxisY(QValue3DAxis*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcAxisY"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "releaseAxisY()"
+            InjectCode{
+                position: Position.End
+                Text{content: String.raw`__rcAxisY = null;`}
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "setAxisZ(QValue3DAxis*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcAxisZ"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "releaseAxisZ()"
+            InjectCode{
+                position: Position.End
+                Text{content: String.raw`__rcAxisZ = null;`}
+            }
+            since: [6,11]
         }
     }
     
@@ -1378,7 +1558,7 @@ TypeSystem{
                     action: ReferenceCount.Set
                 }
             }
-            until: [6,10]
+            since: [6,10]
         }
         ModifyFunction{
             signature: "setAxisY(QAbstractAxis*)"
@@ -1389,7 +1569,7 @@ TypeSystem{
                     action: ReferenceCount.Set
                 }
             }
-            until: [6,10]
+            since: [6,10]
         }
         Rejection{fieldName: "d_ptr"}
         Rejection{functionName: "graph"}
@@ -1851,6 +2031,71 @@ template<> QExplicitlySharedDataPointer<QGraphsLinePrivate>::~QExplicitlySharedD
 
     ObjectType{
         name: "QPieSlice"
+        ModifyFunction{
+            signature: "append(QPieSlice*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "append(QList<QPieSlice*>)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "take(QPieSlice*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "remove(QPieSlice*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "insert(qsizetype,QPieSlice*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 2
+                threadAffinity: true
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "operator<<(QPieSlice*)"
+            remove: RemoveFlag.All
+            since: [6,11]
+        }
         since: 6.8
     }
 
@@ -1908,4 +2153,5 @@ template<> QExplicitlySharedDataPointer<QGraphsLinePrivate>::~QExplicitlySharedD
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: private virtual function '*()' in 'Q3DTheme'"}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type *Q*DataArray."}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'from*' for function modification in 'QQuick*' not found. Possible candidates: "}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping *, unmatched * type 'QQuickShapeGradient*'"}
 }

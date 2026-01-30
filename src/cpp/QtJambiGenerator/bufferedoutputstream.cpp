@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
 **
 ** This file is part of QtJambi.
@@ -45,11 +45,7 @@ BufferedOutputStream::BufferedOutputStream(const QFileInfo& file):
         QTextStream(),
         m_file(file),
         m_buffer() {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     setEncoding(QStringConverter::Utf8);
-#else
-    setCodec("UTF-8");
-#endif
     QBuffer* buffer = new QBuffer(&m_buffer);
     if(buffer->open(QIODevice::WriteOnly))
         setDevice(buffer);

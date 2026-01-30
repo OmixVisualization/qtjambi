@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -114,8 +114,8 @@ public class TestQmlQt61 extends ApplicationInitializer{
 		QObject scriptValueObject = new QObject();
 		QJSManagedValue jsValue = engine.toManagedValue(scriptValueObject);
         Assert.assertEquals(QJSEngine.ObjectOwnership.JavaOwnership, QJSEngine.objectOwnership(scriptValueObject));
-		Assert.assertTrue(General.internalAccess.isJavaOwnership(scriptValueObject));
-        Assert.assertTrue(jsValue.isQObject());
+		Assert.assertTrue("scriptValueObject !isJavaOwnership", General.internalAccess.isJavaOwnership(scriptValueObject));
+        Assert.assertTrue("QJSManagedValue !isQObject", jsValue.isQObject());
         Assert.assertEquals(scriptValueObject, jsValue.toQObject());
         engine.dispose();
         Assert.assertFalse(scriptValueObject.isDisposed());

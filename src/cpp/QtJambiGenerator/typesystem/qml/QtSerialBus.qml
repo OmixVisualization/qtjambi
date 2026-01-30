@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -259,47 +259,10 @@ TypeSystem{
             generate: false
             using: "std::function<void()>"
         }
-        ModifyFunction{
-            signature: "setResetControllerFunction(std::function<void()>)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.@Nullable Runnable"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    InsertTemplate{
-                        name: "core.runnable.function"
-                    }
-                }
-            }
-            until: 5
-        }
-
         FunctionalType{
             name: "CanBusStatusGetter"
             generate: false
             using: "std::function<QCanBusDevice::CanBusStatus()>"
-        }
-        ModifyFunction{
-            signature: "setCanBusStatusGetter(std::function<QCanBusDevice::CanBusStatus()>)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.util.function.@Nullable Supplier<@NonNull CanBusStatus>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    InsertTemplate{
-                        name: "core.supplier.function"
-                        Replace{
-                            from: "%TYPE"
-                            to: "QCanBusDevice::CanBusStatus"
-                        }
-                    }
-                }
-            }
-            until: 5
         }
     }
     
@@ -454,128 +417,6 @@ TypeSystem{
             }
             since: [6, 2]
         }
-    }
-    
-    InterfaceType{
-        name: "QCanBusFactoryV2"
-        ExtraIncludes{
-            Include{
-                fileName: "utils_p.h"
-                location: Include.Local
-            }
-        }
-        ModifyFunction{
-            signature: "createDevice(const QString &, QString *) const"
-            throwing: "QCanBusException"
-            ModifyArgument{
-                index: "return"
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Shell
-                    ownership: Ownership.Cpp
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
-                }
-            }
-            InjectCode{
-                target: CodeClass.Native
-                position: Position.End
-                ArgumentMap{
-                    index: 0
-                    metaName: "%0"
-                }
-                ArgumentMap{
-                    index: 2
-                    metaName: "%2"
-                }
-                Text{content: "if(!%0 && !%2.isEmpty()){\n"+
-                              "    Java::QtSerialBus::QCanBusException::throwNew(%env, %2 QTJAMBI_STACKTRACEINFO );\n"+
-                              "}"}
-            }
-            InjectCode{
-                target: CodeClass.Shell
-                position: Position.Beginning
-                Text{content: "QTJAMBI_TRY{"}
-            }
-            InjectCode{
-                target: CodeClass.Shell
-                position: Position.End
-                ArgumentMap{
-                    index: 2
-                    metaName: "%2"
-                }
-                Text{content: "}QTJAMBI_CATCH(const JavaException& exn){\n"+
-                              "    if(exn.isInstanceOf(%env, Java::QtSerialBus::QCanBusException::getClass(%env))){\n"+
-                              "        if(%2){\n"+
-                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.throwable(%env));\n"+
-                              "            *%2 = qtjambi_cast<QString>(%env, message);\n"+
-                              "        }\n"+
-                              "    }else{\n"+
-                              "        exn.raise();\n"+
-                              "    }\n"+
-                              "}QTJAMBI_TRY_END"}
-            }
-        }
-        ModifyFunction{
-            signature: "availableDevices(QString *) const"
-            throwing: "QCanBusException"
-            ModifyArgument{
-                index: 1
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
-                }
-            }
-            InjectCode{
-                target: CodeClass.Native
-                position: Position.End
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "if(!%1.isEmpty()){\n"+
-                              "    Java::QtSerialBus::QCanBusException::throwNew(%env, %1 QTJAMBI_STACKTRACEINFO );\n"+
-                              "}"}
-            }
-            InjectCode{
-                target: CodeClass.Shell
-                position: Position.Beginning
-                Text{content: "QTJAMBI_TRY{"}
-            }
-            InjectCode{
-                target: CodeClass.Shell
-                position: Position.End
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "}QTJAMBI_CATCH(const JavaException& exn){\n"+
-                              "    if(exn.isInstanceOf(%env, Java::QtSerialBus::QCanBusException::getClass(%env))){\n"+
-                              "        if(%1){\n"+
-                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.throwable(%env));\n"+
-                              "            *%1 = qtjambi_cast<QString>(%env, message);\n"+
-                              "        }\n"+
-                              "    }else{\n"+
-                              "        exn.raise();\n"+
-                              "    }\n"+
-                              "}QTJAMBI_TRY_END"}
-            }
-        }
-        until: 5
     }
     
     ValueType{
@@ -825,16 +666,6 @@ TypeSystem{
         EnumType{
             name: "ReplyType"
         }
-    }
-    
-    ObjectType{
-        name: "QModbusRtuSerialMaster"
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QModbusRtuSerialSlave"
-        until: 5
     }
     
     ObjectType{

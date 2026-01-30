@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -41,11 +41,7 @@ const char * adaptFile(const char *file){
 #define PATHSEP '/'
 #endif
     if(file){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         QByteArrayView _file(file);
-#else
-        QLatin1String _file(file);
-#endif
         auto idx = _file.lastIndexOf(PATHSEP);
         if(idx>0)
             idx = _file.lastIndexOf(PATHSEP, idx-1);
@@ -402,14 +398,12 @@ public:
             if(category.isDebugEnabled()){
                 QString receiverDbg;
                 QDebug(&receiverDbg).nospace().noquote() << receiver;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                 const char* enumValue = QEvent::staticMetaObject.enumerator(0).valueToKey(event->type());
                 if(enumValue){
                     return new MethodPrintPrivate(category, file, line, function, [enumValue, receiverDbg, receiver, event](QDebug& dbg){
                         dbg << "QCoreApplication::notify(QObject *receiver, QEvent *event) with receiver: " << reinterpret_cast<void*>(receiver) << "=" << receiverDbg << ", event: " << reinterpret_cast<void*>(event) << "=QEvent::" << enumValue;
                     });
                 }
-#endif
                 const std::type_info* eventType = QtJambiPrivate::CheckPointer<QEvent>::trySupplyType(event);
                 if(eventType){
                     return new MethodPrintPrivate(category, file, line, function, [receiverDbg, receiver, event, type = event->type(), eventTypeName = QtJambiAPI::typeName(*eventType)](QDebug& dbg){

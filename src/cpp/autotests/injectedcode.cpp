@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
 **
 ** This file is part of Qt Jambi.
@@ -151,24 +151,6 @@ void AbstractSocketSubclass::aSlot(const QNetworkProxy &proxy, QAuthenticator *a
 
 namespace Java{
 Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-namespace QtXml{
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/xml,QXmlEntityResolver$ResolvedEntity,
-                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(ZLio/qt/xml/QXmlInputSource;)
-                                QTJAMBI_REPOSITORY_DEFINE_FIELD(error,Z)
-                                QTJAMBI_REPOSITORY_DEFINE_FIELD(inputSource,Lio/qt/xml/QXmlInputSource;)
-)
-
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/xml,QXmlNamespaceSupport$ProcessedName,
-                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;Ljava/lang/String;)
-)
-
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/xml,QXmlNamespaceSupport$SplitName,
-                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;Ljava/lang/String;)
-)
-}
-#endif
 
 #ifndef QTJAMBI_NO_WIDGETS
 namespace QtWidgets{

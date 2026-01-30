@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -43,23 +43,19 @@ TypeSystem{
         }
         generate: false
         Rejection{ className: "QClipBlendNodeCreatedChange" }
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DAnimation::QAbstractAnimation"
         EnumType{ name: "AnimationType" }
-        since: [5, 11]
     }
     
     ObjectType{
         name: "Qt3DAnimation::QAbstractAnimationClip"
-        since: [5, 11]
     }
     
     ObjectType{
         name: "Qt3DAnimation::QAbstractChannelMapping"
-        since: [5, 11]
     }
     
     ObjectType{
@@ -86,12 +82,10 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 11]
     }
     
     ObjectType{
         name: "Qt3DAnimation::QAbstractClipBlendNode"
-        since: [5, 11]
     }
     
     ObjectType{
@@ -123,23 +117,19 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 11]
     }
     
     ObjectType{
         name: "Qt3DAnimation::QAnimationAspect"
-        since: [5, 11]
     }
     
     ObjectType{
         name: "Qt3DAnimation::QAnimationCallback"
         EnumType{ name: "Flag" }
-        since: [5, 11]
     }
     
     ObjectType{
         name: "Qt3DAnimation::QAnimationClip"
-        since: [5, 11]
     }
     
     ValueType{
@@ -168,13 +158,11 @@ TypeSystem{
             name: "const_iterator"
             isConst: true
         }
-        since: [5, 11]
     }
     
     ObjectType{
         name: "Qt3DAnimation::QAnimationClipLoader"
         EnumType{name: "Status"}
-        since: [5, 11]
     }
     
     ObjectType{
@@ -220,7 +208,6 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 11]
     }
     
     ObjectType{
@@ -257,7 +244,6 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 11]
     }
     
     ObjectType{
@@ -271,7 +257,6 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 11]
     }
     
     ObjectType{
@@ -286,7 +271,6 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 11]
     }
     
     ValueType{
@@ -309,7 +293,6 @@ TypeSystem{
         IteratorType{
             name: "const_iterator"
         }
-        since: [5, 11]
     }
     
     ValueType{
@@ -343,7 +326,6 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 11]
     }
     
     ObjectType{
@@ -366,7 +348,6 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 11]
     }
     
     ObjectType{
@@ -380,7 +361,6 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 11]
     }
     
     ObjectType{
@@ -394,12 +374,10 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 11]
     }
     
     ObjectType{
         name: "Qt3DAnimation::QClipBlendNodeCreatedChangeBase"
-        since: [5, 11]
     }
     
     ObjectType{
@@ -413,12 +391,10 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 11]
     }
     
     ObjectType{
         name: "Qt3DAnimation::QClock"
-        since: [5, 11]
     }
     
     ObjectType{
@@ -426,7 +402,6 @@ TypeSystem{
         EnumType{
             name: "InterpolationType"
         }
-        since: [5, 11]
     }
     
     ObjectType{
@@ -476,7 +451,6 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 11]
     }
     
     ObjectType{
@@ -499,7 +473,6 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 11]
     }
     
     EnumType{
@@ -550,22 +523,10 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 11]
     }
     
     ObjectType{
         name: "Qt3DAnimation::QMorphTarget"
-        ModifyFunction{
-            signature: "fromGeometry(Qt3DRender::QGeometry*,QStringList)"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-            until: 5
-        }
         ModifyFunction{
             signature: "fromGeometry(Qt3DCore::QGeometry*,QStringList)"
             ModifyArgument{
@@ -575,42 +536,6 @@ TypeSystem{
                     ownership: Ownership.Java
                 }
             }
-            since: 6
-        }
-        ModifyFunction{
-            signature: "setAttributes(const QVector<Qt3DRender::QAttribute*>&)"
-            InjectCode{
-                position: Position.End
-                Text{content: "if(__rcAttribute!=null){\n"+
-                              "    __rcAttribute.clear();\n"+
-                              "}else{\n"+
-                              "    __rcAttribute = new java.util.ArrayList<>();\n"+
-                              "}\n"+
-                              "__rcAttribute.addAll(attributes);"}
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "addAttribute(Qt3DRender::QAttribute*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcAttribute"
-                    action: ReferenceCount.Add
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "removeAttribute(Qt3DRender::QAttribute*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcAttribute"
-                    action: ReferenceCount.Take
-                }
-            }
-            until: 5
         }
         ModifyFunction{
             signature: "setAttributes(const QList<Qt3DCore::QAttribute*>&)"
@@ -623,7 +548,6 @@ TypeSystem{
                               "}\n"+
                               "__rcAttribute.addAll(attributes);"}
             }
-            since: 6
         }
         ModifyFunction{
             signature: "addAttribute(Qt3DCore::QAttribute*)"
@@ -634,7 +558,6 @@ TypeSystem{
                     action: ReferenceCount.Add
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "removeAttribute(Qt3DCore::QAttribute*)"
@@ -645,9 +568,7 @@ TypeSystem{
                     action: ReferenceCount.Take
                 }
             }
-            since: 6
         }
-        since: [5, 11]
     }
     
     ObjectType{
@@ -661,7 +582,6 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 11]
     }
     
     ObjectType{
@@ -708,7 +628,6 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 11]
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QAbstractChannelMapping' set to non-final, as it is extended by other classes"}

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,7 +35,7 @@ QT_WARNING_DISABLE_GCC("-Winaccessible-base")
 QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
 
 QSharedPointer<class AutoPairAccess> getPairAccess(const QtPrivate::QMetaTypeInterface *iface){
-    return findContainerAccess(iface->typeId.loadAcquire()).dynamicCast<AutoPairAccess>();
+    return findContainerAccess(QMetaType(iface)).dynamicCast<AutoPairAccess>();
 }
 void AutoPairAccess::defaultCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr){
     if(QSharedPointer<class AutoPairAccess> access = getPairAccess(iface)){
@@ -154,8 +154,12 @@ AutoPairAccess* AutoPairAccess::clone(){
     return new AutoPairAccess(*this);
 }
 
-size_t AutoPairAccess::sizeOf(){
+size_t AutoPairAccess::sizeOf() const {
     return m_size;
+}
+
+size_t AutoPairAccess::alignOf() const {
+    return m_align;
 }
 
 void* AutoPairAccess::constructContainer(JNIEnv*, void* result, const ConstContainerAndAccessInfo& container) {
@@ -345,7 +349,11 @@ void AutoPairAccess::swap(JNIEnv *, const ContainerInfo& container, const Contai
         void* v2 = reinterpret_cast<char*>(container2.container)+m_offset;
         auto kiface = m_keyMetaType.iface();
         if(kiface->moveCtr){
-            void* tmpFirst = operator new(kiface->size);
+            void* tmpFirst;
+            if (kiface->alignment > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+                tmpFirst = operator new(kiface->size, std::align_val_t(kiface->alignment));
+            else
+                tmpFirst = operator new(kiface->size);
             kiface->moveCtr(kiface, tmpFirst, container.container);
             m_keyMetaType.destruct(container.container);
             kiface->moveCtr(kiface, container.container, container2.container);
@@ -362,7 +370,11 @@ void AutoPairAccess::swap(JNIEnv *, const ContainerInfo& container, const Contai
         }
         auto viface = m_valueMetaType.iface();
         if(viface->moveCtr){
-            void* tmpSecond = operator new(viface->size);
+            void* tmpSecond;
+            if (viface->alignment > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+                tmpSecond = operator new(viface->size, std::align_val_t(viface->alignment));
+            else
+                tmpSecond = operator new(viface->size);
             viface->moveCtr(viface, tmpSecond, v1);
             m_valueMetaType.destruct(v1);
             viface->moveCtr(viface, v1, v2);
@@ -387,16 +399,16 @@ bool AutoPairAccess::destructContainer(void* container) {
     return true;
 }
 
-int AutoPairAccess::registerContainer(const QByteArray& typeName) {
-    int newMetaType = QMetaType::fromName(typeName).id();
-    if(newMetaType==QMetaType::UnknownType){
+QMetaType AutoPairAccess::registerContainer(const QByteArray& typeName) {
+    QMetaType newMetaType = QMetaType::fromName(typeName);
+    if(!newMetaType.isValid()){
         if(typeName.startsWith("QPair<")){
-            newMetaType = QMetaType::fromName("std::p"+typeName.mid(2)).id();
+            newMetaType = QMetaType::fromName("std::p"+typeName.mid(2));
         }else if(typeName.startsWith("std::pair<")){
-            newMetaType = QMetaType::fromName("QP"+typeName.mid(6)).id();
+            newMetaType = QMetaType::fromName("QP"+typeName.mid(6));
         }
     }
-    if(newMetaType==QMetaType::UnknownType){
+    if(!newMetaType.isValid()){
         QSharedPointer<AutoPairAccess> access(new AutoPairAccess(*this), &containerDisposer);
         auto kiface = m_keyMetaType.iface();
         auto viface = m_valueMetaType.iface();
@@ -440,7 +452,7 @@ int AutoPairAccess::registerContainer(const QByteArray& typeName) {
             QtJambiUtils::QHashFunction keyHash = m_keyHashFunction;
             QtJambiUtils::QHashFunction valueHash = m_valueHashFunction;
             size_t offset = m_offset;
-            insertHashFunctionByMetaType(newMetaType,
+            insertHashFunctionByMetaType(newMetaType.iface(),
                                             [offset, keyHash, valueHash]
                                             (const void* ptr, size_t seed)->size_t{
                                                 if(ptr){
@@ -457,31 +469,31 @@ int AutoPairAccess::registerContainer(const QByteArray& typeName) {
             const QMetaType to = QMetaType::fromType<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
             QMetaType::ConverterFunction o = [newMetaType](const void *src, void *target)->bool{
                 QtMetaTypePrivate::QPairVariantInterfaceImpl* impl = new(target) QtMetaTypePrivate::QPairVariantInterfaceImpl();
-                QSharedPointer<class AutoPairAccess> access = getPairAccess(QMetaType(newMetaType).iface());
+                QSharedPointer<class AutoPairAccess> access = getPairAccess(newMetaType.iface());
                 impl->_pair = src;
                 impl->_metaType_first = access->m_keyMetaType;
                 impl->_metaType_second = access->m_valueMetaType;
                 impl->_getFirst = qtjambi_function_pointer<16,void(const void * const *, void *)>(
                             [newMetaType](const void * const *pair, void *dataPtr){
                                 if(pair){
-                                    if(QSharedPointer<class AutoPairAccess> access = getPairAccess(QMetaType(newMetaType).iface())){
+                                    if(QSharedPointer<class AutoPairAccess> access = getPairAccess(newMetaType.iface())){
                                         const void* fst = reinterpret_cast<const char*>(*pair);
                                         access->m_keyMetaType.construct(dataPtr, fst);
                                     }
                                 }
-                            }, newMetaType);
+                    }, size_t(newMetaType.iface()));
                 impl->_getSecond = qtjambi_function_pointer<16,void(const void * const *, void *)>(
                             [newMetaType](const void * const *pair, void *dataPtr) {
                                 if(pair){
-                                    if(QSharedPointer<class AutoPairAccess> access = getPairAccess(QMetaType(newMetaType).iface())){
+                                    if(QSharedPointer<class AutoPairAccess> access = getPairAccess(newMetaType.iface())){
                                         const void* snd = reinterpret_cast<const char*>(*pair)+access->m_offset;
                                         access->m_valueMetaType.construct(dataPtr, snd);
                                     }
                                 }
-                            }, newMetaType);
+                    }, size_t(newMetaType.iface()));
                 return true;
             };
-            QMetaType::registerConverterFunction(o, QMetaType(newMetaType), to);
+            QMetaType::registerConverterFunction(o, newMetaType, to);
         }
     }else{
         registerContainerAccess(newMetaType, this);

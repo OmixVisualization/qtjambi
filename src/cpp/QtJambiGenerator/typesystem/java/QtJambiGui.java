@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -413,7 +413,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_gui_QImage_initialize_1native__Lio_
         arguments[1].i = width;
         arguments[2].i = height;
         arguments[3].l = format;
-        QtJambiShell::initialize(env, __jni_class, java_object, &__qt_construct_QImage_7, sizeof(QImage_shell), typeid(QImage), 0, true, arguments);
+        QtJambiShell::initialize(env, __jni_class, java_object, &__qt_construct_QImage_7, sizeof(QImage_shell), alignof(QImage_shell), typeid(QImage), 0, true, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
     }QTJAMBI_TRY_END
@@ -436,7 +436,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_gui_QImage_initialize_1native__Lio_
         arguments[1].i = width;
         arguments[2].i = height;
         arguments[3].l = format;
-        QtJambiShell::initialize(env, __jni_class, java_object, &__qt_construct_QImage_8, sizeof(QImage_shell), typeid(QImage), 0, true, arguments);
+        QtJambiShell::initialize(env, __jni_class, java_object, &__qt_construct_QImage_8, sizeof(QImage_shell), alignof(QImage_shell), typeid(QImage), 0, true, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
     }QTJAMBI_TRY_END
@@ -453,16 +453,7 @@ class QPointerEvent_native__{
 
 }// class
 
-class QKeySequence_5__ extends QKeySequence {
-
-        @QtUninvokable
-        public final int at(int i) {
-            return get(i);
-        }
-
-}// class
-
-class QKeySequence_6__ extends QKeySequence {
+class QKeySequence__ extends QKeySequence {
 
         @QtUninvokable
         public final QKeyCombination at(int i) {
@@ -666,12 +657,46 @@ class QQuaternion___ extends QQuaternion {
     /**
      * Result type for {@link QQuaternion#getAxes()}.
      */
-    public static class Axes{
-        private Axes(QVector3D xAxis, QVector3D yAxis, QVector3D zAxis) {
+    public static class Axes implements java.lang.Cloneable{
+        public Axes(@NonNull QVector3D xAxis, @NonNull QVector3D yAxis, @NonNull QVector3D zAxis) {
             super();
+            if(xAxis==null)
+                xAxis = new QVector3D();
+            if(yAxis==null)
+                yAxis = new QVector3D();
+            if(zAxis==null)
+                zAxis = new QVector3D();
             this.xAxis = xAxis;
             this.yAxis = yAxis;
             this.zAxis = zAxis;
+        }
+        /**
+         * <p>Creates and returns a copy of this object.</p>
+         */
+        @QtUninvokable
+        @Override
+        public Axes clone() {
+            return new Axes(xAxis, yAxis, zAxis);
+        }
+        @Override
+        public int hashCode() {
+            return java.util.Objects.hash(xAxis, yAxis, zAxis);
+        }
+        public boolean equals(@NonNull Axes other) {
+            return other!=null
+                    && java.util.Objects.equals(xAxis, other.xAxis)
+                    && java.util.Objects.equals(yAxis, other.yAxis)
+                    && java.util.Objects.equals(zAxis, other.zAxis);
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            return equals((Axes) obj);
         }
         public final QVector3D xAxis;
         public final QVector3D yAxis;
@@ -681,11 +706,40 @@ class QQuaternion___ extends QQuaternion {
     /**
      * Result type for {@link QQuaternion#getAxisAndAngle()}.
      */
-    public static class AxisAndAngle{
-        private AxisAndAngle(QVector3D axis, float angle) {
+    public static class AxisAndAngle implements java.lang.Cloneable{
+        public AxisAndAngle(@NonNull QVector3D axis, float angle) {
             super();
+            if(axis==null)
+                axis = new QVector3D();
             this.axis = axis;
             this.angle = angle;
+        }
+        /**
+         * <p>Creates and returns a copy of this object.</p>
+         */
+        @QtUninvokable
+        @Override
+        public AxisAndAngle clone() {
+            return new AxisAndAngle(axis, angle);
+        }
+        @Override
+        public int hashCode() {
+            return java.util.Objects.hash(angle, axis);
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            return equals((AxisAndAngle) obj);
+        }
+        public boolean equals(@NonNull AxisAndAngle other) {
+            return other!=null
+                && Float.floatToIntBits(angle) == Float.floatToIntBits(other.angle)
+                && java.util.Objects.equals(axis, other.axis);
         }
         public final QVector3D axis;
         public final float angle;
@@ -694,12 +748,39 @@ class QQuaternion___ extends QQuaternion {
     /**
      * Result type for {@link QQuaternion#getEulerAngles()}.
      */
-    public static class EulerAngles{
-        private EulerAngles(float pitch, float yaw, float roll) {
+    public static class EulerAngles implements java.lang.Cloneable{
+        public EulerAngles(float pitch, float yaw, float roll) {
             super();
             this.pitch = pitch;
             this.yaw = yaw;
             this.roll = roll;
+        }
+        /**
+         * <p>Creates and returns a copy of this object.</p>
+         */
+        @QtUninvokable
+        @Override
+        public EulerAngles clone() {
+            return new EulerAngles(pitch, yaw, roll);
+        }
+        @Override
+        public int hashCode() {
+            return java.util.Objects.hash(pitch, roll, yaw);
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            return equals((EulerAngles) obj);
+        }
+        public boolean equals(@NonNull EulerAngles other) {
+            return Float.floatToIntBits(pitch) == Float.floatToIntBits(other.pitch)
+                    && Float.floatToIntBits(roll) == Float.floatToIntBits(other.roll)
+                    && Float.floatToIntBits(yaw) == Float.floatToIntBits(other.yaw);
         }
         public final float pitch;
         public final float yaw;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -870,18 +870,6 @@ TypeSystem{
                     action: ReferenceCount.Add
                 }
             }
-            since: 6
-        }
-        ModifyFunction{
-            signature: "insertWidget(QWidget*,QPair<int,int>)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcWidgets"
-                    action: ReferenceCount.Add
-                }
-            }
-            until: 5
         }
         ModifyFunction{
             signature: "removeWidget(QWidget*)"

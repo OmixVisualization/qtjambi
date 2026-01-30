@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -130,7 +130,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * <p>See <a href="https://doc.qt.io/qt/qmap.html#QMap-2">QMap::<wbr>QMap(const QMap&lt;Key, T> &amp;)</a></p>
      * @param other map
      */
-    public QMap(@StrictNonNull Map<Key,T> other) {
+    public QMap(@StrictNonNull Map<? extends Key,? extends T> other) {
 		super(null);
 		QPair<QMetaType, QMetaType> metaTypes = QMap.findMapMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
 		if(metaTypes.first==null || metaTypes.first.id()==0)
@@ -283,7 +283,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
     }
     
     @QtUninvokable
-    private native void initialize(Class<?> keyType, long keyMetaType, Class<?> valueType, long valueMetaType, Map<Key, T> other);
+    private native void initialize(Class<?> keyType, long keyMetaType, Class<?> valueType, long valueMetaType, Map<?,?> other);
     
     /**
      * Creates and returns a copy of this object.
@@ -2758,7 +2758,7 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
      * <p>See <code>QMap::<wbr>operator=(QMap&lt;Key,T>)</code></p>
      */
     @QtUninvokable
-    public final void assign(@StrictNonNull QMap<Key,T> other) {
+    public final void assign(@StrictNonNull QMap<? extends Key,? extends T> other) {
 		assign(QtJambi_LibraryUtilities.internal.nativeId(this), other, QtJambi_LibraryUtilities.internal.nativeId(other));
     }
     @QtUninvokable

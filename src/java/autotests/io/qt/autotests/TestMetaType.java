@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -39,9 +39,6 @@ import org.junit.*;
 import io.qt.*;
 import io.qt.autotests.generated.*;
 import io.qt.core.*;
-import io.qt.core.QObject.QProperty;
-import io.qt.core.QObject.Signal0;
-import io.qt.core.QObject.Signal1;
 import io.qt.gui.*;
 import io.qt.qml.QJSValue;
 import io.qt.widgets.*;

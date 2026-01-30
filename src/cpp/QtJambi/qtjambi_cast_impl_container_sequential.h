@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -39,7 +39,7 @@
 
 namespace RegistryAPI{
 template<typename T>
-int registerMetaType(const QByteArray& typeName);
+QMetaType registerMetaType(const QByteArray& typeName);
 }
 
 enum class QtJambiNativeID : jlong;
@@ -182,7 +182,7 @@ template<typename Iterator> struct supports_mutableIterator : std::conditional<s
                                                                 && !std::is_const<typename std::remove_reference<decltype(*std::declval<Iterator>())>::type>::value, std::true_type, std::false_type>::type{};
 
 template<typename Iterator, bool isMutable = supports_mutableIterator<Iterator>::value>
-struct qtjambi_sequential_iterator_caster{
+struct qtjambi_sequential_iterator_cast{
     static jobject cast(JNIEnv * env, QtJambiNativeID __list_nativeId, typename std::conditional<std::is_pointer<Iterator>::value, Iterator, const Iterator&>::type iter){
         return QtJambiAPI::convertQSequentialIteratorToJavaObject(env, __list_nativeId,
             new Iterator(iter),
@@ -196,7 +196,7 @@ struct qtjambi_sequential_iterator_caster{
 };
 
 template<typename Iterator>
-struct qtjambi_sequential_iterator_caster<Iterator,true>{
+struct qtjambi_sequential_iterator_cast<Iterator,true>{
     static jobject cast(JNIEnv * env, QtJambiNativeID __list_nativeId, typename std::conditional<std::is_pointer<Iterator>::value, Iterator, const Iterator&>::type iter){
         return QtJambiAPI::convertQSequentialIteratorToJavaObject(env, __list_nativeId,
             new Iterator(iter),
@@ -460,7 +460,7 @@ template<template<typename T> class Container, typename T>
 struct ContainerBegin{
     static jobject function(JNIEnv *env, const ExtendedContainerInfo& ptr) {
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
-        return qtjambi_sequential_iterator_caster<decltype(container->begin())>::cast(env, ptr.nativeId, container->begin());
+        return qtjambi_sequential_iterator_cast<decltype(container->begin())>::cast(env, ptr.nativeId, container->begin());
     }
 };
 
@@ -468,7 +468,7 @@ template<template<typename T> class Container, typename T>
 struct ContainerEnd{
     static jobject function(JNIEnv *env, const ExtendedContainerInfo& ptr) {
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
-        return qtjambi_sequential_iterator_caster<decltype(container->end())>::cast(env, ptr.nativeId, container->end());
+        return qtjambi_sequential_iterator_cast<decltype(container->end())>::cast(env, ptr.nativeId, container->end());
     }
 };
 
@@ -476,7 +476,7 @@ template<template<typename T> class Container, typename T>
 struct ContainerConstBegin{
     static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr) {
         const Container<T> *container = static_cast<const Container<T> *>(ptr.container);
-        return qtjambi_sequential_iterator_caster<decltype(container->constBegin())>::cast(env, ptr.nativeId, container->constBegin());
+        return qtjambi_sequential_iterator_cast<decltype(container->constBegin())>::cast(env, ptr.nativeId, container->constBegin());
     }
 };
 
@@ -484,7 +484,7 @@ template<template<typename T> class Container, typename T>
 struct ContainerConstEnd{
     static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr) {
         const Container<T> *container = static_cast<const Container<T> *>(ptr.container);
-        return qtjambi_sequential_iterator_caster<decltype(container->constEnd())>::cast(env, ptr.nativeId, container->constEnd());
+        return qtjambi_sequential_iterator_cast<decltype(container->constEnd())>::cast(env, ptr.nativeId, container->constEnd());
     }
 };
 
@@ -1212,8 +1212,11 @@ public:
         return ContainerContentType<T>::isContainer && ContainerContentType<T>::needsReferenceCounting;
     }
 
-    size_t sizeOf() override {
+    size_t sizeOf() const override {
         return sizeof(QList<T>);
+    }
+    size_t alignOf() const override {
+        return alignof(QList<T>);
     }
     void* constructContainer(void* placement) override {
         return new(placement) QList<T>();
@@ -1257,7 +1260,7 @@ public:
             Q_UNUSED(env);
         }
     }
-    int registerContainer(const QByteArray& containerTypeName) override {
+    QMetaType registerContainer(const QByteArray& containerTypeName) override {
         return RegistryAPI::registerMetaType<QList<T>>(containerTypeName, this);
     }
 
@@ -1711,8 +1714,11 @@ public:
             Q_UNUSED(env);
         }
     }
-    size_t sizeOf() override {
+    size_t sizeOf() const override {
         return sizeof(QSet<T>);
+    }
+    size_t alignOf() const override {
+        return alignof(QSet<T>);
     }
     void* constructContainer(void* placement) override {
         return new(placement) QSet<T>();
@@ -1734,7 +1740,7 @@ public:
         return true;
     }
 
-    int registerContainer(const QByteArray& containerTypeName) override {
+    QMetaType registerContainer(const QByteArray& containerTypeName) override {
         return RegistryAPI::registerMetaType<QSet<T>>(containerTypeName, this);
     }
 
@@ -1935,8 +1941,11 @@ public:
             Q_UNUSED(env);
         }
     }
-    size_t sizeOf() override {
+    size_t sizeOf() const override {
         return sizeof(QSpan<T,E>);
+    }
+    size_t alignOf() const override {
+        return alignof(QSpan<T,E>);
     }
     void* constructContainer(void* placement) override {
         return new(placement) QSpan<T,E>();
@@ -1958,7 +1967,7 @@ public:
         return true;
     }
 
-    int registerContainer(const QByteArray& containerTypeName) override {
+    QMetaType registerContainer(const QByteArray& containerTypeName) override {
         return RegistryAPI::registerMetaType<QSpan<T,E>>(containerTypeName, this);
     }
 
@@ -1979,22 +1988,22 @@ public:
 
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
         const QSpan<T,E> *span = static_cast<const QSpan<T,E> *>(container.container);
-        return qtjambi_sequential_iterator_caster<decltype(span->cbegin())>::cast(env, container.nativeId, span->cbegin());
+        return qtjambi_sequential_iterator_cast<decltype(span->cbegin())>::cast(env, container.nativeId, span->cbegin());
     }
 
     jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
         const QSpan<T,E> *span = static_cast<const QSpan<T,E> *>(container.container);
-        return qtjambi_sequential_iterator_caster<decltype(span->cend())>::cast(env, container.nativeId, span->cend());
+        return qtjambi_sequential_iterator_cast<decltype(span->cend())>::cast(env, container.nativeId, span->cend());
     }
 
     jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override {
         QSpan<T,E> *span = static_cast<QSpan<T,E> *>(container.container);
-        return qtjambi_sequential_iterator_caster<decltype(span->begin())>::cast(env, container.nativeId, span->begin());
+        return qtjambi_sequential_iterator_cast<decltype(span->begin())>::cast(env, container.nativeId, span->begin());
     }
 
     jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override {
         QSpan<T,E> *span = static_cast<QSpan<T,E> *>(container.container);
-        return qtjambi_sequential_iterator_caster<decltype(span->end())>::cast(env, container.nativeId, span->end());
+        return qtjambi_sequential_iterator_cast<decltype(span->end())>::cast(env, container.nativeId, span->end());
     }
 
     jobject get(JNIEnv * env, const void* container, jint index) override {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -95,7 +95,7 @@ class QmlTypeSystemReaderPrivate {
         NamingPolicy namingPolicy;
     };
 
-    QmlTypeSystemReaderPrivate(TS::TypeDatabase *database, bool generate, const QVersionNumber& qtVersion);
+    QmlTypeSystemReaderPrivate(QQmlEngine* engine, TS::TypeDatabase *database, bool generate, const QVersionNumber& qtVersion);
     void parse(const QString &filepath);
     bool checkQtVersion(AbstractObject* object);
     void parseTypeSystem(TypeSystem* typeSystem, const QString& fileName);
@@ -134,6 +134,7 @@ class QmlTypeSystemReaderPrivate {
     void parseEnumType(const QString& nameSpace, EnumType* element);
     CustomFunction parseCustomStructor(AbstractStructor* element);
 
+    QQmlEngine* m_engine;
     TypeDatabase *m_database;
     QVersionNumber m_qtVersion;
     QString m_defaultPackage;
@@ -149,8 +150,8 @@ class QmlTypeSystemReaderPrivate {
     friend QmlTypeSystemReader;
 };
 
-QmlTypeSystemReader::QmlTypeSystemReader(TS::TypeDatabase *database, bool generate, const QVersionNumber& qtVersion)
-        : d(new QmlTypeSystemReaderPrivate(database, generate, qtVersion)) {}
+QmlTypeSystemReader::QmlTypeSystemReader(QQmlEngine* engine, TS::TypeDatabase *database, bool generate, const QVersionNumber& qtVersion)
+        : d(new QmlTypeSystemReaderPrivate(engine, database, generate, qtVersion)) {}
 
 QmlTypeSystemReader::~QmlTypeSystemReader(){delete d;}
 
@@ -167,7 +168,6 @@ void QmlTypeSystemReader::parse(const QString &filepath){
 }
 
 void QmlTypeSystemReaderPrivate::parse(const QString &filepath){
-    QQmlEngine engine;
     QUrl url;
     if(filepath.startsWith(":")){
         url = QUrl("qrc"+filepath);
@@ -175,11 +175,11 @@ void QmlTypeSystemReaderPrivate::parse(const QString &filepath){
         QFileInfo file(filepath);
         url = QUrl::fromLocalFile(file.absoluteFilePath());
     }
-    QQmlComponent component(&engine, url, QQmlComponent::PreferSynchronous);
+    QQmlComponent component(m_engine, url, QQmlComponent::PreferSynchronous);
     if(component.status()==QQmlComponent::Ready){
         QObject* obj = component.create();
         if(!obj->parent())
-            obj->setParent(&engine);
+            obj->setParent(&component);
         if(TypeSystem* typeSystem = qobject_cast<TypeSystem*>(obj)){
             parseTypeSystem(typeSystem, QFileInfo(filepath).fileName());
             const auto keys = m_requiredModules.keys();
@@ -204,15 +204,11 @@ void QmlTypeSystemReaderPrivate::parse(const QString &filepath){
     }
 }
 
-QmlTypeSystemReaderPrivate::QmlTypeSystemReaderPrivate(TS::TypeDatabase *database, bool generate, const QVersionNumber& qtVersion)
-        : m_database(database),
+QmlTypeSystemReaderPrivate::QmlTypeSystemReaderPrivate(QQmlEngine* engine, TS::TypeDatabase *database, bool generate, const QVersionNumber& qtVersion)
+        : m_engine(engine),
+          m_database(database),
           m_qtVersion(qtVersion),
           m_generate(generate ? TypeEntry::GenerateAll : TypeEntry::GenerateForSubclass) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    static bool r1 = [](){return (QMetaType::registerConverter<int,AccessModifications>([](int i)->AccessModifications{return AccessModifications(i);}),
-                                  QMetaType::registerConverter<AccessModifications,int>());}();
-    Q_UNUSED(r1)
-#endif
 }
 
 void QmlTypeSystemReaderPrivate::parseTypeSystem(TypeSystem* typeSystem, const QString& fileName){
@@ -764,7 +760,7 @@ void QmlTypeSystemReaderPrivate::parseLoadTypeSystem(LoadTypeSystem* loadTypeSys
         }
         bool generated = loadTypeSystem->getGenerate() && (m_generate & ~TypeEntry::InheritedByTypeSystem)==TypeEntry::GenerateAll;
         bool optional = loadTypeSystem->getOptional();
-        m_database->parseFile(name, m_importInputDirectoryList, m_typesystemDirectoryList, generated, optional);
+        m_database->parseFile(m_engine, name, m_importInputDirectoryList, m_typesystemDirectoryList, generated, optional);
     }
 }
 
@@ -1645,14 +1641,12 @@ void QmlTypeSystemReaderPrivate::parseModifyArgument(ModifyArgument* element, Ab
                         }
                         rc.declareVariable = childElement->getDeclareVariable();
                         rc.condition = childElement->getCondition();
-                        if(childElement->getAccess().testFlag(Modification::Private))
-                            rc.access = TS::ReferenceCount::Private;
+                        if(childElement->getAccess().testFlag(Modification::Friendly))
+                            rc.access = TS::ReferenceCount::Friendly;
                         else if(childElement->getAccess().testFlag(Modification::Protected))
                             rc.access = TS::ReferenceCount::Protected;
                         else if(childElement->getAccess().testFlag(Modification::Public))
                             rc.access = TS::ReferenceCount::Public;
-                        else if(childElement->getAccess().testFlag(Modification::Friendly))
-                            rc.access = TS::ReferenceCount::Friendly;
                         else
                             rc.access = TS::ReferenceCount::Private;
                         argumentModification.referenceCounts.append(rc);
@@ -2465,14 +2459,12 @@ void QmlTypeSystemReaderPrivate::parseModifyField(ModifyField* element, ComplexT
                         }
                         rc.declareVariable = childElement->getDeclareVariable();
                         rc.condition = childElement->getCondition();
-                        if(childElement->getAccess().testFlag(Modification::Private))
-                            rc.access = TS::ReferenceCount::Private;
+                        if(childElement->getAccess().testFlag(Modification::Friendly))
+                            rc.access = TS::ReferenceCount::Friendly;
                         else if(childElement->getAccess().testFlag(Modification::Protected))
                             rc.access = TS::ReferenceCount::Protected;
                         else if(childElement->getAccess().testFlag(Modification::Public))
                             rc.access = TS::ReferenceCount::Public;
-                        else if(childElement->getAccess().testFlag(Modification::Friendly))
-                            rc.access = TS::ReferenceCount::Friendly;
                         else
                             rc.access = TS::ReferenceCount::Private;
                         fm.referenceCounts.append(rc);

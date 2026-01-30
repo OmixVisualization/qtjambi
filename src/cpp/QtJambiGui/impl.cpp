@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,6 +47,9 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QClipboard$Text,
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QQuaternion$Axes,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/gui/QVector3D;Lio/qt/gui/QVector3D;Lio/qt/gui/QVector3D;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(xAxis, Lio/qt/gui/QVector3D;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(yAxis, Lio/qt/gui/QVector3D;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(zAxis, Lio/qt/gui/QVector3D;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QQuaternion$AxisAndAngle,
@@ -55,6 +58,9 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QQuaternion$AxisAndAngle,
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QQuaternion$EulerAngles,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(FFF)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(pitch, F)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(roll, F)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(yaw, F)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QTextCursor$SelectedTableCells,
@@ -192,48 +198,6 @@ const QObject* getPointerOwner(const QTextCursor* __qt_this){
     }
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-
-// QOpenGLContext::versionFunctions<T>() const
-QAbstractOpenGLFunctions* qtjambi_QOpenGLContext_versionFunctions(JNIEnv *__jni_env, const QOpenGLContext *__qt_this, jclass type){
-    QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
-    QString className = QtJambiAPI::getClassName(__jni_env, type);
-    if(className == "io.qt.gui.QOpenGLFunctions_ES2"){
-#if defined(QT_OPENGL_ES_2)
-        return __qt_this->versionFunctions<QOpenGLFunctions_ES2>();
-#else
-    }else if(className.startsWith("io.qt.gui.QOpenGLFunctions_")){
-        className = className.mid(27);
-        int idx = className.indexOf('_');
-        if(idx>0){
-            bool ok = false;
-            int majorVersion = className.left(idx).toInt(&ok);
-            if(ok){
-                className = className.mid(idx+1);
-                QSurfaceFormat::OpenGLContextProfile profile = QSurfaceFormat::NoProfile;
-                if(className.endsWith("_Core")){
-                    className = className.chopped(5);
-                    profile = QSurfaceFormat::CoreProfile;
-                }else if(className.endsWith("_Compatibility")){
-                    className = className.chopped(14);
-                    profile = QSurfaceFormat::CompatibilityProfile;
-                }
-                ok = false;
-                int minorVersion = className.toInt(&ok);
-                if(ok){
-                    QOpenGLVersionProfile version;
-                    version.setProfile(profile);
-                    version.setVersion(majorVersion, minorVersion);
-                    return __qt_this->versionFunctions(version);
-                }
-            }
-        }
-#endif
-    }
-    return nullptr;
-}
-#else
-
 extern "C" JNIEXPORT void JNICALL Java_io_qt_gui_QPointerEvent_setPoint
 (JNIEnv *__jni_env,
  jobject _this,
@@ -252,8 +216,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_gui_QPointerEvent_setPoint
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
 }
-
-#endif
 
 // QGradient::QGradient(QGradient::Preset arg__1)
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_gui_QGradient_create(JNIEnv *__jni_env, jclass, int preset){

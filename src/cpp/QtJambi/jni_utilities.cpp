@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -58,7 +58,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_QtJambi_1LibraryUtilities_
 #else
         if(QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed()){
             QThreadData* td = QThreadData::get2(mainThread);
-            QThreadUserData::theMainThreadId.storeRelaxed(nullptr);
+            QThreadObjectData::theMainThreadId.storeRelaxed(nullptr);
             if(td && td->threadId.loadRelaxed()==QThread::currentThreadId()){
                 if(QCoreApplication::instance() && !Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.no-app-deletion"))){
                     delete QCoreApplication::instance();
@@ -313,7 +313,11 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QtConstructInPlace_asArguments(J
 extern "C" JNIEXPORT bool JNICALL Java_io_qt_QtUtilities_reinstallEventNotifyCallback(JNIEnv * env){
     try{
         if(QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed()){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+            if(!mainThread->isCurrentThread()){
+#else
             if(QThread::currentThread()!=mainThread){
+#endif
                 Java::Runtime::IllegalStateException::throwNew(env, "Unable to reinstall event notify callback from outside the main thread." QTJAMBI_STACKTRACEINFO );
             }
             if(mainThread->loopLevel()>0){
@@ -361,7 +365,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_QtUtilities_threadCheck(JNIEnv *env
 struct SignalCache : public QtJambiObjectData{
     SignalCache() = default;
     ~SignalCache() override = default;
-    QTJAMBI_OBJECTUSERDATA_ID_IMPL(static,)
     Q_DISABLE_COPY_MOVE(SignalCache)
     static std::vector<int> signals(){
         return std::vector<int>{SIGSEGV,SIGBUS,SIGFPE,SIGPIPE,SIGILL,SIGQUIT,SIGUSR2,SIGFPE};
@@ -389,8 +392,10 @@ extern "C" JNIEXPORT bool JNICALL Java_io_qt_QtUtilities_saveUnixSignalHandlers(
                 }else
                     qCDebug(DebugAPI::internalCategory, "Unable to save signalhandler for %d.", s);
             }
-            QWriteLocker locker(QtJambiLinkUserData::lock());
-            QTJAMBI_SET_OBJECTUSERDATA(SignalCache, mainThread, cache.release());
+            {
+                auto locker = QtJambiObjectData::writeLock();
+                cache.reset(QtJambiObjectData::setUserData<SignalCache>(mainThread, cache.release()));
+            }
             return true;
         }
     }catch(const JavaException& exn){
@@ -408,9 +413,8 @@ extern "C" JNIEXPORT bool JNICALL Java_io_qt_QtUtilities_restoreUnixSignalHandle
         if(QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed()){
             std::unique_ptr<SignalCache> cache{nullptr};
             {
-                QWriteLocker locker(QtJambiLinkUserData::lock());
-                cache.reset(QTJAMBI_GET_OBJECTUSERDATA(SignalCache, mainThread));
-                QTJAMBI_SET_OBJECTUSERDATA(SignalCache, mainThread, nullptr);
+                auto locker = QtJambiObjectData::writeLock();
+                cache.reset(QtJambiObjectData::setUserData<SignalCache>(mainThread, nullptr));
             }
             if(cache){
                 for(int s : SignalCache::signals()){

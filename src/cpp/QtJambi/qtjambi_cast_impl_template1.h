@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -647,18 +647,19 @@ namespace QtJambiPrivate {
                         if constexpr(cast_var_args<Args...>::hasScope)
                             return QtJambiAPI::convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(env, cast_var_args<Args...>::scope(args...), in, typeid(NativeType));
                         else
-                            return QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in);
-                    }else if constexpr(is_rvalue){
-                        return QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(env, new QFutureInterface<T>(std::move(in)));
-                    }else if constexpr(is_reference && !is_const && cast_var_args<Args...>::hasScope){
+                            return QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, typeid(NativeType));
+                    }else if constexpr(is_reference && !is_rvalue && !is_const && cast_var_args<Args...>::hasScope){
                         return QtJambiAPI::convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(env, cast_var_args<Args...>::scope(args...), &in, typeid(NativeType));
                     }else{
-                        return QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &in);
+                        return QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &in, typeid(NativeType));
                     }
                 }else{
                     NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-                    QFutureInterface<QVariant>* jpromise = new QFutureInterface<QVariant>(convert_future_interface<QVariant>(env, &_in));
-                    return QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(env, jpromise);
+                    std::unique_ptr<QFutureInterface<QVariant>> ptr = std::make_unique<QFutureInterface<QVariant>>(convert_future_interface<QVariant>(env, &_in));
+                    jobject out = QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(env, ptr.get(), typeid(QFutureInterface<QVariant>));
+                    if(out)
+                        (void)ptr.release();
+                    return out;
                 }
             }else{
                 QFutureInterfaceBase* base = qtjambi_cast<QFutureInterfaceBase*,jobject, Args...>::cast(in, args...);
@@ -874,15 +875,13 @@ struct qtjambi_jobject_template1_cast<forward,
         if constexpr(forward){
             Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasJNIEnv, "Cannot cast to jobject without JNIEnv.");
             if(NativeType_c* _in = ref_ptr<is_pointer, NativeType_c>::ref(in)){
-                if constexpr (std::is_same<void, T>::value){
-                    if constexpr(is_rvalue){
-                        return QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(env, new QPromise<T>(std::move(in)));
-                    }else{
-                        return QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, reinterpret_cast<QPromise<QVariant>*>(_in), typeid(NativeType));
-                    }
-                }else if constexpr (std::is_same<QVariant, T>::value){
-                    if constexpr(is_rvalue){
-                        return QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(env, new QPromise<T>(std::move(in)), typeid(NativeType));
+                if constexpr (std::is_same<void, T>::value || std::is_same<QVariant, T>::value){
+                    if constexpr(is_rvalue && !is_const){
+                        std::unique_ptr<NativeType> ptr = std::make_unique<NativeType>(std::move(in));
+                        jobject out = QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(env, ptr.get(), typeid(NativeType));
+                        if(out)
+                            (void)ptr.release();
+                        return out;
                     }else{
                         return QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, _in, typeid(NativeType));
                     }
@@ -938,8 +937,6 @@ struct qtjambi_jobject_template1_cast<forward,
                     }else if(base){
                         if(QtJambiAPI::isVoidFutureInterface(base)){
                             JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast QPromise<void> to %1.").arg(QLatin1String(QtJambiAPI::typeName(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
-                        }else if(NativeType* fi = dynamic_cast<NativeType*>(base)){
-                            result = reinterpret_cast<QPromise<T>*>(fi);
                         }else {
                             QString baseType = QLatin1String(QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QFutureInterfaceBase>::trySupplyType(base)));
 #if defined(Q_OS_ANDROID) || defined(Q_OS_FREEBSD)
@@ -998,18 +995,26 @@ struct qtjambi_jobject_template1_cast<forward,
         auto env = cast_var_args<Args...>::env(args...);
         if constexpr(forward){
             Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasJNIEnv, "Cannot cast to jobject without JNIEnv.");
-            NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
             if constexpr (std::is_same<QVariant, T>::value || std::is_same<void, T>::value){
-                return QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &_in);
+                if constexpr(is_pointer){
+                    if constexpr(cast_var_args<Args...>::hasScope)
+                        return QtJambiAPI::convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(env, cast_var_args<Args...>::scope(args...), in, typeid(NativeType));
+                    else
+                        return QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, typeid(NativeType));
+                }else if constexpr(is_reference && !is_rvalue && !is_const && cast_var_args<Args...>::hasScope){
+                    return QtJambiAPI::convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(env, cast_var_args<Args...>::scope(args...), &in, typeid(NativeType));
+                }else{
+                    return QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &in, typeid(NativeType));
+                }
             }else{
-                const QFuture<T>& future = reinterpret_cast<const QFuture<T>&>(_in);
+                NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
                 QFutureInterface<QVariant> jpromise = convert_future_interface<QVariant>(
                     env,
-                    &QtPrivate::Continuation<T,bool,bool>::sourceFuture(future),
+                    &QtPrivate::Continuation<T,bool,bool>::sourceFuture(_in),
                     "QFuture"
                     );
                 QFuture<QVariant> ft = jpromise.future();
-                return QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &ft);
+                return QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &ft, typeid(QFuture<QVariant>));
             }
         }else{
             QFuture<QVariant>* future = QtJambiAPI::convertJavaObjectToNative<QFuture<QVariant>>(env, in);
@@ -1091,12 +1096,51 @@ struct qtjambi_jobject_template1_cast<forward,
         auto env = cast_var_args<Args...>::env(args...);
         if constexpr(forward){
             Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasJNIEnv, "Cannot cast to jobject without JNIEnv.");
-            NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-            QCborStreamReader::StringResult<QVariant>* ___qt_return_value = new QCborStreamReader::StringResult<QVariant>;
-            ___qt_return_value->data = _in.data;
-            ___qt_return_value->status = _in.status;
-            return QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(env, ___qt_return_value);
+            if constexpr (std::is_same<QVariant, T>::value){
+                if constexpr(is_pointer){
+                    if constexpr(cast_var_args<Args...>::hasScope)
+                        return QtJambiAPI::convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(env, cast_var_args<Args...>::scope(args...), in, typeid(NativeType));
+                    else
+                        return QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, typeid(NativeType));
+                }else if constexpr(is_reference && !is_rvalue && !is_const && cast_var_args<Args...>::hasScope){
+                    return QtJambiAPI::convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(env, cast_var_args<Args...>::scope(args...), &in, typeid(NativeType));
+                }else{
+                    std::unique_ptr<NativeType> ptr;
+                    if constexpr(is_rvalue && !is_const)
+                        ptr = std::make_unique<NativeType>(std::move(in));
+                    else
+                        ptr = std::make_unique<NativeType>(in);
+                    jobject out = QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(env, ptr.get(), typeid(NativeType));
+                    if(out)
+                        (void)ptr.release();
+                    return out;
+                }
+            }else{
+                NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
+                if constexpr((is_reference || is_pointer) && !is_rvalue && !is_const && cast_var_args<Args...>::hasScope){
+                    std::shared_ptr<QCborStreamReader::StringResult<QVariant>> ptr = std::make_shared<QCborStreamReader::StringResult<QVariant>>();
+                    ptr->data = _in.data;
+                    ptr->status = _in.status;
+                    cast_var_args<Args...>::scope(args...).addFinalAction([ptr, out = &_in](){
+                        out->status = ptr->status;
+                        out->data = ptr->data.value<T>();
+                    });
+                    return QtJambiAPI::convertSmartPointerToJavaObject(env, ptr);
+                }else{
+                    std::unique_ptr<QCborStreamReader::StringResult<QVariant>> ptr = std::make_unique<QCborStreamReader::StringResult<QVariant>>();
+                    ptr->data = _in.data;
+                    ptr->status = _in.status;
+                    jobject out = QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(env, ptr.get(), typeid(QCborStreamReader::StringResult<QVariant>));
+                    if(out)
+                        (void)ptr.release();
+                    return out;
+                }
+            }
         }else{
+            if constexpr(is_pointer){
+                if(!in)
+                    return nullptr;
+            }
             QCborStreamReader::StringResult<QVariant>* result = nullptr;
             if(!QtJambiAPI::convertJavaToNative(env, in, &result, typeid(QCborStreamReader::StringResult<QVariant>))){
                 JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? QtJambiAPI::getObjectClassName(env, in) : QStringLiteral("null"), QLatin1String(QtJambiAPI::typeName(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
@@ -1106,23 +1150,33 @@ struct qtjambi_jobject_template1_cast<forward,
                     return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(QCborStreamReader::StringResult<QVariant>(), args...);
                 return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(result, args...);
             }else{
-                QCborStreamReader::StringResult<T> tresult;
-                if(result){
-                    tresult.status = result->status;
-                    tresult.data = result->data.value<T>();
+                if constexpr((is_reference || is_pointer) && !is_rvalue && !is_const && cast_var_args<Args...>::hasScope){
+                    QCborStreamReader::StringResult<T>* tresult = new QCborStreamReader::StringResult<T>;
+                    if(result){
+                        tresult->status = result->status;
+                        tresult->data = result->data.value<T>();
+                        cast_var_args<Args...>::scope(args...).addFinalAction([tresult, result](){
+                            result->status = tresult->status;
+                            result->data = tresult->data;
+                            delete tresult;
+                        });
+                    }
+                    if constexpr(is_pointer){
+                        return tresult;
+                    }else{
+                        return *tresult;
+                    }
+                }else{
+                    QCborStreamReader::StringResult<T> tresult;
+                    if(result){
+                        tresult.status = result->status;
+                        tresult.data = result->data.value<T>();
+                    }
+                    return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(std::move(tresult), args...);
                 }
-                return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(std::move(tresult), args...);
             }
         }
     }
-};
-
-template<typename JniType,
-         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
-struct qtjambi_jobject_template1_cast<true,
-                                      JniType,
-                                      QCborStreamReader::StringResult, is_pointer, is_const, is_reference, is_rvalue,
-                                      QVariant, Args...> : qtjambi_jobject_plain_cast<true, JniType, QCborStreamReader::StringResult<QVariant>, is_pointer, is_const, is_reference, is_rvalue, Args...>{
 };
 
 #endif //def QCBORSTREAMREADER_H
@@ -1479,17 +1533,7 @@ struct qtjambi_jobject_template1_cast<forward,
                 else
                     return QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, typeid(NativeType), cast_var_args<Args...>::nativeTypeName(args...));
             }else{
-                NativeType* ptr = new NativeType(std::move(in));
-                try{
-                    jobject out = QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(env, ptr, typeid(NativeType), cast_var_args<Args...>::nativeTypeName(args...));
-                    if(!out)
-                        delete ptr;
-                    return out;
-                }catch(const JavaException& exn){
-                    delete ptr;
-                    exn.raise();
-                    return nullptr;
-                }
+                return QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &in, typeid(NativeType), cast_var_args<Args...>::nativeTypeName(args...));
             }
         }else{
             Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast to non-const std::function<R(Args...)>*");
@@ -1745,9 +1789,9 @@ struct qtjambi_jobject_template1_cast<forward,
 
 #endif //defined(_INITIALIZER_LIST_)
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0) //&& defined(QSPAN_H)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
 
-//template from any QSpan to jobject
+//template from any span to jobject
 
 template<typename Container>
 class Result{
@@ -1765,9 +1809,10 @@ public:
     operator bool(){return success;}
 };
 
-template<bool forward, typename JniType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename T, std::size_t E, bool t_is_const, typename... Args>
+template<bool forward, typename JniType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename T, std::size_t E, template<typename,std::size_t> typename Span, bool t_is_const, typename... Args>
 struct qtjambi_jobject_span_cast{
-    typedef QSpan<typename std::conditional<t_is_const, typename std::add_const<T>::type, T>::type,E> NativeType;
+    typedef typename std::conditional<t_is_const, typename std::add_const<T>::type, T>::type Tconst;
+    typedef Span<Tconst,E> NativeType;
     typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
@@ -1785,89 +1830,137 @@ struct qtjambi_jobject_span_cast{
                 return value_range_converter<TArray, T, t_is_const, JniType, NativeType_c, Args...>::toJavaArray(ref_ptr<is_pointer, NativeType_c>::ref(in), arg_pointer<Args>::ref(args)...);
             }else{
                 auto env = cast_var_args<Args...>::env(args...);
-                if constexpr(cast_var_args<Args...>::hasScope){
-                    return QtJambiAPI::convertQSpanToJavaObject<T, t_is_const, E>(env, in, cast_var_args<Args...>::scope(args...).relatedNativeID());
+                if constexpr(t_is_const){
+                    const void * spanPtr;
+                    if constexpr(is_pointer){
+                        if(!in)
+                            return nullptr;
+                        spanPtr = in;
+                    }else
+                        spanPtr = &in;
+                    return QtJambiAPI::convertQSpanFromQListToJavaObject(env,
+                                                                         spanPtr,
+                                                                         [](const void* ptr) -> void* {
+                                                                             const Span<Tconst,E>& _span = *reinterpret_cast<const Span<Tconst,E>*>(ptr);
+                                                                             return new QList<T>(_span.begin(), _span.end());
+                                                                         },
+                                                                         QtJambiPrivate::DeleteContainer<QList,T>::function,
+                                                                         QtJambiPrivate::QListAccess<T>::newInstance(),
+                                                                         t_is_const);
                 }else{
-                    return QtJambiAPI::convertQSpanToJavaObject<T, t_is_const, E>(env, in);
+                    QtJambiNativeID owner{InvalidNativeID};
+                    if constexpr(cast_var_args<Args...>::hasScope){
+                        owner = cast_var_args<Args...>::scope(args...).relatedNativeID();
+                    }
+                    if constexpr(is_pointer)
+                        return in ? QtJambiAPI::convertQSpanToJavaObject(env,
+                                                                         owner,
+                                                                         QtJambiPrivate::QSpanAccess<Tconst,E>::newInstance(),
+                                                                         in->begin(),
+                                                                         jlong(in->size())
+                                                                         ) : nullptr;
+                    else
+                        return QtJambiAPI::convertQSpanToJavaObject(env,
+                                                                owner,
+                                                                QtJambiPrivate::QSpanAccess<Tconst,E>::newInstance(),
+                                                                in.begin(),
+                                                                jlong(in.size())
+                                                                );
                 }
             }
         }else{
-            if constexpr(is_pointer || is_reference){
-                Q_STATIC_ASSERT_X(!is_reference || cast_var_args<Args...>::hasScope, "Cannot cast to QSpan<T> &");
-                Q_STATIC_ASSERT_X(!is_pointer || cast_var_args<Args...>::hasScope, "Cannot cast to QSpan<T> *");
-                QSpan<T>* result = new QSpan<T>(qtjambi_jobject_span_cast<forward, JniType, false, false, false, false, T, E, t_is_const, Args...>::cast(in, args...));
-                cast_var_args<Args...>::scope(args...).addDeletion(result);
-                if constexpr(is_pointer)
-                    return result;
-                else
-                    return *result;
-            }else{
-                if constexpr(is_jni_array_type<JniType>::value){
-                    if constexpr(E==q20::dynamic_extent){
-                        return value_range_converter<TArray, T, t_is_const, JniType, NativeType, Args...>::toNativeContainer(in, -1, arg_pointer<Args>::ref(args)...);
+            Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast to non-const QSpan<T,E>&");
+            Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast to non-const QSpan<T,E>*");
+            if constexpr(is_pointer){
+                if(!in)
+                    return nullptr;
+            }
+            if constexpr(is_jni_array_type<JniType>::value){
+                typedef Span<Tconst,q20::dynamic_extent> UnlimitedSpan;
+                if constexpr(E==q20::dynamic_extent){
+                    UnlimitedSpan span = value_range_converter<TArray, T, t_is_const, JniType, UnlimitedSpan, Args...>::toNativeContainer(in, -1, arg_pointer<Args>::ref(args)...);
+                    return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(std::move(span), args...);
+                }else{
+                    UnlimitedSpan span = value_range_converter<TArray, T, t_is_const, JniType, UnlimitedSpan, Args...>::toNativeContainer(in, jsize(E), arg_pointer<Args>::ref(args)...);
+                    if constexpr(is_pointer || is_reference){
+                        NativeType* result = new NativeType(span.template first<E>());
+                        return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(result, args...);
                     }else{
-                        typedef QSpan<typename std::conditional<t_is_const, typename std::add_const<T>::type, T>::type> Span;
-                        Span span = value_range_converter<TArray, T, t_is_const, JniType, Span, Args...>::toNativeContainer(in, E, arg_pointer<Args>::ref(args)...);
                         return span.template first<E>();
                     }
-                }else{
-                    auto env = cast_var_args<Args...>::env(args...);
+                }
+            }else{
+                auto env = cast_var_args<Args...>::env(args...);
+                if constexpr(E==q20::dynamic_extent){
+                    NativeType result;
                     if(QtJambiAPI::isQSpanObject(env, in)){
                         QPair<void*,jlong> data = QtJambiAPI::fromQSpanObject(env, in, t_is_const, QMetaType::fromType<T>());
-                        if constexpr (cast_var_args<Args...>::hasScope && !t_is_const){
-                            if constexpr (std::is_copy_constructible_v<decltype(env)>){
-                                cast_var_args<Args...>::scope(args...).addFinalAction([env, in](){QtJambiAPI::commitQSpanObject(env, in);});
+                        if(data.first && data.second>0){
+                            if constexpr (cast_var_args<Args...>::hasScope && !t_is_const){
+                                if constexpr (std::is_copy_constructible_v<decltype(env)>){
+                                    cast_var_args<Args...>::scope(args...).addFinalAction([env, in](){QtJambiAPI::commitQSpanObject(env, in);});
+                                }else{
+#if defined(QTJAMBI_JOBJECTWRAPPER_H)
+                                    cast_var_args<Args...>::scope(args...).addFinalAction([in = JObjectWrapper(env, in)](){
+                                        JniEnvironment env{500};
+                                        QtJambiAPI::commitQSpanObject(env, in.object(env));
+                                    });
+#else
+                                    cast_var_args<Args...>::scope(args...).addFinalAction([in](){
+                                        JniEnvironment env{500};
+                                        QtJambiAPI::commitQSpanObject(env, in);
+                                    });
+#endif
+                                }
+                            }
+                            result = NativeType(reinterpret_cast<typename NativeType::iterator>(data.first), qsizetype(data.second));
+                        }
+                    }else if(in){
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(QtJambiAPI::getObjectClassName(env, in), QLatin1String(QtJambiAPI::typeName(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
+                    }
+                    return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(std::move(result), args...);
+                }else{
+                    if(QtJambiAPI::isQSpanObject(env, in)){
+                        QPair<void*,jlong> data = QtJambiAPI::fromQSpanObject(env, in, t_is_const, QMetaType::fromType<T>());
+                        if(data.first && data.second>0){
+                            if constexpr (cast_var_args<Args...>::hasScope && !t_is_const){
+                                if constexpr (std::is_copy_constructible_v<decltype(env)>){
+                                    cast_var_args<Args...>::scope(args...).addFinalAction([env, in](){QtJambiAPI::commitQSpanObject(env, in);});
+                                }else{
+#if defined(QTJAMBI_JOBJECTWRAPPER_H)
+                                    cast_var_args<Args...>::scope(args...).addFinalAction([in = JObjectWrapper(env, in)](){
+                                        JniEnvironment env{500};
+                                        QtJambiAPI::commitQSpanObject(env, in.object(env));
+                                    });
+#else
+                                    cast_var_args<Args...>::scope(args...).addFinalAction([in](){
+                                        JniEnvironment env{500};
+                                        QtJambiAPI::commitQSpanObject(env, in);
+                                    });
+#endif
+                                }
+                            }
+                            if(data.second<E){
+                                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast span of size %1 to %2").arg(QString::number(data.second), QLatin1String(QtJambiAPI::typeName(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
+                            }
+                            if constexpr(is_pointer || is_reference){
+                                NativeType* result = new NativeType(reinterpret_cast<typename NativeType::iterator>(data.first), E);
+                                return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(result, args...);
                             }else{
-                                cast_var_args<Args...>::scope(args...).addFinalAction([in](){
-                                    JniEnvironment env{500};
-                                    QtJambiAPI::commitQSpanObject(env, in);
-                                });
+                                return NativeType(reinterpret_cast<typename NativeType::iterator>(data.first), E);
                             }
                         }
-                        if(data.first && data.second>0)
-                            return NativeType(reinterpret_cast<typename NativeType::iterator>(data.first), qsizetype(data.second));
+                    }else{
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? QtJambiAPI::getObjectClassName(env, in) : QStringLiteral("null"), QLatin1String(QtJambiAPI::typeName(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
                     }
-                    return NativeType();
                 }
             }
         }
     }
 };
 
-#endif // defined(QSPAN_H)
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
 
 } // namespace QtJambiPrivate
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0) //&& defined(QSPAN_H)
-namespace QtJambiAPI{
-template<typename T, std::size_t E>
-jobject convertQSpanToDetachedJavaObject(JNIEnv *env, const QSpan<T,E>& span){
-    typedef typename std::remove_cv<T>::type T_;
-    return QtJambiAPI::convertQSpanFromQListToJavaObject(env,
-                                                &span,
-                                                [](const void* ptr) -> void* {
-                                                    const QSpan<T,E>& _span = *reinterpret_cast<const QSpan<T,E>*>(ptr);
-                                                    return new QList<T_>(_span.begin(), _span.end());
-                                                },
-                                                QtJambiPrivate::DeleteContainer<QList,T_>::function,
-                                                QtJambiPrivate::QListAccess<T_>::newInstance(),
-                                                std::is_const<T>::value);
-}
-
-template<typename T, bool t_is_const, std::size_t E>
-jobject convertQSpanToJavaObject(JNIEnv *env,
-                                 const QSpan<typename std::conditional<t_is_const, typename std::add_const<T>::type, T>::type,E>& span,
-                                 QtJambiNativeID owner){
-    return QtJambiAPI::convertQSpanToJavaObject(env,
-                                                owner,
-                                                QtJambiPrivate::QSpanAccess<typename std::conditional<t_is_const, typename std::add_const<T>::type, T>::type,E>::newInstance(),
-                                                span.begin(),
-                                                jlong(span.size())
-                                                );
-}
-
-} // namespace QtJambiAPI
-
-#endif // defined(QSPAN_H)
 
 #endif // QTJAMBI_CAST_IMPL_TEMPLATE1_H

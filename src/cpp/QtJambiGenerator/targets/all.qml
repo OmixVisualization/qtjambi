@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,15 +35,14 @@ TypeSystem{
     LoadTypeSystem{name: "QtGui";               generate: true; unless: "QTJAMBI_NO_GUI"}
     LoadTypeSystem{name: "QtGuiQpa";            generate: true; unless: "QTJAMBI_NO_GUI";              since: 7}
     LoadTypeSystem{name: "QtGuiRhi";            generate: true; unless: "QTJAMBI_NO_GUI";              since: 6.6}
-    LoadTypeSystem{name: "QtOpenGL";            generate: true; unless: "QTJAMBI_NO_OPENGL";           since: 6}
+    LoadTypeSystem{name: "QtOpenGL";            generate: true; unless: "QTJAMBI_NO_OPENGL";}
     LoadTypeSystem{name: "QtConcurrent";        generate: true; unless: "QTJAMBI_NO_CONCURRENT"}
     LoadTypeSystem{name: "QtWidgets";           generate: true; unless: "QTJAMBI_NO_WIDGETS"}
-    LoadTypeSystem{name: "QtOpenGLWidgets";     generate: true; unless: "QTJAMBI_NO_OPENGLWIDGETS";    since: 6}
+    LoadTypeSystem{name: "QtOpenGLWidgets";     generate: true; unless: "QTJAMBI_NO_OPENGLWIDGETS";}
     LoadTypeSystem{name: "QtSql";               generate: true; unless: "QTJAMBI_NO_SQL"}
     LoadTypeSystem{name: "QtNetwork";           generate: true; unless: "QTJAMBI_NO_NETWORK"}
     LoadTypeSystem{name: "QtNetworkAuth";       generate: true; unless: "QTJAMBI_NO_NETWORKAUTH"}
     LoadTypeSystem{name: "QtXml";               generate: true; unless: "QTJAMBI_NO_XML"}
-    LoadTypeSystem{name: "QtXmlPatterns";       generate: true; unless: "QTJAMBI_NO_XMLPATTERNS";      until: 5}
     LoadTypeSystem{name: "QtQml";               generate: true; unless: "QTJAMBI_NO_QML"}
     LoadTypeSystem{name: "QtQuick";             generate: true; unless: "QTJAMBI_NO_QUICK"}
     LoadTypeSystem{name: "QtQuickTest";         generate: true; unless: "QTJAMBI_NO_QUICKTEST"}
@@ -55,7 +54,7 @@ TypeSystem{
     LoadTypeSystem{name: "QtPrintSupport";      generate: true; unless: "QTJAMBI_NO_PRINTSUPPORT"}
     LoadTypeSystem{name: "QtMultimediaWidgets"; generate: true; unless: "QTJAMBI_NO_MULTIMEDIAWIDGETS"}
     LoadTypeSystem{name: "QtSvg";               generate: true; unless: "QTJAMBI_NO_SVG"}
-    LoadTypeSystem{name: "QtSvgWidgets";        generate: true; unless: "QTJAMBI_NO_SVGWIDGETS";       since: 6}
+    LoadTypeSystem{name: "QtSvgWidgets";        generate: true; unless: "QTJAMBI_NO_SVGWIDGETS";}
     LoadTypeSystem{name: "QtDBus";              generate: true; unless: "QTJAMBI_NO_DBUS"}
     LoadTypeSystem{name: "QtTest";              generate: true; unless: "QTJAMBI_NO_TEST"}
     LoadTypeSystem{name: "QtHelp";              generate: true; unless: "QTJAMBI_NO_HELP"}
@@ -65,26 +64,26 @@ TypeSystem{
     LoadTypeSystem{name: "Qt3DInput";           generate: true; unless: "QTJAMBI_NO_QT3DINPUT"}
     LoadTypeSystem{name: "Qt3DQuick";           generate: true; unless: "QTJAMBI_NO_QT3DQUICK"}
     LoadTypeSystem{name: "Qt3DQuickRender";     generate: true; unless: "QTJAMBI_NO_QT3DQUICKRENDER"}
-    LoadTypeSystem{name: "Qt3DQuickExtras";     generate: true; unless: "QTJAMBI_NO_QT3DQUICKEXTRAS";  since: [5, 7]}
+    LoadTypeSystem{name: "Qt3DQuickExtras";     generate: true; unless: "QTJAMBI_NO_QT3DQUICKEXTRAS";}
     LoadTypeSystem{name: "Qt3DLogic";           generate: true; unless: "QTJAMBI_NO_QT3DLOGIC"}
-    LoadTypeSystem{name: "Qt3DAnimation";       generate: true; unless: "QTJAMBI_NO_QT3DANIMATION";    since: [5, 11]}
-    LoadTypeSystem{name: "Qt3DQuickScene2D";    generate: true; unless: "QTJAMBI_NO_QT3DQUICKSCENE2D"; since: [5, 11]}
+    LoadTypeSystem{name: "Qt3DAnimation";       generate: true; unless: "QTJAMBI_NO_QT3DANIMATION";}
+    LoadTypeSystem{name: "Qt3DQuickScene2D";    generate: true; unless: "QTJAMBI_NO_QT3DQUICKSCENE2D";}
     LoadTypeSystem{name: "QtWebSockets";        generate: true; unless: "QTJAMBI_NO_WEBSOCKETS"}
     LoadTypeSystem{name: "QtWebChannel";        generate: true; unless: "QTJAMBI_NO_WEBCHANNEL"}
     LoadTypeSystem{name: "QtWebChannelQuick";   generate: true; unless: "QTJAMBI_NO_WEBCHANNELQUICK";  since: 6.6}
-    LoadTypeSystem{name: "QtWebEngineQuick";    generate: true; unless: "QTJAMBI_NO_WEBENGINEQUICK";   since: 6}
+    LoadTypeSystem{name: "QtWebEngineQuick";    generate: true; unless: "QTJAMBI_NO_WEBENGINEQUICK";}
     LoadTypeSystem{name: "QtWebEngineWidgets";  generate: true; unless: "QTJAMBI_NO_WEBENGINEWIDGETS"}
     LoadTypeSystem{name: "QtWebEngineCore";     generate: true; unless: "QTJAMBI_NO_WEBENGINECORE"}
     LoadTypeSystem{name: "QtWebView";           generate: true; unless: "QTJAMBI_NO_WEBVIEW"}
     LoadTypeSystem{name: "QtRemoteObjects";     generate: true; unless: "QTJAMBI_NO_REMOTEOBJECTS"}
-    LoadTypeSystem{name: "QtScxml";             generate: true; unless: "QTJAMBI_NO_SCXML";            since: [5, 11]}
-    LoadTypeSystem{name: "QtBluetooth";         generate: true; unless: "QTJAMBI_NO_BLUETOOTH";        since: [5, 11]}
-    LoadTypeSystem{name: "QtLocation";          generate: true; unless: "QTJAMBI_NO_LOCATION";         since: [5, 11]}
-    LoadTypeSystem{name: "QtPositioning";       generate: true; unless: "QTJAMBI_NO_POSITIONING";      since: [5, 11]}
-    LoadTypeSystem{name: "QtNfc";               generate: true; unless: "QTJAMBI_NO_NFC";              since: [5, 11]}
-    LoadTypeSystem{name: "QtPurchasing";        generate: true; unless: "QTJAMBI_NO_PURCHASING";       since: [5, 11]}
-    LoadTypeSystem{name: "QtTextToSpeech";      generate: true; unless: "QTJAMBI_NO_TEXTTOSPEECH";     since: [5, 11]}
-    LoadTypeSystem{name: "QtSensors";           generate: true; unless: "QTJAMBI_NO_SENSORS";          since: [5, 11]}
+    LoadTypeSystem{name: "QtScxml";             generate: true; unless: "QTJAMBI_NO_SCXML";}
+    LoadTypeSystem{name: "QtBluetooth";         generate: true; unless: "QTJAMBI_NO_BLUETOOTH";}
+    LoadTypeSystem{name: "QtLocation";          generate: true; unless: "QTJAMBI_NO_LOCATION";}
+    LoadTypeSystem{name: "QtPositioning";       generate: true; unless: "QTJAMBI_NO_POSITIONING";}
+    LoadTypeSystem{name: "QtNfc";               generate: true; unless: "QTJAMBI_NO_NFC";}
+    LoadTypeSystem{name: "QtPurchasing";        generate: true; unless: "QTJAMBI_NO_PURCHASING";}
+    LoadTypeSystem{name: "QtTextToSpeech";      generate: true; unless: "QTJAMBI_NO_TEXTTOSPEECH";}
+    LoadTypeSystem{name: "QtSensors";           generate: true; unless: "QTJAMBI_NO_SENSORS";}
     LoadTypeSystem{name: "QtUiTools";           generate: true; unless: "QTJAMBI_NO_UITOOLS"}
     LoadTypeSystem{name: "QtDesigner";          generate: true; unless: "QTJAMBI_NO_DESIGNER"}
     LoadTypeSystem{name: "ui4";                 generate: true; unless: "QTJAMBI_NO_UI4"}

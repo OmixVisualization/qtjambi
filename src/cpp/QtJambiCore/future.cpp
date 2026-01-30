@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -71,7 +71,6 @@ private:
 public:
     const QMetaObject *metaObject() const override{ return &staticMetaObject; }
     bool m_isVoid;
-    static const QMetaObject& staticMetaObject;
     friend class QFutureWatcher_mshell;
     friend class QFutureWatcher_oshell;
 };
@@ -101,14 +100,6 @@ public:
 private:
     jmethodID __shell_javaMethod(int pos) const;
 };
-
-const QMetaObject& QFutureWatcher_shell::staticMetaObject = []()->const QMetaObject&{
-    QMetaObjectBuilder builder;
-    builder.setClassName("QFutureWatcher<QVariant>");
-    builder.setSuperClass(&QFutureWatcherBase::staticMetaObject);
-    //builder.setFlags();
-    return *builder.toMetaObject();
-}();
 
 QtJambiShell* QFutureWatcher_shell::__shell() const { return *reinterpret_cast<QtJambiShell**>( quintptr(this) + sizeof(QFutureWatcher_shell) ); }
 
@@ -440,7 +431,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QFutureWatcher_initialize_1nat
 #if QT_CONFIG(future)
         jvalue arguments;
         arguments.l = parent0;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QFutureWatcher_QObject_ptr, sizeof(QFutureWatcher_shell), typeid(QFutureWatcher<QVariant>), 0, QFutureWatcher_shell::staticMetaObject, true, false, &arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QFutureWatcher_QObject_ptr, sizeof(QFutureWatcher_shell), alignof(QFutureWatcher_shell), typeid(QFutureWatcher<QVariant>), 0, QFutureWatcher_shell::staticMetaObject, true, false, &arguments);
 #else
         Q_UNUSED(__jni_object)
         Q_UNUSED(__jni_class)
@@ -565,9 +556,21 @@ void initialize_meta_info_QFutureInterface(){
     using namespace RegistryAPI;
 #if QT_CONFIG(future)
     {
+        struct Deleter{
+            void operator()(QMetaObject* m) const{
+                free(m);
+            }
+        };
+        static std::unique_ptr<QMetaObject,Deleter> FutureWatcherMetaObject{[]()->QMetaObject*{
+            QMetaObjectBuilder builder;
+            builder.setClassName("QFutureWatcher<QVariant>");
+            builder.setSuperClass(&QFutureWatcherBase::staticMetaObject);
+            //builder.setFlags();
+            return builder.toMetaObject();
+        }()};
         const std::type_info& typeId = registerQObjectTypeInfo<QFutureWatcher<QVariant>>("QFutureWatcher<QVariant>", "io/qt/core/QFutureWatcher");
-        registerMetaObject(typeId, QFutureWatcher_shell::staticMetaObject, false, nullptr);
-        registerSizeOfShell(typeId, sizeof(QFutureWatcher_shell));
+        registerMetaObject(typeId, *FutureWatcherMetaObject, false, nullptr);
+        registerSizeOfShell(typeId, sizeof(QFutureWatcher_shell), alignof(QFutureWatcher_shell));
         registerFunctionInfos(typeId, {
                                        FunctionInfo{/* 0 */ "childEvent", "(Lio/qt/core/QChildEvent;)V"},
                                        FunctionInfo{/* 1 */ "connectNotify", "(Lio/qt/core/QMetaMethod;)V"},

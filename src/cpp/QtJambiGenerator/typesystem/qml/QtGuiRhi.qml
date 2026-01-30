@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -130,7 +130,6 @@ TypeSystem{
                               "    __qt_return_value.__rc_importDevice = importDevice;\n"+
                               "}"}
             }
-            until: 6.9
         }
         ModifyFunction{
             signature: "create(QRhi::Implementation,QRhiInitParams*,QRhi::Flags,QRhiNativeHandles*,QRhiAdapter*)"

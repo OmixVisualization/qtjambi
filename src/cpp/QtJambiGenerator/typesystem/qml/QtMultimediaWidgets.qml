@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -35,62 +35,17 @@ TypeSystem{
     qtLibrary: "QtMultimediaWidgets"
     module: "qtjambi.multimediawidgets"
     description: "Widget classes for audio, video, radio and camera functionality."
-    InjectCode{
-        position: Position.Position4
-        until: 5
-        Text{content: "if(QtUtilities.isAvailableQtLibrary(\"OpenGL\"))\n"+
-                      "QtUtilities.loadQtLibrary(\"OpenGL\");"}
-    }
-    
-    RequiredLibrary{
-        name: "QtOpenGL"
-        mode: RequiredLibrary.ProvideOnly
-        until: 5
-    }
     
     ObjectType{
         name: "QGraphicsVideoItem"
-        ModifyFunction{
-            signature: "setMediaObject(QMediaObject *)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcMediaObject"
-                    action: ReferenceCount.Set
-                }
-            }
-            until: 5
-        }
     }
     
     ObjectType{
         name: "QVideoWidget"
-        ModifyFunction{
-            signature: "setMediaObject(QMediaObject *)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcMediaObject"
-                    action: ReferenceCount.Set
-                }
-            }
-            until: 5
-        }
     }
     
     ObjectType{
         name: "QCameraViewfinder"
-        ModifyFunction{
-            signature: "setMediaObject(QMediaObject *)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcMediaObject"
-                    action: ReferenceCount.Set
-                }
-            }
-            until: 5
-        }
     }
     
     ObjectType{

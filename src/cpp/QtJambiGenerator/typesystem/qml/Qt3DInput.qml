@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -52,12 +52,10 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DInput::QButtonAxisInput"
-        since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DInput::QAbstractActionInput"
-        since: [5, 7]
     }
     
     ObjectType{
@@ -71,12 +69,10 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DInput::QKeyboardDevice"
-        since: [5, 7]
     }
     
     ObjectType{
@@ -84,7 +80,6 @@ TypeSystem{
         EnumType{
             name: "Axis"
         }
-        since: [5, 7]
     }
     
     ObjectType{
@@ -101,7 +96,6 @@ TypeSystem{
                 }
             }
         }        
-        since: [5, 8]
     }
     
     ObjectType{
@@ -122,7 +116,6 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 7]
     }
 
     ObjectType{
@@ -135,14 +128,11 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
-            since: [5, 7]
         }
-        since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DInput::QAnalogAxisInput"
-        since: [5, 7]
     }
     
     ObjectType{
@@ -155,7 +145,6 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
-            since: [5, 7]
         }
         ModifyFunction{
             signature: "removeChord(Qt3DInput::QAbstractActionInput*)"
@@ -165,9 +154,7 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
-            since: [5, 7]
         }
-        since: [5, 7]
     }
     
     ObjectType{
@@ -180,7 +167,6 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
-            since: [5, 7]
         }
         ModifyFunction{
             signature: "removeSequence(Qt3DInput::QAbstractActionInput*)"
@@ -190,9 +176,7 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
-            since: [5, 7]
         }
-        since: [5, 7]
     }
     
     ObjectType{
@@ -231,7 +215,6 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
-            since: [5, 7]
         }
         ModifyFunction{
             signature: "removeInput(Qt3DInput::QAbstractActionInput*)"
@@ -241,7 +224,6 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
-            since: [5, 7]
         }
     }
     
@@ -256,7 +238,6 @@ TypeSystem{
                     action: ReferenceCount.Set
                 }
             }
-            since: [5, 7]
         }
     }
     
@@ -271,7 +252,6 @@ TypeSystem{
                     action: ReferenceCount.Set
                 }
             }
-            since: [5, 7]
         }
     }
     
@@ -285,7 +265,6 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
-            since: [5, 7]
         }
         ModifyFunction{
             signature: "removeInput(Qt3DInput::QAbstractAxisInput*)"
@@ -295,7 +274,6 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
-            since: [5, 7]
         }
     }
     
@@ -405,54 +383,7 @@ TypeSystem{
     }
     
     ObjectType{
-        name: "Qt3DInput::QMouseController"
-        EnumType{
-            name: "Axis"
-        }
-
-        EnumType{
-            name: "Button"
-        }
-        ModifyFunction{
-            signature: "axisCount() const"
-            access: Modification.DeclFinal
-        }
-        ModifyFunction{
-            signature: "buttonCount() const"
-            access: Modification.DeclFinal
-        }
-        ModifyFunction{
-            signature: "axisNames() const"
-            access: Modification.DeclFinal
-        }
-        ModifyFunction{
-            signature: "buttonNames() const"
-            access: Modification.DeclFinal
-        }
-        ModifyFunction{
-            signature: "axisIdentifier(const QString &) const"
-            access: Modification.DeclFinal
-        }
-        ModifyFunction{
-            signature: "buttonIdentifier(const QString &) const"
-            access: Modification.DeclFinal
-        }
-        until: [5, 6]
-    }
-    
-    ObjectType{
         name: "Qt3DInput::QInputAspect"
-        ModifyFunction{
-            signature: "setCamera(Qt3DRender::QCamera*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcCamera"
-                    action: ReferenceCount.Set
-                }
-            }
-            until: [5, 6]
-        }
         ModifyFunction{
             signature: "createPhysicalDevice(const QString &)"
             ModifyArgument{
@@ -508,7 +439,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DInput::QPhysicalDeviceCreatedChangeBase"
-        since: [5, 7]
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*::doClone', unmatched return type 'QNode*'"}

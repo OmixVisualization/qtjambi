@@ -66,7 +66,7 @@ public class TestQtjambiCast extends ApplicationInitializer {
 		QEasingCurve.EasingFunction functionalPointer = d->d;
 		FunctionalTest.TestFunction1 functional = (a,b)->a;
 		QList_String customCList = new QList_String();
-		customCList.addAll(Arrays.asList("A", "B", "C"));
+		customCList.append(Arrays.asList("A", "B", "C"));
 		List<String> customJavaList = new ArrayList<>();
 		customJavaList.addAll(Arrays.asList("A", "B", "C", "D"));
 		String text = "TestQtjambiCast::test()";

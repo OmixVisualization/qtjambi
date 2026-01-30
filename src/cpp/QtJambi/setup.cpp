@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,7 +33,7 @@
 
 QT_WARNING_DISABLE_DEPRECATED
 
-#if !defined(QT_NO_DATASTREAM) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if !defined(QT_NO_DATASTREAM)
 namespace QTypeTraits {
 template <>
 struct has_ostream_operator<QDataStream,QVariant::Type,void> : std::true_type {};
@@ -70,13 +70,6 @@ struct QDebugStreamOperatorForType<QVariant::Type, true>
 #define qAsConst std::as_const
 #endif
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-template<>
-inline bool qMapLessThanKey<QVariant>(const QVariant& v1, const QVariant& v2){
-    return v1 < v2;
-}
-#endif
-
 #ifdef Q_OS_IOS
 #ifdef QT_NO_DEBUG
 #define JNI_OnLoad JNI_OnLoad_QtJambi
@@ -92,17 +85,8 @@ inline bool qMapLessThanKey<QVariant>(const QVariant& v1, const QVariant& v2){
 #endif
 
 void shutdown(JNIEnv * env, bool regular);
-void clearRegistryAtShutdown(JNIEnv * env);
-void clearVTablesAtShutdown();
-void clearTypeHandlersAtShutdown();
-void clearSmartPointersInfoAtShutdown();
 void clearMessageHandlerAtShutdown(JNIEnv * env);
-void clearSuperTypesAtShutdown(JNIEnv *env);
-void clearMetaObjectsAtShutdown(JNIEnv * env);
 void clearFunctionPointersAtShutdown();
-void clearObjectsByFunctionPointerAtShutdown(JNIEnv* env);
-void clearTypeManagerAtShutdown();
-void clearInstallSignalEmitThreadCheckHandler(JNIEnv *env);
 void initializeFileEngineResources();
 void clearFileEngineResourcesAtShutdown(JNIEnv* env);
 void clearPurgeThreadAtShutdown(JNIEnv *env);
@@ -113,8 +97,6 @@ void registerPointerContainerAccess();
 JNIEnv *currentJNIEnvironment(JavaVM *vm, bool& requiresDetach, JniEnvironmentFlags flags);
 QObject* connectionSender(const QMetaObject::Connection* connection);
 void registerPluginImporter();
-void clearResettableFlags();
-void clear_type_entries();
 #ifdef Q_OS_ANDROID
 void reinitializeResettableFlags(JNIEnv * env);
 #endif
@@ -126,97 +108,13 @@ namespace DebugAPI{
 void initialize();
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-
-namespace QtJambiVariant {
-    void registerHandler();
-    void unregisterHandler();
-}
-
-void jobjectwrapper_save(QDataStream &stream, const void *_jObjectWrapper)
-{
-    if(JniEnvironment env{200}){
-        const JObjectWrapper *jObjectWrapper = static_cast<const JObjectWrapper *>(_jObjectWrapper);
-        stream << *jObjectWrapper;
-    }
-}
-
-void jcollectionwrapper_save(QDataStream &stream, const void *_jCollectionWrapper)
-{
-    const JCollectionWrapper *jCollectionWrapper = static_cast<const JCollectionWrapper *>(_jCollectionWrapper);
-    bool ok = false;
-    QStringList stringList = jCollectionWrapper->toStringList(&ok);
-    if(ok){
-        stream << stringList;
-    }else{
-        stream << jCollectionWrapper->toList();
-    }
-}
-
-void jmapwrapper_save(QDataStream &stream, const void *_jMapWrapper)
-{
-    const JMapWrapper *jMapWrapper = static_cast<const JMapWrapper *>(_jMapWrapper);
-    bool ok = false;
-    QVariantMap variantMap = jMapWrapper->toStringMap(&ok);
-    if(ok){
-        stream << variantMap;
-    }else{
-        stream << jMapWrapper->toMap();
-    }
-}
-
-void jcollectionwrapper_load(QDataStream &stream, void *_jCollectionWrapper)
-{
-    if(JniEnvironment env{200}){
-        JCollectionWrapper *jCollectionWrapper = static_cast<JCollectionWrapper *>(_jCollectionWrapper);
-        QList<QVariant> list;
-        stream >> list;
-        jobject res = QtJambiAPI::convertQVariantToJavaObject(env, QVariant::fromValue<QList<QVariant>>(list));
-        *jCollectionWrapper = JCollectionWrapper(env, res);
-    }
-}
-
-void jmapwrapper_load(QDataStream &stream, void *_jMapWrapper)
-{
-    if(JniEnvironment env{200}){
-        JMapWrapper *jMapWrapper = static_cast<JMapWrapper *>(_jMapWrapper);
-        QMap<QVariant,QVariant> map;
-        stream >> map;
-        jobject res = QtJambiAPI::convertQVariantToJavaObject(env, QVariant::fromValue<QMap<QVariant,QVariant>>(map));
-        *jMapWrapper = JMapWrapper(env, res);
-    }
-}
-
-void jobjectwrapper_load(QDataStream &stream, void *_jObjectWrapper)
-{
-    if(JniEnvironment env{200}){
-        QtJambiExceptionHandler __exnHandler;
-        try{
-            JObjectWrapper *jObjectWrapper = static_cast<JObjectWrapper *>(_jObjectWrapper);
-            stream >> *jObjectWrapper;
-        }catch(const JavaException& exn){
-            if(noExceptionForwarding(env)){
-                QtJambiExceptionBlocker __blocker;
-                {
-                    QtJambiExceptionHandler __handler;
-                    __handler.handle(env, exn, "operator<<(QDataStream &, const JObjectWrapper &)");
-                }
-                __blocker.release(env);
-            }else
-                __exnHandler.handle(env, exn, "operator<<(QDataStream &, const JObjectWrapper &)");
-        }
-    }
-}
-#endif
-
 template<typename T>
 const std::type_info& registerSpecialTypeInfo(const char *qt_name, const char *java_name)
 {
     using namespace RegistryAPI;
     const std::type_info& id = typeid(T);
-    registerTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name, EntryTypes::SpecialTypeInfo);
-    registerSizeOfType(id, sizeof(T));
-    registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerTypeInfo(id, qt_name, java_name, EntryTypes::SpecialTypeInfo);
+    registerSizeOfType(id, sizeof(T), alignof(T));
     registerOperators<T>();
     return id;
 }
@@ -226,9 +124,8 @@ const std::type_info& registerStringTypeInfo(const char *qt_name, const char *ja
 {
     using namespace RegistryAPI;
     const std::type_info& id = typeid(T);
-    registerTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name, EntryTypes::StringTypeInfo);
-    registerSizeOfType(id, sizeof(T));
-    registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerTypeInfo(id, qt_name, java_name, EntryTypes::StringTypeInfo);
+    registerSizeOfType(id, sizeof(T), alignof(T));
     registerOperators<T>();
     return id;
 }
@@ -238,13 +135,10 @@ const std::type_info& registerPrimitiveMetaTypeInfo(const char *qt_name, const c
 {
     using namespace RegistryAPI;
     const std::type_info& id = registerPrimitiveTypeInfo<T>(qt_name, java_name);
-    int mid = qRegisterMetaType<T>(qt_name);
-    registerMetaTypeID(id, mid);
-/*#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QtJambiPrivate::MetaTypeStreamOperatorsHelper<T>::registerStreamOperators(mid);
-    QtJambiPrivate::MetaTypeComparatorHelper<T>::registerComparators(mid);
-    QtJambiPrivate::MetaTypeDebugStreamOperatorHelper<T>::registerDebugStreamOperator(mid);
-#endif*/
+    QMetaType metaType = QMetaType::fromType<T>();
+    if(QByteArrayView(metaType.name())!=qt_name)
+        QMetaType::registerNormalizedTypedef(qt_name, metaType);
+    registerMetaType(id, metaType);
     registerOperators<T>();
     return id;
 }
@@ -254,34 +148,20 @@ const std::type_info& registerContainerTypeInfo(const char *qt_name, const char 
 {
     using namespace RegistryAPI;
     const std::type_info& id = typeid(T);
-    registerContainerTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name, java_interface);
-    registerSizeOfType(id, sizeof(T));
-    registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerContainerTypeInfo(id, qt_name, java_name, java_interface);
+    registerSizeOfType(id, sizeof(T), alignof(T));
     //registerOperators<T>();
     return id;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-Q_DECLARE_METATYPE(jobject)
-Q_DECLARE_METATYPE(jobjectArray)
-Q_DECLARE_METATYPE(jintArray)
-Q_DECLARE_METATYPE(jshortArray)
-Q_DECLARE_METATYPE(jbyteArray)
-Q_DECLARE_METATYPE(jlongArray)
-Q_DECLARE_METATYPE(jbooleanArray)
-Q_DECLARE_METATYPE(jcharArray)
-Q_DECLARE_METATYPE(jfloatArray)
-Q_DECLARE_METATYPE(jdoubleArray)
-#endif
 bool enabledMethodTracePrints(JNIEnv*);
 bool enabledEventPrints(JNIEnv*);
 bool useFastEnvForOverrides(JNIEnv*);
 bool dontUseEventNotify(JNIEnv *);
 bool useFastEnv(JNIEnv*);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 bool useHiddenObjectData(JNIEnv *);
-#endif
 void forceRemoveObjectData(QObject* object);
+void clearQtJambiStorage(JNIEnv*, bool regular);
 
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
     using namespace RegistryAPI;
@@ -309,14 +189,13 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
     try{
         JniLocalFrame __jniLocalFrame(env, 200);
         // BEGIN these need to be the first steps
+        avoidJNIGlobalRefs(env);
         useFastEnvForOverrides(env);
         dontUseEventNotify(env);
         useFastEnv(env);
         enabledMethodTracePrints(env);
         enabledEventPrints(env);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         useHiddenObjectData(env);
-#endif
         enabledDanglingPointerCheck(env);
 #if defined(Q_OS_ANDROID) && !defined(QT_NO_DEBUG)
         Java::Runtime::System::setProperty(env, env->NewStringUTF("io.qt.debug"), env->NewStringUTF("debug"));
@@ -325,26 +204,29 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
 
         initializeFileEngineResources();
         initializePurgeThread(env);
-        QThreadUserData* threadData;
-        bool init = false;
+        QThreadObjectData* threadData;
+        QThreadObjectData* init{nullptr};
         {
-            QWriteLocker locker(QtJambiLinkUserData::lock());
-            threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, currentThread);
-            if(!threadData){
-                threadData = new QThreadUserData();
-                init = true;
-                QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, currentThread, threadData);
+            auto locker = QtJambiObjectData::readLock();
+            threadData = QtJambiObjectData::userData<QThreadObjectData>(currentThread);
+        }
+        if(!threadData){
+            QThreadObjectData* _threadData;
+            threadData = new QThreadObjectData();
+            init = threadData;
+            {
+                auto locker = QtJambiObjectData::writeLock();
+                _threadData = QtJambiObjectData::setUserData<QThreadObjectData>(currentThread, threadData);
             }
+            if(_threadData)
+                delete _threadData;
         }
         if(init){
             if(QThreadData::get2(currentThread)->isAdopted)
-                threadData->initializeAdopted(currentThread);
+                init->initializeAdopted(currentThread);
             else
-                threadData->initializeDefault(currentThread);
+                init->initializeDefault(currentThread);
         }
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        QtJambiLinkUserData::id();
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         enableThreadAffinity(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-thread-affinity-check")));
         enableSignalEmitThreadCheck(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-signal-emit-thread-check")));
         if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-event-thread-affinity-check"))){
@@ -356,58 +238,55 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
         registerPointerContainerAccess();
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
         //qtjambi_register_containeraccess_all();
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        QtJambiVariant::registerHandler();
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
-        registerMetaTypeID(typeid(JObjectWrapper), qMetaTypeId<JObjectWrapper>());
+        registerMetaType(typeid(JObjectWrapper), QMetaType::fromType<JObjectWrapper>());
         registerSpecialTypeInfo<JObjectWrapper>("JObjectWrapper", "java/lang/Object");
         registerSpecialTypeInfo<JObjectArrayWrapper>("JObjectArrayWrapper", "[Ljava/lang/Object;");
         {
             const std::type_info& typeId = registerSpecialTypeInfo<JIntArrayWrapper>("JIntArrayWrapper", "[I");
-            registerMetaTypeID(typeId, qMetaTypeId<JIntArrayWrapper>());
+            registerMetaType(typeId, QMetaType::fromType<JIntArrayWrapper>());
             registerTypeAlias(typeId, QMetaType::fromType<JIntArrayWrapper>().name(), nullptr);
         }
         {
             const std::type_info& typeId = registerSpecialTypeInfo<JShortArrayWrapper>("JShortArrayWrapper", "[S");
-            registerMetaTypeID(typeId, qMetaTypeId<JShortArrayWrapper>());
+            registerMetaType(typeId, QMetaType::fromType<JShortArrayWrapper>());
             registerTypeAlias(typeId, QMetaType::fromType<JShortArrayWrapper>().name(), nullptr);
         }
         {
             const std::type_info& typeId = registerSpecialTypeInfo<JByteArrayWrapper>("JByteArrayWrapper", "[B");
-            registerMetaTypeID(typeId, qMetaTypeId<JByteArrayWrapper>());
+            registerMetaType(typeId, QMetaType::fromType<JByteArrayWrapper>());
             registerTypeAlias(typeId, QMetaType::fromType<JByteArrayWrapper>().name(), nullptr);
         }
         {
             const std::type_info& typeId = registerSpecialTypeInfo<JLongArrayWrapper>("JLongArrayWrapper", "[J");
-            registerMetaTypeID(typeId, qMetaTypeId<JLongArrayWrapper>());
+            registerMetaType(typeId, QMetaType::fromType<JLongArrayWrapper>());
             registerTypeAlias(typeId, QMetaType::fromType<JLongArrayWrapper>().name(), nullptr);
         }
         {
             const std::type_info& typeId = registerSpecialTypeInfo<JBooleanArrayWrapper>("JBooleanArrayWrapper", "[Z");
-            registerMetaTypeID(typeId, qMetaTypeId<JBooleanArrayWrapper>());
+            registerMetaType(typeId, QMetaType::fromType<JBooleanArrayWrapper>());
             registerTypeAlias(typeId, QMetaType::fromType<JBooleanArrayWrapper>().name(), nullptr);
         }
         {
             const std::type_info& typeId = registerSpecialTypeInfo<JCharArrayWrapper>("JCharArrayWrapper", "[C");
-            registerMetaTypeID(typeId, qMetaTypeId<JCharArrayWrapper>());
+            registerMetaType(typeId, QMetaType::fromType<JCharArrayWrapper>());
             registerTypeAlias(typeId, QMetaType::fromType<JCharArrayWrapper>().name(), nullptr);
         }
         {
             const std::type_info& typeId = registerSpecialTypeInfo<JDoubleArrayWrapper>("JDoubleArrayWrapper", "[D");
-            registerMetaTypeID(typeId, qMetaTypeId<JDoubleArrayWrapper>());
+            registerMetaType(typeId, QMetaType::fromType<JDoubleArrayWrapper>());
             registerTypeAlias(typeId, QMetaType::fromType<JDoubleArrayWrapper>().name(), nullptr);
         }
         {
             const std::type_info& typeId = registerSpecialTypeInfo<JFloatArrayWrapper>("JFloatArrayWrapper", "[F");
-            registerMetaTypeID(typeId, qMetaTypeId<JFloatArrayWrapper>());
+            registerMetaType(typeId, QMetaType::fromType<JFloatArrayWrapper>());
             registerTypeAlias(typeId, QMetaType::fromType<JFloatArrayWrapper>().name(), nullptr);
         }
         {
             const std::type_info& typeId = registerSpecialTypeInfo<std::nullptr_t>("std::nullptr_t", "java/lang/Object");
-            registerMetaTypeID(typeId, QMetaType::Nullptr);
+            registerMetaType(typeId, QMetaType(QMetaType::Nullptr));
         }
-        registerMetaTypeID(typeid(QObject*), typeid(QObject), QMetaType::QObjectStar);
+        registerMetaType(typeid(QObject*), typeid(QObject), QMetaType(QMetaType::QObjectStar));
         registerMetaType<JNIEnv*>("JNIEnv*");
         registerMetaType<jobject>("jobject");
         registerMetaType<jobjectArray>("jobjectArray");
@@ -420,36 +299,29 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
         registerMetaType<jfloatArray>("jfloatArray");
         registerMetaType<jdoubleArray>("jdoubleArray");
         registerSpecialTypeInfo<void*>("void*", "io/qt/QNativePointer");
-        registerMetaTypeID(typeid(void*), QMetaType::VoidStar);
+        registerMetaType(typeid(void*), QMetaType(QMetaType::VoidStar));
         {
             const std::type_info& typeId = registerSpecialTypeInfo<QVariant>("QVariant", "java/lang/Object");
             registerTypeAlias(typeId, nullptr, "io/qt/core/QVariant");
-            registerMetaTypeID(typeId, QMetaType::QVariant);
+            registerMetaType(typeId, QMetaType(QMetaType::QVariant));
         }
 
         {
             registerEnumTypeInfo<QVariant::Type>("QVariant::Type", "io/qt/core/QVariant$Type");
         }
-        registerMetaTypeID(typeid(JObjectArrayWrapper), qMetaTypeId<JObjectArrayWrapper>());
-        registerMetaTypeID(typeid(JMapWrapper), qMetaTypeId<JMapWrapper>());
-        registerMetaTypeID(typeid(JCollectionWrapper), qMetaTypeId<JCollectionWrapper>());
-        registerMetaTypeID(typeid(JIteratorWrapper), qMetaTypeId<JIteratorWrapper>());
-        registerMetaTypeID(typeid(JEnumWrapper), qMetaTypeId<JEnumWrapper>());
+        registerMetaType(typeid(JObjectArrayWrapper), QMetaType::fromType<JObjectArrayWrapper>());
+        registerMetaType(typeid(JMapWrapper), QMetaType::fromType<JMapWrapper>());
+        registerMetaType(typeid(JCollectionWrapper), QMetaType::fromType<JCollectionWrapper>());
         registerMetaType<QMap<QVariant,QVariant> >("QMap<QVariant,QVariant>");
-        registerSpecialTypeInfo<JEnumWrapper>("JEnumWrapper", "java/lang/Enum");
-        registerSpecialTypeInfo<JIteratorWrapper>("JIteratorWrapper", "java/util/Iterator");
         registerSpecialTypeInfo<JCollectionWrapper>("JCollectionWrapper", "java/util/Collection");
         registerSpecialTypeInfo<JMapWrapper>("JMapWrapper", "java/util/Map");
         //qRegisterMetaTypeStreamOperators<JCollectionWrapper>();
-        QMetaType::registerConverter<JEnumWrapper,qint32>(&JEnumWrapper::ordinal);
         QMetaType::registerConverter<JCollectionWrapper,QList<QVariant>>(&JCollectionWrapper::toList);
         QMetaType::registerConverter<JCollectionWrapper,QStringList>(&JCollectionWrapper::toStringList);
         QMetaType::registerConverter<JCollectionWrapper,JObjectWrapper>([](const JObjectWrapper& w) -> JObjectWrapper {return JObjectWrapper(w);});
-        QMetaType::registerConverter<JIteratorWrapper,JObjectWrapper>([](const JIteratorWrapper& w) -> JObjectWrapper {return JObjectWrapper(w);});
         QMetaType::registerConverter<JMapWrapper,JObjectWrapper>([](const JMapWrapper& w) -> JObjectWrapper {return JObjectWrapper(w);});
         QMetaType::registerConverter<JObjectWrapper,QString>(&JObjectWrapper::toString);
         QMetaType::registerConverter<JCollectionWrapper,QString>([](const JObjectWrapper& w) -> QString {return w.toString();});
-        QMetaType::registerConverter<JIteratorWrapper,QString>([](const JIteratorWrapper& w) -> QString {return w.toString();});
         QMetaType::registerConverter<JMapWrapper,QString>([](const JMapWrapper& w) -> QString {return w.toString();});
         QMetaType::registerConverter<JObjectArrayWrapper,QString>(&JObjectArrayWrapper::toString);
         QMetaType::registerConverter<JIntArrayWrapper,QString>([](const JIntArrayWrapper& w) -> QString {return w.toString();});
@@ -464,7 +336,6 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
             QMetaType::registerConverter<JObjectWrapper,jobject>([](const JObjectWrapper& w) -> jobject {return w;});
         QMetaType::registerConverter<JCollectionWrapper,jobject>([](const JObjectWrapper& w) -> jobject {return w;});
         QMetaType::registerConverter<JMapWrapper,jobject>([](const JMapWrapper& w) -> jobject {return w;});
-        QMetaType::registerConverter<JIteratorWrapper,jobject>([](const JIteratorWrapper& w) -> jobject {return w;});
         QMetaType::registerConverter<JObjectArrayWrapper,jobject>([](JObjectArrayWrapper w) -> jobject {return w;});
         QMetaType::registerConverter<JObjectArrayWrapper,jobjectArray>([](JObjectArrayWrapper w) -> jobjectArray {return w;});
         QMetaType::registerConverter<JIntArrayWrapper,jobject>([](const JIntArrayWrapper& w) -> jobject {return w;});
@@ -483,20 +354,6 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
         QMetaType::registerConverter<JDoubleArrayWrapper,jdoubleArray>([](const JDoubleArrayWrapper& w) -> jdoubleArray {return w;});
         QMetaType::registerConverter<JFloatArrayWrapper,jobject>([](const JFloatArrayWrapper& w) -> jobject {return w;});
         QMetaType::registerConverter<JFloatArrayWrapper,jfloatArray>([](const JFloatArrayWrapper& w) -> jfloatArray {return w;});
-        QMetaType::registerConverter<JObjectWrapper,JEnumWrapper>([](const JObjectWrapper& w) -> JEnumWrapper {
-            if(JniEnvironmentExceptionHandler env{200}){
-                try{
-                    if(jobject obj = w.object(env)){
-                        if(Java::Runtime::Enum::isInstanceOf(env, obj)){
-                            return JEnumWrapper(env, obj);
-                        }
-                    }
-                }catch(const JavaException& exn){
-                    env.handleException(exn, "converter");
-                }
-            }
-            return JEnumWrapper();
-        });
         QMetaType::registerConverter<JObjectWrapper,JCollectionWrapper>([](const JObjectWrapper& w) -> JCollectionWrapper {
             if(JniEnvironmentExceptionHandler env{200}){
                 try{
@@ -688,52 +545,8 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
         QMetaType::registerConverter<JMapWrapper,QMap<QVariant,QVariant>>(&JMapWrapper::toMap);
         QMetaType::registerConverter<JMapWrapper,QMap<QString,QVariant>>(&JMapWrapper::toStringMap);
         QMetaType::registerConverter<JMapWrapper,QHash<QString,QVariant>>(&JMapWrapper::toStringHash);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        QMetaType::registerStreamOperators(qMetaTypeId<JEnumWrapper>(),
-                           reinterpret_cast<QMetaType::SaveOperator>(jobjectwrapper_save),
-                           reinterpret_cast<QMetaType::LoadOperator>(jobjectwrapper_load));
-        QMetaType::registerStreamOperators(qMetaTypeId<JObjectWrapper>(),
-                           reinterpret_cast<QMetaType::SaveOperator>(jobjectwrapper_save),
-                           reinterpret_cast<QMetaType::LoadOperator>(jobjectwrapper_load));
-        QMetaType::registerStreamOperators(qMetaTypeId<JCollectionWrapper>(),
-                           reinterpret_cast<QMetaType::SaveOperator>(jcollectionwrapper_save),
-                           reinterpret_cast<QMetaType::LoadOperator>(jcollectionwrapper_load));
-        QMetaType::registerStreamOperators(qMetaTypeId<JMapWrapper>(),
-                           reinterpret_cast<QMetaType::SaveOperator>(jmapwrapper_save),
-                           reinterpret_cast<QMetaType::LoadOperator>(jmapwrapper_load));
-        QMetaType::registerStreamOperators(qMetaTypeId<JIteratorWrapper>(),
-                           reinterpret_cast<QMetaType::SaveOperator>(jobjectwrapper_save),
-                           reinterpret_cast<QMetaType::LoadOperator>(jobjectwrapper_load));
-        QMetaType::registerStreamOperators(qMetaTypeId<JObjectArrayWrapper>(),
-                           reinterpret_cast<QMetaType::SaveOperator>(jobjectwrapper_save),
-                           reinterpret_cast<QMetaType::LoadOperator>(jobjectwrapper_load));
-        QMetaType::registerStreamOperators(qMetaTypeId<JIntArrayWrapper>(),
-                           reinterpret_cast<QMetaType::SaveOperator>(jobjectwrapper_save),
-                           reinterpret_cast<QMetaType::LoadOperator>(jobjectwrapper_load));
-        QMetaType::registerStreamOperators(qMetaTypeId<JShortArrayWrapper>(),
-                           reinterpret_cast<QMetaType::SaveOperator>(jobjectwrapper_save),
-                           reinterpret_cast<QMetaType::LoadOperator>(jobjectwrapper_load));
-        QMetaType::registerStreamOperators(qMetaTypeId<JByteArrayWrapper>(),
-                           reinterpret_cast<QMetaType::SaveOperator>(jobjectwrapper_save),
-                           reinterpret_cast<QMetaType::LoadOperator>(jobjectwrapper_load));
-        QMetaType::registerStreamOperators(qMetaTypeId<JLongArrayWrapper>(),
-                           reinterpret_cast<QMetaType::SaveOperator>(jobjectwrapper_save),
-                           reinterpret_cast<QMetaType::LoadOperator>(jobjectwrapper_load));
-        QMetaType::registerStreamOperators(qMetaTypeId<JCharArrayWrapper>(),
-                           reinterpret_cast<QMetaType::SaveOperator>(jobjectwrapper_save),
-                           reinterpret_cast<QMetaType::LoadOperator>(jobjectwrapper_load));
-        QMetaType::registerStreamOperators(qMetaTypeId<JBooleanArrayWrapper>(),
-                           reinterpret_cast<QMetaType::SaveOperator>(jobjectwrapper_save),
-                           reinterpret_cast<QMetaType::LoadOperator>(jobjectwrapper_load));
-        QMetaType::registerStreamOperators(qMetaTypeId<JDoubleArrayWrapper>(),
-                           reinterpret_cast<QMetaType::SaveOperator>(jobjectwrapper_save),
-                           reinterpret_cast<QMetaType::LoadOperator>(jobjectwrapper_load));
-        QMetaType::registerStreamOperators(qMetaTypeId<JFloatArrayWrapper>(),
-                           reinterpret_cast<QMetaType::SaveOperator>(jobjectwrapper_save),
-                           reinterpret_cast<QMetaType::LoadOperator>(jobjectwrapper_load));
-#endif
-        registerTypeInfo(typeid(void), QtJambiTypeInfo::of<void>(), "void", "void", EntryTypes::PrimitiveTypeInfo);
-        registerMetaTypeID(typeid(void), QMetaType::Void);
+        registerTypeInfo(typeid(void), "void", "void", EntryTypes::PrimitiveTypeInfo);
+        registerMetaType(typeid(void), QMetaType(QMetaType::Void));
         registerPrimitiveMetaTypeInfo<qint64>("qint64", "long");
         registerPrimitiveMetaTypeInfo<quint64>("quint64", "long");
         registerPrimitiveMetaTypeInfo<qulonglong>("qulonglong", "long");
@@ -745,9 +558,7 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
         registerPrimitiveMetaTypeInfo<qint8>("qint8", "byte");
         registerPrimitiveMetaTypeInfo<quint8>("quint8", "byte");
         registerPrimitiveMetaTypeInfo<uchar>("uchar", "byte");
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         registerPrimitiveMetaTypeInfo<std::byte>("char", "byte");
-#endif
         registerPrimitiveMetaTypeInfo<float>("float", "float");
         registerPrimitiveMetaTypeInfo<double>("double", "double");
         registerPrimitiveMetaTypeInfo<bool>("bool", "boolean");
@@ -766,18 +577,10 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
         registerTypeAlias(typeid(QString), nullptr, "io/qt/core/QString");
         registerTypeAlias(typeid(unsigned int), "QRgb", nullptr);
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        registerStringTypeInfo<QXmlStreamStringRef>("QXmlStreamStringRef", "java/lang/String");
-        registerMetaType<QXmlStreamStringRef>("QXmlStreamStringRef");
-
-        registerStringTypeInfo<QStringRef>("QStringRef", "java/lang/String");
-        registerMetaType<QStringRef>("QStringRef");
-#else
         registerStringTypeInfo<QAnyStringView>("QAnyStringView", "java/lang/String");
         registerMetaType<QAnyStringView>("QAnyStringView");
         registerStringTypeInfo<QUtf8StringView>("QUtf8StringView", "java/lang/String");
         registerMetaType<QUtf8StringView>("QUtf8StringView");
-#endif // QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
         registerStringTypeInfo<QLatin1String>("QLatin1String", "java/lang/String");
 
@@ -803,38 +606,21 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
             });
         }
 
-#if QT_VERSION >= 0x050C00
         registerSpecialTypeInfo<QCborValueRef>("QCborValueRef", "io/qt/core/QCborValue");
 #if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
         registerSpecialTypeInfo<QCborValueConstRef>("QCborValueConstRef", "io/qt/core/QCborValue");
 #endif
-#endif
         {
             registerSpecialTypeInfo<QUrl::FormattingOptions>("QUrlTwoFlags<QUrl::UrlFormattingOption,QUrl::ComponentFormattingOption>", "io/qt/core/QUrl$FormattingOptions");
             registerTypeAlias(typeid(QUrl::FormattingOptions), "QUrl::FormattingOptions", nullptr);
-            int id = registerMetaType<QUrl::FormattingOptions>("QUrlTwoFlags<QUrl::UrlFormattingOption,QUrl::ComponentFormattingOption>");
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            QtJambiPrivate::MetaTypeStreamOperatorsHelper<QUrl::FormattingOptions>::registerStreamOperators(id);
-            QtJambiPrivate::MetaTypeComparatorHelper<QUrl::FormattingOptions>::registerComparators(id);
-            QtJambiPrivate::MetaTypeDebugStreamOperatorHelper<QUrl::FormattingOptions>::registerDebugStreamOperator(id);
-#else
-            Q_UNUSED(id)
-#endif
+            registerMetaType<QUrl::FormattingOptions>("QUrlTwoFlags<QUrl::UrlFormattingOption,QUrl::ComponentFormattingOption>");
 
             registerValueTypeInfo<QStringList>("QStringList", "io/qt/core/QStringList");
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            QMetaType::registerNormalizedTypedef("QList<QString>", QMetaType::QStringList);
-            QMetaType::registerNormalizedTypedef("QList<QByteArray>", QMetaType::QByteArrayList);
-            QMetaType::registerNormalizedTypedef("QList<QVariant>", QMetaType::QVariantList);
-            QMetaType::registerNormalizedTypedef("QMap<QString,QVariant>", QMetaType::QVariantMap);
-            QMetaType::registerNormalizedTypedef("QHash<QString,QVariant>", QMetaType::QVariantHash);
-#else
             QMetaType::registerNormalizedTypedef("QList<QString>", QMetaType(QMetaType::QStringList));
             QMetaType::registerNormalizedTypedef("QList<QByteArray>", QMetaType(QMetaType::QByteArrayList));
             QMetaType::registerNormalizedTypedef("QList<QVariant>", QMetaType(QMetaType::QVariantList));
             QMetaType::registerNormalizedTypedef("QMap<QString,QVariant>", QMetaType(QMetaType::QVariantMap));
             QMetaType::registerNormalizedTypedef("QHash<QString,QVariant>", QMetaType(QMetaType::QVariantHash));
-#endif
             registerSpecialTypeInfo<QPair<QVariant,QVariant>>("QPair", "io/qt/core/QPair");
             registerSpecialTypeInfo<std::pair<QVariant,QVariant>>("QPair", "io/qt/core/QPair");
             registerContainerTypeInfo<QHash<QVariant,QVariant>>("QHash", "io/qt/core/QHash", "java/util/Map");
@@ -847,10 +633,6 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
             registerContainerTypeInfo<QMap<QVariant,QVariant>::const_iterator>("QAssociativeConstIterator", "io/qt/core/QAssociativeConstIterator", "java/lang/Iterable");
             registerContainerTypeInfo<QList<QVariant>>("QList", "io/qt/core/QList", "java/util/List");
             registerContainerTypeInfo<std::vector<QVariant>>("std::vector", "java/util/ArrayList", "java/util/List");
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            registerContainerTypeInfo<QLinkedList<QVariant>>("QLinkedList", "io/qt/core/QLinkedList", "java/util/Collection");
-            registerContainerTypeInfo<QVector<QVariant>>("QVector", "io/qt/core/QVector", "java/util/List");
-#endif
             registerContainerTypeInfo<QQueue<QVariant>>("QQueue", "io/qt/core/QQueue", "java/util/Queue");
             registerContainerTypeInfo<QSet<QVariant>>("QSet", "io/qt/core/QSet", "java/util/Set");
             registerContainerTypeInfo<QStack<QVariant>>("QStack", "io/qt/core/QStack", "java/util/Deque");
@@ -989,37 +771,6 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
                     env.handleException(exn, "postRoutine");
                 }
             }
-            /*if(QThread* thread = QThread::currentThread()){
-                QThreadUserData* threadData{nullptr};
-                QtJambiLinkUserData *p{nullptr};
-                {
-                    QReadLocker locker(QtJambiLinkUserData::lock());
-                    threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
-                    p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, thread);
-                }
-                if(threadData || p){
-                    {
-                        QWriteLocker locker(QtJambiLinkUserData::lock());
-                        QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, thread, nullptr);
-                        QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, thread, nullptr);
-                        QTJAMBI_SET_OBJECTUSERDATA(QThreadAdoptionUserData, thread, nullptr);
-                        QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, thread, nullptr);
-                        QTJAMBI_SET_OBJECTUSERDATA(DependencyManagerUserData, thread, nullptr);
-                    }
-                    if(threadData)
-                        delete threadData;
-                    if(p){
-                        if(QSharedPointer<QtJambiLink> link = p->link()){
-                            if(env && !link->isShell()){
-                                link->invalidate(env);
-                            }
-                        }
-                        p->clear();
-                        delete p;
-                    }
-                }
-                forceRemoveObjectData(thread);
-            }*/
         });
         Java::Runtime::URL::getClass(env);
         Java::Runtime::URLConnection::getClass(env);
@@ -1082,7 +833,6 @@ void shutdown(JNIEnv * env, bool regular)
     if(std::atomic<bool>* atm = getJVMLoaded()){
         if(!atm->load())
             return;
-        clearResettableFlags();
         if(regular)
             clearMessageHandlerAtShutdown(env);
         JavaException exception;
@@ -1101,39 +851,7 @@ void shutdown(JNIEnv * env, bool regular)
 
         QInternal::unregisterCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
         QInternal::unregisterCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);
-
-    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        QtJambiVariant::unregisterHandler();
-    #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        try{
-            clearSuperTypesAtShutdown(env);
-        }catch (const JavaException& exn) {
-            if(env)
-                exception.addSuppressed(env, exn);
-        }
-        try{
-            clearMetaObjectsAtShutdown(env);
-        }catch (const JavaException& exn) {
-            if(env)
-                exception.addSuppressed(env, exn);
-        }
-        clearTypeHandlersAtShutdown();
         clearFunctionPointersAtShutdown();
-        try{
-            clearObjectsByFunctionPointerAtShutdown(env);
-        }catch (const JavaException& exn) {
-            if(env)
-                exception.addSuppressed(env, exn);
-        }
-        try{
-            clearInstallSignalEmitThreadCheckHandler(env);
-        }catch (const JavaException& exn) {
-            if(env)
-                exception.addSuppressed(env, exn);
-        }
-        clearTypeManagerAtShutdown();
-        clear_type_entries();
-        clearSmartPointersInfoAtShutdown();
         try{
             clearFileEngineResourcesAtShutdown(env);
         }catch (const JavaException& exn) {
@@ -1150,24 +868,33 @@ void shutdown(JNIEnv * env, bool regular)
         atm->store(false);
         {
             QThread* thread = QThread::currentThread();
-            QThreadUserData* threadData{nullptr};
-            QtJambiLinkUserData *p{nullptr};
+            QThreadObjectData* threadData{nullptr};
+            QtJambiLinkObjectData *p{nullptr};
             {
-                QReadLocker locker(QtJambiLinkUserData::lock());
-                threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
-                p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, thread);
+                auto locker = QtJambiObjectData::readLock();
+                threadData = QtJambiObjectData::userData<QThreadObjectData>(thread);
+                p = QtJambiObjectData::userData<QtJambiLinkObjectData>(thread);
             }
             if(threadData || p){
+                QThreadAdoptionObjectData* ta;
+                ValueOwnerObjectData* v;
+                DependencyManagerObjectData* d;
                 {
-                    QWriteLocker locker(QtJambiLinkUserData::lock());
-                    QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, thread, nullptr);
-                    QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, thread, nullptr);
-                    QTJAMBI_SET_OBJECTUSERDATA(QThreadAdoptionUserData, thread, nullptr);
-                    QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, thread, nullptr);
-                    QTJAMBI_SET_OBJECTUSERDATA(DependencyManagerUserData, thread, nullptr);
+                    auto locker = QtJambiObjectData::writeLock();
+                    p = QtJambiObjectData::setUserData<QtJambiLinkObjectData>(thread, nullptr);
+                    threadData = QtJambiObjectData::setUserData<QThreadObjectData>(thread, nullptr);
+                    ta = QtJambiObjectData::setUserData<QThreadAdoptionObjectData>(thread, nullptr);
+                    v = QtJambiObjectData::setUserData<ValueOwnerObjectData>(thread, nullptr);
+                    d = QtJambiObjectData::setUserData<DependencyManagerObjectData>(thread, nullptr);
                 }
                 if(threadData)
                     delete threadData;
+                if(ta)
+                    delete ta;
+                if(v)
+                    delete v;
+                if(d)
+                    delete d;
                 if(p){
                     p->clear(env);
                     delete p;
@@ -1175,14 +902,11 @@ void shutdown(JNIEnv * env, bool regular)
             }
             forceRemoveObjectData(thread);
         }
-        clearVTablesAtShutdown();
-        if(regular){
-            try{
-                clearRegistryAtShutdown(env);
-            }catch (const JavaException& exn) {
-                if(env)
-                    exception.addSuppressed(env, exn);
-            }
+        try{
+            clearQtJambiStorage(env, regular);
+        }catch (const JavaException& exn) {
+            if(env)
+                exception.addSuppressed(env, exn);
         }
         try{
             clearPurgeThreadAtShutdown(env);

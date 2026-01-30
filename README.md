@@ -46,7 +46,7 @@ The necessary JNI (Java Native Interface) code and `.java` files are automatical
             GNU LESSER GENERAL PUBLIC LICENSE
 
  QtJambi is Copyright (C) 1992-2009 Nokia. All rights reserved.
-            Copyright (C) 2009-2025 Dr. Peter Droste, 
+            Copyright (C) 2009-2026 Dr. Peter Droste, 
                                     Omix Visualization GmbH & Co. KG. 
                                     All rights reserved.
 
@@ -58,7 +58,7 @@ The necessary JNI (Java Native Interface) code and `.java` files are automatical
             GNU GENERAL PUBLIC LICENSE
 
  QtJambi is Copyright (C) 1992-2009 Nokia. All rights reserved.
-            Copyright (C) 2009-2025 Dr. Peter Droste, 
+            Copyright (C) 2009-2026 Dr. Peter Droste, 
                                     Omix Visualization GmbH & Co. KG. 
                                     All rights reserved.
 

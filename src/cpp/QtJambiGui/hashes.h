@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -899,6 +899,11 @@ QTJAMBI_MATRIX(4,2)
 QTJAMBI_MATRIX(4,3)
 
 size_t qHash(const QColorTransform &value, size_t seed = 0);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 11, 0)
+bool operator==(const QQuaternion::Axes &v1, const QQuaternion::Axes &v2);
+size_t qHash(const QQuaternion::Axes& value, size_t seed = 0);
+#endif
 
 #endif
 

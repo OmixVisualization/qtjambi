@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,7 +34,6 @@
 #include <QtJambi/TestAPI>
 #include <QtJambi/QtJambiAPI>
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #define QTJAMBI_ARG(Type, MetaType, arg) QArgument<Type >(#MetaType, arg)
 #define QTJAMBI_RETURN_ARG(Type, MetaType, arg) QReturnArgument<Type >(#MetaType, arg)
 #define TEST_METHOD(Type, MetaType, Method) "test"#Method"("#MetaType")"
@@ -72,38 +71,6 @@
         testmethod.invoke(qobj, Qt::AutoConnection, Q_RETURN_ARG(bool, result), QGenericArgument(#MetaType, variant.constData()));\
     }\
     return result;
-#else
-#define QTJAMBI_ARG(Type, MetaType, arg) Q_ARG(Type, arg)
-#define QTJAMBI_RETURN_ARG(Type, MetaType, arg) Q_RETURN_ARG(Type, arg)
-#define TEST_METHOD(Type, MetaType, Method) "test"#Method"("#Type")"
-#define PROPERTY_TEST(Type, MetaType, Property)\
-    bool result = false;\
-    if(qobj && qobj->metaObject()){\
-        QString name(#Property);\
-        name[0] = name[0].toLower();\
-        QVariant pValue = qobj->property(name.toLatin1());\
-        pValue.convert(QMetaType::fromType<Type>().id());\
-        Type arg = pValue.value<Type>();\
-        const QMetaMethod testmethod = qobj->metaObject()->method(qobj->metaObject()->indexOfMethod(TEST_METHOD(Type, MetaType, Property)));\
-        if(testmethod.isValid())\
-            testmethod.invoke(qobj, Qt::AutoConnection, Q_RETURN_ARG(bool, result), Q_ARG(Type, arg));\
-    }\
-    return result;
-
-#define GETMETHOD_TEST(Type, MetaType, Method)\
-    bool result = false;\
-    if(qobj){\
-    Type arg;\
-    const QMetaMethod qmethod = qobj->metaObject()->method(qobj->metaObject()->indexOfMethod("get"#Method"()"));\
-    const QMetaMethod testmethod = qobj->metaObject()->method(qobj->metaObject()->indexOfMethod(TEST_METHOD(Type, MetaType, Method)));\
-    if(qmethod.isValid())\
-        qmethod.invoke(qobj, Qt::AutoConnection, QTJAMBI_RETURN_ARG(Type, MetaType, arg));\
-    if(testmethod.isValid())\
-        testmethod.invoke(qobj, Qt::AutoConnection, Q_RETURN_ARG(bool, result), QTJAMBI_ARG(Type, MetaType, arg));\
-    }\
-    return result;
-
-#endif
 
 #define PTR_PROPERTY_TEST(Type, MetaType, Property)\
     bool result = false;\
@@ -140,9 +107,8 @@ PropertyAndMethodCallTest::PropertyAndMethodCallTest(QObject *parent) :
 
 bool PropertyAndMethodCallTest::connectSignals(QObject* sender, bool useAnnotatedType){
     bool connected = true;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    connected &= bool(QtJambiAPI::connect(sender, SIGNAL(customEnumChanged(io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomEnum)), this, SLOT(receiveCustomEnum(JEnumWrapper))));
-    connected &= bool(QtJambiAPI::connect(sender, SIGNAL(customQtEnumChanged(io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomQtEnum)), this, SLOT(receiveCustomQtEnum(JEnumWrapper))));
+    connected &= bool(QtJambiAPI::connect(sender, SIGNAL(customEnumChanged(io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomEnum)), this, SLOT(receiveCustomEnum(JObjectWrapper))));
+    connected &= bool(QtJambiAPI::connect(sender, SIGNAL(customQtEnumChanged(io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomQtEnum)), this, SLOT(receiveCustomQtEnum(JObjectWrapper))));
     connected &= bool(QtJambiAPI::connect(sender, SIGNAL(customQtFlagsChanged(io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomQtFlags)), this, SLOT(receiveQtFlags(JObjectWrapper))));
     connected &= bool(QObject::connect(sender, SIGNAL(customColorChanged(QColor)), this, SLOT(receiveColor(QColor))));
     if(useAnnotatedType)
@@ -152,23 +118,10 @@ bool PropertyAndMethodCallTest::connectSignals(QObject* sender, bool useAnnotate
     connected &= bool(QtJambiAPI::connect(sender, SIGNAL(customJavaTypeChanged(JObjectWrapper<io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomJavaType>)), this, SLOT(receiveCustomJavaType(JObjectWrapper))));
     connected &= bool(QtJambiAPI::connect(sender, SIGNAL(derivedQObjectChanged(io::qt::autotests::TestPropertyAndMethodCall::TestQObject::DerivedQObject*)), this, SLOT(receiveDerivedQObject(QObject*))));
     connected &= bool(QtJambiAPI::connect(sender, SIGNAL(extendedColorChanged(io::qt::autotests::TestPropertyAndMethodCall::TestQObject::ExtendedColor)), this, SLOT(receiveExtendedColor(JObjectWrapper))));
-#else
-    connected &= bool(QObject::connect(sender, SIGNAL(customEnumChanged(JEnumWrapper)), this, SLOT(receiveCustomEnum(JEnumWrapper))));
-    connected &= bool(QObject::connect(sender, SIGNAL(customQtEnumChanged(JEnumWrapper)), this, SLOT(receiveCustomQtEnum(JEnumWrapper))));
-    connected &= bool(QObject::connect(sender, SIGNAL(customQtFlagsChanged(JObjectWrapper)), this, SLOT(receiveQtFlags(JObjectWrapper))));
-    connected &= bool(QObject::connect(sender, SIGNAL(customColorChanged(QColor)), this, SLOT(receiveColor(QColor))));
-    if(useAnnotatedType)
-        connected &= bool(QObject::connect(sender, SIGNAL(customColorPtrChanged(QColor*)), this, SLOT(receiveColorPtr(QColor*))));
-    connected &= bool(QObject::connect(sender, SIGNAL(customQtValueChanged(QGraphicsItem*)), this, SLOT(receiveCustomQtValue(QGraphicsItem*))));
-    connected &= bool(QObject::connect(sender, SIGNAL(customQtInterfaceValueChanged(QGraphicsItem*)), this, SLOT(receiveCustomQtInterfaceValue(QGraphicsItem*))));
-    connected &= bool(QObject::connect(sender, SIGNAL(customJavaTypeChanged(JObjectWrapper)), this, SLOT(receiveCustomJavaType(JObjectWrapper))));
-    connected &= bool(QObject::connect(sender, SIGNAL(derivedQObjectChanged(QObject*)), this, SLOT(receiveDerivedQObject(QObject*))));
-    //connected &= bool(QObject::connect(sender, SIGNAL(extendedColorChanged(QColor)), this, SLOT(receiveExtendedColor(JObjectWrapper))));
-#endif
     return connected;
 }
 
-void PropertyAndMethodCallTest::receiveCustomEnum(JEnumWrapper value){
+void PropertyAndMethodCallTest::receiveCustomEnum(JObjectWrapper value){
     m_receivedEnum = value;
 }
 
@@ -180,7 +133,7 @@ void PropertyAndMethodCallTest::receiveColorPtr(QColor* value){
     m_receivedColorPtr = value;
 }
 
-void PropertyAndMethodCallTest::receiveCustomQtEnum(JEnumWrapper value){
+void PropertyAndMethodCallTest::receiveCustomQtEnum(JObjectWrapper value){
     m_receivedQtEnum = value;
 }
 
@@ -216,7 +169,7 @@ void PropertyAndMethodCallTest::receiveDerivedQObject(QObject* value){
     m_receivedDerivedQObject = value;
 }
 
-JEnumWrapper PropertyAndMethodCallTest::receivedCustomEnum(){
+JObjectWrapper PropertyAndMethodCallTest::receivedCustomEnum(){
     return m_receivedEnum;
 }
 
@@ -228,7 +181,7 @@ QColor* PropertyAndMethodCallTest::receivedColorPtr(){
     return m_receivedColorPtr;
 }
 
-JEnumWrapper PropertyAndMethodCallTest::receivedCustomQtEnum(){
+JObjectWrapper PropertyAndMethodCallTest::receivedCustomQtEnum(){
     return m_receivedQtEnum;
 }
 
@@ -269,11 +222,7 @@ bool PropertyAndMethodCallTest::testMethodCallNumber(QObject* qobj){
 }
 
 bool PropertyAndMethodCallTest::testMethodCallEnum(QObject* qobj){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     GETMETHOD_TEST(int, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomEnum, Enum)
-#else
-    GETMETHOD_TEST(JEnumWrapper, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomEnum, Enum)
-#endif
 }
 
 bool PropertyAndMethodCallTest::testMethodCallColor(QObject* qobj){
@@ -294,11 +243,7 @@ bool PropertyAndMethodCallTest::testMethodCallDerivedQObject(QObject* qobj){
 }
 
 bool PropertyAndMethodCallTest::testMethodCallCustomQtEnum(QObject* qobj){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     GETMETHOD_TEST(int, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomQtEnum, CustomQtEnum)
-#else
-    GETMETHOD_TEST(JEnumWrapper, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomQtEnum, CustomQtEnum)
-#endif
 }
 
 bool PropertyAndMethodCallTest::testMethodCallQtFlags(QObject* qobj){
@@ -318,19 +263,11 @@ bool PropertyAndMethodCallTest::testMethodCallCustomJavaType(QObject* qobj){
 }
 
 bool PropertyAndMethodCallTest::testMethodCallCustomQtEnum2(QObject* qobj){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     GETMETHOD_TEST(int, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomQtEnum, CustomQtEnum2)
-#else
-    GETMETHOD_TEST(JEnumWrapper, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomQtEnum, CustomQtEnum2)
-#endif
 }
 
 bool PropertyAndMethodCallTest::testMethodCallExtendedColor(QObject* qobj){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     GETMETHOD_TEST(JObjectWrapper, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::ExtendedColor, ExtendedColor)
-#else
-    GETMETHOD_TEST(QColor, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::ExtendedColor, ExtendedColor)
-#endif
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyNumber(QObject* qobj){
@@ -338,11 +275,7 @@ bool PropertyAndMethodCallTest::testFetchPropertyNumber(QObject* qobj){
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyEnum(QObject* qobj){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     PROPERTY_TEST(int, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomEnum, CustomEnum)
-#else
-    PROPERTY_TEST(JEnumWrapper, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomEnum, CustomEnum)
-#endif
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyColor(QObject* qobj){
@@ -362,11 +295,7 @@ bool PropertyAndMethodCallTest::testFetchPropertyDerivedQObject(QObject* qobj){
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyCustomQtEnum(QObject* qobj){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     PROPERTY_TEST(int, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomQtEnum, CustomQtEnum)
-#else
-    PROPERTY_TEST(JEnumWrapper, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomQtEnum, CustomQtEnum)
-#endif
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyQtFlags(QObject* qobj){
@@ -386,11 +315,7 @@ bool PropertyAndMethodCallTest::testFetchPropertyCustomQtValue(QObject* qobj){
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyExtendedColor(QObject* qobj){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     PROPERTY_TEST(JObjectWrapper, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::ExtendedColor, ExtendedColor)
-#else
-    PROPERTY_TEST(QColor, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::ExtendedColor, ExtendedColor)
-#endif
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyCustomQtInterfaceValue(QObject* qobj){
@@ -402,11 +327,7 @@ bool PropertyAndMethodCallTest::testFetchPropertyCustomJavaType(QObject* qobj){
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyCustomQtEnum2(QObject* qobj){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     PROPERTY_TEST(int, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomQtEnum, CustomQtEnum2)
-#else
-    PROPERTY_TEST(JEnumWrapper, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomQtEnum, CustomQtEnum2)
-#endif
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
@@ -431,27 +352,61 @@ QVariant PropertyAndMethodCallTest::instantiateInPlace(const QMetaMethod& constr
                 a[i+1] = _args[i].data();
             }
             if(!metaType.isValid() || (metaType.flags() & QMetaType::IsPointer)){
-                size_t size = TestAPI::sizeOf(env, metaObject);
-                if(size>0){
+                QPair<size_t,size_t> sizeAlign = TestAPI::sizeAndAlignOf(env, metaObject);
+                if(sizeAlign.first>0){
                     if(metaObject->inherits(&QObject::staticMetaObject)){
-                        void* placement = operator new(size);
-                        memset(placement, 0, size);
+                        void* placement;
+                        if (sizeAlign.second > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+                            placement = operator new(sizeAlign.first, std::align_val_t(sizeAlign.second));
+                        }else{
+                            placement = operator new(sizeAlign.first);
+                        }
+                        memset(placement, 0, sizeAlign.first);
                         a[0] = placement;
                         QObject* ptr = reinterpret_cast<QObject*>(a[0]);
                         if(metaObject->static_metacall(QMetaObject::ConstructInPlace, index, a.data())>=0){
                             ptr = nullptr;
-                            operator delete(placement);
+                            if (sizeAlign.second > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+#ifdef __cpp_sized_deallocation
+                                operator delete(placement, sizeAlign.first, std::align_val_t(sizeAlign.second));
+#else
+                                operator delete(placement, std::align_val_t(sizeAlign.second));
+#endif
+                            } else {
+#ifdef __cpp_sized_deallocation
+                                operator delete(placement, sizeAlign.first);
+#else
+                                operator delete(placement);
+#endif
+                            }
                         }
                         return QVariant::fromValue(ptr);
                     }else if(Java::QtJambi::QtObjectInterface::isAssignableFrom(env, CoreAPI::getMetaObjectJavaType(env, metaObject))){
-                        void* placement = operator new(size);
-                        memset(placement, 0, size);
+                        void* placement;
+                        if (sizeAlign.second > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+                            placement = operator new(sizeAlign.first, std::align_val_t(sizeAlign.second));
+                        }else{
+                            placement = operator new(sizeAlign.first);
+                        }
+                        memset(placement, 0, sizeAlign.first);
                         a[0] = placement;
                         if(metaObject->static_metacall(QMetaObject::ConstructInPlace, index, a.data())<0){
                             jobject obj = QtJambiAPI::findObject(env, placement);
                             return QVariant::fromValue(JObjectWrapper(env, obj));
                         }else{
-                            operator delete(placement);
+                            if (sizeAlign.second > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+#ifdef __cpp_sized_deallocation
+                                operator delete(placement, sizeAlign.first, std::align_val_t(sizeAlign.second));
+#else
+                                operator delete(placement, std::align_val_t(sizeAlign.second));
+#endif
+                            } else {
+#ifdef __cpp_sized_deallocation
+                                operator delete(placement, sizeAlign.first);
+#else
+                                operator delete(placement);
+#endif
+                            }
                         }
                     }
                 }

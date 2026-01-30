@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -28,7 +28,7 @@
 ****************************************************************************/
 
 #include <QtGui/qtguiglobal.h>
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_CONFIG(vulkan)
+#if QT_CONFIG(vulkan)
 #if !__has_include(<vulkan/vulkan.h>)
 #define QVULKANINSTANCE_H
 typedef typename std::conditional<sizeof(void*)==sizeof(qint64), struct VkImage_T *, uint64_t>::type VkImage;
@@ -251,7 +251,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_quick_QSGGeometry_setPoint2D
     }QTJAMBI_TRY_END
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && QT_CONFIG(vulkan)
+#if QT_CONFIG(vulkan)
 
 template<typename T, bool = std::is_pointer<T>::value>
 struct CastHelper{
@@ -267,7 +267,6 @@ QSGTexture * qtjambi_QSGVulkanTexture_fromNative(JNIEnv *, jlong image, jint lay
     return QNativeInterface::QSGVulkanTexture::fromNative(CastHelper<VkImage>::cast(image), VkImageLayout(layout), window, size, options);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *, jlong image, jint layout, const QSize& pixelSize, int sampleCount){
     return QQuickRenderTarget::fromVulkanImage(CastHelper<VkImage>::cast(image), VkImageLayout(layout), pixelSize, sampleCount);
 }
@@ -288,7 +287,6 @@ QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *, jlong im
 QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *, jlong image, jint layout, jint format, jint viewFormat, const QSize& pixelSize, int sampleCount, int arraySize, QQuickRenderTarget::Flags flags){
     return QQuickRenderTarget::fromVulkanImage(CastHelper<VkImage>::cast(image), VkImageLayout(layout), VkFormat(format), VkFormat(viewFormat), pixelSize, sampleCount, arraySize, flags);
 }
-#endif
 #endif
 #endif
 #endif

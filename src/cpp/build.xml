@@ -1,6 +1,6 @@
 <!--===============================================================================================
 ==
-== Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+== Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ==
 == This file is part of Qt Jambi.
 ==
@@ -434,7 +434,7 @@
 					<attribute name="Bundle-Name"      value="QtJambi containeraccess plugin platform bundle"/>
 					<attribute name="Bundle-Description"      value="QtJambi containeraccess plugin platform bundle"/>
 					<attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999"/>
-					<attribute name="Bundle-Version"         value="${qtjambi.version.bundle}"/>
+					<attribute name="Bundle-Version"         value="${qtjambi.jar.version}"/>
 					<attribute name="Bundle-ManifestVersion" value="2"/>
 				</manifest>
 				<fileset dir="${deploymentdir}/platforms/${qtjambi.osname}/${platformjar.configuration}" includes="${library.includes}"/>
@@ -453,7 +453,7 @@
 		<if>
 			<and>
 				<not>
-					<available file="${deploymentdir}/native/qt-lib-core-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.version.bundle}.jar"/>
+					<available file="${deploymentdir}/native/qt-lib-core-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.qtversion.bundle}.jar"/>
 				</not>
 				<or>
 					<equals arg1="${debug.conf}" arg2="release"/>
@@ -461,7 +461,7 @@
 				</or>
 			</and>
 			<then>
-				<echo>${deploymentdir}/native/qt-lib-core-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.version.bundle}.jar not available.</echo>
+				<echo>${deploymentdir}/native/qt-lib-core-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.qtversion.bundle}.jar not available.</echo>
 				<trycatch>
 					<try>
 						<if>
@@ -558,7 +558,7 @@
 				</trycatch>
 			</then>
 			<!--else>
-				<echo>${deploymentdir}/native/qt-lib-core-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.version.bundle}.jar available, skipping.</echo>
+				<echo>${deploymentdir}/native/qt-lib-core-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.qtversion.bundle}.jar available, skipping.</echo>
 			</else-->
 		</if>
   </target>

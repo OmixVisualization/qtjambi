@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,7 +37,7 @@ import io.qt.qml.*;
 import io.qt.quick.*;
 import static io.qt.autotests.TestQuick.*;
 
-public class TestQuickFramebufferObjectQt6 extends ApplicationInitializer {
+public class TestQuickFramebufferObject extends ApplicationInitializer {
 	
 	private static boolean contextIsOpenGL;
 	

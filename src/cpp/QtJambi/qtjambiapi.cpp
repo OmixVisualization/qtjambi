@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -652,9 +652,10 @@ bool enabledDanglingPointerCheck(JNIEnv * env){
     return b;
 }
 
-#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)) && !defined(Q_OS_ANDROID) && !defined(Q_PROCESSOR_ARM)
+#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)) && !defined(Q_OS_ANDROID) //&& !defined(Q_PROCESSOR_ARM)
 #define DO_TYPECHECK_BY_CATCHING_SIGNAL
 #include <signal.h>
+#include <csetjmp>
 #endif
 
 const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, const void* ptr){
@@ -664,6 +665,7 @@ const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, cons
         struct sigaction sa_old;
         bool isRegistered = false;
         bool isSigSegv = false;
+        sigjmp_buf jump_env;
     };
     static thread_local SigData sigData;
     SigData& _sigData = sigData;
@@ -679,7 +681,8 @@ const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, cons
         if(_sigData.isRegistered)
             sigaction(SIGSEGV, &_sigData.sa_old, nullptr);
         _sigData.isRegistered = false;
-        throw std::bad_typeid();
+        siglongjmp(_sigData.jump_env, 1);
+        //throw std::bad_typeid();
     };
     _sigData.isSigSegv = false;
     _sigData.isRegistered = sigaction(SIGSEGV, &sa, &sa_old)==0;
@@ -691,9 +694,13 @@ const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, cons
                 if(_sigData.isRegistered)
                     sigaction(SIGSEGV, &_sigData.sa_old, nullptr);
             });
-            typeId = typeInfoSupplier(ptr);
+            if (sigsetjmp(sigData.jump_env, 1) == 0) {
+                typeId = typeInfoSupplier(ptr);
+            }
         }else{
-            typeId = typeInfoSupplier(ptr);
+            if (sigsetjmp(sigData.jump_env, 1) == 0) {
+                typeId = typeInfoSupplier(ptr);
+            }
         }
         if(typeId){
             const char* typeName = typeId->name();
@@ -740,7 +747,45 @@ const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, cons
     }
 #else
     try{
-        return typeInfoSupplier(ptr);
+        const std::type_info* typeId = typeInfoSupplier(ptr);
+#if !defined(Q_CC_MSVC)
+        if(typeId){
+            const char* typeName = typeId->name();
+            if(typeName && std::strlen(typeName)>1){
+                switch(typeName[0]){
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    break;
+                case 'N':
+                    switch(typeName[1]){
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        break;
+                    default: // not valid name of class
+                        return nullptr;
+                    }
+                    break;
+                default: // not valid name of class
+                    return nullptr;
+                }
+            }
+        }
+#endif
+        return typeId;
     }catch(...){
         return nullptr;
     }
@@ -755,7 +800,45 @@ const std::type_info* tryGetTypeInfo(TypeInfoSupplier typeInfoSupplier, const vo
     }
 #endif
     try{
-        return typeInfoSupplier(ptr);
+        const std::type_info* typeId = typeInfoSupplier(ptr);
+#if !defined(Q_CC_MSVC)
+        if(typeId && enabledDanglingPointerCheck()){
+            const char* typeName = typeId->name();
+            if(typeName && std::strlen(typeName)>1){
+                switch(typeName[0]){
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    break;
+                case 'N':
+                    switch(typeName[1]){
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        break;
+                    default: // not valid name of class
+                        return nullptr;
+                    }
+                    break;
+                default: // not valid name of class
+                    return nullptr;
+                }
+            }
+        }
+#endif
+        return typeId;
     }catch(...){
         return nullptr;
     }
@@ -767,9 +850,9 @@ void QtJambiAPI::checkDanglingPointer(JNIEnv *env, const void* ptr, const std::t
         _typeId = checkedGetTypeInfo(typeInfoSupplier, ptr);
         if(!_typeId){
             QLatin1String java_type(getJavaName(typeId));
-            QString msg = QLatin1String("Dangling pointer to object of type %1");
+            QString msg = QStringLiteral("Dangling pointer to object of type %1");
             if(!java_type.isEmpty()){
-                msg = msg.arg(QString(QLatin1String(java_type)).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.')));
+                msg = msg.arg(QString(java_type).replace(u'/', u'.').replace(u'$', u'.'));
             }else{
                 QLatin1String qt_type(getQtName(typeId));
                 if(!qt_type.isEmpty()){
@@ -905,8 +988,13 @@ jbooleanArray QtJambiAPI::toJBooleanArray(JNIEnv *__jni_env, const jboolean* in,
 }
 
 bool QtJambiAPI::isValidArray(JNIEnv *env, jobject object, const std::type_info& typeId){
-    if(jclass contentType = JavaAPI::resolveClass(env, getJavaInterfaceName(typeId))){
-        return isValidArray(env, object, contentType);
+    const char* javaName = getJavaInterfaceName(typeId);
+    if(jclass contentType = JavaAPI::resolveClass(env, javaName)){
+        if(isValidArray(env, object, contentType)){
+            return true;
+        }else if(typeid_equals(typeId, typeid(QString))){
+            return isValidArray(env, object, Java::Runtime::CharSequence::getClass(env));
+        }
     }
     return false;
 }
@@ -1343,11 +1431,9 @@ bool QtJambiAPI::isQStringObject(JNIEnv *env, jobject obj){
     return Java::QtCore::QString::isInstanceOf(env, obj);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 bool QtJambiAPI::isQByteArrayViewObject(JNIEnv *env, jobject obj){
     return Java::QtCore::QByteArrayView::isInstanceOf(env, obj);
 }
-#endif
 
 bool QtJambiAPI::isQByteArrayObject(JNIEnv *env, jobject obj){
     return Java::QtCore::QByteArray::isInstanceOf(env, obj);

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,6 +35,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -709,6 +710,14 @@ public class TestFileEngine extends ApplicationInitializer {
 		}finally {
 			handler.dispose();
 		}
+	}
+	
+	@Test
+    public void testFD() {
+		QFile file = new QFile();
+		assertTrue(file.open(FileDescriptor.out, QIODevice.OpenModeFlag.WriteOnly.asFlags()));
+		file.write(new QByteArray("Hello World!\n"));
+		file.close();
 	}
 	
     public static void main(String args[]) {

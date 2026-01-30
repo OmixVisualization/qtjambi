@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
 **
 ** This file is part of Qt Jambi.
@@ -119,10 +119,6 @@ public:
 
     static QVariant getIntMultiMap();
 
-    static QVariant getIntVector();
-
-    static QVariant getIntLinkedList();
-
     static QVariant getIntList();
 
     static QVariant getIntSet();
@@ -145,10 +141,6 @@ public:
 
     static QVariant getInt64MultiHash();
 
-    static QVariant getStringVector();
-
-    static QVariant getStringLinkedList();
-
     static QVariant getStringList();
 
     static QVariant getStringSet();
@@ -156,10 +148,6 @@ public:
     static QVariant getStringQueue();
 
     static QVariant getStringStack();
-
-    static QVariant getUnknownEnumVector();
-
-    static QVariant getUnknownEnumLinkedList();
 
     static QVariant getUnknownEnumList();
 
@@ -169,10 +157,6 @@ public:
 
     static QVariant getUnknownEnumStack();
 
-    static QVariant getUnknownValueVector();
-
-    static QVariant getUnknownValueLinkedList();
-
     static QVariant getUnknownValueList();
 
     static QVariant getUnknownValueSet();
@@ -181,10 +165,6 @@ public:
 
     static QVariant getUnknownValueStack();
 
-    static QVariant getDirVector();
-
-    static QVariant getDirLinkedList();
-
     static QVariant getDirList();
 
     static QVariant getDirSet();
@@ -192,10 +172,6 @@ public:
     static QVariant getDirQueue();
 
     static QVariant getDirStack();
-
-    static QVariant getTestObjectVector();
-
-    static QVariant getTestObjectLinkedList();
 
     static QVariant getTestObjectList();
 

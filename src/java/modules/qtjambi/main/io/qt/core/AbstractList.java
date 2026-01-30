@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import io.qt.NonNull;
 import io.qt.QtUninvokable;
 
 abstract class AbstractList<T> extends AbstractSequentialContainer<T> implements java.util.List<T> {
@@ -51,17 +52,16 @@ abstract class AbstractList<T> extends AbstractSequentialContainer<T> implements
     
     abstract T takeAt(int i);
     
-    public abstract void append(java.util.Collection<T> t);
+    public abstract void append(java.util.@NonNull Collection<? extends T> t);
     
     /**
      * Appends all of the elements in the specified collection to the end of
      * this list.
      */
     @Override
-    @SuppressWarnings("unchecked")
     @QtUninvokable
-    public final boolean addAll(Collection<? extends T> c) {
-        append((Collection<T>)c);
+    public final boolean addAll(@NonNull Collection<? extends T> c) {
+        append(c);
         return true;
     }
 
@@ -71,7 +71,7 @@ abstract class AbstractList<T> extends AbstractSequentialContainer<T> implements
      */
     @Override
     @QtUninvokable
-    public final boolean addAll(int index, Collection<? extends T> c) {
+    public final boolean addAll(int index, @NonNull Collection<? extends T> c) {
         for (T o : c) {
             add(index++, o);
         }
@@ -237,7 +237,7 @@ abstract class AbstractList<T> extends AbstractSequentialContainer<T> implements
      */
 	@Override
     @QtUninvokable
-	public final boolean retainAll(Collection<?> c) {
+	public final boolean retainAll(@NonNull Collection<?> c) {
 		return removeIf(c::contains);
 	}
 }

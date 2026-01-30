@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -624,11 +624,5 @@ TypeSystem{
     
     InterfaceType{
         name: "QGeoPositionInfoSourceFactory"
-    }
-    
-    InterfaceType{
-        name: "QGeoPositionInfoSourceFactoryV2"
-        since: [5, 14]
-        until: 5
     }
 }

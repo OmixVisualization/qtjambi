@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,161 +35,9 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "pch_p.h"
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qmetaobject_p.h>
-#include <QtCore/private/qmetaobjectbuilder_p.h>
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
 #define qAsConst std::as_const
-#endif
-
-Q_GLOBAL_STATIC(QReadWriteLock, gRegistryLock)
-typedef SecureContainer<QMap<size_t, EntryTypes>, gRegistryLock> TypeEntryTypesHash;
-typedef SecureContainer<QMap<size_t, const char*>, gRegistryLock> TypeStringHash;
-typedef SecureContainer<QMap<size_t, RegistryAPI::QtJambiTypeInfo>, gRegistryLock> TypeIdToQTypeInfoHash;
-typedef SecureContainer<QHash<QByteArray, const char*>, gRegistryLock> StringStringHash;
-typedef SecureContainer<QHash<QByteArray, const std::type_info*>, gRegistryLock> StringTypeHash;
-typedef SecureContainer<QHash<QByteArray, QList<const std::type_info*>>, gRegistryLock> StringTypesHash;
-Q_GLOBAL_STATIC(TypeStringHash, gTypeQtNameHash)
-Q_GLOBAL_STATIC(TypeIdToQTypeInfoHash, gQTypeInfoHash)
-Q_GLOBAL_STATIC(TypeEntryTypesHash, gEntryTypesHash)
-Q_GLOBAL_STATIC(StringTypeHash, gQtNameTypeHash)
-Q_GLOBAL_STATIC(StringStringHash, gQtFunctionalJavaNameHash)
-Q_GLOBAL_STATIC(StringStringHash, gQtFunctionalQtNameHash)
-Q_GLOBAL_STATIC(StringStringHash, gQtNamespaceJavaNameHash)
-Q_GLOBAL_STATIC(StringStringHash, gJavaNamespaceQtNameHash)
-typedef SecureContainer<QMap<QByteArray, const QMetaObject*>, gRegistryLock> NamespaceMetaObjectHash;
-Q_GLOBAL_STATIC(NamespaceMetaObjectHash, gNamespaceMetaObjectHash)
-Q_GLOBAL_STATIC(TypeStringHash, gTypeJavaNameHash)
-Q_GLOBAL_STATIC(StringTypesHash, gJavaNameTypeHash)
-typedef SecureContainer<QSet<size_t>, gRegistryLock> TypeSet;
-Q_GLOBAL_STATIC(StringTypeHash, gIIDTypeHash)
-Q_GLOBAL_STATIC(StringStringHash, gJavaClassIIDHash)
-#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
-typedef SecureContainer<QMap<QByteArray,QPair<const char*, int>>, gRegistryLock> NativeInterfaceMap;
-Q_GLOBAL_STATIC(NativeInterfaceMap, gNativeInterfaceMap)
-#endif
-typedef SecureContainer<QHash<QByteArray, QByteArray>, gRegistryLock> IIDByteArrayHash;
-Q_GLOBAL_STATIC(IIDByteArrayHash, gIIDByteArrayHash)
-typedef SecureContainer<QMap<size_t, const std::type_info*>, gRegistryLock> ID2IDHash;
-Q_GLOBAL_STATIC(ID2IDHash, gFlagEnumIDHash)
-Q_GLOBAL_STATIC(ID2IDHash, gEnumFlagIDHash)
-Q_GLOBAL_STATIC(TypeStringHash, gTypeJavaInterfaceHash)
-typedef SecureContainer<QMap<size_t, NewContainerAccessFunction>, gRegistryLock> SequentialContainerAccessFactoryHash;
-Q_GLOBAL_STATIC(SequentialContainerAccessFactoryHash, gSequentialContainerAccessFactoryHash)
-
-typedef SecureContainer<QHash<int, QHash<int,std::function<AbstractContainerAccess*()>>>, gRegistryLock> SequentialContainerAccessFactoryByMetaTypeHash;
-Q_GLOBAL_STATIC(SequentialContainerAccessFactoryByMetaTypeHash, gSequentialContainerAccessFactoryByMetaTypeHash)
-typedef SecureContainer<QHash<QPair<int,int>, QHash<int,std::function<AbstractContainerAccess*()>>>, gRegistryLock> MapAccessFactoryByMetaTypeHash;
-Q_GLOBAL_STATIC(MapAccessFactoryByMetaTypeHash, gMapAccessFactoryByMetaTypeHash)
-typedef SecureContainer<QHash<int, const std::type_info*>, gRegistryLock> MetaTypeIDHash;
-typedef SecureContainer<QMap<size_t, int>, gRegistryLock> MetaTypeIDMap;
-Q_GLOBAL_STATIC(MetaTypeIDMap, gMetaTypeIDMap)
-Q_GLOBAL_STATIC(MetaTypeIDHash, gMetaTypeIDHash)
-typedef SecureContainer<QMap<size_t, const void*>, gRegistryLock> DefaultValueHash;
-Q_GLOBAL_STATIC(DefaultValueHash, gDefaultValueHash)
-typedef SecureContainer<QMap<size_t, QVector<RegistryAPI::FunctionInfo>>, gRegistryLock> FunctionInfoHash;
-Q_GLOBAL_STATIC(FunctionInfoHash, gVirtualFunctionInfos)
-typedef SecureContainer<QMap<size_t, QVector<RegistryAPI::ConstructorInfo>>, gRegistryLock> ConstructorInfoHash;
-Q_GLOBAL_STATIC(ConstructorInfoHash, gConstructorInfos)
-typedef SecureContainer<QMap<size_t, uint>, gRegistryLock> ReturnScopeHash;
-Q_GLOBAL_STATIC(ReturnScopeHash, gReturnScopes)
-typedef SecureContainer<QMap<size_t, RegistryAPI::DestructorFn>, gRegistryLock> DestructorHash;
-Q_GLOBAL_STATIC(DestructorHash, gDestructorHash)
-typedef SecureContainer<QHash<size_t, const char*>, gRegistryLock> NameHash;
-Q_GLOBAL_STATIC(NameHash, gFlagEnumNameHash)
-Q_GLOBAL_STATIC(NameHash, gInterfaceHash)
-Q_GLOBAL_STATIC(NameHash, gInterfaceIIDsHash)
-typedef SecureContainer<QSet<size_t>, gRegistryLock> HashSet;
-Q_GLOBAL_STATIC(HashSet, gFunctionalHash)
-typedef SecureContainer<QMap<size_t, PtrDeleterFunction>, gRegistryLock> DeleterHash;
-Q_GLOBAL_STATIC(DeleterHash, gDeleterHash)
-typedef SecureContainer<QMap<int,QSharedPointer<AbstractContainerAccess>>, gRegistryLock> ContainerAccessMap;
-Q_GLOBAL_STATIC(ContainerAccessMap, gContainerAccessMap)
-typedef SecureContainer<QHash<const QtPrivate::QMetaTypeInterface *, jclass>, gRegistryLock> MetaTypeJavaTypeHash;
-typedef SecureContainer<QHash<const QtPrivate::QMetaTypeInterface *, const char*>, gRegistryLock> MetaTypeJavaNameHash;
-typedef SecureContainer<QMultiHash<QByteArray,QMetaType>, gRegistryLock> JavaTypeMetaTypesHash;
-typedef SecureContainer<QSet<const QtPrivate::QMetaTypeInterface *>, gRegistryLock> JObjectWrappedMetaTypeHash;
-typedef SecureContainer<QHash<int, const QtPrivate::QMetaTypeInterface *>, gRegistryLock> JObjectNativeWrappedMetaTypeHash;
-typedef SecureContainer<QHash<const QtPrivate::QMetaTypeInterface *, const QtPrivate::QMetaTypeInterface *>, gRegistryLock> JObjectNativeWrappedMetaTypeReverseHash;
-Q_GLOBAL_STATIC(JObjectNativeWrappedMetaTypeHash, gJObjectNativeWrapperMetaTypes)
-Q_GLOBAL_STATIC(JObjectNativeWrappedMetaTypeReverseHash, gMetaTypesForJObjectNativeWrappers)
-Q_GLOBAL_STATIC(MetaTypeJavaTypeHash, gMetaTypeJavaTypeHash)
-Q_GLOBAL_STATIC(MetaTypeJavaNameHash, gMetaTypeJavaNameHash)
-Q_GLOBAL_STATIC(JavaTypeMetaTypesHash, gJavaTypeMetaTypesHash)
-Q_GLOBAL_STATIC(JObjectWrappedMetaTypeHash, gJObjectWrappedMetaTypes)
-
-typedef SecureContainer<QMap<size_t, PtrOwnerFunction>, gRegistryLock> OwnerFunctionHash;
-Q_GLOBAL_STATIC(OwnerFunctionHash, gOwnerFunctionHash)
-
-typedef SecureContainer<QMultiHash<size_t, const PolymorphicIdHandler* >, gRegistryLock> PolymorphicIdHash;
-Q_GLOBAL_STATIC(PolymorphicIdHash, g_polymorphic_ids)
-typedef SecureContainer<QMultiMap<size_t, const std::type_info*>, gRegistryLock> PolymorphicBasesHash;
-Q_GLOBAL_STATIC(PolymorphicBasesHash, gPolymorphicBasesHash)
-
-typedef SecureContainer<QMap<size_t, RegistryAPI::qHashFn>, gRegistryLock> HashFunctionHash;
-typedef SecureContainer<QMap<size_t, size_t>, gRegistryLock> SizeHash;
-typedef SecureContainer<QMap<size_t, QMap<size_t, int>>, gRegistryLock> OffsetHash;
-typedef SecureContainer<QMap<size_t, QSet<const std::type_info*>>, gRegistryLock> InterfacesHash;
-Q_GLOBAL_STATIC(SizeHash, gValueSizeHash)
-Q_GLOBAL_STATIC(SizeHash, gValueAlignmentHash)
-Q_GLOBAL_STATIC(SizeHash, gShellSizeHash)
-Q_GLOBAL_STATIC(HashFunctionHash, gHashFunctionHash)
-Q_GLOBAL_STATIC(OffsetHash, gOffsetHash)
-Q_GLOBAL_STATIC(InterfacesHash, gInterfacesHash)
-
-typedef SecureContainer<QHash<uint, InterfaceOffsetInfo >, gRegistryLock> InterfaceOffsetHash;
-Q_GLOBAL_STATIC(InterfaceOffsetHash, gInterfaceOffsetHash)
-
-typedef SecureContainer<QMap<size_t, const QMetaObject*>, gRegistryLock> MetaObjectHash;
-Q_GLOBAL_STATIC(MetaObjectHash, gOriginalMetaObjectHash)
-Q_GLOBAL_STATIC(MetaObjectHash, gHasCustomMetaObjectHash)
-typedef SecureContainer<QHash<const QMetaObject*, QVector<RegistryAPI::SignalMetaInfo> >, gRegistryLock> SignalMetaInfoHash;
-Q_GLOBAL_STATIC(SignalMetaInfoHash, gSignalMetaInfos)
-typedef SecureContainer<QHash<const QMetaObject*, QList<QMetaMethod> >, gRegistryLock> ExtraSignalsOfMetaObjectHash;
-Q_GLOBAL_STATIC(ExtraSignalsOfMetaObjectHash, gExtraSignalsOfMetaObject)
-typedef SecureContainer<QHash<const QMetaObject*, const std::type_info* >, gRegistryLock> TypeIdsByMetaObjectHash;
-Q_GLOBAL_STATIC(TypeIdsByMetaObjectHash, gTypeIdsByMetaObject)
-typedef SecureContainer<QHash<const QMetaObject*, RegistryAPI::QMetaMethodRenamerFn>, gRegistryLock> QMetaMethodRenamerFnByMetaObjectHash;
-Q_GLOBAL_STATIC(QMetaMethodRenamerFnByMetaObjectHash, gQMetaMethodRenamerFnByMetaObject)
-typedef SecureContainer<QSet<const QMetaObject*>, gRegistryLock> ValueOwnerSet;
-Q_GLOBAL_STATIC(ValueOwnerSet, gValueOwners)
-typedef SecureContainer<QHash<const QMetaObject*,bool>, gRegistryLock> ValueOwnerHash;
-Q_GLOBAL_STATIC(ValueOwnerHash, gValueOwnerHash)
-typedef SecureContainer<QHash<const QMetaObject*, RegistryAPI::ParameterInfoProviderFn >, gRegistryLock> ParameterTypeInfoProviderHash;
-Q_GLOBAL_STATIC(ParameterTypeInfoProviderHash, gParameterTypeInfoProviders)
-typedef SecureContainer<QHash<const QMetaObject*, QHash<int,const char*>>, gRegistryLock> RenamedMethodsHash;
-Q_GLOBAL_STATIC(RenamedMethodsHash, gRenamedMethodsHash)
-
-typedef SecureContainer<QMap<size_t, FunctionalResolver>, gRegistryLock> FunctionalResolverHash;
-Q_GLOBAL_STATIC(FunctionalResolverHash, gFunctionalResolverHash)
-
-typedef SecureContainer<QMap<size_t, TypeInfoSupplier>, gRegistryLock> TypeInfoSupplierHash;
-Q_GLOBAL_STATIC(TypeInfoSupplierHash, gTypeInfoSupplierHash)
-
-Q_GLOBAL_STATIC(TypeStringHash, gMediaControlIIDHash)
-Q_GLOBAL_STATIC(StringTypeHash, gMediaControlIIDClassHash)
-
-typedef SecureContainer<QHash<size_t,jmethodID>, gRegistryLock> ConstructorIDHash;
-Q_GLOBAL_STATIC(ConstructorIDHash, gConstructorHash)
-
-#ifdef QTJAMBI_LOG_CLASSNAMES
-typedef SecureContainer<QHash<size_t, QString>, gRegistryLock> ClassNameHash;
-Q_GLOBAL_STATIC(ClassNameHash, gClassNameHash)
-#endif
-
-typedef SecureContainer<QHash<size_t, jclass>, gRegistryLock> ClassIdHash;
-Q_GLOBAL_STATIC(ClassIdHash, gClassHash)
-typedef SecureContainer<QHash<size_t, jfieldID>, gRegistryLock> FieldIdHash;
-Q_GLOBAL_STATIC(FieldIdHash, gFieldHash)
-typedef SecureContainer<QHash<size_t, jmethodID>, gRegistryLock> MethodIdHash;
-Q_GLOBAL_STATIC(MethodIdHash, gMethodHash)
-typedef SecureContainer<QHash<size_t, jclass>, gRegistryLock> ClassHash;
-Q_GLOBAL_STATIC(ClassHash, gQtSuperclassHash)
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-typedef SecureContainer<QHash<const QtPrivate::QMetaTypeInterface*,const QMetaObject*>, gRegistryLock> MetaTypeMetaObjectHash;
-Q_GLOBAL_STATIC(MetaTypeMetaObjectHash, gMetaTypeMetaObjectHash)
-typedef SecureContainer<QSet<QByteArray>, gRegistryLock> TypeNameSet;
-Q_GLOBAL_STATIC(TypeNameSet, gTypeNames)
 #endif
 
 #ifdef QTJAMBI_COUNTCACHEMISSES
@@ -199,23 +47,6 @@ static void cacheMisses(const char *s)
 
     qCDebug(DebugAPI::internalCategory, "Total # of cache misses: %d : '%s'", ++count, s);
 }
-#endif
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-class JObjectWrapperConverter : public QtPrivate::AbstractConverterFunction{
-public:
-    static void registerConverter(const std::type_info& _typeId, int _to);
-private:
-    JObjectWrapperConverter(const std::type_info& _typeId, int _to);
-    ~JObjectWrapperConverter();
-    static int jobjectWrapperID();
-    static bool convert(const AbstractConverterFunction *converterFunction, const void * from, void* to);
-    const std::type_info& typeId;
-    int to;
-
-    template <class T, typename Deleter>
-    friend struct QtSharedPointer::CustomDeleter;
-};
 #endif
 
 size_t qHash(const char *p, size_t seed) Q_DECL_NOEXCEPT
@@ -248,40 +79,39 @@ size_t qHash(const type_index& idx) Q_DECL_NOEXCEPT
 
 void registerTypeAlias(const std::type_info& typeId, const char *qt_name, const char *java_name)
 {
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(qt_name){
-        QByteArray _qt_name(qt_name);
-        if(!gQtNameTypeHash->contains(_qt_name))
-            gQtNameTypeHash->insert(_qt_name, &typeId);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker locker(storage->registryLock());
+        if(qt_name){
+            QByteArray _qt_name(qt_name);
+            if(!storage->qtNameTypeHash().contains(_qt_name))
+                storage->qtNameTypeHash().insert(_qt_name, &typeId);
+        }
+        if(java_name)
+            storage->javaNameTypeHash()[java_name].append(&typeId);
     }
-    if(java_name)
-        (*gJavaNameTypeHash)[java_name].append(&typeId);
 }
 
-void registerTypeInfo(const std::type_info& typeId, RegistryAPI::QtJambiTypeInfo info, const char *qt_name, const char *java_name, EntryTypes entryTypes)
+void registerTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, EntryTypes entryTypes)
 {
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QWriteLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
-        if(!gTypeQtNameHash->contains(unique_id(typeId))){
-            gTypeQtNameHash->insert(unique_id(typeId), qt_name);
+        QWriteLocker locker(storage->registryLock());
+        if(!storage->typeQtNameHash().contains(unique_id(typeId))){
+            storage->typeQtNameHash().insert(unique_id(typeId), qt_name);
         }
-        if(entryTypes==EntryTypes::FunctionalTypeInfo 
-                && !gQTypeInfoHash->contains(unique_id(typeId))){
-            gQTypeInfoHash->insert(unique_id(typeId), info);
-        }
-        gQtNameTypeHash->insert(qt_name, &typeId);
+        storage->qtNameTypeHash().insert(qt_name, &typeId);
 
-        if(!gTypeJavaNameHash->contains(unique_id(typeId))){
-            gTypeJavaNameHash->insert(unique_id(typeId), java_name);
+        if(!storage->typeJavaNameHash().contains(unique_id(typeId))){
+            storage->typeJavaNameHash().insert(unique_id(typeId), java_name);
         }
-        (*gJavaNameTypeHash)[java_name].append(&typeId);
+        storage->javaNameTypeHash()[java_name].append(&typeId);
         if(entryTypes!=EntryTypes::Unspecific)
-            gEntryTypesHash->insert(unique_id(typeId), entryTypes);
-        if(entryTypes==EntryTypes::FunctionalTypeInfo){
-            gQtFunctionalJavaNameHash->insert(qt_name, java_name);
-            gQtFunctionalQtNameHash->insert(java_name, qt_name);
+            storage->entryTypesHash().insert(unique_id(typeId), entryTypes);
+        if(entryTypes==EntryTypes::FunctionPointerTypeInfo
+                || entryTypes==EntryTypes::StdFunctionTypeInfo){
+            storage->qtFunctionalJavaNameHash().insert(qt_name, java_name);
+            storage->qtFunctionalQtNameHash().insert(java_name, qt_name);
         }
     }
     QByteArray type_name = QtJambiAPI::typeName(typeId);
@@ -292,18 +122,22 @@ void registerTypeInfo(const std::type_info& typeId, RegistryAPI::QtJambiTypeInfo
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 void RegistryAPI::registerNativeInterface(const char* className, QPair<const char*, int>&& nameAndRevision){
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    gNativeInterfaceMap()->insert(className, std::move(nameAndRevision));
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker locker(storage->registryLock());
+        storage->nativeInterfaceMap().insert(className, std::move(nameAndRevision));
+    }
 }
 
 bool registeredNativeInterface(JNIEnv* env, jclass cls, QPair<const char*, int>& nameAndRevision){
-    QByteArray className = QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')).toUtf8();
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(gNativeInterfaceMap()->contains(className)){
-        nameAndRevision = gNativeInterfaceMap()->value(className);
-        return true;
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QByteArray className = QtJambiAPI::getClassName(env, cls).replace(QLatin1Char('.'), QLatin1Char('/')).toUtf8();
+        QReadLocker locker(storage->registryLock());
+        if(storage->nativeInterfaceMap().contains(className)){
+            nameAndRevision = storage->nativeInterfaceMap().value(className);
+            return true;
+        }
     }
     return false;
 }
@@ -323,35 +157,43 @@ CoreAPI::NITypeInfo CoreAPI::getNativeInterfaceInfo(JNIEnv * env, jclass cls){
 }
 #endif
 
-void RegistryAPI::registerInterfaceTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, const char *interface_iid)
+void RegistryAPI::registerInterfaceTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, const char *interface_iid)
 {
-    registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::InterfaceTypeInfo);
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    gIIDTypeHash->insert(interface_iid, &typeId);
-    gJavaClassIIDHash->insert(java_name, interface_iid);
+    registerTypeInfo(typeId, qt_name, java_name, EntryTypes::InterfaceTypeInfo);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker locker(storage->registryLock());
+        storage->iidTypeHash().insert(interface_iid, &typeId);
+        storage->javaClassIIDHash().insert(java_name, interface_iid);
+    }
 }
 
 void RegistryAPI::registerInterfaceID(const std::type_info& typeId, const char *interface_iid)
 {
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    gIIDTypeHash->insert(interface_iid, &typeId);
-    gJavaClassIIDHash->insert(gTypeJavaNameHash->value(unique_id(typeId), nullptr), interface_iid);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker locker(storage->registryLock());
+        storage->iidTypeHash().insert(interface_iid, &typeId);
+        storage->javaClassIIDHash().insert(storage->typeJavaNameHash().value(unique_id(typeId), nullptr), interface_iid);
+    }
 }
 
 const char * registeredInterfaceID(const std::type_info& typeId)
 {
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gJavaClassIIDHash->value(gTypeJavaNameHash->value(unique_id(typeId), nullptr));
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->javaClassIIDHash().value(storage->typeJavaNameHash().value(unique_id(typeId), nullptr));
+    }
 }
 
 const char * registeredInterfaceIDForClassName(const QString& className)
 {
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gJavaClassIIDHash->value(className.toLocal8Bit());
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->javaClassIIDHash().value(className.toLocal8Bit());
+    }return nullptr;
 }
 
 const char * RegistryAPI::registerInterfaceID(JNIEnv* env, jclass cls)
@@ -359,49 +201,52 @@ const char * RegistryAPI::registerInterfaceID(JNIEnv* env, jclass cls)
     cls = getGlobalClassRef(env, cls);
     QString iid = QtJambiAPI::getClassName(env, cls);
     QByteArray className = iid.toLatin1().replace('.', '/');
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(gRegistryLock());
-        if(gJavaClassIIDHash->contains(className))
-            return (*gJavaClassIIDHash)[className];
+        QReadLocker locker(storage->registryLock());
+        if(storage->javaClassIIDHash().contains(className))
+            return storage->javaClassIIDHash()[className];
     }
     {
-        QWriteLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
-        if(!gJavaClassIIDHash->contains(className)){
-            const char* _iid = gIIDByteArrayHash->insert(iid.toLatin1(), className).key();
-            gJavaClassIIDHash->insert(className, _iid);
+        QWriteLocker locker(storage->registryLock());
+        if(!storage->javaClassIIDHash().contains(className)){
+            const char* _iid = storage->iidByteArrayHash().insert(iid.toLatin1(), className).key();
+            storage->javaClassIIDHash().insert(className, _iid);
             return _iid;
         }else{
-            return (*gJavaClassIIDHash)[className];
+            return storage->javaClassIIDHash()[className];
         }
     }
 }
 
-void RegistryAPI::registerInterfaceValueTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, const char *interface_iid)
+void RegistryAPI::registerInterfaceValueTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, const char *interface_iid)
 {
-    registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::InterfaceValueTypeInfo);
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    gIIDTypeHash->insert(interface_iid, &typeId);
-    gJavaClassIIDHash->insert(java_name, interface_iid);
+    registerTypeInfo(typeId, qt_name, java_name, EntryTypes::InterfaceValueTypeInfo);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker locker(storage->registryLock());
+        storage->iidTypeHash().insert(interface_iid, &typeId);
+        storage->javaClassIIDHash().insert(java_name, interface_iid);
+    }
 }
 
-void RegistryAPI::registerFunctionalTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, int metaType,
-                                             size_t size, size_t alignment, size_t sizeOfShell, FunctionalResolver resolver, uint returnScopes,
+void RegistryAPI::registerFunctionalTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, bool isFunctionPointer, const QMetaType& metaType,
+                                             size_t size, size_t alignment, size_t sizeOfShell, size_t alignmentOfShell, FunctionalResolver resolver, uint returnScopes,
                                              RegistryAPI::DestructorFn destructor, std::initializer_list<ConstructorInfo> constructors,
                                              PtrDeleterFunction deleter, std::initializer_list<FunctionInfo> virtualFunctions)
 {
-    registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::FunctionalTypeInfo);
-    registerSizeOfType(typeId, size);
-    registerAlignmentOfType(typeId, alignment);
-    registerMetaTypeID(typeId, metaType);
+    registerTypeInfo(typeId, qt_name, java_name, isFunctionPointer ? EntryTypes::FunctionPointerTypeInfo : EntryTypes::StdFunctionTypeInfo);
+    registerSizeOfType(typeId, size, alignment);
+    registerMetaType(typeId, metaType);
+    int metaTypeId = metaType.id();
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QWriteLocker locker(gRegistryLock());
-        gMetaTypeJavaNameHash->insert(QMetaType(metaType).iface(), java_name);
-        gJavaTypeMetaTypesHash->insert(java_name, QMetaType(metaType));
+        QWriteLocker locker(storage->registryLock());
+        storage->javaNameByMetaTypes().insert(metaTypeId, java_name);
+        storage->metaTypesByJavaTypeNames().insert(java_name, META_TYPE_ACCESS(metaType).iface());
     }
     if(sizeOfShell>0)
-        registerSizeOfShell(typeId, sizeOfShell);
+        registerSizeOfShell(typeId, sizeOfShell, alignmentOfShell);
     if(resolver)
         registerFunctionalResolver(typeId, resolver);
     if(destructor || constructors.size()>0)
@@ -412,238 +257,289 @@ void RegistryAPI::registerFunctionalTypeInfo(const std::type_info& typeId, QtJam
         registerFunctionInfos(typeId, virtualFunctions);
 }
 
-void RegistryAPI::registerQObjectTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name)
+void RegistryAPI::registerQObjectTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name)
 {
-    registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::QObjectTypeInfo);
+    registerTypeInfo(typeId, qt_name, java_name, EntryTypes::QObjectTypeInfo);
 }
 
-void RegistryAPI::registerObjectTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name)
+void RegistryAPI::registerObjectTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name)
 {
-    registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::ObjectTypeInfo);
+    registerTypeInfo(typeId, qt_name, java_name, EntryTypes::ObjectTypeInfo);
 }
 
-void RegistryAPI::registerValueTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name)
+void RegistryAPI::registerValueTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name)
 {
-    registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::ValueTypeInfo);
+    registerTypeInfo(typeId, qt_name, java_name, EntryTypes::ValueTypeInfo);
 }
 
-void RegistryAPI::registerEnumTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name)
+void RegistryAPI::registerEnumTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name)
 {
-    registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::EnumTypeInfo);
+    registerTypeInfo(typeId, qt_name, java_name, EntryTypes::EnumTypeInfo);
 }
 
-void RegistryAPI::registerEnumTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, const std::type_info& flagsTypeId, QtJambiTypeInfo flagsInfo, const char *flags_qt_name, const char *flags_qt_name_alias, const char *flags_java_name)
+void RegistryAPI::registerEnumTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, const std::type_info& flagsTypeId, const char *flags_qt_name, const char *flags_qt_name_alias, const char *flags_java_name)
 {
-    registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::EnumTypeInfo);
-    registerTypeInfo(flagsTypeId, flagsInfo, flags_qt_name, flags_java_name, EntryTypes::FlagsTypeInfo);
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(QLatin1String(flags_qt_name)!=QLatin1String(flags_qt_name_alias))
-        gQtNameTypeHash->insert(flags_qt_name_alias, &flagsTypeId);
-    gFlagEnumIDHash->insert(unique_id(flagsTypeId), &typeId);
-    gEnumFlagIDHash->insert(unique_id(typeId), &flagsTypeId);
+    registerTypeInfo(typeId, qt_name, java_name, EntryTypes::EnumTypeInfo);
+    registerTypeInfo(flagsTypeId, flags_qt_name, flags_java_name, EntryTypes::FlagsTypeInfo);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker locker(storage->registryLock());
+        if(QLatin1String(flags_qt_name)!=QLatin1String(flags_qt_name_alias))
+            storage->qtNameTypeHash().insert(flags_qt_name_alias, &flagsTypeId);
+        storage->flagEnumIDHash().insert(unique_id(flagsTypeId), &typeId);
+        storage->enumFlagIDHash().insert(unique_id(typeId), &flagsTypeId);
+    }
 }
 
-void RegistryAPI::registerUnspecificTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name)
+void RegistryAPI::registerUnspecificTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name)
 {
-    registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::Unspecific);
+    registerTypeInfo(typeId, qt_name, java_name, EntryTypes::Unspecific);
 }
 
-void RegistryAPI::registerPrimitiveTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name)
+void RegistryAPI::registerPrimitiveTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name)
 {
-    registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::PrimitiveTypeInfo);
+    registerTypeInfo(typeId, qt_name, java_name, EntryTypes::PrimitiveTypeInfo);
 }
 
-void registerContainerTypeInfo(const std::type_info& typeId, RegistryAPI::QtJambiTypeInfo info, const char *qt_name, const char *java_name, const char *java_interface)
+void registerContainerTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, const char *java_interface)
 {
-    registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::Unspecific);
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(!gTypeJavaInterfaceHash->contains(unique_id(typeId))){
-        gTypeJavaInterfaceHash->insert(unique_id(typeId), java_interface);
+    registerTypeInfo(typeId, qt_name, java_name, EntryTypes::Unspecific);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker locker(storage->registryLock());
+        if(!storage->typeJavaInterfaceHash().contains(unique_id(typeId))){
+            storage->typeJavaInterfaceHash().insert(unique_id(typeId), java_interface);
+        }
     }
 }
 
 void RegistryAPI::registerNamespaceTypeInfo(const char *qt_name, const char *java_name, const QMetaObject* namespaceMetaObject){
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(!gJavaNamespaceQtNameHash->contains(java_name)){
-        gJavaNamespaceQtNameHash->insert(java_name, qt_name);
-    }
-    if(!gQtNamespaceJavaNameHash->contains(qt_name)){
-        gQtNamespaceJavaNameHash->insert(qt_name, java_name);
-    }
-    if(namespaceMetaObject && !gNamespaceMetaObjectHash->contains(java_name)){
-        gNamespaceMetaObjectHash->insert(java_name, namespaceMetaObject);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker locker(storage->registryLock());
+        if(!storage->javaNamespaceQtNameHash().contains(java_name)){
+            storage->javaNamespaceQtNameHash().insert(java_name, qt_name);
+        }
+        if(!storage->qtNamespaceJavaNameHash().contains(qt_name)){
+            storage->qtNamespaceJavaNameHash().insert(qt_name, java_name);
+        }
+        if(namespaceMetaObject && !storage->namespaceMetaObjectHash().contains(java_name)){
+            storage->namespaceMetaObjectHash().insert(java_name, namespaceMetaObject);
+        }
     }
 }
 
 void RegistryAPI::registerContainerAccessFactory(const std::type_info& typeId, NewContainerAccessFunction factory){
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(!gSequentialContainerAccessFactoryHash->contains(unique_id(typeId))){
-        gSequentialContainerAccessFactoryHash->insert(unique_id(typeId), factory);
-    }
-    if(AbstractContainerAccess* access = factory()){
-        if(AbstractListAccess* ca = dynamic_cast<AbstractListAccess*>(access)){
-            int mid = ca->elementMetaType().id();
-            if(!gSequentialContainerAccessFactoryByMetaTypeHash->contains(mid)){
-                (*gSequentialContainerAccessFactoryByMetaTypeHash)[mid][int(SequentialContainerType::QList)] = factory;
-            }
-        }else if(AbstractSetAccess* ca = dynamic_cast<AbstractSetAccess*>(access)){
-            int mid = ca->elementMetaType().id();
-            if(!gSequentialContainerAccessFactoryByMetaTypeHash->contains(mid)){
-                (*gSequentialContainerAccessFactoryByMetaTypeHash)[mid][int(SequentialContainerType::QSet)] = factory;
-            }
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        }else if(AbstractLinkedListAccess* ca = dynamic_cast<AbstractLinkedListAccess*>(access)){
-            int mid = ca->elementMetaType().id();
-            if(!gSequentialContainerAccessFactoryByMetaTypeHash->contains(mid)){
-                (*gSequentialContainerAccessFactoryByMetaTypeHash)[mid][int(SequentialContainerType::QLinkedList)] = factory;
-            }
-        }else if(AbstractVectorAccess* ca = dynamic_cast<AbstractVectorAccess*>(access)){
-            int mid = ca->elementMetaType().id();
-            if(!gSequentialContainerAccessFactoryByMetaTypeHash->contains(mid)){
-                (*gSequentialContainerAccessFactoryByMetaTypeHash)[mid][int(SequentialContainerType::QVector)] = factory;
-            }
-#endif
-        }else if(AbstractHashAccess* ca = dynamic_cast<AbstractHashAccess*>(access)){
-            int kid = ca->keyMetaType().id();
-            int vid = ca->valueMetaType().id();
-            if(!gMapAccessFactoryByMetaTypeHash->contains({kid,vid})){
-                (*gMapAccessFactoryByMetaTypeHash)[{kid,vid}][int(AssociativeContainerType::QHash)] = factory;
-            }
-        }else if(AbstractMapAccess* ca = dynamic_cast<AbstractMapAccess*>(access)){
-            int kid = ca->keyMetaType().id();
-            int vid = ca->valueMetaType().id();
-            if(!gMapAccessFactoryByMetaTypeHash->contains({kid,vid})){
-                (*gMapAccessFactoryByMetaTypeHash)[{kid,vid}][int(AssociativeContainerType::QMap)] = factory;
-            }
-        }else if(AbstractMultiHashAccess* ca = dynamic_cast<AbstractMultiHashAccess*>(access)){
-            int kid = ca->keyMetaType().id();
-            int vid = ca->valueMetaType().id();
-            if(!gMapAccessFactoryByMetaTypeHash->contains({kid,vid})){
-                (*gMapAccessFactoryByMetaTypeHash)[{kid,vid}][int(AssociativeContainerType::QMultiHash)] = factory;
-            }
-        }else if(AbstractMultiMapAccess* ca = dynamic_cast<AbstractMultiMapAccess*>(access)){
-            int kid = ca->keyMetaType().id();
-            int vid = ca->valueMetaType().id();
-            if(!gMapAccessFactoryByMetaTypeHash->contains({kid,vid})){
-                (*gMapAccessFactoryByMetaTypeHash)[{kid,vid}][int(AssociativeContainerType::QMultiMap)] = factory;
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        {
+            if(!storage->containerAccessFactories().contains(unique_id(typeId))){
+                storage->containerAccessFactories().insert(unique_id(typeId), factory);
             }
         }
-        access->dispose();
+        if(AbstractContainerAccess* access = factory()){
+            if(AbstractListAccess* ca = dynamic_cast<AbstractListAccess*>(access)){
+                const QMetaType& mid = ca->elementMetaType();
+                int metaTypeId = mid.id();
+                QWriteLocker locker(storage->registryLock());
+                if(!storage->sequentialContainerAccessFactoryByMetaTypes().contains(metaTypeId)){
+                    storage->sequentialContainerAccessFactoryByMetaTypes()[metaTypeId][SequentialContainerType::QList] = factory;
+                }
+            }else if(AbstractSetAccess* ca = dynamic_cast<AbstractSetAccess*>(access)){
+                const QMetaType& mid = ca->elementMetaType();
+                int metaTypeId = mid.id();
+                QWriteLocker locker(storage->registryLock());
+                if(!storage->sequentialContainerAccessFactoryByMetaTypes().contains(metaTypeId)){
+                    storage->sequentialContainerAccessFactoryByMetaTypes()[metaTypeId][SequentialContainerType::QSet] = factory;
+                }
+            }else if(AbstractHashAccess* ca = dynamic_cast<AbstractHashAccess*>(access)){
+                const QMetaType& kid = ca->keyMetaType();
+                const QMetaType& vid = ca->valueMetaType();
+                QPair<int,int> pair{kid.id(),vid.id()};
+                QWriteLocker locker(storage->registryLock());
+                if(!storage->associativeContainerAccessFactoryByMetaTypes().contains(pair)){
+                    storage->associativeContainerAccessFactoryByMetaTypes()[pair][AssociativeContainerType::QHash] = factory;
+                }
+            }else if(AbstractMapAccess* ca = dynamic_cast<AbstractMapAccess*>(access)){
+                const QMetaType& kid = ca->keyMetaType();
+                const QMetaType& vid = ca->valueMetaType();
+                QPair<int,int> pair{kid.id(),vid.id()};
+                QWriteLocker locker(storage->registryLock());
+                if(!storage->associativeContainerAccessFactoryByMetaTypes().contains(pair)){
+                    storage->associativeContainerAccessFactoryByMetaTypes()[pair][AssociativeContainerType::QMap] = factory;
+                }
+            }else if(AbstractMultiHashAccess* ca = dynamic_cast<AbstractMultiHashAccess*>(access)){
+                const QMetaType& kid = ca->keyMetaType();
+                const QMetaType& vid = ca->valueMetaType();
+                QPair<int,int> pair{kid.id(),vid.id()};
+                QWriteLocker locker(storage->registryLock());
+                if(!storage->associativeContainerAccessFactoryByMetaTypes().contains(pair)){
+                    storage->associativeContainerAccessFactoryByMetaTypes()[pair][AssociativeContainerType::QMultiHash] = factory;
+                }
+            }else if(AbstractMultiMapAccess* ca = dynamic_cast<AbstractMultiMapAccess*>(access)){
+                const QMetaType& kid = ca->keyMetaType();
+                const QMetaType& vid = ca->valueMetaType();
+                QPair<int,int> pair{kid.id(),vid.id()};
+                QWriteLocker locker(storage->registryLock());
+                if(!storage->associativeContainerAccessFactoryByMetaTypes().contains(pair)){
+                    storage->associativeContainerAccessFactoryByMetaTypes()[pair][AssociativeContainerType::QMultiMap] = factory;
+                }
+            }
+            access->dispose();
+        }
     }
 }
 
-std::function<AbstractContainerAccess*()> getSequentialContainerAccessFactory(SequentialContainerType containerType, const QMetaType& type){
-    QReadLocker locker(gRegistryLock());
-    if(containerType==SequentialContainerType::QQueue){
-        containerType = SequentialContainerType::QList;
-    }else if(containerType==SequentialContainerType::QStack){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        containerType = SequentialContainerType::QVector;
-#else
-        containerType = SequentialContainerType::QList;
-#endif
-    }
-    if(gSequentialContainerAccessFactoryByMetaTypeHash->contains(type.id())){
-        return (*gSequentialContainerAccessFactoryByMetaTypeHash)[type.id()][int(containerType)];
-    }else{
-        return nullptr;
+std::function<AbstractContainerAccess*()> getContainerAccessFactory(SequentialContainerType containerType, const QMetaType& type){
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        int metaTypeId = type.id();
+        QReadLocker locker(storage->registryLock());
+        if(containerType==SequentialContainerType::QQueue){
+            containerType = SequentialContainerType::QList;
+        }else if(containerType==SequentialContainerType::QStack){
+            containerType = SequentialContainerType::QList;
+        }
+        if(storage->sequentialContainerAccessFactoryByMetaTypes().contains(metaTypeId)){
+            return storage->sequentialContainerAccessFactoryByMetaTypes()[metaTypeId][containerType];
+        }else{
+            return nullptr;
+        }
     }
 }
 
-std::function<AbstractContainerAccess*()> getSequentialContainerAccessFactory(AssociativeContainerType containerType, const QMetaType& keyType, const QMetaType& valueType){
-    QReadLocker locker(gRegistryLock());
-    QPair<int,int> pair{keyType.id(), valueType.id()};
-    if(gMapAccessFactoryByMetaTypeHash->contains(pair)){
-        return (*gMapAccessFactoryByMetaTypeHash)[pair][int(containerType)];
-    }else{
-        return nullptr;
+std::function<AbstractContainerAccess*()> getContainerAccessFactory(AssociativeContainerType containerType, const QMetaType& keyType, const QMetaType& valueType){
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QPair<int,int> pair{keyType.id(),valueType.id()};
+        QReadLocker locker(storage->registryLock());
+        if(storage->associativeContainerAccessFactoryByMetaTypes().contains(pair)){
+            return storage->associativeContainerAccessFactoryByMetaTypes()[pair][containerType];
+        }else{
+            return nullptr;
+        }
     }
 }
 
 void registerContainerAccessFactory(SequentialContainerType containerType, const QMetaType& elementType, std::function<AbstractContainerAccess*()>&& factory){
-    QWriteLocker locker(gRegistryLock());
-    if(!(*gSequentialContainerAccessFactoryByMetaTypeHash)[elementType.id()].contains(int(containerType))
-            || !(*gSequentialContainerAccessFactoryByMetaTypeHash)[elementType.id()][int(containerType)])
-        (*gSequentialContainerAccessFactoryByMetaTypeHash)[elementType.id()][int(containerType)] = std::move(factory);
-}
-
-void registerContainerAccessFactory(AssociativeContainerType containerType, const QMetaType& keyType, const QMetaType& valueType, std::function<AbstractContainerAccess*()>&& factory){
-    QWriteLocker locker(gRegistryLock());
-    QPair<int,int> pair{keyType.id(), valueType.id()};
-    if(gMapAccessFactoryByMetaTypeHash->contains(pair)){
-        if(!(*gMapAccessFactoryByMetaTypeHash)[pair].contains(int(containerType))
-                || !(*gMapAccessFactoryByMetaTypeHash)[pair][int(containerType)])
-            (*gMapAccessFactoryByMetaTypeHash)[pair][int(containerType)] = std::move(factory);
-    }else{
-        (*gMapAccessFactoryByMetaTypeHash)[pair][int(containerType)] = std::move(factory);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        int metaTypeId = elementType.id();
+        QWriteLocker locker(storage->registryLock());
+        if(!storage->sequentialContainerAccessFactoryByMetaTypes()[metaTypeId].contains(containerType)
+                || !storage->sequentialContainerAccessFactoryByMetaTypes()[metaTypeId][containerType])
+            storage->sequentialContainerAccessFactoryByMetaTypes()[metaTypeId][containerType] = std::move(factory);
     }
 }
 
-NewContainerAccessFunction getSequentialContainerAccessFactory(const std::type_info& typeId){
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gSequentialContainerAccessFactoryHash->value(unique_id(typeId));
+void registerContainerAccessFactory(AssociativeContainerType containerType, const QMetaType& keyType, const QMetaType& valueType, std::function<AbstractContainerAccess*()>&& factory){
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QPair<int,int> pair{keyType.id(),valueType.id()};
+        QWriteLocker locker(storage->registryLock());
+        if(storage->associativeContainerAccessFactoryByMetaTypes().contains(pair)){
+            if(!storage->associativeContainerAccessFactoryByMetaTypes()[pair].contains(containerType)
+                    || !storage->associativeContainerAccessFactoryByMetaTypes()[pair][containerType])
+                storage->associativeContainerAccessFactoryByMetaTypes()[pair][containerType] = std::move(factory);
+        }else{
+            storage->associativeContainerAccessFactoryByMetaTypes()[pair][containerType] = std::move(factory);
+        }
+    }
+}
+
+NewContainerAccessFunction getContainerAccessFactory(const std::type_info& typeId){
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->containerAccessFactories().value(unique_id(typeId));
+    }
 }
 
 
 EntryTypes getEntryType(const std::type_info& typeId){
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gEntryTypesHash->value(unique_id(typeId), EntryTypes::Unspecific);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->entryTypesHash().value(unique_id(typeId), EntryTypes::Unspecific);
+    }
 }
 
 const std::type_info* getInterfaceTypeForIID(const char*interface_iid)
 {
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gIIDTypeHash->value(interface_iid, nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->iidTypeHash().value(interface_iid, nullptr);
+    }
 }
 
 bool isInterface(const std::type_info& typeId)
 {
-    EntryTypes entryType;
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(gRegistryLock());
-        entryType = gEntryTypesHash->value(unique_id(typeId), EntryTypes::Unspecific);
+        EntryTypes entryType;
+        {
+            QReadLocker locker(storage->registryLock());
+            entryType = storage->entryTypesHash().value(unique_id(typeId), EntryTypes::Unspecific);
+        }
+        return entryType == EntryTypes::InterfaceTypeInfo || entryType == EntryTypes::InterfaceValueTypeInfo;
     }
-    return entryType == EntryTypes::InterfaceTypeInfo || entryType == EntryTypes::InterfaceValueTypeInfo;
 }
 
 bool isQObject(const std::type_info& typeId)
 {
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gEntryTypesHash->value(unique_id(typeId), EntryTypes::Unspecific) == EntryTypes::QObjectTypeInfo;
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->entryTypesHash().value(unique_id(typeId), EntryTypes::Unspecific) == EntryTypes::QObjectTypeInfo;
+    }
 }
 
 bool isFunctional(const std::type_info& typeId)
 {
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gEntryTypesHash->value(unique_id(typeId), EntryTypes::Unspecific) == EntryTypes::FunctionalTypeInfo;
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        EntryTypes entryType = storage->entryTypesHash().value(unique_id(typeId), EntryTypes::Unspecific);
+        return entryType==EntryTypes::StdFunctionTypeInfo || entryType==EntryTypes::FunctionPointerTypeInfo;
+    }
 }
 
-int registeredMetaTypeID(const std::type_info& typeId);
+bool isStdFunction(const std::type_info& typeId)
+{
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->entryTypesHash().value(unique_id(typeId), EntryTypes::Unspecific) == EntryTypes::StdFunctionTypeInfo;
+    }
+}
 
-bool isValueType(JNIEnv * env, jclass valueType, int* metaTypeId)
+bool isFunctionPointer(const std::type_info& typeId)
+{
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->entryTypesHash().value(unique_id(typeId), EntryTypes::Unspecific) == EntryTypes::FunctionPointerTypeInfo;
+    }
+}
+
+bool isValueType(JNIEnv * env, jclass valueType, QMetaType* metaTypeOut)
 {
     const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, valueType);
-    if(metaTypeId)
-        *metaTypeId = QMetaType::UnknownType;
+    if(metaTypeOut)
+        *metaTypeOut = QMetaType(QMetaType::UnknownType);
     if (!infos.isEmpty()){
         if(const std::type_info* typeId = getTypeByJavaName(QtJambiAPI::getClassName(env, infos.first().javaClass()).replace(QLatin1Char('.'), QLatin1Char('/')))){
-            QReadLocker locker(gRegistryLock());
-            Q_UNUSED(locker)
-            EntryTypes entryType = gEntryTypesHash->value(unique_id(*typeId), EntryTypes::Unspecific);
-            int _metaTypeId = registeredMetaTypeID(*typeId);
-            if(metaTypeId && (entryType==EntryTypes::ValueTypeInfo || entryType==EntryTypes::InterfaceValueTypeInfo))
-                *metaTypeId = _metaTypeId;
-            return (entryType==EntryTypes::ValueTypeInfo || entryType==EntryTypes::InterfaceValueTypeInfo)
-                    && _metaTypeId!=QMetaType::UnknownType;
+            QtJambiStorage* storage = getQtJambiStorage();
+            {
+                QReadLocker locker(storage->registryLock());
+                EntryTypes entryType = storage->entryTypesHash().value(unique_id(*typeId), EntryTypes::Unspecific);
+                QMetaType metaType = registeredMetaType(*typeId);
+                if(metaTypeOut && (metaType.isValid() && (entryType==EntryTypes::ValueTypeInfo || entryType==EntryTypes::InterfaceValueTypeInfo)))
+                    *metaTypeOut = metaType;
+                return (entryType==EntryTypes::ValueTypeInfo || entryType==EntryTypes::InterfaceValueTypeInfo)
+                        && metaType.isValid();
+            }
         }
     }
     return false;
@@ -652,20 +548,22 @@ bool isValueType(JNIEnv * env, jclass valueType, int* metaTypeId)
 const std::type_info* getTypeByJavaName(QByteArray javaName)
 {
     const std::type_info* result = nullptr;
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(!gJavaNameTypeHash->contains(javaName)){
-        if(javaName.endsWith("$ConcreteWrapper")){
-            javaName = javaName.chopped(16);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        if(!storage->javaNameTypeHash().contains(javaName)){
+            if(javaName.endsWith("$ConcreteWrapper")){
+                javaName = javaName.chopped(16);
+            }
+            if(javaName.endsWith("$Impl")){
+                javaName = javaName.chopped(5);
+            }
         }
-        if(javaName.endsWith("$Impl")){
-            javaName = javaName.chopped(5);
-        }
-    }
-    if(gJavaNameTypeHash->contains(javaName)){
-        const QList<const std::type_info*>& list = (*gJavaNameTypeHash)[javaName];
-        if(!list.isEmpty()){
-            result = list.first();
+        if(storage->javaNameTypeHash().contains(javaName)){
+            const QList<const std::type_info*>& list = storage->javaNameTypeHash()[javaName];
+            if(!list.isEmpty()){
+                result = list.first();
+            }
         }
     }
     return result;
@@ -681,18 +579,13 @@ const std::type_info* getTypeByJavaName(const QString& java_name)
     return getTypeByJavaName(java_name.toLatin1());
 }
 
-const char* getJavaNameByFunctional(const char* qt_name)
-{
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gQtFunctionalJavaNameHash->value(qt_name, nullptr);
-}
-
 const char* getQtNameByFunctional(const char* java_name)
 {
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gQtFunctionalQtNameHash->value(java_name, nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->qtFunctionalQtNameHash().value(java_name, nullptr);
+    }
 }
 
 bool isJavaNameNamespace(const QString& java_name){
@@ -700,28 +593,36 @@ bool isJavaNameNamespace(const QString& java_name){
 }
 
 bool isJavaNameNamespace(const QByteArray& java_name){
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gJavaNamespaceQtNameHash->contains(java_name);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->javaNamespaceQtNameHash().contains(java_name);
+    }
 }
 
 const QMetaObject* registeredNamespaceMetaObject(const QString& java_name){
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gNamespaceMetaObjectHash->value(java_name.toLatin1());
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->namespaceMetaObjectHash().value(java_name.toLatin1());
+    }
 }
 
 bool isQtNameNamespace(const QByteArray& qt_name){
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gQtNamespaceJavaNameHash->contains(qt_name);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->qtNamespaceJavaNameHash().contains(qt_name);
+    }
 }
 
 const std::type_info* getTypeByQtName(const QByteArray& qt_name)
 {
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gQtNameTypeHash->value(qt_name, nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->qtNameTypeHash().value(qt_name, nullptr);
+    }
 }
 
 const std::type_info* getTypeByQtName(const QString& qt_name)
@@ -734,112 +635,92 @@ const std::type_info* getTypeByQtName(const char* qt_name)
     return getTypeByQtName(QByteArray(qt_name));
 }
 
-OptionalBool isRegisteredAsPointerType(const std::type_info& typeId){
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(gQTypeInfoHash->contains(unique_id(typeId))){
-        return OptionalBool(gQTypeInfoHash->value(unique_id(typeId)).isPointer);
-    }
-    return OptionalBool();
-}
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-OptionalBool isRegisteredAsStaticType(const std::type_info& typeId){
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(gQTypeInfoHash->contains(unique_id(typeId))){
-        return OptionalBool(gQTypeInfoHash->value(unique_id(typeId)).isStatic);
-    }
-    return OptionalBool();
-}
-#endif
-
 const char * getQtName(const std::type_info& typeId)
 {
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gTypeQtNameHash->value(unique_id(typeId), nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->typeQtNameHash().value(unique_id(typeId), nullptr);
+    }
 }
 
 const char * getJavaName(const std::type_info& typeId)
 {
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gTypeJavaNameHash->value(unique_id(typeId), nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->typeJavaNameHash().value(unique_id(typeId), nullptr);
+    }
 }
 
 const char * getJavaInterfaceName(const std::type_info& typeId)
 {
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(gTypeJavaInterfaceHash->contains(unique_id(typeId)))
-        return gTypeJavaInterfaceHash->value(unique_id(typeId), nullptr);
-    return gTypeJavaNameHash->value(unique_id(typeId), nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        if(storage->typeJavaInterfaceHash().contains(unique_id(typeId)))
+            return storage->typeJavaInterfaceHash().value(unique_id(typeId), nullptr);
+        return storage->typeJavaNameHash().value(unique_id(typeId), nullptr);
+    }
 }
 
-void registerMetaTypeID(const std::type_info& typeId,
+void registerMetaType(const std::type_info& typeId,
                         const std::type_info& nonPointerTypeId,
-                        int qtMetaType,
+                        const QMetaType& metaType,
                         AbstractContainerAccess* access,
                         const QSharedPointer<AbstractContainerAccess>& sharedAccess)
 {
-    const char * registeredQtName;
-    bool insert;
+    int metaTypeId = metaType.id();
+    QByteArrayView registeredQtName;
+    bool insert = false;
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(gRegistryLock());
-        insert = !gMetaTypeIDMap->contains(unique_id(typeId))
-                || !gMetaTypeIDHash->contains(qtMetaType);
-        registeredQtName = gTypeQtNameHash->value(unique_id(typeId), nullptr);
+        {
+            QReadLocker locker(storage->registryLock());
+            insert = !storage->metaTypeByTypeInfos().contains(unique_id(typeId))
+                    || !storage->typeInfoByMetaTypes().contains(metaTypeId);
+            registeredQtName = storage->typeQtNameHash().value(unique_id(typeId), nullptr);
+        }
+        if(insert){
+            QWriteLocker locker(storage->registryLock());
+            if(!storage->metaTypeByTypeInfos().contains(unique_id(typeId)))
+                storage->metaTypeByTypeInfos().insert(unique_id(typeId), META_TYPE_ACCESS(metaType).iface());
+            if(!storage->typeInfoByMetaTypes().contains(metaTypeId))
+                storage->typeInfoByMetaTypes().insert(metaTypeId, &typeId);
+        }
     }
-    if(insert){
-        QWriteLocker locker(gRegistryLock());
-        if(!gMetaTypeIDMap->contains(unique_id(typeId)))
-            gMetaTypeIDMap->insert(unique_id(typeId), qtMetaType);
-        if(!gMetaTypeIDHash->contains(qtMetaType))
-            gMetaTypeIDHash->insert(qtMetaType, &typeId);
+    if(registeredQtName!=metaType.name() && !access && !sharedAccess){
+        registerTypeAlias(typeId, metaType.name(), nullptr);
     }
-    QByteArray metaTypeName = QMetaType::typeName(qtMetaType);
-    if(registeredQtName && metaTypeName!=registeredQtName && !access && !sharedAccess){
-        registerTypeAlias(typeId, metaTypeName, nullptr);
-    }
-    if(nonPointerTypeId!=typeid(JObjectWrapper)
-            && nonPointerTypeId!=typeid(QString)
-            && nonPointerTypeId!=typeid(QStringView)
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            && nonPointerTypeId!=typeid(QStringRef)
-#endif
-            && nonPointerTypeId!=typeid(qint8)
-            && nonPointerTypeId!=typeid(qint16)
-            && nonPointerTypeId!=typeid(qint32)
-            && nonPointerTypeId!=typeid(qint64)
-            && nonPointerTypeId!=typeid(quint8)
-            && nonPointerTypeId!=typeid(quint16)
-            && nonPointerTypeId!=typeid(quint32)
-            && nonPointerTypeId!=typeid(quint64)
-            && nonPointerTypeId!=typeid(bool)
-            && nonPointerTypeId!=typeid(wchar_t)
-            && nonPointerTypeId!=typeid(QVariant)
-            && nonPointerTypeId!=typeid(JObjectArrayWrapper)
-            && nonPointerTypeId!=typeid(JIntArrayWrapper)
-            && nonPointerTypeId!=typeid(JLongArrayWrapper)
-            && nonPointerTypeId!=typeid(JShortArrayWrapper)
-            && nonPointerTypeId!=typeid(JByteArrayWrapper)
-            && nonPointerTypeId!=typeid(JBooleanArrayWrapper)
-            && nonPointerTypeId!=typeid(JCharArrayWrapper)
-            && nonPointerTypeId!=typeid(JDoubleArrayWrapper)
-            && nonPointerTypeId!=typeid(JFloatArrayWrapper)
-            && nonPointerTypeId!=typeid(JEnumWrapper)
-            && nonPointerTypeId!=typeid(JCollectionWrapper)
-            && nonPointerTypeId!=typeid(JMapWrapper)
-            && nonPointerTypeId!=typeid(JIteratorWrapper)
-            && nonPointerTypeId!=typeid(std::nullptr_t)
+    if(typeid_not_equals(nonPointerTypeId, typeid(JObjectWrapper))
+            && typeid_not_equals(nonPointerTypeId, typeid(QString))
+            && typeid_not_equals(nonPointerTypeId, typeid(QStringView))
+            && typeid_not_equals(nonPointerTypeId, typeid(qint8))
+            && typeid_not_equals(nonPointerTypeId, typeid(qint16))
+            && typeid_not_equals(nonPointerTypeId, typeid(qint32))
+            && typeid_not_equals(nonPointerTypeId, typeid(qint64))
+            && typeid_not_equals(nonPointerTypeId, typeid(quint8))
+            && typeid_not_equals(nonPointerTypeId, typeid(quint16))
+            && typeid_not_equals(nonPointerTypeId, typeid(quint32))
+            && typeid_not_equals(nonPointerTypeId, typeid(quint64))
+            && typeid_not_equals(nonPointerTypeId, typeid(bool))
+            && typeid_not_equals(nonPointerTypeId, typeid(wchar_t))
+            && typeid_not_equals(nonPointerTypeId, typeid(QVariant))
+            && typeid_not_equals(nonPointerTypeId, typeid(JObjectArrayWrapper))
+            && typeid_not_equals(nonPointerTypeId, typeid(JIntArrayWrapper))
+            && typeid_not_equals(nonPointerTypeId, typeid(JLongArrayWrapper))
+            && typeid_not_equals(nonPointerTypeId, typeid(JShortArrayWrapper))
+            && typeid_not_equals(nonPointerTypeId, typeid(JByteArrayWrapper))
+            && typeid_not_equals(nonPointerTypeId, typeid(JBooleanArrayWrapper))
+            && typeid_not_equals(nonPointerTypeId, typeid(JCharArrayWrapper))
+            && typeid_not_equals(nonPointerTypeId, typeid(JDoubleArrayWrapper))
+            && typeid_not_equals(nonPointerTypeId, typeid(JFloatArrayWrapper))
+            && typeid_not_equals(nonPointerTypeId, typeid(JCollectionWrapper))
+            && typeid_not_equals(nonPointerTypeId, typeid(JMapWrapper))
+            && typeid_not_equals(nonPointerTypeId, typeid(std::nullptr_t))
             && !access
             && !sharedAccess){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        JObjectWrapperConverter::registerConverter(nonPointerTypeId, qtMetaType);
-#else
         const std::type_info* _nonPointerTypeId = &nonPointerTypeId;
-        QMetaType metaType(qtMetaType);
         QMetaType jObjectWrapperMetaType = QMetaType::fromType<JObjectWrapper>();
         if(!QMetaType::hasRegisteredConverterFunction(jObjectWrapperMetaType, metaType) && strcmp("QRemoteObjectPendingCall", metaType.name())!=0){
             QMetaType::registerConverterFunction([metaType,_nonPointerTypeId](const void *src, void *target) -> bool {
@@ -879,16 +760,14 @@ void registerMetaTypeID(const std::type_info& typeId,
                 return false;
             }, metaType, jObjectWrapperMetaType);
         }
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     }
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 void registerMetaObjectByMetaTypeInterface(const QtPrivate::QMetaTypeInterface* iface, const QMetaObject* mo){
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QWriteLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
-        gMetaTypeMetaObjectHash->insert(iface, mo);
+        QWriteLocker locker(storage->registryLock());
+        storage->metaTypeMetaObjectHash().insert(iface, mo);
     }
     if(const QtJambiMetaObject* cqjmo = QtJambiMetaObject::cast(mo)){
         if(cqjmo->revision()>=10){
@@ -906,31 +785,32 @@ void registerMetaObjectByMetaTypeInterface(const QtPrivate::QMetaTypeInterface* 
 }
 
 const QMetaObject* metaobjectByMetaTypeInterface(const QtPrivate::QMetaTypeInterface* iface){
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gMetaTypeMetaObjectHash->value(iface);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->metaTypeMetaObjectHash().value(iface);
+    }
 }
-#endif
 
-void RegistryAPI::registerMetaTypeID(const std::type_info& typeId, int qtMetaType)
+void RegistryAPI::registerMetaType(const std::type_info& typeId, const QMetaType& netaType)
 {
-    ::registerMetaTypeID(typeId, typeId, qtMetaType);
+    ::registerMetaType(typeId, typeId, netaType);
 }
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
 const char* registerMetaTypeName(const QByteArray& typeName){
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(gRegistryLock());
-        QSet<QByteArray>::const_iterator iter = gTypeNames->constFind(typeName);
-        if(iter!=gTypeNames->end())
+        {
+            QReadLocker locker(storage->registryLock());
+            QSet<QByteArray>::const_iterator iter = storage->typeNames().constFind(typeName);
+            if(iter!=storage->typeNames().end())
+                return iter->data();
+        }
+        {
+            QWriteLocker locker(storage->registryLock());
+            QSet<QByteArray>::iterator iter = storage->typeNames().insert(typeName);
             return iter->data();
-    }
-    {
-        QWriteLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
-        QSet<QByteArray>::iterator iter = gTypeNames->insert(typeName);
-        return iter->data();
+        }
     }
 }
 
@@ -967,7 +847,7 @@ bool QmlAPI::registerMetaTypeConverter(JNIEnv *env, const QMetaType& metaType1, 
     return false;
 }
 
-int QmlAPI::registerQmlMetaType(JNIEnv *env, jclass clazz,
+QMetaType QmlAPI::registerQmlMetaType(JNIEnv *env, jclass clazz,
                         const QByteArray& typeName,
                         QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
                         QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
@@ -1005,7 +885,7 @@ int QmlAPI::registerQmlMetaType(JNIEnv *env, jclass clazz,
                                           metaObjectFn);
     if(clazz)
         registerJavaClassForCustomMetaType(env, metaType, clazz);
-    return metaType.id();
+    return metaType;
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6,5,0)
@@ -1054,11 +934,12 @@ QMetaType createMetaType(QByteArrayView typeName,
     if(!metaObjectFn && metaObject){
         registerMetaObjectByMetaTypeInterface(metaTypeInterface, metaObject);
     }
-    return QMetaType(metaTypeInterface);
+    QMetaType result(metaTypeInterface);
+    result.id();
+    return result;
 }
-#endif
 
-int RegistryAPI::registerMetaType(const std::type_info& typeId,
+QMetaType RegistryAPI::registerMetaType(const std::type_info& typeId,
                      const std::type_info& nonPointerTypeId,
                      const char *typeName,
                      QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
@@ -1080,14 +961,14 @@ int RegistryAPI::registerMetaType(const std::type_info& typeId,
 {
     QMetaType metaType = QMetaType::fromName(typeName);
     if(metaType.isValid()){
-        bool needsRegistration;
+        bool needsRegistration{false};
+        QtJambiStorage* storage = getQtJambiStorage();
         {
-            QReadLocker locker(gRegistryLock());
-            Q_UNUSED(locker)
-            needsRegistration = !gMetaTypeIDMap->contains(unique_id(typeId));
+            QReadLocker locker(storage->registryLock());
+            needsRegistration = !storage->metaTypeByTypeInfos().contains(unique_id(typeId));
         }
         if(needsRegistration)
-            ::registerMetaTypeID(typeId, nonPointerTypeId, metaType.id());
+            ::registerMetaType(typeId, nonPointerTypeId, metaType);
     }else{
         metaType = createMetaType(typeName,
                                   false,
@@ -1107,44 +988,46 @@ int RegistryAPI::registerMetaType(const std::type_info& typeId,
                                   flags,
                                   metaObject, nullptr);
         if(afterRegistrationFunction)
-            afterRegistrationFunction(metaType.id());
-        ::registerMetaTypeID(typeId, nonPointerTypeId, metaType.id());
+            afterRegistrationFunction(metaType.iface());
+        ::registerMetaType(typeId, nonPointerTypeId, metaType);
     }
-    return metaType.id();
+    return metaType;
 }
 
-void registerNestedAccess(QWriteLocker &locker, AbstractContainerAccess* access){
+void registerNestedAccess(QtJambiStorage* storage, QWriteLocker &locker, AbstractContainerAccess* access){
     if(auto daccess = dynamic_cast<AbstractPairAccess*>(access)){
         locker.unlock();
-        int id1 = daccess->firstMetaType().id();
-        int id2 = daccess->secondMetaType().id();
+        const QMetaType& firstMetaType = daccess->firstMetaType();
+        const QMetaType& secondMetaType = daccess->secondMetaType();
+        int id1 = firstMetaType.id();
+        int id2 = secondMetaType.id();
         locker.relock();
-        if(!gContainerAccessMap->contains(id1) || !gContainerAccessMap->contains(id2)){
+        if(!storage->containerAccessMap().contains(id1) || !storage->containerAccessMap().contains(id2)){
             locker.unlock();
             if(auto naccess = dynamic_cast<AbstractNestedPairAccess*>(daccess)){
                 if(QSharedPointer<AbstractContainerAccess> _access = naccess->sharedFirstNestedContainerAccess()){
                     locker.relock();
-                    if(!gContainerAccessMap->contains(id1))
-                        gContainerAccessMap->insert(id1, _access);
+                    if(!storage->containerAccessMap().contains(id1))
+                        storage->containerAccessMap().insert(id1, _access);
                     locker.unlock();
                 }
                 if(QSharedPointer<AbstractContainerAccess> _access = naccess->sharedSecondNestedContainerAccess()){
                     locker.relock();
-                    if(!gContainerAccessMap->contains(id2))
-                        gContainerAccessMap->insert(id2, _access);
+                    if(!storage->containerAccessMap().contains(id2))
+                        storage->containerAccessMap().insert(id2, _access);
                     locker.unlock();
                 }
             }else{
                 if(AbstractContainerAccess* _access = daccess->firstNestedContainerAccess()){
                     locker.relock();
-                    if(!gContainerAccessMap->contains(id1))
-                        gContainerAccessMap->insert(id1, QSharedPointer<AbstractContainerAccess>(_access->clone(), &containerDisposer));
+                    if(!storage->containerAccessMap().contains(id1))
+                        storage->containerAccessMap().insert(id1, QSharedPointer<AbstractContainerAccess>(_access->clone(), &containerDisposer));
                     locker.unlock();
                 }
                 if(AbstractContainerAccess* _access = daccess->secondNestedContainerAccess()){
                     locker.relock();
-                    if(!gContainerAccessMap->contains(id2))
-                        gContainerAccessMap->insert(id2, QSharedPointer<AbstractContainerAccess>(_access->clone(), &containerDisposer));
+                    if(!storage->containerAccessMap().contains(id2))
+                        storage->containerAccessMap().insert(id2, QSharedPointer<AbstractContainerAccess>(_access->clone(), &containerDisposer));
                     locker.unlock();
                 }
             }
@@ -1152,35 +1035,37 @@ void registerNestedAccess(QWriteLocker &locker, AbstractContainerAccess* access)
         }
     }else if(auto daccess = dynamic_cast<AbstractAssociativeAccess*>(access)){
         locker.unlock();
-        int id1 = daccess->keyMetaType().id();
-        int id2 = daccess->valueMetaType().id();
+        const QMetaType& keyMetaType = daccess->keyMetaType();
+        const QMetaType& valueMetaType = daccess->valueMetaType();
+        int id1 = keyMetaType.id();
+        int id2 = valueMetaType.id();
         locker.relock();
-        if(!gContainerAccessMap->contains(id1) || !gContainerAccessMap->contains(id2)){
+        if(!storage->containerAccessMap().contains(id1) || !storage->containerAccessMap().contains(id2)){
             locker.unlock();
             if(auto naccess = dynamic_cast<AbstractNestedAssociativeAccess*>(daccess)){
                 if(QSharedPointer<AbstractContainerAccess> _access = naccess->sharedKeyNestedContainerAccess()){
                     locker.relock();
-                    if(!gContainerAccessMap->contains(id1))
-                        gContainerAccessMap->insert(id1, _access);
+                    if(!storage->containerAccessMap().contains(id1))
+                        storage->containerAccessMap().insert(id1, _access);
                     locker.unlock();
                 }
                 if(QSharedPointer<AbstractContainerAccess> _access = naccess->sharedValueNestedContainerAccess()){
                     locker.relock();
-                    if(!gContainerAccessMap->contains(id2))
-                        gContainerAccessMap->insert(id2, _access);
+                    if(!storage->containerAccessMap().contains(id2))
+                        storage->containerAccessMap().insert(id2, _access);
                     locker.unlock();
                 }
             }else{
                 if(AbstractContainerAccess* _access = daccess->keyNestedContainerAccess()){
                     locker.relock();
-                    if(!gContainerAccessMap->contains(id1))
-                        gContainerAccessMap->insert(id1, QSharedPointer<AbstractContainerAccess>(_access->clone(), &containerDisposer));
+                    if(!storage->containerAccessMap().contains(id1))
+                        storage->containerAccessMap().insert(id1, QSharedPointer<AbstractContainerAccess>(_access->clone(), &containerDisposer));
                     locker.unlock();
                 }
                 if(AbstractContainerAccess* _access = daccess->valueNestedContainerAccess()){
                     locker.relock();
-                    if(!gContainerAccessMap->contains(id2))
-                        gContainerAccessMap->insert(id2, QSharedPointer<AbstractContainerAccess>(_access->clone(), &containerDisposer));
+                    if(!storage->containerAccessMap().contains(id2))
+                        storage->containerAccessMap().insert(id2, QSharedPointer<AbstractContainerAccess>(_access->clone(), &containerDisposer));
                     locker.unlock();
                 }
             }
@@ -1188,20 +1073,21 @@ void registerNestedAccess(QWriteLocker &locker, AbstractContainerAccess* access)
         }
     }else if(auto daccess = dynamic_cast<AbstractSequentialAccess*>(access)){
         locker.unlock();
-        int id1 = daccess->elementMetaType().id();
+        const QMetaType& elementMetaType = daccess->elementMetaType();
+        int id1 = elementMetaType.id();
         locker.relock();
-        if(!gContainerAccessMap->contains(id1)){
+        if(!storage->containerAccessMap().contains(id1)){
             locker.unlock();
             if(auto naccess = dynamic_cast<AbstractNestedSequentialAccess*>(daccess)){
                 if(QSharedPointer<AbstractContainerAccess> _access = naccess->sharedElementNestedContainerAccess()){
                     locker.relock();
-                    gContainerAccessMap->insert(id1, _access);
+                    storage->containerAccessMap().insert(id1, _access);
                     locker.unlock();
                 }
             }else{
                 if(AbstractContainerAccess* _access = daccess->elementNestedContainerAccess()){
                     locker.relock();
-                    gContainerAccessMap->insert(id1, QSharedPointer<AbstractContainerAccess>(_access->clone(), &containerDisposer));
+                    storage->containerAccessMap().insert(id1, QSharedPointer<AbstractContainerAccess>(_access->clone(), &containerDisposer));
                     locker.unlock();
                 }
             }
@@ -1210,120 +1096,73 @@ void registerNestedAccess(QWriteLocker &locker, AbstractContainerAccess* access)
     }
 }
 
-QSharedPointer<AbstractContainerAccess> findContainerAccess(int metaType){
-    QSharedPointer<AbstractContainerAccess> result;
-    {
-        QReadLocker locker(gRegistryLock());
-        result = gContainerAccessMap->value(metaType);
-    }
-    if(!result){
-        switch(metaType){
-        case QMetaType::QStringList:
-            result.reset(QtJambiPrivate::QListAccess<QString>::newInstance(), &containerDisposer);
-            {
-                QWriteLocker locker(gRegistryLock());
-                gContainerAccessMap->insert(metaType, result);
-                registerNestedAccess(locker, result.data());
-            }
-            break;
-        case QMetaType::QVariantList:
-            result.reset(QtJambiPrivate::QListAccess<QVariant>::newInstance(), &containerDisposer);
-            {
-                QWriteLocker locker(gRegistryLock());
-                gContainerAccessMap->insert(metaType, result);
-                registerNestedAccess(locker, result.data());
-            }
-            break;
-        case QMetaType::QVariantHash:
-            result.reset(QtJambiPrivate::QHashAccess<QString,QVariant>::newInstance(), &containerDisposer);
-            {
-                QWriteLocker locker(gRegistryLock());
-                gContainerAccessMap->insert(metaType, result);
-                registerNestedAccess(locker, result.data());
-            }
-            break;
-        case QMetaType::QVariantMap:
-            result.reset(QtJambiPrivate::QMapAccess<QString,QVariant>::newInstance(), &containerDisposer);
-            {
-                QWriteLocker locker(gRegistryLock());
-                gContainerAccessMap->insert(metaType, result);
-                registerNestedAccess(locker, result.data());
-            }
-            break;
-        case QMetaType::QVariantPair:
-            result.reset(QtJambiPrivate::QPairAccess<QVariant,QVariant>::newInstance(), &containerDisposer);
-            {
-                QWriteLocker locker(gRegistryLock());
-                gContainerAccessMap->insert(metaType, result);
-                registerNestedAccess(locker, result.data());
-            }
-            break;
-        default: break;
-        }
-    }
-    return result;
-}
-
 QSharedPointer<AbstractContainerAccess> findContainerAccess(const QMetaType& metaType){
+    int id = metaType.id();
     QSharedPointer<AbstractContainerAccess> result;
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(gRegistryLock());
-        result = gContainerAccessMap->value(metaType.id());
-    }
-    if(!result){
-        switch(metaType.id()){
-        case QMetaType::QStringList:
-            result.reset(QtJambiPrivate::QListAccess<QString>::newInstance(), &containerDisposer);
-            {
-                QWriteLocker locker(gRegistryLock());
-                gContainerAccessMap->insert(metaType.id(), result);
-                registerNestedAccess(locker, result.data());
+        {
+            QReadLocker locker(storage->registryLock());
+            result = storage->containerAccessMap().value(id);
+        }
+        if(!result){
+            switch(metaType.id()){
+            case QMetaType::QStringList:
+                result.reset(QtJambiPrivate::QListAccess<QString>::newInstance(), &containerDisposer);
+                {
+                    QWriteLocker locker(storage->registryLock());
+                    storage->containerAccessMap().insert(id, result);
+                    registerNestedAccess(storage, locker, result.data());
+                }
+                break;
+            case QMetaType::QVariantList:
+                result.reset(QtJambiPrivate::QListAccess<QVariant>::newInstance(), &containerDisposer);
+                {
+                    QWriteLocker locker(storage->registryLock());
+                    storage->containerAccessMap().insert(id, result);
+                    registerNestedAccess(storage, locker, result.data());
+                }
+                break;
+            case QMetaType::QVariantHash:
+                result.reset(QtJambiPrivate::QHashAccess<QString,QVariant>::newInstance(), &containerDisposer);
+                {
+                    QWriteLocker locker(storage->registryLock());
+                    storage->containerAccessMap().insert(id, result);
+                    registerNestedAccess(storage, locker, result.data());
+                }
+                break;
+            case QMetaType::QVariantMap:
+                result.reset(QtJambiPrivate::QMapAccess<QString,QVariant>::newInstance(), &containerDisposer);
+                {
+                    QWriteLocker locker(storage->registryLock());
+                    storage->containerAccessMap().insert(id, result);
+                    registerNestedAccess(storage, locker, result.data());
+                }
+                break;
+            case QMetaType::QVariantPair:
+                result.reset(QtJambiPrivate::QPairAccess<QVariant,QVariant>::newInstance(), &containerDisposer);
+                {
+                    QWriteLocker locker(storage->registryLock());
+                    storage->containerAccessMap().insert(id, result);
+                    registerNestedAccess(storage, locker, result.data());
+                }
+                break;
+            default: break;
             }
-            break;
-        case QMetaType::QVariantList:
-            result.reset(QtJambiPrivate::QListAccess<QVariant>::newInstance(), &containerDisposer);
-            {
-                QWriteLocker locker(gRegistryLock());
-                gContainerAccessMap->insert(metaType.id(), result);
-                registerNestedAccess(locker, result.data());
-            }
-            break;
-        case QMetaType::QVariantHash:
-            result.reset(QtJambiPrivate::QHashAccess<QString,QVariant>::newInstance(), &containerDisposer);
-            {
-                QWriteLocker locker(gRegistryLock());
-                gContainerAccessMap->insert(metaType.id(), result);
-                registerNestedAccess(locker, result.data());
-            }
-            break;
-        case QMetaType::QVariantMap:
-            result.reset(QtJambiPrivate::QMapAccess<QString,QVariant>::newInstance(), &containerDisposer);
-            {
-                QWriteLocker locker(gRegistryLock());
-                gContainerAccessMap->insert(metaType.id(), result);
-                registerNestedAccess(locker, result.data());
-            }
-            break;
-        case QMetaType::QVariantPair:
-            result.reset(QtJambiPrivate::QPairAccess<QVariant,QVariant>::newInstance(), &containerDisposer);
-            {
-                QWriteLocker locker(gRegistryLock());
-                gContainerAccessMap->insert(metaType.id(), result);
-                registerNestedAccess(locker, result.data());
-            }
-            break;
-        default: break;
         }
     }
     return result;
 }
 
-bool hasRegisteredContainerAccess(const QMetaType& metaType){
-    QReadLocker locker(gRegistryLock());
-    return !gContainerAccessMap->value(metaType.id()).isNull();
+bool hasRegisteredContainerAccess(QMetaType metaType){
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return !storage->containerAccessMap().value(metaType.id()).isNull();
+    }
 }
 
-int registerMetaTypeImpl(const std::type_info* typeId,
+QMetaType registerMetaTypeImpl(const std::type_info* typeId,
                      const std::type_info* nonPointerTypeId,
                      const QByteArray& typeName,
                      QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
@@ -1347,29 +1186,28 @@ int registerMetaTypeImpl(const std::type_info* typeId,
 {
     QMetaType metaType = QMetaType::fromName(typeName);
     if(metaType.isValid()){
-        auto id = metaType.id();
-        bool needsRegistration;
-        bool needsContainerAccessRegistration;
+        bool needsRegistration{false};
+        bool needsContainerAccessRegistration{false};
+        QtJambiStorage* storage = getQtJambiStorage();
         {
-            QReadLocker locker(gRegistryLock());
-            Q_UNUSED(locker)
-            needsContainerAccessRegistration = (access || sharedAccess) && !gContainerAccessMap->contains(id);
-            needsRegistration = typeId && !gMetaTypeIDMap->contains(unique_id(*typeId));
+            QReadLocker locker(storage->registryLock());
+            needsContainerAccessRegistration = (access || sharedAccess) && !storage->containerAccessMap().contains(metaType.id());
+            needsRegistration = typeId && !storage->metaTypeByTypeInfos().contains(unique_id(*typeId));
         }
         if(needsContainerAccessRegistration){
             if(sharedAccess){
-                QWriteLocker locker(gRegistryLock());
-                gContainerAccessMap->insert(id, sharedAccess);
-                registerNestedAccess(locker, sharedAccess.data());
+                QWriteLocker locker(storage->registryLock());
+                storage->containerAccessMap().insert(metaType.id(), sharedAccess);
+                registerNestedAccess(storage, locker, sharedAccess.data());
             }else if(access){
                 QSharedPointer<AbstractContainerAccess> shared(access->clone(), &containerDisposer);
-                QWriteLocker locker(gRegistryLock());
-                gContainerAccessMap->insert(id, std::move(shared));
-                registerNestedAccess(locker, access);
+                QWriteLocker locker(storage->registryLock());
+                storage->containerAccessMap().insert(metaType.id(), std::move(shared));
+                registerNestedAccess(storage, locker, access);
             }
         }
         if(needsRegistration && typeId && nonPointerTypeId)
-            ::registerMetaTypeID(*typeId, *nonPointerTypeId, id, access, sharedAccess);
+            ::registerMetaType(*typeId, *nonPointerTypeId, metaType, access, sharedAccess);
     }else{
         metaType = createMetaType(typeName,
                                   true,
@@ -1389,72 +1227,70 @@ int registerMetaTypeImpl(const std::type_info* typeId,
                                   flags,
                                   metaObject, nullptr);
         if(afterRegistrationFunction)
-            afterRegistrationFunction(metaType.id());
+            afterRegistrationFunction(metaType.iface());
         if(access || sharedAccess){
-            auto id = metaType.id();
-            bool insert;
+            QtJambiStorage* storage = getQtJambiStorage();
+            bool insert{false};
             {
-                QReadLocker locker(gRegistryLock());
-                insert = !gContainerAccessMap->contains(id);
+                QReadLocker locker(storage->registryLock());
+                insert = !storage->containerAccessMap().contains(metaType.id());
             }
             if(insert){
-                if(!gContainerAccessMap->contains(id)){
+                if(!storage->containerAccessMap().contains(metaType.id())){
                     if(sharedAccess){
-                        QWriteLocker locker(gRegistryLock());
-                        gContainerAccessMap->insert(id, sharedAccess);
-                        registerNestedAccess(locker, sharedAccess.data());
+                        QWriteLocker locker(storage->registryLock());
+                        storage->containerAccessMap().insert(metaType.id(), sharedAccess);
+                        registerNestedAccess(storage, locker, sharedAccess.data());
                     }else if(access){
                         QSharedPointer<AbstractContainerAccess> shared(access->clone(), &containerDisposer);
-                        QWriteLocker locker(gRegistryLock());
-                        gContainerAccessMap->insert(id, std::move(shared));
-                        registerNestedAccess(locker, access);
+                        QWriteLocker locker(storage->registryLock());
+                        storage->containerAccessMap().insert(metaType.id(), std::move(shared));
+                        registerNestedAccess(storage, locker, access);
                     }
                 }
             }
         }
         if(typeId && nonPointerTypeId){
-            ::registerMetaTypeID(*typeId, *nonPointerTypeId, metaType.id(), access, sharedAccess);
+            ::registerMetaType(*typeId, *nonPointerTypeId, metaType, access, sharedAccess);
         }
     }
-    return metaType.id();
+    return metaType;
 }
 
-void registerContainerAccess(int metaType, const QSharedPointer<AbstractContainerAccess>& sharedAccess){
+void registerContainerAccess(QMetaType metaType, const QSharedPointer<AbstractContainerAccess>& sharedAccess){
     if(sharedAccess){
+        QtJambiStorage* storage = getQtJambiStorage();
         {
-            QReadLocker locker(gRegistryLock());
-            if(gContainerAccessMap->contains(metaType))
+            QReadLocker locker(storage->registryLock());
+            if(storage->containerAccessMap().contains(metaType.id()))
                 return;
         }
         {
-            QWriteLocker locker(gRegistryLock());
-            gContainerAccessMap->insert(metaType, sharedAccess);
+            QWriteLocker locker(storage->registryLock());
+            storage->containerAccessMap().insert(metaType.id(), sharedAccess);
         }
     }
 }
 
-void registerContainerAccess(int metaType, AbstractContainerAccess* access){
+void registerContainerAccess(QMetaType metaType, AbstractContainerAccess* access){
     if(access){
+        QtJambiStorage* storage = getQtJambiStorage();
         {
-            QReadLocker locker(gRegistryLock());
-            if(gContainerAccessMap->contains(metaType))
+            QReadLocker locker(storage->registryLock());
+            if(storage->containerAccessMap().contains(metaType.id()))
                 return;
         }
         {
             QSharedPointer<AbstractContainerAccess> shared(access->clone(), &containerDisposer);
-            QWriteLocker locker(gRegistryLock());
-            gContainerAccessMap->insert(metaType, std::move(shared));
+            QWriteLocker locker(storage->registryLock());
+            storage->containerAccessMap().insert(metaType.id(), std::move(shared));
         }
     }
 }
 
-int RegistryAPI::registerMetaType(const std::type_info& typeId,
+QMetaType RegistryAPI::registerMetaType(const std::type_info& typeId,
                      const std::type_info& nonPointerTypeId,
                      const QByteArray& typeName,
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                     QMetaType::Destructor destructor,
-                     QMetaType::Constructor constructor,
-#else
                      QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
                      QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
                      QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
@@ -1465,12 +1301,9 @@ int RegistryAPI::registerMetaType(const std::type_info& typeId,
                      QtPrivate::QMetaTypeInterface::DataStreamOutFn dataStreamOutFn,
                      QtPrivate::QMetaTypeInterface::DataStreamInFn dataStreamInFn,
                      QtPrivate::QMetaTypeInterface::LegacyRegisterOp legacyRegisterOp,
-#endif
                      uint size,
                      ushort align,
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                      int builtInTypeId,
-#endif
                      QMetaType::TypeFlags flags,
                      const QMetaObject *metaObject,
                      AfterRegistrationFunction afterRegistrationFunction,
@@ -1498,7 +1331,7 @@ int RegistryAPI::registerMetaType(const std::type_info& typeId,
                                 access, {});
 }
 
-int registerContainerMetaType(const QByteArray& typeName,
+QMetaType registerContainerMetaType(const QByteArray& typeName,
                      QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
                      QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
                      QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
@@ -1539,7 +1372,7 @@ int registerContainerMetaType(const QByteArray& typeName,
                                 nullptr, sharedAccess);
 }
 
-int registerSmartPointerMetaType(const QByteArray& typeName,
+QMetaType registerSmartPointerMetaType(const QByteArray& typeName,
                      QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
                      QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
                      QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
@@ -1577,209 +1410,218 @@ int registerSmartPointerMetaType(const QByteArray& typeName,
                                 nullptr, {});
 }
 
-int registeredMetaTypeID(const std::type_info& typeId)
+QMetaType registeredMetaType(const std::type_info& typeId)
 {
-    size_t uid = unique_id(typeId);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gMetaTypeIDMap->value(uid, QMetaType::UnknownType);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        size_t uid = unique_id(typeId);
+        QReadLocker locker(storage->registryLock());
+        return QMetaType(storage->metaTypeByTypeInfos().value(uid, nullptr));
+    }
 }
 
 const std::type_info* getTypeByMetaType(const QMetaType& metaType)
 {
-    return getTypeByMetaType(metaType.id());
-}
-
-const std::type_info* getTypeByMetaType(int metaType)
-{
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
-        if(const std::type_info* info = gMetaTypeIDHash->value(metaType, nullptr)){
-            return info;
+        int metaTypeId = metaType.id();
+        {
+            QReadLocker locker(storage->registryLock());
+            if(const std::type_info* info = storage->typeInfoByMetaTypes().value(metaTypeId, nullptr)){
+                return info;
+            }
         }
+        return getTypeByQtName(metaType.name());
     }
-    return getTypeByQtName(QMetaType::typeName(metaType));
-}
-
-const std::type_info* getEnumForFlag(const std::type_info& flag)
-{
-    size_t uid = unique_id(flag);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gFlagEnumIDHash->value(uid, nullptr);
-}
-
-const std::type_info* getFlagForEnum(const std::type_info& enumerator)
-{
-    size_t uid = unique_id(enumerator);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gEnumFlagIDHash->value(uid, nullptr);
 }
 
 const void* QtJambiPrivate::getDefaultValue(const std::type_info& type_info, QtJambiPrivate::DefaultValueCreator creator)
 {
     size_t uid = unique_id(type_info);
-    const void* result;
+    const void* result{nullptr};
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
-        result = gDefaultValueHash->value(uid, nullptr);
+        QReadLocker locker(storage->registryLock());
+        result = storage->defaultValueHash().value(uid, nullptr);
     }
     if(!result){
         result = creator();
-        QWriteLocker wlocker(gRegistryLock());
-        Q_UNUSED(wlocker)
-        gDefaultValueHash->insert(uid, result);
+        QWriteLocker wlocker(storage->registryLock());
+        storage->defaultValueHash().insert(uid, result);
     }
     return result;
 }
 
 void RegistryAPI::registerFunctionInfos(const std::type_info& typeId, std::initializer_list<FunctionInfo> virtualFunctions)
 {
-    size_t uid = unique_id(typeId);
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(!gVirtualFunctionInfos->contains(uid))
-        gVirtualFunctionInfos->insert(uid, virtualFunctions);
-}
-
-QVector<RegistryAPI::FunctionInfo> virtualFunctions(const std::type_info& typeId)
-{
-    size_t uid = unique_id(typeId);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(gVirtualFunctionInfos->contains(uid)){
-        return (*gVirtualFunctionInfos())[uid];
-    }else{
-        return QVector<RegistryAPI::FunctionInfo>{};
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        size_t uid = unique_id(typeId);
+        QWriteLocker locker(storage->registryLock());
+        if(!storage->virtualFunctionInfos().contains(uid))
+            storage->virtualFunctionInfos().insert(uid, virtualFunctions);
     }
 }
 
 void RegistryAPI::registerConstructorInfos(const std::type_info& typeId, uint returnScopes, RegistryAPI::DestructorFn destructor, std::initializer_list<ConstructorInfo> constructors){
-    size_t uid = unique_id(typeId);
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(!gConstructorInfos->contains(uid))
-        gConstructorInfos->insert(uid, constructors);
-    if(!gDestructorHash->contains(uid))
-        gDestructorHash->insert(uid, destructor);
-    if(returnScopes>0 && !gReturnScopes->contains(uid))
-        gReturnScopes->insert(uid, returnScopes);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        size_t uid = unique_id(typeId);
+        QWriteLocker locker(storage->registryLock());
+        if(!storage->constructorInfos().contains(uid))
+            storage->constructorInfos().insert(uid, constructors);
+        if(!storage->destructorHash().contains(uid))
+            storage->destructorHash().insert(uid, destructor);
+        if(returnScopes>0 && !storage->returnScopes().contains(uid))
+            storage->returnScopes().insert(uid, returnScopes);
+    }
 }
 
 uint returnScopes(const std::type_info& typeId){
-    size_t uid = unique_id(typeId);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gReturnScopes()->value(uid, 0);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        size_t uid = unique_id(typeId);
+        QReadLocker locker(storage->registryLock());
+        return storage->returnScopes().value(uid, 0);
+    }
 }
 
 const QVector<const RegistryAPI::ConstructorInfo>* registeredConstructorInfos(const std::type_info& typeId){
-    size_t uid = unique_id(typeId);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(gConstructorInfos->contains(uid)){
-        return reinterpret_cast<const QVector<const RegistryAPI::ConstructorInfo>*>(&(*gConstructorInfos())[uid]);
-    }else{
-        return nullptr;
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        size_t uid = unique_id(typeId);
+        QReadLocker locker(storage->registryLock());
+        if(storage->constructorInfos().contains(uid)){
+            return reinterpret_cast<const QVector<const RegistryAPI::ConstructorInfo>*>(&storage->constructorInfos()[uid]);
+        }
     }
+    return nullptr;
 }
 
 void registerFlagToEnum(const char *flag_name, const char *enum_name)
 {
-    auto hashcode = qHash(flag_name);
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    gFlagEnumNameHash->insert(hashcode, enum_name);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto hashcode = qHash(flag_name);
+        QWriteLocker locker(storage->registryLock());
+        storage->flagEnumNameHash().insert(hashcode, enum_name);
+    }
 }
 
 const char* getEnumName(const char*flag_name)
 {
-    auto hashcode = qHash(flag_name);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gFlagEnumNameHash->value(hashcode, nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto hashcode = qHash(flag_name);
+        QReadLocker locker(storage->registryLock());
+        return storage->flagEnumNameHash().value(hashcode, nullptr);
+    }
+    return nullptr;
 }
 
 void registerInterface(const char *qt_interface, const char *java_interface, const char *interface_iid)
 {
-    auto hashcode = qHash(qt_interface);
-    auto hashcode2 = interface_iid ? qHash(interface_iid) : 0;
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    gInterfaceHash->insert(hashcode, java_interface);
-    if(interface_iid)
-        gInterfaceIIDsHash->insert(hashcode2, qt_interface);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto hashcode = qHash(qt_interface);
+        auto hashcode2 = interface_iid ? qHash(interface_iid) : 0;
+        QWriteLocker locker(storage->registryLock());
+        storage->interfaceHash().insert(hashcode, java_interface);
+        if(interface_iid)
+            storage->interfaceIIDsHash().insert(hashcode2, qt_interface);
+    }
 }
 
 const char* getInterfaceForIID(const char*interface_iid)
 {
-    auto hashcode = qHash(interface_iid);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gInterfaceIIDsHash->value(hashcode, nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto hashcode = qHash(interface_iid);
+        QReadLocker locker(storage->registryLock());
+        return storage->interfaceIIDsHash().value(hashcode, nullptr);
+    }
+    return nullptr;
 }
 
 bool isInterface(const char*qt_interface)
 {
-    auto hashcode = qHash(qt_interface);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gInterfaceHash->contains(hashcode);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto hashcode = qHash(qt_interface);
+        QReadLocker locker(storage->registryLock());
+        return storage->interfaceHash().contains(hashcode);
+    }
+    return false;
 }
 
 const char* getInterface(const char*qt_interface)
 {
-    auto hashcode = qHash(qt_interface);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gInterfaceHash->value(hashcode, nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto hashcode = qHash(qt_interface);
+        QReadLocker locker(storage->registryLock());
+        return storage->interfaceHash().value(hashcode, nullptr);
+    }
+    return nullptr;
 }
 
 void registerFunctional(const char *qt_interface)
 {
-    auto hashcode = qHash(qt_interface);
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    gFunctionalHash->insert(hashcode);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto hashcode = qHash(qt_interface);
+        QWriteLocker locker(storage->registryLock());
+        storage->functionalHash().insert(hashcode);
+    }
 }
 
 bool isFunctional(const char*qt_interface)
 {
-    auto hashcode = qHash(qt_interface);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gFunctionalHash->contains(hashcode);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto hashcode = qHash(qt_interface);
+        QReadLocker locker(storage->registryLock());
+        return storage->functionalHash().contains(hashcode);
+    }
+    return false;
 }
 
 void RegistryAPI::registerDeleter(const std::type_info& typeId, PtrDeleterFunction deleter)
 {
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    gDeleterHash->insert(unique_id(typeId), deleter);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker locker(storage->registryLock());
+        storage->deleterHash().insert(unique_id(typeId), deleter);
+    }
 }
 
 PtrDeleterFunction deleter(const std::type_info& typeId)
 {
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gDeleterHash->value(unique_id(typeId), nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->deleterHash().value(unique_id(typeId), nullptr);
+    }
+    return nullptr;
 }
 
 void RegistryAPI::registerOwnerFunction(const std::type_info& typeId, PtrOwnerFunction ownerFunction)
 {
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    gOwnerFunctionHash->insert(unique_id(typeId), ownerFunction);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker locker(storage->registryLock());
+        storage->ownerFunctionHash().insert(unique_id(typeId), ownerFunction);
+    }
 }
 
 PtrOwnerFunction registeredOwnerFunction(const std::type_info& typeId)
 {
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gOwnerFunctionHash->value(unique_id(typeId), nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->ownerFunctionHash().value(unique_id(typeId), nullptr);
+    }
+    return nullptr;
 }
 
 void clear_type_entry(const std::type_info& typeId);
@@ -1787,78 +1629,80 @@ void clear_type_entry(const std::type_info& typeId);
 void RegistryAPI::registerPolymorphyHandler(const std::type_info& polymorphicBaseTypeId, const std::type_info& targetTypeId, PolymorphyHandler handler)
 {
     if(handler){
+        QtJambiStorage* storage = getQtJambiStorage();
         {
-            QWriteLocker locker(gRegistryLock());
-            Q_UNUSED(locker)
-            g_polymorphic_ids->insert(unique_id(polymorphicBaseTypeId), new PolymorphicIdHandler(targetTypeId, handler));
-            gPolymorphicBasesHash->insert(unique_id(targetTypeId), &polymorphicBaseTypeId);
+            QWriteLocker locker(storage->registryLock());
+            storage->polymorphicIDs().insert(unique_id(polymorphicBaseTypeId), QExplicitlySharedDataPointer<const PolymorphicIdHandler>(new PolymorphicIdHandler(targetTypeId, handler)));
+            storage->polymorphicBasesHash().insert(unique_id(targetTypeId), &polymorphicBaseTypeId);
         }
         clear_type_entry(polymorphicBaseTypeId);
     }
 }
 
 bool isPolymorphicBase(const std::type_info& typeId){
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return g_polymorphic_ids->contains(unique_id(typeId));
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->polymorphicIDs().contains(unique_id(typeId));
+    }
+    return false;
 }
 
 QList<const std::type_info*> getPolymorphicBases(const std::type_info& typeId){
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gPolymorphicBasesHash->values(unique_id(typeId));
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->polymorphicBasesHash().values(unique_id(typeId));
+    }
+    return {};
 }
 
-QList<const PolymorphicIdHandler*> getPolymorphicIdHandlers(const std::type_info& polymorphicBaseTypeId){
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return g_polymorphic_ids->values(unique_id(polymorphicBaseTypeId));
+QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>> getPolymorphicIdHandlers(const std::type_info& polymorphicBaseTypeId){
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->polymorphicIDs().values(unique_id(polymorphicBaseTypeId));
+    }
+    return {};
 }
 
-void RegistryAPI::registerSizeOfType(const std::type_info& typeId, size_t size)
+void RegistryAPI::registerSizeOfType(const std::type_info& typeId, size_t size, size_t alignment)
 {
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(gRegistryLock());
-        if(gValueSizeHash->contains(unique_id(typeId)))
-            return;
-    }
-    {
-        QWriteLocker locker(gRegistryLock());
-        if(!gValueSizeHash->contains(unique_id(typeId)))
-            gValueSizeHash->insert(unique_id(typeId), size);
-    }
-}
-
-void RegistryAPI::registerAlignmentOfType(const std::type_info& typeId, size_t alignment)
-{
-    {
-        QReadLocker locker(gRegistryLock());
-        if(gValueAlignmentHash->contains(unique_id(typeId)))
-            return;
-    }
-    {
-        QWriteLocker locker(gRegistryLock());
-        if(!gValueAlignmentHash->contains(unique_id(typeId)))
-            gValueAlignmentHash->insert(unique_id(typeId), alignment);
+        {
+            QReadLocker locker(storage->registryLock());
+            if(storage->valueSizeHash().contains(unique_id(typeId)))
+                return;
+        }
+        {
+            QWriteLocker locker(storage->registryLock());
+            if(!storage->valueSizeHash().contains(unique_id(typeId)))
+                storage->valueSizeHash().insert(unique_id(typeId), {size, alignment});
+        }
     }
 }
 
-void RegistryAPI::registerSizeOfShell(const std::type_info& typeId, size_t size)
+void RegistryAPI::registerSizeOfShell(const std::type_info& typeId, size_t size, size_t alignment)
 {
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(gRegistryLock());
-        if(gShellSizeHash->contains(unique_id(typeId)))
-            return;
-    }
-    {
-        QWriteLocker locker(gRegistryLock());
-        if(!gShellSizeHash->contains(unique_id(typeId)))
-            gShellSizeHash->insert(unique_id(typeId), size);
+        {
+            QReadLocker locker(storage->registryLock());
+            if(storage->shellSizeHash().contains(unique_id(typeId)))
+                return;
+        }
+        {
+            QWriteLocker locker(storage->registryLock());
+            if(!storage->shellSizeHash().contains(unique_id(typeId)))
+                storage->shellSizeHash().insert(unique_id(typeId), {size, alignment});
+        }
     }
 }
 
 QMap<QString,QPair<size_t,size_t>> getRegisteredTypeSizesAndAlignments(){
     QSet<int> types;
+    QSet<const QtPrivate::QMetaTypeInterface *> types2;
     for(int i=QMetaType::FirstCoreType; i<=QMetaType::LastCoreType; ++i){
         if(QMetaType::isRegistered(i))
             types << i;
@@ -1871,11 +1715,11 @@ QMap<QString,QPair<size_t,size_t>> getRegisteredTypeSizesAndAlignments(){
         if(QMetaType::isRegistered(i))
             types << i;
     }
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
-        for(int mt : gMetaTypeIDMap->values())
-            types << mt;
+        QReadLocker locker(storage->registryLock());
+        for(const QtPrivate::QMetaTypeInterface * mt : storage->metaTypeByTypeInfos().values())
+            types2 << mt;
     }
     QMap<QString,QPair<size_t,size_t>> result;
     for(int type : qAsConst(types)){
@@ -1883,28 +1727,17 @@ QMap<QString,QPair<size_t,size_t>> getRegisteredTypeSizesAndAlignments(){
                 && type!=QMetaType::UnknownType
                 && type!=QMetaType::Void){
             QMetaType metaType(type);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            size_t alignment = 0;
-            const std::type_info* typeId;
-            {
-                QReadLocker locker(gRegistryLock());
-                if(const std::type_info* typeId = gMetaTypeIDHash->value(type)){
-                    alignment = gValueAlignmentHash->value(unique_id(*typeId));
-            }
-            }else if(AbstractContainerAccess::isPointerType(metaType))
-                alignment = alignof(void*);
-            if(alignment==0)
-                continue;
-#endif
             result[QLatin1String(metaType.name())] = {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                     metaType.sizeOf(),
-                    metaType.alignOf()
-#else
-                    size_t(metaType.sizeOf()),
-                    alignment
-#endif
-        };
+                    metaType.alignOf()};
+        }
+    }
+    for(const QtPrivate::QMetaTypeInterface * iface : qAsConst(types2)){
+        QMetaType metaType(iface);
+        if(metaType.isValid()){
+            result[QLatin1String(metaType.name())] = {
+                    metaType.sizeOf(),
+                    metaType.alignOf()};
         }
     }
     return result;
@@ -1912,49 +1745,49 @@ QMap<QString,QPair<size_t,size_t>> getRegisteredTypeSizesAndAlignments(){
 
 void RegistryAPI::registerHashFunction(const std::type_info& typeId, qHashFn hashFunction){
     auto uniq = unique_id(typeId);
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(gRegistryLock());
-        if(gHashFunctionHash->contains(uniq))
-            return;
-    }
-    {
-        QWriteLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
-        if(!gHashFunctionHash->contains(uniq))
-            gHashFunctionHash->insert(uniq, hashFunction);
+        {
+            QReadLocker locker(storage->registryLock());
+            if(storage->hashFunctionHash().contains(uniq))
+                return;
+        }
+        {
+            QWriteLocker locker(storage->registryLock());
+            if(!storage->hashFunctionHash().contains(uniq))
+                storage->hashFunctionHash().insert(uniq, hashFunction);
+        }
     }
 }
 
 RegistryAPI::qHashFn registeredHashFunction(const std::type_info& typeId)
 {
-    auto uniq = unique_id(typeId);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gHashFunctionHash->value(uniq, nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto uniq = unique_id(typeId);
+        QReadLocker locker(storage->registryLock());
+        return storage->hashFunctionHash().value(uniq, nullptr);
+    }
 }
 
-size_t getValueSize(const std::type_info& typeId)
+QPair<size_t,size_t> getValueSizeAndAlignment(const std::type_info& typeId)
 {
-    auto uniq = unique_id(typeId);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gValueSizeHash->value(uniq, 0);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto uniq = unique_id(typeId);
+        QReadLocker locker(storage->registryLock());
+        return storage->valueSizeHash().value(uniq, {0,0});
+    }
 }
 
-size_t getValueAlignment(const std::type_info& typeId)
+QPair<size_t,size_t> getShellSizeAndAlignment(const std::type_info& typeId)
 {
-    auto uniq = unique_id(typeId);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gValueAlignmentHash->value(uniq, 0);
-}
-
-size_t getShellSize(const std::type_info& typeId)
-{
-    auto uniq = unique_id(typeId);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gShellSizeHash->value(uniq, 0);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto uniq = unique_id(typeId);
+        QReadLocker locker(storage->registryLock());
+        return storage->shellSizeHash().value(uniq, {0,0});
+    }
 }
 
 void RegistryAPI::registerInterfaceOffset(const std::type_info& qt_base, const std::type_info& qt_interface, int offset)
@@ -1962,77 +1795,84 @@ void RegistryAPI::registerInterfaceOffset(const std::type_info& qt_base, const s
     if(offset!=0){
         auto uniq = unique_id(qt_base);
         auto uniq2 = unique_id(qt_interface);
-        QWriteLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
-        ( *gOffsetHash )[uniq].insert(uniq2, offset);
-        ( *gOffsetHash )[uniq2].insert(uniq, -offset);
-        ( *gInterfacesHash )[uniq] << &qt_interface;
+        QtJambiStorage* storage = getQtJambiStorage();
+        {
+            QWriteLocker locker(storage->registryLock());
+            storage->offsetHash()[uniq].insert(uniq2, offset);
+            storage->offsetHash()[uniq2].insert(uniq, -offset);
+            storage->interfacesHash()[uniq] << &qt_interface;
+        }
     }
 }
 
 int registeredInterfaceOffset(const std::type_info& qt_base, const std::type_info& qt_interface){
-    auto uniq = unique_id(qt_base);
-    auto uniq2 = unique_id(qt_interface);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(gOffsetHash->contains(uniq)){
-        return ( *gOffsetHash )[uniq].value(uniq2, -1);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto uniq = unique_id(qt_base);
+        auto uniq2 = unique_id(qt_interface);
+        QReadLocker locker(storage->registryLock());
+        if(storage->offsetHash().contains(uniq)){
+            return storage->offsetHash()[uniq].value(uniq2, -1);
+        }
     }
     return -1;
 }
 
 void registeredInterfaceOffsets(const std::type_info& qt_type, InterfaceOffsetInfo* info){
-    auto uniq = unique_id(qt_type);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(gOffsetHash->contains(uniq)){
-        const QMap<size_t, int>& values = ( *gOffsetHash )[uniq];
-        for(QMap<size_t, int>::const_key_value_iterator i = values.keyValueBegin(); i!=values.keyValueEnd(); ++i){
-            info->interfaces.insert(i.base().key());
-            if(i.base().value()>0)
-                info->offsets.insert(i.base().key(), uint(i.base().value()));
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto uniq = unique_id(qt_type);
+        QReadLocker locker(storage->registryLock());
+        if(storage->offsetHash().contains(uniq)){
+            const QMap<size_t, int>& values = storage->offsetHash()[uniq];
+            for(QMap<size_t, int>::const_key_value_iterator i = values.keyValueBegin(); i!=values.keyValueEnd(); ++i){
+                info->interfaces.insert(i.base().key());
+                if(i.base().value()>0)
+                    info->offsets.insert(i.base().key(), uint(i.base().value()));
+            }
         }
-    }
-    if(gInterfacesHash->contains(uniq)){
-        info->inheritedInterfaces[uniq] = ( *gInterfacesHash )[uniq];
+        if(storage->interfacesHash().contains(uniq)){
+            info->inheritedInterfaces[uniq] = storage->interfacesHash()[uniq];
+        }
     }
 }
 
 const InterfaceOffsetInfo* getInterfaceOffsets(JNIEnv *env, jclass clazz){
     if(clazz){
-        uint classHash = uint(Java::Runtime::Object::hashCode(env,clazz));
+        QtJambiStorage* storage = getQtJambiStorage();
         {
-            QReadLocker locker(gRegistryLock());
-            Q_UNUSED(locker)
-            if(gInterfaceOffsetHash->contains(classHash))
-                return &( *gInterfaceOffsetHash )[classHash];
-        }
-        {
-            InterfaceOffsetInfo result;
-            jclass cls = clazz;
-            if(!Java::QtJambi::ClassAnalyzerUtility::isGeneratedClass(env, cls)){
-                const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, clazz);
-                for(const SuperTypeInfo& info : infos){
-                    if(info.offset()>0){
-                        result.offsets[unique_id(info.typeId())] = uint(info.offset());
+            uint classHash = uint(Java::Runtime::Object::hashCode(env,clazz));
+            {
+                QReadLocker locker(storage->registryLock());
+                if(storage->interfaceOffsetHash().contains(classHash))
+                    return &storage->interfaceOffsetHash()[classHash];
+            }
+            {
+                InterfaceOffsetInfo result;
+                jclass cls = clazz;
+                if(!Java::QtJambi::ClassAnalyzerUtility::isGeneratedClass(env, cls)){
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, clazz);
+                    for(const SuperTypeInfo& info : infos){
+                        if(info.offset()>0){
+                            result.offsets[unique_id(info.typeId())] = uint(info.offset());
+                        }
                     }
+                    cls = JavaAPI::resolveClosestQtSuperclass(env, cls);
                 }
-                cls = JavaAPI::resolveClosestQtSuperclass(env, cls);
-            }
 
-            while(cls && Java::QtJambi::ClassAnalyzerUtility::isGeneratedClass(env, cls)){
-                QString className = QtJambiAPI::getClassName(env, cls).replace(".", "/");
-                const std::type_info* qt_type = getTypeByJavaName(qPrintable(className));
-                Q_ASSERT(qt_type);
-                registeredInterfaceOffsets(*qt_type, &result);
-                cls = env->GetSuperclass(cls);
+                while(cls && Java::QtJambi::ClassAnalyzerUtility::isGeneratedClass(env, cls)){
+                    QString className = QtJambiAPI::getClassName(env, cls).replace(".", "/");
+                    const std::type_info* qt_type = getTypeByJavaName(qPrintable(className));
+                    Q_ASSERT(qt_type);
+                    registeredInterfaceOffsets(*qt_type, &result);
+                    cls = env->GetSuperclass(cls);
+                }
+                QWriteLocker wlocker(storage->registryLock());
+                if(storage->interfaceOffsetHash().contains(classHash))
+                    return &storage->interfaceOffsetHash()[classHash];
+                storage->interfaceOffsetHash().insert(classHash, result);
+                return &storage->interfaceOffsetHash()[classHash];
             }
-            QWriteLocker wlocker(gRegistryLock());
-            Q_UNUSED(wlocker)
-            if(gInterfaceOffsetHash->contains(classHash))
-                return &( *gInterfaceOffsetHash )[classHash];
-            gInterfaceOffsetHash->insert(classHash, result);
-            return &( *gInterfaceOffsetHash )[classHash];
         }
     }
     return nullptr;
@@ -2040,30 +1880,31 @@ const InterfaceOffsetInfo* getInterfaceOffsets(JNIEnv *env, jclass clazz){
 
 const InterfaceOffsetInfo* getInterfaceOffsets(JNIEnv *env, jclass clazz, const std::type_info& typeId, const SuperTypeInfos* superTypeInfos){
     if(clazz){
-        uint classHash = uint(Java::Runtime::Object::hashCode(env,clazz));
+        QtJambiStorage* storage = getQtJambiStorage();
         {
-            QReadLocker locker(gRegistryLock());
-            Q_UNUSED(locker)
-            if(gInterfaceOffsetHash->contains(classHash))
-                return &( *gInterfaceOffsetHash )[classHash];
-        }
-        {
-            InterfaceOffsetInfo result;
-            if(superTypeInfos){
-                const SuperTypeInfos& infos = *superTypeInfos;
-                for(const SuperTypeInfo& info : infos){
-                    if(info.offset()>0){
-                        result.offsets[unique_id(info.typeId())] = uint(info.offset());
+            uint classHash = uint(Java::Runtime::Object::hashCode(env,clazz));
+            {
+                QReadLocker locker(storage->registryLock());
+                if(storage->interfaceOffsetHash().contains(classHash))
+                    return &storage->interfaceOffsetHash()[classHash];
+            }
+            {
+                InterfaceOffsetInfo result;
+                if(superTypeInfos){
+                    const SuperTypeInfos& infos = *superTypeInfos;
+                    for(const SuperTypeInfo& info : infos){
+                        if(info.offset()>0){
+                            result.offsets[unique_id(info.typeId())] = uint(info.offset());
+                        }
                     }
                 }
+                registeredInterfaceOffsets(typeId, &result);
+                QWriteLocker wlocker(storage->registryLock());
+                if(storage->interfaceOffsetHash().contains(classHash))
+                    return &storage->interfaceOffsetHash()[classHash];
+                storage->interfaceOffsetHash()[classHash] = std::move(result);
+                return &storage->interfaceOffsetHash()[classHash];
             }
-            registeredInterfaceOffsets(typeId, &result);
-            QWriteLocker wlocker(gRegistryLock());
-            Q_UNUSED(wlocker)
-            if(gInterfaceOffsetHash->contains(classHash))
-                return &( *gInterfaceOffsetHash )[classHash];
-            ( *gInterfaceOffsetHash )[classHash] = std::move(result);
-            return &( *gInterfaceOffsetHash )[classHash];
         }
     }
     return nullptr;
@@ -2071,17 +1912,22 @@ const InterfaceOffsetInfo* getInterfaceOffsets(JNIEnv *env, jclass clazz, const 
 
 void registerDestructor(const std::type_info& typeId, RegistryAPI::DestructorFn destructor)
 {
-    auto uniq = unique_id(typeId);
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    gDestructorHash->insert(uniq, destructor);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto uniq = unique_id(typeId);
+        QWriteLocker locker(storage->registryLock());
+        storage->destructorHash().insert(uniq, destructor);
+    }
 }
 
 RegistryAPI::DestructorFn registeredDestructor(const std::type_info& typeId){
-    auto uniq = unique_id(typeId);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gDestructorHash->value(uniq, nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto uniq = unique_id(typeId);
+        QReadLocker locker(storage->registryLock());
+        return storage->destructorHash().value(uniq, nullptr);
+    }
+    return nullptr;
 }
 
 size_t qHash(const QMetaObject* mo, size_t seed = 0){
@@ -2096,43 +1942,165 @@ size_t qHash(const QMetaObject* mo, size_t seed = 0){
 
 void RegistryAPI::registerCustomMetaObject(const std::type_info& typeId, const QMetaObject& superTypeMetaObject)
 {
-    auto uniq = unique_id(typeId);
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    gHasCustomMetaObjectHash->insert(uniq, &superTypeMetaObject);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto uniq = unique_id(typeId);
+        QWriteLocker locker(storage->registryLock());
+        storage->customMetaObject().insert(uniq, &superTypeMetaObject);
+    }
 }
 
 bool hasCustomMetaObject(const std::type_info& typeId, const QMetaObject** superTypeMetaObject){
-    auto uniq = unique_id(typeId);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(gHasCustomMetaObjectHash->contains(uniq)){
-        if(superTypeMetaObject)
-            *superTypeMetaObject = gHasCustomMetaObjectHash->value(uniq, nullptr);
-        return true;
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto uniq = unique_id(typeId);
+        QReadLocker locker(storage->registryLock());
+        if(storage->customMetaObject().contains(uniq)){
+            if(superTypeMetaObject)
+                *superTypeMetaObject = storage->customMetaObject().value(uniq, nullptr);
+            return true;
+        }
     }
     return false;
 }
 
-const QMetaObject* superTypeForCustomMetaObject(const std::type_info& typeId)
+const QMetaObject* customMetaObject(const std::type_info& typeId)
 {
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gHasCustomMetaObjectHash->value(unique_id(typeId), nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->customMetaObject().value(unique_id(typeId), nullptr);
+    }
+    return nullptr;
+}
+
+RegisteredTypeInfo registeredTypeInfo(const std::type_info& typeId, const char* qtName){
+    RegisteredTypeInfo result;
+    QtJambiStorage* storage = getQtJambiStorage();
+    size_t uid = unique_id(typeId);
+    {
+        QReadLocker locker(storage->registryLock());
+        result.entryType = storage->entryTypesHash().value(uid, EntryTypes::Unspecific);
+        result.metaType = QMetaType(storage->metaTypeByTypeInfos().value(uid, nullptr));
+        if(result.metaType.isValid() && !(result.metaType.flags() & QMetaType::IsPointer)){
+            switch(result.entryType){
+            case EntryTypes::ObjectTypeInfo:
+                result.entryType = EntryTypes::ValueTypeInfo;
+                break;
+            case EntryTypes::InterfaceTypeInfo:
+                result.entryType = EntryTypes::InterfaceValueTypeInfo;
+                break;
+            default: break;
+            }
+        }
+        switch(result.entryType){
+        case EntryTypes::Unspecific:
+            if(qtName && (result.javaName = storage->qtFunctionalJavaNameHash().value(qtName, nullptr))){
+                result.qtName = qtName;
+                if(result.metaType.flags() & QMetaType::IsPointer){
+                    result.entryType = EntryTypes::FunctionPointerTypeInfo;
+                }else{
+                    result.entryType = EntryTypes::StdFunctionTypeInfo;
+                }
+            }
+            break;
+        case EntryTypes::FunctionPointerTypeInfo:
+        case EntryTypes::StdFunctionTypeInfo:
+            result.qtName = storage->typeQtNameHash().value(uid, nullptr);
+            if(qtName){
+                if(QByteArrayView(qtName)!=QByteArrayView(result.qtName)){
+                    result.qtName = qtName;
+                }
+            }
+            result.javaName = storage->qtFunctionalJavaNameHash().value(result.qtName, nullptr);
+            break;
+        default:
+            result.qtName = storage->typeQtNameHash().value(uid, nullptr);
+            result.javaName = storage->typeJavaNameHash().value(uid, nullptr);
+            break;
+        }
+
+        if(result.entryType!=EntryTypes::Unspecific){
+            if(qtName && (result.entryType==EntryTypes::StdFunctionTypeInfo || result.entryType==EntryTypes::FunctionPointerTypeInfo)){
+                if(QByteArrayView(qtName)!=QByteArrayView(result.qtName)){
+                    result.qtName = qtName;
+                    result.javaName = storage->qtFunctionalJavaNameHash().value(qtName, nullptr);
+                }
+            }
+            switch(result.entryType){
+            case EntryTypes::EnumTypeInfo:
+                result.flagForEnum = storage->enumFlagIDHash().value(uid, nullptr);
+                result.valueSizeAndAlignment = storage->valueSizeHash().value(uid, {0,0});
+                break;
+            case EntryTypes::FlagsTypeInfo:
+                result.enumForFlag = storage->flagEnumIDHash().value(uid, nullptr);
+                result.valueSizeAndAlignment = storage->valueSizeHash().value(uid, {0,0});
+                break;
+            case EntryTypes::FunctionPointerTypeInfo:
+            case EntryTypes::StdFunctionTypeInfo:
+                result.valueSizeAndAlignment = storage->valueSizeHash().value(uid, {0,0});
+                result.shellSizeAndAlignment = storage->shellSizeHash().value(uid, {0,0});
+                result.virtualFunctions = storage->virtualFunctionInfos().value(uid, {});;
+                result.destructor = storage->destructorHash().value(uid, nullptr);
+                result.functionalResolver = storage->functionalResolverHash().value(uid, nullptr);
+                break;
+            case EntryTypes::ValueTypeInfo:
+            case EntryTypes::ObjectTypeInfo:
+            case EntryTypes::InterfaceTypeInfo:
+            case EntryTypes::InterfaceValueTypeInfo:
+            case EntryTypes::QObjectTypeInfo:
+                result.containerAccessFactory = storage->containerAccessFactories().value(uid, nullptr);
+                result.valueSizeAndAlignment = storage->valueSizeHash().value(uid, {0,0});
+                result.shellSizeAndAlignment = storage->shellSizeHash().value(uid, {0,0});
+                result.virtualFunctions = storage->virtualFunctionInfos().value(uid, {});;
+                result.deleter = storage->deleterHash().value(uid, nullptr);
+                result.ownerFunction = storage->ownerFunctionHash().value(uid, nullptr);
+                result.destructor = storage->destructorHash().value(uid, nullptr);
+                result.functionalResolver = storage->functionalResolverHash().value(uid, nullptr);
+                result.typeInfoSupplier = storage->typeInfoSupplierHash().value(uid, nullptr);
+                result.polymorphicIdHandlers = storage->polymorphicIDs().values(uid);
+                if(result.entryType==EntryTypes::QObjectTypeInfo){
+                    result.customMetaObject = storage->customMetaObject().value(uid, nullptr);
+                    result.originalMetaObject = storage->originalMetaObjectHash().value(uid, nullptr);
+                }
+                if(storage->offsetHash().contains(uid)){
+                    const QMap<size_t, int>& values = storage->offsetHash()[uid];
+                    for(QMap<size_t, int>::const_key_value_iterator i = values.keyValueBegin(); i!=values.keyValueEnd(); ++i){
+                        result.interfaceOffsetInfo.interfaces.insert(i.base().key());
+                        if(i.base().value()>0)
+                            result.interfaceOffsetInfo.offsets.insert(i.base().key(), uint(i.base().value()));
+                    }
+                }
+                if(storage->interfacesHash().contains(uid)){
+                    result.interfaceOffsetInfo.inheritedInterfaces[uid] = storage->interfacesHash()[uid];
+                }
+                break;
+            case EntryTypes::StringTypeInfo:
+            case EntryTypes::PrimitiveTypeInfo:
+            case EntryTypes::SpecialTypeInfo:
+                result.valueSizeAndAlignment = storage->valueSizeHash().value(uid, {0,0});
+            default:
+                break;
+            }
+        }
+    }
+    return result;
 }
 
 void RegistryAPI::registerMetaObject(const std::type_info& typeId, const QMetaObject& originalMetaObject, bool isValueOwner,
                         QMetaMethodRenamerFn methodRenamer)
 {
-    auto uniq = unique_id(typeId);
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    gOriginalMetaObjectHash->insert(uniq, &originalMetaObject);
-    gTypeIdsByMetaObject->insert(&originalMetaObject, &typeId);
-    if(methodRenamer)
-        gQMetaMethodRenamerFnByMetaObject->insert(&originalMetaObject, methodRenamer);
-    if(isValueOwner)
-        gValueOwners->insert(&originalMetaObject);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto uniq = unique_id(typeId);
+        QWriteLocker locker(storage->registryLock());
+        storage->originalMetaObjectHash().insert(uniq, &originalMetaObject);
+        storage->typeIdsByMetaObject().insert(&originalMetaObject, &typeId);
+        if(methodRenamer)
+            storage->metaMethodRenamerFnByMetaObject().insert(&originalMetaObject, methodRenamer);
+        if(isValueOwner)
+            storage->valueOwners().insert(&originalMetaObject);
+    }
 }
 
 void RegistryAPI::registerMetaObject(const std::type_info& typeId, const QMetaObject& metaObject, bool isValueOwner,
@@ -2140,182 +2108,200 @@ void RegistryAPI::registerMetaObject(const std::type_info& typeId, const QMetaOb
                         ParameterInfoProviderFn parameterTypeInfoProvider,
                         QMetaMethodRenamerFn methodRenamer)
 {
-    auto uniq = unique_id(typeId);
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    gOriginalMetaObjectHash->insert(uniq, &metaObject);
-    gTypeIdsByMetaObject->insert(&metaObject, &typeId);
-    if(!gSignalMetaInfos->contains(&metaObject))
-        gSignalMetaInfos->insert(&metaObject, signalMetaInfos);
-    if(parameterTypeInfoProvider && !gParameterTypeInfoProviders->contains(&metaObject))
-        gParameterTypeInfoProviders->insert(&metaObject, parameterTypeInfoProvider);
-    if(methodRenamer)
-        gQMetaMethodRenamerFnByMetaObject->insert(&metaObject, methodRenamer);
-    if(isValueOwner)
-        gValueOwners->insert(&metaObject);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto uniq = unique_id(typeId);
+        QWriteLocker locker(storage->registryLock());
+        storage->originalMetaObjectHash().insert(uniq, &metaObject);
+        storage->typeIdsByMetaObject().insert(&metaObject, &typeId);
+        if(!storage->signalMetaInfos().contains(&metaObject))
+            storage->signalMetaInfos().insert(&metaObject, signalMetaInfos);
+        if(parameterTypeInfoProvider && !storage->parameterTypeInfoProviders().contains(&metaObject))
+            storage->parameterTypeInfoProviders().insert(&metaObject, parameterTypeInfoProvider);
+        if(methodRenamer)
+            storage->metaMethodRenamerFnByMetaObject().insert(&metaObject, methodRenamer);
+        if(isValueOwner)
+            storage->valueOwners().insert(&metaObject);
+    }
 }
 
 bool isValueOwner(const QMetaObject* metaObject){
-    {
-        QReadLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
-        if(gValueOwnerHash->contains(metaObject)){
-            return gValueOwnerHash->value(metaObject);
-        }
-    }
     bool result = false;
-    ValueOwnerSet valueOwners;
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
-        valueOwners = *gValueOwners;
-    }
-    for(const QMetaObject* mo : qAsConst(valueOwners)){
-        if(metaObject->inherits(mo)){
-            result = true;
-            break;
+        {
+            QReadLocker locker(storage->registryLock());
+            if(storage->valueOwnerHash().contains(metaObject)){
+                return storage->valueOwnerHash().value(metaObject);
+            }
         }
-    }
-    {
-        QWriteLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
-        gValueOwnerHash->insert(metaObject, result);
+        QtJambiStorage::ValueOwnerSet valueOwners;
+        {
+            QReadLocker locker(storage->registryLock());
+            valueOwners = storage->valueOwners();
+        }
+        for(const QMetaObject* mo : qAsConst(valueOwners)){
+            if(metaObject->inherits(mo)){
+                result = true;
+                break;
+            }
+        }
+        {
+            QWriteLocker locker(storage->registryLock());
+            storage->valueOwnerHash().insert(metaObject, result);
+        }
     }
     return result;
 }
 
 const std::type_info* getTypeByMetaObject(const QMetaObject* metaObject)
 {
-    return gTypeIdsByMetaObject->value(metaObject, nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->typeIdsByMetaObject().value(metaObject, nullptr);
+    }
+    return nullptr;
 }
 
 
 
 const QMetaObject* registeredOriginalMetaObject(const std::type_info& typeId){
-    auto uniq = unique_id(typeId);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gOriginalMetaObjectHash->value(uniq, nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto uniq = unique_id(typeId);
+        QReadLocker locker(storage->registryLock());
+        return storage->originalMetaObjectHash().value(uniq, nullptr);
+    }
+    return nullptr;
 }
 
 const QVector<const RegistryAPI::SignalMetaInfo>* signalMetaInfos(const QMetaObject* metaObject)
 {
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(gSignalMetaInfos->contains(metaObject)){
-        return reinterpret_cast<const QVector<const RegistryAPI::SignalMetaInfo>*>(&(*gSignalMetaInfos())[metaObject]);
-    }else{
-        return nullptr;
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        if(storage->signalMetaInfos().contains(metaObject)){
+            return reinterpret_cast<const QVector<const RegistryAPI::SignalMetaInfo>*>(&storage->signalMetaInfos()[metaObject]);
+        }
     }
+    return nullptr;
 }
 
 QList<QMetaMethod> getExtraSignalsOfMetaObject(const QMetaObject* metaObject){
-    {
-        QReadLocker lock(gRegistryLock());
-        if(gExtraSignalsOfMetaObject->contains(metaObject))
-            return gExtraSignalsOfMetaObject->value(metaObject);
-    }
     QList<QMetaMethod> extraSignals;
-    QSet<int> availableSignalInfos;
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        const QMetaObject* currentMetaObject = metaObject;
-        do{
-            if(const QVector<const RegistryAPI::SignalMetaInfo>* infos = signalMetaInfos(currentMetaObject)){
-                for(const RegistryAPI::SignalMetaInfo& info : *infos){
-                    availableSignalInfos.insert(info.signal_method_index_provider());
-                }
-            }
-            currentMetaObject = currentMetaObject->superClass();
-        }while(currentMetaObject);
-    }
-    const int methodCount = metaObject->methodCount();
-    for(int i=0; i<methodCount; ++i){
-        QMetaMethod method = metaObject->method(i);
-        if(method.isValid()
-                && method.methodType()==QMetaMethod::Signal
-                && !(method.attributes() & QMetaMethod::Cloned)
-                && !availableSignalInfos.contains(method.methodIndex())
-                && !QtJambiMetaObject::isInstance(method.enclosingMetaObject())){
-            extraSignals << method;
+        {
+            QReadLocker lock(storage->registryLock());
+            if(storage->extraSignalsOfMetaObject().contains(metaObject))
+                return storage->extraSignalsOfMetaObject().value(metaObject);
         }
-    }
-    {
-        QWriteLocker lock(gRegistryLock());
-        if(gExtraSignalsOfMetaObject->contains(metaObject))
-            return gExtraSignalsOfMetaObject->value(metaObject);
-        gExtraSignalsOfMetaObject->insert(metaObject, extraSignals);
+        QSet<int> availableSignalInfos;
+        {
+            const QMetaObject* currentMetaObject = metaObject;
+            do{
+                if(const QVector<const RegistryAPI::SignalMetaInfo>* infos = signalMetaInfos(currentMetaObject)){
+                    for(const RegistryAPI::SignalMetaInfo& info : *infos){
+                        availableSignalInfos.insert(info.signal_method_index_provider());
+                    }
+                }
+                currentMetaObject = currentMetaObject->superClass();
+            }while(currentMetaObject);
+        }
+        const int methodCount = metaObject->methodCount();
+        for(int i=0; i<methodCount; ++i){
+            QMetaMethod method = metaObject->method(i);
+            if(method.isValid()
+                    && method.methodType()==QMetaMethod::Signal
+                    && !(method.attributes() & QMetaMethod::Cloned)
+                    && !availableSignalInfos.contains(method.methodIndex())
+                    && !QtJambiMetaObject::isInstance(method.enclosingMetaObject())){
+                extraSignals << method;
+            }
+        }
+        {
+            QWriteLocker lock(storage->registryLock());
+            if(storage->extraSignalsOfMetaObject().contains(metaObject))
+                return storage->extraSignalsOfMetaObject().value(metaObject);
+            storage->extraSignalsOfMetaObject().insert(metaObject, extraSignals);
+        }
     }
     return extraSignals;
 }
 
 RegistryAPI::ParameterInfoProviderFn registeredParameterInfoProviderFn(const QMetaObject* metaObject)
 {
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(gSignalMetaInfos->contains(metaObject)){
-        return (*gParameterTypeInfoProviders())[metaObject];
-    }else{
-        return nullptr;
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        if(storage->parameterTypeInfoProviders().contains(metaObject)){
+            return storage->parameterTypeInfoProviders()[metaObject];
+        }
     }
+    return nullptr;
 }
 
 const QHash<int,const char*>* CoreAPI::renamedMethods(const QMetaObject* metaObject){
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(gQMetaMethodRenamerFnByMetaObject->contains(metaObject)){
-        if(!gRenamedMethodsHash->contains(metaObject)){
-            RegistryAPI::QMetaMethodRenamerFn registeredMetaMethodRenamer = (*gQMetaMethodRenamerFnByMetaObject())[metaObject];
-            QHash<int,const char*> renamedMethods;
-            for(int i=metaObject->methodOffset(); i<metaObject->methodCount(); ++i){
-                if(const char* newName = registeredMetaMethodRenamer(i)){
-                    renamedMethods[i] = newName;
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        if(storage->metaMethodRenamerFnByMetaObject().contains(metaObject)){
+            if(!storage->renamedMethodsHash().contains(metaObject)){
+                RegistryAPI::QMetaMethodRenamerFn registeredMetaMethodRenamer = storage->metaMethodRenamerFnByMetaObject()[metaObject];
+                QHash<int,const char*> renamedMethods;
+                for(int i=metaObject->methodOffset(); i<metaObject->methodCount(); ++i){
+                    if(const char* newName = registeredMetaMethodRenamer(i)){
+                        renamedMethods[i] = newName;
+                    }
                 }
+                storage->renamedMethodsHash().insert(metaObject, renamedMethods);
             }
-            gRenamedMethodsHash->insert(metaObject, renamedMethods);
+            return &storage->renamedMethodsHash()[metaObject];
         }
-        return & (*gRenamedMethodsHash)[metaObject];
     }
     return nullptr;
 }
 
 RegistryAPI::QMetaMethodRenamerFn registeredMetaMethodRenamer(const QMetaObject* metaObject)
 {
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(gQMetaMethodRenamerFnByMetaObject->contains(metaObject)){
-        return (*gQMetaMethodRenamerFnByMetaObject())[metaObject];
-    }else{
-        return nullptr;
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        if(storage->metaMethodRenamerFnByMetaObject().contains(metaObject)){
+            return storage->metaMethodRenamerFnByMetaObject()[metaObject];
+        }
     }
+    return nullptr;
 }
 
 void RegistryAPI::registerTypeInfoSupplier(const std::type_info& typeId, TypeInfoSupplier resolver){
-    auto uniq = unique_id(typeId);
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    gTypeInfoSupplierHash->insert(uniq, resolver);
-}
-
-TypeInfoSupplier registeredTypeInfoSupplier(const std::type_info& typeId){
-    auto uniq = unique_id(typeId);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gTypeInfoSupplierHash->value(uniq, nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto uniq = unique_id(typeId);
+        QWriteLocker locker(storage->registryLock());
+        storage->typeInfoSupplierHash().insert(uniq, resolver);
+    }
 }
 
 void RegistryAPI::registerFunctionalResolver(const std::type_info& typeId, FunctionalResolver resolver)
 {
-    auto uniq = unique_id(typeId);
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    gFunctionalResolverHash->insert(uniq, resolver);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto uniq = unique_id(typeId);
+        QWriteLocker locker(storage->registryLock());
+        storage->functionalResolverHash().insert(uniq, resolver);
+    }
 }
 
 FunctionalResolver registeredFunctionalResolver(const std::type_info& typeId){
-    auto uniq = unique_id(typeId);
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gFunctionalResolverHash->value(uniq, nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto uniq = unique_id(typeId);
+        QReadLocker locker(storage->registryLock());
+        return storage->functionalResolverHash().value(uniq, nullptr);
+    }
+    return nullptr;
 }
 
 static QmlAPI::QmlReportDestruction qmlReportDestructionFunction = nullptr;
@@ -2346,354 +2332,120 @@ bool isQmlExplicitCppOwnership(QObject * obj){
 }
 
 void RegistryAPI::registerMediaControlInfo(const std::type_info& typeId, const char *media_control_iid){
-    auto uniq = unique_id(typeId);
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    gMediaControlIIDHash->insert(uniq, media_control_iid);
-    gMediaControlIIDClassHash->insert(media_control_iid, &typeId);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto uniq = unique_id(typeId);
+        QWriteLocker locker(storage->registryLock());
+        storage->mediaControlIIDHash().insert(uniq, media_control_iid);
+        storage->mediaControlIIDClassHash().insert(media_control_iid, &typeId);
+    }
 }
 
-void registerJavaClassForCustomMetaType(JNIEnv *env, QMetaType metaType, jclass javaClass, bool isJObjectWrapped){
-    const QtPrivate::QMetaTypeInterface * iface = metaType.iface();
+void registerJavaClassForCustomMetaType(JNIEnv *env, const QMetaType& metaType, jclass javaClass, bool isJObjectWrapped){
+    int metaTypeId = metaType.id();
+    const QtPrivate::QMetaTypeInterface * iface = META_TYPE_ACCESS(metaType).iface();
     QByteArray javaName = QtJambiAPI::getClassName(env, javaClass).toLatin1().replace('.', '/');
     if(Java::Runtime::Class::isSynthetic(env,javaClass)){
         javaClass = JavaAPI::resolveClass(env, javaName);
     }else{
         javaClass = getGlobalClassRef(env, javaClass, javaName);
     }
-    QWriteLocker locker(gRegistryLock());
-    gMetaTypeJavaTypeHash->insert(iface, javaClass);
-    gJavaTypeMetaTypesHash->insert(javaName, metaType);
-    if(isJObjectWrapped)
-        gJObjectWrappedMetaTypes->insert(iface);
-}
-
-bool isJObjectWrappedMetaType(QMetaType metaType){
-    auto iface = metaType.iface();
-    QReadLocker locker(gRegistryLock());
-    return gJObjectWrappedMetaTypes->contains(iface);
-}
-
-bool isNativeWrapperMetaType(QMetaType metaType){
-    auto iface = metaType.iface();
-    QReadLocker locker(gRegistryLock());
-    return gMetaTypesForJObjectNativeWrappers->contains(iface);
-}
-
-const QtPrivate::QMetaTypeInterface * getOriginalForNativeWrapperMetaType(const QtPrivate::QMetaTypeInterface *iface){
-    const QtPrivate::QMetaTypeInterface *original{nullptr};
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(gRegistryLock());
-        original = (*gMetaTypesForJObjectNativeWrappers)[iface];
+        QWriteLocker locker(storage->registryLock());
+        storage->javaTypeByCustomMetaTypes().insert(iface, javaClass);
+        storage->metaTypesByJavaTypeNames().insert(javaName, iface);
+        if(isJObjectWrapped)
+            storage->jobjectWrappedMetaTypes().insert(metaTypeId);
     }
-    return original;
 }
 
-QMetaType getNativeWrapperType(const QMetaType& metaType){
-    const QtPrivate::QMetaTypeInterface * nativeWrapperType{nullptr};
-    if(metaType.flags().testFlag(QMetaType::IsPointer)){
-        {
-            auto id = metaType.id();
-            QReadLocker locker(gRegistryLock());
-            nativeWrapperType = (*gJObjectNativeWrapperMetaTypes)[id];
-        }
-        if(!nativeWrapperType){
-            bool isQObject = metaType.flags().testFlag(QMetaType::PointerToQObject);
-            const QtPrivate::QMetaTypeInterface *original{QMetaType(metaType).iface()};
-            QByteArray typeName = QByteArray("JObjectWrapper<") + QByteArray(metaType.name()) + ">";
-            const char* name = registerMetaTypeName(typeName);
-            QtPrivate::QMetaTypeInterface* metaTypeInterface;
-            const QMetaObject *originalMetaObject{nullptr};
-            if(isQObject){
-#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
-                uint flags = QtPrivate::QMetaTypeTypeFlags<JQObjectWrapper>::Flags;
-#else
-                uint flags = QtPrivate::QMetaTypeForType<JQObjectWrapper>::flags();
-#endif
-                flags |= QMetaType::PointerToQObject;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
-                if(metaType.flags().testFlag(QMetaType::IsConst))
-                    flags |= QMetaType::IsConst;
-#endif
-                metaTypeInterface = new QtPrivate::QMetaTypeInterface{
-                    /*.revision=*/ QMetaTypeInterface_CurrentRevision,
-                    /*.alignment=*/ alignof(JQObjectWrapper),
-                    /*.size=*/ sizeof(JQObjectWrapper),
-                    /*.flags=*/ flags,
-                    /*.typeId=*/ QMetaType::UnknownType,
-                    /*.metaObject=*/ original->metaObjectFn,
-                    /*.name=*/ name,
-                    /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<JQObjectWrapper>::getDefaultCtr(),
-                    /*.copyCtr=*/ QtPrivate::QMetaTypeForType<JQObjectWrapper>::getCopyCtr(),
-                    /*.moveCtr=*/ QtPrivate::QMetaTypeForType<JQObjectWrapper>::getMoveCtr(),
-                    /*.dtor=*/ QtPrivate::QMetaTypeForType<JQObjectWrapper>::getDtor(),
-                    /*.equals=*/ [](const QtPrivate::QMetaTypeInterface *, const void *value1, const void *value2) -> bool{
-                        const JQObjectWrapper* _value1 = reinterpret_cast<const JQObjectWrapper*>(value1);
-                        const JQObjectWrapper* _value2 = reinterpret_cast<const JQObjectWrapper*>(value2);
-                        return _value1->qobject()==_value2->qobject();
-                    },
-                    /*.lessThan=*/ [](const QtPrivate::QMetaTypeInterface *, const void *value1, const void *value2) -> bool{
-                        const JQObjectWrapper* _value1 = reinterpret_cast<const JQObjectWrapper*>(value1);
-                        const JQObjectWrapper* _value2 = reinterpret_cast<const JQObjectWrapper*>(value2);
-                        return _value1->qobject()<_value2->qobject();
-                    },
-                    /*.debugStream=*/ original->debugStream ? [](const QtPrivate::QMetaTypeInterface *iface, QDebug &d, const void *value){
-                        if(const QtPrivate::QMetaTypeInterface *original = getOriginalForNativeWrapperMetaType(iface)){
-                            const JQObjectWrapper* _value = reinterpret_cast<const JQObjectWrapper*>(value);
-                            original->debugStream(original, d, _value->qobject());
-                        }
-                    } : QtPrivate::QMetaTypeInterface::DebugStreamFn(nullptr),
-                    /*.dataStreamOutFn=*/ original->dataStreamOut ? [](const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, const void *value){
-                        if(const QtPrivate::QMetaTypeInterface *original = getOriginalForNativeWrapperMetaType(iface)){
-                            const JQObjectWrapper* _value = reinterpret_cast<const JQObjectWrapper*>(value);
-                            original->dataStreamOut(original, d, _value->qobject());
-                        }
-                    } : QtPrivate::QMetaTypeInterface::DataStreamOutFn(nullptr),
-                    /*.dataStreamInFn=*/ original->dataStreamIn ? [](const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, void *value){
-                        if(const QtPrivate::QMetaTypeInterface *original = getOriginalForNativeWrapperMetaType(iface)){
-                            JQObjectWrapper* _value = reinterpret_cast<JQObjectWrapper*>(value);
-                            original->dataStreamIn(original, d, _value->qobject());
-                        }
-                    } : QtPrivate::QMetaTypeInterface::DataStreamInFn(nullptr),
-                    /*.legacyRegisterOp=*/ nullptr
-                };
-            }else{
-                if(original->metaObjectFn)
-                    originalMetaObject = original->metaObjectFn(original);
-#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
-                uint flags = QtPrivate::QMetaTypeTypeFlags<JObjectWrapper>::Flags;
-#else
-                uint flags = QtPrivate::QMetaTypeForType<JObjectWrapper>::flags();
-#endif
-                if(originalMetaObject)
-                    flags |= QMetaType::IsGadget;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
-                if(metaType.flags().testFlag(QMetaType::IsConst))
-                    flags |= QMetaType::IsConst;
-#endif
-                metaTypeInterface = new QtPrivate::QMetaTypeInterface{
-                    /*.revision=*/ QMetaTypeInterface_CurrentRevision,
-                    /*.alignment=*/ alignof(JObjectWrapper),
-                    /*.size=*/ sizeof(JObjectWrapper),
-                    /*.flags=*/ flags,
-                    /*.typeId=*/ QMetaType::UnknownType,
-                    /*.metaObject=*/ originalMetaObject ? &metaobjectByMetaTypeInterface : nullptr,
-                    /*.name=*/ name,
-                    /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<JObjectWrapper>::getDefaultCtr(),
-                    /*.copyCtr=*/ QtPrivate::QMetaTypeForType<JObjectWrapper>::getCopyCtr(),
-                    /*.moveCtr=*/ QtPrivate::QMetaTypeForType<JObjectWrapper>::getMoveCtr(),
-                    /*.dtor=*/ QtPrivate::QMetaTypeForType<JObjectWrapper>::getDtor(),
-                    /*.equals=*/ [](const QtPrivate::QMetaTypeInterface *, const void *value1, const void *value2) -> bool{
-                        const JObjectWrapper* _value1 = reinterpret_cast<const JObjectWrapper*>(value1);
-                        const JObjectWrapper* _value2 = reinterpret_cast<const JObjectWrapper*>(value2);
-                        if(JniEnvironment env{200}){
-                            if (QSharedPointer<QtJambiLink> link1 = QtJambiLink::findLinkForJavaInterface(env, _value1->object(env))){
-                                if (QSharedPointer<QtJambiLink> link2 = QtJambiLink::findLinkForJavaInterface(env, _value2->object(env))){
-                                    return link1->pointer()==link2->pointer();
-                                }
-                            }
-                        }
-                        return false;
-                    },
-                    /*.lessThan=*/ [](const QtPrivate::QMetaTypeInterface *, const void *value1, const void *value2) -> bool{
-                        const JObjectWrapper* _value1 = reinterpret_cast<const JObjectWrapper*>(value1);
-                        const JObjectWrapper* _value2 = reinterpret_cast<const JObjectWrapper*>(value2);
-                        if(JniEnvironment env{200}){
-                            if (QSharedPointer<QtJambiLink> link1 = QtJambiLink::findLinkForJavaInterface(env, _value1->object(env))){
-                                if (QSharedPointer<QtJambiLink> link2 = QtJambiLink::findLinkForJavaInterface(env, _value2->object(env))){
-                                    return link1->pointer()<link2->pointer();
-                                }
-                            }
-                        }
-                        return false;
-                    },
-                    /*.debugStream=*/ original->debugStream ? [](const QtPrivate::QMetaTypeInterface *iface, QDebug &d, const void *value){
-                        if(const QtPrivate::QMetaTypeInterface *original = getOriginalForNativeWrapperMetaType(iface)){
-                            const JObjectWrapper* _value = reinterpret_cast<const JObjectWrapper*>(value);
-                            if(JniEnvironment env{200}){
-                                if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, _value->object(env))){
-                                    original->debugStream(original, d, link->pointer());
-                                }
-                            }
-                        }
-                    } : QtPrivate::QMetaTypeInterface::DebugStreamFn(nullptr),
-                    /*.dataStreamOutFn=*/ original->dataStreamOut ? [](const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, const void *value){
-                        if(const QtPrivate::QMetaTypeInterface *original = getOriginalForNativeWrapperMetaType(iface)){
-                            const JObjectWrapper* _value = reinterpret_cast<const JObjectWrapper*>(value);
-                            if(JniEnvironment env{200}){
-                                if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, _value->object(env))){
-                                    original->dataStreamOut(original, d, link->pointer());
-                                }
-                            }
-                        }
-                    } : QtPrivate::QMetaTypeInterface::DataStreamOutFn(nullptr),
-                    /*.dataStreamInFn=*/ original->dataStreamIn ? [](const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, void *value){
-                        if(const QtPrivate::QMetaTypeInterface *original = getOriginalForNativeWrapperMetaType(iface)){
-                            JObjectWrapper* _value = reinterpret_cast<JObjectWrapper*>(value);
-                            if(JniEnvironment env{200}){
-                                if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, _value->object(env))){
-                                    original->dataStreamIn(original, d, link->pointer());
-                                }
-                            }
-                        }
-                    } : QtPrivate::QMetaTypeInterface::DataStreamInFn(nullptr),
-                    /*.legacyRegisterOp=*/ nullptr
-                };
-            }
-            {
-                QWriteLocker locker(gRegistryLock());
-                if(const QtPrivate::QMetaTypeInterface * iface = (*gJObjectNativeWrapperMetaTypes)[metaType.id()]){
-                    delete metaTypeInterface;
-                    nativeWrapperType = iface;
-                }else{
-                    (*gJObjectNativeWrapperMetaTypes)[metaType.id()] = metaTypeInterface;
-                    (*gMetaTypesForJObjectNativeWrappers)[metaTypeInterface] = original;
-                    if(originalMetaObject){
-                        locker.unlock();
-                        QMetaObjectBuilder builder;
-                        builder.setClassName(name);
-                        for(int i=0, l=originalMetaObject->methodCount(); i<l; ++i){
-                            QMetaMethod method = originalMetaObject->method(i);
-                            builder.addMethod(method);
-                        }
-                        for(int i=0, l=originalMetaObject->constructorCount(); i<l; ++i){
-                            QMetaMethod constructor = originalMetaObject->constructor(i);
-                            builder.addConstructor(constructor);
-                        }
-                        for(int i=0, l=originalMetaObject->propertyCount(); i<l; ++i){
-                            QMetaProperty property = originalMetaObject->property(i);
-                            builder.addProperty(property);
-                        }
-                        if(isQObject){
-                                builder.setFlags(PropertyAccessInStaticMetaCall);
-                                builder.setStaticMetacallFunction([](QObject *gadget, QMetaObject::Call call, int argc, void **argv){
-                                    JObjectWrapper* wrapper = reinterpret_cast<JObjectWrapper*>(gadget);
-                                    if(JniEnvironment env{200}){
-                                        if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, wrapper->object(env))){
-                                            Q_ASSERT(link->isQObject());
-                                            link->qobject()->qt_metacall(call, argc, argv);
-                                        }
-                                    }
-                                });
-                        }else if(originalMetaObject->d.static_metacall){
-                            builder.setFlags(PropertyAccessInStaticMetaCall);
-                            builder.setStaticMetacallFunction([](QObject *gadget, QMetaObject::Call call, int argc, void **argv){
-                                JObjectWrapper* wrapper = reinterpret_cast<JObjectWrapper*>(gadget);
-                                if(JniEnvironment env{200}){
-                                    if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, wrapper->object(env))){
-                                        QMetaType metaType;
-                                        if(const QMetaType* metaTypePtr = link->metaType()){
-                                            metaType = *metaTypePtr;
-                                        }else if(jclass object_class = env->GetObjectClass(wrapper->object(env))){
-                                            QString qtName = QtJambiTypeManager::getInternalTypeName(env, object_class, false);
-                                            metaType = QMetaType::fromName(qPrintable(qtName));
-                                        }
-                                        if(metaType.metaObject() && metaType.metaObject()->d.static_metacall)
-                                            metaType.metaObject()->d.static_metacall(reinterpret_cast<QObject*>(link->pointer()), call, argc, argv);
-                                    }
-                                }
-                            });
-                        }
-                        QMetaObject* mo = builder.toMetaObject();
-                        mo->d.superdata.direct = nullptr;
-#ifdef QT_NO_DATA_RELOCATION
-                        mo->d.superdata.indirect = nullptr;
-#endif
-                        locker.relock();
-                        gMetaTypeMetaObjectHash->insert(metaTypeInterface, mo);
-                    }
-                    nativeWrapperType = metaTypeInterface;
-                    QMetaType nativeWrapperMetaType(nativeWrapperType);
-                    (void)nativeWrapperMetaType.id();
-                    locker.unlock();
-                    if(!QMetaType::hasRegisteredConverterFunction(nativeWrapperMetaType, QMetaType::fromType<QString>())){
-                        if(isQObject){
-                            QMetaType::registerConverterFunction([metaType](const void *src, void *target) -> bool {
-                                new (target)QString();
-                                if(src){
-                                    QObject* obj = reinterpret_cast<const JQObjectWrapper*>(src)->qobject();
-                                    return QMetaType::convert(metaType, &obj, QMetaType::fromType<QString>(), target);
-                                }
-                                return true;
-                            }, nativeWrapperMetaType, QMetaType::fromType<QString>());
-                        }else{
-                            QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
-                                bool ok = false;
-                                if(src){
-                                    new (target)QString(reinterpret_cast<const JObjectWrapper*>(src)->toString(&ok));
-                                }else{
-                                    ok = true;
-                                    new (target)QString();
-                                }
-                                return ok;
-                            }, nativeWrapperMetaType, QMetaType::fromType<QString>());
-                        }
-                    }
-                    locker.relock();
-                }
-            }
-        }
+bool isJObjectWrappedMetaType(const QMetaType& metaType){
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        int metaTypeId = metaType.id();
+        QReadLocker locker(storage->registryLock());
+        return storage->jobjectWrappedMetaTypes().contains(metaTypeId);
     }
-    return QMetaType(nativeWrapperType);
+    return false;
+}
+
+bool isNativeWrapperMetaType(const QMetaType& metaType){
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        auto iface = META_TYPE_ACCESS(metaType).iface();
+        QReadLocker locker(storage->registryLock());
+        return storage->metaTypesForJObjectNativeWrappers().contains(iface);
+    }
+    return false;
 }
 
 jclass registeredJavaClassForCustomMetaType(const QtPrivate::QMetaTypeInterface * metaType){
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gMetaTypeJavaTypeHash->value(metaType);
-}
-
-const char* registeredClassNameForFunctionalMetaType(const QtPrivate::QMetaTypeInterface * metaType){
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gMetaTypeJavaNameHash->value(metaType);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->javaTypeByCustomMetaTypes().value(metaType);
+    }
+    return nullptr;
 }
 
 jclass registeredJavaClassForCustomMetaType(QMetaType metaType){
     return registeredJavaClassForCustomMetaType(metaType.iface());
 }
 
-const char* registeredClassNameForFunctionalMetaType(QMetaType metaType){
-    return registeredClassNameForFunctionalMetaType(metaType.iface());
+const char* registeredClassNameForFunctionalMetaType(const QMetaType& metaType){
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        int metaTypeId = metaType.id();
+        QReadLocker locker(storage->registryLock());
+        return storage->javaNameByMetaTypes().value(metaTypeId);
+    }
+    return nullptr;
 }
 
 const QMetaObject *findWrappersMetaObject(const QtPrivate::QMetaTypeInterface *iface){
     const QMetaObject* meta_object = nullptr;
-    if(JniEnvironment env{200}){
-        try {
-            jclass clazz = nullptr;
-            {
-                QReadLocker locker(gRegistryLock());
-                clazz = (*gMetaTypeJavaTypeHash)[iface];
-            }
-            if(clazz){
-                meta_object = CoreAPI::metaObjectForClass(env, clazz);
-                if(meta_object){
-                    registerMetaObjectByMetaTypeInterface(iface, meta_object);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
-                    const_cast<QtPrivate::QMetaTypeInterface*>(iface)->metaObjectFn = &metaobjectByMetaTypeInterface;
-#else
-                    const_cast<QtPrivate::QMetaTypeInterface::MetaObjectFn&>(iface->metaObjectFn) = &metaobjectByMetaTypeInterface;
-#endif
-                }else{
-                    const_cast<QtPrivate::QMetaTypeInterface*>(iface)->flags &= ~(QMetaType::IsGadget | QMetaType::PointerToGadget);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
-                    const_cast<QtPrivate::QMetaTypeInterface*>(iface)->metaObjectFn = [](const QtPrivate::QMetaTypeInterface*)->const QMetaObject*{return nullptr;};
-#else
-                    const_cast<QtPrivate::QMetaTypeInterface::MetaObjectFn&>(iface->metaObjectFn) = [](const QtPrivate::QMetaTypeInterface*)->const QMetaObject*{return nullptr;};
-#endif
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        if(JniEnvironment env{200}){
+            try {
+                jclass clazz = nullptr;
+                {
+                    QReadLocker locker(storage->registryLock());
+                    clazz = storage->javaTypeByCustomMetaTypes()[iface];
                 }
+                if(clazz){
+                    meta_object = CoreAPI::metaObjectForClass(env, clazz);
+                    if(meta_object){
+                        registerMetaObjectByMetaTypeInterface(iface, meta_object);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
+                        const_cast<QtPrivate::QMetaTypeInterface*>(iface)->metaObjectFn = &metaobjectByMetaTypeInterface;
+#else
+                        const_cast<QtPrivate::QMetaTypeInterface::MetaObjectFn&>(iface->metaObjectFn) = &metaobjectByMetaTypeInterface;
+#endif
+                    }else{
+                        const_cast<QtPrivate::QMetaTypeInterface*>(iface)->flags &= ~(QMetaType::IsGadget | QMetaType::PointerToGadget);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
+                        const_cast<QtPrivate::QMetaTypeInterface*>(iface)->metaObjectFn = [](const QtPrivate::QMetaTypeInterface*)->const QMetaObject*{return nullptr;};
+#else
+                        const_cast<QtPrivate::QMetaTypeInterface::MetaObjectFn&>(iface->metaObjectFn) = [](const QtPrivate::QMetaTypeInterface*)->const QMetaObject*{return nullptr;};
+#endif
+                    }
+                }
+            }catch(const JavaException&){
             }
-        }catch(const JavaException&){
         }
     }
     return meta_object;
 }
 
-QList<QMetaType> registeredCustomMetaTypesForJavaClass(const QByteArray& javaClass){
-    QReadLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    return gJavaTypeMetaTypesHash->values(javaClass);
+QList<const QtPrivate::QMetaTypeInterface *> registeredCustomMetaTypesForJavaClass(const QByteArray& javaClass){
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->metaTypesByJavaTypeNames().values(javaClass);
+    }
+    return {};
 }
 
 QList<jclass> getFlatClassHirarchy(JNIEnv *env, jclass clazz){
@@ -2761,26 +2513,27 @@ const char* CoreAPI::getInterfaceIID(JNIEnv *env, jclass javaType){
 }
 
 jclass CoreAPI::getInterfaceByIID(JNIEnv *env, const char* iid){
-    if(env && iid){
-        const std::type_info* typeId(nullptr);
-        {
-            QReadLocker locker(gRegistryLock());
-            Q_UNUSED(locker)
-            typeId = gIIDTypeHash->value(iid, nullptr);
-        }
-        if(typeId){
-            if(const char* javaName = getJavaName(*typeId)){
-                return JavaAPI::resolveClass(env, javaName);
-            }
-        }else{
-            const char* javaName(nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        if(env && iid){
+            const std::type_info* typeId(nullptr);
             {
-                QReadLocker locker(gRegistryLock());
-                Q_UNUSED(locker)
-                javaName = (*gIIDByteArrayHash)[iid];
+                QReadLocker locker(storage->registryLock());
+                typeId = storage->iidTypeHash().value(iid, nullptr);
             }
-            if(javaName){
-                return JavaAPI::resolveClass(env, javaName);
+            if(typeId){
+                if(const char* javaName = getJavaName(*typeId)){
+                    return JavaAPI::resolveClass(env, javaName);
+                }
+            }else{
+                const char* javaName(nullptr);
+                {
+                    QReadLocker locker(storage->registryLock());
+                    javaName = storage->iidByteArrayHash()[iid];
+                }
+                if(javaName){
+                    return JavaAPI::resolveClass(env, javaName);
+                }
             }
         }
     }
@@ -2788,30 +2541,34 @@ jclass CoreAPI::getInterfaceByIID(JNIEnv *env, const char* iid){
 }
 
 const char* RegistryAPI::mediaControlIID(JNIEnv *env, jclass javaType){
-    if(javaType){
-        QString className = QtJambiAPI::getClassName(env, javaType).replace(".", "/");
-        const std::type_info* typeId = getTypeByJavaName(className);
-        if(typeId){
-            auto unique = unique_id(*typeId);
-            QReadLocker locker(gRegistryLock());
-            Q_UNUSED(locker)
-            return gMediaControlIIDHash->value(unique, nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        if(javaType){
+            QString className = QtJambiAPI::getClassName(env, javaType).replace(".", "/");
+            const std::type_info* typeId = getTypeByJavaName(className);
+            if(typeId){
+                auto unique = unique_id(*typeId);
+                QReadLocker locker(storage->registryLock());
+                return storage->mediaControlIIDHash().value(unique, nullptr);
+            }
         }
     }
     return nullptr;
 }
 
 jclass RegistryAPI::classByMediaControlIID(JNIEnv *env, const char* iid){
-    if(env && iid){
-        const std::type_info* typeId(nullptr);
-        {
-            QReadLocker locker(gRegistryLock());
-            Q_UNUSED(locker)
-            typeId = gMediaControlIIDClassHash->value(iid, nullptr);
-        }
-        if(typeId){
-            if(const char* javaName = getJavaName(*typeId)){
-                return JavaAPI::resolveClass(env, javaName);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        if(env && iid){
+            const std::type_info* typeId(nullptr);
+            {
+                QReadLocker locker(storage->registryLock());
+                typeId = storage->mediaControlIIDClassHash().value(iid, nullptr);
+            }
+            if(typeId){
+                if(const char* javaName = getJavaName(*typeId)){
+                    return JavaAPI::resolveClass(env, javaName);
+                }
             }
         }
     }
@@ -2914,11 +2671,8 @@ jclass findClass(JNIEnv *env, const char *qualifiedName, jobject classLoader = n
     return returned;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-jclass getGlobalClassRef(JNIEnv *env, jclass cls, const char *className){
-#else
 jclass getGlobalClassRef(JNIEnv *env, jclass cls, QByteArrayView className){
-#endif
+    QtJambiStorage* storage = getQtJambiStorage();
 #ifndef QTJAMBI_NOCACHE
     size_t key;
 #ifdef QTJAMBI_LOG_CLASSNAMES
@@ -2937,27 +2691,25 @@ jclass getGlobalClassRef(JNIEnv *env, jclass cls, QByteArrayView className){
         key = qHash(qPrintable(classNameStrg));
     }
     {
-        QReadLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
-        if(gClassHash->contains(key))
-            return gClassHash->value(key);
+        QReadLocker locker(storage->registryLock());
+        if(storage->classHash().contains(key))
+            return storage->classHash().value(key);
     }
     bool deleteGlobalRef = false;
     if(env->GetObjectRefType(cls)!=JNIGlobalRefType){
         cls = jclass(env->NewGlobalRef(cls));
         deleteGlobalRef = true;
     }
-    QWriteLocker locker(gRegistryLock());
-    Q_UNUSED(locker)
-    if(gClassHash->contains(key)) { // if it has been inserted meanwhile by other thread
+    QWriteLocker locker(storage->registryLock());
+    if(storage->classHash().contains(key)) { // if it has been inserted meanwhile by other thread
         if(deleteGlobalRef)
             env->DeleteGlobalRef(cls);
-        return gClassHash->value(key);
+        return storage->classHash().value(key);
     }
 #ifdef QTJAMBI_LOG_CLASSNAMES
-    gClassNameHash->insert(key, classNameStrg);
+    storage->classNameHash().insert(key, classNameStrg);
 #endif
-    gClassHash->insert(key, cls);
+    storage->classHash().insert(key, cls);
     return cls;
 #else
     Q_UNUSED(env)
@@ -3000,11 +2752,11 @@ jclass getArrayClass(JNIEnv *env, jclass cls, int arrayDepth){
     }
     size_t key = qHash(qPrintable( className ));
     jclass cachedClass(nullptr);
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
-        if(gClassHash->contains(key)){
-            cachedClass = gClassHash->value(key);
+        QReadLocker locker(storage->registryLock());
+        if(storage->classHash().contains(key)){
+            cachedClass = storage->classHash().value(key);
         }
     }
     if(!cachedClass){
@@ -3040,10 +2792,10 @@ jclass JavaAPI::resolveClass(JNIEnv *env, const char *className, jobject classLo
 #ifndef QTJAMBI_NOCACHE
     size_t key = qHash(className);
 
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
-        returned = gClassHash->value(key, nullptr);
+        QReadLocker locker(storage->registryLock());
+        returned = storage->classHash().value(key, nullptr);
     }
 
     if (returned == nullptr) {
@@ -3061,20 +2813,10 @@ jclass JavaAPI::resolveClass(JNIEnv *env, const char *className, jobject classLo
 }
 
 size_t computeHash(JNIEnv* env, jclass clazz, const char *memberName, const char *signature, bool isStatic) {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     if(signature)
         return qHashMulti(0, clazz ? Java::Runtime::Object::hashCode(env, clazz) : 0, memberName, signature, isStatic);
     else
         return qHashMulti(0, clazz ? Java::Runtime::Object::hashCode(env, clazz) : 0, memberName, isStatic);
-#else
-    QList<size_t> range;
-    range << qHash(clazz ? Java::Runtime::Object::hashCode(env, clazz) : 0);
-    range << qHash(memberName);
-    if(signature)
-        range << qHash(signature);
-    range << qHash(isStatic);
-    return qHashRange(range.begin(), range.end());
-#endif
 }
 
 jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature,
@@ -3082,39 +2824,40 @@ jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature,
 {
     if(!clazz)
         return nullptr;
-#ifndef QTJAMBI_NOCACHE
-    size_t key = computeHash(env,clazz,fieldName,nullptr,isStatic);
-    {
-        QReadLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
-        jfieldID returned = gFieldHash->value(key, nullptr);
-        if(returned)
-            return returned;
-    }
-#endif // QTJAMBI_NOCACHE
     jfieldID returned = nullptr;
-    if (!isStatic)
-        returned = env->GetFieldID(clazz, fieldName, signature);
-    else
-        returned = env->GetStaticFieldID(clazz, fieldName, signature);
-    if(env->ExceptionCheck()){
-        if(exceptionOccurred)
-            *exceptionOccurred = env->ExceptionOccurred();
-        env->ExceptionClear();
-        return nullptr;
-    }
-#ifndef QTJAMBI_NOCACHE
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QWriteLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
-#ifdef QTJAMBI_COUNTCACHEMISSES
-        cacheMisses(fieldName);
-#endif
-        if (returned != nullptr && !gFieldHash->contains(key)) {
-            gFieldHash->insert(key, returned);
+#ifndef QTJAMBI_NOCACHE
+        size_t key = computeHash(env,clazz,fieldName,nullptr,isStatic);
+        {
+            QReadLocker locker(storage->registryLock());
+            jfieldID returned = storage->fieldHash().value(key, nullptr);
+            if(returned)
+                return returned;
         }
-    }
 #endif // QTJAMBI_NOCACHE
+        if (!isStatic)
+            returned = env->GetFieldID(clazz, fieldName, signature);
+        else
+            returned = env->GetStaticFieldID(clazz, fieldName, signature);
+        if(env->ExceptionCheck()){
+            if(exceptionOccurred)
+                *exceptionOccurred = env->ExceptionOccurred();
+            env->ExceptionClear();
+            return nullptr;
+        }
+#ifndef QTJAMBI_NOCACHE
+        {
+#ifdef QTJAMBI_COUNTCACHEMISSES
+            cacheMisses(fieldName);
+#endif
+            QWriteLocker locker(storage->registryLock());
+            if (returned != nullptr && !storage->fieldHash().contains(key)) {
+                storage->fieldHash().insert(key, returned);
+            }
+        }
+#endif // QTJAMBI_NOCACHE
+    }
     return returned;
 }
 
@@ -3125,37 +2868,38 @@ jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature,
 jmethodID JavaAPI::resolveMethod(JNIEnv *env, const char *methodName, const char *signature, jclass clazz, bool isStatic, jthrowable* exceptionOccurred)
 {
     jmethodID returned = nullptr;
-    if(clazz){
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        if(clazz){
 #ifndef QTJAMBI_NOCACHE
-        size_t key = computeHash(env,clazz,methodName,signature,isStatic);
-        {
-            QReadLocker locker(gRegistryLock());
-            Q_UNUSED(locker)
-            returned = gMethodHash->value(key, nullptr);
-            if(returned)
-                return returned;
-        }
+            size_t key = computeHash(env,clazz,methodName,signature,isStatic);
+            {
+                QReadLocker locker(storage->registryLock());
+                returned = storage->methodHash().value(key, nullptr);
+                if(returned)
+                    return returned;
+            }
 #endif
-        if (!isStatic)
-            returned = env->GetMethodID(clazz, methodName, signature);
-        else
-            returned = env->GetStaticMethodID(clazz, methodName, signature);
-        if(env->ExceptionCheck()){
-            if(exceptionOccurred)
-                *exceptionOccurred = env->ExceptionOccurred();
-            env->ExceptionClear();
-            return nullptr;
-        }
+            if (!isStatic)
+                returned = env->GetMethodID(clazz, methodName, signature);
+            else
+                returned = env->GetStaticMethodID(clazz, methodName, signature);
+            if(env->ExceptionCheck()){
+                if(exceptionOccurred)
+                    *exceptionOccurred = env->ExceptionOccurred();
+                env->ExceptionClear();
+                return nullptr;
+            }
 #ifndef QTJAMBI_NOCACHE
-        QWriteLocker locker(gRegistryLock());
-        Q_UNUSED(locker)
 #ifdef QTJAMBI_COUNTCACHEMISSES
-        cacheMisses(methodName);
+            cacheMisses(methodName);
 #endif
-        if (!gMethodHash->contains(key)) {
-            gMethodHash->insert(key, returned);
-        }
+            QWriteLocker locker(storage->registryLock());
+            if (!storage->methodHash().contains(key)) {
+                storage->methodHash().insert(key, returned);
+            }
 #endif // QTJAMBI_NOCACHE
+        }
     }
     return returned;
 }
@@ -3172,67 +2916,65 @@ jclass resolveLambdaInterface(JNIEnv* env, jclass lambdaClass){
 
 jclass JavaAPI::resolveClosestQtSuperclass(JNIEnv *env, jclass clazz, jobject classLoader)
 {
-    if(!env->IsSameObject(clazz, nullptr)){
-        uint key = uint(Java::Runtime::Object::hashCode(env,clazz));
-        {
-            QReadLocker locker(gRegistryLock());
-            Q_UNUSED(locker)
-            jclass returned = gQtSuperclassHash->value(key, nullptr);
-            if(returned)
-                return returned;
-        }
-
-        jclass returned = nullptr;
-        if (clazz) {
-            // Check if key is a Qt class
-
-            if (Java::QtJambi::ClassAnalyzerUtility::isGeneratedClass(env,clazz))
-                returned = clazz;
-
-            // If not, try the superclass recursively
-            if (!returned && clazz) {
-                jclass superKey = env->GetSuperclass(clazz);
-                if (superKey) {
-                    returned = JavaAPI::resolveClosestQtSuperclass(env, superKey, classLoader);
-                }
+    jclass returned = nullptr;
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        if(!env->IsSameObject(clazz, nullptr)){
+            uint key = uint(Java::Runtime::Object::hashCode(env,clazz));
+            {
+                QReadLocker locker(storage->registryLock());
+                jclass returned = storage->qtSuperclassHash().value(key, nullptr);
+                if(returned)
+                    return returned;
             }
 
-            if (returned) {
-                returned = getGlobalClassRef(env, returned);
-                QWriteLocker locker(gRegistryLock());
-                Q_UNUSED(locker)
-                if (!gQtSuperclassHash->contains(key)) {
+            if (clazz) {
+                // Check if key is a Qt class
+
+                if (Java::QtJambi::ClassAnalyzerUtility::isGeneratedClass(env,clazz))
+                    returned = clazz;
+
+                // If not, try the superclass recursively
+                if (!returned && clazz) {
+                    jclass superKey = env->GetSuperclass(clazz);
+                    if (superKey) {
+                        returned = JavaAPI::resolveClosestQtSuperclass(env, superKey, classLoader);
+                    }
+                }
+
+                if (returned) {
+                    returned = getGlobalClassRef(env, returned);
+                    QWriteLocker locker(storage->registryLock());
+                    if (!storage->qtSuperclassHash().contains(key)) {
 #ifdef QTJAMBI_COUNTCACHEMISSES
-                    locker.unlock();
-                    QString className = QtJambiAPI::getClassName(env, returned).replace('.', '/');
-                    locker.relock();
-                    cacheMisses(qPrintable(className));
+                        locker.unlock();
+                        QString className = QtJambiAPI::getClassName(env, returned).replace('.', '/');
+                        cacheMisses(qPrintable(className));
+                        locker.relock();
 #endif
-                    gQtSuperclassHash->insert(key, returned);
-                }else{
-                    returned = gQtSuperclassHash->value(key, nullptr);
+                        storage->qtSuperclassHash().insert(key, returned);
+                    }else{
+                        returned = storage->qtSuperclassHash().value(key, nullptr);
+                    }
                 }
-            }
-            if (!returned) {
-                QWriteLocker locker(gRegistryLock());
-                Q_UNUSED(locker)
-                if (!gQtSuperclassHash->contains(key)) {
+                if (!returned) {
+                    QWriteLocker locker(storage->registryLock());
+                    if (!storage->qtSuperclassHash().contains(key)) {
 #ifdef QTJAMBI_COUNTCACHEMISSES
-                    locker.unlock();
-                    QString className = QtJambiAPI::getClassName(env, returned).replace('.', '/');
-                    cacheMisses(qPrintable(className));
-                    locker.relock();
+                        locker.unlock();
+                        QString className = QtJambiAPI::getClassName(env, returned).replace('.', '/');
+                        cacheMisses(qPrintable(className));
+                        locker.relock();
 #endif
-                    gQtSuperclassHash->insert(key, nullptr);
-                }else{
-                    returned = gQtSuperclassHash->value(key, nullptr);
+                        storage->qtSuperclassHash().insert(key, nullptr);
+                    }else{
+                        returned = storage->qtSuperclassHash().value(key, nullptr);
+                    }
                 }
             }
         }
-
-        return returned;
     }
-    return nullptr;
+    return returned;
 }
 
 static QmlAPI::CreateQmlErrorDummyObject createQmlErrorDummyObjectFunction = nullptr;
@@ -3264,693 +3006,38 @@ size_t QmlAPI::extendedSizeForClass(JNIEnv *env, jclass object_class)
     return size;
 }
 
-typedef SecureContainer<QList<void**>, gRegistryLock> GlobalClassPointers;
-Q_GLOBAL_STATIC(GlobalClassPointers, gGlobalClassPointers)
-
 void QtJambiPrivate::registerGlobalClassPointer(jclass& cls){
-    QWriteLocker locker(gRegistryLock());
-    gGlobalClassPointers->append(reinterpret_cast<void**>(&cls));
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker locker(storage->registryLock());
+        storage->globalClassPointers().append(reinterpret_cast<void**>(&cls));
+    }
 }
 
 void unregisterGlobalClassPointer(jclass& cls){
-    QWriteLocker locker(gRegistryLock());
-    gGlobalClassPointers->removeAll(reinterpret_cast<void**>(&cls));
-}
-
-void clearRegistryAtShutdown(JNIEnv * env){
-#ifndef QTJAMBI_NOCACHE
-    QHash<size_t, jclass> classIdHash;
-#endif
-    QList<void**> globalClassPointers;
-    QMultiHash<size_t, const PolymorphicIdHandler* > polymorphic_ids;
-    QMap<int,QSharedPointer<AbstractContainerAccess>> containerAccessMap;
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QWriteLocker locker(gRegistryLock());
-        if(!gGlobalClassPointers.isDestroyed())
-            globalClassPointers.swap(*gGlobalClassPointers);
-        if(!g_polymorphic_ids.isDestroyed())
-            polymorphic_ids.swap(*g_polymorphic_ids);
-        if(!gExtraSignalsOfMetaObject.isDestroyed())
-            gExtraSignalsOfMetaObject->clear();
-        if(!gContainerAccessMap.isDestroyed())
-            gContainerAccessMap->swap(containerAccessMap);
-#ifndef QTJAMBI_NOCACHE
-        if(!gClassHash.isDestroyed())
-            classIdHash.swap(*gClassHash);
-        if(!gConstructorHash.isDestroyed())
-            gConstructorHash->clear();
-        if(!gQtSuperclassHash.isDestroyed())
-            gQtSuperclassHash->clear();
-        if(!gMethodHash.isDestroyed())
-            gMethodHash->clear();
-        if(!gFieldHash.isDestroyed())
-            gFieldHash->clear();
-#endif
-    }
-    for(const PolymorphicIdHandler* handler : polymorphic_ids){
-        delete handler;
-    }
-#ifndef QTJAMBI_NOCACHE
-    if(env && Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.purge-globalrefs-at-shutdown"))){
-        for(void** ptr : globalClassPointers){
-            *ptr = nullptr;
-        }
-#ifdef QTJAMBI_LOG_CLASSNAMES
-        printf("DeleteGlobalRef of %i classes:\n", classIdHash.keys().size());
-        int counter = 0;
-#endif
-#ifdef QTJAMBI_LOG_CLASSNAMES
-        for(size_t key : classIdHash.keys()){
-            jclass cls = classIdHash[key];
-                printf("%i.: class %s\n", ++counter, qPrintable((*gClassNameHash)[key]));
-#else
-        for(jclass cls : classIdHash){
-#endif
-            if(env->GetObjectRefType(cls)==JNIGlobalRefType)
-                env->DeleteGlobalRef(cls);
-        }
-    }
-#endif // QTJAMBI_NOCACHE
-}
-
-struct JObjectValueWrapperPrivate{
-    jclass clazz = nullptr;
-    jmethodID constructor = 0;
-    jmethodID clone = 0;
-    jmethodID writeTo = 0;
-    jmethodID readFrom = 0;
-    bool isSerializable = false;
-    QByteArray name;
-    const QMetaObject * metaObject = reinterpret_cast<const QMetaObject *>(quintptr(std::numeric_limits<quintptr>::max()));
-    static constexpr auto metaObjectFn = &JObjectValueWrapper::metaObject;
-    static constexpr auto defaultCtr = &JObjectValueWrapper::defaultCtr;
-    static constexpr auto copyCtr = &JObjectValueWrapper::copyCtr;
-    static constexpr auto moveCtr = &JObjectValueWrapper::moveCtr;
-    static constexpr auto dtor = &JObjectValueWrapper::dtor;
-    static constexpr auto equals = &JObjectValueWrapper::equals;
-    static constexpr auto lessThan = &JObjectValueWrapper::lessThan;
-    static constexpr auto debugStream = &JObjectValueWrapper::debugStream;
-    static constexpr auto dataStreamOut = &JObjectValueWrapper::dataStreamOut;
-    static constexpr auto dataStreamIn = &JObjectValueWrapper::dataStreamIn;
-    static constexpr auto serializableDataStreamOut = &JObjectValueWrapper::serializableDataStreamOut;
-    static constexpr auto serializableDataStreamIn = &JObjectValueWrapper::serializableDataStreamIn;
-};
-
-JObjectWrapper qtjambiCreateObject(const JObjectValueWrapperPrivate* methods){
-    if(methods){
-        if(JniEnvironment env{200}){
-            try{
-                return JObjectWrapper(env, env->NewObject(methods->clazz, methods->constructor));
-            }catch(const JavaException& exn){
-                exn.report(env);
-            }
-        }
-    }
-    return JObjectWrapper();
-}
-
-JObjectWrapper qtjambiCopyObject(JNIEnv* env, const JObjectValueWrapperPrivate* methods, const JObjectWrapper& other){
-    if(methods && env){
-        try{
-            jobject o = env->CallObjectMethod(other.object(env), methods->clone);
-            JavaException::check(env QTJAMBI_STACKTRACEINFO );
-            return JObjectWrapper(env, o);
-        }catch(const JavaException& exn){
-            exn.report(env);
-        }
-    }
-    return JObjectWrapper(other);
-}
-
-JObjectWrapper qtjambiCopyObject(const JObjectValueWrapperPrivate* methods, const JObjectWrapper& other){
-    if(JniEnvironment env{200}){
-        return qtjambiCopyObject(env, methods, other);
-    }
-    return JObjectWrapper(other);
-}
-
-typedef SecureContainer<QMap<size_t, const QtPrivate::QMetaTypeInterface *>, gRegistryLock> ClassMetaTypeInterfaceHash;
-Q_GLOBAL_STATIC(ClassMetaTypeInterfaceHash, gClassMetaTypeInterfaces)
-typedef SecureContainer<QMap<const QtPrivate::QMetaTypeInterface *,JObjectValueWrapperPrivate>, gRegistryLock> MetaTypeInterfacesHash;
-Q_GLOBAL_STATIC(MetaTypeInterfacesHash, gMetaTypeInterfaces)
-typedef SecureContainer<QMap<const QtPrivate::QMetaTypeInterface *,jclass>, gRegistryLock> MetaTypeEnumClassesHash;
-Q_GLOBAL_STATIC(MetaTypeEnumClassesHash, gMetaTypeEnumClasses)
-
-bool JObjectValueWrapper::isValueType(QMetaType metaType){
-    const JObjectValueWrapperPrivate* methods{nullptr};
-    {
-        auto iface = metaType.iface();
-        QReadLocker locker(gRegistryLock());
-        if(gMetaTypeInterfaces->contains(iface))
-            methods = &(*gMetaTypeInterfaces)[iface];
-    }
-    return methods;
-}
-
-bool JObjectValueWrapper::hasCustomDebugStreamOperator(QMetaType metaType){
-    return metaType.iface()->debugStream!=JObjectValueWrapper::debugStream;
-}
-
-JObjectValueWrapper JObjectValueWrapper::create(JNIEnv* env, jobject object, QMetaType metaType){
-    const JObjectValueWrapperPrivate* methods{nullptr};
-    {
-        auto iface = metaType.iface();
-        QReadLocker locker(gRegistryLock());
-        if(gMetaTypeInterfaces->contains(iface))
-            methods = &(*gMetaTypeInterfaces)[iface];
-    }
-    if(methods){
-        jobject o = env->IsSameObject(object, nullptr) ? nullptr : env->CallObjectMethod(object, methods->clone);
-        JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        return JObjectValueWrapper(env, o, methods);
-    }
-    return {};
-}
-
-JObjectValueWrapper::JObjectValueWrapper() : JObjectWrapper(), p(nullptr) {}
-JObjectValueWrapper::JObjectValueWrapper(const JObjectValueWrapperPrivate* _p)
-    : JObjectWrapper(qtjambiCreateObject(_p)),
-      p(_p){}
-
-JObjectValueWrapper::JObjectValueWrapper(JNIEnv* env, jobject object, const JObjectValueWrapperPrivate* _p)
-    : JObjectWrapper(env, object),
-      p(_p){}
-
-JObjectValueWrapper::JObjectValueWrapper(JObjectWrapper&& object, const JObjectValueWrapperPrivate* _p)
-    : JObjectWrapper(std::move(object)),
-      p(_p){}
-
-
-JObjectValueWrapper::JObjectValueWrapper(const JObjectValueWrapper& other)
-    : JObjectWrapper(qtjambiCopyObject(other.p, other)),
-      p(other.p){}
-
-JObjectValueWrapper::JObjectValueWrapper(JObjectValueWrapper&& other)
-    : JObjectWrapper(std::move(other)),
-      p(other.p){}
-
-JObjectValueWrapper::~JObjectValueWrapper() {}
-
-jobject JObjectValueWrapper::value(JNIEnv* env) const{
-    jobject o = env->CallObjectMethod(object(env), p->clone);
-    JavaException::check(env QTJAMBI_STACKTRACEINFO );
-    return o;
-}
-
-JObjectValueWrapper& JObjectValueWrapper::operator=(const JObjectValueWrapper &wrapper){
-    JObjectWrapper::operator=(qtjambiCopyObject(wrapper.p, wrapper));
-    p = wrapper.p;
-    return *this;
-}
-
-JObjectValueWrapper& JObjectValueWrapper::operator=(JObjectValueWrapper &&wrapper){
-    JObjectWrapper::operator=(std::move(wrapper));
-    p = wrapper.p;
-    return *this;
-}
-
-void JObjectValueWrapper::assign(JNIEnv* env, JObjectValueWrapper &&wrapper){
-    JObjectWrapper::assign(env, std::move(wrapper));
-    p = wrapper.p;
-}
-
-void JObjectValueWrapper::assign(const JObjectWrapper &wrapper){
-    if(const JObjectValueWrapper* _wrapper = dynamic_cast<const JObjectValueWrapper*>(&wrapper)){
-        operator=(*_wrapper);
-    }else if(p){
-        if(JniEnvironment env{200}){
-            if(env->IsInstanceOf(wrapper.object(env), p->clazz)){
-                operator=(JObjectValueWrapper(qtjambiCopyObject(env, p, wrapper.object(env)), p));
-            }
-        }
+        QWriteLocker locker(storage->registryLock());
+        storage->globalClassPointers().removeAll(reinterpret_cast<void**>(&cls));
     }
 }
 
-void JObjectValueWrapper::assign(JNIEnv* env, JObjectWrapper &&wrapper){
-    if(JObjectValueWrapper* _wrapper = dynamic_cast<JObjectValueWrapper*>(&wrapper)){
-        assign(env, std::move(*_wrapper));
-    }else{
-        if(env->IsInstanceOf(wrapper.object(env), p->clazz)){
-            assign(env, JObjectValueWrapper(std::move(wrapper), p));
-        }
-    }
-}
+bool getFunctions(JNIEnv *env, const QMetaType& elementType, QtJambiUtils::QHashFunction& hashFunction, QtJambiUtils::InternalToExternalConverter& internalToExternalConverter, QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter);
 
-void JObjectValueWrapper::assign(JNIEnv* env, jobject obj){
-    if(p){
-        if(env->IsInstanceOf(obj, p->clazz)){
-            JObjectWrapper::assign(env, obj);
-        }
-    }
-}
-
-bool JObjectValueWrapper::operator==(const JObjectValueWrapper &other) const{
-    return p==other.p && JObjectWrapper::operator==(other);
-}
-
-bool JObjectValueWrapper::operator<(const JObjectValueWrapper &other) const{
-    return p==other.p && JObjectWrapper::operator<(other);
-
-}
-
-bool JObjectValueWrapper::isNull()const{return !p;}
-
-void JObjectValueWrapper::writeTo(QDataStream &d)const{
-    if(JniEnvironment env{200}){
-        try{
-            jobject _d = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, &d);
-            QTJAMBI_INVALIDATE_AFTER_USE(env, _d);
-            env->CallVoidMethod(object(env), p->writeTo, _d);
-        }catch(const JavaException& exn){
-            exn.report(env);
-        }
-    }
-}
-void JObjectValueWrapper::readFrom(QDataStream &d){
-    if(JniEnvironment env{200}){
-        try{
-            jobject _d = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, &d);
-            QTJAMBI_INVALIDATE_AFTER_USE(env, _d);
-            env->CallVoidMethod(object(env), p->readFrom, _d);
-        }catch(const JavaException& exn){
-            exn.report(env);
-        }
-    }
-}
-
-void JObjectValueWrapper::serializeTo(QDataStream &d)const{
-    if(JniEnvironment env{200}){
-        try{
-            jobject _d = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, &d);
-            QTJAMBI_INVALIDATE_AFTER_USE(env, _d);
-            Java::QtJambi::MetaTypeUtility::writeSerializableJavaObject(env, _d, object(env));
-        }catch(const JavaException& exn){
-            exn.report(env);
-        }
-    }
-}
-void JObjectValueWrapper::serializeFrom(QDataStream &d){
-    if(JniEnvironment env{200}){
-        try{
-            jobject _d = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, &d);
-            QTJAMBI_INVALIDATE_AFTER_USE(env, _d);
-            jobject newValue = Java::QtJambi::MetaTypeUtility::readSerializableJavaObject(env, _d);
-            *this = JObjectValueWrapper(env, newValue, p);
-        }catch(const JavaException& exn){
-            exn.report(env);
-        }
-    }
-}
-
-const QMetaObject *JObjectValueWrapper::metaObject(const QtPrivate::QMetaTypeInterface *iface){
-    const JObjectValueWrapperPrivate* methods{nullptr};
-    {
-        QReadLocker locker(gRegistryLock());
-        if(gMetaTypeInterfaces->contains(iface))
-            methods = &(*gMetaTypeInterfaces)[iface];
-    }
-    if(methods){
-        if(quintptr(methods->metaObject) == std::numeric_limits<quintptr>::max()){
-            if(JniEnvironment env{200}){
-                const_cast<JObjectValueWrapperPrivate*>(methods)->metaObject = CoreAPI::metaObjectForClass(env, methods->clazz);
-                if(!methods->metaObject){
-                    const_cast<QtPrivate::QMetaTypeInterface*>(iface)->flags &= ~QMetaType::IsGadget;
-                    const_cast<QtPrivate::QMetaTypeInterface*>(iface)->flags &= ~QMetaType::PointerToGadget;
-                }
-            }else return nullptr;
-        }
-        return methods->metaObject;
-    }
-    return nullptr;
-}
-
-void JObjectValueWrapper::defaultCtr(const QtPrivate::QMetaTypeInterface *iface, void *target){
-    const JObjectValueWrapperPrivate* methods{nullptr};
-    {
-        QReadLocker locker(gRegistryLock());
-        if(gMetaTypeInterfaces->contains(iface))
-            methods = &(*gMetaTypeInterfaces)[iface];
-    }
-    new (target) JObjectValueWrapper(qtjambiCreateObject(methods), methods);
-}
-
-void JObjectValueWrapper::copyCtr(const QtPrivate::QMetaTypeInterface *, void *target, const void *other){
-    const JObjectValueWrapper* _other = reinterpret_cast<const JObjectValueWrapper*>(other);
-    new (target) JObjectValueWrapper(*_other);
-}
-
-void JObjectValueWrapper::moveCtr(const QtPrivate::QMetaTypeInterface *, void *target, void *other){
-    JObjectValueWrapper* _other = reinterpret_cast<JObjectValueWrapper*>(other);
-    new (target) JObjectValueWrapper(std::move(*_other));
-}
-
-void JObjectValueWrapper::dtor(const QtPrivate::QMetaTypeInterface *, void *target){
-    reinterpret_cast<JObjectValueWrapper*>(target)->~JObjectValueWrapper();
-}
-
-bool JObjectValueWrapper::equals(const QtPrivate::QMetaTypeInterface *iface, const void *value1, const void *value2){
-    const JObjectValueWrapper* _value1 = reinterpret_cast<const JObjectValueWrapper*>(value1);
-    const JObjectValueWrapper* _value2 = reinterpret_cast<const JObjectValueWrapper*>(value2);
-    if(_value1->isNull() || _value2->isNull()){
-        const JObjectValueWrapperPrivate* methods{nullptr};
-        {
-            QReadLocker locker(gRegistryLock());
-            if(gMetaTypeInterfaces->contains(iface))
-                methods = &(*gMetaTypeInterfaces)[iface];
-        }
-        if(methods){
-            if(_value1->isNull())
-                *const_cast<JObjectValueWrapper*>(_value1) = JObjectValueWrapper(methods);
-            if(_value2->isNull())
-                *const_cast<JObjectValueWrapper*>(_value2) = JObjectValueWrapper(methods);
-        }else return false;
-    }
-    try{
-        return *_value1 == *_value2;
-    }catch(const JavaException& exn){
-        JniEnvironment env{200};
-        exn.report(env);
-        return false;
-    }
-}
-
-bool JObjectValueWrapper::lessThan(const QtPrivate::QMetaTypeInterface *iface, const void *value1, const void *value2){
-    const JObjectValueWrapper* _value1 = reinterpret_cast<const JObjectValueWrapper*>(value1);
-    const JObjectValueWrapper* _value2 = reinterpret_cast<const JObjectValueWrapper*>(value2);
-    if(_value1->isNull() || _value2->isNull()){
-        const JObjectValueWrapperPrivate* methods{nullptr};
-        {
-            QReadLocker locker(gRegistryLock());
-            if(gMetaTypeInterfaces->contains(iface))
-                methods = &(*gMetaTypeInterfaces)[iface];
-        }
-        if(methods){
-            if(_value1->isNull())
-                *const_cast<JObjectValueWrapper*>(_value1) = JObjectValueWrapper(methods);
-            if(_value2->isNull())
-                *const_cast<JObjectValueWrapper*>(_value2) = JObjectValueWrapper(methods);
-        }else return false;
-    }
-    try{
-        return *_value1 < *_value2;
-    }catch(const JavaException& exn){
-        JniEnvironment env{200};
-        exn.report(env);
-        return false;
-    }
-}
-
-void JObjectValueWrapper::debugStream(const QtPrivate::QMetaTypeInterface *iface, QDebug &d, const void *value){
-    const JObjectValueWrapper* _value = reinterpret_cast<const JObjectValueWrapper*>(value);
-    if(_value->isNull()){
-        const JObjectValueWrapperPrivate* methods{nullptr};
-        {
-            QReadLocker locker(gRegistryLock());
-            if(gMetaTypeInterfaces->contains(iface))
-                methods = &(*gMetaTypeInterfaces)[iface];
-        }
-        if(methods)
-            *const_cast<JObjectValueWrapper*>(_value) = JObjectValueWrapper(methods);
-        else return;
-    }
-    try{
-        bool ok = false;
-        QString strg = _value->toString(&ok);
-        if(ok)
-            d << strg;
-    }catch(const JavaException& exn){
-        JniEnvironment env{200};
-        exn.report(env);
-    }
-}
-
-void JObjectValueWrapper::dataStreamOut(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, const void *value){
-    try{
-        const JObjectValueWrapper* _value = reinterpret_cast<const JObjectValueWrapper*>(value);
-        if(_value->isNull()){
-            const JObjectValueWrapperPrivate* methods{nullptr};
-            {
-                QReadLocker locker(gRegistryLock());
-                if(gMetaTypeInterfaces->contains(iface))
-                    methods = &(*gMetaTypeInterfaces)[iface];
-            }
-            if(methods)
-                *const_cast<JObjectValueWrapper*>(_value) = JObjectValueWrapper(methods);
-            else return;
-        }
-        _value->writeTo(d);
-    }catch(const JavaException& exn){
-        JniEnvironment env{200};
-        exn.report(env);
-    }
-}
-
-void JObjectValueWrapper::dataStreamIn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, void *value){
-    try{
-        JObjectValueWrapper* _value = reinterpret_cast<JObjectValueWrapper*>(value);
-        if(_value->isNull()){
-            const JObjectValueWrapperPrivate* methods{nullptr};
-            {
-                QReadLocker locker(gRegistryLock());
-                if(gMetaTypeInterfaces->contains(iface))
-                    methods = &(*gMetaTypeInterfaces)[iface];
-            }
-            if(methods)
-                *_value = JObjectValueWrapper(methods);
-            else return;
-        }
-        _value->readFrom(d);
-    }catch(const JavaException& exn){
-        JniEnvironment env{200};
-        exn.report(env);
-    }
-}
-
-void JObjectValueWrapper::serializableDataStreamOut(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, const void *value){
-    try{
-        const JObjectValueWrapper* _value = reinterpret_cast<const JObjectValueWrapper*>(value);
-        if(_value->isNull()){
-            const JObjectValueWrapperPrivate* methods{nullptr};
-            {
-                QReadLocker locker(gRegistryLock());
-                if(gMetaTypeInterfaces->contains(iface))
-                    methods = &(*gMetaTypeInterfaces)[iface];
-            }
-            if(methods)
-                *const_cast<JObjectValueWrapper*>(_value) = JObjectValueWrapper(methods);
-            else return;
-        }
-        _value->serializeTo(d);
-    }catch(const JavaException& exn){
-        JniEnvironment env{200};
-        exn.report(env);
-    }
-}
-
-void JObjectValueWrapper::serializableDataStreamIn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, void *value){
-    try{
-        JObjectValueWrapper* _value = reinterpret_cast<JObjectValueWrapper*>(value);
-        if(_value->isNull()){
-            const JObjectValueWrapperPrivate* methods{nullptr};
-            {
-                QReadLocker locker(gRegistryLock());
-                if(gMetaTypeInterfaces->contains(iface))
-                    methods = &(*gMetaTypeInterfaces)[iface];
-            }
-            if(methods)
-                *_value = JObjectValueWrapper(methods);
-            else return;
-        }
-        _value->serializeFrom(d);
-    }catch(const JavaException& exn){
-        JniEnvironment env{200};
-        exn.report(env);
-    }
-}
-
-struct JQObjectWrapperPrivate{
-    JQObjectWrapperPrivate(QObject*& object, JNIEnv* env, QSharedPointer<QtJambiLink>&& link);
-    void unref(QObject*& pointer);
-    void ref(QObject*& pointer);
-    void exchange(QObject*& pointer, QObject*& byPointer);
-    QSharedPointer<QtJambiLink> m_link;
-    QMutex m_mutex;
-    QSet<QObject**> m_pointers;
-private:
-    ~JQObjectWrapperPrivate();
-};
-
-JQObjectWrapperPrivate::JQObjectWrapperPrivate(QObject*& object, JNIEnv* env, QSharedPointer<QtJambiLink>&& link)
-    : m_link(std::move(link)), m_mutex(), m_pointers() {
-    Q_ASSERT(!m_link.isNull());
-    Q_ASSERT(m_link->ownership()==QtJambiLink::Ownership::Java);
-    m_link->setCppOwnership(env);
-    m_pointers.insert(&object);
-    if(DependencyManagerUserData* dm = DependencyManagerUserData::instance(object)){
-        dm->addFinalization(this,
-            [](JNIEnv*, void* data){
-                JQObjectWrapperPrivate* p = reinterpret_cast<JQObjectWrapperPrivate*>(data);
-                QSet<QObject**> pointers;
-                {
-                    QMutexLocker<QMutex> locker(&p->m_mutex);
-                    p->m_pointers.swap(pointers);
-                }
-                for(QObject** pointer : std::as_const(pointers)){
-                    *pointer = nullptr;
-                }
-            }, nullptr);
-    }
-}
-
-void JQObjectWrapperPrivate::unref(QObject*& pointer){
-    bool isEmpty;
-    {
-        QMutexLocker<QMutex> locker(&m_mutex);
-        m_pointers.remove(&pointer);
-        isEmpty = m_pointers.isEmpty();
-    }
-    if(isEmpty)
-        delete this;
-}
-
-void JQObjectWrapperPrivate::ref(QObject*& pointer){
-    {
-        QMutexLocker<QMutex> locker(&m_mutex);
-        m_pointers.insert(&pointer);
-    }
-}
-
-void JQObjectWrapperPrivate::exchange(QObject*& pointer, QObject*& byPointer){
-    {
-        QMutexLocker<QMutex> locker(&m_mutex);
-        m_pointers.remove(&pointer);
-        m_pointers.insert(&byPointer);
-    }
-}
-
-JQObjectWrapperPrivate::~JQObjectWrapperPrivate(){
-    try{
-        if(QObject* object = m_link->qobject()){
-            JniEnvironment env{200};
-            try{
-                if(DependencyManagerUserData* dm = DependencyManagerUserData::instance(object, false)){
-                    dm->removeFinalization(env, this);
-                }
-                if(!isQmlJavaScriptOwnership(object) && env)
-                    m_link->setJavaOwnership(env);
-            }catch(const JavaException& exn){
-                exn.report(env);
-            }
-        }
-    }catch(...){
-    }
-}
-
-JQObjectWrapper::JQObjectWrapper()
-    : m_qobject(nullptr), p(nullptr) {
-}
-
-JQObjectWrapper::JQObjectWrapper(JNIEnv* env, QSharedPointer<QtJambiLink>&& link)
-    : m_qobject(link->qobject()), p(new JQObjectWrapperPrivate(m_qobject, env, std::move(link))){
-}
-
-JQObjectWrapper::~JQObjectWrapper(){
-    if(p)
-        p->unref(m_qobject);
-    m_qobject = nullptr;
-    p = nullptr;
-}
-
-JQObjectWrapper::JQObjectWrapper(const JQObjectWrapper& other)
-    : m_qobject(other.m_qobject), p(other.p){
-    if(p)
-        p->ref(m_qobject);
-}
-
-JQObjectWrapper::JQObjectWrapper(JQObjectWrapper&& other)
-    : m_qobject(other.m_qobject), p(other.p){
-    if(p)
-        p->exchange(other.m_qobject, m_qobject);
-    other.p = nullptr;
-    other.m_qobject = nullptr;
-}
-
-JQObjectWrapper& JQObjectWrapper::operator=(const JQObjectWrapper &other){
-    if(other.p!=p){
-        if(p)
-            p->unref(m_qobject);
-        m_qobject = other.m_qobject;
-        p = other.p;
-        if(p){
-            p->ref(m_qobject);
-        }
-    }
-    return *this;
-}
-
-JQObjectWrapper& JQObjectWrapper::operator=(JQObjectWrapper &&other){
-    if(other.p!=p){
-        if(p)
-            p->unref(m_qobject);
-        m_qobject = other.m_qobject;
-        p = other.p;
-        if(p){
-            p->exchange(other.m_qobject, m_qobject);
-        }
-        other.p = nullptr;
-        other.m_qobject = nullptr;
-    }
-    return *this;
-}
-
-QSharedPointer<QtJambiLink> JQObjectWrapper::link() const{
-    if(p)
-        return  p->m_link;
-    else
-        return {};
-}
-
-jobject JQObjectWrapper::javaObject(JNIEnv* env) const{
-    if(p)
-        return  p->m_link->getJavaObjectLocalRef(env);
-    else
-        return nullptr;
-}
-
-
-int QmlAPI::registerMetaType(JNIEnv *env, SequentialContainerType containerType, const QMetaType& elementType){
-    int result = 0;
+QMetaType QmlAPI::registerMetaType(JNIEnv *env, SequentialContainerType containerType, const QMetaType& elementType){
+    QMetaType result;
     AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(ContainerAccessAPI::createContainerAccess(containerType, elementType));
     if(!listAccess){
         QtJambiUtils::QHashFunction hashFunction;
         QtJambiUtils::InternalToExternalConverter internalToExternalConverter;
         QtJambiUtils::ExternalToInternalConverter externalToInternalConverter;
-        const JObjectValueWrapperPrivate* methods{nullptr};
-        {
-            const QtPrivate::QMetaTypeInterface *iface = QMetaType(elementType).iface();
-            QReadLocker locker(gRegistryLock());
-            if(gMetaTypeInterfaces->contains(iface))
-                methods = &(*gMetaTypeInterfaces)[iface];
-        }
-        if(methods){
-            hashFunction = [](const void* ptr, size_t seed)->size_t{
-                if(JniEnvironment env{200}){
-                    try{
-                        seed = qHash(Java::Runtime::Object::hashCode(env, reinterpret_cast<const JObjectValueWrapper*>(ptr)->object(env)), seed);
-                    }catch(const JavaException& exn){
-                        exn.report(env);
-                    }
-                }
-                return seed;
-            };
-            internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(env, QLatin1String(elementType.name()), elementType, methods->clazz);
-            externalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(env, methods->clazz, QLatin1String(elementType.name()), elementType);
-        }else{
+        if(!getFunctions(env, elementType, hashFunction, internalToExternalConverter, externalToInternalConverter)){
+            int elementTypeId = elementType.id();
             const std::type_info* typeId;
+            QtJambiStorage* storage = getQtJambiStorage();
             {
-                auto id = elementType.id();
-                QReadLocker locker(gRegistryLock());
-                typeId = gMetaTypeIDHash->value(id);
+                QReadLocker locker(storage->registryLock());
+                typeId = storage->typeInfoByMetaTypes().value(elementTypeId);
             }
             if(typeId)
                 hashFunction = registeredHashFunction(*typeId);
@@ -4005,10 +3092,10 @@ int QmlAPI::registerMetaType(JNIEnv *env, SequentialContainerType containerType,
 }
 
 template<typename INT, int isQtEnum0OrFlag1 = 0>
-int qtjambi_register_enum_meta_type(JNIEnv *env, jclass clazz, const QString& javaClassName, const QByteArray& javaTypeName){
+QMetaType qtjambi_register_enum_meta_type(JNIEnv *env, jclass clazz, const QString& javaClassName, const QByteArray& javaTypeName){
     enum E:INT{};
     typedef typename std::conditional<isQtEnum0OrFlag1==1,QFlags<E>,E>::type EnumOrFlags;
-    typedef typename std::conditional<isQtEnum0OrFlag1==1,JObjectWrapper,JEnumWrapper>::type Wrapper;
+    typedef JObjectWrapper Wrapper;
     QtPrivate::QMetaTypeInterface* metaTypeInterface = new QtPrivate::QMetaTypeInterface{
             /*.revision=*/ QMetaTypeInterface_CurrentRevision,
             /*.alignment=*/ alignof(EnumOrFlags),
@@ -4032,36 +3119,37 @@ int qtjambi_register_enum_meta_type(JNIEnv *env, jclass clazz, const QString& ja
             /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<EnumOrFlags>::dataStreamIn,
             /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<EnumOrFlags>::legacyRegisterOp
     };
-    const QtPrivate::QMetaTypeInterface * iface;
+    QtJambiStorage* storage = getQtJambiStorage();
     {
+        const QtPrivate::QMetaTypeInterface * iface{nullptr};
         auto hash = qHash(javaClassName);
         {
-            QReadLocker locker(gRegistryLock());
-            iface = gClassMetaTypeInterfaces->value(hash);
+            QReadLocker locker(storage->registryLock());
+            iface = storage->classMetaTypeInterfaces().value(hash);
         }
         if(iface){
             delete metaTypeInterface;
-            return iface->typeId;
+            return QMetaType(iface);
         }else{
             jclass cls = getGlobalClassRef(env, clazz, qPrintable(javaClassName));
-            QWriteLocker locker(gRegistryLock());
-            iface = gClassMetaTypeInterfaces->value(hash);
+            QWriteLocker locker(storage->registryLock());
+            iface = storage->classMetaTypeInterfaces().value(hash);
             if(iface){
                 delete metaTypeInterface;
-                return iface->typeId;
+                return QMetaType(iface);
             }
-            gClassMetaTypeInterfaces->insert(hash, metaTypeInterface);
-            (*gMetaTypeEnumClasses)[metaTypeInterface] = cls;
+            storage->classMetaTypeInterfaces().insert(hash, metaTypeInterface);
+            storage->metaTypeEnumClasses()[metaTypeInterface] = cls;
         }
     }
     QMetaType metaType(metaTypeInterface);
-    int result = metaType.id();
     auto conv = [metaTypeInterface](const void *src, void *target) -> bool {
         if(src){
-            jclass clazz;
+            jclass clazz{nullptr};
+            QtJambiStorage* storage = getQtJambiStorage();
             {
-                QReadLocker locker(gRegistryLock());
-                clazz = (*gMetaTypeEnumClasses)[metaTypeInterface];
+                QReadLocker locker(storage->registryLock());
+                clazz = storage->metaTypeEnumClasses()[metaTypeInterface];
             }
             if(clazz){
                 if(JniEnvironment env{200}){
@@ -4091,10 +3179,6 @@ int qtjambi_register_enum_meta_type(JNIEnv *env, jclass clazz, const QString& ja
     };
     if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<JObjectWrapper>()))
         QMetaType::registerConverterFunction(conv, metaType, QMetaType::fromType<JObjectWrapper>());
-    if constexpr(isQtEnum0OrFlag1!=1){
-        if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<JEnumWrapper>()))
-            QMetaType::registerConverterFunction(conv, metaType, QMetaType::fromType<JEnumWrapper>());
-    }
     auto iconv = [](const void *src, void *target) -> bool {
         if(src){
             new (target)typename QIntegerForSizeof<EnumOrFlags>::Signed(*reinterpret_cast<const E*>(src));
@@ -4112,16 +3196,17 @@ int qtjambi_register_enum_meta_type(JNIEnv *env, jclass clazz, const QString& ja
     if(!QMetaType::hasRegisteredConverterFunction(QMetaType::fromType<typename QIntegerForSizeof<EnumOrFlags>::Unsigned>(), metaType))
         QMetaType::registerConverterFunction(iconv, QMetaType::fromType<typename QIntegerForSizeof<EnumOrFlags>::Unsigned>(), metaType);
     registerJavaClassForCustomMetaType(env, metaType, clazz);
-    return result;
+    return metaType;
 }
 
-int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference, const QString* javaClassNamePtr, int superId = QMetaType::UnknownType)
-{
+QMetaType registerJObjectValueWrapper(JNIEnv *env, jclass clazz, const QString& javaClassName, const QByteArray& metaTypeName);
+
+QMetaType registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference, const QString* javaClassNamePtr, const QMetaType& superMetaType = QMetaType(QMetaType::UnknownType)){
     using namespace RegistryAPI;
     try{
-        int id = CoreAPI::metaTypeId(env, clazz);
-        if(id!=QMetaType::UnknownType)
-            return id;
+        QMetaType metaType = CoreAPI::registeredMetaType(env, clazz);
+        if(metaType.isValid())
+            return metaType;
         if(Java::Runtime::Class::isArray(env, clazz) && !isPointer){
             jclass componentType = Java::Runtime::Class::getComponentType(env, clazz);
             if(Java::Runtime::Integer::isPrimitiveType(env, componentType)){
@@ -4144,40 +3229,39 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                 return registerMetaType<JObjectArrayWrapper>("JObjectArrayWrapper");
             }
         }else if((Java::Runtime::Integer::isSameClass(env, clazz) || Java::Runtime::Integer::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::Int;
+            return QMetaType(QMetaType::Int);
         }else if((Java::Runtime::Long::isSameClass(env, clazz) || Java::Runtime::Long::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::LongLong;
+            return QMetaType(QMetaType::LongLong);
         }else if((Java::Runtime::Short::isSameClass(env, clazz) || Java::Runtime::Short::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::Short;
+            return QMetaType(QMetaType::Short);
         }else if((Java::Runtime::Byte::isSameClass(env, clazz) || Java::Runtime::Byte::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::SChar;
+            return QMetaType(QMetaType::SChar);
         }else if((Java::Runtime::Boolean::isSameClass(env, clazz) || Java::Runtime::Boolean::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::Bool;
+            return QMetaType(QMetaType::Bool);
         }else if((Java::Runtime::Character::isSameClass(env, clazz) || Java::Runtime::Character::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::QChar;
+            return QMetaType(QMetaType::QChar);
         }else if((Java::Runtime::Float::isSameClass(env, clazz) || Java::Runtime::Float::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::Float;
+            return QMetaType(QMetaType::Float);
         }else if((Java::Runtime::Double::isSameClass(env, clazz) || Java::Runtime::Double::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::Double;
+            return QMetaType(QMetaType::Double);
         }else if((Java::Runtime::Void::isPrimitiveType(env, clazz)) && !isPointer){
-            return QMetaType::Void;
+            return QMetaType(QMetaType::Void);
         }else{
             QString javaClassName = javaClassNamePtr ? *javaClassNamePtr : QtJambiAPI::getClassName(env, clazz).replace('.', '/');
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            QtJambiStorage* storage = getQtJambiStorage();
             {
                 auto hashcode = qHash(javaClassName);
-                QReadLocker locker(gRegistryLock());
-                if(const QtPrivate::QMetaTypeInterface * iface = gClassMetaTypeInterfaces->value(hashcode)){
-                    return iface->typeId;
+                QReadLocker locker(storage->registryLock());
+                if(const QtPrivate::QMetaTypeInterface * iface = storage->classMetaTypeInterfaces().value(hashcode)){
+                    return QMetaType(iface);
                 }
             }
-#endif
             if(const std::type_info* typeId = getTypeByJavaName(javaClassName)){
                 QByteArray qtType = getQtName(*typeId);
                 if((!isPointer || qtType.endsWith("*")) && (!isReference || !qtType.endsWith("*"))){
-                    int id = registeredMetaTypeID(*typeId);
-                    if(id!=QMetaType::UnknownType)
-                        return id;
+                    QMetaType metaType = registeredMetaType(*typeId);
+                    if(metaType.isValid())
+                        return metaType;
                 }
                 const QMetaObject *const original_meta_object = registeredOriginalMetaObject(*typeId);
                 QMetaType::TypeFlags flags;
@@ -4214,41 +3298,22 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                     Q_FALLTHROUGH();
                 case EntryTypes::ObjectTypeInfo:
                 case EntryTypes::InterfaceTypeInfo:
-                case EntryTypes::FunctionalTypeInfo: {
+                case EntryTypes::FunctionPointerTypeInfo: {
 #if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
                     flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeTypeFlags<void*>::Flags);
 #else
                     flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<void*>::flags());
 #endif
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
                     flags |= QMetaType::IsPointer;
-#endif
-                    if(entryType!=EntryTypes::FunctionalTypeInfo && !typeName.endsWith("*")){
+                    if(entryType!=EntryTypes::FunctionPointerTypeInfo && !typeName.endsWith("*")){
                         typeName = QMetaObject::normalizedType(typeName + "*");
                     }
                     if(isQObject){
                         flags |= QMetaType::PointerToQObject;
                     }else if(original_meta_object){
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
                         flags |= QMetaType::IsGadget;
-#endif
                         flags |= QMetaType::PointerToGadget;
                     }
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    QMetaType::Destructor destructor = &destructHelper;
-                    QMetaType::Constructor constructor = &pointerConstructHelper;
-                    int typeId = QMetaType::registerNormalizedType(
-                            typeName,
-                            destructor,
-                            constructor,
-                            sizeof(void*),
-                            flags,
-                            original_meta_object
-                        );
-                    RegistryAPI::registerComparator(new QtPrivate::BuiltInComparatorFunction<void*>(), typeId);
-                    QmlAPI::registerJavaClassForCustomMetaType(env, typeId, clazz);
-                    return typeId;
-#else
                     QMetaType metaType = createMetaType(typeName,
                                                         true,
                                                         /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::defaultCtr,
@@ -4270,8 +3335,7 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                     metaType.id();
                     registerJavaClassForCustomMetaType(env, metaType, clazz);
                     registerConverterVariant(env, metaType, typeName, javaClassName, clazz);
-                    return metaType.id();
-#endif
+                    return metaType;
                 }
                 case EntryTypes::EnumTypeInfo:{
 #if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
@@ -4280,19 +3344,6 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                     flags = QMetaType::TypeFlags(QtPrivate::QMetaTypeForType<Qt::Orientation>::flags());
 #endif
                     if(Java::QtJambi::QtShortEnumerator::isAssignableFrom(env, clazz)){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                        int typeId = QMetaType::registerNormalizedType(
-                                typeName,
-                                &destructHelper,
-                                findEnumConstructor(sizeof(qint16)),
-                                sizeof(sizeof(qint16)),
-                                flags,
-                                original_meta_object
-                            );
-                        RegistryAPI::registerComparator(new QtPrivate::BuiltInComparatorFunction<qint16>(), typeId);
-                        QmlAPI::registerJavaClassForCustomMetaType(env, typeId, clazz);
-                        return typeId;
-#else
                         QMetaType metaType = createMetaType(typeName,
                                                             true,
                                                             /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint16>::defaultCtr,
@@ -4311,24 +3362,10 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                                             /*.flags=*/ QMetaType::TypeFlags(flags),
                                                             original_meta_object,
                                                             nullptr);
-                        int _id = metaType.id();
+                        metaType.id();
                         registerJavaClassForCustomMetaType(env, metaType, clazz);
-                        return _id;
-#endif
+                        return metaType;
                     }else if(Java::QtJambi::QtLongEnumerator::isAssignableFrom(env, clazz)){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                        int typeId = QMetaType::registerNormalizedType(
-                                typeName,
-                                &destructHelper,
-                                findEnumConstructor(sizeof(qint64)),
-                                sizeof(sizeof(qint64)),
-                                flags,
-                                original_meta_object
-                            );
-                        RegistryAPI::registerComparator(new QtPrivate::BuiltInComparatorFunction<qint64>(), typeId);
-                        QmlAPI::registerJavaClassForCustomMetaType(env, typeId, clazz);
-                        return typeId;
-#else
                         QMetaType metaType = createMetaType(typeName,
                                                             true,
                                                             /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint64>::defaultCtr,
@@ -4347,24 +3384,10 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                                             /*.flags=*/ QMetaType::TypeFlags(flags),
                                                             original_meta_object,
                                                             nullptr);
-                        int _id = metaType.id();
+                        metaType.id();
                         registerJavaClassForCustomMetaType(env, metaType, clazz);
-                        return _id;
-#endif
+                        return metaType;
                     }else if(Java::QtJambi::QtByteEnumerator::isAssignableFrom(env, clazz)){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                        int typeId = QMetaType::registerNormalizedType(
-                                typeName,
-                                &destructHelper,
-                                findEnumConstructor(sizeof(qint8)),
-                                sizeof(sizeof(qint8)),
-                                flags,
-                                original_meta_object
-                            );
-                        RegistryAPI::registerComparator(new QtPrivate::BuiltInComparatorFunction<qint8>(), typeId);
-                        QmlAPI::registerJavaClassForCustomMetaType(env, typeId, clazz);
-                        return typeId;
-#else
                         QMetaType metaType = createMetaType(typeName,
                                                             true,
                                                             /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<qint8>::defaultCtr,
@@ -4383,25 +3406,11 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                                             /*.flags=*/ QMetaType::TypeFlags(flags),
                                                             original_meta_object,
                                                             nullptr);
-                        int _id = metaType.id();
+                        metaType.id();
                         registerJavaClassForCustomMetaType(env, metaType, clazz);
-                        return _id;
-#endif
+                        return metaType;
                     }else /*if(Java::Runtime::Enum::isAssignableFrom(env, clazz)
                          || Java::QtJambi::QtEnumerator::isAssignableFrom(env, clazz))*/ {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                         int typeId = QMetaType::registerNormalizedType(
-                                 typeName,
-                                 &destructHelper,
-                                 findEnumConstructor(sizeof(qint32)),
-                                 sizeof(sizeof(qint32)),
-                                 flags,
-                                 original_meta_object
-                             );
-                         RegistryAPI::registerComparator(new QtPrivate::BuiltInComparatorFunction<qint32>(), typeId);
-                         QmlAPI::registerJavaClassForCustomMetaType(env, typeId, clazz);
-                         return typeId;
-#else
                          enum E:qint32{};
                          QMetaType metaType = createMetaType(typeName,
                                                              true,
@@ -4425,26 +3434,12 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
 #endif
                                                              original_meta_object,
                                                              nullptr);
-                         int _id = metaType.id();
+                         metaType.id();
                          registerJavaClassForCustomMetaType(env, metaType, clazz);
-                         return _id;
-#endif
+                         return metaType;
                     }
                 }
                 case EntryTypes::FlagsTypeInfo:{
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    int typeId = QMetaType::registerNormalizedType(
-                            typeName,
-                            &destructHelper,
-                            findEnumConstructor(sizeof(qint32)),
-                            sizeof(sizeof(qint32)),
-                            flags,
-                            original_meta_object
-                        );
-                    RegistryAPI::registerComparator(new QtPrivate::BuiltInComparatorFunction<qint32>(), typeId);
-                    QmlAPI::registerJavaClassForCustomMetaType(env, typeId, clazz);
-                    return typeId;
-#else
                     enum E:qint32{};
                     QMetaType metaType = createMetaType(typeName,
                                                         true,
@@ -4468,23 +3463,16 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
 #endif
                                                         original_meta_object,
                                                         nullptr);
-                    int _id = metaType.id();
+                    metaType.id();
                     registerJavaClassForCustomMetaType(env, metaType, clazz);
-                    return _id;
-#endif
+                    return metaType;
                 }
+                case EntryTypes::StdFunctionTypeInfo:
                 case EntryTypes::InterfaceValueTypeInfo:
                 case EntryTypes::ValueTypeInfo:{
-                    int id = qRegisterMetaType<JObjectWrapper>("JObjectWrapper");
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    int typeId = QMetaType::registerNormalizedTypedef(typeName, id);
-                    RegistryAPI::registerComparator(new QtPrivate::BuiltInEqualsComparatorFunction<JObjectWrapper>(), typeId);
-                    QmlAPI::registerJavaClassForCustomMetaType(env, typeId, clazz);
-                    return typeId;
-#else
-                    QMetaType::registerNormalizedTypedef(typeName, QMetaType(id));
-                    return id;
-#endif
+                    QMetaType metaType = QMetaType::fromType<JObjectWrapper>();
+                    QMetaType::registerNormalizedTypedef(typeName, metaType);
+                    return metaType;
                 }
                 default: break;
                 }
@@ -4493,28 +3481,6 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                 QByteArray metaTypeName = javaClassName.toUtf8().replace("/", "::").replace("$", "::");
                 if(superTypes.isEmpty())
                 {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    int id;
-                    if(Java::QtJambi::QtShortEnumerator::isAssignableFrom(env, clazz)
-                            || Java::QtJambi::QtLongEnumerator::isAssignableFrom(env, clazz)
-                            || Java::QtJambi::QtByteEnumerator::isAssignableFrom(env, clazz)
-                            || Java::QtJambi::QtEnumerator::isAssignableFrom(env, clazz)
-                            || Java::Runtime::Enum::isAssignableFrom(env, clazz)){
-                        id = qRegisterMetaType<JEnumWrapper>("JEnumWrapper");
-                    }else if(Java::Runtime::Map::isAssignableFrom(env, clazz)){
-                         id = qRegisterMetaType<JMapWrapper>("JMapWrapper");
-                    }else if(Java::Runtime::Collection::isAssignableFrom(env, clazz)){
-                         id = qRegisterMetaType<JCollectionWrapper>("JCollectionWrapper");
-                    }else if(Java::Runtime::Iterator::isAssignableFrom(env, clazz)){
-                         id = qRegisterMetaType<JIteratorWrapper>("JIteratorWrapper");
-                    }else{
-                        id = qRegisterMetaType<JObjectWrapper>("JObjectWrapper");
-                    }
-                    int typeId = QMetaType::registerNormalizedTypedef(metaTypeName, id);
-                    RegistryAPI::registerComparator(new QtPrivate::BuiltInEqualsComparatorFunction<JObjectWrapper>(), typeId);
-                    QmlAPI::registerJavaClassForCustomMetaType(env, typeId, clazz);
-                    return typeId;
-#else
                     if(Java::Runtime::Enum::isAssignableFrom(env, clazz)){
                         if(Java::QtJambi::QtShortEnumerator::isAssignableFrom(env, clazz)){
                             return qtjambi_register_enum_meta_type<qint16>(env, clazz, javaClassName, metaTypeName);
@@ -4530,136 +3496,17 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                     }else if(Java::QtJambi::QFlags::isAssignableFrom(env, clazz) && !Java::QtJambi::QFlags::isSameClass(env, clazz)){
                         return qtjambi_register_enum_meta_type<qint32,1>(env, clazz, javaClassName, metaTypeName);
                     }else{
-                        JObjectValueWrapperPrivate p;
-                        p.constructor = env->GetMethodID(clazz, "<init>", "()V");
-                        if(env->ExceptionCheck())
-                            env->ExceptionClear();
-                        p.clone = env->GetMethodID(clazz, "clone", qPrintable(QString("()L%1;").arg(javaClassName)));
-                        if(env->ExceptionCheck())
-                            env->ExceptionClear();
-                        if(!p.clone && p.constructor && Java::Runtime::Cloneable::isAssignableFrom(env, clazz)){
-                            jobject newObject = env->NewObject(clazz, p.constructor);
-                            if(env->ExceptionCheck())
-                                env->ExceptionClear();
-                            if(!newObject){
-                                p.constructor = nullptr;
-                            }else{
-                                p.clone = Java::Runtime::Object::clone_ID(env);
-                                jobject clonedObject = env->CallObjectMethod(newObject, p.clone);
-                                if(env->ExceptionCheck())
-                                    env->ExceptionClear();
-                                if(!env->IsInstanceOf(clonedObject, clazz))
-                                    p.clone = nullptr;
-                            }
-                        }
-                        if(p.constructor && p.clone){
-                            p.writeTo = env->GetMethodID(clazz, "writeTo", "(Lio/qt/core/QDataStream;)V");
-                            if(env->ExceptionCheck())
-                                env->ExceptionClear();
-                            p.readFrom = env->GetMethodID(clazz, "readFrom", "(Lio/qt/core/QDataStream;)V");
-                            if(env->ExceptionCheck())
-                                env->ExceptionClear();
-                            if(!p.writeTo && !p.readFrom){
-                                p.isSerializable = Java::Runtime::Serializable::isAssignableFrom(env, clazz);
-                            }
-                            p.clazz = getGlobalClassRef(env, clazz, qPrintable(javaClassName));
-                            p.name = metaTypeName;
-#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
-                            uint flags = QtPrivate::QMetaTypeTypeFlags<JObjectValueWrapper>::Flags;
-#else
-                            uint flags = QtPrivate::QMetaTypeForType<JObjectValueWrapper>::flags();
-#endif
-                            flags |= QMetaType::IsGadget;
-                            QtPrivate::QMetaTypeInterface* metaTypeInterface = new QtPrivate::QMetaTypeInterface{
-                                    /*.revision=*/ QMetaTypeInterface_CurrentRevision,
-                                    /*.alignment=*/ alignof(JObjectValueWrapper),
-                                    /*.size=*/ sizeof(JObjectValueWrapper),
-                                    /*.flags=*/ flags,
-                                    /*.typeId=*/ QMetaType::UnknownType,
-                                    /*.metaObject=*/ JObjectValueWrapperPrivate::metaObjectFn,
-                                    /*.name=*/ p.name.constData(),
-                                    /*.defaultCtr=*/ JObjectValueWrapperPrivate::defaultCtr,
-                                    /*.copyCtr=*/ JObjectValueWrapperPrivate::copyCtr,
-                                    /*.moveCtr=*/ JObjectValueWrapperPrivate::moveCtr,
-                                    /*.dtor=*/ JObjectValueWrapperPrivate::dtor,
-                                    /*.equals=*/ JObjectValueWrapperPrivate::equals,
-                                    /*.lessThan=*/ Java::Runtime::Comparable::isInstanceOf(env, clazz) ? JObjectValueWrapperPrivate::lessThan : nullptr,
-                                    /*.debugStream=*/ JObjectValueWrapperPrivate::debugStream,
-                                    /*.dataStreamOutFn=*/ p.writeTo ? JObjectValueWrapperPrivate::dataStreamOut : (p.isSerializable ? JObjectValueWrapperPrivate::serializableDataStreamOut : nullptr),
-                                    /*.dataStreamInFn=*/ p.readFrom ? JObjectValueWrapperPrivate::dataStreamIn : (p.isSerializable ? JObjectValueWrapperPrivate::serializableDataStreamIn : nullptr),
-                                    /*.legacyRegisterOp=*/ nullptr
-                            };
-                            {
-                                auto hashcode = qHash(javaClassName);
-                                QWriteLocker locker(gRegistryLock());
-                                if(const QtPrivate::QMetaTypeInterface * iface = gClassMetaTypeInterfaces->value(hashcode)){
-                                    delete metaTypeInterface;
-                                    return iface->typeId;
-                                }
-                                gClassMetaTypeInterfaces->insert(hashcode, metaTypeInterface);
-                                (*gMetaTypeInterfaces)[metaTypeInterface] = std::move(p);
-                            }
-                            QMetaType metaType(metaTypeInterface);
-                            int result = metaType.id();
-                            if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<QString>())){
-                                QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
-                                    bool ok = false;
-                                    if(src){
-                                        new (target)QString(reinterpret_cast<const JObjectValueWrapper*>(src)->toString(&ok));
-                                    }else{
-                                        ok = true;
-                                        new (target)QString();
-                                    }
-                                    return ok;
-                                }, metaType, QMetaType::fromType<QString>());
-                            }
-                            if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<JObjectWrapper>())){
-                                QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
-                                    if(src){
-                                        new (target)JObjectWrapper(*reinterpret_cast<const JObjectValueWrapper*>(src));
-                                    }else{
-                                        new (target)JObjectWrapper();
-                                    }
-                                    return true;
-                                }, metaType, QMetaType::fromType<JObjectWrapper>());
-                            }
-                            if(!QMetaType::hasRegisteredConverterFunction(QMetaType::fromType<JObjectWrapper>(), metaType)){
-                                QMetaType::registerConverterFunction([metaType](const void *src, void *target) -> bool {
-                                    if(src){
-                                        if(JniEnvironment env{200}){
-                                            jobject value = reinterpret_cast<const JObjectWrapper*>(src)->object(env);
-                                            if(value!=nullptr){
-                                                const JObjectValueWrapperPrivate* methods{nullptr};
-                                                {
-                                                    auto iface = QMetaType(metaType).iface();
-                                                    QReadLocker locker(gRegistryLock());
-                                                    if(gMetaTypeInterfaces->contains(iface))
-                                                        methods = &(*gMetaTypeInterfaces)[iface];
-                                                }
-                                                if(!methods || !env->IsInstanceOf(value, methods->clazz))
-                                                    return false;
-                                                new (target)JObjectValueWrapper(JObjectValueWrapper::create(env, *reinterpret_cast<const JObjectWrapper*>(src), metaType));
-                                                return true;
-                                            }else{
-                                                return false;
-                                            }
-                                        }
-                                    }
-                                    new (target)JObjectValueWrapper();
-                                    return true;
-                                }, QMetaType::fromType<JObjectWrapper>(), metaType);
-                            }
-                            registerJavaClassForCustomMetaType(env, metaType, clazz);
-                            registerConverterVariant(env, metaType, QLatin1String(metaTypeInterface->name), javaClassName, clazz);
-                            return result;
+                        QMetaType metaType = registerJObjectValueWrapper(env, clazz, javaClassName, metaTypeName);
+                        if(metaType.isValid()){
+                            return metaType;
                         }
                         if(Java::Runtime::Collection::isAssignableFrom(env, clazz)){
-                            return QMetaType::fromType<JCollectionWrapper>().id();
+                            return QMetaType::fromType<JCollectionWrapper>();
                         }else if(Java::Runtime::Map::isAssignableFrom(env, clazz)){
-                            return QMetaType::fromType<JMapWrapper>().id();
+                            return QMetaType::fromType<JMapWrapper>();
                         }
                         metaTypeName = "JObjectWrapper<" + metaTypeName + ">";
-                        QMetaType metaType = createMetaType(metaTypeName,
+                        metaType = createMetaType(metaTypeName,
                                                             true,
                                                             /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::defaultCtr,
                                                             /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::copyCtr,
@@ -4683,7 +3530,6 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                                                 | QMetaType::IsGadget
                                                                 ),
                                                             nullptr, &findWrappersMetaObject);
-                        int result = metaType.id();
                         registerJavaClassForCustomMetaType(env, metaType, clazz, true);
                         if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<QString>())){
                             QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
@@ -4698,30 +3544,24 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                             }, metaType, QMetaType::fromType<QString>());
                         }
                         registerConverterVariant(env, metaType, QLatin1String(metaTypeName), javaClassName, clazz);
-                        return result;
+                        return metaType;
                     }
-#endif
                 }else{
-                    int id = QMetaType::UnknownType;
-                    if(superId!=QMetaType::UnknownType){
-                        jclass cls = CoreAPI::getClassForMetaType(env, QMetaType(superId));
+                    QMetaType metaType;
+                    if(superMetaType.isValid()){
+                        jclass cls = CoreAPI::getClassForMetaType(env, superMetaType);
                         if(env->IsSameObject(cls, superTypes[0].javaClass())){
-                            id = superId;
+                            metaType = superMetaType;
                         }
                     }
-                    if(id==QMetaType::UnknownType)
-                        id = registerMetaType(env, superTypes[0].javaClass(), isPointer, isReference, &superTypes[0].className());
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    int typeId = QMetaType::registerNormalizedTypedef(metaTypeName, id);
-                    RegistryAPI::registerComparator(new QtPrivate::BuiltInEqualsComparatorFunction<JObjectWrapper>(), typeId);
-                    return typeId;
-#else
-                    if(id!=QMetaType::UnknownType){
-                        QMetaType superMetaType(id);
-                        QSharedPointer<AbstractContainerAccess> access = findContainerAccess(id);
+                    if(!metaType.isValid())
+                        metaType = registerMetaType(env, superTypes[0].javaClass(), isPointer, isReference, &superTypes[0].className());
+                    if(metaType.isValid()){
+                        QMetaType superMetaType(metaType);
+                        QSharedPointer<AbstractContainerAccess> access = findContainerAccess(metaType);
                         if(superMetaType.flags() & QMetaType::IsPointer){
                             metaTypeName = metaTypeName + "*";
-                            QMetaType metaType = createMetaType(metaTypeName,
+                            metaType = createMetaType(metaTypeName,
                                                                 true,
                                                                 /*.defaultCtr=*/ superMetaType.iface()->defaultCtr,
                                                                 /*.copyCtr=*/ superMetaType.iface()->copyCtr,
@@ -4738,14 +3578,12 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                                                 /*.typeId=*/ QMetaType::UnknownType,
                                                                 /*.flags=*/ QMetaType::TypeFlags(superMetaType.iface()->flags),
                                                                 nullptr, &findWrappersMetaObject);
-                            id = metaType.id();
                             registerJavaClassForCustomMetaType(env, metaType, clazz);
                             registerConverterVariant(env, metaType, QLatin1String(metaTypeName), javaClassName, clazz);
-                            return id;
-#if 1
+                            return metaType;
                         }else if(access){
                             metaTypeName = metaTypeName + "*";
-                            QMetaType metaType = createMetaType(metaTypeName,
+                            metaType = createMetaType(metaTypeName,
                                                                 true,
                                                                 /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::defaultCtr,
                                                                 /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::copyCtr,
@@ -4770,143 +3608,24 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                                                         | QMetaType::PointerToGadget
                                                                         ),
                                                                 nullptr, &findWrappersMetaObject);
-                            id = metaType.id();
+                            metaType.id();
                             registerJavaClassForCustomMetaType(env, metaType, clazz);
                             registerConverterVariant(env, metaType, QLatin1String(metaTypeName), javaClassName, clazz);
-                            return id;
-#endif
+                            return metaType;
                         }else{
-                            JObjectValueWrapperPrivate p;
-                            p.constructor = env->GetMethodID(clazz, "<init>", "()V");
-                            if(env->ExceptionCheck())
-                                env->ExceptionClear();
-                            p.clone = env->GetMethodID(clazz, "clone", qPrintable(QString("()L%1;").arg(javaClassName)));
-                            if(env->ExceptionCheck())
-                                env->ExceptionClear();
-                            if(!p.clone && p.constructor && Java::Runtime::Cloneable::isAssignableFrom(env, clazz)){
-                                jobject newObject = env->NewObject(clazz, p.constructor);
-                                if(env->ExceptionCheck())
-                                    env->ExceptionClear();
-                                if(!newObject){
-                                    p.constructor = nullptr;
-                                }else{
-                                    p.clone = Java::Runtime::Object::clone_ID(env);
-                                    jobject clonedObject = env->CallObjectMethod(newObject, p.clone);
-                                    if(env->ExceptionCheck())
-                                        env->ExceptionClear();
-                                    if(!env->IsInstanceOf(clonedObject, clazz))
-                                        p.clone = nullptr;
-                                }
-                            }
-                            if(p.constructor && p.clone){
-                                p.writeTo = env->GetMethodID(clazz, "writeTo", "(Lio/qt/core/QDataStream;)V");
-                                if(env->ExceptionCheck())
-                                    env->ExceptionClear();
-                                p.readFrom = env->GetMethodID(clazz, "readFrom", "(Lio/qt/core/QDataStream;)V");
-                                if(env->ExceptionCheck())
-                                    env->ExceptionClear();
-                                if(!p.writeTo && !p.readFrom){
-                                    p.isSerializable = Java::Runtime::Serializable::isAssignableFrom(env, clazz);
-                                }
-                                p.clazz = getGlobalClassRef(env, clazz, qPrintable(javaClassName));
-                                p.name = metaTypeName;
-#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
-                                uint flags = QtPrivate::QMetaTypeTypeFlags<JObjectValueWrapper>::Flags;
-#else
-                                uint flags = QtPrivate::QMetaTypeForType<JObjectValueWrapper>::flags();
-#endif
-                                flags |= QMetaType::IsGadget;
-                                QtPrivate::QMetaTypeInterface* metaTypeInterface = new QtPrivate::QMetaTypeInterface{
-                                        /*.revision=*/ QMetaTypeInterface_CurrentRevision,
-                                        /*.alignment=*/ alignof(JObjectValueWrapper),
-                                        /*.size=*/ sizeof(JObjectValueWrapper),
-                                        /*.flags=*/ flags,
-                                        /*.typeId=*/ QMetaType::UnknownType,
-                                        /*.metaObject=*/ JObjectValueWrapperPrivate::metaObjectFn,
-                                        /*.name=*/ p.name.constData(),
-                                        /*.defaultCtr=*/ JObjectValueWrapperPrivate::defaultCtr,
-                                        /*.copyCtr=*/ JObjectValueWrapperPrivate::copyCtr,
-                                        /*.moveCtr=*/ JObjectValueWrapperPrivate::moveCtr,
-                                        /*.dtor=*/ JObjectValueWrapperPrivate::dtor,
-                                        /*.equals=*/ JObjectValueWrapperPrivate::equals,
-                                        /*.lessThan=*/ Java::Runtime::Comparable::isInstanceOf(env, clazz) ? JObjectValueWrapperPrivate::lessThan : nullptr,
-                                        /*.debugStream=*/ JObjectValueWrapperPrivate::debugStream,
-                                        /*.dataStreamOutFn=*/ p.writeTo ? JObjectValueWrapperPrivate::dataStreamOut : (p.isSerializable ? JObjectValueWrapperPrivate::serializableDataStreamOut : nullptr),
-                                        /*.dataStreamInFn=*/ p.readFrom ? JObjectValueWrapperPrivate::dataStreamIn : (p.isSerializable ? JObjectValueWrapperPrivate::serializableDataStreamIn : nullptr),
-                                        /*.legacyRegisterOp=*/ nullptr
-                                };
-                                {
-                                    auto hashcode = qHash(javaClassName);
-                                    QWriteLocker locker(gRegistryLock());
-                                    if(const QtPrivate::QMetaTypeInterface * iface = gClassMetaTypeInterfaces->value(hashcode)){
-                                        delete metaTypeInterface;
-                                        return iface->typeId;
-                                    }
-                                    gClassMetaTypeInterfaces->insert(hashcode, metaTypeInterface);
-                                    (*gMetaTypeInterfaces)[metaTypeInterface] = std::move(p);
-                                }
-                                QMetaType metaType(metaTypeInterface);
-                                int result = metaType.id();
-                                if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<QString>())){
-                                    QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
-                                        bool ok = false;
-                                        if(src){
-                                            new (target)QString(reinterpret_cast<const JObjectValueWrapper*>(src)->toString(&ok));
-                                        }else{
-                                            ok = true;
-                                            new (target)QString();
-                                        }
-                                        return ok;
-                                    }, metaType, QMetaType::fromType<QString>());
-                                }
-                                if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<JObjectWrapper>())){
-                                    QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
-                                        if(src){
-                                            new (target)JObjectWrapper(*reinterpret_cast<const JObjectValueWrapper*>(src));
-                                        }else{
-                                            new (target)JObjectWrapper();
-                                        }
-                                        return true;
-                                    }, metaType, QMetaType::fromType<JObjectWrapper>());
-                                }
-                                if(!QMetaType::hasRegisteredConverterFunction(QMetaType::fromType<JObjectWrapper>(), metaType)){
-                                    QMetaType::registerConverterFunction([metaType](const void *src, void *target) -> bool {
-                                        if(src){
-                                            if(JniEnvironment env{200}){
-                                                jobject value = reinterpret_cast<const JObjectWrapper*>(src)->object(env);
-                                                if(value!=nullptr){
-                                                    const JObjectValueWrapperPrivate* methods{nullptr};
-                                                    {
-                                                        QReadLocker locker(gRegistryLock());
-                                                        if(gMetaTypeInterfaces->contains(QMetaType(metaType).iface()))
-                                                            methods = &(*gMetaTypeInterfaces)[QMetaType(metaType).iface()];
-                                                    }
-                                                    if(!methods || !env->IsInstanceOf(value, methods->clazz))
-                                                        return false;
-                                                    new (target)JObjectValueWrapper(JObjectValueWrapper::create(env, *reinterpret_cast<const JObjectWrapper*>(src), metaType));
-                                                    return true;
-                                                }else{
-                                                    return false;
-                                                }
-                                            }
-                                        }
-                                        new (target)JObjectValueWrapper();
-                                        return true;
-                                    }, QMetaType::fromType<JObjectWrapper>(), metaType);
-                                }
-                                registerJavaClassForCustomMetaType(env, metaType, clazz);
-                                registerConverterVariant(env, metaType, QLatin1String(metaTypeInterface->name), javaClassName, clazz);
-                                return result;
+                            QMetaType metaType = registerJObjectValueWrapper(env, clazz, javaClassName, metaTypeName);
+                            if(metaType.isValid()){
+                                return metaType;
                             }
                             if(!access){
                                 if(Java::Runtime::Collection::isAssignableFrom(env, clazz)){
-                                    return QMetaType::fromType<JCollectionWrapper>().id();
+                                    return QMetaType::fromType<JCollectionWrapper>();
                                 }else if(Java::Runtime::Map::isAssignableFrom(env, clazz)){
-                                    return QMetaType::fromType<JMapWrapper>().id();
+                                    return QMetaType::fromType<JMapWrapper>();
                                 }
                             }
                             metaTypeName = "JObjectWrapper<" + metaTypeName + ">";
-                            QMetaType metaType = createMetaType(metaTypeName,
+                            metaType = createMetaType(metaTypeName,
                                                                 true,
                                                                 /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::defaultCtr,
                                                                 /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::copyCtr,
@@ -4930,7 +3649,6 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                                                         | QMetaType::IsGadget
                                                                         ),
                                                                 nullptr, &findWrappersMetaObject);
-                            int result = metaType.id();
                             registerJavaClassForCustomMetaType(env, metaType, clazz, true);
                             if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<QString>())){
                                 QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
@@ -4945,18 +3663,18 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                 }, metaType, QMetaType::fromType<QString>());
                             }
                             registerConverterVariant(env, metaType, QLatin1String(metaTypeName), javaClassName, clazz);
-                            return result;
+                            return metaType;
                         }
                     }else{
                         if(!Java::QtCore::AbstractContainer::isAssignableFrom(env, clazz)){
                             if(Java::Runtime::Collection::isAssignableFrom(env, clazz)){
-                                return QMetaType::fromType<JCollectionWrapper>().id();
+                                return QMetaType::fromType<JCollectionWrapper>();
                             }else if(Java::Runtime::Map::isAssignableFrom(env, clazz)){
-                                return QMetaType::fromType<JMapWrapper>().id();
+                                return QMetaType::fromType<JMapWrapper>();
                             }
                         }
                         metaTypeName = "JObjectWrapper<" + metaTypeName + ">";
-                        QMetaType metaType = createMetaType(metaTypeName,
+                        metaType = createMetaType(metaTypeName,
                                                             true,
                                                             /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::defaultCtr,
                                                             /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::copyCtr,
@@ -4980,7 +3698,6 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                                                             | QMetaType::IsGadget
                                                                     ),
                                                             nullptr, &findWrappersMetaObject);
-                        int result = metaType.id();
                         if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<QString>())){
                             QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
                                 bool ok = false;
@@ -4995,24 +3712,21 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                         }
                         registerJavaClassForCustomMetaType(env, metaType, clazz, true);
                         registerConverterVariant(env, metaType, QLatin1String(metaTypeName), javaClassName, clazz);
-                        return result;
+                        return metaType;
                     }
-#endif
                 }
             }
         }
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
-    return QMetaType::UnknownType;
+    return QMetaType();
 }
 
-int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference, int superId){
-    return registerMetaType(env, clazz, isPointer, isReference, nullptr, superId);
+QMetaType registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference, const QMetaType& superMetaType){
+    return registerMetaType(env, clazz, isPointer, isReference, nullptr, superMetaType);
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-int QmlAPI::registerMetaType(JNIEnv *env, jclass clazz, const QString& javaClassName){
+QMetaType QmlAPI::registerMetaType(JNIEnv *env, jclass clazz, const QString& javaClassName){
     return registerMetaType(env, clazz, false, false, &javaClassName);
 }
-#endif

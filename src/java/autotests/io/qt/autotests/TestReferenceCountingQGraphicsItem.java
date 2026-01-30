@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -639,10 +639,24 @@ public class TestReferenceCountingQGraphicsItem extends ApplicationInitializer{
 	}
 	
 	@Test 
+	public final void testQGraphicsSceneFactory() {
+		QGraphicsScene scene = new QGraphicsScene();
+		QGraphicsItem item = scene.addEllipse(1,1,1,1);
+		Assert.assertEquals(null, item.parentItem());
+		Assert.assertTrue(General.internalAccess.isCppOwnership(item));
+		QGraphicsWidget widget = new QGraphicsWidget();
+		scene.addItem(widget);
+		scene.dispose();
+		Assert.assertTrue(item.isDisposed());
+	}
+	
+	@Test 
 	public final void testQGraphicsItemInstallSceneEventFilter() throws InterruptedException {
 		AtomicInteger counter = new AtomicInteger();
 		{
+			QGraphicsScene scene = new QGraphicsScene();
 			QGraphicsItem o = new QGraphicsSimpleTextItem();
+			scene.addItem(o);
 	        {
 	        	QGraphicsItem filter = new QGraphicsSimpleTextItem();
 	        	General.internalAccess.registerCleaner(filter, counter::incrementAndGet);
@@ -659,6 +673,7 @@ public class TestReferenceCountingQGraphicsItem extends ApplicationInitializer{
 	            QCoreApplication.processEvents();
 			}
 	        Assert.assertEquals(0, counter.get());
+	        scene.removeItem(o);
 	        o.isDisposed();
 	        o = null;
 		}
@@ -679,6 +694,8 @@ public class TestReferenceCountingQGraphicsItem extends ApplicationInitializer{
 		AtomicInteger counter = new AtomicInteger();
 		{
 			QGraphicsItem o = new QGraphicsSimpleTextItem();
+			QGraphicsScene scene = new QGraphicsScene();
+			scene.addItem(o);
 	        {
 	        	QGraphicsItem filter = new QGraphicsSimpleTextItem();
 	        	General.internalAccess.registerCleaner(filter, counter::incrementAndGet);
@@ -696,6 +713,7 @@ public class TestReferenceCountingQGraphicsItem extends ApplicationInitializer{
 	            QCoreApplication.processEvents();
 			}
 	        Assert.assertEquals(1, counter.get());
+	        scene.removeItem(o);
 	        o = null;
 		}
         ApplicationInitializer.runGC();
@@ -780,7 +798,9 @@ public class TestReferenceCountingQGraphicsItem extends ApplicationInitializer{
 	public final void testQGraphicsItemInterfaceInstallSceneEventFilter() throws InterruptedException {
 		AtomicInteger counter = new AtomicInteger();
 		{
+			QGraphicsScene scene = new QGraphicsScene();
 			QGraphicsItem o = new GraphicsItem();
+			scene.addItem(o);
 	        {
 	        	QGraphicsItem filter = new QGraphicsSimpleTextItem();
 	        	General.internalAccess.registerCleaner(filter, counter::incrementAndGet);
@@ -797,6 +817,7 @@ public class TestReferenceCountingQGraphicsItem extends ApplicationInitializer{
 	            QCoreApplication.processEvents();
 			}
 	        Assert.assertEquals(0, counter.get());
+	        scene.removeItem(o);
 	        o.isDisposed();
 	        o = null;
 		}
@@ -815,7 +836,9 @@ public class TestReferenceCountingQGraphicsItem extends ApplicationInitializer{
 	public final void testQGraphicsItemInterfaceInstallRemoveSceneEventFilter() throws InterruptedException {
 		AtomicInteger counter = new AtomicInteger();
 		{
+			QGraphicsScene scene = new QGraphicsScene();
 			QGraphicsItem o = new GraphicsItem();
+			scene.addItem(o);
 	        {
 	        	QGraphicsItem filter = new QGraphicsSimpleTextItem();
 	        	General.internalAccess.registerCleaner(filter, counter::incrementAndGet);
@@ -833,6 +856,7 @@ public class TestReferenceCountingQGraphicsItem extends ApplicationInitializer{
 	            QCoreApplication.processEvents();
 			}
 	        Assert.assertEquals(1, counter.get());
+	        scene.removeItem(o);
 	        o = null;
 		}
         ApplicationInitializer.runGC();

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -48,7 +48,7 @@ enum class DebugCounters{
 
 typedef void(*DebugCounter)(DebugCounters debugCounter, const char*className);
 QTJAMBI_EXPORT void registerDebugCounter(DebugCounter increaser);
-QTJAMBI_EXPORT size_t sizeOf(JNIEnv * env, const QMetaObject* metaObject);
+QTJAMBI_EXPORT QPair<size_t,size_t> sizeAndAlignOf(JNIEnv * env, const QMetaObject* metaObject);
 }
 
 #endif // TESTAPI_H

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -46,7 +46,7 @@ import io.qt.widgets.QGraphicsPathItem;
 import io.qt.widgets.QGraphicsProxyWidget;
 import io.qt.widgets.QGraphicsWidget;
 
-public class TestQObjectPropertyQt6 extends ApplicationInitializer {
+public class TestQObjectProperty extends ApplicationInitializer {
     @Test
     public void testQByteProperty() {
     	class PropertyOwner extends QObject{

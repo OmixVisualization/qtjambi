@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -75,9 +75,6 @@ import io.qt.core.QMetaObject.AbstractPrivateSignal1;
 import io.qt.core.QMetaProperty;
 import io.qt.core.QMetaType;
 import io.qt.core.QMetaType.GenericFlags;
-import io.qt.core.QObject.QProperty;
-import io.qt.core.QObject.Signal0;
-import io.qt.core.QObject.Signal1;
 import io.qt.core.QModelIndex;
 import io.qt.core.QObject;
 import io.qt.core.QRunnable;

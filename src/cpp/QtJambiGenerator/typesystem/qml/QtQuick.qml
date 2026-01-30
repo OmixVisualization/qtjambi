@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -199,7 +199,6 @@ TypeSystem{
     RequiredLibrary{
         name: "QtDBus"
         mode: RequiredLibrary.Optional
-        since: 6
     }
     
     Rejection{
@@ -224,57 +223,39 @@ TypeSystem{
             name: "GraphicsApi"
             RejectEnumValue{
                 name: "OpenGLRhi"
-                since: 6
             }
             RejectEnumValue{
                 name: "Direct3D11Rhi"
-                since: 6
             }
             RejectEnumValue{
                 name: "VulkanRhi"
-                since: 6
             }
             RejectEnumValue{
                 name: "MetalRhi"
-                since: 6
             }
             RejectEnumValue{
                 name: "NullRhi"
-                since: 6
             }
-            since: [5, 8]
         }
 
         EnumType{
             name: "Resource"
-            since: [5, 8]
         }
 
         EnumType{
             name: "ShaderType"
-            since: [5, 8]
         }
 
         EnumType{
             name: "RenderMode"
-            since: 6
         }
 
         EnumType{
             name: "ShaderCompilationType"
-            since: [5, 8]
         }
 
         EnumType{
             name: "ShaderSourceType"
-            since: [5, 8]
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QTextCodec"
-                location: Include.Global
-                until: 5
-            }
         }
         ModifyFunction{
             signature: "getResource(QQuickWindow *, QSGRendererInterface::Resource) const"
@@ -284,12 +265,10 @@ TypeSystem{
             signature: "getResource(QQuickWindow *, const char *) const"
             remove: RemoveFlag.JavaAndNative
         }
-        since: [5, 8]
     }
     
     NamespaceType{
         name: "QQuickOpenGLUtils"
-        since: 6
     }
     
     ObjectType{
@@ -715,7 +694,6 @@ try{
                               "    hasContainsMethod = %1.metaObject().method(\"contains\", io.qt.core.QPointF.class)!=null;\n"+
                               "}"}
             }
-            since: [5, 11]
         }
         ModifyFunction{
             signature: "itemTransform(QQuickItem *, bool *) const"
@@ -955,28 +933,10 @@ try{
 
         EnumType{
             name: "TextRenderType"
-            since: [5, 10]
         }
 
         ValueType{
             name: "GraphicsStateInfo"
-            since: [5, 14]
-        }
-        ModifyFunction{
-            signature: "setRenderTarget(QOpenGLFramebufferObject*)"
-            threadAffinity: false
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setRenderTarget(uint, const QSize &)"
-            threadAffinity: false
-            until: 5
         }
         ModifyFunction{
             signature: "rendererInterface() const"
@@ -1072,18 +1032,6 @@ try{
             since: 6.6
         }
         ModifyFunction{
-            signature: "createTextureFromId(uint,QSize,QQuickWindow::CreateTextureOptions)const"
-            threadAffinity: false
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "scheduleRenderJob(QRunnable *, QQuickWindow::RenderStage)"
             ModifyArgument{
                 index: 1
@@ -1104,7 +1052,6 @@ try{
                 ArgumentMap{index: 1; metaName: "%1"}
                 Text{content: "__rcDevice = %1==null ? null : %1.__rcDeviceContext;"}
             }
-            since: 6
         }
         ModifyFunction{
             signature: "setRenderTarget(QQuickRenderTarget)"
@@ -1114,11 +1061,9 @@ try{
                 ArgumentMap{index: 1; metaName: "%1"}
                 Text{content: "__rcRenderTarget = %1==null ? null : %1.__rcRenderTarget;"}
             }
-            since: 6
         }
         InjectCode{
             Text{content: "private Object __rcDevice;\nprivate Object __rcRenderTarget;"}
-            since: 6
         }
     }
     
@@ -1412,7 +1357,6 @@ try{
                 }
             }
         }
-        since: [5, 8]
     }
     
     ObjectType{
@@ -1426,17 +1370,14 @@ try{
                 }
             }
         }
-        since: [5, 8]
     }
     
     EnumType{
         name: "QSGImageNode::TextureCoordinatesTransformFlag"
-        since: [5, 8]
     }
     
     ObjectType{
         name: "QSGRectangleNode"
-        since: [5, 8]
     }
     
     ObjectType{
@@ -1453,16 +1394,19 @@ try{
             ModifyArgument{
                 index: 1
                 ReferenceCount{
-                    action: ReferenceCount.Ignore
+                    variableName: "__rcTexture"
+                    action: ReferenceCount.Set
+                    condition: "!ownsTexture()"
                 }
             }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "if (%1 != null && ownsTexture()) {\n"+
-                              "    QtJambi_LibraryUtilities.internal.setCppOwnership(%1);\n"+
-                              "}"}
+                Text{content: String.raw`
+                        if (%1 != null && ownsTexture()) {
+                            QtJambi_LibraryUtilities.internal.setCppOwnership(%1);
+                        }`}
             }
         }
         ModifyFunction{
@@ -1470,13 +1414,19 @@ try{
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
-                Text{content: "if (texture() != null) {\n"+
-                              "    if(owns){\n"+
-                              "        QtJambi_LibraryUtilities.internal.setCppOwnership(texture());\n"+
-                              "    }else{\n"+
-                              "        QtJambi_LibraryUtilities.internal.setJavaOwnership(texture());\n"+
-                              "    }\n"+
-                              "}"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    io.qt.quick.QSGTexture texture = texture();
+                    if (texture != null) {
+                        if(%1){
+                            QtJambi_LibraryUtilities.internal.setCppOwnership(texture);
+                        }else{
+                            InternalAccess.NativeIdInfo __texture__NativeIdInfo = QtJambi_LibraryUtilities.internal.checkedNativeIdInfo(texture);
+                            QtJambi_LibraryUtilities.internal.setDefaultOwnership(texture);
+                            if(__texture__NativeIdInfo.needsReferenceCounting())
+                                __rcTexture = texture;
+                        }
+                    }`}
             }
         }
     }
@@ -1575,12 +1525,10 @@ void addRC(Object obj){
 
         EnumType{
             name: "StateFlag"
-            since: [5, 8]
         }
 
         EnumType{
             name: "RenderingFlag"
-            since: [5, 8]
         }
     }
     
@@ -1598,24 +1546,6 @@ void addRC(Object obj){
     ObjectType{
         name: "QSGFlatColorMaterial"
         ModifyFunction{
-            signature: "createShader() const"
-            noExcept: true
-            ModifyArgument{
-                index: 0
-                NoNullPointer{
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Shell
-                    ownership: Ownership.Cpp
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "createShader(QSGRendererInterface::RenderMode) const"
             noExcept: true
             ModifyArgument{
@@ -1631,7 +1561,6 @@ void addRC(Object obj){
                     ownership: Ownership.Java
                 }
             }
-            since: 6
         }
     }
     
@@ -1986,13 +1915,7 @@ if(%1.count()<=0)
                 }
             }
         }
-        ModifyFunction{
-            signature: "QSGGeometry(QSGGeometry)"
-            remove: RemoveFlag.All
-            until: 5
-        }
     }
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QSGGeometry(QSGGeometry)' for function modification in 'QSGGeometry' not found.*"; until: 5}
     
     ObjectType{
         name: "QSGMaterial"
@@ -2012,24 +1935,6 @@ if(%1.count()<=0)
             }
         }
         ModifyFunction{
-            signature: "createShader() const"
-            noExcept: true
-            ModifyArgument{
-                index: 0
-                NoNullPointer{
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Shell
-                    ownership: Ownership.Cpp
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "createShader(QSGRendererInterface::RenderMode) const"
             noExcept: true
             ModifyArgument{
@@ -2045,7 +1950,6 @@ if(%1.count()<=0)
                     ownership: Ownership.Java
                 }
             }
-            since: 6
         }
     }
     
@@ -2059,12 +1963,10 @@ if(%1.count()<=0)
         }
         EnumType{
             name: "Flag"
-            since: 6
         }
 
         EnumType{
             name: "Stage"
-            since: 6
         }
 
         ValueType{
@@ -2079,7 +1981,6 @@ if(%1.count()<=0)
             ModifyFunction{
                 signature: "uniformData()"
                 remove: RemoveFlag.All
-                since: 6
             }
         }
 
@@ -2097,19 +1998,6 @@ if(%1.count()<=0)
             EnumType{
                 name: "CullMode"
             }
-            since: 6
-        }
-        ModifyFunction{
-            signature: "updateState(QSGMaterialShader::RenderState,QSGMaterial*,QSGMaterial*)"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-            }
-            ModifyArgument{
-                index: 3
-                invalidateAfterUse: true
-            }
-            until: 5
         }
         ExtraIncludes{
             Include{
@@ -2138,112 +2026,6 @@ if(%1.count()<=0)
                           "    mutable QVector<const char *> __qt_attributeNames;"}
         }
         ModifyFunction{
-            signature: "attributeNames()const"
-            InjectCode{
-                target: CodeClass.Shell
-                position: Position.Beginning
-                Text{content: "if (__qt_attributeNames.size())\n"+
-                              "    return __qt_attributeNames.constData();"}
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "java.lang.@Nullable String @Nullable[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize size = 0;\n"+
-                                  "while(%in[size]){\n"+
-                                  "    ++size;\n"+
-                                  "}\n"+
-                                  "jobjectArray %out = Java::Runtime::String::newArray(%env, size);\n"+
-                                  "for(jsize i = 0; i < size; i++){\n"+
-                                  "    jstring element = qtjambi_cast<jstring>(%env, QLatin1String(%in[i]));\n"+
-                                  "    %env->SetObjectArrayElement(%out, i, element);\n"+
-                                  "    JavaException::check(%env QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jsize length = %in ? %env->GetArrayLength(%in) : 0;\n"+
-                                  "QList<QByteArray> names;\n"+
-                                  "for(jsize i=0; i<length; i++){\n"+
-                                  "    jstring element = jstring(__jni_env->GetObjectArrayElement(__java_return_value, i));\n"+
-                                  "    names << qtjambi_cast<QByteArray>(__jni_env, element);\n"+
-                                  "}\n"+
-                                  "int total = 0;\n"+
-                                  "for (int i=0; i<names.size(); ++i)\n"+
-                                  "    total += names.at(i).size() + 1;\n"+
-                                  "__qt_attributeNameByteArrays.reserve(total);\n"+
-                                  "__qt_attributeNames.reserve(names.size()+1);\n"+
-                                  "for (int i=0; i<names.size(); ++i) {\n"+
-                                  "    __qt_attributeNames << __qt_attributeNameByteArrays.constData() + __qt_attributeNameByteArrays.size();\n"+
-                                  "    __qt_attributeNameByteArrays.append(names.at(i));\n"+
-                                  "    __qt_attributeNameByteArrays.append('\\0');\n"+
-                                  "}\n"+
-                                  "__qt_attributeNames << nullptr;\n"+
-                                  "const char*const * %out = __qt_attributeNames.constData();"}
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "vertexShader()const"
-            InjectCode{
-                target: CodeClass.Shell
-                position: Position.Beginning
-                Text{content: "if (__qt_vertexShader.size())\n"+
-                              "return __qt_vertexShader.constData();"}
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jstring %out = qtjambi_cast<jstring>(%env, QLatin1String(%in));"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "const char * %out = nullptr;\n"+
-                                  "if(%in){\n"+
-                                  "    __qt_vertexShader = qtjambi_cast<QByteArray>(%env, %in);\n"+
-                                  "    %out = __qt_vertexShader.constData();\n"+
-                                  "}"}
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "fragmentShader()const"
-            InjectCode{
-                target: CodeClass.Shell
-                position: Position.Beginning
-                Text{content: "if (__qt_fragmentShader.size())\n"+
-                              "return __qt_fragmentShader.constData();"}
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jstring %out = qtjambi_cast<jstring>(%env, QLatin1String(%in));"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "const char * %out = nullptr;\n"+
-                                  "if(%in){\n"+
-                                  "    __qt_fragmentShader = qtjambi_cast<QByteArray>(%env, %in);\n"+
-                                  "    %out = __qt_fragmentShader.constData();\n"+
-                                  "}"}
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "updateGraphicsPipelineState(QSGMaterialShader::RenderState &, QSGMaterialShader::GraphicsPipelineState *, QSGMaterial *, QSGMaterial *)"
             ModifyArgument{
                 index: 1
@@ -2261,7 +2043,6 @@ if(%1.count()<=0)
                 index: 4
                 invalidateAfterUse: true
             }
-            since: 6
         }
         ModifyFunction{
             signature: "updateUniformData(QSGMaterialShader::RenderState &, QSGMaterial *, QSGMaterial *)"
@@ -2277,7 +2058,6 @@ if(%1.count()<=0)
                 index: 3
                 invalidateAfterUse: true
             }
-            since: 6
         }
         ModifyFunction{
             signature: "updateSampledImage(QSGMaterialShader::RenderState &, int, QSGTexture **, QSGMaterial *, QSGMaterial *)"
@@ -2300,7 +2080,6 @@ if(%1.count()<=0)
                 index: 5
                 invalidateAfterUse: true
             }
-            since: 6
         }
     }
     
@@ -2328,24 +2107,6 @@ if(%1.count()<=0)
             fieldName: "m_reserved"
         }
         ModifyFunction{
-            signature: "createShader() const"
-            noExcept: true
-            ModifyArgument{
-                index: 0
-                NoNullPointer{
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Shell
-                    ownership: Ownership.Cpp
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "createShader(QSGRendererInterface::RenderMode) const"
             noExcept: true
             ModifyArgument{
@@ -2361,7 +2122,6 @@ if(%1.count()<=0)
                     ownership: Ownership.Java
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "setTexture(QSGTexture*)"
@@ -2416,7 +2176,6 @@ if(%1.count()<=0)
         }
         EnumType{
             name: "AnisotropyLevel"
-            since: [5, 9]
         }
         ModifyFunction{
             signature: "resolveInterface(const char *, int)const"
@@ -2463,24 +2222,6 @@ if(%1.count()<=0)
     ObjectType{
         name: "QSGTextureMaterial"
         ModifyFunction{
-            signature: "createShader() const"
-            noExcept: true
-            ModifyArgument{
-                index: 0
-                NoNullPointer{
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Shell
-                    ownership: Ownership.Cpp
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "createShader(QSGRendererInterface::RenderMode) const"
             noExcept: true
             ModifyArgument{
@@ -2496,31 +2237,12 @@ if(%1.count()<=0)
                     ownership: Ownership.Java
                 }
             }
-            since: 6
         }
     }
     
     ObjectType{
         name: "QSGVertexColorMaterial"
         ModifyFunction{
-            signature: "createShader() const"
-            noExcept: true
-            ModifyArgument{
-                index: 0
-                NoNullPointer{
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Shell
-                    ownership: Ownership.Cpp
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "createShader(QSGRendererInterface::RenderMode) const"
             noExcept: true
             ModifyArgument{
@@ -2536,7 +2258,6 @@ if(%1.count()<=0)
                     ownership: Ownership.Java
                 }
             }
-            since: 6
         }
     }
     
@@ -2590,115 +2311,6 @@ if(%1.count()<=0)
     
     ObjectType{
         name: "QQuickItemGrabResult"
-        ModifyFunction{
-            signature: "saveToFile(const QString &)"
-            remove: RemoveFlag.All
-            since: [5, 9]
-            until: 5
-        }
-    }
-    
-    ObjectType{
-        name: "QSGAbstractRenderer"
-        ModifyFunction{
-            signature: "nodeChanged(QSGNode*,QSGNode::DirtyState)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "setRootNode(QSGRootNode*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcRootNode"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        until: 5
-    }
-    
-    EnumType{
-        name: "QSGAbstractRenderer::ClearModeBit"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QSGAbstractRenderer::MatrixTransformFlag"
-        since: [5, 14]
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QSGEngine"
-        ModifyFunction{
-            signature: "createImageNode()const"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "createRectangleNode()const"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "createNinePatchNode()const"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "createRenderer()const"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "createTextureFromImage(QImage,QSGEngine::CreateTextureOptions)const"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "createTextureFromId(uint,QSize,QSGEngine::CreateTextureOptions)const"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-        }
-        until: 5
-    }
-    
-    EnumType{
-        name: "QSGEngine::CreateTextureOption"
-        until: 5
     }
     
     Rejection{
@@ -2796,7 +2408,6 @@ if(%1.count()<=0)
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            since: 6
             Text{content: "QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromPhysicalDevice(JNIEnv *, jlong);\n"+
                           "QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromDeviceObjects(JNIEnv *, jlong, jlong, int, int);"}
         }
@@ -2817,7 +2428,6 @@ if(%1.count()<=0)
                                   "#define %out %in"}
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "fromDeviceObjects(void*, void*, int, int)"
@@ -2849,7 +2459,6 @@ if(%1.count()<=0)
                                   "#define %out %in"}
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "fromAdapter(quint32, qint32, int)"
@@ -2862,7 +2471,6 @@ if(%1.count()<=0)
         ModifyFunction{
             signature: "fromDeviceAndCommandQueue(MTLDevice *, MTLCommandQueue *)"
             ppCondition: "defined(Q_OS_MACOS) || defined(Q_OS_IOS)"
-            since: 6
         }
         ModifyFunction{
             signature: "fromOpenGLContext(QOpenGLContext *)"
@@ -2926,7 +2534,6 @@ if(%1.count()<=0)
             position: Position.End
             Text{content: "\nObject __rcDeviceContext;"}
         }
-        since: 6
     }
 
     ObjectType{
@@ -2958,7 +2565,6 @@ if(%1.count()<=0)
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            since: 6
             Text{content: "QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jlong image, jint layout, const QSize& pixelSize, int sampleCount);"}
         }
         InjectCode{
@@ -3001,7 +2607,6 @@ if(%1.count()<=0)
         ModifyFunction{
             signature: "fromMetalTexture(MTLTexture *, QSize, int)"
             ppCondition: "defined(Q_OS_MACOS) || defined(Q_OS_IOS)"
-            since: 6
         }
         ModifyFunction{
             signature: "fromMetalTexture(MTLTexture *, unsigned int, QSize, int)"
@@ -3065,7 +2670,6 @@ if(%1.count()<=0)
                                   "#define %out %in"}
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "fromVulkanImage(VkImage, VkImageLayout, VkFormat, QSize, int)"
@@ -3209,128 +2813,10 @@ if(%1.count()<=0)
             position: Position.End
             Text{content: "\nObject __rcRenderTarget;"}
         }
-        since: 6
-    }
-    
-    ObjectType{
-        name: "QSGMaterialRhiShader"
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-        }
-        InjectCode{
-            target: CodeClass.ShellDeclaration
-            position: Position.End
-            Text{content: "    mutable QByteArray __qt_vertexShader;\n"+
-                          "    mutable QByteArray __qt_fragmentShader;\n"+
-                          "    mutable QByteArray __qt_attributeNameByteArrays;\n"+
-                          "    mutable QVector<const char *> __qt_attributeNames;"}
-        }
-        Rejection{
-            functionName: "setShader"
-        }
-
-        EnumType{
-            name: "Flag"
-        }
-
-        EnumType{
-            name: "Stage"
-        }
-
-        ValueType{
-            name: "RenderState"
-            ModifyFunction{
-                signature: "uniformData()"
-                remove: RemoveFlag.All
-            }
-            Rejection{
-                functionName: "resourceUpdateBatch"
-            }
-            Rejection{
-                functionName: "rhi"
-            }
-        }
-
-        ValueType{
-            name: "GraphicsPipelineState"
-            EnumType{
-                name: "BlendFactor"
-            }
-            EnumType{
-                name: "ColorMaskComponent"
-            }
-            EnumType{
-                name: "CullMode"
-            }
-        }
-        ModifyFunction{
-            signature: "updateGraphicsPipelineState(QSGMaterialRhiShader::RenderState &, QSGMaterialRhiShader::GraphicsPipelineState *, QSGMaterial *, QSGMaterial *)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-            }
-            ModifyArgument{
-                index: 3
-                invalidateAfterUse: true
-            }
-            ModifyArgument{
-                index: 4
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "updateSampledImage(QSGMaterialRhiShader::RenderState &, int, QSGTexture **, QSGMaterial *, QSGMaterial *)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-            ModifyArgument{
-                index: 4
-                invalidateAfterUse: true
-            }
-            ModifyArgument{
-                index: 3
-                invalidateAfterUse: true
-                NoNullPointer{
-                }
-                AsArray{
-                    minLength: 1
-                }
-            }
-            ModifyArgument{
-                index: 5
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "updateUniformData(QSGMaterialRhiShader::RenderState &, QSGMaterial *, QSGMaterial *)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-            }
-            ModifyArgument{
-                index: 3
-                invalidateAfterUse: true
-            }
-        }
-        since: [5, 14]
-        until: 5
     }
     
     ValueType{
         name: "QQuickGraphicsConfiguration"
-        since: 6
     }
         
     InterfaceType{

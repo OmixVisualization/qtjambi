@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -246,7 +246,7 @@ void GeneratorApplication::parseArguments(){
     {
         QJsonValue iid("io.qtjambi.PluginImporter");
         for(QStaticPlugin sp : QPluginLoader::staticPlugins()){
-            if(sp.metaData()["IID"]==iid && sp.instance){
+            if(sp.metaData().value("IID")==iid && sp.instance){
                 if(QObject* jarimportPlugin = sp.instance()){
                     QFunctionPointer preExit = QFunctionPointer(jarimportPlugin->qt_metacast("CoreAPI::preExit"));
                     unexit = QFunctionPointer(jarimportPlugin->qt_metacast("CoreAPI::unexit"));
@@ -369,11 +369,7 @@ void GeneratorApplication::parseArguments(){
         m_includeDirectories << v.split(PATHSEP, Qt::SkipEmptyParts);
     }
     if(m_includeDirectories.isEmpty()){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        m_includeDirectories << QLibraryInfo::location(QLibraryInfo::HeadersPath);
-#else
         m_includeDirectories << QLibraryInfo::path(QLibraryInfo::HeadersPath);
-#endif
         printf("No include paths specified. Taking Qt's headers path instead: %s\n", qPrintable(m_includeDirectories[0]));
     }
     for(const QString& v : parser.values(typesystemDirectoryOption)){
@@ -503,11 +499,7 @@ auto concurrent_run(Function&& f){
         } catch (QException &e) {
             promise.reportException(e);
         } catch (...) {
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            promise.reportException(QUnhandledException());
-#else
             promise.reportException(std::current_exception());
-#endif
         }
         promise.reportFinished();
     });
@@ -529,18 +521,14 @@ int GeneratorApplication::generate() {
                 versionAvailable.acquire(3);
                 if(m_docsDirectory.isEmpty()){
                     if(m_qtVersionMajor==QT_VERSION_MAJOR && m_qtVersionMinor==QT_VERSION_MINOR){
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                        m_docsDirectory = QLibraryInfo::location(QLibraryInfo::DocumentationPath);
-#else
                         m_docsDirectory = QLibraryInfo::path(QLibraryInfo::DocumentationPath);
-#endif
                         printf("No docs directory specified. Taking Qt's documentation path instead: %s\n", qPrintable(m_docsDirectory));
                     }
                     docDirectoryAvailable.release();
                 }
                 ReportHandler::setContext("Typesystem");
                 m_database.setDefined([this](const QString& name)->bool{
-                    for(const DefineUndefine& ddf : m_defineUndefineList){
+                    for(const DefineUndefine& ddf : std::as_const(m_defineUndefineList)){
                         if(ddf.isSet() && ddf.name()==name){
                             return true;
                         }

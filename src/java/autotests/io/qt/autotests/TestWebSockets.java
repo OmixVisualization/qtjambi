@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -28,32 +28,22 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assume.assumeTrue;
+import static org.junit.Assume.*;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.*;
 
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
-import io.qt.QtInvokable;
-import io.qt.QtUtilities;
+import io.qt.*;
 import io.qt.autotests.generated.General;
 import io.qt.core.*;
-import io.qt.gui.QGuiApplication;
-import io.qt.gui.QOpenGLContext;
+import io.qt.gui.*;
 import io.qt.network.*;
-import io.qt.qml.QJSValue;
-import io.qt.qml.QQmlApplicationEngine;
-import io.qt.quick.QQuickItem;
-import io.qt.quick.QQuickWindow;
-import io.qt.webchannelquick.QQmlWebChannel;
-import io.qt.webengine.core.QWebEngineLoadingInfo;
-import io.qt.webengine.core.QWebEngineProfile;
-import io.qt.webengine.core.QWebEngineSettings;
-import io.qt.webengine.quick.QtWebEngineQuick;
+import io.qt.qml.*;
+import io.qt.quick.*;
+import io.qt.webchannelquick.*;
+import io.qt.webengine.core.*;
+import io.qt.webengine.quick.*;
 import io.qt.websockets.*;
 import io.qt.widgets.QApplication;
 
@@ -68,6 +58,7 @@ public class TestWebSockets extends ApplicationInitializer {
     	}
         Assume.assumeFalse("Cannot run on Android", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
         Assume.assumeFalse("Cannot run on Windows MINGW", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows) && !QLibraryInfo.build().contains("MSVC"));
+//        QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.OpenGLRhi);
     	QtUtilities.initializePackage("io.qt.webengine.widgets");
         QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
         ApplicationInitializer.testInitializeWithWidgets();

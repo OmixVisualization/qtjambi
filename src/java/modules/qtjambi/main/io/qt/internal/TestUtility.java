@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -79,19 +79,9 @@ public abstract class TestUtility {
     
     public static native int objectCount();
 
-	public static native int objectCacheMode();
-
-	public static native void setObjectCacheMode(int objectCacheMode);
-    
     public static native void flushOut();
     
     public static native void flushErr();
-
-	public static final int OBJECT_CACHE_MODE_DISABLE = 0;
-	
-	public static final int OBJECT_CACHE_MODE_LIMITED = 1;
-	
-	public static final int OBJECT_CACHE_MODE_DEFAULT = 2;
 
 	public static boolean isDebugBuild() {
 		return LibraryUtility.configuration() == LibraryBundle.Configuration.Debug;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -134,8 +134,11 @@ public:
         return new GenericMapAccess<align1, size1, align2, size2>(*this);
     }
 
-    size_t sizeOf() override {
+    size_t sizeOf() const override {
         return sizeof(QMap<K,T>);
+    }
+    size_t alignOf() const override {
+        return alignof(QMap<K,T>);
     }
     void* constructContainer(void* placement) override {
         return new(placement) QMap<K,T>();
@@ -167,7 +170,7 @@ public:
         QTJAMBI_KEY_VALUE_LOCKER(this);
             (*reinterpret_cast<QMap<K,T>*>(container)) = (*reinterpret_cast<const QMap<K,T>*>(other));
     }
-    int registerContainer(const QByteArray& containerTypeName) override {
+    QMetaType registerContainer(const QByteArray& containerTypeName) override {
         return QtJambiPrivate::registerAssociativeContainerType<QMap<K,T>, size1, size2>(containerTypeName, m_keyMetaTypeInfo.metaType(), m_valueMetaTypeInfo.metaType(), this);
     }
     const QMetaType& keyMetaType() override {

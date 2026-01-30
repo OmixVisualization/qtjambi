@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -462,15 +462,20 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 				try {
 					String value = releases.getProperty("current", "0");
 					qtJambiReleaseVersion = Integer.parseInt(value);
+					if(qtJambiReleaseVersion<0)
+						qtJambiReleaseVersion = 0;
 				} catch (NumberFormatException e) {
 					qtJambiReleaseVersion = 0;
 				}
 				try {
 					String value = releases.getProperty(String.format("%1$s.%2$s.0", qtMajorVersion, qtMinorVersion), "");
-					if(value!=null && !value.isEmpty())
+					if(value!=null && !value.isEmpty()) {
 						qtJambiVersion = qtJambiReleaseVersion - Integer.parseInt(value);
-					else
+						if(qtJambiVersion<0)
+							qtJambiVersion = 0;
+					}else {
 						qtJambiVersion = 0;
+					}
 				} catch (NumberFormatException e) {
 					qtJambiVersion = 0;
 				}
@@ -490,7 +495,16 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			sourceValue = " (auto-detected)";
 			mySetProperty(-1, "qtjambi.patchversion", sourceValue, "" + qtJambiVersion, true); // report value
 			qtjambiFullVersion = qtVersionShort + "." + qtJambiVersion;
-			mySetProperty(-1, "qtjambi.jar.version", sourceValue, qtjambiFullVersion, true); // report
+			String versionSuffix = AntUtil.getPropertyAsString(propertyHelper, Constants.SUFFIX_VERSION);
+			if(versionSuffix!=null && !versionSuffix.isEmpty()) {
+				if (versionSuffix.equals("auto-suffix-date") || versionSuffix.equals("yyyyMMdd")) {
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+					versionSuffix = "." + sdf.format(new Date());
+				}
+				mySetProperty(-1, "qtjambi.jar.version", sourceValue, qtjambiFullVersion + versionSuffix, true); // report
+			}else {
+				mySetProperty(-1, "qtjambi.jar.version", sourceValue, qtjambiFullVersion, true); // report
+			}
 			
 			if(compiler!=null && compiler.name().startsWith("MSVC")) {
 				if(compiler.name().endsWith("_arm64")) {
@@ -567,7 +581,12 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			sourceValue = " (auto-detected)";
 			mySetProperty(-1, "qtjambi.patchversion", sourceValue, "" + qtJambiVersion, true); // report value
 			qtjambiFullVersion = qtVersionShort + "." + qtJambiVersion;
-			mySetProperty(-1, "qtjambi.jar.version", sourceValue, qtjambiFullVersion, true); // report
+			String versionSuffix = AntUtil.getPropertyAsString(propertyHelper, Constants.SUFFIX_VERSION);
+			if(versionSuffix!=null && !versionSuffix.isEmpty()) {
+				mySetProperty(-1, "qtjambi.jar.version", sourceValue, qtjambiFullVersion + versionSuffix, true); // report
+			}else {
+				mySetProperty(-1, "qtjambi.jar.version", sourceValue, qtjambiFullVersion, true); // report
+			}
 		}
 		String targetversions = AntUtil.getPropertyAsString(propertyHelper, "targetversions");
 		if(targetversions!=null && !targetversions.isEmpty()) {
@@ -869,15 +888,15 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		AntUtil.setProperty(propertyHelper, Constants.QT_VERSION_PATCHLEVEL, String.valueOf(qtPatchlevelVersion));
 		decideAlternativeJavaHomesTarget();
 
-		versionSuffix = AntUtil.getPropertyAsString(propertyHelper, Constants.SUFFIX_VERSION);
-		mySetProperty(-1, Constants.SUFFIX_VERSION, null, null, true); // report
+		versionSuffix = AntUtil.getPropertyAsString(propertyHelper, Constants.QT_SUFFIX_VERSION);
+		mySetProperty(-1, Constants.QT_SUFFIX_VERSION, null, null, true); // report
 
 		String canonVersionSuffix;
 		if (versionSuffix != null)
 			canonVersionSuffix = versionSuffix;
 		else
 			canonVersionSuffix = "";
-		String bundleVersionMode = AntUtil.getPropertyAsString(propertyHelper, Constants.BUNDLE_VERSION_MODE);
+		String bundleVersionMode = AntUtil.getPropertyAsString(propertyHelper, Constants.QT_BUNDLE_VERSION_MODE);
 		if (bundleVersionMode != null) {
 			if (bundleVersionMode.equals("auto-suffix-date")) {
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
@@ -886,7 +905,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		} else {
 			s = qtVersion + canonVersionSuffix;
 		}
-		mySetProperty(-1, Constants.BUNDLE_VERSION, null, s, true);
+		mySetProperty(-1, Constants.QT_BUNDLE_VERSION, null, s, true);
 		if(testConf==null){
 			analyzeLibinfix(osInfo);
 			List<String> includePaths = new ArrayList<>();

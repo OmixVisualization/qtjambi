@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -134,8 +134,11 @@ public:
         return new GenericHashAccess<align1, size1, align2, size2>(*this);
     }
 
-    size_t sizeOf() override {
+    size_t sizeOf() const override {
         return sizeof(QHash<K,T>);
+    }
+    size_t alignOf() const override {
+        return alignof(QHash<K,T>);
     }
     void assign(JNIEnv *, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override {
         QTJAMBI_KEY_VALUE_LOCKER(this);
@@ -168,7 +171,7 @@ public:
         reinterpret_cast<QHash<K,T>*>(container)->~QHash<K,T>();
         return true;
     }
-    int registerContainer(const QByteArray& containerTypeName) override {
+    QMetaType registerContainer(const QByteArray& containerTypeName) override {
         return QtJambiPrivate::registerAssociativeContainerType<QHash<K,T>, size1, size2>(containerTypeName, m_keyMetaTypeInfo.metaType(), m_valueMetaTypeInfo.metaType(), this);
     }
     const QMetaType& keyMetaType() override {

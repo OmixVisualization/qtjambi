@@ -1,6 +1,6 @@
 <!--===============================================================================================
 ==
-== Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+== Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ==
 == This file is part of Qt Jambi.
 ==
@@ -399,12 +399,7 @@
             </then>
         </if>
     </target>
-    <target name="compile.native" depends="init.build">
-        <mkdir dir="${outputDir}/${qtjambi.osname}/tests/autotests"/>
-        <qmake  dir="${outputDir}/${qtjambi.osname}/tests/autotests"
-                pro="${basedir}/src/cpp/autotests/autotests.pro"
-                config="${qtjambi.configuration}"
-                qmakebinary="${qtjambi.qt.qmake.abspath}"/>
+	<target name="compile.native.make" depends="init.build">
         <make dir="${outputDir}/${qtjambi.osname}/tests/autotests" target="${qtjambi.qmake.target.default}"/>
         <if>
             <os family="mac"/>
@@ -454,6 +449,19 @@
 				</if>
 			</else>
 		</if>
+    </target>
+	<target name="compile.native.qmake" depends="init.build">
+        <mkdir dir="${outputDir}/${qtjambi.osname}/tests/autotests"/>
+        <qmake  dir="${outputDir}/${qtjambi.osname}/tests/autotests"
+                pro="${basedir}/src/cpp/autotests/autotests.pro"
+                config="${qtjambi.configuration}"
+                qmakebinary="${qtjambi.qt.qmake.abspath}"/>
+    </target>
+    <target name="compile.native" depends="init.build">
+        <antcall inheritrefs="true" target="compile.native.qmake">
+        </antcall>
+        <antcall inheritrefs="true" target="compile.native.make">
+        </antcall>
     </target>
 	<target name="create-bundle">
 		<create-native-deployment outputDirectory="${outputDir}/${qtjambi.osname}/tests" 
@@ -766,7 +774,7 @@
 				<attribute name="Bundle-ManifestVersion"  value="2"/>
 				<attribute name="Bundle-Name"             value="QtJambi Autotests"/>
 				<attribute name="Bundle-RequiredExecutionEnvironment" value="${minimum.java.version}"/>
-				<attribute name="Bundle-Version"          value="${qtjambi.version.bundle}"/>
+				<attribute name="Bundle-Version"          value="${qtjambi.jar.version}"/>
 			</manifest>
 			<fileset dir="${test.java.outdir}"/>
 			<fileset dir="${test.javaext.outdir}"/>
@@ -1320,6 +1328,9 @@
 								<condition property="Dio.qt.internal.disable-metalambdas" value="-Dio.qt.internal.disable-metalambdas=${io.qt.internal.disable-metalambdas}" else="-Dx">
 									<isset property="io.qt.internal.disable-metalambdas"/>
 								</condition>
+								<condition property="Dtermination.mode" value="-Dtermination.mode=${termination.mode}" else="-Dx">
+									<isset property="termination.mode"/>
+								</condition>
 								<mkdir dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}"/>
 								<trycatch>
 									<try>
@@ -1350,6 +1361,7 @@
 											<jvmarg value="${Dio.qt.enable-event-logs}"/>
 											<jvmarg value="${Dio.qt.enable-metaobject-logs}"/>
 											<jvmarg value="${Dio.qt.internal.disable-metalambdas}"/>
+											<jvmarg value="${Dtermination.mode}"/>
 											<jvmarg value="-Dio.qt.qml-imports=${testQmlPath}"/>
 											<jvmarg value="-Dio.qt.pluginpath=${qtjambiPluginPath}${psep}${testPluginPath}"/>
 											<jvmarg value="${XstartOnFirstThread}"/>
@@ -1576,11 +1588,20 @@
     <target name="tests.generate-impl"
             depends="init.build, compile.deps, check.junit, check.ssl, compile.native.generator, compile.native, compile.java, compile.plugins.java"/>
 
+    <target name="tests.generate.only-impl"
+            depends="init.build, compile.deps, check.junit, check.ssl, compile.native.generator"/>
+
     <target name="tests.compile-impl"
             depends="init.build, compile.deps, check.junit, check.ssl, compile.native, compile.java, compile.plugins.java"/>
             
     <target name="tests.compile.native-impl"
             depends="init.build, compile.deps, check.junit, check.ssl, compile.native"/>
+            
+    <target name="tests.compile.native.make-impl"
+            depends="init.build, compile.deps, check.junit, check.ssl, compile.native.make"/>
+            
+    <target name="tests.compile.native.qmake-impl"
+            depends="init.build, compile.deps, check.junit, check.ssl, compile.native.qmake"/>
             
     <target name="tests.compile.java-impl"
             depends="init.build, compile.deps, check.junit, check.ssl, compile.java"/>

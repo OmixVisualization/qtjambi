@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -28,17 +28,18 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QDanglingPointerException;
+import io.qt.QtUtilities;
 import io.qt.core.QSysInfo;
 import io.qt.widgets.QHBoxLayout;
 import io.qt.widgets.QLayoutItem;
 import io.qt.widgets.QWidget;
-import io.qt.widgets.QWidgetItem;
 
 public class TestDanglingPointers3 extends ApplicationInitializer{
 	
@@ -48,9 +49,16 @@ public class TestDanglingPointers3 extends ApplicationInitializer{
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
-		Assume.assumeTrue("Runtime property -Dio.qt.enable-dangling-pointer-check=true required.", Boolean.getBoolean("io.qt.enable-dangling-pointer-check"));
-		Assume.assumeTrue("Can only run successfully on x86_64", "x86_64".equals(QSysInfo.currentCpuArchitecture()));
+		Assume.assumeTrue("Use -Dio.qt.enable-dangling-pointer-check=true or env ENABLE_DANGLING_POINTER_CHECK=true", Boolean.getBoolean("io.qt.enable-dangling-pointer-check") || "true".equalsIgnoreCase(System.getenv("ENABLE_DANGLING_POINTER_CHECK")) || "1".equalsIgnoreCase(System.getenv("ENABLE_DANGLING_POINTER_CHECK")));
+//		Assume.assumeTrue("Can only run successfully on x86_64", "x86_64".equals(QSysInfo.currentCpuArchitecture()));
 		ApplicationInitializer.testInitializeWithWidgets();
+		QtUtilities.setDanglingPointerCheckEnabled(true);
+    }
+	
+	@AfterClass
+	public static void testDispose() throws Exception {
+		QtUtilities.setDanglingPointerCheckEnabled(Boolean.getBoolean("io.qt.enable-dangling-pointer-check"));
+		ApplicationInitializer.testDispose();
     }
 	
     @Test
@@ -66,16 +74,13 @@ public class TestDanglingPointers3 extends ApplicationInitializer{
 		parent.dispose();
 		Assert.assertFalse(item0.isDisposed());
     	try {
-    		item0.widget();
+    		item0.expandingDirections();
+    		Assert.fail("QDanglingPointerException expected to be thrown");
 		} catch (QDanglingPointerException e) {
-			try {
-				Assert.assertEquals(String.format("Dangling pointer to object of type %1$s", QWidgetItem.class.getName()), e.getMessage());
-			} catch (org.junit.ComparisonFailure e2) {
-				Assert.assertEquals(String.format("Cannot convert dangling pointer to object of type %1$s", QWidget.class.getName()), e.getMessage());
-			}
+			Assert.assertTrue(e.getMessage(), e.getMessage().startsWith("Object of type io.qt.widgets.QWidgetItem points to dangling pointer"));
 		}
     }
-
+    
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestDanglingPointers3.class.getName());
     }

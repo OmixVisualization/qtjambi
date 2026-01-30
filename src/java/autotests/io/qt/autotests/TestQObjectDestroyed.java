@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -31,16 +31,14 @@ package io.qt.autotests;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -82,39 +80,45 @@ public class TestQObjectDestroyed extends ApplicationInitializer {
     }
     
     @Test
-    public void testDestroyedOnGC() {
+    public void testDestroyedOnGC() throws InterruptedException {
     	final QTimer timer = new QTimer();
     	timer.setInterval(200);
     	timer.timeout.connect(()->{
-    		System.gc();
+    		ApplicationInitializer.runGC();
+    		Thread.yield();
     		QCoreApplication.processEvents();
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
     	});
     	timer.start();
     	final QEventLoop loop = new QEventLoop();
+    	WeakReference<Object> reference = new WeakReference<>(null);
     	AtomicReference<QObject> destroyedObject = new AtomicReference<>();
     	boolean[] received = {false,false};
     	{
 	    	QObject object = UnMoccedObject.create(1);
+	    	reference = new WeakReference<>(object);
+	    	Assert.assertTrue("QObject does not java java ownership", General.internalAccess.isJavaOwnership(object));
 	    	QtUtilities.getSignalOnDispose(object).connect(()->received[1] = true);
 	    	object.destroyed.connect(o->{
-	    		if(!loop.isDisposed()) {
-//		    		System.out.println("destroyed("+o+")");
-		    		received[0] = true;
-		    		destroyedObject.set(o);
+	    		received[0] = true;
+	    		destroyedObject.set(o);
+	    		if(!loop.isDisposed())
 					loop.quit();
-	    		}
 	    	});
 	    	object = null;
     	}
-    	QTimer.singleShot(10000, loop::quit);
+    	QTimer.singleShot(30000, loop::quit);
     	loop.exec();
-    	while(TestUtility.hasDeleteLaterEvents()) {
+    	do {
+    		ApplicationInitializer.runGC();
+            Thread.sleep(50);
+    		Thread.yield();
             QCoreApplication.processEvents();
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());	        	
-        }
+        } while(TestUtility.hasDeleteLaterEvents());
     	loop.dispose();
     	assertTrue("destroyed signal not received", received[0]);
+    	assertEquals("QObject not GCed", null, reference.get());
     	assertTrue("disposed signal not received", received[1]);
     	assertTrue(destroyedObject.get()!=null);
     	assertTrue(destroyedObject.get().isDisposed());

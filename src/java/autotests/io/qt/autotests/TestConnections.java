@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,10 +47,10 @@ import java.util.Objects;
 
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.NonNull;
 import io.qt.QMisfittingSignatureException;
 import io.qt.QNoSuchSlotException;
 import io.qt.QtInvokable;
@@ -85,7 +85,6 @@ import io.qt.core.Qt;
 import io.qt.gui.QClipboard;
 import io.qt.gui.QDesktopServices;
 import io.qt.gui.QGuiApplication;
-import io.qt.internal.TestUtility;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QGraphicsScene;
 import io.qt.widgets.QLineEdit;
@@ -103,13 +102,6 @@ public class TestConnections extends ApplicationInitializer
 	
     public TestConnections()
     {
-    }
-
-    @Before
-    public void setUp() {
-        // This class is known to fail when we messed with this setting in a previous testcase running in the same JVM
-        // The method run_queuedConnection() in particular
-        assertEquals("getObjectCacheMode != DEFAULT", TestUtility.OBJECT_CACHE_MODE_DEFAULT, TestUtility.objectCacheMode());
     }
 
     @Test public void run_signalInNonQObject() {
@@ -1951,8 +1943,8 @@ public class TestConnections extends ApplicationInitializer
         String signature = metaObjectMethodSignature(aqo, "zootBaz");
         assertEquals("zootBaz(JObjectArrayWrapper)", signature);
 
-		Object connection = aqo.zootBaz.connect(aqo::fooBar);
-        assertTrue("zootBaz connected", connection!=null);
+		Connection connection = aqo.zootBaz.connect(aqo::fooBar);
+        assertTrue("zootBaz connected", connection!=null && connection.isConnected());
 		
 		aqo.zootBaz.emit(new String[] { "goodday", "planet" });
 		assertEquals(String[].class, aqo.received!=null ? aqo.received.getClass() : null);

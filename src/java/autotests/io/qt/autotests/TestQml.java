@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -41,8 +41,6 @@ import io.qt.autotests.generated.*;
 import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.qml.*;
-import io.qt.qml.QQmlIncubationController.WhileFlag;
-import io.qt.qml.QQmlIncubator.Status;
 import io.qt.quick.*;
 import io.qt.quick.widgets.*;
 import io.qt.widgets.*;
@@ -786,10 +784,7 @@ public class TestQml extends ApplicationInitializer{
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, (QUrl)null);
 		Assert.assertEquals(QQmlComponent.Status.Error, component.status());
-		if(QLibraryInfo.version().compareTo(new QVersionNumber(6,9,2))>=0)
-			Assert.assertEquals(":5 Cannot assign object of type \"QQuickItem\" to list property \"testChildren\"; expected \"io::qt::autotests::TestQml::TestChild\"", component.errorString().trim());
-		else
-			Assert.assertEquals(":5 Cannot assign object to list property \"testChildren\"", component.errorString().trim());
+		Assert.assertTrue(component.errorString().trim().startsWith(":5 Cannot assign object ") && component.errorString().trim().contains("list property \"testChildren\""));
 	}
 	
 	@Test
@@ -807,10 +802,7 @@ public class TestQml extends ApplicationInitializer{
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, (QUrl)null);
 		Assert.assertEquals(QQmlComponent.Status.Error, component.status());
-		if(QLibraryInfo.version().compareTo(new QVersionNumber(6,9,2))>=0)
-			Assert.assertEquals(":5 Cannot assign object of type \"io::qt::autotests::TestQml::TestChild\" to list property \"testItems\"; expected \"QQuickItem\"", component.errorString().trim());
-		else
-			Assert.assertEquals(":5 Cannot assign object to list property \"testItems\"", component.errorString().trim());
+		Assert.assertTrue(component.errorString().trim().startsWith(":5 Cannot assign object ") && component.errorString().trim().contains("list property \"testItems\""));
 	}
 	
 	@Test

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,9 +33,7 @@
 #include <QtJambi/JObjectWrapper>
 #include <QtJambi/JavaAPI>
 #include <QtJambi/CoreAPI>
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QtRemoteObjects/qconnectionfactories.h>
-#endif
 #include <QtRemoteObjects/QRemoteObjectPendingCall>
 #include <QtJambi/qtjambi_cast.h>
 #include "hashes.h"
@@ -56,7 +54,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_remoteobjects_QRemoteObjectPendingR
 {
     QTJAMBI_NATIVE_METHOD_CALL("QRemoteObjectPendingReply<QVariant>::QRemoteObjectPendingReply<QVariant>()")
     QTJAMBI_TRY{
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QRemoteObjectPendingCall, sizeof(QRemoteObjectPendingReply<QVariant>), typeid(QRemoteObjectPendingReply<QVariant>), 0, false);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QRemoteObjectPendingCall, sizeof(QRemoteObjectPendingReply<QVariant>), alignof(QRemoteObjectPendingReply<QVariant>), typeid(QRemoteObjectPendingReply<QVariant>), 0, false);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -73,7 +71,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_remoteobjects_QRemoteObjectPendingR
     QTJAMBI_TRY{
         jvalue arguments;
         arguments.l = other0;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QRemoteObjectPendingCall_cref_QRemoteObjectPendingCall, sizeof(QRemoteObjectPendingReply<QVariant>), typeid(QRemoteObjectPendingReply<QVariant>), 0, false, &arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QRemoteObjectPendingCall_cref_QRemoteObjectPendingCall, sizeof(QRemoteObjectPendingReply<QVariant>), alignof(QRemoteObjectPendingReply<QVariant>), typeid(QRemoteObjectPendingReply<QVariant>), 0, false, &arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -217,8 +215,8 @@ void initialize_meta_info_RemoteObject(){
     using namespace RegistryAPI;
     const std::type_info& typeId = registerUnspecificTypeInfo<QRemoteObjectPendingReply<QVariant>>("QRemoteObjectPendingReply", "io/qt/remoteobjects/QRemoteObjectPendingReply");
     RegistryAPI::registerOperators<QRemoteObjectPendingReply<QVariant>>();
-    int metaTypeID = registerMetaType<QRemoteObjectPendingReply<QVariant>>("QRemoteObjectPendingReply<QVariant>");
-    QMetaType::registerNormalizedTypedef("QRemoteObjectPendingReply", QMetaType(metaTypeID));
+    QMetaType metaType = registerMetaType<QRemoteObjectPendingReply<QVariant>>("QRemoteObjectPendingReply<QVariant>");
+    QMetaType::registerNormalizedTypedef("QRemoteObjectPendingReply", metaType);
     registerConstructorInfos(typeId, 0, &__qt_destruct_QRemoteObjectPendingCall, {
     });
 }

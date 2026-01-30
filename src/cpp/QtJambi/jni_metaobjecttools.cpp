@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -31,8 +31,6 @@
 
 #include "pch_p.h"
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_PropertyUtility_getPropertyForField(JNIEnv *env, jclass, jobject jmetaObject, jobject reflectField){
     const QMetaObject* metaObject = qtjambi_cast<const QMetaObject*>(env, jmetaObject);
     if(metaObject){
@@ -60,4 +58,3 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_PropertyUtility_registerPr
         }
     }
 }
-# endif

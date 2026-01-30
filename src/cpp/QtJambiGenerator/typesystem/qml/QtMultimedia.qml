@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -50,19 +50,6 @@ TypeSystem{
     }
 
     RequiredLibrary{
-        name: "QtMultimediaGstTools"
-        mode: RequiredLibrary.ProvideOnly
-        platforms: ["linux"]
-        until: 5
-    }
-
-    RequiredLibrary{
-        name: "QtMultimediaWidgets"
-        mode: RequiredLibrary.ProvideOnly
-        until: 5
-    }
-
-    RequiredLibrary{
         name: "QtConcurrent"
         mode: RequiredLibrary.ProvideOnly
         platforms: ["macos", "linux", "android"]
@@ -93,12 +80,6 @@ TypeSystem{
     
     Rejection{
         className: "QPlatformMediaRecorder"
-    }
-    
-    Rejection{
-        className: ""
-        functionName: "qmediacontrol_iid"
-        until: [5, 15]
     }
     
     NamespaceType{
@@ -196,15 +177,6 @@ TypeSystem{
         name: "QtAudio::State"
         since: [6,7,1]
     }
-    
-    NamespaceType{
-        name: "QMultimedia"
-        EnumType{name: "AvailabilityStatus"}
-        EnumType{name: "EncodingMode"}
-        EnumType{name: "EncodingQuality"}
-        EnumType{name: "SupportEstimate"}
-        until: 5
-    }
 
     NamespaceType{
         name: "QtVideo"
@@ -226,7 +198,6 @@ TypeSystem{
 
         Rejection{
             functionName: "videoBuffer"
-            since: 6
         }
 
         EnumType{
@@ -252,21 +223,6 @@ TypeSystem{
                 name: "set"
                 deprecated: true
             }
-        }
-        ModifyFunction{
-            signature: "bits()"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "bits(int)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "bits(int)const"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "bits(int) const"
@@ -298,22 +254,6 @@ TypeSystem{
                 }
             }
             since: [6, 2]
-        }
-        ModifyFunction{
-            signature: "bits() const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "byte[]"
-                }
-                NoNullPointer{}
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %env->NewByteArray(__qt_this->mappedBytes());\n"+
-                                  "%env->SetByteArrayRegion(%out, 0, __qt_this->mappedBytes(), reinterpret_cast<const jbyte *>(%in));"}
-                }
-            }
-            until: 5
         }
     }
     
@@ -350,7 +290,6 @@ TypeSystem{
                     }
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "data<T>()const"
@@ -372,7 +311,6 @@ TypeSystem{
                     }
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "data<T>()"
@@ -392,7 +330,6 @@ TypeSystem{
                     }
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "data() const"
@@ -409,167 +346,14 @@ TypeSystem{
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiMultimedia.java"
-                quoteAfterLine: "class QAudioBuffer__6_"
+                quoteAfterLine: "class QAudioBuffer__"
                 quoteBeforeLine: "}// class"
             }
-            since: 6
         }
     }
 
     Rejection{
         className: "QAbstractVideoBuffer"
-        since: 6
-    }
-    ObjectType{
-        name: "QAbstractVideoBuffer"
-        EnumType{name: "HandleType"}
-        EnumType{name: "MapMode"}
-        ExtraIncludes{
-            Include{
-                fileName: "utils_p.h"
-                location: Include.Local
-            }
-        }
-        InjectCode{
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiMultimedia.java"
-                quoteAfterLine: "class QAbstractVideoBuffer__"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        ModifyFunction{
-            signature: "map(QAbstractVideoBuffer::MapMode, int*, int*)"
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "int %in = 0;\n"+
-                                  "int* %out = &%in;"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "//"}
-                }
-            }
-            ModifyArgument{
-                index: 3
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "int %in = 0;\n"+
-                                  "int* %out = &%in;"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "//"}
-                }
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.multimedia.QAbstractVideoBuffer$@NonNull MapResult"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jobject buffer = DataJBuffer(%env, %in, %2).take();\n"+
-                                  "QtJambiAPI::registerDependency(%env, buffer, __this_nativeId);\n"+
-                                  "jobject %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(%3), false);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: String.raw`
-uchar* %out = nullptr;
-if(%in){
-    JBufferData buffer(%env, Java::QtMultimedia::QAbstractVideoBuffer$MapResult::data(%env, %in));
-    if(%3)
-        *%3 = int(Java::QtMultimedia::QAbstractVideoBuffer$MapResult::bytesPerLine(%env, %in));
-    if(%2)
-        *%2 = int(buffer.size());
-    %out = reinterpret_cast<uchar*>(buffer.take());
-}else{
-    if(%2)
-        *%2 = 0;
-    if(%3)
-        *%3 = 0;
-}`
-                    }
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "mapPlanes(QAbstractVideoBuffer::MapMode, int *, int[4], uchar*[4])"
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "int %in = 0;\n"+
-                                  "int* %out = &%in;"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "//"}
-                }
-            }
-            ModifyArgument{
-                index: 3
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "int %out[4] = {0,0,0,0};"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "//"}
-                }
-            }
-            ModifyArgument{
-                index: 4
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "uchar* %out[4] = {nullptr,nullptr,nullptr,nullptr};"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "//"}
-                }
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.multimedia.QAbstractVideoBuffer$@NonNull MapResult @NonNull[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: String.raw`
-if(%in>0){
-    if(%in>4)
-        %in = 4;
-    %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newArray(%env, jsize(%in));
-    for(int i=0; i<%in; ++i){
-        jobject buffer = DataJBuffer(%env, __qt_%4[i], %2).take();
-        jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(__qt_%3[i]), false);
-        %env->SetObjectArrayElement(%out, jsize(i), element);
-        JavaException::check(%env QTJAMBI_STACKTRACEINFO );
-    }
-}`
-                    }
-                }
-            }
-        }
-        ModifyField{
-            name: "m_type"
-            read: false
-            rename: "handleType"
-        }
-        until: 5
     }
     
     ObjectType{
@@ -686,11 +470,6 @@ if(%in){
     }
     
     ValueType{
-        name: "QAudioDeviceInfo"
-        until: 5
-    }
-    
-    ValueType{
         name: "QAudioFormat"
 
         EnumType{
@@ -715,7 +494,6 @@ if(%in){
         ModifyFunction{
             signature: "channelConfig<Args...>(Args)"
             remove: RemoveFlag.All
-            since: 6
         }
         InjectCode{
             ImportFile{
@@ -736,36 +514,7 @@ if(%in){
     }
     
     ValueType{
-        name: "QVideoSurfaceFormat"
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QScopedPointer"
-                location: Include.Global
-            }
-            Include{
-                fileName: "QtCore/QByteArray"
-                location: Include.Global
-            }
-        }
-        EnumType{
-            name: "Direction"
-        }
-        EnumType{
-            name: "YCbCrColorSpace"
-        }
-        until: 5
-    }
-    
-    ValueType{
         name: "QAudioEncoderSettings"
-    }
-    
-    ValueType{
-        name: "QCameraFocusZone"
-        EnumType{
-            name: "FocusZoneStatus"
-        }
-        until: 5
     }
     
     ValueType{
@@ -808,56 +557,11 @@ if(%in){
     }
     
     ValueType{
-        name: "QMediaServiceProviderHint"
-        noImplicitConstructors: true
-
-        EnumType{
-            name: "Feature"
-        }
-
-        EnumType{
-            name: "Type"
-        }
-        until: 5
-    }
-    
-    ValueType{
         name: "QCameraViewfinderSettings"
     }
     
     ObjectType{
-        name: "QAbstractVideoSurface"
-        EnumType{name: "Error"}
-        until: 5
-    }
-    
-    ObjectType{
         name: "QAudioOutput"
-        ModifyFunction{
-            signature: "QAudioOutput(const QAudioFormat &,QObject*)"
-            ModifyArgument{
-                index: 1
-                ReplaceDefaultExpression{
-                    expression: "new QAudioFormat()"
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "QAudioOutput(const QAudioDeviceInfo &,const QAudioFormat &,QObject*)"
-            ModifyArgument{
-                index: 2
-                ReplaceDefaultExpression{
-                    expression: "new QAudioFormat()"
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "notify()"
-            rename: "notifySignal"
-            until: 5
-        }
     }
     
     ObjectType{
@@ -942,31 +646,6 @@ if(%in){
     
     ObjectType{
         name: "QAudioInput"
-        ModifyFunction{
-            signature: "QAudioInput(const QAudioFormat &,QObject*)"
-            ModifyArgument{
-                index: 1
-                ReplaceDefaultExpression{
-                    expression: "new QAudioFormat()"
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "QAudioInput(const QAudioDeviceInfo &,const QAudioFormat &,QObject*)"
-            ModifyArgument{
-                index: 2
-                ReplaceDefaultExpression{
-                    expression: "new QAudioFormat()"
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "notify()"
-            rename: "notifySignal"
-            until: 5
-        }
     }
     
     ObjectType{
@@ -1028,55 +707,6 @@ if(%in){
         EnumType{name: "WhiteBalanceMode"}
         EnumType{name: "TorchMode"}
         ValueType{name: "FrameRateRange"}
-        ModifyFunction{
-            signature: "setViewfinder(QAbstractVideoSurface*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setViewfinder(QGraphicsVideoItem*)"
-            remove: RemoveFlag.All
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: 5
-        }
-        InjectCode{
-            until: 5
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiMultimedia.java"
-                quoteAfterLine: "class QCamera__"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        ModifyFunction{
-            signature: "setViewfinder(QVideoWidget*)"
-            rename: "setViewfinderImpl"
-            access: Modification.Private
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.core.QObject"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QVideoWidget* %out = reinterpret_cast<QVideoWidget*>(qtjambi_cast<QObject*>(%env, %in));"}
-                }
-                ReferenceCount{
-                    variableName: "__rcViewfinder"
-                    action: ReferenceCount.Set
-                }
-            }
-            until: 5
-        }
     }
     
     ValueType{
@@ -1092,75 +722,7 @@ if(%in){
     }
     
     ObjectType{
-        name: "QCameraControl"
-        EnumType{
-            name: "PropertyChangeType"
-        }
-        until: 5
-    }
-    
-    ObjectType{
         name: "QCameraInfoControl"
-    }
-    
-    ObjectType{
-        name: "QCameraExposureControl"
-        ExtraIncludes{
-            Include{
-                fileName: "utils_p.h"
-                location: Include.Local
-            }
-        }
-        EnumType{
-            name: "ExposureParameter"
-        }
-        ModifyFunction{
-            signature: "supportedParameterRange(const QCameraExposureControl::ExposureParameter &, bool *) const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<Object>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(\n"+
-                                  "%env, qtjambi_cast<jobject>(%env, %in), jboolean(%2));"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: String.raw`
-QList<QVariant> %out;
-if(%in){
-    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
-    if(__tmp_%in)
-        %out = qtjambi_cast<QList<QVariant>>(%env, __tmp_%in);
-    if(%2){
-        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
-    }
-}`
-                        }
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "bool %in = false;\n"+
-                                  "bool* %out = &%in;"}
-                }
-            }
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QCameraFeedbackControl"
-        EnumType{
-            name: "EventType"
-        }
-        until: 5
     }
     
     ObjectType{
@@ -1168,220 +730,7 @@ if(%in){
     }
     
     ObjectType{
-        name: "QCameraExposure"
-        ExtraIncludes{
-            Include{
-                fileName: "utils_p.h"
-                location: Include.Local
-            }
-        }
-        EnumType{
-            name: "ExposureMode"
-        }
-        EnumType{
-            name: "FlashMode"
-        }
-        EnumType{
-            name: "MeteringMode"
-        }
-        ModifyFunction{
-            signature: "supportedApertures(bool *) const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<@QtPrimitiveType@NonNull Double>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = Java::QtMultimedia::QMediaService$ListResult::newInstance(\n"+
-                                  "%env, qtjambi_cast<jobject>(%env, %in), jboolean(%1));"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: String.raw`
-QList<double> %out;
-if(%in){
-    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
-    if(__tmp_%in)
-        %out = qtjambi_cast<QList<double>>(%env, __tmp_%in);
-    if(%2){
-        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
-    }
-}`
-                    }
-                }
-            }
-            ModifyArgument{
-                index: 1
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "bool %in = false;\n"+
-                                  "bool* %out = &%in;"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "supportedIsoSensitivities(bool *) const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<@QtPrimitiveType@NonNull Integer>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = Java::QtMultimedia::QMediaService$ListResult::newInstance(\n"+
-                                  "%env, qtjambi_cast<jobject>(%env, %in), jboolean(%1));"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: String.raw`
-QList<int> %out;
-if(%in){
-    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
-    if(__tmp_%in)
-        %out = qtjambi_cast<QList<int>>(%env, __tmp_%in);
-    if(%2){
-        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
-    }
-}`
-                    }
-                }
-            }
-            ModifyArgument{
-                index: 1
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "bool %in = false;\n"+
-                                  "bool* %out = &%in;"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "supportedShutterSpeeds(bool *) const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<@QtPrimitiveType@NonNull Double>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = Java::QtMultimedia::QMediaService$ListResult::newInstance(\n"+
-                                  "%env, qtjambi_cast<jobject>(%env, %in), jboolean(%1));"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: String.raw`
-QList<double> %out;
-if(%in){
-    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
-    if(__tmp_%in)
-        %out = qtjambi_cast<QList<double>>(%env, __tmp_%in);
-    if(%2){
-        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
-    }
-}`
-                    }
-                }
-            }
-            ModifyArgument{
-                index: 1
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "bool %in = false;\n"+
-                                  "bool* %out = &%in;"}
-                }
-            }
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QCameraFocus"
-        EnumType{
-            name: "FocusMode"
-        }
-        EnumType{
-            name: "FocusPointMode"
-        }
-        until: 5
-    }
-    
-    ObjectType{
         name: "QCameraFocusControl"
-    }
-    
-    ObjectType{
-        name: "QCameraImageCapture"
-        EnumType{
-            name: "CaptureDestination"
-        }
-        EnumType{
-            name: "DriveMode"
-        }
-        EnumType{
-            name: "Error"
-        }
-        ModifyFunction{
-            signature: "setMediaObject(QMediaObject*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: 5
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "utils_p.h"
-                location: Include.Local
-            }
-        }
-        ModifyFunction{
-            signature: "supportedResolutions(const QImageEncoderSettings &, bool *) const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<io.qt.core.@NonNull QSize>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = Java::QtMultimedia::QMediaService$ListResult::newInstance(\n"+
-                                  "%env, qtjambi_cast<jobject>(%env, %in), jboolean(%2));"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: String.raw`
-QList<QSize> %out;
-if(%in){
-    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
-    if(__tmp_%in)
-        %out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);
-    if(%2){
-        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
-    }
-}`
-                    }
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "bool %in = false;\n"+
-                                  "bool* %out = &%in;"}
-                }
-            }
-        }
-        until: 5
     }
     
     ObjectType{
@@ -1389,39 +738,7 @@ if(%in){
     }
     
     ObjectType{
-        name: "QCameraImageProcessing"
-        EnumType{
-            name: "WhiteBalanceMode"
-        }
-        EnumType{
-            name: "ColorFilter"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QCameraImageProcessingControl"
-        EnumType{
-            name: "ProcessingParameter"
-        }
-        until: 5
-    }
-    
-    ObjectType{
         name: "QCameraLocksControl"
-    }
-    
-    ObjectType{
-        name: "QCameraViewfinderSettingsControl"
-        EnumType{
-            name: "ViewfinderParameter"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QCameraViewfinderSettingsControl2"
-        until: 5
     }
     
     ObjectType{
@@ -1549,47 +866,6 @@ if(%in){
             name: "Loops"
         }
         ModifyFunction{
-            signature: "setVideoOutput(QGraphicsVideoItem*)"
-            remove: RemoveFlag.All
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setVideoOutput(QAbstractVideoSurface*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setPlaylist(QMediaPlaylist*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setMedia(QMediaContent,QIODevice*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "setAudioOutput(QAudioOutput*)"
             ModifyArgument{
                 index: 1
@@ -1634,26 +910,6 @@ if(%in){
             since: [6, 2]
         }
         ModifyFunction{
-            signature: "setVideoOutput(QVideoWidget*)"
-            rename: "setVideoOutputImpl"
-            access: Modification.Private
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcVideoOutput"
-                    action: ReferenceCount.Set
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.core.@Nullable QObject"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QVideoWidget* %out = reinterpret_cast<QVideoWidget*>(qtjambi_cast<QObject*>(%env, %in));"}
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "setAudioBufferOutput(QAudioBufferOutput*)"
             ModifyArgument{
                 index: 1
@@ -1663,14 +919,6 @@ if(%in){
                 }
             }
             since: [6, 8]
-        }
-        InjectCode{
-            until: 5
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiMultimedia.java"
-                quoteAfterLine: "class QMediaPlayer__"
-                quoteBeforeLine: "}// class"
-            }
         }
     }
     
@@ -1685,37 +933,6 @@ if(%in){
                 }
             }
         }
-    }
-    
-    ObjectType{
-        name: "QMediaPlaylist"
-        EnumType{
-            name: "Error"
-        }
-        EnumType{
-            name: "PlaybackMode"
-        }
-        ModifyFunction{
-            signature: "setMediaObject(QMediaObject*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: 5
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QScopedPointer"
-                location: Include.Global
-            }
-            Include{
-                fileName: "QtCore/QByteArray"
-                location: Include.Global
-            }
-        }
-        until: 5
     }
     
     ObjectType{
@@ -1739,16 +956,6 @@ if(%in){
             name: "RecorderState"
         }
         ModifyFunction{
-            signature: "setMediaObject(QMediaObject*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "setOutputDevice(QIODevice*)"
             ModifyArgument{
                 index: 1
@@ -1764,123 +971,6 @@ if(%in){
                 fileName: "utils_p.h"
                 location: Include.Local
             }
-        }
-        ModifyFunction{
-            signature: "supportedAudioSampleRates(const QAudioEncoderSettings &, bool *) const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<@QtPrimitiveType@NonNull Integer>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = Java::QtMultimedia::QMediaService$ListResult::newInstance(\n"+
-                                  "%env, qtjambi_cast<jobject>(%env, %in), jboolean(%2));"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: String.raw`
-QList<int> %out;
-if(%in){
-    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
-    if(__tmp_%in)
-        %out = qtjambi_cast<QList<int>>(%env, __tmp_%in);
-    if(%2){
-        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
-    }
-}`
-                    }
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "bool %in = false;\n"+
-                                  "bool* %out = &%in;"}
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "supportedFrameRates(const QVideoEncoderSettings &, bool *) const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<@QtPrimitiveType@NonNull Double>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = Java::QtMultimedia::QMediaService$ListResult::newInstance(\n"+
-                                  "%env, qtjambi_cast<jobject>(%env, %in), jboolean(%2));"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: String.raw`
-QList<double> %out;
-if(%in){
-    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
-    if(__tmp_%in)
-        %out = qtjambi_cast<QList<double>>(%env, __tmp_%in);
-    if(%2){
-        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
-    }
-}`
-                            }
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "bool %in = false;\n"+
-                                  "bool* %out = &%in;"}
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "supportedResolutions(const QVideoEncoderSettings &, bool *) const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<io.qt.core.@NonNull QSize>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = Java::QtMultimedia::QMediaService$ListResult::newInstance(\n"+
-                                  "%env, qtjambi_cast<jobject>(%env, %in), jboolean(%2));"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: String.raw`
-QList<QSize> %out;
-if(%in){
-    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
-    if(__tmp_%in)
-        %out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);
-    if(%2){
-        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
-    }
-}`
-                    }
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "bool %in = false;\n"+
-                                  "bool* %out = &%in;"}
-                }
-            }
-            until: 5
         }
     }
     
@@ -1949,14 +1039,6 @@ if(%in){
     }
     
     ObjectType{
-        name: "QMediaStreamsControl"
-        EnumType{
-            name: "StreamType"
-        }
-        until: 5
-    }
-    
-    ObjectType{
         name: "QMediaVideoProbeControl"
     }
     
@@ -1969,64 +1051,11 @@ if(%in){
     }
     
     ObjectType{
-        name: "QRadioData"
-        EnumType{
-            name: "Error"
-        }
-        EnumType{
-            name: "ProgramType"
-        }
-        ModifyFunction{
-            signature: "setMediaObject(QMediaObject*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        until: 5
-    }
-    
-    ObjectType{
         name: "QRadioDataControl"
     }
     
     ObjectType{
-        name: "QRadioTuner"
-
-        EnumType{
-            name: "Band"
-        }
-
-        EnumType{
-            name: "Error"
-        }
-
-        EnumType{
-            name: "SearchMode"
-        }
-
-        EnumType{
-            name: "State"
-        }
-
-        EnumType{
-            name: "StereoMode"
-        }
-        until: 5
-    }
-    
-    ObjectType{
         name: "QRadioTunerControl"
-    }
-    
-    ObjectType{
-        name: "QSound"
-        EnumType{
-            name: "Loop"
-        }
-        until: 5
     }
     
     ObjectType{
@@ -2276,30 +1305,6 @@ if(%in){
         name: "QCustomAudioRoleControl"
     }
     
-    ObjectType{
-        name: "QVideoFilterRunnable"
-
-        EnumType{
-            name: "RunFlag"
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "utils_p.h"
-                location: Include.Local
-            }
-        }
-        ModifyFunction{
-            signature: "run(QVideoFrame *, const QVideoSurfaceFormat &, QVideoFilterRunnable::RunFlags)"
-            ModifyArgument{
-                index: 1
-                NoNullPointer{
-                }
-                invalidateAfterUse: true
-            }
-        }
-        until: 5
-    }
-    
     InterfaceType{
         name: "QAudioSystemFactoryInterface"
         ModifyFunction{
@@ -2473,6 +1478,33 @@ if(%in){
     
     ObjectType{
         name: "QAudioSink"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/JObjectWrapper"
+                location: Include.Global
+            }
+            since: [6,11]
+        }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+                template<typename T>
+                inline auto convertConsumer(JNIEnv* _env, jobject callback){
+                    return [callback = JObjectWrapper(_env, callback)](QSpan<T> data){
+                        if(JniEnvironmentScope env{nullptr,200}){
+                            QTJAMBI_TRY{
+                                jobject _data = qtjambi_cast<jobject>(env, env.scope(), std::move(data));
+                                Java::Runtime::Consumer::accept(env, callback.object(env), _data);
+                            }QTJAMBI_CATCH(const JavaException& exn){
+                                exn.report(env);
+                            }QTJAMBI_TRY_END
+                        }
+                    };
+                }
+                `}
+            since: [6,11]
+        }
         ModifyFunction{
             signature: "error(Qt::Disambiguated_t)const"
             ModifyArgument{
@@ -2498,12 +1530,144 @@ if(%in){
             }
             since: [6,7,0]
             until: [6,7,0]
+        }
+        FunctionalType{
+            name: "FloatConsumer"
+            using: "std::function<void(QSpan<float>)>"
+            generate: false
+            since: [6,11]
+        }
+        FunctionalType{
+            name: "ByteConsumer"
+            using: "std::function<void(QSpan<quint8>)>"
+            generate: false
+            since: [6,11]
+        }
+        FunctionalType{
+            name: "ShortConsumer"
+            using: "std::function<void(QSpan<qint16>)>"
+            generate: false
+            since: [6,11]
+        }
+        FunctionalType{
+            name: "IntConsumer"
+            using: "std::function<void(QSpan<qint32>)>"
+            generate: false
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "start<Callback,true>(Callback&&)"
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QSpan<float>)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    NoNullPointer{}
+                    ReplaceType{
+                        modifiedType: "io.qt.multimedia.QAudioSink$FloatConsumer"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer<float>(%env, %in);"}
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QSpan<quint8>)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    NoNullPointer{}
+                    ReplaceType{
+                        modifiedType: "io.qt.multimedia.QAudioSink$ByteConsumer"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer<quint8>(%env, %in);"}
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QSpan<qint16>)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    NoNullPointer{}
+                    ReplaceType{
+                        modifiedType: "io.qt.multimedia.QAudioSink$ShortConsumer"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer<qint16>(%env, %in);"}
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QSpan<qint32>)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    NoNullPointer{}
+                    ReplaceType{
+                        modifiedType: "io.qt.multimedia.QAudioSink$IntConsumer"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer<qint32>(%env, %in);"}
+                    }
+                }
+            }
+            since: [6,11]
+        }
+        InjectCode{
+            target: CodeClass.Java
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiMultimedia.java"
+                quoteAfterLine: "class QAudioSink__"
+                quoteBeforeLine: "}// class"
+            }
+            since: [6,11]
         }
         since: [6, 2]
     }
     
     ObjectType{
         name: "QAudioSource"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/JObjectWrapper"
+                location: Include.Global
+            }
+            since: [6,11]
+        }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+                template<typename T>
+                inline auto convertConsumer(JNIEnv* _env, jobject callback){
+                    return [callback = JObjectWrapper(_env, callback)](QSpan<T> data){
+                        if(JniEnvironmentScope env{nullptr,200}){
+                            QTJAMBI_TRY{
+                                jobject _data = qtjambi_cast<jobject>(env, env.scope(), std::move(data));
+                                Java::Runtime::Consumer::accept(env, callback.object(env), _data);
+                            }QTJAMBI_CATCH(const JavaException& exn){
+                                exn.report(env);
+                            }QTJAMBI_TRY_END
+                        }
+                    };
+                }
+                `}
+            since: [6,11]
+        }
         ModifyFunction{
             signature: "error(Qt::Disambiguated_t)const"
             ModifyArgument{
@@ -2529,6 +1693,111 @@ if(%in){
             }
             since: [6,7,0]
             until: [6,7,0]
+        }
+        FunctionalType{
+            name: "FloatConsumer"
+            using: "std::function<void(QSpan<const float>)>"
+            generate: false
+            since: [6,11]
+        }
+        FunctionalType{
+            name: "ByteConsumer"
+            using: "std::function<void(QSpan<const quint8>)>"
+            generate: false
+            since: [6,11]
+        }
+        FunctionalType{
+            name: "ShortConsumer"
+            using: "std::function<void(QSpan<const qint16>)>"
+            generate: false
+            since: [6,11]
+        }
+        FunctionalType{
+            name: "IntConsumer"
+            using: "std::function<void(QSpan<const qint32>)>"
+            generate: false
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "start<Callback,true>(Callback&&)"
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QSpan<const float>)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    NoNullPointer{}
+                    ReplaceType{
+                        modifiedType: "io.qt.multimedia.QAudioSink$FloatConsumer"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer<const float>(%env, %in);"}
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QSpan<const quint8>)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    NoNullPointer{}
+                    ReplaceType{
+                        modifiedType: "io.qt.multimedia.QAudioSink$ByteConsumer"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer<const quint8>(%env, %in);"}
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QSpan<const qint16>)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    NoNullPointer{}
+                    ReplaceType{
+                        modifiedType: "io.qt.multimedia.QAudioSink$ShortConsumer"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer<const qint16>(%env, %in);"}
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QSpan<const qint32>)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    NoNullPointer{}
+                    ReplaceType{
+                        modifiedType: "io.qt.multimedia.QAudioSink$IntConsumer"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer<const qint32>(%env, %in);"}
+                    }
+                }
+            }
+            since: [6,11]
+        }
+        InjectCode{
+            target: CodeClass.Java
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiMultimedia.java"
+                quoteAfterLine: "class QAudioSource__"
+                quoteBeforeLine: "}// class"
+            }
+            since: [6,11]
         }
         since: [6, 2]
     }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -288,16 +288,6 @@ public static java.lang.@NonNull String defaultConnection() {
 
         EnumType{
             name: "RequiredStatus"
-        }
-        ModifyFunction{
-            signature: "QSqlField(QString,QVariant::Type)"
-            ModifyArgument{
-                index: 2
-                ReplaceDefaultExpression{
-                    expression: "io.qt.core.QVariant.Type.Invalid"
-                }
-            }
-            until: 5
         }
     }
     

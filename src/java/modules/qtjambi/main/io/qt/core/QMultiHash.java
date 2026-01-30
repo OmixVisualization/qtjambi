@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -28,8 +28,6 @@
 **
 ****************************************************************************/
 package io.qt.core;
-
-import static io.qt.core.QMap.findMapMetaType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -134,9 +132,9 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#QMultiHash-5">QMultiHash::<wbr>QMultiHash(const QHash&lt;Key, T> &amp;)</a></code></p>
      * @param other map
      */
-    public QMultiHash(Map<Key,List<T>> other) {
+    public QMultiHash(Map<? extends Key,? extends List<? extends T>> other) {
 		super(null);
-		QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
+		QPair<QMetaType, QMetaType> metaTypes = QMultiMap.findMapMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
 		initialize(metaTypes.first.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.first), metaTypes.second.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.second), other);
 	}
     
@@ -176,7 +174,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
 	}
     
     @QtUninvokable
-    private native void initialize(Class<?> keyType, long keyMetaType, Class<?> valueType, long valueMetaType, Map<Key,List<T>> other);
+    private native void initialize(Class<?> keyType, long keyMetaType, Class<?> valueType, long valueMetaType, Map<?,?> other);
     
     /**
      * Creates and returns a copy of this object.
@@ -1185,7 +1183,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      */
     @SafeVarargs
     public static <Key,T> @NonNull QMultiHash<Key,T> ofEntries(Map.@StrictNonNull Entry<? extends Key, ? extends T> entry0, Map.@StrictNonNull Entry<? extends Key, ? extends T> @StrictNonNull... entries) {
-    	QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(entry0, entries);
+    	QPair<QMetaType, QMetaType> metaTypes = QMap.findMapMetaType(entry0, entries);
     	QMultiHash<Key,T> result = new QMultiHash<>(metaTypes.first, metaTypes.second);
     	result.insert(entry0.getKey(), entry0.getValue());
     	for (Map.Entry<? extends Key, ? extends T> entry : entries) {
@@ -1220,7 +1218,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      */
     @SafeVarargs
     public static <Key,T> @NonNull QMultiHash<Key,T> ofPairs(@StrictNonNull QPair<? extends Key, ? extends T> pair0, @StrictNonNull QPair<? extends Key, ? extends T> @StrictNonNull... pairs) {
-    	QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(pair0, pairs);
+    	QPair<QMetaType, QMetaType> metaTypes = QMap.findMapMetaType(pair0, pairs);
     	QMultiHash<Key,T> result = new QMultiHash<>(metaTypes.first, metaTypes.second);
     	result.insert(pair0.first, pair0.second);
     	for (QPair<? extends Key, ? extends T> entry : pairs) {

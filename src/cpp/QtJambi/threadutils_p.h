@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -42,7 +42,7 @@
 
 class QtJambiLink;
 class EventDispatcherCheck;
-class QThreadUserData;
+class QThreadObjectData;
 
 typedef QExplicitlySharedDataPointer<EventDispatcherCheck> EventDispatcherCheckPointer;
 
@@ -61,7 +61,7 @@ public:
     };
 
     typedef void (*CleanupFunction)(JNIEnv *env, Data*);
-    static void adoptThread(JNIEnv *env, jobject jthreadObject, QThread* thread, QThreadUserData* threadData, jint associationHashcode, QWeakPointer<QtJambiLink>&& wlink, CleanupFunction _cleaner = nullptr);
+    static void adoptThread(JNIEnv *env, jobject jthreadObject, QThread* thread, QThreadObjectData* threadData, jint associationHashcode, QWeakPointer<QtJambiLink>&& wlink, CleanupFunction _cleaner = nullptr);
     static void detach(JNIEnv *env);
     static bool isAlive();
 private:
@@ -74,7 +74,7 @@ private:
     friend EventDispatcherCheckPointer;
 };
 
-class QThreadUserData : public QtJambiObjectData
+class QThreadObjectData : public QtJambiObjectData
 {
 public:
     enum ThreadType{
@@ -83,9 +83,8 @@ public:
         VirtualMainThread,
         AdoptedThread
     };
-    QThreadUserData();
-    ~QThreadUserData() override;
-    QTJAMBI_OBJECTUSERDATA_ID_DECL
+    QThreadObjectData();
+    ~QThreadObjectData() override;
     void initializeDefault(QThread* thread);
     void initializeAdopted(QThread* thread);
     void reinitializeMain(QThread* thread);
@@ -95,9 +94,9 @@ public:
     inline bool purgeOnExit() const {return m_threadType!=ProcessMainThread;}
     QObject* threadDeleter() const;
     inline ThreadType threadType() const { return m_threadType; }
-    static QThreadUserData* ensureThreadUserData(QThread* thread);
+    static QThreadObjectData* ensureThreadUserData(QThread* thread);
     struct Result{
-        QThreadUserData* threadUserData;
+        QThreadObjectData* threadUserData;
         bool initRequired;
     };
     static Result ensureThreadUserDataLocked(QThread* thread);
@@ -105,19 +104,18 @@ public:
     static QBasicAtomicPointer<void> theMainThreadId;
 #endif
 private:
-    QExplicitlySharedDataPointer<struct QThreadUserDataPrivate> p;
+    QExplicitlySharedDataPointer<struct QThreadObjectDataPrivate> p;
     ThreadType m_threadType;
     bool m_isJavaLaunched = false;
 
     friend EventDispatcherCheck;
 };
 
-class QThreadInitializationUserData : public QtJambiObjectData{
+class QThreadInitializationObjectData : public QtJambiObjectData{
 public:
-    QThreadInitializationUserData();
-    QThreadInitializationUserData(JNIEnv *env, jobject threadGroup);
-    ~QThreadInitializationUserData() override;
-    QTJAMBI_OBJECTUSERDATA_ID_DECL
+    QThreadInitializationObjectData();
+    QThreadInitializationObjectData(JNIEnv *env, jobject threadGroup);
+    ~QThreadInitializationObjectData() override;
     jobject getThreadGroup() const;
     jobject getUncaughtExceptionHandler(JNIEnv *env) const;
     void setUncaughtExceptionHandler(JNIEnv *env, jobject uncaughtExceptionHandler);
@@ -136,15 +134,14 @@ private:
     QByteArray m_name;
 };
 
-struct QThreadAdoptionUserData : public QtJambiObjectData{
+struct QThreadAdoptionObjectData : public QtJambiObjectData{
     JObjectWrapper m_java_object;
-    QThreadAdoptionUserData(JNIEnv * env, jobject java_qthread);
+    QThreadAdoptionObjectData(JNIEnv * env, jobject java_qthread);
     void clear(JNIEnv* env);
     jobject getLocalRef(JNIEnv* env);
-    ~QThreadAdoptionUserData() override;
-    QTJAMBI_OBJECTUSERDATA_ID_DECL
+    ~QThreadAdoptionObjectData() override;
 private:
-    Q_DISABLE_COPY_MOVE(QThreadAdoptionUserData)
+    Q_DISABLE_COPY_MOVE(QThreadAdoptionObjectData)
 };
 
 class AbstractThreadEvent : public QEvent

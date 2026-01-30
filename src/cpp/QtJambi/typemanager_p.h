@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -107,7 +107,7 @@ public:
     static QtJambiUtils::ExternalToInternalConverter tryGetExternalToInternalConverter(JNIEnv* env, jclass externalClass, const QString &internalTypeName, const QMetaType& internalMetaType);
 
     static QStringList parseSignature(const QString &signature, QString *name = nullptr);
-    static QtJambiUtils::QHashFunction findHashFunction(bool isPointer, int metaType);
+    static QtJambiUtils::QHashFunction findHashFunction(bool isPointer, QMetaType metaType);
 
 private:
     enum class PointerType{

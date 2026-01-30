@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -335,11 +335,11 @@ auto %out = [functor = JObjectWrapper(%env, %in)](const QHttpServerRequest& requ
                         codeClass: CodeClass.Native
                         Text{content: String.raw`
 auto %out = [slot = JObjectWrapper(%env, %in)](const QHttpServerRequest & request, QHttpServerResponder & responder){
-                if(JniEnvironment env{200}){
+                if(JniEnvironmentScope env{nullptr, 200}){
                             QTJAMBI_TRY{
                                 Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env),
                                                     qtjambi_cast<jobject>(env, request),
-                                                    qtjambi_cast<jobject>(env, responder));
+                                                    qtjambi_cast<jobject>(env, env.scope(), responder));
                             }QTJAMBI_CATCH(const JavaException& exn){
                                 exn.report(env);
                             }QTJAMBI_TRY_END
@@ -368,12 +368,12 @@ auto %out = [slot = JObjectWrapper(%env, %in)](const QHttpServerRequest & reques
                     ConversionRule{
                         codeClass: CodeClass.Native
                         Text{content: String.raw`
-auto %out = [slot = JObjectWrapper(%env, %in)](const QHttpServerRequest & request, QHttpServerResponse & responde){
-                if(JniEnvironment env{200}){
+auto %out = [slot = JObjectWrapper(%env, %in)](const QHttpServerRequest & request, QHttpServerResponse & response){
+                if(JniEnvironmentScope env{nullptr, 200}){
                             QTJAMBI_TRY{
                                 Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env),
                                                     qtjambi_cast<jobject>(env, request),
-                                                    qtjambi_cast<jobject>(env, responde));
+                                                    qtjambi_cast<jobject>(env, env.scope(), response));
                             }QTJAMBI_CATCH(const JavaException& exn){
                                 exn.report(env);
                             }QTJAMBI_TRY_END
@@ -838,12 +838,12 @@ public:
             Text{content: String.raw`
 inline auto convertSlot(JNIEnv* _env, jobject _slot){
     return [slot = JObjectWrapper(_env, _slot)](const QRegularExpressionMatch & regexp, const QHttpServerRequest & request, QHttpServerResponder & responder){
-                    if(JniEnvironment env{200}){
+                    if(JniEnvironmentScope env{nullptr,200}){
                         QTJAMBI_TRY{
                             Java::QtCore::QMetaObject$Slot3::invoke(env, slot.object(env),
                                         qtjambi_cast<jobject>(env, regexp),
                                         qtjambi_cast<jobject>(env, request),
-                                        qtjambi_cast<jobject>(env, responder));
+                                        qtjambi_cast<jobject>(env, env.scope(), responder));
                         }QTJAMBI_CATCH(const JavaException& exn){
                             exn.report(env);
                         }QTJAMBI_TRY_END
@@ -855,13 +855,13 @@ inline auto convertSlot(JNIEnv* _env, QObject*& qobject, jobject _receiver, jobj
         qobject = qtjambi_cast<QObject*>(_env, _receiver);
     }
     return [receiver = JObjectWrapper(_env, _receiver), slot = JObjectWrapper(_env, _slot)](const QRegularExpressionMatch & regexp, const QHttpServerRequest & request, QHttpServerResponder & responder){
-                    if(JniEnvironment env{200}){
+                    if(JniEnvironmentScope env{nullptr,200}){
                         QTJAMBI_TRY{
                             Java::QtCore::QMetaObject$Slot4::invoke(env, slot.object(env),
                                         receiver.object(env),
                                         qtjambi_cast<jobject>(env, regexp),
                                         qtjambi_cast<jobject>(env, request),
-                                        qtjambi_cast<jobject>(env, responder));
+                                        qtjambi_cast<jobject>(env, env.scope(), responder));
                         }QTJAMBI_CATCH(const JavaException& exn){
                             exn.report(env);
                         }QTJAMBI_TRY_END
@@ -955,7 +955,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServerRouterRule_in
         arguments[0].l = pathPattern0;
         arguments[1].l = context1;
         arguments[2].l = func2;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler, sizeof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &deleter_QHttpServerRouterRule, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler, sizeof(QHttpServerRouterRule_shell), alignof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &deleter_QHttpServerRouterRule, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -978,7 +978,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServerRouterRule_in
         arguments[1].l = methods1;
         arguments[2].l = context2;
         arguments[3].l = func3;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler, sizeof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &deleter_QHttpServerRouterRule, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler, sizeof(QHttpServerRouterRule_shell), alignof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &deleter_QHttpServerRouterRule, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -999,7 +999,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServerRouterRule_in
         arguments[0].l = pathPattern0;
         arguments[1].l = context2;
         arguments[2].l = func3;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler_3, sizeof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &deleter_QHttpServerRouterRule, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler_3, sizeof(QHttpServerRouterRule_shell), alignof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &deleter_QHttpServerRouterRule, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -1022,7 +1022,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServerRouterRule_in
         arguments[1].l = methods1;
         arguments[2].l = context2;
         arguments[3].l = func3;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler_4, sizeof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &deleter_QHttpServerRouterRule, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler_4, sizeof(QHttpServerRouterRule_shell), alignof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &deleter_QHttpServerRouterRule, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END

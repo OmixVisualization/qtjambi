@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -148,22 +148,27 @@ private:
 Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
 
 struct Libraries{
+    typedef QHash<void*,void(*)(void*)> FunctionPointerCleanupHash;
     Libraries():dir(nullptr){}
     ~Libraries(){
         QHash<QString,QVector<QExplicitlySharedDataPointer<LibraryFile>>> libraries;
         QHash<quintptr,QExplicitlySharedDataPointer<LibraryFile>> filesByFunction;
+        FunctionPointerCleanupHash _functionPointerCleanups;
         {
             QMutexLocker locker(gMutex());
             this->libraries.swap(libraries);
             this->filesByFunction.swap(filesByFunction);
+            this->functionPointerCleanups.swap(_functionPointerCleanups);
         }
         filesByFunction.clear();
         libraries.clear();
+        _functionPointerCleanups.clear();
     }
     Libraries& swap(Libraries& other){
         libraries.swap(other.libraries);
         filesByFunction.swap(other.filesByFunction);
         dir.swap(other.dir);
+        functionPointerCleanups.swap(other.functionPointerCleanups);
         return *this;
     }
     QFunctionPointer nextFunction(const QString& typeName,
@@ -204,15 +209,12 @@ struct Libraries{
                     files.removeAll(libFile);
                 }
             }
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            libFile = nullptr;
-#else
             libFile.reset();
-#endif
             return true;
         }
         return false;
     }
+    FunctionPointerCleanupHash functionPointerCleanups;
 private:
     QHash<QString,QVector<QExplicitlySharedDataPointer<LibraryFile>>> libraries;
     QHash<quintptr,QExplicitlySharedDataPointer<LibraryFile>> filesByFunction;
@@ -222,8 +224,6 @@ private:
     friend void unregister_file_by_function(QFunctionPointer fn);
 };
 
-typedef SecureContainer<QHash<void*,void(*)(void*)>,gMutex> FunctionPointerCleanupHash;
-Q_GLOBAL_STATIC(FunctionPointerCleanupHash, gFunctionPointerCleanups)
 Q_GLOBAL_STATIC(Libraries, gLibraries)
 
 void register_file_by_function(LibraryFile* libFile, QFunctionPointer fn){
@@ -242,13 +242,11 @@ void unregister_file_by_function(QFunctionPointer fn){
 
 void clearFunctionPointersAtShutdown(){
     Libraries libraries;
-    QHash<void*,void(*)(void*)> functionPointerCleanups;
     if(Q_LIKELY(!gLibraries.isDestroyed())){
         QMutexLocker locker(gMutex());
         gLibraries->swap(libraries);
-        gFunctionPointerCleanups->swap(functionPointerCleanups);
     }
-    for(auto iter = functionPointerCleanups.constKeyValueBegin(); iter!=functionPointerCleanups.constKeyValueEnd(); ++iter){
+    for(auto iter = libraries.functionPointerCleanups.constKeyValueBegin(); iter!=libraries.functionPointerCleanups.constKeyValueEnd(); ++iter){
         if(iter->second && iter->first)
             iter->second(iter->first);
     }
@@ -262,13 +260,13 @@ QRecursiveMutex* functionPointerLock(){
 
 void registerFunctionPointerCleanup(void* ptr, void(*cleanup)(void*)){
     QMutexLocker locker(gMutex());
-    (*gFunctionPointerCleanups)[ptr] = cleanup;
+    gLibraries->functionPointerCleanups[ptr] = cleanup;
 }
 
 void unregisterFunctionPointerCleanup(void* ptr){
-    if(Q_LIKELY(!gFunctionPointerCleanups.isDestroyed())){
+    if(Q_LIKELY(!gLibraries.isDestroyed())){
         QMutexLocker locker(gMutex());
-        gFunctionPointerCleanups->remove(ptr);
+        gLibraries->functionPointerCleanups.remove(ptr);
     }
 }
 

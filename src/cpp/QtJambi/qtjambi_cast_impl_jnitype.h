@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -134,12 +134,19 @@ struct qtjambi_jobject_plain_cast{
                 if constexpr(std::is_polymorphic<NativeType>::value){
                     jobject o = nullptr;
                     if(in){
+                        const std::type_info* typeId{nullptr};
                         try{
-                            QtJambiAPI::checkDanglingPointer(env, in);
-                            // check rtti availability:
-                            if(QtJambiPrivate::CheckPointer<NativeType>::trySupplyType(in)!=nullptr)
-                                o = QtJambiShellInterface::getJavaObjectLocalRef(env, dynamic_cast<const QtJambiShellInterface*>(in));
+                            typeId = QtJambiPrivate::CheckPointer<NativeType>::trySupplyType(in);
                         }catch(...){}
+                        // check rtti availability:
+                        if(typeId){
+                            try{
+                                if(const QtJambiShellInterface* shell = dynamic_cast<const QtJambiShellInterface*>(in))
+                                    return QtJambiShellInterface::getJavaObjectLocalRef(env, shell);
+                            }catch(...){}
+                        }else{
+                            QtJambiAPI::checkDanglingPointer(env, in);
+                        }
                     }
                     if(!o){
                         if constexpr(cast_var_args<Args...>::hasScope)
@@ -155,22 +162,13 @@ struct qtjambi_jobject_plain_cast{
                         return QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, typeid(NativeType));
                 }
             }else if constexpr(is_rvalue && !is_const && std::is_move_constructible<NativeType>::value){
-                NativeType* ptr = new NativeType(std::move(in));
-                try{
-                    jobject out = QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(env, ptr, typeid(NativeType));
-                    if(!out)
-                        delete ptr;
-                    return out;
-                }catch(const JavaException& exn){
-                    delete ptr;
-                    exn.raise();
-                    return nullptr;
-                }
-            }else if constexpr(!std::is_copy_constructible<NativeType>::value || (is_reference && !is_rvalue && !is_const && cast_var_args<Args...>::hasScope)){
-                if constexpr(cast_var_args<Args...>::hasScope)
-                    return QtJambiAPI::convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(env, cast_var_args<Args...>::scope(args...), &in, typeid(NativeType));
-                else
-                    return QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, &in, typeid(NativeType));
+                std::unique_ptr<NativeType> ptr = std::make_unique<NativeType>(std::move(in));
+                jobject out = QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(env, ptr.get(), typeid(NativeType));
+                if(out)
+                    (void)ptr.release();
+                return out;
+            }else if constexpr((!std::is_copy_constructible<NativeType>::value || (is_reference && !is_rvalue && !is_const)) && cast_var_args<Args...>::hasScope){
+                return QtJambiAPI::convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(env, cast_var_args<Args...>::scope(args...), &in, typeid(NativeType));
             }else{
                 return QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &in, typeid(NativeType));
             }
@@ -272,7 +270,7 @@ template<bool forward,
 struct qtjambi_jobject_plain_cast<forward,
                               JniType,
                               QSpan<T,E>, is_pointer, is_const, is_reference, is_rvalue, Args...>
-    : qtjambi_jobject_span_cast<forward, JniType, is_pointer, is_const, is_reference, is_rvalue, typename std::remove_cv<T>::type, E, std::is_const<T>::value, Args...>{
+    : qtjambi_jobject_span_cast<forward, JniType, is_pointer, is_const, is_reference, is_rvalue, typename std::remove_cv<T>::type, E, QSpan, std::is_const<T>::value, Args...>{
 };
 
 template<bool forward,
@@ -281,8 +279,29 @@ template<bool forward,
 struct qtjambi_jobject_plain_cast<forward,
                               jobject,
                               QSpan<T,E>, is_pointer, is_const, is_reference, is_rvalue, Args...>
-    : qtjambi_jobject_span_cast<forward, jobject, is_pointer, is_const, is_reference, is_rvalue, typename std::remove_cv<T>::type, E, std::is_const<T>::value, Args...>{
+    : qtjambi_jobject_span_cast<forward, jobject, is_pointer, is_const, is_reference, is_rvalue, typename std::remove_cv<T>::type, E, QSpan, std::is_const<T>::value, Args...>{
 };
+
+#ifdef __cpp_lib_span
+template<bool forward,
+         typename JniType,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
+         typename T, std::size_t E, typename... Args>
+struct qtjambi_jobject_plain_cast<forward,
+                                  JniType,
+                                  std::span<T,E>, is_pointer, is_const, is_reference, is_rvalue, Args...>
+    : qtjambi_jobject_span_cast<forward, JniType, is_pointer, is_const, is_reference, is_rvalue, typename std::remove_cv<T>::type, E, std::span, std::is_const<T>::value, Args...>{
+};
+
+template<bool forward,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
+         typename T, std::size_t E, typename... Args>
+struct qtjambi_jobject_plain_cast<forward,
+                                  jobject,
+                                  std::span<T,E>, is_pointer, is_const, is_reference, is_rvalue, Args...>
+    : qtjambi_jobject_span_cast<forward, jobject, is_pointer, is_const, is_reference, is_rvalue, typename std::remove_cv<T>::type, E, std::span, std::is_const<T>::value, Args...>{
+};
+#endif // __cpp_lib_span
 #endif // QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
 
 template<bool forward,
@@ -455,15 +474,15 @@ struct qtjambi_jobject_plain_cast<forward, jobject, QModelIndex, is_pointer, is_
             Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasJNIEnv, "Cannot cast to jobject without JNIEnv.");
             if constexpr(is_pointer){
                 if constexpr(cast_var_args<Args...>::hasScope)
-                    return QtJambiAPI::convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(env, cast_var_args<Args...>::scope(args...), in, typeid(NativeType));
+                    return QtJambiAPI::convertModelIndexToEphemeralJavaObject(env, cast_var_args<Args...>::scope(args...), in);
                 else
-                    return QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, typeid(NativeType));
+                    return QtJambiAPI::convertModelIndexToJavaObject(env, in);
             }else if constexpr(is_rvalue){
-                return QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(env, new QModelIndex(std::move(in)));
+                return QtJambiAPI::convertModelIndexToJavaObject(env, std::move(in));
             }else if constexpr(is_reference && !is_const && cast_var_args<Args...>::hasScope){
-                return QtJambiAPI::convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(env, cast_var_args<Args...>::scope(args...), &in, typeid(NativeType));
+                return QtJambiAPI::convertModelIndexToEphemeralJavaObject(env, cast_var_args<Args...>::scope(args...), in);
             }else{
-                return QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &in, typeid(NativeType));
+                return QtJambiAPI::convertModelIndexToJavaObject(env, in);
             }
         }else{
             if constexpr(is_pointer || is_reference){
@@ -522,6 +541,8 @@ struct qtjambi_jobject_plain_cast<forward, jobject, QModelRoleDataSpan, is_point
             qsizetype length(0);
             QtJambiAPI::convertJavaObjectToQModelRoleData(env, cast_var_args<Args...>::scope(args...), in, data, length);
             if constexpr(is_pointer || is_reference){
+                Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const QModelRoleDataSpan&");
+                Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const QModelRoleDataSpan*");
                 QModelRoleDataSpan* result = new QModelRoleDataSpan(reinterpret_cast<QModelRoleData*>(data), length);
                 cast_var_args<Args...>::scope(args...).addDeletion(result);
                 if constexpr(is_pointer){
@@ -800,6 +821,9 @@ struct qtjambi_string_cast{
                                 result = new NativeType(buffer->constData<QChar>(), buffer->size<QChar>());
                                 cast_var_args<Args...>::scope(args...).addDeletion(result);
                             }
+                        }else{
+                            Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jstring to non-const QString&");
+                            Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jstring to non-const QString*");
                         }
                         if(!result){
                             JString2QChars buffer(env, qtjambi_to_jstring<JniType>::cast(env, in));
@@ -842,6 +866,10 @@ struct qtjambi_string_cast{
                 if constexpr(is_pointer || is_reference){
                     Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope || !is_reference, "Cannot cast to QVariant& without scope.");
                     Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope || !is_pointer, "Cannot cast to QVariant* without scope.");
+                    if constexpr(std::is_same_v<JniType,jstring>){
+                        Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jstring to non-const QVariant&");
+                        Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jstring to non-const QVariant*");
+                    }
                     if constexpr(is_pointer){
                         if(!in)
                             return nullptr;
@@ -960,6 +988,9 @@ struct qtjambi_string_cast{
                                 result = new NativeType(QtJambiAPI::convertJavaObjectToNative<QVariant>(env, in)->template value<NativeType>());
                                 cast_var_args<Args...>::scope(args...).addDeletion(result);
                             }
+                        }else{
+                            Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jstring to non-const QByteArray&");
+                            Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jstring to non-const QByteArray*");
                         }
                         if(!result){
                             J2CStringBuffer buffer(env, qtjambi_to_jstring<JniType>::cast(env, in));
@@ -1050,55 +1081,29 @@ struct qtjambi_string_cast{
             }else if constexpr(std::is_same_v<JniType, jstring> && (std::is_same_v<NativeType, char>
                                                                       || std::is_same_v<NativeType, QLatin1Char>
                                                                       || std::is_same_v<NativeType, std::byte>) && is_pointer){
-                if constexpr(is_const){
-                    Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast to const char* without scope.");
-                    PersistentJ2CStringBuffer* buffer = new PersistentJ2CStringBuffer(env, in);
-                    cast_var_args<Args...>::scope(args...).addDeletion(buffer);
-                    JavaException::check(env QTJAMBI_STACKTRACEINFO );
-                    if constexpr(std::is_same_v<NativeType, QLatin1Char>){
-                        return reinterpret_cast<const QLatin1Char*>(buffer->constData());
-                    }else if constexpr(std::is_same_v<NativeType, std::byte>){
-                        return reinterpret_cast<const std::byte*>(buffer->constData());
-                    }else{
-                        return buffer->constData();
-                    }
+                Q_STATIC_ASSERT_X(is_const, "Cannot cast jstring to non-const char*");
+                Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast to const char* without scope.");
+                PersistentJ2CStringBuffer* buffer = new PersistentJ2CStringBuffer(env, in);
+                cast_var_args<Args...>::scope(args...).addDeletion(buffer);
+                JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                if constexpr(std::is_same_v<NativeType, QLatin1Char>){
+                    return reinterpret_cast<const QLatin1Char*>(buffer->constData());
+                }else if constexpr(std::is_same_v<NativeType, std::byte>){
+                    return reinterpret_cast<const std::byte*>(buffer->constData());
                 }else{
-                    Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast to char* without scope.");
-                    J2CStringBuffer buffer(env, in);
-                    QByteArray* result = new QByteArray(buffer.toByteArray());
-                    cast_var_args<Args...>::scope(args...).addDeletion(result);
-                    return result->data();
-                    if constexpr(std::is_same_v<NativeType, QLatin1Char>){
-                        return reinterpret_cast<QLatin1Char*>(result->data());
-                    }else if constexpr(std::is_same_v<NativeType, std::byte>){
-                        return reinterpret_cast<std::byte*>(result->data());
-                    }else{
-                        return result->data();
-                    }
+                    return buffer->constData();
                 }
             }else if constexpr(std::is_same_v<JniType, jstring> && (std::is_same_v<NativeType, QChar>
                                                                       || std::is_same_v<NativeType, char16_t>) && is_pointer){
-                if constexpr(is_const){
-                    Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast to const QChar* without scope.");
-                    PersistentJString2QChars* buffer = new PersistentJString2QChars(env, in);
-                    cast_var_args<Args...>::scope(args...).addDeletion(buffer);
-                    JavaException::check(env QTJAMBI_STACKTRACEINFO );
-                    if constexpr(std::is_same_v<NativeType, char16_t>){
-                        return reinterpret_cast<const char16_t*>(buffer->data());
-                    }else{
-                        return buffer->data();
-                    }
+                Q_STATIC_ASSERT_X(is_const, "Cannot cast jstring to non-const QChar*");
+                Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast to const QChar* without scope.");
+                PersistentJString2QChars* buffer = new PersistentJString2QChars(env, in);
+                cast_var_args<Args...>::scope(args...).addDeletion(buffer);
+                JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                if constexpr(std::is_same_v<NativeType, char16_t>){
+                    return reinterpret_cast<const char16_t*>(buffer->data());
                 }else{
-                    Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast to QChar* without scope.");
-                    JString2QChars buffer(env, in);
-                    QString* chars = new QString(buffer.toString());
-                    cast_var_args<Args...>::scope(args...).addDeletion(chars);
-                    JavaException::check(env QTJAMBI_STACKTRACEINFO );
-                    if constexpr(std::is_same_v<NativeType, char16_t>){
-                        return reinterpret_cast<char16_t*>(chars->data());
-                    }else{
-                        return chars->data();
-                    }
+                    return buffer->data();
                 }
             }
         }
@@ -1159,27 +1164,64 @@ struct qtjambi_jobject_arithmetic_cast<forward,
             }else{
                 Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
             }
-        }else if constexpr(is_const && is_pointer){
-            Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast jstring to const char* pointer without scope.");
-            if(!in)
-                return nullptr;
-            if constexpr(std::is_integral<NativeType>::value){
+        }else{
+            if constexpr(is_pointer)
+                if(!in)
+                    return nullptr;
+            Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast jstring to const char* without scope.");
+            if constexpr(std::is_integral<NativeType>::value || std::is_same_v<NativeType, QLatin1Char> || std::is_same_v<NativeType, QChar>){
                 if constexpr(sizeof(NativeType)==sizeof(jbyte)){
-                    PersistentJ2CStringBuffer* buffer = new PersistentJ2CStringBuffer(env, in);
-                    cast_var_args<Args...>::scope(args...).addDeletion(buffer);
-                    return buffer->data();
+                    if constexpr(is_const){
+                        if constexpr(is_pointer || is_reference){
+                            PersistentJ2CStringBuffer* buffer = new PersistentJ2CStringBuffer(env, in);
+                            cast_var_args<Args...>::scope(args...).addDeletion(buffer);
+                            if constexpr(is_pointer){
+                                return reinterpret_cast<const NativeType*>(buffer->data());
+                            }else{
+                                return *reinterpret_cast<const NativeType*>(buffer->data());
+                            }
+                        }else{
+                            J2CStringBuffer buffer(env, in);
+                            return *buffer.data();
+                        }
+                    }else{
+                        if constexpr(std::is_same_v<NativeType, QLatin1Char>){
+                            Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jstring to non-const QLatin1Char&");
+                            Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jstring to non-const QLatin1Char*");
+                        }else{
+                            Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jstring to non-const char&");
+                            Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jstring to non-const char*");
+                        }
+                    }
                 }else if constexpr(sizeof(NativeType)==sizeof(jchar)){
-                    PersistentJ2CStringBuffer* buffer = new PersistentJ2CStringBuffer(env, in);
-                    cast_var_args<Args...>::scope(args...).addDeletion(buffer);
-                    return buffer->data();
+                    if constexpr(is_const){
+                        if constexpr(is_pointer || is_reference){
+                            PersistentJString2QChars* buffer = new PersistentJString2QChars(env, in);
+                            cast_var_args<Args...>::scope(args...).addDeletion(buffer);
+                            if constexpr(is_pointer){
+                                return reinterpret_cast<const NativeType*>(buffer->chars());
+                            }else{
+                                return *reinterpret_cast<const NativeType*>(buffer->chars());
+                            }
+                        }else{
+                            JString2QChars buffer(env, in);
+                            return *reinterpret_cast<const NativeType*>(buffer.chars());
+                        }
+                    }else{
+                        if constexpr(std::is_same_v<NativeType, QChar>){
+                            Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jstring to non-const QChar&");
+                            Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jstring to non-const QChar*");
+                        }else{
+                            Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jstring to non-const char16_t&");
+                            Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jstring to non-const char16_t*");
+                        }
+                    }
                 }else{
                     Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
                 }
             }else{
                 Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
             }
-        }else{
-            Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
         }
     }
 };
@@ -1271,30 +1313,50 @@ struct qtjambi_jobject_arithmetic_cast<forward,
                 if constexpr(std::is_same_v<NativeType,bool>){
                     *result = NativeType(QtJambiAPI::fromJavaBooleanObject(env, in));
                 }else if constexpr(std::is_integral<NativeType>::value){
+                    Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const integer reference");
+                    Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const integer pointer");
                     if constexpr(sizeof(NativeType)==sizeof(jbyte)){
+                        Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const char&");
+                        Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const char*");
                         *result = NativeType(QtJambiAPI::fromJavaByteObject(env, in));
                     }else if constexpr(sizeof(NativeType)==sizeof(jshort)){
+                        Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const short&");
+                        Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const short*");
                         *result = NativeType(QtJambiAPI::fromJavaShortObject(env, in));
                     }else if constexpr(sizeof(NativeType)==sizeof(jint)){
+                        Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const int&");
+                        Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const int*");
                         *result = NativeType(QtJambiAPI::fromJavaIntegerObject(env, in));
                     }else if constexpr(sizeof(NativeType)==sizeof(jlong)){
+                        Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const long long&");
+                        Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const long long*");
                         *result = NativeType(QtJambiAPI::fromJavaLongObject(env, in));
                     }else{
                         Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
                     }
                 }else if constexpr(std::is_floating_point<NativeType>::value){
                     if constexpr(sizeof(NativeType)==sizeof(jfloat)){
+                        Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const float&");
+                        Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const float*");
                         *result = NativeType(QtJambiAPI::fromJavaFloatObject(env, in));
                     }else if constexpr(sizeof(NativeType)==sizeof(jdouble)){
+                        Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const double&");
+                        Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const double*");
                         *result = NativeType(QtJambiAPI::fromJavaDoubleObject(env, in));
                     }else{
                         Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
                     }
                 }else if constexpr(std::is_same_v<NativeType,QChar>){
+                    Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const QChar&");
+                    Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const QChar*");
                     *result = NativeType(QtJambiAPI::fromJavaCharacterObject(env, in));
                 }else if constexpr(std::is_same_v<NativeType,QLatin1Char>){
+                    Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const QLatin1Char&");
+                    Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const QLatin1Char*");
                     *result = NativeType(QtJambiAPI::fromJavaByteObject(env, in));
                 }else if constexpr(std::is_same_v<NativeType,std::byte>){
+                    Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const std::byte&");
+                    Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const std::byte*");
                     *result = NativeType(QtJambiAPI::fromJavaByteObject(env, in));
                 }else{
                     Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");

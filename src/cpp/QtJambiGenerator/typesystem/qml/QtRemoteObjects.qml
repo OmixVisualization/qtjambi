@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -382,90 +382,6 @@ TypeSystem{
     
     ObjectType{
         name: "QConnectionAbstractServer"
-        until: 5
-        unless: "QTJAMBI_NO_REMOTEOBJECTS_PRIVATE"
-    }
-    
-    ObjectType{
-        name: "QConnectionAbstractServer"
-        since: 6
-    }
-    
-    ObjectType{
-        name: "IoDeviceBase"
-        ModifyField{
-            name: "m_isClosing"
-            read: false
-            write: true
-            rename: "Closing"
-        }
-        InjectCode{
-            target: CodeClass.Destructor
-            position: Position.Position1
-            Text{content: "if (!%this->m_isClosing)\n"+
-                          "    %this->close();"}
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "utils_p.h"
-                location: Include.Local
-            }
-        }
-        ModifyFunction{
-            signature: "read(QtRemoteObjects::QRemoteObjectPacketTypeEnum &, QString &)"
-            ModifyArgument{
-                index: 1
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QtRemoteObjects::QRemoteObjectPacketTypeEnum %out(QtRemoteObjects::Invalid);"}
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QString %out;"}
-                }
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.remoteobjects.IoDeviceBase$@Nullable ReadResult"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: String.raw`
-if(%in){
-    %out = Java::QtRemoteObjects::IoDeviceBase$ReadResult::newInstance(%env, qtjambi_cast<jobject>(%env, __qt_%1), qtjambi_cast<jobject>(%env, __qt_%2));
-}`
-                    }
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "stream()"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Dependent
-                }
-            }
-        }
-        InjectCode{
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiRemoteObjects.java"
-                quoteAfterLine: "class IoDevice___"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        since: [5, 12]
-        until: 5
-        unless: "QTJAMBI_NO_REMOTEOBJECTS_PRIVATE"
     }
     
     ObjectType{
@@ -528,149 +444,8 @@ if(%in){
     }
     
     ObjectType{
-        name: "ServerIoDevice"
-        InjectCode{
-            target: CodeClass.Destructor
-            position: Position.Position1
-            until: [5, 11]
-            Text{content: "if (!%this->m_isClosing)\n"+
-                          "    %this->close();"}
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-            Include{
-                fileName: "utils_p.h"
-                location: Include.Local
-            }
-            until: [5, 12, 0]
-        }
-        ModifyFunction{
-            signature: "read(QtRemoteObjects::QRemoteObjectPacketTypeEnum &, QString &)"
-            ModifyArgument{
-                index: 1
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QtRemoteObjects::QRemoteObjectPacketTypeEnum %out(QtRemoteObjects::Invalid);"}
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QString %out;"}
-                }
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.remoteobjects.ServerIoDevice$@Nullable ReadResult"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: String.raw`
-if(%in){
-    %out = Java::QtRemoteObjects::ServerIoDevice$ReadResult::newInstance(%env, qtjambi_cast<jobject>(%env, __qt_%1), qtjambi_cast<jobject>(%env, __qt_%2));
-}`
-                    }
-                }
-            }
-            until: [5, 12, 0]
-        }
-        InjectCode{
-            until: [5, 12, 0]
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiRemoteObjects.java"
-                quoteAfterLine: "class IoDevice___"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        until: 5
-        unless: "QTJAMBI_NO_REMOTEOBJECTS_PRIVATE"
-    }
-    
-    ObjectType{
         name: "QtROServerIoDevice"
         since: [6, 2]
-    }
-    
-    ObjectType{
-        name: "ClientIoDevice"
-        ModifyField{
-            name: "m_dataStream"
-            read: false
-            write: false
-        }
-        InjectCode{
-            target: CodeClass.Destructor
-            position: Position.Position1
-            until: [5, 11]
-            Text{content: "if (!%this->m_isClosing)\n"+
-                          "    %this->close();"}
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-            Include{
-                fileName: "utils_p.h"
-                location: Include.Local
-            }
-            until: [5, 12, 0]
-        }
-        ModifyFunction{
-            signature: "read(QtRemoteObjects::QRemoteObjectPacketTypeEnum &, QString &)"
-            ModifyArgument{
-                index: 1
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QtRemoteObjects::QRemoteObjectPacketTypeEnum %out(QtRemoteObjects::Invalid);"}
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QString %out;"}
-                }
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.remoteobjects.ClientIoDevice$@Nullable ReadResult"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: String.raw`
-if(%in){
-    %out = Java::QtRemoteObjects::ClientIoDevice$ReadResult::newInstance(%env, qtjambi_cast<jobject>(%env, __qt_%1), qtjambi_cast<jobject>(%env, __qt_%2));
-}`
-                    }
-                }
-            }
-            until: [5, 12, 0]
-        }
-        InjectCode{
-            until: [5, 12, 0]
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiRemoteObjects.java"
-                quoteAfterLine: "class IoDevice___"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        until: 5
-        unless: "QTJAMBI_NO_REMOTEOBJECTS_PRIVATE"
     }
     
     ObjectType{
@@ -721,19 +496,6 @@ if(%in){
         targetType: "QtRemoteObjects"
         Instantiation{
             proxyCall: "qtjambi_qRegisterRemoteObjectsClient"
-            until: [5, 15]
-            unless: "QTJAMBI_NO_REMOTEOBJECTS_PRIVATE"
-            Argument{
-                type: "char"
-            }
-            AddArgument{
-                name: "type"
-                type: "java.lang.Class<? extends io.qt.remoteobjects.ClientIoDevice>"
-            }
-        }
-        Instantiation{
-            proxyCall: "qtjambi_qRegisterRemoteObjectsClient"
-            since: 6
             Argument{
                 type: "char"
             }
@@ -764,19 +526,6 @@ if(%in){
         targetType: "QtRemoteObjects"
         Instantiation{
             proxyCall: "qtjambi_qRegisterRemoteObjectsServer"
-            until: [5, 15]
-            unless: "QTJAMBI_NO_REMOTEOBJECTS_PRIVATE"
-            Argument{
-                type: "char"
-            }
-            AddArgument{
-                name: "type"
-                type: "java.lang.Class<? extends io.qt.remoteobjects.QConnectionAbstractServer>"
-            }
-        }
-        Instantiation{
-            proxyCall: "qtjambi_qRegisterRemoteObjectsServer"
-            since: 6
             Argument{
                 type: "char"
             }

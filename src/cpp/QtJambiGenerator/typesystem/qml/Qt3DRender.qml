@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -48,12 +48,6 @@ TypeSystem{
         namespace: "Qt3DRender"
         namingPolicy: NamespacePrefix.Cut
     }
-
-    NamespaceType{
-        name: "Qt3DRender"
-        generate: false
-        until: [5, 14]
-    }
     
     NamespaceType{
         name: "Qt3DRender"
@@ -87,7 +81,6 @@ TypeSystem{
         EnumType{
             name: "API"
         }
-        since: [5, 15]
     }
     
     Rejection{
@@ -131,7 +124,6 @@ TypeSystem{
 
         EnumType{
             name: "SubmissionType"
-            since: 6
         }
     }
     
@@ -147,7 +139,6 @@ TypeSystem{
         name: "Qt3DRender::QScreenRayCaster"
         ModifyFunction{
             signature: "pick(QPoint)"
-            since: 6
         }
     }
     
@@ -244,51 +235,10 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QFrameGraphNodeCreatedChangeBase"
-        since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QLineWidth"
-    }
-    
-    ObjectType{
-        name: "Qt3DRender::QDiffuseMapMaterial"
-        ModifyFunction{
-            signature: "setDiffuse(Qt3DRender::QAbstractTextureProvider*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcDiffuse"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        until: [5, 6]
-    }
-    
-    ObjectType{
-        name: "Qt3DRender::QDiffuseSpecularMapMaterial"
-        ModifyFunction{
-            signature: "setDiffuse(Qt3DRender::QAbstractTextureProvider*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcDiffuse"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setSpecular(Qt3DRender::QAbstractTextureProvider*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcSpecular"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        until: [5, 6]
     }
     
     ObjectType{
@@ -305,73 +255,7 @@ TypeSystem{
     }
     
     ObjectType{
-        name: "Qt3DRender::QNormalDiffuseMapAlphaMaterial"
-        until: [5, 6]
-    }
-    
-    ObjectType{
-        name: "Qt3DRender::QNormalDiffuseMapMaterial"
-        ModifyFunction{
-            signature: "setDiffuse(Qt3DRender::QAbstractTextureProvider*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcDiffuse"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setNormal(Qt3DRender::QAbstractTextureProvider*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcNormal"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        until: [5, 6]
-    }
-    
-    ObjectType{
-        name: "Qt3DRender::QNormalDiffuseSpecularMapMaterial"
-        ModifyFunction{
-            signature: "setDiffuse(Qt3DRender::QAbstractTextureProvider*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcDiffuse"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setSpecular(Qt3DRender::QAbstractTextureProvider*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcSpecular"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setNormal(Qt3DRender::QAbstractTextureProvider*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcNormal"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        until: [5, 6]
-    }
-    
-    ObjectType{
         name: "Qt3DRender::QPhongMaterial"
-        until: [5, 6]
     }
     
     ObjectType{
@@ -403,23 +287,6 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "setTextureParameter(QString,Qt3DRender::QAbstractTextureProvider*)"
-            ModifyArgument{
-                index: 2
-                ReferenceCount{
-                    variableName: "__rcTextureParameters"
-                    keyArgument: 1
-                    action: ReferenceCount.Put
-                }
-            }
-            until: [5, 6]
-        }
-    }
-    
-    ObjectType{
-        name: "Qt3DRender::QSkyboxEntity"
-        until: [5, 6]
     }
     
     InterfaceType{
@@ -473,17 +340,6 @@ TypeSystem{
             name: "PrimitiveType"
         }
         ModifyFunction{
-            signature: "setGeometry(Qt3DRender::QGeometry *)"
-            ModifyArgument{
-                index: 1
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Cpp
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "setGeometry(Qt3DCore::QGeometry *)"
             ModifyArgument{
                 index: 1
@@ -492,89 +348,7 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
-    }
-    
-    ObjectType{
-        name: "Qt3DRender::QGeometry"
-
-        Rejection{
-            functionName: "boundingVolumeSpecifier"
-        }
-        ModifyFunction{
-            signature: "addAttribute(Qt3DRender::QAttribute *)"
-            ModifyArgument{
-                index: 1
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Cpp
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "removeAttribute(Qt3DRender::QAttribute *)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setBoundingVolumePositionAttribute(Qt3DRender::QAttribute *)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcBoundingVolumePositionAttribute"
-                    action: ReferenceCount.Set
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "addAttribute(Qt3DCore::QAttribute *)"
-            ModifyArgument{
-                index: 1
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Cpp
-                }
-            }
-            since: 6
-        }
-        ModifyFunction{
-            signature: "removeAttribute(Qt3DCore::QAttribute *)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            since: 6
-        }
-        ModifyFunction{
-            signature: "setBoundingVolumePositionAttribute(Qt3DCore::QAttribute *)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcBoundingVolumePositionAttribute"
-                    action: ReferenceCount.Set
-                }
-            }
-            since: 6
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "Qt3DRender::QAbstractSceneLoader"
-        EnumType{
-            name: "Status"
-        }
-        until: [5, 6]
     }
     
     InterfaceType{
@@ -610,72 +384,6 @@ TypeSystem{
                 }
             }
         }
-    }
-    
-    InterfaceType{
-        name: "Qt3DRender::QGeometryFunctor"
-        ModifyFunction{
-            signature: "operator==(const Qt3DRender::QGeometryFunctor &) const"
-            rename: "equals"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-            InjectCode{
-                target: CodeClass.JavaInterface
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "return this==%1;"}
-            }
-        }
-        ModifyFunction{
-            signature: "operator()()"
-            Delegate{name: "get"}
-            ModifyArgument{
-                index: "return"
-                DefineOwnership{
-                    codeClass: CodeClass.Shell
-                    ownership: Ownership.Cpp
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-        }
-        until: 5
-    }
-    
-    InterfaceType{
-        name: "Qt3DRender::QAbstractFunctor"
-
-        Rejection{
-            functionName: "functor_cast"
-            since: [5, 15]
-        }
-        ModifyFunction{
-            signature: "id()const"
-            remove: RemoveFlag.JavaAndNative
-            InjectCode{
-                target: CodeClass.Shell
-                Text{content: String.raw`
-if(JniEnvironmentExceptionHandler %env{200}) {
-    QTJAMBI_TRY {
-        if(jobject %this = __shell()->getJavaObjectLocalRef(%env)){
-            return qintptr(QtJambiAPI::getJavaObjectHashCode(%env, %env->GetObjectClass(%this)));
-        }else{
-            __shell()->warnForMethod("Qt3DRender::QAbstractFunctor::id() const");
-        }
-    } QTJAMBI_CATCH(const JavaException& exn){
-        %env.handleException(exn, this, "Qt3DRender::QAbstractFunctor::id() const");
-    } QTJAMBI_TRY_END
-}`
-                }
-            }
-        }
-        until: 5
     }
     
     InterfaceType{
@@ -737,66 +445,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     }
     
     ObjectType{
-        name: "Qt3DRender::QAbstractTextureProvider"
-        EnumType{
-            name: "Status"
-        }
-
-        EnumType{
-            name: "Target"
-        }
-
-        EnumType{
-            name: "TextureFormat"
-        }
-
-        EnumType{
-            name: "Filter"
-        }
-
-        EnumType{
-            name: "CubeMapFace"
-        }
-
-        EnumType{
-            name: "ComparisonFunction"
-        }
-
-        EnumType{
-            name: "ComparisonMode"
-            until: [5, 6]
-        }
-        ModifyFunction{
-            signature: "addTextureImage(Qt3DRender::QAbstractTextureImage*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "removeTextureImage(Qt3DRender::QAbstractTextureImage*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setWrapMode(Qt3DRender::QTextureWrapMode)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        until: [5, 6]
-    }
-    
-    ObjectType{
         name: "Qt3DRender::QAbstractTexture"
         EnumType{
             name: "Status"
@@ -828,7 +476,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
 
         EnumType{
             name: "HandleType"
-            since: [5, 12]
         }
         ModifyFunction{
             signature: "addTextureImage(Qt3DRender::QAbstractTextureImage*)"
@@ -861,16 +508,10 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     
     ObjectType{
         name: "Qt3DRender::QSharedGLTexture"
-        since: [5, 13]
     }
     
     ObjectType{
         name: "Qt3DRender::QAlphaCoverage"
-        ModifyFunction{
-            signature: "doClone() const"
-            remove: RemoveFlag.All
-            until: [5, 6]
-        }
     }
     
     ObjectType{
@@ -881,12 +522,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
 
         EnumType{
             name: "AlphaFunction"
-            since: [5, 7]
-        }
-        ModifyFunction{
-            signature: "doClone() const"
-            remove: RemoveFlag.All
-            until: [5, 6]
         }
     }
     
@@ -897,52 +532,12 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     ObjectType{
         name: "Qt3DRender::QBlendEquation"
         EnumType{
-            name: "BlendMode"
-            until: [5, 6]
-        }
-
-        EnumType{
             name: "BlendFunction"
-            since: [5, 7]
         }
-        ModifyFunction{
-            signature: "doClone() const"
-            remove: RemoveFlag.All
-            until: [5, 6]
-        }
-    }
-    
-    ObjectType{
-        name: "Qt3DRender::QBlendState"
-
-        EnumType{
-            name: "Blending"
-            RejectEnumValue{
-                name: "OneMinusSrcAlpha"
-            }
-            RejectEnumValue{
-                name: "DstAlpha"
-            }
-        }
-        ModifyFunction{
-            signature: "doClone() const"
-            remove: RemoveFlag.All
-        }
-        until: [5, 6]
     }
     
     ObjectType{
         name: "Qt3DRender::QColorMask"
-        ModifyFunction{
-            signature: "doClone() const"
-            remove: RemoveFlag.All
-            until: [5, 6]
-        }
-        ModifyFunction{
-            signature: "copy(const Qt3DCore::QNode *)"
-            access: Modification.DeclFinal
-            until: [5, 6]
-        }
     }
     
     ObjectType{
@@ -955,11 +550,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
         EnumType{
             name: "CullingMode"
         }
-        ModifyFunction{
-            signature: "doClone() const"
-            remove: RemoveFlag.All
-            until: [5, 6]
-        }
     }
     
     ObjectType{
@@ -968,11 +558,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     
     ObjectType{
         name: "Qt3DRender::QDepthMask"
-        ModifyFunction{
-            signature: "doClone() const"
-            remove: RemoveFlag.All
-            until: [5, 6]
-        }
     }
     
     ObjectType{
@@ -984,12 +569,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
 
         EnumType{
             name: "DepthFunction"
-            since: [5, 7]
-        }
-        ModifyFunction{
-            signature: "doClone() const"
-            remove: RemoveFlag.All
-            until: [5, 6]
         }
     }
     
@@ -999,11 +578,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     
     ObjectType{
         name: "Qt3DRender::QDithering"
-        ModifyFunction{
-            signature: "doClone() const"
-            remove: RemoveFlag.All
-            until: [5, 6]
-        }
     }
     
     ObjectType{
@@ -1047,28 +621,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     }
     
     ObjectType{
-        name: "Qt3DRender::QAttribute"
-        ModifyFunction{
-            signature: "setBuffer(Qt3DRender::QBuffer*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-
-        EnumType{
-            name: "AttributeType"
-        }
-
-        EnumType{
-            name: "VertexBaseType"
-        }
-        until: 5
-    }
-    
-    ObjectType{
         name: "Qt3DRender::QAbstractAttribute"
         ModifyFunction{
             signature: "buffer() const"
@@ -1078,52 +630,14 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     
     ObjectType{
         name: "Qt3DRender::QFrontFace"
-        ModifyFunction{
-            signature: "doClone() const"
-            remove: RemoveFlag.All
-            until: [5, 6]
-        }
-
-        EnumType{
-            name: "FaceDir"
-            until: [5, 6]
-        }
 
         EnumType{
             name: "WindingDirection"
-            since: [5, 7]
         }
     }
     
     ObjectType{
         name: "Qt3DRender::QAbstractBuffer"
-    }
-    
-    ObjectType{
-        name: "Qt3DRender::QBuffer"
-        ModifyFunction{
-            signature: "QBuffer(Qt3DRender::QBuffer::BufferType, Qt3DCore::QNode *)"
-            ModifyArgument{
-                index: 1
-                ReplaceDefaultExpression{
-                    expression: "BufferType.VertexBuffer"
-                }
-            }
-        }
-
-        EnumType{
-            name: "BufferType"
-        }
-
-        EnumType{
-            name: "UsageType"
-        }
-
-        EnumType{
-            name: "AccessType"
-            since: [5, 9]
-        }
-        until: 5
     }
     
     ObjectType{
@@ -1148,21 +662,11 @@ if(JniEnvironmentExceptionHandler %env{200}) {
         name: "Qt3DRender::QMesh"
         EnumType{
             name: "Status"
-            since: [5, 11]
         }
     }
     
     ObjectType{
         name: "Qt3DRender::QParameter"
-    }
-    
-    ObjectType{
-        name: "Qt3DRender::QParameterMapping"
-
-        EnumType{
-            name: "Binding"
-        }
-        until: [5, 9]
     }
     
     ObjectType{
@@ -1175,42 +679,10 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     
     ObjectType{
         name: "Qt3DRender::QPolygonOffset"
-        ModifyFunction{
-            signature: "doClone() const"
-            remove: RemoveFlag.All
-            until: [5, 6]
-        }
-    }
-    
-    ObjectType{
-        name: "Qt3DRender::QRenderAttachment"
-
-        EnumType{
-            name: "RenderAttachmentType"
-        }
-
-        EnumType{
-            name: "CubeMapFace"
-        }
-        ModifyFunction{
-            signature: "setTexture(Qt3DRender::QAbstractTextureProvider*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        until: [5, 6]
     }
     
     ObjectType{
         name: "Qt3DRender::QRenderPass"
-        ModifyFunction{
-            signature: "glslNameForParameter(QString) const"
-            remove: RemoveFlag.All
-            until: [5, 6]
-        }
         ModifyFunction{
             signature: "addFilterKey(Qt3DRender::QFilterKey*)"
             ModifyArgument{
@@ -1228,46 +700,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                     action: ReferenceCount.Ignore
                 }
             }
-        }
-        ModifyFunction{
-            signature: "addAnnotation(Qt3DRender::QAnnotation*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: [5, 6]
-        }
-        ModifyFunction{
-            signature: "removeAnnotation(Qt3DRender::QAnnotation*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: [5, 6]
-        }
-        ModifyFunction{
-            signature: "addBinding(Qt3DRender::QParameterMapping*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: [5, 6]
-        }
-        ModifyFunction{
-            signature: "removeBinding(Qt3DRender::QParameterMapping*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: [5, 6]
         }
         ModifyFunction{
             signature: "addParameter(Qt3DRender::QParameter*)"
@@ -1328,26 +760,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     ObjectType{
         name: "Qt3DRender::QRenderTarget"
         ModifyFunction{
-            signature: "addAttachment(Qt3DRender::QRenderAttachment*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: [5, 6]
-        }
-        ModifyFunction{
-            signature: "removeAttachment(Qt3DRender::QRenderAttachment*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: [5, 6]
-        }
-        ModifyFunction{
             signature: "addOutput(Qt3DRender::QRenderTargetOutput*)"
             ModifyArgument{
                 index: 1
@@ -1376,22 +788,11 @@ if(JniEnvironmentExceptionHandler %env{200}) {
 
         EnumType{
             name: "ComponentType"
-            since: [5, 9]
-        }
-        ModifyFunction{
-            signature: "doClone() const"
-            remove: RemoveFlag.All
-            until: [5, 6]
         }
     }
     
     ObjectType{
         name: "Qt3DRender::QScissorTest"
-        ModifyFunction{
-            signature: "doClone() const"
-            remove: RemoveFlag.All
-            until: [5, 6]
-        }
     }
     
     ObjectType{
@@ -1408,14 +809,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
         }
     }
     
-    ObjectType{
-        name: "Qt3DRender::QLight"
-        EnumType{
-            name: "Type"
-        }
-        until: [5, 6]
-    }
-    
     InterfaceType{
         name: "Qt3DRender::PropertyReaderInterface"
     }
@@ -1425,14 +818,12 @@ if(JniEnvironmentExceptionHandler %env{200}) {
 
         EnumType{
             name: "Status"
-            since: [5, 9]
         }
         EnumType{
             name: "ShaderType"
         }
         EnumType{
             name: "Format"
-            since: [5, 15]
         }
     }
     
@@ -1446,31 +837,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     
     ObjectType{
         name: "Qt3DRender::QStencilTest"
-
-        Rejection{
-            functionName: "front"
-            until: [5, 6]
-        }
-
-        Rejection{
-            functionName: "back"
-            until: [5, 6]
-        }
-
-        EnumType{
-            name: "StencilFaceMode"
-            until: [5, 6]
-        }
-
-        EnumType{
-            name: "StencilFunc"
-            until: [5, 6]
-        }
-        ModifyFunction{
-            signature: "doClone() const"
-            remove: RemoveFlag.All
-            until: [5, 6]
-        }
     }
     
     ObjectType{
@@ -1480,26 +846,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
             functionName: "graphicsApiFilter"
         }
         ModifyFunction{
-            signature: "addPass(Qt3DRender::QRenderPass*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: [5, 6]
-        }
-        ModifyFunction{
-            signature: "removePass(Qt3DRender::QRenderPass*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: [5, 6]
-        }
-        ModifyFunction{
             signature: "addRenderPass(Qt3DRender::QRenderPass*)"
             ModifyArgument{
                 index: 1
@@ -1507,7 +853,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                     action: ReferenceCount.Ignore
                 }
             }
-            since: [5, 7]
         }
         ModifyFunction{
             signature: "removeRenderPass(Qt3DRender::QRenderPass*)"
@@ -1517,7 +862,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                     action: ReferenceCount.Ignore
                 }
             }
-            since: [5, 7]
         }
         ModifyFunction{
             signature: "addFilterKey(Qt3DRender::QFilterKey*)"
@@ -1536,26 +880,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                     action: ReferenceCount.Ignore
                 }
             }
-        }
-        ModifyFunction{
-            signature: "addAnnotation(Qt3DRender::QAnnotation*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: [5, 6]
-        }
-        ModifyFunction{
-            signature: "removeAnnotation(Qt3DRender::QAnnotation*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: [5, 6]
         }
         ModifyFunction{
             signature: "addParameter(Qt3DRender::QParameter*)"
@@ -1582,12 +906,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
 
         EnumType{
             name: "Status"
-            since: [5, 7]
-        }
-        ModifyFunction{
-            signature: "doClone() const"
-            remove: RemoveFlag.All
-            until: [5, 6]
         }
     }
     
@@ -1637,12 +955,10 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     
     ObjectType{
         name: "Qt3DRender::QTextureLoader"
-        since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QTextureData"
-        since: [5, 7]
     }
     
     ObjectType{
@@ -1688,15 +1004,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     }
     
     ObjectType{
-        name: "Qt3DRender::QClearBuffer"
-
-        EnumType{
-            name: "BufferType"
-        }
-        until: [5, 6]
-    }
-    
-    ObjectType{
         name: "Qt3DRender::QFrameGraph"
         ModifyFunction{
             signature: "setActiveFrameGraph(Qt3DRender::QFrameGraphNode*)"
@@ -1712,16 +1019,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     
     ObjectType{
         name: "Qt3DRender::QFrameGraphNode"
-        ModifyFunction{
-            signature: "isEnabled() const"
-            rename: "isFrameGraphEnabled"
-            until: [5, 6]
-        }
-        ModifyFunction{
-            signature: "setEnabled(bool)"
-            rename: "setFrameGraphEnabled"
-            until: [5, 6]
-        }
     }
     
     InterfaceType{
@@ -1741,7 +1038,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
 
         EnumType{
             name: "FilterMode"
-            since: [5, 5]
         }
         ModifyFunction{
             signature: "addLayer(Qt3DRender::QLayer*)"
@@ -1761,7 +1057,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 }
             }
         }
-        since: [5, 5]
     }
     
     ObjectType{
@@ -1770,26 +1065,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     
     ObjectType{
         name: "Qt3DRender::QRenderPassFilter"
-        ModifyFunction{
-            signature: "addInclude(Qt3DRender::QAnnotation*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: [5, 6]
-        }
-        ModifyFunction{
-            signature: "removeInclude(Qt3DRender::QAnnotation*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: [5, 6]
-        }
         ModifyFunction{
             signature: "addParameter(Qt3DRender::QParameter*)"
             ModifyArgument{
@@ -1839,15 +1114,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 }
             }
         }
-    }
-    
-    ObjectType{
-        name: "Qt3DRender::QSortCriterion"
-
-        EnumType{
-            name: "SortType"
-        }
-        until: [5, 6]
     }
     
     ObjectType{
@@ -1915,26 +1181,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
             }
         }
         ModifyFunction{
-            signature: "addRequirement(Qt3DRender::QAnnotation*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: [5, 6]
-        }
-        ModifyFunction{
-            signature: "removeRequirement(Qt3DRender::QAnnotation*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: [5, 6]
-        }
-        ModifyFunction{
             signature: "addMatch(Qt3DRender::QFilterKey*)"
             ModifyArgument{
                 index: 1
@@ -1972,12 +1218,10 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     
     ObjectType{
         name: "Qt3DRender::QDispatchCompute"
-        since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QFrustumCulling"
-        since: [5, 7]
     }
     
     ObjectType{
@@ -1996,7 +1240,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
         EnumType{
             name: "BufferType"
         }
-        since: [5, 7]
     }
     
     ObjectType{
@@ -2019,7 +1262,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 }
             }
         }
-        since: [5, 7]
     }
     
     ObjectType{
@@ -2034,7 +1276,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 }
             }
         }
-        since: [5, 7]
     }
     
     ObjectType{
@@ -2051,7 +1292,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
         EnumType{
             name: "SortType"
         }
-        since: [5, 7]
     }
     
     ObjectType{
@@ -2060,7 +1300,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
         EnumType{
             name: "CameraTranslationOption"
         }
-        since: [5, 7]
     }
     
     ObjectType{
@@ -2069,7 +1308,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
         EnumType{
             name: "ProjectionType"
         }
-        since: [5, 7]
     }
     
     ObjectType{
@@ -2077,9 +1315,7 @@ if(JniEnvironmentExceptionHandler %env{200}) {
 
         EnumType{
             name: "RunType"
-            since: [5, 12]
         }
-        since: [5, 7]
     }
     
     ObjectType{
@@ -2093,7 +1329,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
         EnumType{
             name: "FaceOrientationPickingMode"
         }
-        since: [5, 7]
     }
     
     ObjectType{
@@ -2109,7 +1344,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
 
         EnumType{
             name: "FaceOrientationPickingMode"
-            since: [5, 8]
         }
 
         EnumType{
@@ -2124,7 +1358,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 }
             }
         }
-        since: [5, 7]
     }
     
     ObjectType{
@@ -2142,18 +1375,10 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 }
             }
         }
-        since: [5, 7]
     }
     
     InterfaceType{
         name: "Qt3DRender::QBufferDataGenerator"
-        ExtraIncludes{
-            Include{
-                fileName: "Qt3DRender/qabstractfunctor.h"
-                location: Include.Global
-                until: 5
-            }
-        }
         ModifyFunction{
             signature: "operator==(const Qt3DRender::QBufferDataGenerator &) const"
             rename: "equals"
@@ -2174,18 +1399,10 @@ if(JniEnvironmentExceptionHandler %env{200}) {
             signature: "operator()()"
             Delegate{name: "get"}
         }
-        since: [5, 7]
     }
     
     InterfaceType{
         name: "Qt3DRender::QGeometryFactory"
-        ExtraIncludes{
-            Include{
-                fileName: "Qt3DRender/qabstractfunctor.h"
-                location: Include.Global
-                until: 5
-            }
-        }
         ModifyFunction{
             signature: "operator==(const Qt3DRender::QGeometryFactory &) const"
             rename: "equals"
@@ -2217,7 +1434,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 }
             }
         }
-        since: [5, 7]
     }
     
     InterfaceType{
@@ -2252,18 +1468,11 @@ if(JniEnvironmentExceptionHandler %env{200}) {
             signature: "operator()()"
             Delegate{name: "get"}
         }
-        since: [5, 7]
     }
     
     InterfaceType{
         name: "Qt3DRender::QTextureImageDataGenerator"
-        ExtraIncludes{
-            Include{
-                fileName: "Qt3DRender/qabstractfunctor.h"
-                location: Include.Global
-                until: 5
-            }
-        }
+
         InjectCode{
             target: CodeClass.Native
             Text{content: "QT_WARNING_DISABLE_DEPRECATED\nQT_WARNING_DISABLE_GCC(\"-Wdeprecated-declarations\")"}
@@ -2295,12 +1504,10 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 }
             }
         }
-        since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QFilterKey"
-        since: [5, 7]
     }
     
     ObjectType{
@@ -2316,7 +1523,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 name: "Vulkan"
             }
         }
-        since: [5, 7]
     }
     GlobalFunction{
         signature: "operator==(const Qt3DRender::QGraphicsApiFilter &,const Qt3DRender::QGraphicsApiFilter &)"
@@ -2325,7 +1531,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     
     ObjectType{
         name: "Qt3DRender::QObjectPicker"
-        since: [5, 7]
     }
     
     ObjectType{
@@ -2333,24 +1538,19 @@ if(JniEnvironmentExceptionHandler %env{200}) {
 
         EnumType{
             name: "Buttons"
-            since: [5, 8]
         }
 
         EnumType{
             name: "Modifiers"
-            since: [5, 8]
         }
-        since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QPickLineEvent"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DRender::QPickPointEvent"
-        since: [5, 10]
     }
     
     ObjectType{
@@ -2364,7 +1564,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 }
             }
         }
-        since: [5, 10]
     }
     
     ObjectType{
@@ -2378,12 +1577,10 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 }
             }
         }
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DRender::QPickTriangleEvent"
-        since: [5, 7]
     }
     
     ObjectType{
@@ -2399,25 +1596,20 @@ if(JniEnvironmentExceptionHandler %env{200}) {
             }
             RejectEnumValue{
                 name: "OneMinusSource1Color0"
-                since: [5, 8]
             }
         }
-        since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QClipPlane"
-        since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QMultiSampleAntiAliasing"
-        since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QNoDepthMask"
-        since: [5, 7]
     }
     
     ObjectType{
@@ -2426,22 +1618,18 @@ if(JniEnvironmentExceptionHandler %env{200}) {
         EnumType{
             name: "SizeMode"
         }
-        since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QSeamlessCubemap"
-        since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QStencilMask"
-        since: [5, 7]
     }
     
     ObjectType{
         name: "Qt3DRender::QStencilOperation"
-        since: [5, 7]
     }
     
     ObjectType{
@@ -2454,7 +1642,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
         EnumType{
             name: "Operation"
         }
-        since: [5, 7]
     }
     
     ObjectType{
@@ -2465,7 +1652,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
         EnumType{
             name: "StencilFunction"
         }
-        since: [5, 7]
     }
     
     ValueType{
@@ -2493,7 +1679,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
             name: "DataConverter"
             generate: false
             using: "std::function<QByteArray(QByteArray,int,int,int)>"
-            since: 6
         }
 
         ModifyFunction{
@@ -2521,7 +1706,6 @@ if(%in){
                     }
                 }
             }
-            since: 6
         }
         InjectCode{
             target: CodeClass.Java
@@ -2534,7 +1718,6 @@ public interface DataConverter{
     public io.qt.core.@NonNull QByteArray apply(io.qt.core.@NonNull QByteArray rawData, int layer, int face, int mipmapLevel);
 }
                 `}
-            since: 6
         }
         InjectCode{
             target: CodeClass.Native
@@ -2550,9 +1733,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qt3d/render,QTextureImageData$DataConverte
 }
 }
                 `}
-            since: 6
         }
-        since: [5, 7]
     }
     
     ObjectType{
@@ -2599,12 +1780,10 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qt3d/render,QTextureImageData$DataConverte
     
     ObjectType{
         name: "Qt3DRender::QDepthRange"
-        since: [5, 14]
     }
     
     ObjectType{
         name: "Qt3DRender::QNoPicking"
-        since: [5, 14]
     }
     
     ObjectType{
@@ -2617,7 +1796,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qt3d/render,QTextureImageData$DataConverte
         EnumType{
             name: "RasterMode"
         }
-        since: [5, 14]
     }
     
     ObjectType{
@@ -2639,7 +1817,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qt3d/render,QTextureImageData$DataConverte
                 }
             }
         }
-        since: [5, 14]
     }
     
     ObjectType{
@@ -2648,7 +1825,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qt3d/render,QTextureImageData$DataConverte
         EnumType{
             name: "Enablement"
         }
-        since: [5, 14]
     }
     
     ObjectType{
@@ -2661,12 +1837,10 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qt3d/render,QTextureImageData$DataConverte
         EnumType{
             name: "Profile"
         }
-        since: [5, 15]
     }
     
     ObjectType{
         name: "Qt3DRender::QDebugOverlay"
-        since: [5, 15]
     }
     
     ValueType{
@@ -2691,12 +1865,10 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qt3d/render,QTextureImageData$DataConverte
                 }
             }
         }
-        since: [5, 14]
     }
     
     ObjectType{
         name: "Qt3DRender::QPickingProxy"
-        since: 6
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping *, unmatched *type 'Qt3DRender::QGraphicsApiFilter*'"}

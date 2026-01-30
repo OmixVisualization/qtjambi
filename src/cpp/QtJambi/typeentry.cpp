@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,36 +30,21 @@
 #include <QtCore/qcompilerdetection.h>
 QT_WARNING_DISABLE_DEPRECATED
 
+#include <QtCore/private/qmetatype_p.h>
 #include "pch_p.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
 #define qAsConst std::as_const
 #endif
 
-bool isQObject(const std::type_info& typeId);
-
-Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gTypeEntryLock, (QReadWriteLock::Recursive))
-typedef SecureContainer<QMap<size_t, QMap<QByteArray,QtJambiTypeEntryPtr>>, gTypeEntryLock> TypeEntryHash;
-Q_GLOBAL_STATIC(TypeEntryHash, gTypeEntryHash)
-
-const char* getJavaNameByFunctional(const char* qt_name);
-
-void clear_type_entries()
-{
-    QMap<size_t, QMap<QByteArray,QtJambiTypeEntryPtr>> hash;
-    if(!gTypeEntryHash.isDestroyed()){
-        QWriteLocker locker(gTypeEntryLock());
-        gTypeEntryHash()->swap(hash);
-    }
-}
-
 void clear_type_entry(const std::type_info& typeId)
 {
     QMap<QByteArray,QtJambiTypeEntryPtr> typeEntries;
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QWriteLocker locker(gTypeEntryLock());
-        if(gTypeEntryHash()->contains(unique_id(typeId))){
-            typeEntries = gTypeEntryHash()->take(unique_id(typeId));
+        QWriteLocker lock(storage->lock());
+        if(storage->typeEntries().contains(unique_id(typeId))){
+            typeEntries = storage->typeEntries().take(unique_id(typeId));
         }
     }
 }
@@ -85,7 +70,7 @@ template<typename T, class = decltype(std::declval<T>().createContainerAccess() 
 constexpr std::true_type  has_container_access_test(const T&);
 constexpr std::false_type has_container_access_test(...);
 template<typename T> struct has_container_access : decltype(has_container_access_test(std::declval<T>())){};
-template<typename T, class = decltype(std::declval<T>().superTypeForCustomMetaObject() )>
+template<typename T, class = decltype(std::declval<T>().customMetaObject() )>
 constexpr std::true_type  has_superTypeForCustomMetaObject_test(const T&);
 constexpr std::false_type has_superTypeForCustomMetaObject_test(...);
 template<typename T> struct has_superTypeForCustomMetaObject : decltype(has_superTypeForCustomMetaObject_test(std::declval<T>())){};
@@ -234,15 +219,61 @@ public:
 private:
 };
 
+class MetaObjectConnectionTypeEntry : public MetaUtilTypeEntry<QMetaObject::Connection>{
+    using MetaUtilTypeEntry<QMetaObject::Connection>::MetaUtilTypeEntry;
+public:
+    using MetaUtilTypeEntry<QMetaObject::Connection>::convertToJava;
+    NativeToJavaResult convertToJava(JNIEnv *env, void *qt_object, jobject& output) const override;
+};
+
+template<typename T, class = decltype(std::declval<T>().typeInfoSupplier() )>
+std::true_type  supports_typeInfoSupplier_test(const T&);
+std::false_type supports_typeInfoSupplier_test(...);
+template<typename T> struct supports_typeInfoSupplier : decltype(supports_typeInfoSupplier_test(std::declval<T>())){};
+
 template<typename Super>
 class ValueTypeEntry : public Super{
 public:
     const QMetaType& metaType() const{ return m_qt_meta_type; }
+    QtJambiTypeEntry::NativeToJavaResult convertToJava(JNIEnv *env, void *qt_object, jobject& output) const override{
+        if(qt_object){
+            if(jobject obj = QtJambiLink::findObjectForPointer(env, javaClass(), qt_object)){
+                output = obj;
+                return true;
+            }
+            CopyValueInfo value = moveValue(env, qt_object);
+            if(!value.value || !value.isCopy){
+                value = copyValue(env, qt_object, true);
+            }
+            if (!value.value){
+                output = nullptr;
+                return true;
+            }
+            output = env->NewObject(creatableClass(), creatorMethod(), nullptr);
+            JavaException::check(env QTJAMBI_STACKTRACEINFO );
+            return createLinkForNativeObject(
+                env,
+                output,
+                value.value,
+                NativeToJavaConversionMode::MakeCopyOfValues,
+                value.isCopy,
+                value.containerAccess);
+        }
+        return true;
+    }
 protected:
     using Super::Super;
+    using typename Super::CopyValueInfo;
+    using Super::convertToJava;
+    using Super::javaClass;
+    using Super::moveValue;
+    using Super::copyValue;
+    using Super::creatableClass;
+    using Super::creatorMethod;
+    using Super::createLinkForNativeObject;
 private:
     bool isValue() const final{ return true; }
-    QtJambiMetaType m_qt_meta_type;
+    QMetaType m_qt_meta_type;
     friend class ObjectTypeEntryFactory;
 };
 
@@ -311,6 +342,17 @@ private:
 };
 
 template<typename Super>
+class VirtualTypeEntry : public Super{
+public:
+    TypeInfoSupplier typeInfoSupplier() const { return m_typeInfoSupplier; }
+    QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset) const override;
+private:
+    using Super::Super;
+    TypeInfoSupplier m_typeInfoSupplier = nullptr;
+    friend class ObjectTypeEntryFactory;
+};
+
+template<typename Super>
 class OwnedTypeEntry : public Super{
 public:
     PtrOwnerFunction ownerFunction() const { return m_owner_function; }
@@ -323,18 +365,18 @@ private:
 class PolymorphicTypeEntryInterface{
 public:
     virtual ~PolymorphicTypeEntryInterface();
-    virtual const QList<const PolymorphicIdHandler*>& polymorphicIdHandlers() const = 0;
+    virtual const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicIdHandlers() const = 0;
 };
 
 template<typename Super>
 class PolymorphicTypeEntry : public Super, public PolymorphicTypeEntryInterface{
 public:
-    const QList<const PolymorphicIdHandler*>& polymorphicIdHandlers() const final { return m_polymorphicIdHandlers; }
+    const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicIdHandlers() const final { return m_polymorphicIdHandlers; }
     QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset) const override;
     bool isPolymorphic() const final { return true; }
 private:
     using Super::Super;
-    QList<const PolymorphicIdHandler*> m_polymorphicIdHandlers;
+    QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>> m_polymorphicIdHandlers;
     friend class QObjectTypeEntryFactory;
     friend class ObjectTypeEntryFactory;
 };
@@ -374,6 +416,147 @@ protected:
     QSharedPointer<QtJambiLink> createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *object, NativeToJavaConversionMode mode, bool isMetaCopy, AbstractContainerAccess* containerAccess) const override{
         Q_UNUSED(containerAccess)
         Q_UNUSED(isMetaCopy)
+        QtJambiLink::Ownership ownership = QtJambiLink::Ownership::None;
+        if constexpr(QtJambiPrivate::has_metatype<Super>::value){
+            switch(mode){
+            case NativeToJavaConversionMode::CppOwnership:
+                ownership = QtJambiLink::Ownership::Cpp;
+                break;
+            case NativeToJavaConversionMode::None:
+                break;
+            case NativeToJavaConversionMode::MakeCopyOfValues:
+            default:
+                ownership = QtJambiLink::Ownership::Java;
+                break;
+            }
+        }else if constexpr(QtJambiPrivate::has_owner_function<Super>::value){
+            ownership = mode==NativeToJavaConversionMode::TransferOwnership ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None;
+        }
+        if constexpr(supports_typeInfoSupplier<Super>::value){
+            if(ownership != QtJambiLink::Ownership::Java && !isMetaCopy && enabledDanglingPointerCheck()){
+                if constexpr(QtJambiPrivate::has_interface_offset<Super>::value){
+                    if constexpr(QtJambiPrivate::has_metatype<Super>::value){
+                        if constexpr(QtJambiPrivate::has_owner_function<Super>::value){
+                            return QtJambiLink::createLinkForNativeObject(
+                                        env,
+                                        javaObject,
+                                        object,
+                                        LINK_NAME_ARG(Super::qtName())
+                                        Super::deleter(),
+                                        Super::ownerFunction(),
+                                        ownership==QtJambiLink::Ownership::Cpp,
+                                        Super::interfaceOffsetInfo(),
+                                        Super::typeInfoSupplier()
+                                );
+                        }else if constexpr(QtJambiPrivate::has_container_access<Super>::value){
+                            return QtJambiLink::createLinkForNativeObject(
+                                        env,
+                                        javaObject,
+                                        object,
+                                        LINK_NAME_ARG(Super::qtName())
+                                        Super::deleter(),
+                                        containerAccess,
+                                        ownership==QtJambiLink::Ownership::Cpp,
+                                        Super::interfaceOffsetInfo(),
+                                        Super::typeInfoSupplier()
+                                );
+                        }else{
+                            return QtJambiLink::createLinkForNativeObject(
+                                        env,
+                                        javaObject,
+                                        object,
+                                        LINK_NAME_ARG(Super::qtName())
+                                        Super::deleter(),
+                                        ownership==QtJambiLink::Ownership::Cpp,
+                                        Super::interfaceOffsetInfo(),
+                                        Super::typeInfoSupplier()
+                                );
+                        }
+                    }else if constexpr(QtJambiPrivate::has_owner_function<Super>::value){
+                        return QtJambiLink::createLinkForNativeObject(
+                                        env,
+                                        javaObject,
+                                        object,
+                                        LINK_NAME_ARG(Super::qtName())
+                                        Super::deleter(),
+                                        Super::ownerFunction(),
+                                        ownership==QtJambiLink::Ownership::Cpp,
+                                        Super::interfaceOffsetInfo(),
+                                        Super::typeInfoSupplier()
+                                );
+                    }else{
+                        return QtJambiLink::createLinkForNativeObject(
+                                        env,
+                                        javaObject,
+                                        object,
+                                        LINK_NAME_ARG(Super::qtName())
+                                        Super::deleter(),
+                                        ownership==QtJambiLink::Ownership::Cpp,
+                                        Super::interfaceOffsetInfo(),
+                                        Super::typeInfoSupplier()
+                                        );
+                    }
+                }else{
+                    // no interfaceOffsetInfo()
+                    if constexpr(QtJambiPrivate::has_metatype<Super>::value){
+                        if constexpr(QtJambiPrivate::has_owner_function<Super>::value){
+                            return QtJambiLink::createLinkForNativeObject(
+                                        env,
+                                        javaObject,
+                                        object,
+                                        LINK_NAME_ARG(Super::qtName())
+                                        Super::deleter(),
+                                        Super::ownerFunction(),
+                                        ownership==QtJambiLink::Ownership::Cpp,
+                                        Super::typeInfoSupplier()
+                                );
+                        }else if constexpr(QtJambiPrivate::has_container_access<Super>::value){
+                            return QtJambiLink::createLinkForNativeObject(
+                                        env,
+                                        javaObject,
+                                        object,
+                                        LINK_NAME_ARG(Super::qtName())
+                                        Super::deleter(),
+                                        containerAccess,
+                                        ownership==QtJambiLink::Ownership::Cpp,
+                                        Super::typeInfoSupplier()
+                                );
+                        }else{
+                            return QtJambiLink::createLinkForNativeObject(
+                                        env,
+                                        javaObject,
+                                        object,
+                                        LINK_NAME_ARG(Super::qtName())
+                                        Super::deleter(),
+                                        ownership==QtJambiLink::Ownership::Cpp,
+                                        Super::typeInfoSupplier()
+                                );
+                        }
+                    }else if constexpr(QtJambiPrivate::has_owner_function<Super>::value){
+                        return QtJambiLink::createLinkForNativeObject(
+                                        env,
+                                        javaObject,
+                                        object,
+                                        LINK_NAME_ARG(Super::qtName())
+                                        Super::deleter(),
+                                        Super::ownerFunction(),
+                                        ownership==QtJambiLink::Ownership::Cpp,
+                                        Super::typeInfoSupplier()
+                                );
+                    }else{
+                        return QtJambiLink::createLinkForNativeObject(
+                                        env,
+                                        javaObject,
+                                        object,
+                                        LINK_NAME_ARG(Super::qtName())
+                                        Super::deleter(),
+                                        ownership==QtJambiLink::Ownership::Cpp,
+                                        Super::typeInfoSupplier()
+                                );
+                    }
+                }
+            }
+        }
         if constexpr(QtJambiPrivate::has_interface_offset<Super>::value){
             if constexpr(QtJambiPrivate::has_metatype<Super>::value){
                 if(isMetaCopy){
@@ -386,7 +569,7 @@ protected:
                                     false,
                                     false,
                                     Super::ownerFunction(),
-                                    mode==NativeToJavaConversionMode::None ? QtJambiLink::Ownership::None : QtJambiLink::Ownership::Java,
+                                    ownership,
                                     Super::interfaceOffsetInfo()
                             );
                     }else if constexpr(QtJambiPrivate::has_container_access<Super>::value){
@@ -398,7 +581,7 @@ protected:
                                     false,
                                     false,
                                     containerAccess,
-                                    mode==NativeToJavaConversionMode::None ? QtJambiLink::Ownership::None : QtJambiLink::Ownership::Java,
+                                    ownership,
                                     Super::interfaceOffsetInfo()
                             );
                     }else{
@@ -409,7 +592,7 @@ protected:
                                     Super::metaType(),
                                     false,
                                     false,
-                                    mode==NativeToJavaConversionMode::None ? QtJambiLink::Ownership::None : QtJambiLink::Ownership::Java,
+                                    ownership,
                                     Super::interfaceOffsetInfo()
                             );
                     }
@@ -424,7 +607,7 @@ protected:
                                     false,
                                     Super::deleter(),
                                     Super::ownerFunction(),
-                                    mode==NativeToJavaConversionMode::None ? QtJambiLink::Ownership::None : QtJambiLink::Ownership::Java,
+                                    ownership,
                                     Super::interfaceOffsetInfo()
                             );
                     }else if constexpr(QtJambiPrivate::has_container_access<Super>::value){
@@ -437,7 +620,7 @@ protected:
                                     false,
                                     Super::deleter(),
                                     containerAccess,
-                                    mode==NativeToJavaConversionMode::None ? QtJambiLink::Ownership::None : QtJambiLink::Ownership::Java,
+                                    ownership,
                                     Super::interfaceOffsetInfo()
                             );
                     }else{
@@ -449,7 +632,7 @@ protected:
                                     false,
                                     false,
                                     Super::deleter(),
-                                    mode==NativeToJavaConversionMode::None ? QtJambiLink::Ownership::None : QtJambiLink::Ownership::Java,
+                                    ownership,
                                     Super::interfaceOffsetInfo()
                             );
                     }
@@ -464,7 +647,7 @@ protected:
                                 false,
                                 Super::deleter(),
                                 Super::ownerFunction(),
-                                mode==NativeToJavaConversionMode::TransferOwnership ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
+                                ownership,
                                 Super::interfaceOffsetInfo()
                         );
             }else{
@@ -476,7 +659,7 @@ protected:
                                 false,
                                 false,
                                 Super::deleter(),
-                                mode==NativeToJavaConversionMode::TransferOwnership ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
+                                ownership,
                                 Super::interfaceOffsetInfo()
                                 );
             }
@@ -493,7 +676,7 @@ protected:
                                     false,
                                     false,
                                     Super::ownerFunction(),
-                                    mode==NativeToJavaConversionMode::None ? QtJambiLink::Ownership::None : QtJambiLink::Ownership::Java
+                                    ownership
                             );
                     }else if constexpr(QtJambiPrivate::has_container_access<Super>::value){
                         return QtJambiLink::createLinkForNativeObject(
@@ -504,7 +687,7 @@ protected:
                                     false,
                                     false,
                                     containerAccess,
-                                    mode==NativeToJavaConversionMode::None ? QtJambiLink::Ownership::None : QtJambiLink::Ownership::Java
+                                    ownership
                             );
                     }else{
                         return QtJambiLink::createLinkForNativeObject(
@@ -514,7 +697,7 @@ protected:
                                     Super::metaType(),
                                     false,
                                     false,
-                                    mode==NativeToJavaConversionMode::None ? QtJambiLink::Ownership::None : QtJambiLink::Ownership::Java
+                                    ownership
                             );
                     }
                 }else{
@@ -528,7 +711,7 @@ protected:
                                     false,
                                     Super::deleter(),
                                     Super::ownerFunction(),
-                                    mode==NativeToJavaConversionMode::None ? QtJambiLink::Ownership::None : QtJambiLink::Ownership::Java
+                                    ownership
                             );
                     }else if constexpr(QtJambiPrivate::has_container_access<Super>::value){
                         return QtJambiLink::createLinkForNativeObject(
@@ -540,7 +723,7 @@ protected:
                                     false,
                                     Super::deleter(),
                                     containerAccess,
-                                    mode==NativeToJavaConversionMode::None ? QtJambiLink::Ownership::None : QtJambiLink::Ownership::Java
+                                    ownership
                             );
                     }else{
                         return QtJambiLink::createLinkForNativeObject(
@@ -551,7 +734,7 @@ protected:
                                     false,
                                     false,
                                     Super::deleter(),
-                                    mode==NativeToJavaConversionMode::None ? QtJambiLink::Ownership::None : QtJambiLink::Ownership::Java
+                                    ownership
                             );
                     }
                 }
@@ -565,7 +748,7 @@ protected:
                                 false,
                                 Super::deleter(),
                                 Super::ownerFunction(),
-                                mode==NativeToJavaConversionMode::TransferOwnership ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                                ownership
                         );
             }else{
                 return QtJambiLink::createLinkForNativeObject(
@@ -576,7 +759,7 @@ protected:
                                 false,
                                 false,
                                 Super::deleter(),
-                                mode==NativeToJavaConversionMode::TransferOwnership ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                                ownership
                         );
             }
         }
@@ -600,14 +783,31 @@ protected:
                 if constexpr(QtJambiPrivate::has_owner_function<Super>::value){
                     if(!ownerFunction)
                         ownerFunction = Super::ownerFunction();
+                    return QtJambiLink::createLinkForSmartPointerToObject(env, javaObject,
+                                                                          LINK_NAME_ARG(Super::qtName())
+                                                                          createdByJava,
+                                                                          is_shell,
+                                                                          ownerFunction,
+                                                                          smartPointer,
+                                                                          Super::interfaceOffsetInfo());
+                }else{
+                    if(ownerFunction){
+                        return QtJambiLink::createLinkForSmartPointerToObject(env, javaObject,
+                                                                              LINK_NAME_ARG(Super::qtName())
+                                                                              createdByJava,
+                                                                              is_shell,
+                                                                              ownerFunction,
+                                                                              smartPointer,
+                                                                              Super::interfaceOffsetInfo());
+                    }else{
+                        return QtJambiLink::createLinkForSmartPointerToObject(env, javaObject,
+                                                                              LINK_NAME_ARG(Super::qtName())
+                                                                              createdByJava,
+                                                                              is_shell,
+                                                                              smartPointer,
+                                                                              Super::interfaceOffsetInfo());
+                    }
                 }
-                return QtJambiLink::createLinkForSmartPointerToObject(env, javaObject,
-                                                                      LINK_NAME_ARG(Super::qtName())
-                                                                      createdByJava,
-                                                                      is_shell,
-                                                                      ownerFunction,
-                                                                      smartPointer,
-                                                                      Super::interfaceOffsetInfo());
             }
         }else{
             if constexpr(QtJambiPrivate::has_container_access<Super>::value){
@@ -622,13 +822,28 @@ protected:
                 if constexpr(QtJambiPrivate::has_owner_function<Super>::value){
                     if(!ownerFunction)
                         ownerFunction = Super::ownerFunction();
+                    return QtJambiLink::createLinkForSmartPointerToObject(env, javaObject,
+                                                                          LINK_NAME_ARG(Super::qtName())
+                                                                          createdByJava,
+                                                                          is_shell,
+                                                                          ownerFunction,
+                                                                          smartPointer);
+                }else{
+                    if(ownerFunction){
+                        return QtJambiLink::createLinkForSmartPointerToObject(env, javaObject,
+                                                                              LINK_NAME_ARG(Super::qtName())
+                                                                              createdByJava,
+                                                                              is_shell,
+                                                                              ownerFunction,
+                                                                              smartPointer);
+                    }else{
+                        return QtJambiLink::createLinkForSmartPointerToObject(env, javaObject,
+                                                                              LINK_NAME_ARG(Super::qtName())
+                                                                              createdByJava,
+                                                                              is_shell,
+                                                                              smartPointer);
+                    }
                 }
-                return QtJambiLink::createLinkForSmartPointerToObject(env, javaObject,
-                                                                      LINK_NAME_ARG(Super::qtName())
-                                                                      createdByJava,
-                                                                      is_shell,
-                                                                      ownerFunction,
-                                                                      smartPointer);
             }
         }
     }
@@ -639,6 +854,39 @@ protected:
 
     QSharedPointer<QtJambiLink> createLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject, bool createdByJava, bool is_shell, const std::shared_ptr<char>& smartPointer, PtrOwnerFunction ownerFunction) const override{
         return createLinkForSmartPointerToObject<std::shared_ptr>(env, javaObject, createdByJava, is_shell, smartPointer, ownerFunction);
+    }
+    ObjectTypeAbstractEntry::CopyValueInfo moveValue(JNIEnv *env, void* qt_object) const override{
+        if constexpr(QtJambiPrivate::has_metatype<Super>::value){
+            if constexpr(QtJambiPrivate::has_owner_function<Super>::value){
+                checkThreadOnQObject(env, Super::ownerFunction(), qt_object, Super::creatableClass());
+            }else{
+                Q_UNUSED(env)
+            }
+            if constexpr(QtJambiPrivate::has_container_access<Super>::value){
+                AbstractContainerAccess* containerAccess = Super::createContainerAccess();
+                return ObjectTypeAbstractEntry::CopyValueInfo{containerAccess->createContainer(qt_object), true, containerAccess};
+            }else{
+                if(Super::metaType().isMoveConstructible()){
+                    auto iface = const_cast<QMetaType&>(Super::metaType()).iface();
+                    void* newPointer;
+                    if (iface->alignment > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+                        newPointer = operator new(iface->size, std::align_val_t(iface->alignment));
+                    else
+                        newPointer = operator new(iface->size);
+                    QtMetaTypePrivate::moveConstruct(iface, newPointer, qt_object);
+                    return ObjectTypeAbstractEntry::CopyValueInfo{newPointer, true};
+                }else{
+                    return ObjectTypeAbstractEntry::CopyValueInfo{nullptr};
+                }
+            }
+        }else{
+            if constexpr(QtJambiPrivate::has_container_access<Super>::value){
+                AbstractContainerAccess* containerAccess = Super::createContainerAccess();
+                return ObjectTypeAbstractEntry::CopyValueInfo{containerAccess->createContainer(qt_object), true, containerAccess};
+            }else{
+                return ObjectTypeAbstractEntry::CopyValueInfo{nullptr};
+            }
+        }
     }
     ObjectTypeAbstractEntry::CopyValueInfo copyValue(JNIEnv *env, const void* qt_object, bool makeCopyOfValue) const override{
         if constexpr(QtJambiPrivate::has_metatype<Super>::value){
@@ -654,10 +902,15 @@ protected:
                 else
                     return ObjectTypeAbstractEntry::CopyValueInfo{const_cast<void*>(qt_object), false, containerAccess};
             }else{
-                if(makeCopyOfValue)
-                    return ObjectTypeAbstractEntry::CopyValueInfo{Super::metaType().create(qt_object), true};
-                else
+                if(makeCopyOfValue){
+                    if(qt_object ? Super::metaType().isCopyConstructible() : Super::metaType().isDefaultConstructible()){
+                        return ObjectTypeAbstractEntry::CopyValueInfo{Super::metaType().create(qt_object), true};
+                    }else{
+                        return ObjectTypeAbstractEntry::CopyValueInfo{const_cast<void*>(qt_object)};
+                    }
+                }else{
                     return ObjectTypeAbstractEntry::CopyValueInfo{const_cast<void*>(qt_object)};
+                }
             }
         }else{
             if constexpr(QtJambiPrivate::has_container_access<Super>::value){
@@ -705,7 +958,7 @@ private:
 template<typename Super>
 class CustomMetaObjectTypeEntry : public Super{
 public:
-    const QMetaObject* superTypeForCustomMetaObject() const{ return m_superTypeForCustomMetaObject; }
+    const QMetaObject* customMetaObject() const{ return m_superTypeForCustomMetaObject; }
 protected:
     using Super::Super;
 private:
@@ -720,13 +973,13 @@ protected:
     QSharedPointer<QtJambiLink> createLinkForNativeQObject(JNIEnv *env, jobject& javaObject, QObject *object) const override{
         if constexpr(QtJambiPrivate::has_interface_offset<Super>::value){
             if constexpr(QtJambiPrivate::has_superTypeForCustomMetaObject<Super>::value){
-                return QtJambiLink::createLinkForNativeQObject(env, javaObject, object, Super::isQThread(), Super::interfaceOffsetInfo(), Super::superTypeForCustomMetaObject());
+                return QtJambiLink::createLinkForNativeQObject(env, javaObject, object, Super::isQThread(), Super::interfaceOffsetInfo(), Super::customMetaObject());
             }else{
                 return QtJambiLink::createLinkForNativeQObject(env, javaObject, object, Super::isQThread(), Super::interfaceOffsetInfo());
             }
         }else{
             if constexpr(QtJambiPrivate::has_superTypeForCustomMetaObject<Super>::value){
-                return QtJambiLink::createLinkForNativeQObject(env, javaObject, object, Super::isQThread(), Super::superTypeForCustomMetaObject());
+                return QtJambiLink::createLinkForNativeQObject(env, javaObject, object, Super::isQThread(), Super::customMetaObject());
             }else{
                 return QtJambiLink::createLinkForNativeQObject(env, javaObject, object, Super::isQThread());
             }
@@ -736,13 +989,13 @@ protected:
     QSharedPointer<QtJambiLink> createLinkForSmartPointerToQObject(JNIEnv *env, jobject javaObject, bool createdByJava, bool is_shell, const SmartPointer<QObject>& smartPointer) const{
         if constexpr(QtJambiPrivate::has_interface_offset<Super>::value){
             if constexpr(QtJambiPrivate::has_superTypeForCustomMetaObject<Super>::value){
-                return QtJambiLink::createLinkForSmartPointerToQObject(env, javaObject, createdByJava, is_shell, smartPointer, Super::isQThread(), Super::interfaceOffsetInfo(), Super::superTypeForCustomMetaObject());
+                return QtJambiLink::createLinkForSmartPointerToQObject(env, javaObject, createdByJava, is_shell, smartPointer, Super::isQThread(), Super::interfaceOffsetInfo(), Super::customMetaObject());
             }else{
                 return QtJambiLink::createLinkForSmartPointerToQObject(env, javaObject, createdByJava, is_shell, smartPointer, Super::isQThread(), Super::interfaceOffsetInfo());
             }
         }else{
             if constexpr(QtJambiPrivate::has_superTypeForCustomMetaObject<Super>::value){
-                return QtJambiLink::createLinkForSmartPointerToQObject(env, javaObject, createdByJava, is_shell, smartPointer, Super::isQThread(), Super::superTypeForCustomMetaObject());
+                return QtJambiLink::createLinkForSmartPointerToQObject(env, javaObject, createdByJava, is_shell, smartPointer, Super::isQThread(), Super::customMetaObject());
             }else{
                 return QtJambiLink::createLinkForSmartPointerToQObject(env, javaObject, createdByJava, is_shell, smartPointer, Super::isQThread());
             }
@@ -769,7 +1022,18 @@ public:
         return t;
     }
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override{
-        return convertModelIndexNativeToJava(env, reinterpret_cast<const QModelIndex *>(qt_object), mode, output);
+        if(!qt_object){
+            output = nullptr;
+            return true;
+        }
+        return convertModelIndexNativeToJava(env, *reinterpret_cast<const QModelIndex *>(qt_object), mode, output);
+    }
+    NativeToJavaResult convertToJava(JNIEnv *env, void *qt_object, jobject& output) const override{
+        if(!qt_object){
+            output = nullptr;
+            return true;
+        }
+        return convertModelIndexNativeToJava(env, std::move(*reinterpret_cast<QModelIndex *>(qt_object)), output);
     }
 #if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
     bool convertToNative(JNIEnv *env, jobject input, void * output, QtJambiScope& scope) const override{
@@ -800,15 +1064,20 @@ private:
                                                                 createdByJava,
                                                                 is_shell,
                                                                 index->model(),
-                                                                nullptr,
                                                                 smartPointer
             );
-        }else{
+        }else if(ownerFunction){
             return QtJambiLink::createLinkForSmartPointerToObject(env, javaObject,
                                                                 LINK_NAME_ARG(qtName())
                                                                 createdByJava,
                                                                 is_shell,
                                                                 ownerFunction,
+                                                                smartPointer);
+        }else{
+            return QtJambiLink::createLinkForSmartPointerToObject(env, javaObject,
+                                                                LINK_NAME_ARG(qtName())
+                                                                createdByJava,
+                                                                is_shell,
                                                                 smartPointer);
         }
     }
@@ -862,7 +1131,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QList<const PolymorphicIdHandler*>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, Args&&... args){
+    static auto create(const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, Args&&... args){
         Q_ASSERT(!interfaceOffsetInfo.offsets.isEmpty());
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new QObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<QObjectTypeAbstractEntry>>>(std::forward<Args>(args)...);
@@ -871,7 +1140,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QList<const PolymorphicIdHandler*>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, const QMetaObject* superTypeForCustomMetaObject, Args&&... args){
+    static auto create(const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, const QMetaObject* superTypeForCustomMetaObject, Args&&... args){
         Q_ASSERT(!interfaceOffsetInfo.offsets.isEmpty());
         Q_ASSERT(superTypeForCustomMetaObject);
         Q_ASSERT(!polymorphicHandlers.isEmpty());
@@ -882,7 +1151,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QList<const PolymorphicIdHandler*>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+    static auto create(const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
         Q_ASSERT(!interfaceOffsetInfo.offsets.isEmpty());
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new QObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<QObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
@@ -892,7 +1161,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QList<const PolymorphicIdHandler*>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, const QMetaObject* superTypeForCustomMetaObject, JNIEnv* env, Args&&... args){
+    static auto create(const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, const QMetaObject* superTypeForCustomMetaObject, JNIEnv* env, Args&&... args){
         Q_ASSERT(!interfaceOffsetInfo.offsets.isEmpty());
         Q_ASSERT(superTypeForCustomMetaObject);
         Q_ASSERT(!polymorphicHandlers.isEmpty());
@@ -919,7 +1188,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QList<const PolymorphicIdHandler*>& polymorphicHandlers, const QMetaObject* superTypeForCustomMetaObject, Args&&... args){
+    static auto create(const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const QMetaObject* superTypeForCustomMetaObject, Args&&... args){
         Q_ASSERT(superTypeForCustomMetaObject);
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new QObjectTypeEntry<PolymorphicTypeEntry<CustomMetaObjectTypeEntry<QObjectTypeAbstractEntry>>>(std::forward<Args>(args)...);
@@ -928,7 +1197,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QList<const PolymorphicIdHandler*>& polymorphicHandlers, jclass java_wrapper_class, const QMetaObject* superTypeForCustomMetaObject, JNIEnv* env, Args&&... args){
+    static auto create(const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, const QMetaObject* superTypeForCustomMetaObject, JNIEnv* env, Args&&... args){
         Q_ASSERT(superTypeForCustomMetaObject);
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new QObjectTypeEntry<PolymorphicTypeEntry<CustomMetaObjectTypeEntry<AbstractTypeEntry<QObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
@@ -938,7 +1207,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QList<const PolymorphicIdHandler*>& polymorphicHandlers, JNIEnv* env, Args&&... args){
+    static auto create(const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv* env, Args&&... args){
         auto instance = new QObjectTypeEntry<PolymorphicTypeEntry<QObjectTypeAbstractEntry>>(env, std::forward<Args>(args)...);
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
         return instance;
@@ -950,7 +1219,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QList<const PolymorphicIdHandler*>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+    static auto create(const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new QObjectTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<QObjectTypeAbstractEntry>>>(env, std::forward<Args>(args)...);
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
@@ -1021,13 +1290,13 @@ public:
     }
 
     template<typename... Args>
-    static auto create(const QList<const PolymorphicIdHandler*>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+    static auto create(const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
         auto instance = new ObjectTypeEntry<PolymorphicTypeEntry<ObjectTypeAbstractEntry>>(env, std::forward<Args>(args)...);
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
         return instance;
     }
     template<typename... Args>
-    static auto create(PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+    static auto create(PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
         Q_ASSERT(owner_function);
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new ObjectTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<ObjectTypeAbstractEntry>>>(env, std::forward<Args>(args)...);
@@ -1036,7 +1305,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(jclass java_impl_class, jclass java_wrapper_class, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+    static auto create(jclass java_impl_class, jclass java_wrapper_class, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new ObjectTypeEntry<InterfaceTypeEntry<PolymorphicTypeEntry<ObjectTypeAbstractEntry>>>(env, std::forward<Args>(args)...);
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
@@ -1045,7 +1314,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+    static auto create(jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
         Q_ASSERT(owner_function);
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new ObjectTypeEntry<InterfaceTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
@@ -1056,14 +1325,14 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QMetaType& metaType, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+    static auto create(const QMetaType& metaType, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
         auto instance = new ObjectTypeEntry<PolymorphicTypeEntry<ValueTypeEntry<ObjectTypeAbstractEntry>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
         return instance;
     }
     template<typename... Args>
-    static auto create(const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+    static auto create(const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
         Q_ASSERT(owner_function);
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new ObjectTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<ValueTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
@@ -1073,7 +1342,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+    static auto create(const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new ObjectTypeEntry<InterfaceTypeEntry<PolymorphicTypeEntry<ValueTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
@@ -1083,7 +1352,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+    static auto create(const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
         Q_ASSERT(owner_function);
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new ObjectTypeEntry<InterfaceTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<ValueTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
@@ -1095,7 +1364,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
         auto instance = new ObjectTypeEntry<PolymorphicTypeEntry<ContainerTypeEntry<ObjectTypeAbstractEntry>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
@@ -1103,7 +1372,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
         Q_ASSERT(owner_function);
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new ObjectTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<ContainerTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
@@ -1114,7 +1383,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new ObjectTypeEntry<InterfaceTypeEntry<PolymorphicTypeEntry<ContainerTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
@@ -1125,7 +1394,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
         Q_ASSERT(owner_function);
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new ObjectTypeEntry<InterfaceTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<ContainerTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
@@ -1151,14 +1420,14 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QList<const PolymorphicIdHandler*>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+    static auto create(const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
         auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<ObjectTypeAbstractEntry>>>(env, std::forward<Args>(args)...);
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
         instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
         return instance;
     }
     template<typename... Args>
-    static auto create(const QList<const PolymorphicIdHandler*>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+    static auto create(const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
         auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
         instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
@@ -1181,7 +1450,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+    static auto create(PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
         auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<OwnedTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
         instance->m_owner_function = owner_function;
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
@@ -1189,7 +1458,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+    static auto create(PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
         auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<OwnedTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
         instance->m_owner_function = owner_function;
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
@@ -1206,7 +1475,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(jclass java_impl_class, jclass java_wrapper_class, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+    static auto create(jclass java_impl_class, jclass java_wrapper_class, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
         auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
         instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
@@ -1224,7 +1493,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+    static auto create(jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
         auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<OwnedTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
         instance->m_owner_function = owner_function;
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
@@ -1249,7 +1518,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QMetaType& metaType, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+    static auto create(const QMetaType& metaType, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
         auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<ValueTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
@@ -1257,7 +1526,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QMetaType& metaType, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+    static auto create(const QMetaType& metaType, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
         auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<ValueTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
@@ -1283,7 +1552,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+    static auto create(const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
         auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<OwnedTypeEntry<ValueTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
         instance->m_owner_function = owner_function;
@@ -1292,7 +1561,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+    static auto create(const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
         auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<OwnedTypeEntry<ValueTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
         instance->m_owner_function = owner_function;
@@ -1311,7 +1580,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+    static auto create(const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
         auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<ValueTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
@@ -1331,7 +1600,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+    static auto create(const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
         auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<OwnedTypeEntry<ValueTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
         instance->m_owner_function = owner_function;
@@ -1359,7 +1628,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
         auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<ContainerTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
@@ -1368,7 +1637,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
         auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<ContainerTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
@@ -1397,7 +1666,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
         auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<OwnedTypeEntry<ContainerTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
         instance->m_owner_function = owner_function;
@@ -1407,7 +1676,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
         auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<OwnedTypeEntry<ContainerTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
         instance->m_owner_function = owner_function;
@@ -1428,7 +1697,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
         auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<ContainerTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
@@ -1450,7 +1719,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
         auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<OwnedTypeEntry<ContainerTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
         instance->m_owner_function = owner_function;
@@ -1469,7 +1738,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QList<const PolymorphicIdHandler*>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+    static auto create(const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new ObjectTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<ObjectTypeAbstractEntry>>>(env, std::forward<Args>(args)...);
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
@@ -1485,7 +1754,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+    static auto create(PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
         Q_ASSERT(owner_function);
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new ObjectTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
@@ -1502,7 +1771,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QMetaType& metaType, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+    static auto create(const QMetaType& metaType, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new ObjectTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<ValueTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
@@ -1520,7 +1789,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+    static auto create(const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
         Q_ASSERT(owner_function);
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new ObjectTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<ValueTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
@@ -1539,7 +1808,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new ObjectTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<ContainerTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
         instance->m_qt_meta_type = metaType;
@@ -1559,7 +1828,7 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+    static auto create(NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
         Q_ASSERT(owner_function);
         Q_ASSERT(!polymorphicHandlers.isEmpty());
         auto instance = new ObjectTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<ContainerTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
@@ -1588,7 +1857,8 @@ public:
 
     template<typename... Args>
     static auto create(LinkFlag, JNIEnv *env, Args&&... args){
-        return new NoDebugMessagingObjectTypeEntry<ObjectTypeAbstractEntry>(env, std::forward<Args>(args)...);
+        auto instance = new NoDebugMessagingObjectTypeEntry<ObjectTypeAbstractEntry>(env, std::forward<Args>(args)...);
+        return instance;
     }
     template<typename... Args>
     static auto create(LinkFlag, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
@@ -1597,16 +1867,809 @@ public:
         return instance;
     }
     template<typename... Args>
-    static auto create(LinkFlag, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+    static auto create(LinkFlag, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
         auto instance = new NoDebugMessagingObjectTypeEntry<PolymorphicTypeEntry<ObjectTypeAbstractEntry>>(env, std::forward<Args>(args)...);
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
         return instance;
     }
     template<typename... Args>
-    static auto create(LinkFlag, const QList<const PolymorphicIdHandler*>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+    static auto create(LinkFlag, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
         auto instance = new NoDebugMessagingObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<ObjectTypeAbstractEntry>>>(env, std::forward<Args>(args)...);
         instance->m_polymorphicIdHandlers = polymorphicHandlers;
         instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>(env, std::forward<Args>(args)...);
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, PtrOwnerFunction owner_function, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<OwnedTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>(env, std::forward<Args>(args)...);
+        Q_ASSERT(owner_function);
+        instance->m_owner_function = owner_function;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, PtrOwnerFunction owner_function, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<OwnedTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        Q_ASSERT(owner_function);
+        instance->m_owner_function = owner_function;
+        instance->m_qt_meta_type = metaType;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<OwnedTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        Q_ASSERT(owner_function);
+        instance->m_owner_function = owner_function;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<OwnedTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        Q_ASSERT(owner_function);
+        instance->m_owner_function = owner_function;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        instance->m_qt_meta_type = metaType;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, jclass java_impl_class, jclass java_wrapper_class, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>(env, std::forward<Args>(args)...);
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<PolymorphicTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>(env, std::forward<Args>(args)...);
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        Q_ASSERT(!polymorphicHandlers.isEmpty());
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        Q_ASSERT(owner_function);
+        instance->m_owner_function = owner_function;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, jclass java_impl_class, jclass java_wrapper_class, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<PolymorphicTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        Q_ASSERT(!polymorphicHandlers.isEmpty());
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        Q_ASSERT(!polymorphicHandlers.isEmpty());
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(owner_function);
+        instance->m_owner_function = owner_function;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<PolymorphicTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        Q_ASSERT(!polymorphicHandlers.isEmpty());
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        Q_ASSERT(!polymorphicHandlers.isEmpty());
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        Q_ASSERT(owner_function);
+        instance->m_owner_function = owner_function;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+        Q_ASSERT(!polymorphicHandlers.isEmpty());
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<PolymorphicTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+        Q_ASSERT(owner_function);
+        Q_ASSERT(!polymorphicHandlers.isEmpty());
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        instance->m_owner_function = owner_function;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<PolymorphicTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+        Q_ASSERT(owner_function);
+        Q_ASSERT(!polymorphicHandlers.isEmpty());
+        auto instance = new ObjectTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        instance->m_owner_function = owner_function;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+        Q_ASSERT(!polymorphicHandlers.isEmpty());
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<PolymorphicTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+        Q_ASSERT(owner_function);
+        Q_ASSERT(!polymorphicHandlers.isEmpty());
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        instance->m_owner_function = owner_function;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>(env, std::forward<Args>(args)...);
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<AbstractTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, PtrOwnerFunction owner_function, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<OwnedTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        instance->m_owner_function = owner_function;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, PtrOwnerFunction owner_function, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<AbstractTypeEntry<OwnedTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_owner_function = owner_function;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<OwnedTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_owner_function = owner_function;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<OwnedTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_owner_function = owner_function;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, jclass java_impl_class, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, jclass java_impl_class, jclass java_wrapper_class, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<OwnedTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_owner_function = owner_function;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<OwnedTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_owner_function = owner_function;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_qt_meta_type = metaType;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<AbstractTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, PtrOwnerFunction owner_function, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<OwnedTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_owner_function = owner_function;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, PtrOwnerFunction owner_function, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<AbstractTypeEntry<OwnedTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_owner_function = owner_function;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<OwnedTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_owner_function = owner_function;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<OwnedTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_owner_function = owner_function;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<OwnedTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_owner_function = owner_function;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<OwnedTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_owner_function = owner_function;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_qt_meta_type = metaType;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<AbstractTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, PtrOwnerFunction owner_function, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<OwnedTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_owner_function = owner_function;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, PtrOwnerFunction owner_function, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<AbstractTypeEntry<OwnedTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_owner_function = owner_function;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<OwnedTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_owner_function = owner_function;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<OwnedTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_owner_function = owner_function;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<OwnedTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_owner_function = owner_function;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, jclass java_impl_class, jclass java_wrapper_class, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<InterfaceTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<OwnedTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_owner_function = owner_function;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        instance->m_java_impl_class = java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<AbstractTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>(env, std::forward<Args>(args)...);
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+        Q_ASSERT(!polymorphicHandlers.isEmpty());
+        auto instance = new ObjectTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, PtrOwnerFunction owner_function, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+        Q_ASSERT(owner_function);
+        auto instance = new ObjectTypeEntry<OwnedTypeEntry<AbstractTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        instance->m_owner_function = owner_function;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+        Q_ASSERT(owner_function);
+        Q_ASSERT(!polymorphicHandlers.isEmpty());
+        auto instance = new ObjectTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_owner_function = owner_function;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<AbstractTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+        Q_ASSERT(!polymorphicHandlers.isEmpty());
+        auto instance = new ObjectTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, PtrOwnerFunction owner_function, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+        Q_ASSERT(owner_function);
+        auto instance = new ObjectTypeEntry<OwnedTypeEntry<AbstractTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        instance->m_owner_function = owner_function;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+        Q_ASSERT(owner_function);
+        Q_ASSERT(!polymorphicHandlers.isEmpty());
+        auto instance = new ObjectTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_owner_function = owner_function;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<AbstractTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+        Q_ASSERT(!polymorphicHandlers.isEmpty());
+        auto instance = new ObjectTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, PtrOwnerFunction owner_function, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+        Q_ASSERT(owner_function);
+        auto instance = new ObjectTypeEntry<OwnedTypeEntry<AbstractTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        instance->m_owner_function = owner_function;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, PtrOwnerFunction owner_function, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, jclass java_wrapper_class, JNIEnv* env, Args&&... args){
+        Q_ASSERT(owner_function);
+        Q_ASSERT(!polymorphicHandlers.isEmpty());
+        auto instance = new ObjectTypeEntry<OwnedTypeEntry<PolymorphicTypeEntry<AbstractTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_owner_function = owner_function;
+        instance->m_java_wrapper_class = java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, const QMetaType& metaType, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ValueTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, NewContainerAccessFunction containerAccessFactory, const QMetaType& metaType, JNIEnv* env, Args&&... args){
+        auto instance = new ObjectTypeEntry<ContainerTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>(env, std::forward<Args>(args)...);
+        instance->m_qt_meta_type = metaType;
+        instance->m_containerAccessFactory = containerAccessFactory;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, LinkFlag, JNIEnv *env, Args&&... args){
+        auto instance = new NoDebugMessagingObjectTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>(env, std::forward<Args>(args)...);
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, LinkFlag, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+        auto instance = new NoDebugMessagingObjectTypeEntry<ImplementingTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>(env, std::forward<Args>(args)...);
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, LinkFlag, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, JNIEnv *env, Args&&... args){
+        auto instance = new NoDebugMessagingObjectTypeEntry<PolymorphicTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>(env, std::forward<Args>(args)...);
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
+        return instance;
+    }
+    template<typename... Args>
+    static auto create(TypeInfoSupplier typeInfoSupplier, LinkFlag, const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicHandlers, const InterfaceOffsetInfo& interfaceOffsetInfo, JNIEnv *env, Args&&... args){
+        auto instance = new NoDebugMessagingObjectTypeEntry<ImplementingTypeEntry<PolymorphicTypeEntry<VirtualTypeEntry<ObjectTypeAbstractEntry>>>>(env, std::forward<Args>(args)...);
+        instance->m_polymorphicIdHandlers = polymorphicHandlers;
+        instance->m_interfaceOffsetInfo = interfaceOffsetInfo;
+        Q_ASSERT(typeInfoSupplier);
+        instance->m_typeInfoSupplier = typeInfoSupplier;
         return instance;
     }
 
@@ -1651,1281 +2714,1809 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntryByIID(JNIEnv* env, const char*
 
 QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_info& typeId, bool recursive, const char* qtName)
 {
-    {
-        QReadLocker locker(gTypeEntryLock());
-        Q_UNUSED(locker)
-        if(gTypeEntryHash()->contains(unique_id(typeId))){
-            const QMap<QByteArray,QtJambiTypeEntryPtr>& entries = (*gTypeEntryHash())[unique_id(typeId)];
-            if(qtName){
-                if(QtJambiTypeEntryPtr result = entries.value(qtName)){
-                    return result;
-                }
-            }else if(!entries.isEmpty()){
-                return entries.first();
-            }
-        }
-    }
     QtJambiTypeEntryPtr result;
-    const char *qt_name = nullptr;
-    const char *java_name = nullptr;
-    EntryTypes entryType = getEntryType(typeId);
-    switch(entryType){
-    case EntryTypes::Unspecific:
-        if(qtName && (java_name = getJavaNameByFunctional(qtName))){
-            qt_name = qtName;
-            entryType = EntryTypes::FunctionalTypeInfo;
-        }
-        break;
-    case EntryTypes::FunctionalTypeInfo:
-        qt_name = getQtName(typeId);
-        if(qtName){
-            if(QLatin1String(qtName)!=QLatin1String(qt_name)){
-                qt_name = qtName;
-            }
-        }
-        java_name = getJavaNameByFunctional(qt_name);
-        break;
-    default:
-        qt_name = getQtName(typeId);
-        java_name = getJavaName(typeId);
-        break;
-    }
-
-    if(entryType!=EntryTypes::Unspecific){
-        QTJAMBI_JNI_LOCAL_FRAME(env, 512);
-        if(qtName && entryType==EntryTypes::FunctionalTypeInfo){
-            if(QLatin1String(qtName)!=QLatin1String(qt_name)){
-                qt_name = qtName;
-                java_name = getJavaNameByFunctional(qtName);
-            }
-        }
-        jclass java_class = JavaAPI::resolveClass(env, java_name);
-        if(!java_class){
-            if(java_name)
-                JavaException::raiseError(env, QLatin1String("class %1 cannot be found").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
-            else
-                JavaException::raiseError(env, QLatin1String("class %1 cannot be found").arg(qtName) QTJAMBI_STACKTRACEINFO );
-            return QtJambiTypeEntryPtr();
-        }
-
-        switch(entryType){
-        case EntryTypes::EnumTypeInfo:
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
         {
-            if(recursive){
-                const std::type_info* flagId = getFlagForEnum(typeId);
-                if(flagId){
-                    QtJambiTypeEntryPtr e = QtJambiTypeEntry::getTypeEntry(env, *flagId);
-                    if(const FlagsTypeEntry* flagsType = dynamic_cast<const FlagsTypeEntry*>(e.data())){
-                        return QtJambiTypeEntryPtr(flagsType->enumType());
+            QReadLocker locker(storage->lock());
+            if(storage->typeEntries().contains(unique_id(typeId))){
+                const QMap<QByteArray,QtJambiTypeEntryPtr>& entries = storage->typeEntries()[unique_id(typeId)];
+                if(qtName){
+                    if(QtJambiTypeEntryPtr result = entries.value(qtName)){
+                        return result;
                     }
+                }else if(!entries.isEmpty()){
+                    return entries.first();
                 }
             }
-            QString sig;
-            size_t value_size = getValueSize(typeId);
-            switch ( value_size ) {
-            case 1:  sig = QLatin1String("(B)L%1;"); break;
-            case 2:  sig = QLatin1String("(S)L%1;"); break;
-            case 8:  sig = QLatin1String("(J)L%1;"); break;
-            default: sig = QLatin1String("(I)L%1;"); break;
-            }
-            jthrowable exceptionOccurred = nullptr;
-            jmethodID creator_method = JavaAPI::resolveMethod(env, "resolve", qPrintable(sig.arg(java_name)), java_class, true, &exceptionOccurred);
-            if(exceptionOccurred)
-                JavaException(env, exceptionOccurred).raise();
-            Q_ASSERT(creator_method);
-            result = new EnumTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size);
-            break;
         }
-        case EntryTypes::FlagsTypeInfo:
-        {
-            size_t value_size = getValueSize(typeId);
-            const std::type_info* flagId = getEnumForFlag(typeId);
-            Q_ASSERT(flagId);
-            jthrowable exceptionOccurred = nullptr;
-            jmethodID creator_method = JavaAPI::resolveMethod(env, "<init>", value_size==8 ? "(J)V" : "(I)V", java_class, false, &exceptionOccurred);
-            if(exceptionOccurred)
-                JavaException(env, exceptionOccurred).raise();
-            Q_ASSERT(creator_method);
-            auto e = getTypeEntry(env, *flagId, false, nullptr);
-            result = new FlagsTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, dynamic_cast<const EnumTypeEntry*>(e.data()));
-            break;
-        }
-        case EntryTypes::FunctionalTypeInfo:
-        {
-            size_t value_size = getValueSize(typeId);
-            size_t shell_size = getShellSize(typeId);
-            jclass java_impl_class = nullptr;
-            jclass java_wrapper_class = nullptr;
-            jmethodID creator_method = nullptr;
-            if(Java::Runtime::Class::isInterface(env, java_class)){
-                java_impl_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl").arg(java_name)));
-                if(!java_impl_class){
-                    JavaException::raiseError(env, QLatin1String("class %1.Impl cannot be found").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
-                    return QtJambiTypeEntryPtr();
+
+        const RegisteredTypeInfo typeInfo = registeredTypeInfo(typeId, qtName);
+
+        if(typeInfo.entryType!=EntryTypes::Unspecific){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 512);
+            if(!typeInfo.javaName){
+                if(qtName)
+                    JavaException::raiseError(env, QLatin1String("Java class for native type %1 cannot be found").arg(qtName) QTJAMBI_STACKTRACEINFO );
+                else if(typeInfo.qtName)
+                    JavaException::raiseError(env, QLatin1String("Java class for native type %1 cannot be found").arg(typeInfo.qtName) QTJAMBI_STACKTRACEINFO );
+                else
+                    JavaException::raiseError(env, QLatin1String("Java class for native type %1 cannot be found").arg(QtJambiAPI::typeName(typeId)) QTJAMBI_STACKTRACEINFO );
+            }else if(jclass java_class = JavaAPI::resolveClass(env, typeInfo.javaName)){
+                switch(typeInfo.entryType){
+                case EntryTypes::EnumTypeInfo:
+                {
+                    if(recursive){
+                        if(typeInfo.flagForEnum){
+                            QtJambiTypeEntryPtr e = QtJambiTypeEntry::getTypeEntry(env, *typeInfo.flagForEnum);
+                            if(const FlagsTypeEntry* flagsType = dynamic_cast<const FlagsTypeEntry*>(e.data())){
+                                return QtJambiTypeEntryPtr(flagsType->enumType());
+                            }
+                        }
+                    }
+                    QString sig;
+                    switch ( typeInfo.valueSizeAndAlignment.first ) {
+                    case 1:  sig = QLatin1String("(B)L%1;"); break;
+                    case 2:  sig = QLatin1String("(S)L%1;"); break;
+                    case 8:  sig = QLatin1String("(J)L%1;"); break;
+                    default: sig = QLatin1String("(I)L%1;"); break;
+                    }
+                    jthrowable exceptionOccurred = nullptr;
+                    jmethodID creator_method = JavaAPI::resolveMethod(env, "resolve", qPrintable(sig.arg(typeInfo.javaName)), java_class, true, &exceptionOccurred);
+                    if(exceptionOccurred)
+                        JavaException(env, exceptionOccurred).raise();
+                    Q_ASSERT(creator_method);
+                    result = new EnumTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    break;
                 }
-                int modifiers = Java::Runtime::Class::getModifiers(env,java_impl_class);
-                if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
-                    java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl$ConcreteWrapper").arg(java_name)));
-                }else{
-                    java_wrapper_class = java_impl_class;
+                case EntryTypes::FlagsTypeInfo:
+                {
+                    Q_ASSERT(typeInfo.enumForFlag);
+                    jthrowable exceptionOccurred = nullptr;
+                    jmethodID creator_method = JavaAPI::resolveMethod(env, "<init>", typeInfo.valueSizeAndAlignment.first==8 ? "(J)V" : "(I)V", java_class, false, &exceptionOccurred);
+                    if(exceptionOccurred)
+                        JavaException(env, exceptionOccurred).raise();
+                    Q_ASSERT(creator_method);
+                    auto e = getTypeEntry(env, *typeInfo.enumForFlag, false, nullptr);
+                    result = new FlagsTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, dynamic_cast<const EnumTypeEntry*>(e.data()));
+                    break;
                 }
-            }else{
-                java_impl_class = java_class;
-                int modifiers = Java::Runtime::Class::getModifiers(env,java_impl_class);
-                if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
-                    java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$ConcreteWrapper").arg(java_name)));
-                }else{
-                    java_wrapper_class = java_impl_class;
-                }
-            }
-            creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
-            if(!creator_method){
-                JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.Impl").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
-                return QtJambiTypeEntryPtr();
-            }
-            const QVector<RegistryAPI::FunctionInfo> _virtualFunctions = virtualFunctions(typeId);
-            RegistryAPI::DestructorFn destructor = registeredDestructor(typeId);
-            FunctionalResolver registered_functional_resolver = registeredFunctionalResolver(typeId);
-            QMetaType qt_meta_type(registeredMetaTypeID(typeId));
-            Q_ASSERT(qt_meta_type.isValid());
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            QString typeName = QtJambiAPI::typeName(typeId);
-            bool is_std_function = typeName.startsWith("std::function") || !typeName.contains("(*)");
-#else
-            bool is_std_function = !(qt_meta_type.flags() & QMetaType::IsPointer);
-#endif
-            result = new FunctionalTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, shell_size,
-                                             java_impl_class, java_wrapper_class, _virtualFunctions, destructor, registered_functional_resolver, qt_meta_type, is_std_function);
-            break;
-        }
-        case EntryTypes::ObjectTypeInfo:
-        {
-            size_t value_size = getValueSize(typeId);
-            InterfaceOffsetInfo interfaceOffsetInfo;
-            registeredInterfaceOffsets(typeId, &interfaceOffsetInfo);
-            size_t shell_size = getShellSize(typeId);
-            PtrDeleterFunction _deleter = deleter(typeId);
-            PtrOwnerFunction owner_function = registeredOwnerFunction(typeId);
-            const QVector<RegistryAPI::FunctionInfo> _virtualFunctions = virtualFunctions(typeId);
-            RegistryAPI::DestructorFn destructor = registeredDestructor(typeId);
-            int modifiers = Java::Runtime::Class::getModifiers(env,java_class);
-            TypeInfoSupplier typeInfoSupplier = registeredTypeInfoSupplier(typeId);
-            QList<const PolymorphicIdHandler*> polymorphicIdHandlers = getPolymorphicIdHandlers(typeId);
-            if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
-                jclass java_wrapper_class = nullptr;
-                try{
-                    java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$ConcreteWrapper").arg(java_name)));
-                } catch (const JavaException&) {
-                }
-                jmethodID creator_method = nullptr;
-                if(java_wrapper_class){
+                case EntryTypes::StdFunctionTypeInfo:
+                {
+                    jclass java_impl_class = nullptr;
+                    jclass java_wrapper_class = nullptr;
+                    jmethodID creator_method = nullptr;
+                    if(Java::Runtime::Class::isInterface(env, java_class)){
+                        java_impl_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl").arg(typeInfo.javaName)));
+                        if(!java_impl_class){
+                            JavaException::raiseError(env, QLatin1String("class %1.Impl cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                            return QtJambiTypeEntryPtr();
+                        }
+                        int modifiers = Java::Runtime::Class::getModifiers(env,java_impl_class);
+                        if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
+                            java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl$ConcreteWrapper").arg(typeInfo.javaName)));
+                        }else{
+                            java_wrapper_class = java_impl_class;
+                        }
+                    }else{
+                        java_impl_class = java_class;
+                        int modifiers = Java::Runtime::Class::getModifiers(env,java_impl_class);
+                        if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
+                            java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$ConcreteWrapper").arg(typeInfo.javaName)));
+                        }else{
+                            java_wrapper_class = java_impl_class;
+                        }
+                    }
                     creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
                     if(!creator_method){
-                        JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.ConcreteWrapper").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.Impl").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                         return QtJambiTypeEntryPtr();
                     }
+                    Q_ASSERT(typeInfo.metaType.isValid());
+                    result = new StdFunctionalTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                     java_impl_class, java_wrapper_class, typeInfo.virtualFunctions, typeInfo.destructor, typeInfo.functionalResolver, typeInfo.metaType);
+                    break;
                 }
-                if(polymorphicIdHandlers.isEmpty()){
-                    if(interfaceOffsetInfo.offsets.isEmpty()){
-                        if(owner_function){
-                            result = ObjectTypeEntryFactory::create(owner_function, java_wrapper_class,
-                                                             env, typeId, qt_name, java_name,
-                                                             java_class, creator_method, value_size,
-                                                             shell_size, _deleter, _virtualFunctions,
-                                                             destructor, typeInfoSupplier);
-                        }else{
-                            result = ObjectTypeEntryFactory::create(java_wrapper_class,
-                                                             env, typeId, qt_name, java_name, java_class,
-                                                             creator_method, value_size,
-                                                             shell_size, _deleter, _virtualFunctions,
-                                                             destructor,
-                                                             typeInfoSupplier);
-                        }
-                    }else{
-                        if(owner_function){
-                            result = ObjectTypeEntryFactory::create(owner_function, java_wrapper_class, interfaceOffsetInfo,
-                                                             env, typeId, qt_name, java_name,
-                                                             java_class, creator_method, value_size,
-                                                             shell_size, _deleter, _virtualFunctions,
-                                                             destructor, typeInfoSupplier);
-                        }else{
-                            result = ObjectTypeEntryFactory::create(java_wrapper_class, interfaceOffsetInfo,
-                                                             env, typeId, qt_name, java_name, java_class,
-                                                             creator_method, value_size,
-                                                             shell_size, _deleter, _virtualFunctions,
-                                                             destructor, typeInfoSupplier);
-                        }
-                    }
-                }else{
-                    if(interfaceOffsetInfo.offsets.isEmpty()){
-                        if(owner_function){
-                            result = ObjectTypeEntryFactory::create(owner_function, polymorphicIdHandlers, java_wrapper_class,
-                                                             env, typeId, qt_name, java_name,
-                                                             java_class, creator_method, value_size,
-                                                             shell_size, _deleter, _virtualFunctions,
-                                                             destructor, typeInfoSupplier);
-                        }else{
-                            result = ObjectTypeEntryFactory::create(polymorphicIdHandlers, java_wrapper_class,
-                                                             env, typeId, qt_name, java_name, java_class,
-                                                             creator_method, value_size,
-                                                             shell_size, _deleter, _virtualFunctions,
-                                                             destructor,
-                                                             typeInfoSupplier);
-                        }
-                    }else{
-                        if(owner_function){
-                            result = ObjectTypeEntryFactory::create(owner_function, polymorphicIdHandlers,
-                                                             java_wrapper_class, interfaceOffsetInfo,
-                                                             env, typeId, qt_name, java_name,
-                                                             java_class, creator_method, value_size,
-                                                             shell_size, _deleter, _virtualFunctions,
-                                                             destructor, typeInfoSupplier);
-                        }else{
-                            result = ObjectTypeEntryFactory::create(polymorphicIdHandlers, java_wrapper_class,
-                                                             interfaceOffsetInfo,
-                                                             env, typeId, qt_name, java_name, java_class,
-                                                             creator_method, value_size,
-                                                             shell_size, _deleter, _virtualFunctions,
-                                                             destructor, typeInfoSupplier);
-                        }
-                    }
-                }
-            }else{
-                jmethodID creator_method = findInternalPrivateConstructor(env, java_class);
-                if(!creator_method){
-                    JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
-                    return QtJambiTypeEntryPtr();
-                }
-                if(polymorphicIdHandlers.isEmpty()){
-                    if(interfaceOffsetInfo.offsets.isEmpty()){
-                        if(typeid_equals(typeId, typeid(QMessageLogContext))){
-                            Q_ASSERT(!owner_function);
-                            result = ObjectTypeEntryFactory::create(NoDebugMessaging, env, typeId, qt_name, java_name,
-                                                                             java_class, creator_method, value_size,
-                                                                             shell_size, _deleter, _virtualFunctions,
-                                                                             destructor, typeInfoSupplier);
-                        }else if(owner_function){
-                            result = ObjectTypeEntryFactory::create(owner_function, env, typeId, qt_name, java_name,
-                                                                             java_class, creator_method, value_size,
-                                                                             shell_size, _deleter, _virtualFunctions,
-                                                                             destructor, typeInfoSupplier
-                                                                        );
-                        }else{
-                            result = ObjectTypeEntryFactory::create(env, typeId, qt_name, java_name, java_class, creator_method, value_size,
-                                                         shell_size, _deleter, _virtualFunctions,
-                                                         destructor, typeInfoSupplier
-                                                     );
-                        }
-                    }else{
-                        if(typeid_equals(typeId, typeid(QMessageLogContext))){
-                            Q_ASSERT(!owner_function);
-                            result = ObjectTypeEntryFactory::create(NoDebugMessaging, interfaceOffsetInfo,
-                                                                                 env, typeId, qt_name, java_name,
-                                                                                 java_class, creator_method, value_size,
-                                                                                 shell_size, _deleter, _virtualFunctions,
-                                                                                 destructor, typeInfoSupplier);
-                        }else if(owner_function){
-                            result = ObjectTypeEntryFactory::create(owner_function, interfaceOffsetInfo,
-                                                             env, typeId, qt_name, java_name,
-                                                             java_class, creator_method, value_size,
-                                                             shell_size, _deleter, _virtualFunctions,
-                                                             destructor, typeInfoSupplier);
-                        }else{
-                            result = ObjectTypeEntryFactory::create(interfaceOffsetInfo,
-                                                             env, typeId, qt_name, java_name, java_class,
-                                                             creator_method, value_size,
-                                                             shell_size, _deleter, _virtualFunctions,
-                                                             destructor, typeInfoSupplier);
-                        }
-                    }
-                }else{
-                    if(interfaceOffsetInfo.offsets.isEmpty()){
-                        if(typeid_equals(typeId, typeid(QMessageLogContext))){
-                            Q_ASSERT(!owner_function);
-                            result = ObjectTypeEntryFactory::create(NoDebugMessaging, polymorphicIdHandlers,
-                                                                               env, typeId, qt_name, java_name, java_class,
-                                                                               creator_method, value_size,
-                                                                               shell_size, _deleter, _virtualFunctions,
-                                                                               destructor, typeInfoSupplier);
-                        }else if(owner_function){
-                            result = ObjectTypeEntryFactory::create(owner_function, polymorphicIdHandlers,
-                                                             env, typeId, qt_name, java_name, java_class,
-                                                             creator_method, value_size,
-                                                             shell_size, _deleter, _virtualFunctions,
-                                                             destructor, typeInfoSupplier);
-                        }else{
-                            result = ObjectTypeEntryFactory::create(polymorphicIdHandlers,
-                                                             env, typeId, qt_name, java_name,
-                                                             java_class, creator_method, value_size,
-                                                             shell_size, _deleter, _virtualFunctions,
-                                                             destructor, typeInfoSupplier);
-                        }
-                    }else{
-                        if(typeid_equals(typeId, typeid(QMessageLogContext))){
-                            Q_ASSERT(!owner_function);
-                            result = ObjectTypeEntryFactory::create(NoDebugMessaging, polymorphicIdHandlers, interfaceOffsetInfo,
-                                                                                 env, typeId, qt_name, java_name,
-                                                                                 java_class, creator_method, value_size,
-                                                                                 shell_size, _deleter, _virtualFunctions,
-                                                                                 destructor, typeInfoSupplier);
-                        }else if(owner_function){
-                            result = ObjectTypeEntryFactory::create(owner_function, polymorphicIdHandlers, interfaceOffsetInfo,
-                                                             env, typeId, qt_name, java_name,
-                                                             java_class, creator_method, value_size,
-                                                             shell_size, _deleter, _virtualFunctions,
-                                                             destructor, typeInfoSupplier);
-                        }else{
-                            result = ObjectTypeEntryFactory::create(polymorphicIdHandlers, interfaceOffsetInfo,
-                                                             env, typeId, qt_name, java_name, java_class,
-                                                             creator_method, value_size,
-                                                             shell_size, _deleter, _virtualFunctions,
-                                                             destructor, typeInfoSupplier);
-                        }
-                    }
-                }
-            }
-            break;
-        }
-        case EntryTypes::ValueTypeInfo:
-        {
-            size_t value_size = getValueSize(typeId);
-            InterfaceOffsetInfo interfaceOffsetInfo;
-            registeredInterfaceOffsets(typeId, &interfaceOffsetInfo);
-            size_t shell_size = getShellSize(typeId);
-            NewContainerAccessFunction containerAccessFactory = getSequentialContainerAccessFactory(typeId);
-            PtrOwnerFunction owner_function = registeredOwnerFunction(typeId);
-            const QVector<RegistryAPI::FunctionInfo> _virtualFunctions = virtualFunctions(typeId);
-            PtrDeleterFunction _deleter = deleter(typeId);
-            RegistryAPI::DestructorFn destructor = registeredDestructor(typeId);
-            QMetaType qt_meta_type(registeredMetaTypeID(typeId));
-            QList<const PolymorphicIdHandler*> polymorphicIdHandlers = getPolymorphicIdHandlers(typeId);
-            TypeInfoSupplier typeInfoSupplier = registeredTypeInfoSupplier(typeId);
-
-            if(typeid_equals(typeId, typeid(QModelIndex))){
-                Q_ASSERT(!owner_function);
-                result = QModelIndexTypeEntry::create(env, typeId, qt_name, java_name, java_class,
-                                                      nullptr,
-                                                      sizeof(QModelIndex),
-                                                      0,
-                                                      QModelIndexTypeEntry::deleter,
-                                                      QVector<RegistryAPI::FunctionInfo>{},
-                                                      destructor,
-                                                      typeInfoSupplier);
-            }else{
-                int modifiers = Java::Runtime::Class::getModifiers(env,java_class);
-                if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
+                case EntryTypes::FunctionPointerTypeInfo:
+                {
+                    jclass java_impl_class = nullptr;
                     jclass java_wrapper_class = nullptr;
-                    try{
-                        java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$ConcreteWrapper").arg(java_name)));
-                    } catch (const JavaException&) {
-                    }
                     jmethodID creator_method = nullptr;
-                    if(java_wrapper_class){
-                        creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
-                        if(!creator_method){
-                            JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.ConcreteWrapper").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                    if(Java::Runtime::Class::isInterface(env, java_class)){
+                        java_impl_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl").arg(typeInfo.javaName)));
+                        if(!java_impl_class){
+                            JavaException::raiseError(env, QLatin1String("class %1.Impl cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                             return QtJambiTypeEntryPtr();
                         }
-                    }
-                    if(containerAccessFactory){
-                        Q_ASSERT(qt_meta_type.isValid());
-                        Q_ASSERT(!owner_function);
-                        if(polymorphicIdHandlers.isEmpty()){
-                            if(interfaceOffsetInfo.offsets.isEmpty()){
-                                result = ObjectTypeEntryFactory::create(containerAccessFactory, qt_meta_type, java_wrapper_class,
-                                                                 env, typeId, qt_name, java_name,
-                                                                 java_class, creator_method, value_size,
-                                                                 shell_size, _deleter, _virtualFunctions,
-                                                                 destructor, typeInfoSupplier);
-                            }else{
-                                result = ObjectTypeEntryFactory::create(containerAccessFactory, qt_meta_type,
-                                                                 java_wrapper_class, interfaceOffsetInfo,
-                                                                 env, typeId, qt_name, java_name, java_class,
-                                                                 creator_method, value_size,
-                                                                 shell_size,
-                                                                 _deleter, _virtualFunctions,
-                                                                 destructor,
-                                                                 typeInfoSupplier);
-                            }
+                        int modifiers = Java::Runtime::Class::getModifiers(env,java_impl_class);
+                        if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
+                            java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl$ConcreteWrapper").arg(typeInfo.javaName)));
                         }else{
-                            if(interfaceOffsetInfo.offsets.isEmpty()){
-                                result = ObjectTypeEntryFactory::create(containerAccessFactory, qt_meta_type,
-                                                                 polymorphicIdHandlers, java_wrapper_class,
-                                                                 env, typeId, qt_name, java_name,
-                                                                 java_class, creator_method, value_size,
-                                                                 shell_size, _deleter, _virtualFunctions,
-                                                                 destructor, typeInfoSupplier);
-                            }else{
-                                result = ObjectTypeEntryFactory::create(containerAccessFactory, qt_meta_type,
-                                                                 polymorphicIdHandlers,
-                                                                 java_wrapper_class, interfaceOffsetInfo,
-                                                                 env, typeId, qt_name, java_name, java_class,
-                                                                 creator_method, value_size,
-                                                                 shell_size,
-                                                                 _deleter, _virtualFunctions,
-                                                                 destructor,
-                                                                 typeInfoSupplier);
-                            }
+                            java_wrapper_class = java_impl_class;
                         }
                     }else{
-                        if(qt_meta_type.isValid()){
+                        java_impl_class = java_class;
+                        int modifiers = Java::Runtime::Class::getModifiers(env,java_impl_class);
+                        if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
+                            java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$ConcreteWrapper").arg(typeInfo.javaName)));
+                        }else{
+                            java_wrapper_class = java_impl_class;
+                        }
+                    }
+                    creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
+                    if(!creator_method){
+                        JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.Impl").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                        return QtJambiTypeEntryPtr();
+                    }
+                    Q_ASSERT(typeInfo.metaType.isValid());
+                    result = new FunctionPointerTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                     java_impl_class, java_wrapper_class, typeInfo.virtualFunctions, typeInfo.destructor, typeInfo.functionalResolver, typeInfo.metaType);
+                    break;
+                }
+                case EntryTypes::ObjectTypeInfo:
+                {
+                    int modifiers = Java::Runtime::Class::getModifiers(env,java_class);
+                    const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicIdHandlers = typeInfo.polymorphicIdHandlers;
+                    if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
+                        jclass java_wrapper_class = nullptr;
+                        try{
+                            java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$ConcreteWrapper").arg(typeInfo.javaName)));
+                        } catch (const JavaException&) {
+                        }
+                        jmethodID creator_method = nullptr;
+                        if(java_wrapper_class){
+                            creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
+                            if(!creator_method){
+                                JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                                return QtJambiTypeEntryPtr();
+                            }
+                        }
+                        if(typeInfo.typeInfoSupplier){
                             if(polymorphicIdHandlers.isEmpty()){
-                                if(interfaceOffsetInfo.offsets.isEmpty()){
-                                    if(owner_function){
-                                        result = ObjectTypeEntryFactory::create(qt_meta_type, owner_function, java_wrapper_class,
-                                                                         env, typeId, qt_name, java_name, java_class,
-                                                                         creator_method, value_size,
-                                                                         shell_size, _deleter, _virtualFunctions,
-                                                                         destructor, typeInfoSupplier);
+                                if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                    if(typeInfo.ownerFunction){
+                                        result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.ownerFunction, java_wrapper_class,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                         java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }else{
-                                        result = ObjectTypeEntryFactory::create(qt_meta_type, java_wrapper_class,
-                                                                         env, typeId, qt_name, java_name,
-                                                                         java_class, creator_method, value_size,
-                                                                         shell_size, _deleter, _virtualFunctions,
-                                                                         destructor, typeInfoSupplier);
+                                        result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, java_wrapper_class,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                         creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }
                                 }else{
-                                    if(owner_function){
-                                        result = ObjectTypeEntryFactory::create(qt_meta_type, owner_function, java_wrapper_class,
-                                                                         interfaceOffsetInfo,
-                                                                         env, typeId, qt_name, java_name,
-                                                                         java_class, creator_method, value_size,
-                                                                         shell_size, _deleter,
-                                                                         _virtualFunctions, destructor,
-                                                                         typeInfoSupplier);
+                                    if(typeInfo.ownerFunction){
+                                        result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.ownerFunction, java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                         java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }else{
-                                        result = ObjectTypeEntryFactory::create(qt_meta_type, java_wrapper_class, interfaceOffsetInfo,
-                                                                         env, typeId, qt_name,
-                                                                         java_name, java_class, creator_method,
-                                                                         value_size,
-                                                                         shell_size, _deleter, _virtualFunctions,
-                                                                         destructor,
-                                                                         typeInfoSupplier);
+                                        result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                         creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }
                                 }
                             }else{
-                                if(interfaceOffsetInfo.offsets.isEmpty()){
-                                    if(owner_function){
-                                        result = ObjectTypeEntryFactory::create(qt_meta_type, owner_function,
-                                                                         polymorphicIdHandlers, java_wrapper_class,
-                                                                         env, typeId, qt_name, java_name, java_class,
-                                                                         creator_method, value_size,
-                                                                         shell_size, _deleter, _virtualFunctions,
-                                                                         destructor, typeInfoSupplier);
+                                if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                    if(typeInfo.ownerFunction){
+                                        result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.ownerFunction, polymorphicIdHandlers, java_wrapper_class,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                         java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }else{
-                                        result = ObjectTypeEntryFactory::create(qt_meta_type, polymorphicIdHandlers, java_wrapper_class,
-                                                                         env, typeId, qt_name, java_name,
-                                                                         java_class, creator_method, value_size,
-                                                                         shell_size, _deleter, _virtualFunctions,
-                                                                         destructor, typeInfoSupplier);
+                                        result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, polymorphicIdHandlers, java_wrapper_class,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                         creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }
                                 }else{
-                                    if(owner_function){
-                                        result = ObjectTypeEntryFactory::create(qt_meta_type, owner_function,
-                                                                         polymorphicIdHandlers, java_wrapper_class,
-                                                                         interfaceOffsetInfo,
-                                                                         env, typeId, qt_name, java_name,
-                                                                         java_class, creator_method, value_size,
-                                                                         shell_size, _deleter,
-                                                                         _virtualFunctions, destructor,
-                                                                         typeInfoSupplier);
+                                    if(typeInfo.ownerFunction){
+                                        result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.ownerFunction, polymorphicIdHandlers,
+                                                                         java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                         java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }else{
-                                        result = ObjectTypeEntryFactory::create(qt_meta_type,
-                                                                         polymorphicIdHandlers,
-                                                                         java_wrapper_class,
-                                                                         interfaceOffsetInfo,
-                                                                         env, typeId, qt_name,
-                                                                         java_name, java_class, creator_method,
-                                                                         value_size,
-                                                                         shell_size, _deleter, _virtualFunctions,
-                                                                         destructor,
-                                                                         typeInfoSupplier);
+                                        result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, polymorphicIdHandlers, java_wrapper_class,
+                                                                         typeInfo.interfaceOffsetInfo,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                         creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }
                                 }
                             }
-                        }else{
-                            PtrDeleterFunction _deleter = deleter(typeId);
-                            Q_ASSERT(_deleter);
+                        }else{ // !typeInfo.typeInfoSupplier
                             if(polymorphicIdHandlers.isEmpty()){
-                                if(interfaceOffsetInfo.offsets.isEmpty()){
-                                    if(owner_function){
-                                        result = ObjectTypeEntryFactory::create(owner_function, java_wrapper_class,
-                                                                                                 env, typeId, qt_name, java_name, java_class,
-                                                                                                 creator_method, value_size,
-                                                                                                 shell_size, _deleter, _virtualFunctions,
-                                                                                                 destructor, typeInfoSupplier
-                                                                                             );
+                                if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                    if(typeInfo.ownerFunction){
+                                        result = ObjectTypeEntryFactory::create(typeInfo.ownerFunction, java_wrapper_class,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                         java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }else{
                                         result = ObjectTypeEntryFactory::create(java_wrapper_class,
-                                                                                            env, typeId, qt_name, java_name, java_class,
-                                                                                            creator_method, value_size,
-                                                                                            shell_size, _deleter, _virtualFunctions,
-                                                                                            destructor, typeInfoSupplier);
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                         creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }
                                 }else{
-                                    if(owner_function){
-                                        result = ObjectTypeEntryFactory::create(owner_function, java_wrapper_class, interfaceOffsetInfo,
-                                                                                                              env, typeId, qt_name, java_name, java_class,
-                                                                                                              creator_method, value_size,
-                                                                                                              shell_size, _deleter, _virtualFunctions,
-                                                                                                              destructor, typeInfoSupplier);
+                                    if(typeInfo.ownerFunction){
+                                        result = ObjectTypeEntryFactory::create(typeInfo.ownerFunction, java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                         java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }else{
-                                        result = ObjectTypeEntryFactory::create(java_wrapper_class, interfaceOffsetInfo,
-                                                                                                         env, typeId, qt_name, java_name, java_class,
-                                                                                                         creator_method, value_size,
-                                                                                                         shell_size, _deleter, _virtualFunctions,
-                                                                                                         destructor, typeInfoSupplier);
+                                        result = ObjectTypeEntryFactory::create(java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                         creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }
                                 }
                             }else{
-                                if(interfaceOffsetInfo.offsets.isEmpty()){
-                                    if(owner_function){
-                                        result = ObjectTypeEntryFactory::create(owner_function, polymorphicIdHandlers, java_wrapper_class,
-                                                                                                 env, typeId, qt_name, java_name, java_class,
-                                                                                                 creator_method, value_size,
-                                                                                                 shell_size, _deleter, _virtualFunctions,
-                                                                                                 destructor, typeInfoSupplier
-                                                                                             );
+                                if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                    if(typeInfo.ownerFunction){
+                                        result = ObjectTypeEntryFactory::create(typeInfo.ownerFunction, polymorphicIdHandlers, java_wrapper_class,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                         java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }else{
                                         result = ObjectTypeEntryFactory::create(polymorphicIdHandlers, java_wrapper_class,
-                                                                                            env, typeId, qt_name, java_name, java_class,
-                                                                                            creator_method, value_size,
-                                                                                            shell_size, _deleter, _virtualFunctions,
-                                                                                            destructor, typeInfoSupplier);
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                         creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }
                                 }else{
-                                    if(owner_function){
-                                        result = ObjectTypeEntryFactory::create(owner_function, polymorphicIdHandlers, java_wrapper_class, interfaceOffsetInfo,
-                                                                                                              env, typeId, qt_name, java_name, java_class,
-                                                                                                              creator_method, value_size,
-                                                                                                              shell_size, _deleter, _virtualFunctions,
-                                                                                                              destructor, typeInfoSupplier);
+                                    if(typeInfo.ownerFunction){
+                                        result = ObjectTypeEntryFactory::create(typeInfo.ownerFunction, polymorphicIdHandlers,
+                                                                         java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                         java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }else{
-                                        result = ObjectTypeEntryFactory::create(polymorphicIdHandlers, java_wrapper_class, interfaceOffsetInfo,
-                                                                                                         env, typeId, qt_name, java_name, java_class,
-                                                                                                         creator_method, value_size,
-                                                                                                         shell_size, _deleter, _virtualFunctions,
-                                                                                                         destructor, typeInfoSupplier);
+                                        result = ObjectTypeEntryFactory::create(polymorphicIdHandlers, java_wrapper_class,
+                                                                         typeInfo.interfaceOffsetInfo,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                         creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }
                                 }
-                            }
-                        }
-                    }
-                }else{
-                    jmethodID creator_method = findInternalPrivateConstructor(env, java_class);
-                    if(!creator_method){
-                        JavaException::raiseError(env, "constructor cannot be found" QTJAMBI_STACKTRACEINFO );
-                        return QtJambiTypeEntryPtr();
-                    }
-                    if(containerAccessFactory){
-                        Q_ASSERT(qt_meta_type.isValid());
-                        Q_ASSERT(!owner_function);
-                        if(polymorphicIdHandlers.isEmpty()){
-                            if(interfaceOffsetInfo.offsets.isEmpty()){
-                                result = ObjectTypeEntryFactory::create(containerAccessFactory, qt_meta_type, env, typeId, qt_name,
-                                                                                     java_name, java_class, creator_method, value_size,
-                                                                                     shell_size, _deleter, _virtualFunctions,
-                                                                                     destructor, typeInfoSupplier
-                                                                                );
-                            }else{
-                                result = ObjectTypeEntryFactory::create(containerAccessFactory, qt_meta_type,
-                                                                                                 interfaceOffsetInfo, env, typeId,
-                                                                                                 qt_name, java_name, java_class,
-                                                                                                 creator_method, value_size,
-                                                                                                 shell_size, _deleter, _virtualFunctions,
-                                                                                                 destructor, typeInfoSupplier
-                                                                                            );
-                            }
-                        }else{
-                            if(interfaceOffsetInfo.offsets.isEmpty()){
-                                result = ObjectTypeEntryFactory::create(containerAccessFactory, qt_meta_type, polymorphicIdHandlers,
-                                                                                        env, typeId, qt_name, java_name, java_class,
-                                                                                        creator_method, value_size,
-                                                                                        shell_size, _deleter, _virtualFunctions,
-                                                                                        destructor, typeInfoSupplier);
-                            }else{
-                                result = ObjectTypeEntryFactory::create(containerAccessFactory, qt_meta_type,
-                                                                                                 polymorphicIdHandlers, interfaceOffsetInfo,
-                                                                                                 env, typeId, qt_name, java_name, java_class,
-                                                                                                 creator_method, value_size,
-                                                                                                 shell_size, _deleter, _virtualFunctions,
-                                                                                                 destructor, typeInfoSupplier);
                             }
                         }
                     }else{
-                        if(qt_meta_type.isValid()){
+                        jmethodID creator_method = findInternalPrivateConstructor(env, java_class);
+                        if(!creator_method){
+                            JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                            return QtJambiTypeEntryPtr();
+                        }
+                        if(typeInfo.typeInfoSupplier){
                             if(polymorphicIdHandlers.isEmpty()){
-                                if(interfaceOffsetInfo.offsets.isEmpty()){
-                                    if(owner_function){
-                                        result = ObjectTypeEntryFactory::create(qt_meta_type, owner_function, env, typeId, qt_name, java_name,
-                                                                                              java_class, creator_method, value_size,
-                                                                                              shell_size, _deleter, _virtualFunctions,
-                                                                                              destructor, typeInfoSupplier
-                                                                                            );
+                                if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                    if(typeInfo.ownerFunction){
+                                        result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.ownerFunction, env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                         java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                         typeInfo.destructor
+                                                                                    );
                                     }else{
-                                        result = ObjectTypeEntryFactory::create(qt_meta_type,
-                                                                                         env, typeId, qt_name,
-                                                                                         java_name, java_class,
-                                                                                         creator_method, value_size,
-                                                                                         shell_size, _deleter,
-                                                                                         _virtualFunctions,
-                                                                                         destructor, typeInfoSupplier
-                                                                                );
+                                        result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                     typeInfo.destructor
+                                                                 );
                                     }
                                 }else{
-                                    if(owner_function){
-                                        result = ObjectTypeEntryFactory::create(qt_meta_type, owner_function, interfaceOffsetInfo,
-                                                                                                              env, typeId, qt_name, java_name,
-                                                                                                                   java_class, creator_method, value_size,
-                                                                                                                   shell_size, _deleter, _virtualFunctions,
-                                                                                                                   destructor, typeInfoSupplier);
+                                    if(typeInfo.ownerFunction){
+                                        result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.ownerFunction, typeInfo.interfaceOffsetInfo,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                         java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }else{
-                                        result = ObjectTypeEntryFactory::create(qt_meta_type, interfaceOffsetInfo,
-                                                                                                              env, typeId, qt_name, java_name,
-                                                                                                              java_class, creator_method, value_size,
-                                                                                                              shell_size, _deleter, _virtualFunctions,
-                                                                                                              destructor, typeInfoSupplier);
+                                        result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.interfaceOffsetInfo,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                         creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }
                                 }
                             }else{
-                                if(interfaceOffsetInfo.offsets.isEmpty()){
-                                    if(owner_function){
-                                        result = ObjectTypeEntryFactory::create(qt_meta_type, owner_function, polymorphicIdHandlers,
-                                                                         env, typeId, qt_name, java_name,
-                                                                         java_class, creator_method, value_size,
-                                                                         shell_size, _deleter, _virtualFunctions,
-                                                                         destructor, typeInfoSupplier);
+                                if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                    if(typeInfo.ownerFunction){
+                                        result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.ownerFunction, polymorphicIdHandlers,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                         creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }else{
-                                        result = ObjectTypeEntryFactory::create(qt_meta_type, polymorphicIdHandlers,
-                                                                         env, typeId, qt_name, java_name,
-                                                                         java_class, creator_method, value_size,
-                                                                         shell_size, _deleter, _virtualFunctions,
-                                                                         destructor, typeInfoSupplier);
+                                        result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, polymorphicIdHandlers,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                         java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }
                                 }else{
-                                    if(owner_function){
-                                        result = ObjectTypeEntryFactory::create(qt_meta_type, owner_function, polymorphicIdHandlers, interfaceOffsetInfo,
-                                                                                                              env, typeId, qt_name, java_name,
-                                                                                                                   java_class, creator_method, value_size,
-                                                                                                                   shell_size, _deleter, _virtualFunctions,
-                                                                                                                   destructor, typeInfoSupplier);
+                                    if(typeInfo.ownerFunction){
+                                        result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.ownerFunction, polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                         java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }else{
-                                        result = ObjectTypeEntryFactory::create(qt_meta_type, polymorphicIdHandlers, interfaceOffsetInfo,
-                                                                                                              env, typeId, qt_name, java_name,
-                                                                                                              java_class, creator_method, value_size,
-                                                                                                              shell_size, _deleter, _virtualFunctions,
-                                                                                                              destructor, typeInfoSupplier);
+                                        result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                         creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }
                                 }
                             }
-                        }else{
-                            PtrDeleterFunction _deleter = deleter(typeId);
-                            Q_ASSERT(_deleter);
+                        }else{ // !typeInfo.typeInfoSupplier
                             if(polymorphicIdHandlers.isEmpty()){
-                                if(interfaceOffsetInfo.offsets.isEmpty()){
-                                    if(owner_function){
-                                        result = ObjectTypeEntryFactory::create(owner_function, env, typeId, qt_name,
-                                                                         java_name, java_class, creator_method, value_size,
-                                                                         shell_size, _deleter, _virtualFunctions,
-                                                                         destructor, typeInfoSupplier);
+                                if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                    if(typeid_equals(typeId, typeid(QMessageLogContext))){
+                                        Q_ASSERT(!typeInfo.ownerFunction);
+                                        result = ObjectTypeEntryFactory::create(NoDebugMessaging, env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                         java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                         typeInfo.destructor);
+                                    }else if(typeInfo.ownerFunction){
+                                        result = ObjectTypeEntryFactory::create(typeInfo.ownerFunction, env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                         java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                         typeInfo.destructor
+                                                                                    );
                                     }else{
-                                        result = ObjectTypeEntryFactory::create(env, typeId, qt_name, java_name, java_class, creator_method, value_size,
-                                                                         shell_size, _deleter, _virtualFunctions,
-                                                                         destructor, typeInfoSupplier);
+                                        result = ObjectTypeEntryFactory::create(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                     typeInfo.destructor
+                                                                 );
                                     }
                                 }else{
-                                    if(owner_function){
-                                        result = ObjectTypeEntryFactory::create(owner_function, interfaceOffsetInfo,
-                                                                                                              env, typeId, qt_name, java_name,
-                                                                                                              java_class, creator_method, value_size,
-                                                                                                              shell_size, _deleter, _virtualFunctions,
-                                                                                                              destructor, typeInfoSupplier);
+                                    if(typeid_equals(typeId, typeid(QMessageLogContext))){
+                                        Q_ASSERT(!typeInfo.ownerFunction);
+                                        result = ObjectTypeEntryFactory::create(NoDebugMessaging, typeInfo.interfaceOffsetInfo,
+                                                                                             env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                             java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                             typeInfo.destructor);
+                                    }else if(typeInfo.ownerFunction){
+                                        result = ObjectTypeEntryFactory::create(typeInfo.ownerFunction, typeInfo.interfaceOffsetInfo,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                         java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }else{
-                                        result = ObjectTypeEntryFactory::create(interfaceOffsetInfo,
-                                                                                                         env, typeId, qt_name, java_name,
-                                                                                                         java_class, creator_method, value_size,
-                                                                                                         shell_size, _deleter, _virtualFunctions,
-                                                                                                         destructor, typeInfoSupplier);
+                                        result = ObjectTypeEntryFactory::create(typeInfo.interfaceOffsetInfo,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                         creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }
                                 }
                             }else{
-                                if(interfaceOffsetInfo.offsets.isEmpty()){
-                                    if(owner_function){
-                                        result = ObjectTypeEntryFactory::create(owner_function, polymorphicIdHandlers,
-                                                                         env, typeId, qt_name, java_name, java_class,
-                                                                         creator_method, value_size,
-                                                                         shell_size, _deleter, _virtualFunctions,
-                                                                         destructor, typeInfoSupplier);
+                                if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                    if(typeid_equals(typeId, typeid(QMessageLogContext))){
+                                        Q_ASSERT(!typeInfo.ownerFunction);
+                                        result = ObjectTypeEntryFactory::create(NoDebugMessaging, polymorphicIdHandlers,
+                                                                                           env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                           creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                           typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                           typeInfo.destructor);
+                                    }else if(typeInfo.ownerFunction){
+                                        result = ObjectTypeEntryFactory::create(typeInfo.ownerFunction, polymorphicIdHandlers,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                         creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }else{
                                         result = ObjectTypeEntryFactory::create(polymorphicIdHandlers,
-                                                                         env, typeId, qt_name, java_name, java_class,
-                                                                         creator_method, value_size,
-                                                                         shell_size, _deleter, _virtualFunctions,
-                                                                         destructor, typeInfoSupplier);
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                         java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }
                                 }else{
-                                    if(owner_function){
-                                        result = ObjectTypeEntryFactory::create(owner_function, polymorphicIdHandlers, interfaceOffsetInfo,
-                                                                                                              env, typeId, qt_name, java_name,
-                                                                                                              java_class, creator_method, value_size,
-                                                                                                              shell_size, _deleter, _virtualFunctions,
-                                                                                                              destructor, typeInfoSupplier);
+                                    if(typeid_equals(typeId, typeid(QMessageLogContext))){
+                                        Q_ASSERT(!typeInfo.ownerFunction);
+                                        result = ObjectTypeEntryFactory::create(NoDebugMessaging, polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                             env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                             java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                             typeInfo.destructor);
+                                    }else if(typeInfo.ownerFunction){
+                                        result = ObjectTypeEntryFactory::create(typeInfo.ownerFunction, polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                         java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }else{
-                                        result = ObjectTypeEntryFactory::create(polymorphicIdHandlers, interfaceOffsetInfo,
-                                                                                                         env, typeId, qt_name, java_name,
-                                                                                                         java_class, creator_method, value_size,
-                                                                                                         shell_size, _deleter, _virtualFunctions,
-                                                                                                         destructor, typeInfoSupplier);
+                                        result = ObjectTypeEntryFactory::create(polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                         env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                         creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                         typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                         typeInfo.destructor);
                                     }
                                 }
                             }
                         }
                     }
+                    break;
                 }
-            }
-            break;
-        }
-        case EntryTypes::InterfaceTypeInfo:
-        {
-            size_t value_size = getValueSize(typeId);
-            jclass java_impl_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl").arg(java_name)));
-            if(!java_impl_class){
-                JavaException::raiseError(env, QLatin1String("class %1.Impl cannot be found").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
-                return QtJambiTypeEntryPtr();
-            }
-            jclass java_wrapper_class = nullptr;
-            int modifiers = Java::Runtime::Class::getModifiers(env,java_impl_class);
-            if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
-                java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl$ConcreteWrapper").arg(java_name)));
-                if(!java_wrapper_class){
-                    JavaException::raiseError(env, QLatin1String("class %1.Impl.ConcreteWrapper cannot be found").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
-                    return QtJambiTypeEntryPtr();
-                }
-            }else{
-                java_wrapper_class = java_impl_class;
-            }
-            jmethodID creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
-            if(!creator_method){
-                if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
-                    JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.Impl.ConcreteWrapper").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
-                }else{
-                    JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.Impl").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
-                }
-                return QtJambiTypeEntryPtr();
-            }
-            InterfaceOffsetInfo interfaceOffsetInfo;
-            registeredInterfaceOffsets(typeId, &interfaceOffsetInfo);
-            size_t shell_size = getShellSize(typeId);
-            PtrDeleterFunction _deleter = deleter(typeId);
-            PtrOwnerFunction owner_function = registeredOwnerFunction(typeId);
-            const QVector<RegistryAPI::FunctionInfo> _virtualFunctions = virtualFunctions(typeId);
-            RegistryAPI::DestructorFn destructor = registeredDestructor(typeId);
-            TypeInfoSupplier typeInfoSupplier = registeredTypeInfoSupplier(typeId);
-            QList<const PolymorphicIdHandler*> polymorphicIdHandlers;
-            for(const PolymorphicIdHandler* handler : getPolymorphicIdHandlers(typeId)){
-                jclass _java_class = JavaAPI::resolveClass(env, getJavaName(handler->m_targetTypeId));
-                if(env->IsAssignableFrom(_java_class, java_class)){
-                    polymorphicIdHandlers << handler;
-                }
-            }
-            if(polymorphicIdHandlers.isEmpty()){
-                if(interfaceOffsetInfo.offsets.isEmpty()){
-                    if(owner_function){
-                        result = ObjectTypeEntryFactory::create(java_impl_class, java_wrapper_class,
-                                                         owner_function, env, typeId,
-                                                         qt_name, java_name, java_class, creator_method,
-                                                         value_size, shell_size,
-                                                         _deleter, _virtualFunctions, destructor, typeInfoSupplier );
-                    }else{
-                        result = ObjectTypeEntryFactory::create(java_impl_class, java_wrapper_class,
-                                                         env, typeId,
-                                                         qt_name, java_name, java_class, creator_method,
-                                                         value_size, shell_size,
-                                                         _deleter, _virtualFunctions, destructor, typeInfoSupplier );
-                    }
-                }else{
-                    if(owner_function){
-                        result = ObjectTypeEntryFactory::create(java_impl_class, java_wrapper_class,
-                                                                                         owner_function, interfaceOffsetInfo,
-                                                                                         env, typeId,
-                                                                                         qt_name, java_name, java_class, creator_method,
-                                                                                         value_size, shell_size,
-                                                                                         _deleter, _virtualFunctions,
-                                                                                         destructor, typeInfoSupplier);
-                    }else{
-                        result = ObjectTypeEntryFactory::create(java_impl_class, java_wrapper_class,
-                                                                                         interfaceOffsetInfo,
-                                                                                         env, typeId,
-                                                                                         qt_name, java_name, java_class, creator_method,
-                                                                                         value_size, shell_size,
-                                                                                         _deleter, _virtualFunctions, destructor,
-                                                                                         typeInfoSupplier);
-                    }
-                }
-            }else{
-                if(interfaceOffsetInfo.offsets.isEmpty()){
-                    if(owner_function){
-                        result = ObjectTypeEntryFactory::create(java_impl_class, java_wrapper_class,
-                                                         owner_function, polymorphicIdHandlers, env, typeId,
-                                                         qt_name, java_name, java_class, creator_method,
-                                                         value_size, shell_size,
-                                                         _deleter, _virtualFunctions, destructor, typeInfoSupplier );
-                    }else{
-                        result = ObjectTypeEntryFactory::create(java_impl_class, java_wrapper_class,
-                                                         polymorphicIdHandlers, env, typeId,
-                                                         qt_name, java_name, java_class, creator_method,
-                                                         value_size, shell_size,
-                                                         _deleter, _virtualFunctions, destructor, typeInfoSupplier );
-                    }
-                }else{
-                    if(owner_function){
-                        result = ObjectTypeEntryFactory::create(java_impl_class, java_wrapper_class,
-                                                                                         owner_function, polymorphicIdHandlers, interfaceOffsetInfo,
-                                                                                         env, typeId,
-                                                                                         qt_name, java_name, java_class, creator_method,
-                                                                                         value_size, shell_size,
-                                                                                         _deleter, _virtualFunctions,
-                                                                                         destructor, typeInfoSupplier);
-                    }else{
-                        result = ObjectTypeEntryFactory::create(java_impl_class, java_wrapper_class,
-                                                                                         polymorphicIdHandlers, interfaceOffsetInfo,
-                                                                                         env, typeId,
-                                                                                         qt_name, java_name, java_class, creator_method,
-                                                                                         value_size, shell_size,
-                                                                                         _deleter, _virtualFunctions, destructor,
-                                                                                         typeInfoSupplier);
-                    }
-                }
-            }
-            break;
-        }
-        case EntryTypes::InterfaceValueTypeInfo:
-        {
-            size_t value_size = getValueSize(typeId);
-            jclass java_impl_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl").arg(java_name)));
-            if(!java_impl_class){
-                JavaException::raiseError(env, QLatin1String("class %1.Impl cannot be found").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
-                return QtJambiTypeEntryPtr();
-            }
-            jclass java_wrapper_class = nullptr;
-            int modifiers = Java::Runtime::Class::getModifiers(env,java_impl_class);
-            if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
-                java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl$ConcreteWrapper").arg(java_name)));
-                if(!java_wrapper_class){
-                    JavaException::raiseError(env, QLatin1String("class %1.Impl.ConcreteWrapper cannot be found").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
-                    return QtJambiTypeEntryPtr();
-                }
-            }else{
-                java_wrapper_class = java_impl_class;
-            }
-            jmethodID creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
-            if(!creator_method){
-                if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
-                    JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.Impl.ConcreteWrapper").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
-                }else{
-                    JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.Impl").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
-                }
-                return QtJambiTypeEntryPtr();
-            }
-            InterfaceOffsetInfo interfaceOffsetInfo;
-            registeredInterfaceOffsets(typeId, &interfaceOffsetInfo);
-            size_t shell_size = getShellSize(typeId);
-            PtrDeleterFunction _deleter = deleter(typeId);
-            PtrOwnerFunction owner_function = registeredOwnerFunction(typeId);
-            const QVector<RegistryAPI::FunctionInfo> _virtualFunctions = virtualFunctions(typeId);
-            RegistryAPI::DestructorFn destructor = registeredDestructor(typeId);
-            TypeInfoSupplier typeInfoSupplier = registeredTypeInfoSupplier(typeId);
-            QMetaType qt_meta_type(registeredMetaTypeID(typeId));
-            Q_ASSERT(qt_meta_type.isValid());
-            QList<const PolymorphicIdHandler*> polymorphicIdHandlers;
-            for(const PolymorphicIdHandler* handler : getPolymorphicIdHandlers(typeId)){
-                jclass _java_class = JavaAPI::resolveClass(env, getJavaName(handler->m_targetTypeId));
-                if(env->IsAssignableFrom(_java_class, java_class)){
-                    polymorphicIdHandlers << handler;
-                }
-            }
+                case EntryTypes::ValueTypeInfo:
+                {
+                    const QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>& polymorphicIdHandlers = typeInfo.polymorphicIdHandlers;
 
-            if(polymorphicIdHandlers.isEmpty()){
-                if(interfaceOffsetInfo.offsets.isEmpty()){
-                    if(owner_function){
-                        result = ObjectTypeEntryFactory::create(qt_meta_type, java_impl_class, java_wrapper_class,
-                                                         owner_function, env, typeId,
-                                                         qt_name, java_name, java_class, creator_method,
-                                                         value_size, shell_size, _deleter, _virtualFunctions,
-                                                         destructor, typeInfoSupplier );
+                    if(typeid_equals(typeId, typeid(QModelIndex))){
+                        Q_ASSERT(!typeInfo.ownerFunction);
+                        result = QModelIndexTypeEntry::create(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                              nullptr,
+                                                              sizeof(QModelIndex),
+                                                              alignof(QModelIndex),
+                                                              0,0,
+                                                              QModelIndexTypeEntry::deleter,
+                                                              QVector<RegistryAPI::FunctionInfo>{},
+                                                              typeInfo.destructor);
                     }else{
-                        result = ObjectTypeEntryFactory::create(qt_meta_type, java_impl_class, java_wrapper_class,
-                                                         env, typeId,
-                                                         qt_name, java_name, java_class, creator_method,
-                                                         value_size, shell_size, _deleter, _virtualFunctions,
-                                                         destructor, typeInfoSupplier );
-                    }
-                }else{
-                    if(owner_function){
-                        result = ObjectTypeEntryFactory::create(qt_meta_type, java_impl_class, java_wrapper_class,
-                                                                                              owner_function, interfaceOffsetInfo,
-                                                                                                 env, typeId,
-                                                                                                 qt_name, java_name, java_class, creator_method,
-                                                                                                 value_size, shell_size, _deleter,
-                                                                                                 _virtualFunctions,
-                                                                                                 destructor,
-                                                                                                 typeInfoSupplier);
-                    }else{
-                        result = ObjectTypeEntryFactory::create(qt_meta_type, java_impl_class, java_wrapper_class,
-                                                                                              interfaceOffsetInfo,
-                                                                                                 env, typeId,
-                                                                                                 qt_name, java_name, java_class, creator_method,
-                                                                                                 value_size, shell_size, _deleter, _virtualFunctions,
-                                                                                                 destructor,
-                                                                                                 typeInfoSupplier);
-                    }
-                }
-            }else{
-                if(interfaceOffsetInfo.offsets.isEmpty()){
-                    if(owner_function){
-                        result = ObjectTypeEntryFactory::create(qt_meta_type, java_impl_class, java_wrapper_class,
-                                                        owner_function, polymorphicIdHandlers, env, typeId,
-                                                        qt_name, java_name, java_class, creator_method,
-                                                        value_size, shell_size, _deleter, _virtualFunctions,
-                                                        destructor, typeInfoSupplier );
-                    }else{
-                    result = ObjectTypeEntryFactory::create(qt_meta_type, java_impl_class, java_wrapper_class,
-                                                        polymorphicIdHandlers, env, typeId,
-                                                        qt_name, java_name, java_class, creator_method,
-                                                        value_size, shell_size, _deleter, _virtualFunctions,
-                                                        destructor, typeInfoSupplier );
-                    }
-                }else{
-                    if(owner_function){
-                        result = ObjectTypeEntryFactory::create(qt_meta_type, java_impl_class, java_wrapper_class,
-                                                                                              owner_function,
-                                                                                              polymorphicIdHandlers, interfaceOffsetInfo,
-                                                                                              env, typeId,
-                                                                                              qt_name, java_name, java_class, creator_method,
-                                                                                              value_size, shell_size, _deleter,
-                                                                                              _virtualFunctions,
-                                                                                              destructor,
-                                                                                              typeInfoSupplier);
-                    }else{
-                        result = ObjectTypeEntryFactory::create(qt_meta_type, java_impl_class, java_wrapper_class,
-                                                                                              polymorphicIdHandlers, interfaceOffsetInfo,
-                                                                                              env, typeId,
-                                                                                              qt_name, java_name, java_class, creator_method,
-                                                                                              value_size, shell_size, _deleter, _virtualFunctions,
-                                                                                              destructor,
-                                                                                              typeInfoSupplier);
-                    }
-                }
-            }
-            break;
-        }
-        case EntryTypes::QObjectTypeInfo:
-        {
-            size_t value_size = getValueSize(typeId);
-            size_t shell_size = getShellSize(typeId);
-            InterfaceOffsetInfo interfaceOffsetInfo;
-            registeredInterfaceOffsets(typeId, &interfaceOffsetInfo);
-            const QVector<RegistryAPI::FunctionInfo> _virtualFunctions = virtualFunctions(typeId);
-            const QMetaObject* original_meta_object = registeredOriginalMetaObject(typeId);
-            const QMetaObject* _superTypeForCustomMetaObject = superTypeForCustomMetaObject(typeId);
-            int modifiers = Java::Runtime::Class::getModifiers(env,java_class);
-            QList<const PolymorphicIdHandler*> polymorphicIdHandlers;
-            for(const PolymorphicIdHandler* handler : getPolymorphicIdHandlers(typeId)){
-                jclass _java_class = JavaAPI::resolveClass(env, getJavaName(handler->m_targetTypeId));
-                if(env->IsAssignableFrom(_java_class, java_class)){
-                    polymorphicIdHandlers << handler;
-                }
-            }
-            if(_superTypeForCustomMetaObject){
-                if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
-                    jclass java_wrapper_class = nullptr;
-                    try {
-                        java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$ConcreteWrapper").arg(java_name)));
-                    } catch (const JavaException&) {
-                    }
-                    jmethodID creator_method = nullptr;
-                    if(java_wrapper_class){
-                        creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
-                        if(!creator_method){
-                            JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.ConcreteWrapper").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
-                            return QtJambiTypeEntryPtr();
-                        }
-                    }
-                    if(polymorphicIdHandlers.isEmpty()){
-                        if(interfaceOffsetInfo.offsets.isEmpty()){
-                            result = QObjectTypeEntryFactory::create(java_wrapper_class, _superTypeForCustomMetaObject,
-                                                                                         env, typeId, qt_name, java_name, java_class, creator_method,
-                                                                                         value_size, shell_size,
-                                                                                         _virtualFunctions, original_meta_object
-                                                                                    );
+                        int modifiers = Java::Runtime::Class::getModifiers(env,java_class);
+                        if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
+                            jclass java_wrapper_class = nullptr;
+                            try{
+                                java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$ConcreteWrapper").arg(typeInfo.javaName)));
+                            } catch (const JavaException&) {
+                            }
+                            jmethodID creator_method = nullptr;
+                            if(java_wrapper_class){
+                                creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
+                                if(!creator_method){
+                                    JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                                    return QtJambiTypeEntryPtr();
+                                }
+                            }
+                            if(typeInfo.typeInfoSupplier){
+                                if(typeInfo.containerAccessFactory){
+                                    Q_ASSERT(typeInfo.metaType.isValid());
+                                    Q_ASSERT(!typeInfo.ownerFunction);
+                                    if(polymorphicIdHandlers.isEmpty()){
+                                        if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                            result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.containerAccessFactory, typeInfo.metaType, java_wrapper_class,
+                                                                             env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                             java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                             typeInfo.destructor);
+                                        }else{
+                                            result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.containerAccessFactory, typeInfo.metaType,
+                                                                             java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                             env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                             creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                             typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                             typeInfo.destructor);
+                                        }
+                                    }else{
+                                        if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                            result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.containerAccessFactory, typeInfo.metaType,
+                                                                             polymorphicIdHandlers, java_wrapper_class,
+                                                                             env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                             java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                             typeInfo.destructor);
+                                        }else{
+                                            result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.containerAccessFactory, typeInfo.metaType,
+                                                                             polymorphicIdHandlers,
+                                                                             java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                             env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                             creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                             typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                             typeInfo.destructor);
+                                        }
+                                    }
+                                }else{
+                                    if(typeInfo.metaType.isValid()){
+                                        if(polymorphicIdHandlers.isEmpty()){
+                                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, typeInfo.ownerFunction, java_wrapper_class,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                     creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, java_wrapper_class,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                     java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }
+                                            }else{
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, typeInfo.ownerFunction, java_wrapper_class,
+                                                                                     typeInfo.interfaceOffsetInfo,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                     java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter,
+                                                                                     typeInfo.virtualFunctions, typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                                     env, typeId, typeInfo.qtName,
+                                                                                     typeInfo.javaName, java_class, creator_method,
+                                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }
+                                            }
+                                        }else{
+                                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, typeInfo.ownerFunction,
+                                                                                     polymorphicIdHandlers, java_wrapper_class,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                     creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, polymorphicIdHandlers, java_wrapper_class,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                     java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }
+                                            }else{
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, typeInfo.ownerFunction,
+                                                                                     polymorphicIdHandlers, java_wrapper_class,
+                                                                                     typeInfo.interfaceOffsetInfo,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                     java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter,
+                                                                                     typeInfo.virtualFunctions, typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType,
+                                                                                     polymorphicIdHandlers,
+                                                                                     java_wrapper_class,
+                                                                                     typeInfo.interfaceOffsetInfo,
+                                                                                     env, typeId, typeInfo.qtName,
+                                                                                     typeInfo.javaName, java_class, creator_method,
+                                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }
+                                            }
+                                        }
+                                    }else{
+                                        Q_ASSERT(typeInfo.deleter);
+                                        if(polymorphicIdHandlers.isEmpty()){
+                                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.ownerFunction, java_wrapper_class,
+                                                                                                             env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                             creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                             typeInfo.destructor
+                                                                                                         );
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, java_wrapper_class,
+                                                                                                        env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                        creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                        typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                        typeInfo.destructor);
+                                                }
+                                            }else{
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.ownerFunction, java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                                                                          env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                                          creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                          typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                          typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                                     creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                     typeInfo.destructor);
+                                                }
+                                            }
+                                        }else{
+                                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.ownerFunction, polymorphicIdHandlers, java_wrapper_class,
+                                                                                                             env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                             creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                             typeInfo.destructor
+                                                                                                         );
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, polymorphicIdHandlers, java_wrapper_class,
+                                                                                                        env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                        creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                        typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                        typeInfo.destructor);
+                                                }
+                                            }else{
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.ownerFunction, polymorphicIdHandlers, java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                                                                          env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                                          creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                          typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                          typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, polymorphicIdHandlers, java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                                     creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                     typeInfo.destructor);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }else{ // !typeInfo.typeInfoSupplier
+                                if(typeInfo.containerAccessFactory){
+                                    Q_ASSERT(typeInfo.metaType.isValid());
+                                    Q_ASSERT(!typeInfo.ownerFunction);
+                                    if(polymorphicIdHandlers.isEmpty()){
+                                        if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                            result = ObjectTypeEntryFactory::create(typeInfo.containerAccessFactory, typeInfo.metaType, java_wrapper_class,
+                                                                             env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                             java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                             typeInfo.destructor);
+                                        }else{
+                                            result = ObjectTypeEntryFactory::create(typeInfo.containerAccessFactory, typeInfo.metaType,
+                                                                             java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                             env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                             creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                             typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                             typeInfo.destructor);
+                                        }
+                                    }else{
+                                        if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                            result = ObjectTypeEntryFactory::create(typeInfo.containerAccessFactory, typeInfo.metaType,
+                                                                             polymorphicIdHandlers, java_wrapper_class,
+                                                                             env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                             java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                             typeInfo.destructor);
+                                        }else{
+                                            result = ObjectTypeEntryFactory::create(typeInfo.containerAccessFactory, typeInfo.metaType,
+                                                                             polymorphicIdHandlers,
+                                                                             java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                             env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                             creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                             typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                             typeInfo.destructor);
+                                        }
+                                    }
+                                }else{
+                                    if(typeInfo.metaType.isValid()){
+                                        if(polymorphicIdHandlers.isEmpty()){
+                                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, typeInfo.ownerFunction, java_wrapper_class,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                     creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, java_wrapper_class,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                     java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }
+                                            }else{
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, typeInfo.ownerFunction, java_wrapper_class,
+                                                                                     typeInfo.interfaceOffsetInfo,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                     java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter,
+                                                                                     typeInfo.virtualFunctions, typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                                     env, typeId, typeInfo.qtName,
+                                                                                     typeInfo.javaName, java_class, creator_method,
+                                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }
+                                            }
+                                        }else{
+                                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, typeInfo.ownerFunction,
+                                                                                     polymorphicIdHandlers, java_wrapper_class,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                     creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, polymorphicIdHandlers, java_wrapper_class,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                     java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }
+                                            }else{
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, typeInfo.ownerFunction,
+                                                                                     polymorphicIdHandlers, java_wrapper_class,
+                                                                                     typeInfo.interfaceOffsetInfo,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                     java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter,
+                                                                                     typeInfo.virtualFunctions, typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType,
+                                                                                     polymorphicIdHandlers,
+                                                                                     java_wrapper_class,
+                                                                                     typeInfo.interfaceOffsetInfo,
+                                                                                     env, typeId, typeInfo.qtName,
+                                                                                     typeInfo.javaName, java_class, creator_method,
+                                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }
+                                            }
+                                        }
+                                    }else{
+                                        Q_ASSERT(typeInfo.deleter);
+                                        if(polymorphicIdHandlers.isEmpty()){
+                                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.ownerFunction, java_wrapper_class,
+                                                                                                             env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                             creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                             typeInfo.destructor
+                                                                                                         );
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(java_wrapper_class,
+                                                                                                        env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                        creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                        typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                        typeInfo.destructor);
+                                                }
+                                            }else{
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.ownerFunction, java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                                                                          env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                                          creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                          typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                          typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                                     creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                     typeInfo.destructor);
+                                                }
+                                            }
+                                        }else{
+                                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.ownerFunction, polymorphicIdHandlers, java_wrapper_class,
+                                                                                                             env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                             creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                             typeInfo.destructor
+                                                                                                         );
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(polymorphicIdHandlers, java_wrapper_class,
+                                                                                                        env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                        creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                        typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                        typeInfo.destructor);
+                                                }
+                                            }else{
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.ownerFunction, polymorphicIdHandlers, java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                                                                          env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                                          creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                          typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                          typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(polymorphicIdHandlers, java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                                     creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                     typeInfo.destructor);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }else{
-                            result = QObjectTypeEntryFactory::create(java_wrapper_class, interfaceOffsetInfo, _superTypeForCustomMetaObject,
-                                                                                               env, typeId, qt_name, java_name, java_class, creator_method,
-                                                                                               value_size, shell_size,
-                                                                                               _virtualFunctions, original_meta_object
+                            jmethodID creator_method = findInternalPrivateConstructor(env, java_class);
+                            if(!creator_method){
+                                JavaException::raiseError(env, "constructor cannot be found" QTJAMBI_STACKTRACEINFO );
+                                return QtJambiTypeEntryPtr();
+                            }
+                            if(typeInfo.typeInfoSupplier){
+                                if(typeInfo.containerAccessFactory){
+                                    Q_ASSERT(typeInfo.metaType.isValid());
+                                    Q_ASSERT(!typeInfo.ownerFunction);
+                                    if(polymorphicIdHandlers.isEmpty()){
+                                        if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                            result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.containerAccessFactory, typeInfo.metaType, env, typeId, typeInfo.qtName,
+                                                                                                 typeInfo.javaName, java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                 typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                 typeInfo.destructor
                                                                                             );
-                        }
-                    }else{
-                        if(interfaceOffsetInfo.offsets.isEmpty()){
-                            result = QObjectTypeEntryFactory::create(polymorphicIdHandlers, java_wrapper_class, _superTypeForCustomMetaObject,
-                                                                                                            env, typeId, qt_name, java_name, java_class, creator_method,
-                                                                                                            value_size, shell_size,
-                                                                                                            _virtualFunctions, original_meta_object
-                                                     );
-                        }else{
-                            result = QObjectTypeEntryFactory::create(polymorphicIdHandlers, java_wrapper_class, interfaceOffsetInfo,
-                                                                                               _superTypeForCustomMetaObject,
-                                                                                               env, typeId, qt_name, java_name, java_class, creator_method,
-                                                                                               value_size, shell_size,
-                                                                                               _virtualFunctions, original_meta_object);
+                                        }else{
+                                            result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.containerAccessFactory, typeInfo.metaType,
+                                                                                                             typeInfo.interfaceOffsetInfo, env, typeId,
+                                                                                                             typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                             creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                             typeInfo.destructor
+                                                                                                        );
+                                        }
+                                    }else{
+                                        if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                            result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.containerAccessFactory, typeInfo.metaType, polymorphicIdHandlers,
+                                                                                                    env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                    creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                    typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                    typeInfo.destructor);
+                                        }else{
+                                            result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.containerAccessFactory, typeInfo.metaType,
+                                                                                                             polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                             env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                             creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                             typeInfo.destructor);
+                                        }
+                                    }
+                                }else{
+                                    if(typeInfo.metaType.isValid()){
+                                        if(polymorphicIdHandlers.isEmpty()){
+                                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, typeInfo.ownerFunction, env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                          java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                          typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                          typeInfo.destructor
+                                                                                                        );
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType,
+                                                                                                     env, typeId, typeInfo.qtName,
+                                                                                                     typeInfo.javaName, java_class,
+                                                                                                     creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter,
+                                                                                                     typeInfo.virtualFunctions,
+                                                                                                     typeInfo.destructor
+                                                                                            );
+                                                }
+                                            }else{
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, typeInfo.ownerFunction, typeInfo.interfaceOffsetInfo,
+                                                                                                                          env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                                               java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                               typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                               typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, typeInfo.interfaceOffsetInfo,
+                                                                                                                          env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                                          java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                          typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                          typeInfo.destructor);
+                                                }
+                                            }
+                                        }else{
+                                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, typeInfo.ownerFunction, polymorphicIdHandlers,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                     java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, polymorphicIdHandlers,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                     java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }
+                                            }else{
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, typeInfo.ownerFunction, polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                                          env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                                               java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                               typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                               typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                                          env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                                          java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                          typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                          typeInfo.destructor);
+                                                }
+                                            }
+                                        }
+                                    }else{
+                                        Q_ASSERT(typeInfo.deleter);
+                                        if(polymorphicIdHandlers.isEmpty()){
+                                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.ownerFunction, env, typeId, typeInfo.qtName,
+                                                                                     typeInfo.javaName, java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }
+                                            }else{
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.ownerFunction, typeInfo.interfaceOffsetInfo,
+                                                                                                                          env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                                          java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                          typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                          typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.interfaceOffsetInfo,
+                                                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                                     java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                     typeInfo.destructor);
+                                                }
+                                            }
+                                        }else{
+                                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.ownerFunction, polymorphicIdHandlers,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                     creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, polymorphicIdHandlers,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                     creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }
+                                            }else{
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.ownerFunction, polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                                          env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                                          java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                          typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                          typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                                     java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                     typeInfo.destructor);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }else{ // !typeInfo.typeInfoSupplier
+                                if(typeInfo.containerAccessFactory){
+                                    Q_ASSERT(typeInfo.metaType.isValid());
+                                    Q_ASSERT(!typeInfo.ownerFunction);
+                                    if(polymorphicIdHandlers.isEmpty()){
+                                        if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                            result = ObjectTypeEntryFactory::create(typeInfo.containerAccessFactory, typeInfo.metaType, env, typeId, typeInfo.qtName,
+                                                                                                 typeInfo.javaName, java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                 typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                 typeInfo.destructor
+                                                                                            );
+                                        }else{
+                                            result = ObjectTypeEntryFactory::create(typeInfo.containerAccessFactory, typeInfo.metaType,
+                                                                                                             typeInfo.interfaceOffsetInfo, env, typeId,
+                                                                                                             typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                             creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                             typeInfo.destructor
+                                                                                                        );
+                                        }
+                                    }else{
+                                        if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                            result = ObjectTypeEntryFactory::create(typeInfo.containerAccessFactory, typeInfo.metaType, polymorphicIdHandlers,
+                                                                                                    env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                    creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                    typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                    typeInfo.destructor);
+                                        }else{
+                                            result = ObjectTypeEntryFactory::create(typeInfo.containerAccessFactory, typeInfo.metaType,
+                                                                                                             polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                             env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                                             creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                             typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                             typeInfo.destructor);
+                                        }
+                                    }
+                                }else{
+                                    if(typeInfo.metaType.isValid()){
+                                        if(polymorphicIdHandlers.isEmpty()){
+                                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, typeInfo.ownerFunction, env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                          java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                          typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                          typeInfo.destructor
+                                                                                                        );
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType,
+                                                                                                     env, typeId, typeInfo.qtName,
+                                                                                                     typeInfo.javaName, java_class,
+                                                                                                     creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter,
+                                                                                                     typeInfo.virtualFunctions,
+                                                                                                     typeInfo.destructor
+                                                                                            );
+                                                }
+                                            }else{
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, typeInfo.ownerFunction, typeInfo.interfaceOffsetInfo,
+                                                                                                                          env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                                               java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                               typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                               typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, typeInfo.interfaceOffsetInfo,
+                                                                                                                          env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                                          java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                          typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                          typeInfo.destructor);
+                                                }
+                                            }
+                                        }else{
+                                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, typeInfo.ownerFunction, polymorphicIdHandlers,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                     java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, polymorphicIdHandlers,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                     java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }
+                                            }else{
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, typeInfo.ownerFunction, polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                                          env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                                               java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                               typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                               typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                                          env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                                          java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                          typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                          typeInfo.destructor);
+                                                }
+                                            }
+                                        }
+                                    }else{
+                                        Q_ASSERT(typeInfo.deleter);
+                                        if(polymorphicIdHandlers.isEmpty()){
+                                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.ownerFunction, env, typeId, typeInfo.qtName,
+                                                                                     typeInfo.javaName, java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }
+                                            }else{
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.ownerFunction, typeInfo.interfaceOffsetInfo,
+                                                                                                                          env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                                          java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                          typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                          typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.interfaceOffsetInfo,
+                                                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                                     java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                     typeInfo.destructor);
+                                                }
+                                            }
+                                        }else{
+                                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.ownerFunction, polymorphicIdHandlers,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                     creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(polymorphicIdHandlers,
+                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
+                                                                                     creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                     typeInfo.destructor);
+                                                }
+                                            }else{
+                                                if(typeInfo.ownerFunction){
+                                                    result = ObjectTypeEntryFactory::create(typeInfo.ownerFunction, polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                                          env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                                          java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                          typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                          typeInfo.destructor);
+                                                }else{
+                                                    result = ObjectTypeEntryFactory::create(polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                                     env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                                                                     java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                                     typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                                     typeInfo.destructor);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
-                }else{ // !isAbstract
-                    jmethodID creator_method = findInternalPrivateConstructor(env, java_class);
-                    if(!creator_method){
-                        JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                    break;
+                }
+                case EntryTypes::InterfaceTypeInfo:
+                {
+                    jclass java_impl_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl").arg(typeInfo.javaName)));
+                    if(!java_impl_class){
+                        JavaException::raiseError(env, QLatin1String("class %1.Impl cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                         return QtJambiTypeEntryPtr();
                     }
-                    if(polymorphicIdHandlers.isEmpty()){
-                        if(interfaceOffsetInfo.offsets.isEmpty()){
-                            result = QObjectTypeEntryFactory::create(_superTypeForCustomMetaObject,
-                                                                                         env, typeId, qt_name, java_name, java_class, creator_method,
-                                                                                         value_size,
-                                                                                         shell_size, _virtualFunctions, original_meta_object
-                                                     );
-                        }else{
-                            result = QObjectTypeEntryFactory::create(interfaceOffsetInfo, _superTypeForCustomMetaObject,
-                                                                                           env, typeId, qt_name, java_name, java_class, creator_method,
-                                                                                           value_size,
-                                                                                           shell_size, _virtualFunctions, original_meta_object
-                                                     );
-                        }
-                    }else{
-                        if(interfaceOffsetInfo.offsets.isEmpty()){
-                            result = QObjectTypeEntryFactory::create(polymorphicIdHandlers, _superTypeForCustomMetaObject,
-                                                                                                    env, typeId, qt_name, java_name, java_class, creator_method,
-                                                                                                    value_size,
-                                                                                                    shell_size, _virtualFunctions, original_meta_object);
-                        }else{
-                            result = QObjectTypeEntryFactory::create(polymorphicIdHandlers, interfaceOffsetInfo, _superTypeForCustomMetaObject,
-                                                                                                      env, typeId, qt_name, java_name, java_class, creator_method,
-                                                                                                      value_size,
-                                                                                                      shell_size, _virtualFunctions, original_meta_object);
-                        }
-                    }
-                } // isAbstract
-            }else{ // !_superTypeForCustomMetaObject
-                if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
                     jclass java_wrapper_class = nullptr;
-                    try {
-                        java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$ConcreteWrapper").arg(java_name)));
-                    } catch (const JavaException&) {
-                    }
-                    jmethodID creator_method = nullptr;
-                    if(java_wrapper_class){
-                        creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
-                        if(!creator_method){
-                            JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.ConcreteWrapper").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                    int modifiers = Java::Runtime::Class::getModifiers(env,java_impl_class);
+                    if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
+                        java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl$ConcreteWrapper").arg(typeInfo.javaName)));
+                        if(!java_wrapper_class){
+                            JavaException::raiseError(env, QLatin1String("class %1.Impl.ConcreteWrapper cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                             return QtJambiTypeEntryPtr();
                         }
-                    }
-                    if(polymorphicIdHandlers.isEmpty()){
-                        if(interfaceOffsetInfo.offsets.isEmpty()){
-                            result = QObjectTypeEntryFactory::create(java_wrapper_class, env, typeId, qt_name,
-                                                             java_name, java_class, creator_method,
-                                                              value_size, shell_size,
-                                                              _virtualFunctions, original_meta_object);
-                        }else{
-                            result = QObjectTypeEntryFactory::create(java_wrapper_class, interfaceOffsetInfo,
-                                                               env, typeId, qt_name, java_name, java_class, creator_method,
-                                                               value_size, shell_size,
-                                                               _virtualFunctions, original_meta_object);
-                        }
                     }else{
-                        if(interfaceOffsetInfo.offsets.isEmpty()){
-                            result = QObjectTypeEntryFactory::create(polymorphicIdHandlers, java_wrapper_class,
-                                                                env, typeId, qt_name,
-                                                                java_name, java_class, creator_method,
-                                                                value_size, shell_size,
-                                                                _virtualFunctions, original_meta_object);
-                        }else{
-                            result = QObjectTypeEntryFactory::create(polymorphicIdHandlers, java_wrapper_class,
-                                                              interfaceOffsetInfo,
-                                                              env, typeId, qt_name, java_name, java_class, creator_method,
-                                                              value_size, shell_size,
-                                                              _virtualFunctions, original_meta_object);
-                        }
+                        java_wrapper_class = java_impl_class;
                     }
-                }else{ // !isAbstract
-                    jmethodID creator_method = findInternalPrivateConstructor(env, java_class);
+                    jmethodID creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
                     if(!creator_method){
-                        JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                        if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
+                            JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.Impl.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                        }else{
+                            JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.Impl").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                        }
                         return QtJambiTypeEntryPtr();
                     }
-                    if(polymorphicIdHandlers.isEmpty()){
-                        if(interfaceOffsetInfo.offsets.isEmpty()){
-                            result = QObjectTypeEntryFactory::create(env, typeId, qt_name, java_name, java_class, creator_method,
-                                                              value_size,
-                                                              shell_size, _virtualFunctions, original_meta_object
-                                                     );
-                        }else{
-                            result = QObjectTypeEntryFactory::create(interfaceOffsetInfo,
-                                                               env, typeId, qt_name, java_name, java_class, creator_method,
-                                                               value_size,
-                                                               shell_size, _virtualFunctions, original_meta_object);
-                        }
-                    }else{
-                        if(interfaceOffsetInfo.offsets.isEmpty()){
-                            result = QObjectTypeEntryFactory::create(polymorphicIdHandlers,
-                                                                env, typeId, qt_name, java_name,
-                                                                java_class, creator_method,
-                                                                value_size,
-                                                                shell_size, _virtualFunctions, original_meta_object
-                                                            );
-                        }else{
-                            result = QObjectTypeEntryFactory::create(polymorphicIdHandlers, interfaceOffsetInfo,
-                                                               env, typeId, qt_name, java_name,
-                                                               java_class, creator_method,
-                                                               value_size,
-                                                               shell_size, _virtualFunctions,
-                                                               original_meta_object);
+                    QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>> polymorphicIdHandlers;
+                    for(const QExplicitlySharedDataPointer<const PolymorphicIdHandler>& handler : typeInfo.polymorphicIdHandlers){
+                        jclass _java_class = JavaAPI::resolveClass(env, getJavaName(handler->m_targetTypeId));
+                        if(env->IsAssignableFrom(_java_class, java_class)){
+                            polymorphicIdHandlers << handler;
                         }
                     }
-                } // isAbstract
-            } // if(_superTypeForCustomMetaObject)
-            break;
-        }
-        case EntryTypes::StringTypeInfo:
-        {
-            size_t value_size = getValueSize(typeId);
-            if(typeid_equals(typeId, typeid(QString))){
-                result = new StringTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeid_equals(typeId, typeid(QStringView))){
-                result = new StringUtilTypeEntry<QStringView>(env, typeId, qt_name, java_name, java_class, value_size);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            }else if(typeid_equals(typeId, typeid(QStringRef))){
-                result = new StringUtilTypeEntry<QStringRef>(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeid_equals(typeId, typeid(QXmlStreamStringRef))){
-                result = new StringUtilTypeEntry<QXmlStreamStringRef>(env, typeId, qt_name, java_name, java_class, value_size);
-#else
-            }else if(typeid_equals(typeId, typeid(QAnyStringView))){
-                result = new StringUtilTypeEntry<QAnyStringView>(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeid_equals(typeId, typeid(QUtf8StringView))){
-                result = new StringUtilTypeEntry<QUtf8StringView>(env, typeId, qt_name, java_name, java_class, value_size);
-#endif
-            }else if(typeid_equals(typeId, typeid(QLatin1String))){
-                result = new StringUtilTypeEntry<QLatin1String>(env, typeId, qt_name, java_name, java_class, value_size);
-            }
-            break;
-        }
-        case EntryTypes::PrimitiveTypeInfo:
-        {
-            size_t value_size = getValueSize(typeId);
-            if(typeid_equals(typeId, typeid(double)) || typeid_equals(typeId, typeid(jdouble))){
-                result = new JDoubleTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeid_equals(typeId, typeid(float)) || typeid_equals(typeId, typeid(jfloat))){
-                result = new JFloatTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeid_equals(typeId, typeid(bool)) || typeid_equals(typeId, typeid(jboolean))){
-                result = new JBooleanTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeid_equals(typeId, typeid(wchar_t))
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-                     || typeid_equals(typeId, typeid(char16_t))
-#endif
-                     || typeid_equals(typeId, typeid(jchar))){
-                result = new JCharTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeid_equals(typeId, typeid(QChar))){
-                result = new JCharQCharTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeid_equals(typeId, typeid(QLatin1Char))){
-                result = new JCharQLatin1CharTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeid_equals(typeId, typeid(qint32)) || typeid_equals(typeId, typeid(quint32)) || typeid_equals(typeId, typeid(jint))){
-                result = new JIntTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeid_equals(typeId, typeid(qint16)) || typeid_equals(typeId, typeid(quint16)) || typeid_equals(typeId, typeid(jshort))){
-                result = new JShortTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeid_equals(typeId, typeid(qint64)) || typeid_equals(typeId, typeid(quint64)) || typeid_equals(typeId, typeid(jlong))){
-                result = new JLongTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeid_equals(typeId, typeid(qint8)) || typeid_equals(typeId, typeid(quint8)) || typeid_equals(typeId, typeid(jbyte))){
-                result = new JByteTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-            }
-            break;
-        }
-        case EntryTypes::SpecialTypeInfo:
-        {
-            size_t value_size = getValueSize(typeId);
-            if(typeid_equals(typeId, typeid(std::nullptr_t))){
-                result = new NullptrTypeEntry(env, typeId, qt_name, nullptr, nullptr, value_size);
-            }else if(typeid_equals(typeId, typeid(QUrl::FormattingOptions))){
-                jthrowable exceptionOccurred = nullptr;
-                jmethodID creator_method = JavaAPI::resolveMethod(env, "<init>", "(I)V", java_class, false, &exceptionOccurred);
-                if(exceptionOccurred)
-                    JavaException(env, exceptionOccurred).raise();
-                Q_ASSERT(creator_method);
-                result = new FlagsTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, nullptr);
-            }else if(typeid_equals(typeId, typeid(QMetaObject::Connection))){
-                result = new MetaUtilTypeEntry<QMetaObject::Connection>(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeid_equals(typeId, typeid(QMetaObject))){
-                result = new MetaUtilTypeEntry<QMetaObject>(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeid_equals(typeId, typeid(JIteratorWrapper))
-                     || typeid_equals(typeId, typeid(JCollectionWrapper))
-                     || typeid_equals(typeId, typeid(JMapWrapper))
-                     || typeid_equals(typeId, typeid(JObjectWrapper))
-                     || typeid_equals(typeId, typeid(JIntArrayWrapper))
-                     || typeid_equals(typeId, typeid(JLongArrayWrapper))
-                     || typeid_equals(typeId, typeid(JShortArrayWrapper))
-                     || typeid_equals(typeId, typeid(JByteArrayWrapper))
-                     || typeid_equals(typeId, typeid(JBooleanArrayWrapper))
-                     || typeid_equals(typeId, typeid(JCharArrayWrapper))
-                     || typeid_equals(typeId, typeid(JFloatArrayWrapper))
-                     || typeid_equals(typeId, typeid(JDoubleArrayWrapper))
-                     || typeid_equals(typeId, typeid(JEnumWrapper))){
-                result = new MetaUtilTypeEntry<JObjectWrapper>(env, typeId, qt_name, java_name, java_class, value_size);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-            }else if(typeid_equals(typeId, typeid(JQObjectWrapper))){
-                result = new MetaUtilTypeEntry<JQObjectWrapper>(env, typeId, qt_name, java_name, java_class, value_size);
-            }else if(typeid_equals(typeId, typeid(JObjectValueWrapper))){
-                result = new MetaUtilTypeEntry<JObjectValueWrapper>(env, typeId, qt_name, java_name, java_class, value_size);
-#endif
-            }else if(typeid_equals(typeId, typeid(QVariant))){
-                result = new QVariantTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-#if QT_VERSION >= 0x050C00
-            }else if(typeid_equals(typeId, typeid(QCborValueRef)) || typeid_equals(typeId, typeid(QCborValueConstRef))){
-                result = new QCborValueRefTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
-#endif
-            }
-            break;
-        }
-        default:
-            return QtJambiTypeEntryPtr();
-        }
-    }
-
-    {
-        QWriteLocker locker(gTypeEntryLock());
-        Q_UNUSED(locker)
-
-        if(gTypeEntryHash()->contains(unique_id(typeId))){
-            QMap<QByteArray,QtJambiTypeEntryPtr>& entries = (*gTypeEntryHash())[unique_id(typeId)];
-            if(qtName){
-                if(QtJambiTypeEntryPtr altresult = entries.value(qtName)){
-                    return altresult;
+                    if(typeInfo.typeInfoSupplier){
+                        if(polymorphicIdHandlers.isEmpty()){
+                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                if(typeInfo.ownerFunction){
+                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, java_impl_class, java_wrapper_class,
+                                                                     typeInfo.ownerFunction, env, typeId,
+                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                     typeInfo.deleter, typeInfo.virtualFunctions, typeInfo.destructor );
+                                }else{
+                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, java_impl_class, java_wrapper_class,
+                                                                     env, typeId,
+                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                     typeInfo.deleter, typeInfo.virtualFunctions, typeInfo.destructor );
+                                }
+                            }else{
+                                if(typeInfo.ownerFunction){
+                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, java_impl_class, java_wrapper_class,
+                                                                                                     typeInfo.ownerFunction, typeInfo.interfaceOffsetInfo,
+                                                                                                     env, typeId,
+                                                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                                                     typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                     typeInfo.destructor);
+                                }else{
+                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, java_impl_class, java_wrapper_class,
+                                                                                                     typeInfo.interfaceOffsetInfo,
+                                                                                                     env, typeId,
+                                                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                                                     typeInfo.deleter, typeInfo.virtualFunctions, typeInfo.destructor);
+                                }
+                            }
+                        }else{
+                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                if(typeInfo.ownerFunction){
+                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, java_impl_class, java_wrapper_class,
+                                                                     typeInfo.ownerFunction, polymorphicIdHandlers, env, typeId,
+                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                     typeInfo.deleter, typeInfo.virtualFunctions, typeInfo.destructor );
+                                }else{
+                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, java_impl_class, java_wrapper_class,
+                                                                     polymorphicIdHandlers, env, typeId,
+                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                     typeInfo.deleter, typeInfo.virtualFunctions, typeInfo.destructor );
+                                }
+                            }else{
+                                if(typeInfo.ownerFunction){
+                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, java_impl_class, java_wrapper_class,
+                                                                                                     typeInfo.ownerFunction, polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                     env, typeId,
+                                                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                                                     typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                     typeInfo.destructor);
+                                }else{
+                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, java_impl_class, java_wrapper_class,
+                                                                                                     polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                     env, typeId,
+                                                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                                                     typeInfo.deleter, typeInfo.virtualFunctions, typeInfo.destructor);
+                                }
+                            }
+                        }
+                    }else{
+                        if(polymorphicIdHandlers.isEmpty()){
+                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                if(typeInfo.ownerFunction){
+                                    result = ObjectTypeEntryFactory::create(java_impl_class, java_wrapper_class,
+                                                                     typeInfo.ownerFunction, env, typeId,
+                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                     typeInfo.deleter, typeInfo.virtualFunctions, typeInfo.destructor );
+                                }else{
+                                    result = ObjectTypeEntryFactory::create(java_impl_class, java_wrapper_class,
+                                                                     env, typeId,
+                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                     typeInfo.deleter, typeInfo.virtualFunctions, typeInfo.destructor );
+                                }
+                            }else{
+                                if(typeInfo.ownerFunction){
+                                    result = ObjectTypeEntryFactory::create(java_impl_class, java_wrapper_class,
+                                                                                                     typeInfo.ownerFunction, typeInfo.interfaceOffsetInfo,
+                                                                                                     env, typeId,
+                                                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                                                     typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                     typeInfo.destructor);
+                                }else{
+                                    result = ObjectTypeEntryFactory::create(java_impl_class, java_wrapper_class,
+                                                                                                     typeInfo.interfaceOffsetInfo,
+                                                                                                     env, typeId,
+                                                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                                                     typeInfo.deleter, typeInfo.virtualFunctions, typeInfo.destructor);
+                                }
+                            }
+                        }else{
+                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                if(typeInfo.ownerFunction){
+                                    result = ObjectTypeEntryFactory::create(java_impl_class, java_wrapper_class,
+                                                                     typeInfo.ownerFunction, polymorphicIdHandlers, env, typeId,
+                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                     typeInfo.deleter, typeInfo.virtualFunctions, typeInfo.destructor );
+                                }else{
+                                    result = ObjectTypeEntryFactory::create(java_impl_class, java_wrapper_class,
+                                                                     polymorphicIdHandlers, env, typeId,
+                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                     typeInfo.deleter, typeInfo.virtualFunctions, typeInfo.destructor );
+                                }
+                            }else{
+                                if(typeInfo.ownerFunction){
+                                    result = ObjectTypeEntryFactory::create(java_impl_class, java_wrapper_class,
+                                                                                                     typeInfo.ownerFunction, polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                     env, typeId,
+                                                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                                                     typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                     typeInfo.destructor);
+                                }else{
+                                    result = ObjectTypeEntryFactory::create(java_impl_class, java_wrapper_class,
+                                                                                                     polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                     env, typeId,
+                                                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                                                     typeInfo.deleter, typeInfo.virtualFunctions, typeInfo.destructor);
+                                }
+                            }
+                        }
+                    }
+                    break;
                 }
-            }else if(!entries.isEmpty()){
-                QtJambiTypeEntryPtr e = entries.first();
-                return e;
+                case EntryTypes::InterfaceValueTypeInfo:
+                {
+                    jclass java_impl_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl").arg(typeInfo.javaName)));
+                    if(!java_impl_class){
+                        JavaException::raiseError(env, QLatin1String("class %1.Impl cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                        return QtJambiTypeEntryPtr();
+                    }
+                    jclass java_wrapper_class = nullptr;
+                    int modifiers = Java::Runtime::Class::getModifiers(env,java_impl_class);
+                    if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
+                        java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl$ConcreteWrapper").arg(typeInfo.javaName)));
+                        if(!java_wrapper_class){
+                            JavaException::raiseError(env, QLatin1String("class %1.Impl.ConcreteWrapper cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                            return QtJambiTypeEntryPtr();
+                        }
+                    }else{
+                        java_wrapper_class = java_impl_class;
+                    }
+                    jmethodID creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
+                    if(!creator_method){
+                        if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
+                            JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.Impl.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                        }else{
+                            JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.Impl").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                        }
+                        return QtJambiTypeEntryPtr();
+                    }
+                    Q_ASSERT(typeInfo.metaType.isValid());
+                    QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>> polymorphicIdHandlers;
+                    for(const QExplicitlySharedDataPointer<const PolymorphicIdHandler>& handler : typeInfo.polymorphicIdHandlers){
+                        jclass _java_class = JavaAPI::resolveClass(env, getJavaName(handler->m_targetTypeId));
+                        if(env->IsAssignableFrom(_java_class, java_class)){
+                            polymorphicIdHandlers << handler;
+                        }
+                    }
+
+                    if(typeInfo.typeInfoSupplier){
+                        if(polymorphicIdHandlers.isEmpty()){
+                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                if(typeInfo.ownerFunction){
+                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, java_impl_class, java_wrapper_class,
+                                                                     typeInfo.ownerFunction, env, typeId,
+                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                            typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                            typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                     typeInfo.destructor);
+                                }else{
+                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, java_impl_class, java_wrapper_class,
+                                                                     env, typeId,
+                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                            typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                            typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                     typeInfo.destructor);
+                                }
+                            }else{
+                                if(typeInfo.ownerFunction){
+                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, java_impl_class, java_wrapper_class,
+                                                                                                          typeInfo.ownerFunction, typeInfo.interfaceOffsetInfo,
+                                                                                                             env, typeId,
+                                                                                                             typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                             typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter,
+                                                                                                             typeInfo.virtualFunctions,
+                                                                                                             typeInfo.destructor);
+                                }else{
+                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, java_impl_class, java_wrapper_class,
+                                                                                                          typeInfo.interfaceOffsetInfo,
+                                                                                                             env, typeId,
+                                                                                                             typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                             typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                             typeInfo.destructor);
+                                }
+                            }
+                        }else{
+                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                if(typeInfo.ownerFunction){
+                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, java_impl_class, java_wrapper_class,
+                                                                    typeInfo.ownerFunction, polymorphicIdHandlers, env, typeId,
+                                                                    typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                    typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                    typeInfo.destructor );
+                                }else{
+                                result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, java_impl_class, java_wrapper_class,
+                                                                    polymorphicIdHandlers, env, typeId,
+                                                                    typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                    typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                    typeInfo.destructor);
+                                }
+                            }else{
+                                if(typeInfo.ownerFunction){
+                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, java_impl_class, java_wrapper_class,
+                                                                                                          typeInfo.ownerFunction,
+                                                                                                          polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                          env, typeId,
+                                                                                                          typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                          typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter,
+                                                                                                          typeInfo.virtualFunctions,
+                                                                                                          typeInfo.destructor);
+                                }else{
+                                    result = ObjectTypeEntryFactory::create(typeInfo.typeInfoSupplier, typeInfo.metaType, java_impl_class, java_wrapper_class,
+                                                                                                          polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                          env, typeId,
+                                                                                                          typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                          typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                          typeInfo.destructor);
+                                }
+                            }
+                        }
+                    }else{
+                        if(polymorphicIdHandlers.isEmpty()){
+                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                if(typeInfo.ownerFunction){
+                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, java_impl_class, java_wrapper_class,
+                                                                     typeInfo.ownerFunction, env, typeId,
+                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                            typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                            typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                     typeInfo.destructor);
+                                }else{
+                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, java_impl_class, java_wrapper_class,
+                                                                     env, typeId,
+                                                                     typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                     typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                            typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                            typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                     typeInfo.destructor);
+                                }
+                            }else{
+                                if(typeInfo.ownerFunction){
+                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, java_impl_class, java_wrapper_class,
+                                                                                                          typeInfo.ownerFunction, typeInfo.interfaceOffsetInfo,
+                                                                                                             env, typeId,
+                                                                                                             typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                             typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter,
+                                                                                                             typeInfo.virtualFunctions,
+                                                                                                             typeInfo.destructor);
+                                }else{
+                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, java_impl_class, java_wrapper_class,
+                                                                                                          typeInfo.interfaceOffsetInfo,
+                                                                                                             env, typeId,
+                                                                                                             typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                             typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                             typeInfo.destructor);
+                                }
+                            }
+                        }else{
+                            if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                if(typeInfo.ownerFunction){
+                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, java_impl_class, java_wrapper_class,
+                                                                    typeInfo.ownerFunction, polymorphicIdHandlers, env, typeId,
+                                                                    typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                    typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                    typeInfo.destructor );
+                                }else{
+                                result = ObjectTypeEntryFactory::create(typeInfo.metaType, java_impl_class, java_wrapper_class,
+                                                                    polymorphicIdHandlers, env, typeId,
+                                                                    typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                    typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                    typeInfo.destructor);
+                                }
+                            }else{
+                                if(typeInfo.ownerFunction){
+                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, java_impl_class, java_wrapper_class,
+                                                                                                          typeInfo.ownerFunction,
+                                                                                                          polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                          env, typeId,
+                                                                                                          typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                          typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter,
+                                                                                                          typeInfo.virtualFunctions,
+                                                                                                          typeInfo.destructor);
+                                }else{
+                                    result = ObjectTypeEntryFactory::create(typeInfo.metaType, java_impl_class, java_wrapper_class,
+                                                                                                          polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                                                          env, typeId,
+                                                                                                          typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                          typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.deleter, typeInfo.virtualFunctions,
+                                                                                                          typeInfo.destructor);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+                case EntryTypes::QObjectTypeInfo:
+                {
+                    int modifiers = Java::Runtime::Class::getModifiers(env,java_class);
+                    QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>> polymorphicIdHandlers;
+                    for(const QExplicitlySharedDataPointer<const PolymorphicIdHandler>& handler : typeInfo.polymorphicIdHandlers){
+                        jclass _java_class = JavaAPI::resolveClass(env, getJavaName(handler->m_targetTypeId));
+                        if(env->IsAssignableFrom(_java_class, java_class)){
+                            polymorphicIdHandlers << handler;
+                        }
+                    }
+                    if(typeInfo.customMetaObject){
+                        if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
+                            jclass java_wrapper_class = nullptr;
+                            try {
+                                java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$ConcreteWrapper").arg(typeInfo.javaName)));
+                            } catch (const JavaException&) {
+                            }
+                            jmethodID creator_method = nullptr;
+                            if(java_wrapper_class){
+                                creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
+                                if(!creator_method){
+                                    JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                                    return QtJambiTypeEntryPtr();
+                                }
+                            }
+                            if(polymorphicIdHandlers.isEmpty()){
+                                if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                    result = QObjectTypeEntryFactory::create(java_wrapper_class, typeInfo.customMetaObject,
+                                                                                                 env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                 typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                                                 typeInfo.virtualFunctions, typeInfo.originalMetaObject
+                                                                                            );
+                                }else{
+                                    result = QObjectTypeEntryFactory::create(java_wrapper_class, typeInfo.interfaceOffsetInfo, typeInfo.customMetaObject,
+                                                                                                       env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                       typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                                                       typeInfo.virtualFunctions, typeInfo.originalMetaObject
+                                                                                                    );
+                                }
+                            }else{
+                                if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                    result = QObjectTypeEntryFactory::create(polymorphicIdHandlers, java_wrapper_class, typeInfo.customMetaObject,
+                                                                                                                    env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                                    typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                                                                    typeInfo.virtualFunctions, typeInfo.originalMetaObject
+                                                             );
+                                }else{
+                                    result = QObjectTypeEntryFactory::create(polymorphicIdHandlers, java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                                                       typeInfo.customMetaObject,
+                                                                                                       env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                       typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                                                       typeInfo.virtualFunctions, typeInfo.originalMetaObject);
+                                }
+                            }
+                        }else{ // !isAbstract
+                            jmethodID creator_method = findInternalPrivateConstructor(env, java_class);
+                            if(!creator_method){
+                                JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                                return QtJambiTypeEntryPtr();
+                            }
+                            if(polymorphicIdHandlers.isEmpty()){
+                                if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                    result = QObjectTypeEntryFactory::create(typeInfo.customMetaObject,
+                                                                                                 env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                 typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                 typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.virtualFunctions, typeInfo.originalMetaObject
+                                                             );
+                                }else{
+                                    result = QObjectTypeEntryFactory::create(typeInfo.interfaceOffsetInfo, typeInfo.customMetaObject,
+                                                                                                   env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                   typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                   typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.virtualFunctions, typeInfo.originalMetaObject
+                                                             );
+                                }
+                            }else{
+                                if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                    result = QObjectTypeEntryFactory::create(polymorphicIdHandlers, typeInfo.customMetaObject,
+                                                                                                            env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                            typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                            typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.virtualFunctions, typeInfo.originalMetaObject);
+                                }else{
+                                    result = QObjectTypeEntryFactory::create(polymorphicIdHandlers, typeInfo.interfaceOffsetInfo, typeInfo.customMetaObject,
+                                                                                                              env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                                                              typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                                                              typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.virtualFunctions, typeInfo.originalMetaObject);
+                                }
+                            }
+                        } // isAbstract
+                    }else{ // !typeInfo.customMetaObject
+                        if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
+                            jclass java_wrapper_class = nullptr;
+                            try {
+                                java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$ConcreteWrapper").arg(typeInfo.javaName)));
+                            } catch (const JavaException&) {
+                            }
+                            jmethodID creator_method = nullptr;
+                            if(java_wrapper_class){
+                                creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
+                                if(!creator_method){
+                                    JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                                    return QtJambiTypeEntryPtr();
+                                }
+                            }
+                            if(polymorphicIdHandlers.isEmpty()){
+                                if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                    result = QObjectTypeEntryFactory::create(java_wrapper_class, env, typeId, typeInfo.qtName,
+                                                                     typeInfo.javaName, java_class, creator_method,
+                                                                      typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                      typeInfo.virtualFunctions, typeInfo.originalMetaObject);
+                                }else{
+                                    result = QObjectTypeEntryFactory::create(java_wrapper_class, typeInfo.interfaceOffsetInfo,
+                                                                       env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                       typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                       typeInfo.virtualFunctions, typeInfo.originalMetaObject);
+                                }
+                            }else{
+                                if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                    result = QObjectTypeEntryFactory::create(polymorphicIdHandlers, java_wrapper_class,
+                                                                        env, typeId, typeInfo.qtName,
+                                                                        typeInfo.javaName, java_class, creator_method,
+                                                                        typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                        typeInfo.virtualFunctions, typeInfo.originalMetaObject);
+                                }else{
+                                    result = QObjectTypeEntryFactory::create(polymorphicIdHandlers, java_wrapper_class,
+                                                                      typeInfo.interfaceOffsetInfo,
+                                                                      env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                      typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second,
+                                                                      typeInfo.virtualFunctions, typeInfo.originalMetaObject);
+                                }
+                            }
+                        }else{ // !isAbstract
+                            jmethodID creator_method = findInternalPrivateConstructor(env, java_class);
+                            if(!creator_method){
+                                JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                                return QtJambiTypeEntryPtr();
+                            }
+                            if(polymorphicIdHandlers.isEmpty()){
+                                if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                    result = QObjectTypeEntryFactory::create(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                      typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                      typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.virtualFunctions, typeInfo.originalMetaObject
+                                                             );
+                                }else{
+                                    result = QObjectTypeEntryFactory::create(typeInfo.interfaceOffsetInfo,
+                                                                       env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method,
+                                                                       typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                       typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.virtualFunctions, typeInfo.originalMetaObject);
+                                }
+                            }else{
+                                if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
+                                    result = QObjectTypeEntryFactory::create(polymorphicIdHandlers,
+                                                                        env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                        java_class, creator_method,
+                                                                        typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                        typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.virtualFunctions, typeInfo.originalMetaObject
+                                                                    );
+                                }else{
+                                    result = QObjectTypeEntryFactory::create(polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
+                                                                       env, typeId, typeInfo.qtName, typeInfo.javaName,
+                                                                       java_class, creator_method,
+                                                                       typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
+                                                                       typeInfo.shellSizeAndAlignment.first, typeInfo.shellSizeAndAlignment.second, typeInfo.virtualFunctions,
+                                                                       typeInfo.originalMetaObject);
+                                }
+                            }
+                        } // isAbstract
+                    } // if(typeInfo.customMetaObject)
+                    break;
+                }
+                case EntryTypes::StringTypeInfo:
+                {
+                    if(typeid_equals(typeId, typeid(QString))){
+                        result = new StringTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(QStringView))){
+                        result = new StringUtilTypeEntry<QStringView>(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(QAnyStringView))){
+                        result = new StringUtilTypeEntry<QAnyStringView>(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(QUtf8StringView))){
+                        result = new StringUtilTypeEntry<QUtf8StringView>(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(QLatin1String))){
+                        result = new StringUtilTypeEntry<QLatin1String>(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }
+                    break;
+                }
+                case EntryTypes::PrimitiveTypeInfo:
+                {
+                    if(typeid_equals(typeId, typeid(double)) || typeid_equals(typeId, typeid(jdouble))){
+                        result = new JDoubleTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(float)) || typeid_equals(typeId, typeid(jfloat))){
+                        result = new JFloatTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(bool)) || typeid_equals(typeId, typeid(jboolean))){
+                        result = new JBooleanTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(wchar_t))
+                             || typeid_equals(typeId, typeid(char16_t))
+                             || typeid_equals(typeId, typeid(jchar))){
+                        result = new JCharTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(QChar))){
+                        result = new JCharQCharTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(QLatin1Char))){
+                        result = new JCharQLatin1CharTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(qint32)) || typeid_equals(typeId, typeid(quint32)) || typeid_equals(typeId, typeid(jint))){
+                        result = new JIntTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(qint16)) || typeid_equals(typeId, typeid(quint16)) || typeid_equals(typeId, typeid(jshort))){
+                        result = new JShortTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(qint64)) || typeid_equals(typeId, typeid(quint64)) || typeid_equals(typeId, typeid(jlong))){
+                        result = new JLongTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(qint8)) || typeid_equals(typeId, typeid(quint8)) || typeid_equals(typeId, typeid(jbyte))){
+                        result = new JByteTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }
+                    break;
+                }
+                case EntryTypes::SpecialTypeInfo:
+                {
+                    if(typeid_equals(typeId, typeid(std::nullptr_t))){
+                        result = new NullptrTypeEntry(env, typeId, typeInfo.qtName, nullptr, nullptr, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(QUrl::FormattingOptions))){
+                        jthrowable exceptionOccurred = nullptr;
+                        jmethodID creator_method = JavaAPI::resolveMethod(env, "<init>", "(I)V", java_class, false, &exceptionOccurred);
+                        if(exceptionOccurred)
+                            JavaException(env, exceptionOccurred).raise();
+                        Q_ASSERT(creator_method);
+                        result = new FlagsTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, nullptr);
+                    }else if(typeid_equals(typeId, typeid(QMetaObject::Connection))){
+                        result = new MetaObjectConnectionTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(QMetaObject))){
+                        result = new MetaUtilTypeEntry<QMetaObject>(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(JCollectionWrapper))
+                             || typeid_equals(typeId, typeid(JMapWrapper))
+                             || typeid_equals(typeId, typeid(JObjectWrapper))
+                             || typeid_equals(typeId, typeid(JIntArrayWrapper))
+                             || typeid_equals(typeId, typeid(JLongArrayWrapper))
+                             || typeid_equals(typeId, typeid(JShortArrayWrapper))
+                             || typeid_equals(typeId, typeid(JByteArrayWrapper))
+                             || typeid_equals(typeId, typeid(JBooleanArrayWrapper))
+                             || typeid_equals(typeId, typeid(JCharArrayWrapper))
+                             || typeid_equals(typeId, typeid(JFloatArrayWrapper))
+                             || typeid_equals(typeId, typeid(JDoubleArrayWrapper))){
+                        result = new MetaUtilTypeEntry<JObjectWrapper>(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(JQObjectWrapper))){
+                        result = new MetaUtilTypeEntry<JQObjectWrapper>(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(JObjectValueWrapper))){
+                        result = new MetaUtilTypeEntry<JObjectValueWrapper>(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(QVariant))){
+                        result = new QVariantTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(QCborValueRef)) || typeid_equals(typeId, typeid(QCborValueConstRef))){
+                        result = new QCborValueRefTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }
+                    break;
+                }
+                default:
+                    return QtJambiTypeEntryPtr();
+                }
+            }else{
+                JavaException::raiseError(env, QLatin1String("Java class %1 cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
             }
         }
-        (*gTypeEntryHash())[unique_id(typeId)][qt_name] = result;
+
+        {
+            QWriteLocker locker(storage->lock());
+            if(storage->typeEntries().contains(unique_id(typeId))){
+                QMap<QByteArray,QtJambiTypeEntryPtr>& entries = storage->typeEntries()[unique_id(typeId)];
+                if(qtName){
+                    if(QtJambiTypeEntryPtr altresult = entries.value(qtName)){
+                        return altresult;
+                    }
+                }else if(!entries.isEmpty()){
+                    QtJambiTypeEntryPtr e = entries.first();
+                    return e;
+                }
+            }
+            storage->typeEntries()[unique_id(typeId)][typeInfo.qtName] = result;
+        }
     }
     return result;
-}
-
-void clearTypeHandlersAtShutdown(){
-    QMap<size_t, QMap<QByteArray,QtJambiTypeEntryPtr>> typeEntryHash;
-    {
-        QWriteLocker locker(gTypeEntryLock());
-        Q_UNUSED(locker)
-        if(!gTypeEntryHash.isDestroyed())
-            typeEntryHash.swap(*gTypeEntryHash);
-    }
 }
 
 bool QtJambiTypeEntry::isEnum() const {return false;}
@@ -2945,7 +4536,6 @@ bool ObjectTypeAbstractEntry::isValue() const {return false;}
 bool ObjectTypeAbstractEntry::isInterface() const {return false;}
 
 PtrDeleterFunction ObjectTypeAbstractEntry::deleter() const {return m_deleter;}
-TypeInfoSupplier ObjectTypeAbstractEntry::typeInfoSupplier() const {return m_typeInfoSupplier;}
 
 QtJambiTypeEntry::NativeToJavaResult::NativeToJavaResult(bool success) : m_success(success) {}
 QtJambiTypeEntry::NativeToJavaResult::NativeToJavaResult(const QSharedPointer<QtJambiLink>& link) : /*m_link(link),*/ m_success(link) {}
@@ -2957,11 +4547,14 @@ ShellableTypeEntry::ShellableTypeEntry(JNIEnv* env,
                 jclass java_class,
                 jmethodID creator_method,
                 size_t value_size,
+                size_t value_align,
                 size_t shell_size,
+                size_t shell_align,
                 const QVector<RegistryAPI::FunctionInfo>& virtualFunctions
             )
-    : QtJambiTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size),
+    : QtJambiTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, value_align),
       m_shell_size(shell_size),
+      m_shell_align(shell_align),
       m_virtualFunctions(virtualFunctions)
 {
 
@@ -2974,22 +4567,29 @@ size_t ShellableTypeEntry::shellSize() const
     return m_shell_size;
 }
 
+size_t ShellableTypeEntry::shellAlign() const
+{
+    return m_shell_align;
+}
+
 const QVector<RegistryAPI::FunctionInfo>& ShellableTypeEntry::virtualFunctions() const {
     return m_virtualFunctions;
 }
 
 DestructableTypeEntry::DestructableTypeEntry(JNIEnv* env,
-                const std::type_info& typeId,
-                const char *qt_name,
-                const char *java_name,
-                jclass java_class,
-                jmethodID creator_method,
-                size_t value_size,
-                size_t shell_size,
-                const QVector<RegistryAPI::FunctionInfo>& virtualFunctions,
-                RegistryAPI::DestructorFn destructor
-            )
-    : ShellableTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, shell_size, virtualFunctions),
+                                            const std::type_info& typeId,
+                                            const char *qt_name,
+                                            const char *java_name,
+                                            jclass java_class,
+                                            jmethodID creator_method,
+                                             size_t value_size,
+                                             size_t value_align,
+                                             size_t shell_size,
+                                             size_t shell_align,
+                                            const QVector<RegistryAPI::FunctionInfo>& virtualFunctions,
+                                            RegistryAPI::DestructorFn destructor
+                                        )
+    : ShellableTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, value_align, shell_size, shell_align, virtualFunctions),
       m_destructor(destructor)
 {
 }
@@ -3019,6 +4619,11 @@ size_t QtJambiTypeEntry::valueSize() const
     return m_value_size;
 }
 
+size_t QtJambiTypeEntry::valueAlign() const
+{
+    return m_value_align;
+}
+
 uint QtJambiTypeEntry::offset(const std::type_info&) const{
     return 0;
 }
@@ -3044,6 +4649,10 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getFittingTypeEntry(JNIEnv *, const void *
 
 bool QtJambiTypeEntry::convertToNative(JNIEnv *env, jobject input, void * output, QtJambiScope&) const{
     return convertToNative(env, input, output);
+}
+
+QtJambiTypeEntry::NativeToJavaResult QtJambiTypeEntry::convertToJava(JNIEnv *env, void *qt_object, jobject& output) const{
+    return convertToJava(env, qt_object, NativeToJavaConversionMode::MakeCopyOfValues, output);
 }
 
 const char *QtJambiTypeEntry::qtName() const
@@ -3075,13 +4684,14 @@ jclass FunctionalTypeEntry::creatableClass() const
     return m_java_wrapper_class;
 }
 
-QtJambiTypeEntry::QtJambiTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size)
+QtJambiTypeEntry::QtJambiTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size, size_t value_align)
     : m_typeId(typeId),
       m_qt_name(qt_name),
       m_java_name(java_name),
       m_java_class(java_class ? getGlobalClassRef(env, java_class) : nullptr),
       m_creator_method(creator_method),
-      m_value_size(value_size)
+      m_value_size(value_size),
+      m_value_align(value_align)
 {
 }
 
@@ -3113,47 +4723,62 @@ jobject QtJambiTypeEntry::convertInvalidModelIndexToJava(JNIEnv *env){
     return output;
 }
 
-QtJambiTypeEntry::NativeToJavaResult QtJambiTypeEntry::convertModelIndexNativeToJava(JNIEnv *env, const QModelIndex *index, NativeToJavaConversionMode mode, jobject& output, QtJambiScope* scope){
-    if (!index){
-        output = nullptr;
-        return true;
-    }
+bool enableSingletonInvalid(JNIEnv *env){
+    static ResettableBoolFlag value(env, "io.qt.experimental.enable-invalid-modelindex-singleton");
+    return value;
+}
+
+QtJambiTypeEntry::NativeToJavaResult QtJambiTypeEntry::convertModelIndexNativeToJava(JNIEnv *env, QModelIndex &&index, jobject& output){
 #if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
     Q_UNUSED(mode)
-    const QModelIndex* index = reinterpret_cast<const QModelIndex*>(index);
-    output = Java::QtCore::QModelIndex::newInstance(env, jint(index->row()), jint(index->column()), jlong(index->internalId()), QtJambiAPI::convertQObjectToJavaObject(env, index->model()));
+    output = Java::QtCore::QModelIndex::newInstance(env, jint(index.row()), jint(index.column()), jlong(index.internalId()), QtJambiAPI::convertQObjectToJavaObject(env, index.model()));
     return true;
 #else
-    static ResettableBoolFlag enableSingletonInvalid(env, "io.qt.experimental.enable-invalid-modelindex-singleton");
-    if(enableSingletonInvalid && !index->isValid()){
+    output = Java::QtCore::QModelIndex::newInstance(env, nullptr);
+    if(const QAbstractItemModel *model = index.model()){
+        return QtJambiLink::createExtendedLinkForObject(
+            env,
+            output,
+            new QModelIndex(std::move(index)),
+            LINK_NAME_ARG("QModelIndex")
+            false,
+            false,
+            QModelIndexTypeEntry::deleter,
+            model,
+            QtJambiLink::Ownership::Java
+            );
+    }else{
+        return QtJambiLink::createLinkForNativeObject(
+            env,
+            output,
+            new QModelIndex(std::move(index)),
+            LINK_NAME_ARG("QModelIndex")
+            false,
+            false,
+            QModelIndexTypeEntry::deleter,
+            QtJambiLink::Ownership::Java
+            );
+    }
+#endif
+}
+
+QtJambiTypeEntry::NativeToJavaResult QtJambiTypeEntry::convertModelIndexNativeToJava(JNIEnv *env, const QModelIndex &index, NativeToJavaConversionMode mode, jobject& output){
+#if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
+    Q_UNUSED(mode)
+    output = Java::QtCore::QModelIndex::newInstance(env, jint(index.row()), jint(index.column()), jlong(index.internalId()), QtJambiAPI::convertQObjectToJavaObject(env, index.model()));
+    return true;
+#else
+    if(enableSingletonInvalid(env) && !index.isValid()){
         output = convertInvalidModelIndexToJava(env);
         return true;
     }else{
-        static ResettableBoolFlag enableEphemeralModelIndex(env, "io.qt.experimental.enable-ephemeral-modelindexes");
-        if(enableEphemeralModelIndex && scope){
-            output = Java::QtCore::QModelIndex::newInstance(env, nullptr);
-            if(QtJambiLink::createLinkForNativeObject(
-                    env,
-                    output,
-                    const_cast<QModelIndex*>(index),
-                    LINK_NAME_ARG("QModelIndex")
-                    false,
-                    false,
-                    QtJambiLink::Ownership::Cpp
-                    )){
-                scope->addObjectInvalidation(env, output, false);
-                return true;
-            }else{
-                return false;
-            }
-        }
         if(mode==NativeToJavaConversionMode::None){
-            if(jobject obj = QtJambiLink::findObjectForPointer(env, Java::QtCore::QModelIndex::getClass(env), index)){
+            if(jobject obj = QtJambiLink::findObjectForPointer(env, Java::QtCore::QModelIndex::getClass(env), &index)){
                 output = obj;
                 return true;
             }
         }
-        void *copy = mode==NativeToJavaConversionMode::MakeCopyOfValues ? new QModelIndex(*index) : const_cast<QModelIndex*>(index);
+        void *copy = mode==NativeToJavaConversionMode::MakeCopyOfValues ? new QModelIndex(index) : &const_cast<QModelIndex&>(index);
         if (!copy){
             output = nullptr;
             return true;
@@ -3166,7 +4791,82 @@ QtJambiTypeEntry::NativeToJavaResult QtJambiTypeEntry::convertModelIndexNativeTo
         default: ownership = QtJambiLink::Ownership::Java; break;
         }
 
-        if(const QAbstractItemModel *model = index->model()){
+        if(const QAbstractItemModel *model = index.model()){
+            return QtJambiLink::createExtendedLinkForObject(
+                env,
+                output,
+                copy,
+                LINK_NAME_ARG("QModelIndex")
+                false,
+                false,
+                QModelIndexTypeEntry::deleter,
+                model,
+                ownership
+                );
+        }else{
+            return QtJambiLink::createLinkForNativeObject(
+                env,
+                output,
+                copy,
+                LINK_NAME_ARG("QModelIndex")
+                false,
+                false,
+                QModelIndexTypeEntry::deleter,
+                ownership
+                );
+        }
+    }
+#endif
+}
+
+QtJambiTypeEntry::NativeToJavaResult QtJambiTypeEntry::convertModelIndexNativeToJava(JNIEnv *env, const QModelIndex &index, NativeToJavaConversionMode mode, jobject& output, QtJambiScope& scope){
+#if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
+    Q_UNUSED(mode)
+    output = Java::QtCore::QModelIndex::newInstance(env, jint(index.row()), jint(index.column()), jlong(index.internalId()), QtJambiAPI::convertQObjectToJavaObject(env, index.model()));
+    return true;
+#else
+    if(enableSingletonInvalid(env) && !index.isValid()){
+        output = convertInvalidModelIndexToJava(env);
+        return true;
+    }else{
+        static ResettableBoolFlag enableEphemeralModelIndex(env, "io.qt.experimental.enable-ephemeral-modelindexes");
+        if(enableEphemeralModelIndex){
+            output = Java::QtCore::QModelIndex::newInstance(env, nullptr);
+            if(QtJambiLink::createLinkForNativeObject(
+                    env,
+                    output,
+                    &const_cast<QModelIndex&>(index),
+                    LINK_NAME_ARG("QModelIndex")
+                    false,
+                    false,
+                    QtJambiLink::Ownership::Cpp
+                    )){
+                scope.addObjectInvalidation(env, output, false);
+                return true;
+            }else{
+                return false;
+            }
+        }
+        if(mode==NativeToJavaConversionMode::None){
+            if(jobject obj = QtJambiLink::findObjectForPointer(env, Java::QtCore::QModelIndex::getClass(env), &index)){
+                output = obj;
+                return true;
+            }
+        }
+        void *copy = mode==NativeToJavaConversionMode::MakeCopyOfValues ? new QModelIndex(index) : &const_cast<QModelIndex&>(index);
+        if (!copy){
+            output = nullptr;
+            return true;
+        }
+        output = Java::QtCore::QModelIndex::newInstance(env, nullptr);
+        QtJambiLink::Ownership ownership;
+        switch(mode){
+        case NativeToJavaConversionMode::None: ownership = QtJambiLink::Ownership::None; break;
+        case NativeToJavaConversionMode::CppOwnership: ownership = QtJambiLink::Ownership::Cpp; break;
+        default: ownership = QtJambiLink::Ownership::Java; break;
+        }
+
+        if(const QAbstractItemModel *model = index.model()){
             return QtJambiLink::createExtendedLinkForObject(
                 env,
                 output,
@@ -3247,15 +4947,15 @@ bool QtJambiTypeEntry::convertModelIndexJavaToNative(JNIEnv *env, jobject java_o
 }
 #endif
 
-EnumTypeEntry::EnumTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size)
-    : QtJambiTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size),
+EnumTypeEntry::EnumTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size, size_t value_align)
+    : QtJambiTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, value_align),
       m_flagType(nullptr)
 {
 
 }
 
-FlagsTypeEntry::FlagsTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size, const EnumTypeEntry* enumType)
-    : QtJambiTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size),
+FlagsTypeEntry::FlagsTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size, size_t value_align, const EnumTypeEntry* enumType)
+    : QtJambiTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, value_align),
       m_enumType(enumType)
 {
     if(enumType)
@@ -3264,7 +4964,7 @@ FlagsTypeEntry::FlagsTypeEntry(JNIEnv* env, const std::type_info& typeId, const 
 
 PolymorphicTypeEntryInterface::~PolymorphicTypeEntryInterface() = default;
 
-QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const QObject *qt_object, qintptr& offset, const QObjectTypeAbstractEntry* entry, QList<const PolymorphicIdHandler*> polymorphicHandlers){
+QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const QObject *qt_object, qintptr& offset, const QObjectTypeAbstractEntry* entry, QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>> polymorphicHandlers){
     if(qt_object){
         const std::type_info& type = entry->type();
         qintptr _offset = 0;
@@ -3316,16 +5016,16 @@ QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const QObject *qt_object, q
             if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
                 if(typeEntry->isPolymorphic()){
                     if(const PolymorphicTypeEntryInterface* pt = dynamic_cast<const PolymorphicTypeEntryInterface*>(typeEntry.data())){
-                        polymorphicHandlers = QList<const PolymorphicIdHandler*>(pt->polymorphicIdHandlers()) << polymorphicHandlers;
+                        polymorphicHandlers = QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>(pt->polymorphicIdHandlers()) << polymorphicHandlers;
                     }
                 }
             }
         }
         while(!polymorphicHandlers.isEmpty()){
-            QList<const PolymorphicIdHandler*> _polymorphicHandlers;
+            QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>> _polymorphicHandlers;
             polymorphicHandlers.swap(_polymorphicHandlers);
             void *_object = const_cast<QObject *>(qt_object);
-            for(const PolymorphicIdHandler* handler : qAsConst(_polymorphicHandlers)){
+            for(const QExplicitlySharedDataPointer<const PolymorphicIdHandler>& handler : qAsConst(_polymorphicHandlers)){
                 Q_ASSERT(handler->m_polymorphyHandler);
                 _offset = 0;
                 if(handler->m_polymorphyHandler(_object, _offset)) {
@@ -3334,7 +5034,7 @@ QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const QObject *qt_object, q
                         offset += _offset;
                         if(typeEntry->isPolymorphic()){
                             if(const PolymorphicTypeEntryInterface* pt = dynamic_cast<const PolymorphicTypeEntryInterface*>(typeEntry.data())){
-                                polymorphicHandlers = QList<const PolymorphicIdHandler*>(pt->polymorphicIdHandlers()) << polymorphicHandlers;
+                                polymorphicHandlers = QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>(pt->polymorphicIdHandlers()) << polymorphicHandlers;
                             }
                         }
                         break;
@@ -3351,13 +5051,14 @@ QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const QObject *qt_object, q
     return QtJambiTypeEntryPtr{entry};
 }
 
-QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset, const QtJambiTypeEntry* entry, QList<const PolymorphicIdHandler*> polymorphicHandlers, TypeInfoSupplier typeInfoSupplier){
+template<typename ...Args>
+QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset, const QtJambiTypeEntry* entry, QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>> polymorphicHandlers, Args... typeInfoSupplier){
     if(qt_object){
         const std::type_info& type = entry->type();
         qintptr _offset = 0;
         const std::type_info* _typeId = nullptr;
-        if(typeInfoSupplier){
-            _typeId = tryGetTypeInfo(typeInfoSupplier, qt_object);
+        if constexpr(sizeof...(typeInfoSupplier)==1){
+            _typeId = tryGetTypeInfo(typeInfoSupplier..., qt_object);
             if(!_typeId){
                 QByteArray java_type = QByteArray(getJavaName(type)).replace('/', '.').replace('$', '.');
                 if(enabledDanglingPointerCheck()){
@@ -3366,18 +5067,18 @@ QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qint
                     qCWarning(DebugAPI::internalCategory, "Trying to convert possible dangling pointer %p to object of type %s", qt_object, java_type.constData());
                 }
             }
-        }
-        if(_typeId && typeid_not_equals(*_typeId, type)){
-            if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
-                offset = typeEntry->offset(type);
-                return typeEntry;
+            if(_typeId && typeid_not_equals(*_typeId, type)){
+                if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
+                    offset = typeEntry->offset(type);
+                    return typeEntry;
+                }
             }
         }
         while(!polymorphicHandlers.isEmpty()){
-            QList<const PolymorphicIdHandler*> _polymorphicHandlers;
+            QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>> _polymorphicHandlers;
             polymorphicHandlers.swap(_polymorphicHandlers);
             void *_object = const_cast<void *>(qt_object);
-            for(const PolymorphicIdHandler* handler : qAsConst(_polymorphicHandlers)){
+            for(const QExplicitlySharedDataPointer<const PolymorphicIdHandler>& handler : qAsConst(_polymorphicHandlers)){
                 Q_ASSERT(handler->m_polymorphyHandler);
                 _offset = 0;
                 if(handler->m_polymorphyHandler(_object, _offset)) {
@@ -3386,7 +5087,7 @@ QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qint
                         offset += _offset;
                         if(typeEntry->isPolymorphic()){
                             if(const PolymorphicTypeEntryInterface* pt = dynamic_cast<const PolymorphicTypeEntryInterface*>(typeEntry.data())){
-                                polymorphicHandlers = QList<const PolymorphicIdHandler*>(pt->polymorphicIdHandlers()) << polymorphicHandlers;
+                                polymorphicHandlers = QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>(pt->polymorphicIdHandlers()) << polymorphicHandlers;
                             }
                         }
                         break;
@@ -3422,9 +5123,16 @@ template<typename Super>
 QtJambiTypeEntryPtr PolymorphicTypeEntry<Super>::getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset) const{
     if constexpr(std::is_base_of<QObjectTypeAbstractEntry,Super>::value){
         return ::getFittingTypeEntry(env, reinterpret_cast<const QObject*>(qt_object), offset, this, m_polymorphicIdHandlers);
-    }else{
+    }else if constexpr(supports_typeInfoSupplier<Super>::value){
         return ::getFittingTypeEntry(env, qt_object, offset, this, m_polymorphicIdHandlers, Super::typeInfoSupplier());
+    }else{
+        return ::getFittingTypeEntry(env, qt_object, offset, this, m_polymorphicIdHandlers);
     }
+}
+
+template<typename Super>
+QtJambiTypeEntryPtr VirtualTypeEntry<Super>::getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset) const{
+    return ::getFittingTypeEntry(env, qt_object, offset, this, {}, this->typeInfoSupplier());
 }
 
 FunctionalTypeEntry::~FunctionalTypeEntry()
@@ -3436,26 +5144,20 @@ FunctionalTypeEntry::FunctionalTypeEntry(JNIEnv* env, const std::type_info& type
                                          const char *java_name,
                                          jclass java_class,
                                          jmethodID creator_method,
-                                         size_t value_size,
-                                         size_t shell_size,
+                                         size_t value_size, size_t value_align,
+                                         size_t shell_size, size_t shell_align,
                                          jclass java_impl_class,
                                          jclass java_wrapper_class,
                                          const QVector<RegistryAPI::FunctionInfo>& virtualFunctions,
                                          RegistryAPI::DestructorFn destructor,
                                          FunctionalResolver registered_functional_resolver,
-                                         const QMetaType& qt_meta_type,
-                                         bool is_std_function
+                                         const QMetaType& qt_meta_type
                 )
-    : DestructableTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, shell_size, virtualFunctions, destructor),
+    : DestructableTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, value_align, shell_size, shell_align, virtualFunctions, destructor),
       m_java_impl_class(java_impl_class ? getGlobalClassRef(env, java_impl_class) : nullptr),
       m_java_wrapper_class(java_wrapper_class ? getGlobalClassRef(env, java_wrapper_class) : nullptr),
       m_registered_functional_resolver(registered_functional_resolver),
-      m_qt_meta_type(qt_meta_type
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                        .id()
-#endif
-                     ),
-      m_is_std_function(is_std_function)
+      m_qt_meta_type(qt_meta_type)
 {
 
 }
@@ -3466,16 +5168,14 @@ ObjectTypeAbstractEntry::ObjectTypeAbstractEntry(JNIEnv* env,
                 const char *java_name,
                 jclass java_class,
                 jmethodID creator_method,
-                size_t value_size,
-                size_t shell_size,
+                size_t value_size, size_t value_align,
+                size_t shell_size, size_t shell_align,
                 PtrDeleterFunction deleter,
                 const QVector<RegistryAPI::FunctionInfo>& virtualFunctions,
-                RegistryAPI::DestructorFn destructor,
-                TypeInfoSupplier typeInfoSupplier
+                RegistryAPI::DestructorFn destructor
             )
-    : DestructableTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, shell_size, virtualFunctions, destructor),
-      m_deleter(deleter),
-      m_typeInfoSupplier(typeInfoSupplier)
+    : DestructableTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, value_align, shell_size, shell_align, virtualFunctions, destructor),
+      m_deleter(deleter)
 {
 
 }
@@ -3520,12 +5220,12 @@ QObjectTypeAbstractEntry::QObjectTypeAbstractEntry(JNIEnv* env,
                  const char *java_name,
                  jclass java_class,
                  jmethodID creator_method,
-                 size_t value_size,
-                 size_t shell_size,
+                 size_t value_size, size_t value_align,
+                 size_t shell_size, size_t shell_align,
                  const QVector<RegistryAPI::FunctionInfo>& virtualFunctions,
                  const QMetaObject* original_meta_object
             )
-    : ShellableTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, shell_size, virtualFunctions),
+    : ShellableTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, value_align, shell_size, shell_align, virtualFunctions),
       m_original_meta_object(original_meta_object),
       m_isQThread(Java::QtCore::QThread::isAssignableFrom(env, java_class))
 {
@@ -3588,10 +5288,8 @@ bool ObjectTypeAbstractEntry::convertSmartPointerToJava(JNIEnv *env, const Smart
                     }
                     link->reset(env);
                     PtrOwnerFunction registeredThreadAffinityFunction = nullptr;
-                    if(!link->isQObject()){
-                        PointerToObjectLink* polink = static_cast<PointerToObjectLink*>(link.data());
-                        registeredThreadAffinityFunction = polink->ownerFunction();
-                    }
+                    if(!link->isQObject())
+                        registeredThreadAffinityFunction = link->ownerFunction();
                     link->invalidate(env);
                     link.clear();
                     link = createLinkForSmartPointerToObject(env, output, createdByJava, is_shell, smartPointer, registeredThreadAffinityFunction);
@@ -3599,10 +5297,16 @@ bool ObjectTypeAbstractEntry::convertSmartPointerToJava(JNIEnv *env, const Smart
                     if(shell){
                         shell->overrideLink(link);
                     }
-                }else if(!dynamic_cast<typename SmartPointerUtility<SmartPointer>::SharedLink*>(link.data())
-                        && !dynamic_cast<typename SmartPointerUtility<SmartPointer>::WeakLink*>(link.data()))
-                    return false;
-                return true;
+                    return true;
+                }else{
+                    switch(link->smartPointerType()){
+                    case QtJambiPrivate::SmartPointerUtility<SmartPointer>::SharedPointerFlag:
+                    case QtJambiPrivate::SmartPointerUtility<SmartPointer>::WeakPointerFlag:
+                        return true;
+                    default:
+                        return false;
+                    }
+                }
             }else return false;
         }
     }
@@ -3647,18 +5351,23 @@ QtJambiTypeEntry::NativeToJavaResult QObjectTypeAbstractEntry::convertToJava(JNI
         // at least make the brokeness identical to that of C++, and we can't do this
         // better than C++ since we depend on C++ to do it.
         if(!link->createdByJava()){
-            QWriteLocker locker(QtJambiLinkUserData::lock());
-            QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object);
+            QtJambiLinkObjectData *p = nullptr;
+            {
+                auto locker = QtJambiObjectData::readLock();
+                p = QtJambiObjectData::userData<QtJambiLinkObjectData>(qt_object);
+            }
             if (p && p->metaObject() && p->metaObject() != qt_object->metaObject()) {
-                QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
-                locker.unlock();
-                delete p;
+                {
+                    auto locker = QtJambiObjectData::writeLock();
+                    p = QtJambiObjectData::setUserData<QtJambiLinkObjectData>(qt_object, nullptr);
+                }
+                if(p)
+                    delete p;
                 // It should already be split ownership, but in case it has been changed, we need to make sure the c++
                 // object isn't deleted.
                 JavaException::check(env QTJAMBI_STACKTRACEINFO );
                 link->reset(env);
                 link.clear();
-                locker.relock();
             }
         }
         if(link){
@@ -3667,13 +5376,19 @@ QtJambiTypeEntry::NativeToJavaResult QObjectTypeAbstractEntry::convertToJava(JNI
                 {
                     bool isInvalidated = false;
                     {
-                        QWriteLocker locker(QtJambiLinkUserData::lock());
-                        if(QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object)){
-                            QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
-                            locker.unlock();
-                            delete p;
+                        QtJambiLinkObjectData *p = nullptr;
+                        {
+                            auto locker = QtJambiObjectData::readLock();
+                            p = QtJambiObjectData::userData<QtJambiLinkObjectData>(qt_object);
+                        }
+                        if(p){
+                            {
+                                auto locker = QtJambiObjectData::writeLock();
+                                p = QtJambiObjectData::setUserData<QtJambiLinkObjectData>(qt_object, nullptr);
+                            }
+                            if(p)
+                                delete p;
                             isInvalidated = true;
-                            locker.relock();
                         }
                     }
                     if(!isInvalidated)
@@ -3707,28 +5422,29 @@ bool QObjectTypeAbstractEntry::convertSmartPointerToJava(JNIEnv *env, const Smar
         // at least make the brokeness identical to that of C++, and we can't do this
         // better than C++ since we depend on C++ to do it.
         if(!link->createdByJava()){
-            QWriteLocker locker(QtJambiLinkUserData::lock());
-            QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object);
+            QtJambiLinkObjectData *p{nullptr};
+            {
+                auto locker = QtJambiObjectData::readLock();
+                p = QtJambiObjectData::userData<QtJambiLinkObjectData>(qt_object);
+            }
             if (p && p->metaObject() && p->metaObject() != qt_object->metaObject()) {
-                QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
-                locker.unlock();
-                delete p;
+                {
+                    auto locker = QtJambiObjectData::writeLock();
+                    p = QtJambiObjectData::setUserData<QtJambiLinkObjectData>(qt_object, nullptr);
+                }
+                if(p)
+                    delete p;
                 // It should already be split ownership, but in case it has been changed, we need to make sure the c++
                 // object isn't deleted.
                 link->reset(env);
                 link.clear();
-                locker.relock();
             }
         }
         if(link){
             jobject obj = link->getJavaObjectLocalRef(env);
             if(obj && env->IsInstanceOf(obj, javaClass())){
                 output = obj;
-                if(link->isSmartPointer()){
-                    if(!dynamic_cast<typename SmartPointerUtility<SmartPointer>::SharedQObjectLink*>(link.data())
-                            && !dynamic_cast<typename SmartPointerUtility<SmartPointer>::WeakQObjectLink*>(link.data()))
-                        return false;
-                }else{
+                if(!link->isSmartPointer()){
                     bool createdByJava = link->createdByJava();
                     bool is_shell = link->isShell();
                     QtJambiShellImpl* shell = nullptr;
@@ -3745,9 +5461,17 @@ bool QObjectTypeAbstractEntry::convertSmartPointerToJava(JNIEnv *env, const Smar
                     if(shell){
                         shell->overrideLink(link);
                     }
+                    return true;
+                }else{
+                    switch(link->smartPointerType()){
+                    case QtJambiPrivate::SmartPointerUtility<SmartPointer>::SharedPointerFlag:
+                    case QtJambiPrivate::SmartPointerUtility<SmartPointer>::WeakPointerFlag:
+                        return true;
+                    default:
+                        return false;
+                    }
                 }
-                return true;
-            }
+            }else return false;
         }
         if(link){
             output = link->getJavaObjectLocalRef(env);
@@ -3755,13 +5479,19 @@ bool QObjectTypeAbstractEntry::convertSmartPointerToJava(JNIEnv *env, const Smar
                 {
                     bool isInvalidated = false;
                     {
-                        QWriteLocker locker(QtJambiLinkUserData::lock());
-                        if(QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object)){
-                            QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, qt_object, nullptr);
-                            locker.unlock();
+                        QtJambiLinkObjectData *p;
+                        {
+                            auto locker = QtJambiObjectData::readLock();
+                            p = QtJambiObjectData::userData<QtJambiLinkObjectData>(qt_object);
+                        }
+                        if(p){
+                            {
+                                auto locker = QtJambiObjectData::writeLock();
+                                p = QtJambiObjectData::setUserData<QtJambiLinkObjectData>(qt_object, nullptr);
+                            }
                             isInvalidated = true;
-                            delete p;
-                            locker.relock();
+                            if(p)
+                                delete p;
                         }
                     }
                     if(!isInvalidated)
@@ -3798,10 +5528,10 @@ bool QObjectTypeAbstractEntry::convertToNative(JNIEnv *env, jobject input, void 
     }else return false;
 }
 
-QtJambiTypeEntry::NativeToJavaResult FunctionalTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jobject& output) const{
+QtJambiTypeEntry::NativeToJavaResult StdFunctionalTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jobject& output) const{
     if(m_registered_functional_resolver){
         bool ok{false};
-        output = m_registered_functional_resolver(env, m_is_std_function ? qt_object : &qt_object, &ok);
+        output = m_registered_functional_resolver(env, qt_object, &ok);
         if(ok || output)
             return true;
     }
@@ -3814,12 +5544,135 @@ QtJambiTypeEntry::NativeToJavaResult FunctionalTypeEntry::convertToJava(JNIEnv *
     return QtJambiLink::createLinkForNativeObject(
             env,
             output,
-            m_qt_meta_type.create(m_is_std_function ? qt_object : &qt_object),
+            m_qt_meta_type.create(qt_object),
             m_qt_meta_type,
             false,
             false,
             QtJambiLink::Ownership::Java
         );
+}
+
+QtJambiTypeEntry::NativeToJavaResult StdFunctionalTypeEntry::convertToJava(JNIEnv *env, void *qt_object, jobject& output) const{
+    if(!m_qt_meta_type.isMoveConstructible()){
+        return convertToJava(env, qt_object, NativeToJavaConversionMode::MakeCopyOfValues, output);
+    }
+    if(m_registered_functional_resolver){
+        bool ok{false};
+        output = m_registered_functional_resolver(env, qt_object, &ok);
+        if(ok || output)
+            return true;
+    }
+    if(!qt_object){
+        output = nullptr;
+        return true;
+    }
+    output = env->NewObject(creatableClass(), creatorMethod(), nullptr);
+    JavaException::check(env QTJAMBI_STACKTRACEINFO );
+    auto iface = QMetaType(m_qt_meta_type).iface();
+    void* newPointer;
+    if (iface->alignment > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+        newPointer = operator new(iface->size, std::align_val_t(iface->alignment));
+    else
+        newPointer = operator new(iface->size);
+    iface->moveCtr(iface, newPointer, qt_object);
+    return QtJambiLink::createLinkForNativeObject(
+            env,
+            output,
+            newPointer,
+            m_qt_meta_type,
+            false,
+            false,
+            QtJambiLink::Ownership::Java
+        );
+}
+
+bool StdFunctionalTypeEntry::convertToNative(JNIEnv *env, jobject input, void * output) const{
+    if(!env->IsInstanceOf(input, javaClass()))
+        return false;
+    if(input
+        && (QtJambiAPI::getObjectClassName(env, input).endsWith("$ConcreteWrapper")
+            || env->IsSameObject(env->GetObjectClass(input), creatableClass()))){
+        QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, input);
+        if(link){
+            m_qt_meta_type.destruct(output);
+            m_qt_meta_type.construct(output, link->pointer());
+        }else if(input){
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QString(QLatin1String(this->javaName())).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+        }
+    }else{
+        if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, input)){
+            if(!link->isMultiInheritanceType() && env->IsInstanceOf(input, javaClass())){
+                if(FunctionalBase* functionalBase = reinterpret_cast<FunctionalBase *>(link->pointer())){
+                    functionalBase->getFunctional(env, output);
+                }
+            }else if(link->isInterfaceAvailable(type())){
+                if(FunctionalBase* functionalBase = reinterpret_cast<FunctionalBase *>(link->typedPointer(type()))){
+                    functionalBase->getFunctional(env, output);
+                }
+            }
+        }else if(input){
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QString(QLatin1String(this->javaName())).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+        }
+    }
+    return true;
+}
+
+QtJambiTypeEntry::NativeToJavaResult FunctionPointerTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jobject& output) const{
+    if(m_registered_functional_resolver){
+        bool ok{false};
+        output = m_registered_functional_resolver(env, &qt_object, &ok);
+        if(ok || output)
+            return true;
+    }
+    if(!qt_object){
+        output = nullptr;
+        return true;
+    }
+    output = env->NewObject(creatableClass(), creatorMethod(), nullptr);
+    JavaException::check(env QTJAMBI_STACKTRACEINFO );
+    return QtJambiLink::createLinkForNativeObject(
+            env,
+            output,
+            m_qt_meta_type.create(&qt_object),
+            m_qt_meta_type,
+            false,
+            false,
+            QtJambiLink::Ownership::Java
+        );
+}
+
+bool FunctionPointerTypeEntry::convertToNative(JNIEnv *env, jobject input, void * output) const{
+    if(!env->IsInstanceOf(input, javaClass()))
+        return false;
+    if(input
+        && (QtJambiAPI::getObjectClassName(env, input).endsWith("$ConcreteWrapper")
+            || env->IsSameObject(env->GetObjectClass(input), creatableClass()))){
+        QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, input);
+        if(link){
+            *reinterpret_cast<void**>(output) = *reinterpret_cast<void**>(link->pointer());
+        }else if(input){
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QString(QLatin1String(this->javaName())).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+        }
+    }else{
+        if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, input)){
+            if(!link->isMultiInheritanceType() && env->IsInstanceOf(input, javaClass())){
+                if(FunctionalBase* functionalBase = reinterpret_cast<FunctionalBase *>(link->pointer())){
+                    functionalBase->getFunctional(env, output);
+                }
+            }else if(link->isInterfaceAvailable(type())){
+                if(FunctionalBase* functionalBase = reinterpret_cast<FunctionalBase *>(link->typedPointer(type()))){
+                    functionalBase->getFunctional(env, output);
+                }
+            }
+        }else if(input){
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QString(QLatin1String(this->javaName())).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+        }
+    }
+    if(!*reinterpret_cast<void**>(output) && input){
+        QString funTypeName = QtJambiAPI::typeName(type());
+        Java::Runtime::ClassCastException::throwNew(env, QStringLiteral("Unable to convert java object of type '%1' to function pointer '%2'.").arg(QString(QLatin1String(this->javaName())).replace('/', '.').replace('$', '.'), funTypeName) QTJAMBI_STACKTRACEINFO );
+    }
+    return true;
 }
 
 bool FunctionalTypeEntry::convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const{
@@ -3842,45 +5695,6 @@ bool FunctionalTypeEntry::convertSmartPointerToJava(JNIEnv *env, const std::shar
     if(offset!=0)
         _ptr = reinterpret_cast<char*>(_ptr)-offset;
     return convertToJava(env, _ptr, NativeToJavaConversionMode::MakeCopyOfValues, output);
-}
-
-bool FunctionalTypeEntry::convertToNative(JNIEnv *env, jobject input, void * output) const{
-    if(!env->IsInstanceOf(input, javaClass()))
-        return false;
-    if(input
-        && (QtJambiAPI::getObjectClassName(env, input).endsWith("$ConcreteWrapper")
-            || env->IsSameObject(env->GetObjectClass(input), creatableClass()))){
-        QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, input);
-        if(link){
-            if(m_is_std_function){
-                m_qt_meta_type.destruct(output);
-                m_qt_meta_type.construct(output, link->pointer());
-            }else{
-                *reinterpret_cast<void**>(output) = *reinterpret_cast<void**>(link->pointer());
-            }
-        }else if(input){
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QString(QLatin1String(this->javaName())).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
-        }
-    }else{
-        if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, input)){
-            if(!link->isMultiInheritanceType() && env->IsInstanceOf(input, javaClass())){
-                if(FunctionalBase* functionalBase = reinterpret_cast<FunctionalBase *>(link->pointer())){
-                    functionalBase->getFunctional(env, output);
-                }
-            }else if(link->isInterfaceAvailable(type())){
-                if(FunctionalBase* functionalBase = reinterpret_cast<FunctionalBase *>(link->typedPointer(type()))){
-                    functionalBase->getFunctional(env, output);
-                }
-            }
-        }else if(input){
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QString(QLatin1String(this->javaName())).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
-        }
-    }
-    if(!m_is_std_function && !*reinterpret_cast<void**>(output) && input){
-        QString funTypeName = QtJambiAPI::typeName(type());
-        Java::Runtime::ClassCastException::throwNew(env, QStringLiteral("Unable to convert java object of type '%1' to function pointer '%2'.").arg(QString(QLatin1String(this->javaName())).replace('/', '.').replace('$', '.'), funTypeName) QTJAMBI_STACKTRACEINFO );
-    }
-    return true;
 }
 
 QtJambiTypeEntry::NativeToJavaResult EnumTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jobject& output) const{
@@ -4064,8 +5878,8 @@ bool FlagsTypeEntry::convertToNative(JNIEnv *env, jobject input, void * output) 
     return true;
 }
 
-AbstractSimpleTypeEntry::AbstractSimpleTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size)
-    : QtJambiTypeEntry(env, typeId, qt_name, java_name, java_class, nullptr, value_size)
+AbstractSimpleTypeEntry::AbstractSimpleTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size, size_t value_align)
+    : QtJambiTypeEntry(env, typeId, qt_name, java_name, java_class, nullptr, value_size, value_align)
 {
 }
 
@@ -4122,26 +5936,38 @@ bool StringTypeEntry::convertSmartPointerToJava(JNIEnv *env, const SmartPointer<
                     }
                     link->reset(env);
                     PtrOwnerFunction registeredThreadAffinityFunction = nullptr;
-                    if(!link->isQObject()){
-                        PointerToObjectLink* polink = static_cast<PointerToObjectLink*>(link.data());
-                        registeredThreadAffinityFunction = polink->ownerFunction();
-                    }
+                    if(!link->isQObject())
+                        registeredThreadAffinityFunction = link->ownerFunction();
                     link->invalidate(env);
                     link.clear();
-                    link = QtJambiLink::createLinkForSmartPointerToObject(env, output,
-                                                                               LINK_NAME_ARG(qtName())
-                                                                               createdByJava,
-                                                                               is_shell,
-                                                                               registeredThreadAffinityFunction,
-                                                                               smartPointer);
+                    if(registeredThreadAffinityFunction){
+                        link = QtJambiLink::createLinkForSmartPointerToObject(env, output,
+                                                                                   LINK_NAME_ARG(qtName())
+                                                                                   createdByJava,
+                                                                                   is_shell,
+                                                                                   registeredThreadAffinityFunction,
+                                                                                   smartPointer);
+                    }else{
+                        link = QtJambiLink::createLinkForSmartPointerToObject(env, output,
+                                                                                   LINK_NAME_ARG(qtName())
+                                                                                   createdByJava,
+                                                                                   is_shell,
+                                                                                   smartPointer);
+                    }
                     link->setJavaOwnership(env);
                     if(shell){
                         shell->overrideLink(link);
                     }
-                }else if(!dynamic_cast<typename SmartPointerUtility<SmartPointer>::SharedLink*>(link.data())
-                        && !dynamic_cast<typename SmartPointerUtility<SmartPointer>::WeakLink*>(link.data()))
-                    return false;
-                return true;
+                    return true;
+                }else{
+                    switch(link->smartPointerType()){
+                    case QtJambiPrivate::SmartPointerUtility<SmartPointer>::SharedPointerFlag:
+                    case QtJambiPrivate::SmartPointerUtility<SmartPointer>::WeakPointerFlag:
+                        return true;
+                    default:
+                        return false;
+                    }
+                }
             }else return false;
         }
     }
@@ -4153,7 +5979,6 @@ bool StringTypeEntry::convertSmartPointerToJava(JNIEnv *env, const SmartPointer<
         LINK_NAME_ARG(qtName())
         false,
         false,
-        nullptr,
         smartPointer
         );
     link->setJavaOwnership(env);
@@ -4204,12 +6029,12 @@ bool StringTypeEntry::convertToNative(JNIEnv *env, jobject input, void * output,
     return true;
 }
 
-QtJambiTypeEntry::NativeToJavaResult QCborValueRefTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const{
+QtJambiTypeEntry::NativeToJavaResult QCborValueRefTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jobject& output) const{
     const QCborValueConstRef* vref = reinterpret_cast<const QCborValueConstRef*>(qt_object);
     QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeid(QCborValue), "QCborValue");
     Q_ASSERT(typeEntry);
     QCborValue value = *vref;
-    return typeEntry->convertToJava(env, &value, mode, output);
+    return typeEntry->convertToJava(env, &value, output);
 }
 
 bool QCborValueRefTypeEntry::convertToNative(JNIEnv *env, jobject, void *) const{
@@ -4359,9 +6184,9 @@ QtJambiTypeEntry::NativeToJavaResult MetaUtilTypeEntry<TargetType>::convertToJav
             default: break;
             }
 
-            static QMetaType metaTypeId(registeredMetaTypeID(typeid(QMetaObject::Connection)));
+            static QMetaType metaTypeId(registeredMetaType(typeid(QMetaObject::Connection)));
             output = Java::QtJambi::SignalUtility$NativeConnection::newInstance(env, nullptr);
-            (void)QtJambiLink::createLinkForNativeObject(
+            return QtJambiLink::createLinkForNativeObject(
                     env,
                     output,
                     makeCopyOfValues ? new QMetaObject::Connection(*reinterpret_cast<const QMetaObject::Connection*>(qt_object)) : const_cast<void*>(qt_object),
@@ -4387,6 +6212,27 @@ QtJambiTypeEntry::NativeToJavaResult MetaUtilTypeEntry<TargetType>::convertToJav
             Q_UNUSED(mode)
             Q_UNUSED(output)
         }
+    }
+    return true;
+}
+
+QtJambiTypeEntry::NativeToJavaResult MetaObjectConnectionTypeEntry::convertToJava(JNIEnv *env, void *qt_object, jobject& output) const{
+    if(qt_object){
+        if(jobject obj = QtJambiLink::findObjectForPointer(env, javaClass(), qt_object)){
+            output = obj;
+            return true;
+        }
+        static QMetaType metaTypeId(registeredMetaType(typeid(QMetaObject::Connection)));
+        output = Java::QtJambi::SignalUtility$NativeConnection::newInstance(env, nullptr);
+        return QtJambiLink::createLinkForNativeObject(
+                env,
+                output,
+                new QMetaObject::Connection(std::move(*reinterpret_cast<QMetaObject::Connection*>(qt_object))),
+                metaTypeId,
+                false,
+                false,
+                QtJambiLink::Ownership::Java
+            );
     }
     return true;
 }
@@ -4470,25 +6316,36 @@ bool QVariantTypeEntry::convertSmartPointerToJava(JNIEnv *env, const SmartPointe
                     }
                     link->reset(env);
                     PtrOwnerFunction registeredThreadAffinityFunction = nullptr;
-                    if(!link->isQObject()){
-                        PointerToObjectLink* polink = static_cast<PointerToObjectLink*>(link.data());
-                        registeredThreadAffinityFunction = polink->ownerFunction();
-                    }
+                    if(!link->isQObject())
+                        registeredThreadAffinityFunction = link->ownerFunction();
                     link->invalidate(env);
                     link.clear();
-                    link = QtJambiLink::createLinkForSmartPointerToObject(env, output,
+                    if(registeredThreadAffinityFunction){
+                        link = QtJambiLink::createLinkForSmartPointerToObject(env, output,
                                                                                LINK_NAME_ARG(qtName())
                                                                                createdByJava, is_shell,
                                                                                registeredThreadAffinityFunction,
                                                                                smartPointer);
+                    }else{
+                        link = QtJambiLink::createLinkForSmartPointerToObject(env, output,
+                                                                               LINK_NAME_ARG(qtName())
+                                                                               createdByJava, is_shell,
+                                                                               smartPointer);
+                    }
                     link->setJavaOwnership(env);
                     if(shell){
                         shell->overrideLink(link);
                     }
-                }else if(!dynamic_cast<typename SmartPointerUtility<SmartPointer>::SharedLink*>(link.data())
-                        && !dynamic_cast<typename SmartPointerUtility<SmartPointer>::WeakLink*>(link.data()))
-                    return false;
-                return true;
+                    return true;
+                }else{
+                    switch(link->smartPointerType()){
+                    case QtJambiPrivate::SmartPointerUtility<SmartPointer>::SharedPointerFlag:
+                    case QtJambiPrivate::SmartPointerUtility<SmartPointer>::WeakPointerFlag:
+                        return true;
+                    default:
+                        return false;
+                    }
+                }
             }else return false;
         }
     }
@@ -4500,7 +6357,6 @@ bool QVariantTypeEntry::convertSmartPointerToJava(JNIEnv *env, const SmartPointe
         LINK_NAME_ARG(qtName())
         false,
         false,
-        nullptr,
         smartPointer
         );
     link->setJavaOwnership(env);

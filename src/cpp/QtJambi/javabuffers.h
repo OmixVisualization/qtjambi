@@ -1,6 +1,6 @@
 ﻿/****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -99,6 +99,7 @@ protected:
     JNIEnv *m_env;
 private:
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
     Q_DISABLE_COPY(JBufferConstData)
 };
@@ -288,6 +289,7 @@ private:
     JNIEnv *m_env;
     jobject m_buffer_object;
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 

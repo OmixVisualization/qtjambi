@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -50,7 +50,6 @@ TypeSystem{
 
         Rejection{
             functionName: "functor_cast"
-            since: 6
         }
         Rejection{
             functionName: "operator|"
@@ -146,7 +145,6 @@ TypeSystem{
     Rejection{
         className: "Qt3DCore::QAbstractFunctor"
         functionName: "functor_cast"
-        since: 6
     }
     
     ObjectType{
@@ -187,7 +185,6 @@ TypeSystem{
                 }
             }
         }
-        since: 6
     }
     
     ObjectType{
@@ -209,7 +206,6 @@ TypeSystem{
         EnumType{
             name: "VertexBaseType"
         }
-        since: 6
     }
     
     ObjectType{
@@ -223,8 +219,6 @@ TypeSystem{
         EnumType{
             name: "AccessType"
         }
-
-        since: 6
     }
     
     InterfaceType{
@@ -248,7 +242,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
 }`}
             }
         }
-        since: 6
     }
     
     ObjectType{
@@ -263,17 +256,14 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 }
             }
         }
-        since: 6
     }
     
     ObjectType{
         name: "Qt3DCore::QCoreAspect"
-        since: 6
     }
     
     ObjectType{
         name: "Qt3DCore::QCoreSettings"
-        since: 6
     }
     
     ObjectType{
@@ -293,7 +283,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 }
             }
         }
-        since: 6
     }
     
     InterfaceType{
@@ -382,12 +371,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
 
         EnumType{
             name: "PropertyTrackingMode"
-            since: [5, 9]
-        }
-        ModifyFunction{
-            signature: "event(QEvent *)"
-            remove: RemoveFlag.All
-            until: [5, 6]
         }
         ModifyFunction{
             signature: "doClone() const"
@@ -402,22 +385,10 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 }
             }
         }
-        ModifyFunction{
-            signature: "sendCommand(const QString &, const QVariant &, Qt3DCore::QNodeCommand::CommandId)"
-            ModifyArgument{
-                index: 3
-                ReplaceDefaultExpression{
-                    expression: "0"
-                }
-            }
-            since: [5, 10]
-            until: 5
-        }
     }
     
     ObjectType{
         name: "Qt3DCore::QAbstractSkeleton"
-        since: [5, 10]
     }
     
     ObjectType{
@@ -431,7 +402,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 }
             }
         }
-        since: [5, 10]
     }
     
     ObjectType{
@@ -454,7 +424,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 }
             }
         }
-        since: [5, 10]
     }
     
     ObjectType{
@@ -505,19 +474,9 @@ if(JniEnvironmentExceptionHandler %env{200}) {
         }
         InjectCode{
             target: CodeClass.Java
-            until: 5
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambi3DCore.java"
-                quoteAfterLine: "class QEntity_5_"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        InjectCode{
-            target: CodeClass.Java
-            since: 6
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambi3DCore.java"
-                quoteAfterLine: "class QEntity_6_"
+                quoteAfterLine: "class QEntity__"
                 quoteBeforeLine: "}// class"
             }
         }
@@ -534,37 +493,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 }
             }
         }
-        since: [5, 10]
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QSceneChange"
-
-        EnumType{
-            name: "Priority"
-            until: [5, 6]
-        }
-
-        EnumType{
-            name: "ObservableType"
-            until: [5, 6]
-        }
-
-        EnumType{
-            name: "DeliveryFlag"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QNodeCommand"
-        PrimitiveType{
-            name: "CommandId"
-            javaName: "long"
-            jniName: "jlong"
-            preferredConversion: false
-        }
-        until: 5
     }
     
     ObjectType{
@@ -572,39 +500,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
 
         EnumType{
             name: "Mode"
-        }
-        ModifyFunction{
-            signature: "setFactory(const Qt3DCore::QBackendNodeFactory*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcBackendNodeFactory"
-                    action: ReferenceCount.Set
-                }
-            }
-            until: [5, 6]
-        }
-        ModifyFunction{
-            signature: "setPeer(Qt3DCore::QNode*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcPeer"
-                    action: ReferenceCount.Set
-                }
-            }
-            until: [5, 6]
-        }
-        ModifyFunction{
-            signature: "sendCommand(const QString &, const QVariant &, Qt3DCore::QNodeCommand::CommandId)"
-            ModifyArgument{
-                index: 3
-                ReplaceDefaultExpression{
-                    expression: "0"
-                }
-            }
-            since: [5, 10]
-            until: 5
         }
     }
     
@@ -674,7 +569,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
 
         EnumType{
             name: "RunMode"
-            since: [5, 14]
         }
         ModifyFunction{
             signature: "setRootEntity(QSharedPointer<Qt3DCore::QEntity>)"
@@ -747,11 +641,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     
     ObjectType{
         name: "Qt3DCore::QAbstractAspect"
-
-        EnumType{
-            name: "AspectType"
-            until: [5, 6]
-        }
         ExtraIncludes{
             Include{
                 fileName: "Qt3DCore/QBackendNodeMapper"
@@ -759,25 +648,12 @@ if(JniEnvironmentExceptionHandler %env{200}) {
             }
         }
         ModifyFunction{
-            signature: "registerBackendType<Frontend,supportsSyncing>(const QSharedPointer<Qt3DCore::QBackendNodeFunctor> &)"
-            remove: RemoveFlag.All
-            until: [5, 6]
-        }
-        ModifyFunction{
-            signature: "registerBackendType<Frontend,supportsSyncing>(const QSharedPointer<Qt3DCore::QBackendNodeMapper> &)"
-            remove: RemoveFlag.All
-            since: [5, 7]
-            until: 5
-        }
-        ModifyFunction{
             signature: "registerBackendType<Frontend>(const QSharedPointer<Qt3DCore::QBackendNodeMapper> &)"
             remove: RemoveFlag.All
-            since: [5, 7]
         }
         ModifyFunction{
             signature: "unregisterBackendType<Frontend>()"
             remove: RemoveFlag.All
-            since: [5, 9]
         }
         InjectCode{
             target: CodeClass.Java
@@ -787,14 +663,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 quoteBeforeLine: "}// class"
             }
         }
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QCameraLens"
-        EnumType{
-            name: "ProjectionType"
-        }
-        until: [5, 6]
     }
     
     ObjectType{
@@ -846,124 +714,12 @@ if(JniEnvironmentExceptionHandler %env{200}) {
         name: "Qt3DCore::QTranslateTransform"
     }
     
-    ObjectType{
-        name: "Qt3DCore::QComponentAddedChange"
-        since: [5, 7]
-        until: 5
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QComponentRemovedChange"
-        since: [5, 7]
-        until: 5
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QDynamicPropertyUpdatedChange"
-        since: [5, 7]
-        until: 5
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QNodeCreatedChangeBase"
-        since: [5, 7]
-        until: 5
-    }
-    
     ValueType{
         name: "Qt3DCore::QNodeIdTypePair"
-        since: [5, 8]
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QNodeDestroyedChange"
-        since: [5, 7]
-        until: 5
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QPropertyNodeAddedChange"
-        since: [5, 7]
-        until: 5
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QPropertyNodeRemovedChange"
-        since: [5, 7]
-        until: 5
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QPropertyUpdatedChange"
-        since: [5, 7]
-        until: 5
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QPropertyUpdatedChangeBase"
-        since: [5, 7]
-        until: 5
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QPropertyValueAddedChange"
-        since: [5, 7]
-        until: 5
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QPropertyValueAddedChangeBase"
-        since: [5, 7]
-        until: 5
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QPropertyValueRemovedChange"
-        since: [5, 7]
-        until: 5
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QPropertyValueRemovedChangeBase"
-        since: [5, 7]
-        until: 5
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QStaticPropertyUpdatedChangeBase"
-        since: [5, 7]
-        until: 5
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QStaticPropertyValueAddedChangeBase"
-        since: [5, 7]
-        until: 5
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QStaticPropertyValueRemovedChangeBase"
-        since: [5, 7]
-        until: 5
     }
     
     ObjectType{
         name: "Qt3DCore::QBackendNodeMapper"
-        ModifyFunction{
-            signature: "create(const QSharedPointer<Qt3DCore::QNodeCreatedChangeBase>&) const"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    codeClass: CodeClass.Shell
-                    ownership: Ownership.Cpp
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-            until: 5
-        }
         ModifyFunction{
             signature: "create(Qt3DCore::QNodeId) const"
             ModifyArgument{
@@ -977,9 +733,7 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                     ownership: Ownership.Java
                 }
             }
-            since: 6
         }
-        since: [5, 7]
     }
     
     ObjectType{
@@ -993,16 +747,13 @@ if(JniEnvironmentExceptionHandler %env{200}) {
                 }
             }
         }
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DCore::QSkeletonLoader"
         EnumType{
             name: "Status"
-            since: [5, 10]
         }
-        since: [5, 10]
     }
     
     ObjectType{

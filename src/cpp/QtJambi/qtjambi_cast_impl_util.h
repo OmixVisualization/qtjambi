@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -815,7 +815,8 @@ struct cast_var_args;
 template<bool is_pointer, bool is_const, bool is_reference, class Type, bool has_default_ctor = is_default_constructible<Type>::value, bool has_copy_ctor = is_copy_constructible<Type>::value, bool has_move_ctor = is_move_constructible<Type>::value, typename... Args>
 struct pointer_ref_or_clone_decider_impl{
 
-    static Type convert(Args...){
+    template<typename T>
+    static Type convert(T, Args...){
         Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
     }
 };

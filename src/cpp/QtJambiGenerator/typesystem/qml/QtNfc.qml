@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -46,33 +46,13 @@ TypeSystem{
         target: CodeClass.MetaInfo
         Text{content: "#if defined(Q_OS_ANDROID)\ninitialize_meta_info_QtNfc();\n#endif"}
     }
-
-    RequiredLibrary{
-        name: "QtDBus"
-        mode: RequiredLibrary.Optional
-        until: 5
-    }
     RequiredLibrary{
         name: "QtDBus"
         mode: RequiredLibrary.ProvideOnly
-        since: 6
     }
     
     Rejection{
         className: "RequestIdPrivate"
-    }
-    
-    ObjectType{
-        name: "QNearFieldShareManager"
-
-        EnumType{
-            name: "ShareError"
-        }
-
-        EnumType{
-            name: "ShareMode"
-        }
-        until: 5
     }
     
     ObjectType{
@@ -249,47 +229,6 @@ TypeSystem{
             signature: "setPayload(const QByteArray &)"
             access: Modification.NonFinal
         }
-    }
-    
-    ObjectType{
-        name: "QQmlNdefRecord"
-
-        EnumType{
-            name: "TypeNameFormat"
-        }
-        until: 5
-    }
-
-    GlobalFunction{
-        signature: "qNfcChecksum(const char*,uint)"
-        targetType: "QNearFieldTarget"
-        ModifyArgument{
-            index: 1
-            AsBuffer{
-                lengthParameter: 2
-                AsArray{}
-            }
-        }
-        until: 5
-    }
-
-    GlobalFunction{
-        signature: "qRegisterNdefRecordTypeHelper(const QMetaObject *,QNdefRecord::TypeNameFormat,const QByteArray &)"
-        targetType: "QQmlNdefRecord"
-        until: 5
-    }
-
-    GlobalFunction{
-        signature: "qNewDeclarativeNdefRecordForNdefRecord(const QNdefRecord &)"
-        targetType: "QQmlNdefRecord"
-        ModifyArgument{
-            index: "return"
-            DefineOwnership{
-                codeClass: CodeClass.Native
-                ownership: Ownership.Java
-            }
-        }
-        until: 5
     }
     
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QNdefFilter::Record."}

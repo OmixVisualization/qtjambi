@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -265,9 +265,6 @@ extern "C" JNIEXPORT jstring JNICALL Java_io_qt_core_AbstractIterator_toString
                                                                   isAssociative ? "Associative" : "Sequential",
                                                                   isConst ? "Const" : "",
                                                                   containerAccess->valueMetaType().name()
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                                                                                        .constData()
-#endif
                                                                   ,container.first));
         }
     }QTJAMBI_CATCH(const JavaException& exn){

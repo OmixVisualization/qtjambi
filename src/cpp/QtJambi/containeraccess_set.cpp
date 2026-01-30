@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,11 +33,6 @@
 
 QT_WARNING_DISABLE_GCC("-Winaccessible-base")
 QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-QT_WARNING_DISABLE_GCC("-Wstrict-aliasing")
-QT_WARNING_DISABLE_CLANG("-Wstrict-aliasing")
-#endif
 
 QSharedPointer<class AutoHashAccess> getHashAccess(const QtPrivate::QMetaTypeInterface *iface);
 
@@ -95,8 +90,12 @@ void* AutoSetAccess::constructContainer(void* result, void* container){
     return m_hashAccess.constructContainer(result, container);
 }
 
-size_t AutoSetAccess::sizeOf(){
+size_t AutoSetAccess::sizeOf() const {
     return m_hashAccess.sizeOf();
+}
+
+size_t AutoSetAccess::alignOf() const {
+    return m_hashAccess.alignOf();
 }
 
 void AutoSetAccess::assign(void* container, const void* other){
@@ -111,10 +110,10 @@ bool AutoSetAccess::destructContainer(void* container){
     return m_hashAccess.destructContainer(container);
 }
 
-int AutoSetAccess::registerContainer(const QByteArray& typeName)
+QMetaType AutoSetAccess::registerContainer(const QByteArray& typeName)
 {
-    int newMetaType = QMetaType::fromName(typeName).id();
-    if(newMetaType==QMetaType::UnknownType){
+    QMetaType newMetaType = QMetaType::fromName(typeName);
+    if(!newMetaType.isValid()){
         QSharedPointer<AutoHashAccess> access(reinterpret_cast<AutoHashAccess*>(m_hashAccess.clone()), &containerDisposer);
         auto iface = m_hashAccess.m_keyMetaType.iface();
         newMetaType = registerContainerMetaType(typeName,
@@ -142,7 +141,7 @@ int AutoSetAccess::registerContainer(const QByteArray& typeName)
                                        nullptr,
                                        access);
         if(m_hashAccess.m_keyHashFunction){
-            insertHashFunctionByMetaType(newMetaType,
+            insertHashFunctionByMetaType(newMetaType.iface(),
                                             [access]
                                             (const void* ptr, size_t seed)->size_t{
                                                 if(ptr){
@@ -163,13 +162,18 @@ int AutoSetAccess::registerContainer(const QByteArray& typeName)
                                                 }
                                             });
         }
-        const QMetaType to = QMetaType::fromType<QSequentialIterable>();
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+        typedef QMetaSequence::Iterable SequentialIterable;
+#else
+        typedef QSequentialIterable SequentialIterable;
+#endif
+        const QMetaType to = QMetaType::fromType<SequentialIterable>();
         QMetaType::registerMutableViewFunction([newMetaType](void *src, void *target)->bool{
-            new(target) QIterable<QMetaSequence>(QMetaSequence(createMetaSequenceInterface(newMetaType)), reinterpret_cast<void **>(src));
+            new(target) SequentialIterable(QMetaSequence(createMetaSequenceInterface(newMetaType)), reinterpret_cast<void **>(src));
             return true;
         }, QMetaType(newMetaType), to);
         QMetaType::registerConverterFunction([newMetaType](const void *src, void *target)->bool{
-            new(target) QIterable<QMetaSequence>(QMetaSequence(createMetaSequenceInterface(newMetaType)), reinterpret_cast<void const*const*>(src));
+            new(target) SequentialIterable(QMetaSequence(createMetaSequenceInterface(newMetaType)), reinterpret_cast<void const*const*>(src));
             return true;
         }, QMetaType(newMetaType), to);
     }else{
@@ -178,23 +182,20 @@ int AutoSetAccess::registerContainer(const QByteArray& typeName)
     return newMetaType;
 }
 
-QReadWriteLock* containerAccessLock();
-QMap<int, QtMetaContainerPrivate::QMetaSequenceInterface>& metaSequenceHash();
-
-QtMetaContainerPrivate::QMetaSequenceInterface* AutoSetAccess::createMetaSequenceInterface(int newMetaType){
+QtMetaContainerPrivate::QMetaSequenceInterface* AutoSetAccess::createMetaSequenceInterface(QMetaType newMetaType){
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(containerAccessLock());
-        Q_UNUSED(locker)
-        if(metaSequenceHash().contains(newMetaType))
-           return &metaSequenceHash()[newMetaType];
+        QReadLocker locker(storage->lock());
+        if(storage->metaSequencesByMetaType().contains(newMetaType.iface()))
+           return &storage->metaSequencesByMetaType()[newMetaType.iface()];
     }
     using namespace QtMetaContainerPrivate;
     QMetaSequenceInterface* metaSequenceInterface;
     {
-        QWriteLocker locker(containerAccessLock());
-        metaSequenceInterface = &metaSequenceHash()[newMetaType];
+        QWriteLocker locker(storage->lock());
+        metaSequenceInterface = &storage->metaSequencesByMetaType()[newMetaType.iface()];
     }
-    QSharedPointer<class AutoHashAccess> access = getHashAccess(QMetaType(newMetaType).iface());
+    QSharedPointer<class AutoHashAccess> access = getHashAccess(newMetaType.iface());
     metaSequenceInterface->valueMetaType = access->m_keyMetaType.iface();
     metaSequenceInterface->iteratorCapabilities = InputCapability | ForwardCapability;
     metaSequenceInterface->addRemoveCapabilities = CanAddAtBegin|CanRemoveAtBegin|CanAddAtEnd|CanRemoveAtEnd;
@@ -210,16 +211,16 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoSetAccess::createMetaSequenc
                 [newMetaType](void *c) {
                     if(!c)
                         return;
-                    QSharedPointer<class AutoHashAccess> access = getHashAccess(QMetaType(newMetaType).iface());
+                    QSharedPointer<class AutoHashAccess> access = getHashAccess(newMetaType.iface());
                     if(!access)
                         return;
                     access->clear(c);
-                }, newMetaType);
+                }, size_t(newMetaType.iface()));
     metaSequenceInterface->createIteratorFn = qtjambi_function_pointer<16,void*(void *,QMetaContainerInterface::Position)>(
                 [newMetaType](void *c, QMetaContainerInterface::Position p) -> void* {
                         if(!c)
                             return nullptr;
-                        QSharedPointer<class AutoHashAccess> access = getHashAccess(QMetaType(newMetaType).iface());
+                        QSharedPointer<class AutoHashAccess> access = getHashAccess(newMetaType.iface());
                         if(!access)
                             return nullptr;
                         QHashData ** map = reinterpret_cast<QHashData **>(c);
@@ -273,7 +274,7 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoSetAccess::createMetaSequenc
         [newMetaType](const void *c, QMetaContainerInterface::Position p) -> void* {
             if(!c)
                 return nullptr;
-            QSharedPointer<class AutoHashAccess> access = getHashAccess(QMetaType(newMetaType).iface());
+            QSharedPointer<class AutoHashAccess> access = getHashAccess(newMetaType.iface());
             if(!access)
                 return nullptr;
             QHashData *const* map = reinterpret_cast<QHashData *const*>(c);
@@ -304,15 +305,15 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoSetAccess::createMetaSequenc
                 [newMetaType](void *container, const void *e, QMetaSequenceInterface::Position) {
                     if(!container)
                         return;
-                    QSharedPointer<class AutoHashAccess> access = getHashAccess(QMetaType(newMetaType).iface());
+                    QSharedPointer<class AutoHashAccess> access = getHashAccess(newMetaType.iface());
                     if(!access)
                         return;
                     access->emplace(container, e, nullptr);
-                }, newMetaType);
+                }, size_t(newMetaType.iface()));
     metaSequenceInterface->removeValueFn = qtjambi_function_pointer<16,void(void *, QMetaSequenceInterface::Position)>([newMetaType](void *c, QMetaSequenceInterface::Position position) {
         if(!c)
             return;
-        QSharedPointer<class AutoHashAccess> access = getHashAccess(QMetaType(newMetaType).iface());
+        QSharedPointer<class AutoHashAccess> access = getHashAccess(newMetaType.iface());
         if(!access)
             return;
         QHashData ** map = reinterpret_cast<QHashData **>(c);
@@ -332,7 +333,7 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoSetAccess::createMetaSequenc
             it = d->detachedIterator(*access, it);
             d->erase(*access, it);
         }
-    }, newMetaType);
+    }, size_t(newMetaType.iface()));
     metaSequenceInterface->valueAtIteratorFn = [](const void *i, void *r) {
         const iterator* it = reinterpret_cast<const iterator*>(i);
         it->i.access->m_keyMetaType.destruct(r);
@@ -455,34 +456,6 @@ void AutoSetAccess::intersect(JNIEnv * env, const ContainerInfo& container, Cont
         m_hashAccess.detach(reinterpret_cast<QHashData **>(copy2));
         m_hashAccess.assign(container.container, copy1);
     }
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    Node*& e = reinterpret_cast<Node*&>(d);
-    Node*& e1 = *reinterpret_cast<Node**>(copy1);
-    Node*& e2 = *reinterpret_cast<Node**>(copy2);
-    Node *n1 = (*reinterpret_cast<QHashData **>(copy1))->firstNode();
-    bool hasShrunk = false;
-    while (n1 != e1) {
-        void* key = reinterpret_cast<char*>(n1) + m_hashAccess.m_offset1;
-        Node** found2 = m_hashAccess.findNode(reinterpret_cast<QHashData **>(copy2), key);
-        if (*found2 == e2){
-            Node **found = m_hashAccess.findNode(map, key);
-            if(*found != e){
-                bool deleteNext = true;
-                do {
-                    Node *next = (*found)->next;
-                    deleteNext = (next != e && isEquals(m_hashAccess.m_keyMetaType, key, reinterpret_cast<char*>(next)+m_hashAccess.m_offset1));
-                    m_hashAccess.deleteNode(d, *found);
-                    *found = next;
-                    --d->size;
-                } while (deleteNext);
-                hasShrunk = true;
-            }
-        }
-        n1 = QHashData::nextNode(n1);
-    }
-    if(hasShrunk)
-        d->hasShrunk();
-#else
     QHashData* copy1D = *reinterpret_cast<QHashData **>(copy1);
     QHashData* copy2D = *reinterpret_cast<QHashData **>(copy2);
     QHashData::iterator i = copy1D ? copy1D->begin(m_hashAccess) : QHashData::iterator(m_hashAccess);
@@ -497,7 +470,6 @@ void AutoSetAccess::intersect(JNIEnv * env, const ContainerInfo& container, Cont
         }
         ++i;
     }
-#endif
     m_hashAccess.deleteContainer(copy1);
     m_hashAccess.deleteContainer(copy2);
     if(deleteSet){
@@ -529,33 +501,6 @@ jboolean AutoSetAccess::intersects(JNIEnv * env, const void* container, jobject 
     QHashData*biggestSet = otherIsBigger ? d2 : d;
 
     bool result = false;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    const bool equalSeeds = d->seed == d2->seed;
-    Node* eb = reinterpret_cast<Node*>(biggestSet);
-    Node* e = reinterpret_cast<Node*>(smallestSet);
-    Node* n = smallestSet->firstNode();
-
-    if (Q_LIKELY(equalSeeds)) {
-        // If seeds are equal we take the fast path so no hash is recalculated.
-        while (n != e) {
-            Node** n2 = m_hashAccess.findNode(&biggestSet, reinterpret_cast<char*>(n) + m_hashAccess.m_offset1, n->h);
-            if (*n2 != eb){
-                result = true;
-                break;
-            }
-            n = QHashData::nextNode(n);
-        }
-    } else {
-        while (n != e) {
-            Node** n2 = m_hashAccess.findNode(&biggestSet, reinterpret_cast<char*>(n) + m_hashAccess.m_offset1);
-            if (*n2 != eb){
-                result = true;
-                break;
-            }
-            n = QHashData::nextNode(n);
-        }
-    }
-#else
     QHashData::iterator i = smallestSet ? smallestSet->begin(m_hashAccess) : QHashData::iterator(m_hashAccess);
     QHashData::iterator e = smallestSet ? smallestSet->end(m_hashAccess) : QHashData::iterator(m_hashAccess);
 
@@ -564,7 +509,6 @@ jboolean AutoSetAccess::intersects(JNIEnv * env, const void* container, jobject 
             return true;
         ++i;
     }
-#endif
     if(deleteSet)
         m_hashAccess.deleteContainer(ptr);
     return result;
@@ -635,30 +579,6 @@ void AutoSetAccess::subtract(JNIEnv * env, const ContainerInfo& container, Conta
         if(d)
             m_hashAccess.clear(env, container);
     }else{
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        Node*& e = reinterpret_cast<Node*&>(d);
-        Node*& e2 = reinterpret_cast<Node*&>(d2);
-        Node* n2 = d2->firstNode();
-        bool hasShrunk = false;
-        while (n2 != e2) {
-            void* key = reinterpret_cast<char*>(n2) + m_hashAccess.m_offset1;
-            Node **found = m_hashAccess.findNode(map, key);
-            if(*found != e){
-                bool deleteNext = true;
-                do {
-                    Node *next = (*found)->next;
-                    deleteNext = (next != e && isEquals(m_hashAccess.m_keyMetaType, key, reinterpret_cast<char*>(next)+m_hashAccess.m_offset1));
-                    m_hashAccess.deleteNode(d, *found);
-                    *found = next;
-                    --d->size;
-                } while (deleteNext);
-                hasShrunk = true;
-            }
-            n2 = QHashData::nextNode(n2);
-        }
-        if(hasShrunk)
-            d->hasShrunk();
-#else
         QHashData::iterator i = d2 ? d2->begin(m_hashAccess) : QHashData::iterator(m_hashAccess);
         QHashData::iterator e = d2 ? d2->end(m_hashAccess) : QHashData::iterator(m_hashAccess);
 
@@ -669,7 +589,6 @@ void AutoSetAccess::subtract(JNIEnv * env, const ContainerInfo& container, Conta
             }
             ++i;
         }
-#endif
     }
 
     if(deleteSet)
@@ -685,29 +604,12 @@ void AutoSetAccess::unite(JNIEnv * env, const ContainerInfo& container, Containe
         QHashData *const* map2 = reinterpret_cast<QHashData *const*>(other.container);
         QHashData* d2 = *map2;
         if(d && d2 && d!=d2){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            Node* e = reinterpret_cast<Node*>(d);
-            Node* e2 = reinterpret_cast<Node*>(d2);
-            Node* n2 = d2->firstNode();
-            while (n2 != e2) {
-                void* akey = reinterpret_cast<char*>(n2) + m_hashAccess.m_offset1;
-                uint h;
-                Node** node = m_hashAccess.findNode(map, akey, &h);
-                if (*node == e){
-                    if (d->willGrow())
-                        node = m_hashAccess.findNode(map, akey, h);
-                    m_hashAccess.createNode(d, h, akey, nullptr, node);
-                }
-                n2 = QHashData::nextNode(n2);
-            }
-#else
             QHashData::iterator i = d2 ? d2->begin(m_hashAccess) : QHashData::iterator(m_hashAccess);
             QHashData::iterator e = d2 ? d2->end(m_hashAccess) : QHashData::iterator(m_hashAccess);
             while (i != e) {
                 m_hashAccess.emplace(map, i.key(), env, nullptr);
                 ++i;
             }
-#endif
         }
     }else{
         jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, other.object);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -1359,7 +1359,7 @@ public abstract class NativeUtility {
 	static void unregisterConDestroyedObject(QtObject dependentObject, QtObject owner) {
 		unregisterConDestroyedObject(nativeId(dependentObject), nativeId(owner));
 	}
-
+	
 	private static native void setCppOwnership(long native__id);
 
 	private static native void setDefaultOwnership(long native__id);

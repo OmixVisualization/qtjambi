@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -275,6 +275,9 @@ namespace QtCore
                                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(accept))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QFutureInterfaceBase$State,)
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QFutureInterfaceBase,)
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QStringConverter$FinalizeResult,QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+#endif
 namespace Internal
 {
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QAbstractFileEngineHandler,
@@ -336,6 +339,9 @@ QTJAMBI_REPOSITORY_DECLARE_CLASS(QFlags,)
 }
 
 namespace Runtime{
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(FileDescriptor,
+                                 QTJAMBI_REPOSITORY_DECLARE_INT_FIELD(fd))
+
     QTJAMBI_REPOSITORY_DECLARE_CLASS(BigInteger,
                   QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(abs)
@@ -351,6 +357,11 @@ namespace Runtime{
                     return _this.__att;
                 }
         )
+    namespace Private{
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Buffer,
+                                     QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(position)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(setPosition))
+    }
 }
 }
 

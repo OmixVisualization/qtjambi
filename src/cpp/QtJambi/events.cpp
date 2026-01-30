@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -225,7 +225,7 @@ void UIInitialCheck::uiConstructorThreadCheck(JNIEnv *env, const std::type_info&
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
     auto mainThreadId = QCoreApplicationPrivate::theMainThreadId.loadRelaxed();
 #else
-    auto mainThreadId = QThreadUserData::theMainThreadId.loadRelaxed();
+    auto mainThreadId = QThreadObjectData::theMainThreadId.loadRelaxed();
 #endif
     if(mainThreadId!=QThread::currentThreadId()){
         JavaException::raiseQThreadAffinityException(env, QStringLiteral("%1 created outside main thread").arg(getQtName(constructedType)) QTJAMBI_STACKTRACEINFO, nullptr,
@@ -237,7 +237,7 @@ void UIInitialCheck::pixmapUseThreadCheck(JNIEnv *env, const std::type_info& con
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
     auto mainThreadId = QCoreApplicationPrivate::theMainThreadId.loadRelaxed();
 #else
-    auto mainThreadId = QThreadUserData::theMainThreadId.loadRelaxed();
+    auto mainThreadId = QThreadObjectData::theMainThreadId.loadRelaxed();
 #endif
     if(mainThreadId!=QThread::currentThreadId()){
         const char* typeName = getQtName(constructedType);
@@ -255,7 +255,7 @@ void UIInitialCheck::enabledPixmapArgumentThreadCheck(JNIEnv *env, const char* a
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
     auto mainThreadId = QCoreApplicationPrivate::theMainThreadId.loadRelaxed();
 #else
-    auto mainThreadId = QThreadUserData::theMainThreadId.loadRelaxed();
+    auto mainThreadId = QThreadObjectData::theMainThreadId.loadRelaxed();
 #endif
     if(mainThreadId!=QThread::currentThreadId()){
         JavaException::raiseQThreadAffinityException(env, QStringLiteral("%1 used as argument '%2' from outside main thread").arg(getQtName(argumentType), argumentName) QTJAMBI_STACKTRACEINFO ,
@@ -339,17 +339,27 @@ void UIInitialCheck::initialPixmapArgumentCheck(JNIEnv *env, const char* argumen
 
 void UIInitialCheck::windowConstructorThreadCheck(JNIEnv *env, const std::type_info&, const QObject* parent){
     if(parent){
-        QThread* currentThread = QThread::currentThread();
         QThread* objectThread = parent->thread();
-        if (objectThread && objectThread != currentThread) {
+        if (objectThread
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+            && !objectThread->isCurrentThread()
+#else
+            && objectThread!=QThread::currentThread()
+#endif
+        ) {
             if(QThread* this_thread = qobject_cast<QThread*>(const_cast<QObject*>(parent))){
                 objectThread = this_thread;
-                if(objectThread == currentThread)
+                if (objectThread
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+                    && objectThread->isCurrentThread())
+#else
+                    && objectThread==QThread::currentThread())
+#endif
                     return;
             }
             JavaException::raiseQThreadAffinityException(env, "QObject used as parent from outside its own thread" QTJAMBI_STACKTRACEINFO ,
                                                          QtJambiAPI::convertQObjectToJavaObject(env, parent),
-                                                         objectThread, currentThread);
+                                                         objectThread, QThread::currentThread());
         }
     }
 }
@@ -358,7 +368,7 @@ void UIInitialCheck::widgetConstructorThreadCheck(JNIEnv *env, const std::type_i
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
     auto mainThreadId = QCoreApplicationPrivate::theMainThreadId.loadRelaxed();
 #else
-    auto mainThreadId = QThreadUserData::theMainThreadId.loadRelaxed();
+    auto mainThreadId = QThreadObjectData::theMainThreadId.loadRelaxed();
 #endif
     Qt::HANDLE currentThreadId = QThread::currentThreadId();
     if(mainThreadId!=currentThreadId){
@@ -464,7 +474,7 @@ void UIInitialCheck::enabledUIThreadCheck(JNIEnv *env, const std::type_info& typ
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
     auto mainThreadId = QCoreApplicationPrivate::theMainThreadId.loadRelaxed();
 #else
-    auto mainThreadId = QThreadUserData::theMainThreadId.loadRelaxed();
+    auto mainThreadId = QThreadObjectData::theMainThreadId.loadRelaxed();
 #endif
     if(mainThreadId!=QThread::currentThreadId()){
         if(typeid_equals(typeId, typeid(void))){
@@ -523,7 +533,7 @@ void UIInitialCheck::enabledUIArgumentThreadCheck(JNIEnv *env, const char* argum
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
     auto mainThreadId = QCoreApplicationPrivate::theMainThreadId.loadRelaxed();
 #else
-    auto mainThreadId = QThreadUserData::theMainThreadId.loadRelaxed();
+    auto mainThreadId = QThreadObjectData::theMainThreadId.loadRelaxed();
 #endif
     if(mainThreadId!=QThread::currentThreadId()){
         JavaException::raiseQThreadAffinityException(env, QStringLiteral("%1 used as argument '%2' from outside main thread").arg(getQtName(argumentType), argumentName) QTJAMBI_STACKTRACEINFO ,
@@ -663,10 +673,13 @@ void QtJambiAPI::checkThreadConstructingQWindow(JNIEnv *env, const std::type_inf
 void checkThreadConstructingApplication(JNIEnv *env, const std::type_info& constructedType){
     if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-thread-affinity-check"))){
         QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed();
-        QThread* currentThread = QThread::currentThread();
-        if(currentThread!=mainThread){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+        if(!QThread::isMainThread()){
+#else
+        if(QThread::currentThread()!=mainThread){
+#endif
             JavaException::raiseQThreadAffinityException(env, QStringLiteral("%1 created outside main thread").arg(getQtName(constructedType)) QTJAMBI_STACKTRACEINFO, nullptr,
-                                                        currentThread, mainThread );
+                                                        QThread::currentThread(), mainThread );
         }
 #ifdef Q_OS_ANDROID
         if(UIInitialCheck::uiThreadCheck == UIInitialCheck::UseCheck(&UIInitialCheck::trivial)){
@@ -740,9 +753,7 @@ void enableSignalEmitThreadCheck(bool enabled){
     }
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 void onDynamicPropertyChange(QObject *receiver, QDynamicPropertyChangeEvent* event);
-#endif
 
 bool eventNotifier(QObject *receiver, QEvent *event, bool* result)
 {
@@ -779,11 +790,9 @@ bool eventNotifier(QObject *receiver, QEvent *event, bool* result)
         }
     }
     switch (event->type()) {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     case QEvent::DynamicPropertyChange:
         onDynamicPropertyChange(receiver, dynamic_cast<QDynamicPropertyChangeEvent*>(event));
         break;
-#endif
     case QEvent::ChildAdded:
     case QEvent::ChildRemoved:
         {
@@ -872,15 +881,7 @@ bool threadAffineEventNotify(void **data)
                                           qUtf16Printable(eventDescr),
                                           currentThread, qUtf16Printable(receiver->objectName()),
                                           receiver->metaObject()->className(), thr);
-                                if(QtJambiShellInterface* shellInterface = dynamic_cast<QtJambiShellInterface*>(receiver)){
-                                    JavaException::raiseQThreadAffinityException(env, QString::asprintf("Cannot send events to objects owned by a different thread (event type: %ls). "
-                                                                                                        "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
-                                                                                                        qUtf16Printable(eventDescr),
-                                                                                                        currentThread, qUtf16Printable(receiver->objectName()),
-                                                                                                        receiver->metaObject()->className(), thr) QTJAMBI_STACKTRACEINFO ,
-                                                                                 QtJambiShellInterface::getJavaObjectLocalRef(env, shellInterface),
-                                                                                 nullptr, nullptr);
-                                }else if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(receiver)) {
+                                if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(receiver)) {
                                     JavaException::raiseQThreadAffinityException(env, QString::asprintf("Cannot send events to objects owned by a different thread (event type: %ls). "
                                                                                                         "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
                                                                                                         qUtf16Printable(eventDescr),

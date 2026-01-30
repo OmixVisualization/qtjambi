@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
 **
 ** This file is part of Qt Jambi.
@@ -82,9 +82,23 @@ public:
 
     static void run(QThread* runnable);
 
-    static void terminate();
+    static void std_terminate();
 
-    static void abort();
+    static void std_exit(int i);
+
+    static void std_abort();
+
+    static void c_kill();
+
+    static void c_exit(int i);
+
+    static void c_abort();
+
+    static void badAccess();
+
+    static void badVirtual();
+
+    static void uncaughtException();
 
     static QString stringSysctlByName(const char* name);
 };

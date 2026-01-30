@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -156,7 +156,7 @@ namespace TS {
     };
 
     struct ReferenceCount {
-        ReferenceCount() : threadSafe(false), access(Public) { }
+        ReferenceCount() : threadSafe(false), access(Private) { }
         enum Action { // 0x01 - 0xff
             Invalid     = 0x00,
             Add         = 0x01,
@@ -195,7 +195,7 @@ namespace TS {
         QString condition;
         QString declareVariable;
 
-    uint threadSafe : 1;
+        uint threadSafe : 1;
 
         uint access;
 

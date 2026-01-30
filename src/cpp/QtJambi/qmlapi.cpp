@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -28,6 +28,24 @@
 ****************************************************************************/
 
 #include "pch_p.h"
+
+QExplicitlySharedDataPointer<QmlAPI::CreatorFunctionMetaData> QmlAPI::creatorFunctionMetaData(JNIEnv * env, const QMetaObject *meta_object, jclass clazz, jmethodID constructor, QmlAPI::ConstructorKind constructorKind, QtJambiAPI::ConstructorFn constructorFunction, size_t objectSize, int psCast, int vsCast, int viCast, int fhCast){
+    size_t hash = qHashMulti(0, meta_object, QtJambiAPI::getJavaObjectHashCode(env, clazz), qint64(constructor), constructorKind, qint64(constructorFunction), objectSize, psCast, vsCast, viCast, fhCast);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker lock(storage->lock());
+        if(storage->creatorFunctionMetaDataHash().contains(hash)){
+            return storage->creatorFunctionMetaDataHash()[hash];
+        }
+    }
+    {
+        clazz = JavaAPI::toGlobalReference(env, clazz);
+        QExplicitlySharedDataPointer<QmlAPI::CreatorFunctionMetaData> data{new QmlAPI::CreatorFunctionMetaData{QSharedData{},clazz, meta_object, constructor, constructorKind, constructorFunction, objectSize, psCast, vsCast, viCast, fhCast}};
+        QWriteLocker lock(storage->lock());
+        storage->creatorFunctionMetaDataHash()[hash] = data;
+        return data;
+    }
+}
 
 int QmlAPI::getInterfaceOffset(JNIEnv *env, jclass cls, const std::type_info& interfacetype){
     if(const InterfaceOffsetInfo* info = getInterfaceOffsets(env, cls)){

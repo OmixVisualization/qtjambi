@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -52,11 +52,7 @@ AutoSequentialConstIteratorAccess::AutoSequentialConstIteratorAccess(
       m_value(value),
       m_lessThan(lessThan),
       m_equals(equals),
-      m_valueMetaType(valueMetaType
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                          .id()
-#endif
-                      ),
+      m_valueMetaType(valueMetaType),
       m_offset(offset)
 {
     Q_ASSERT(m_value);
@@ -147,11 +143,7 @@ AutoAssociativeConstIteratorAccess::AutoAssociativeConstIteratorAccess(
                         valueMetaType, valueOffset),
       m_keyInternalToExternalConverter(keyInternalToExternalConverter),
       m_key(std::move(key)),
-      m_keyMetaType(keyMetaType
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                        .id()
-#endif
-                    ),
+      m_keyMetaType(keyMetaType),
       m_keyOffset(keyOffset)
 {
     Q_ASSERT(m_key);

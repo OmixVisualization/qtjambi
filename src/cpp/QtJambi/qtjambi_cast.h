@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,7 +47,7 @@ constexpr O qtjambi_cast(JNIEnv *env, QtJambiScope& scope, T&& in, const char (&
     }
 }
 
-template<class O, class T, class = void, size_t N>
+template<class O, class T, class = void, std::enable_if_t<!std::is_same_v<QtJambiNativeID,T>, size_t> N>
 constexpr O qtjambi_cast(JNIEnv *env, T&& in, const char (&nativeTypeName)[N]){
     if constexpr(std::is_array_v<std::remove_reference_t<T>> && (QtJambiPrivate::jni_type<O>::isArray || std::is_same_v<O, jobject> || std::is_same_v<O, jcoreobject>)){
         return QtJambiPrivate::qtjambi_array_cast<O, std::decay_t<T>, size_t, true,JNIEnv *,const char(&)[N]>::cast(in, std::extent_v<std::remove_reference_t<T>>, env, nativeTypeName);
@@ -80,46 +80,37 @@ constexpr O qtjambi_cast(JNIEnv *env, T&& in){
     }
 }
 
-template<class T>
-constexpr jobject qtjambi_cast_sequential_iterator(JNIEnv *env, QtJambiScope& scope, const T& in){
+template<class O, class T, class = void, std::enable_if_t<std::is_same_v<jobject,O>, size_t> = 0>
+constexpr jobject qtjambi_cast(JNIEnv *env, QtJambiNativeID __owner_nativeId, const T& in){
     typedef typename std::remove_reference<const T>::type T_noref;
     typedef typename std::remove_cv<T_noref>::type T_noconst;
-    return QtJambiPrivate::qtjambi_sequential_iterator_caster<T_noconst>::cast(env, scope.relatedNativeID(), in);
+    if constexpr(QtJambiPrivate::supports_key<T>::value && QtJambiPrivate::supports_value<T>::value){
+        return QtJambiPrivate::qtjambi_associative_iterator_cast<T_noconst>::cast(env, __owner_nativeId, in);
+    }else{
+        return QtJambiPrivate::qtjambi_sequential_iterator_cast<T_noconst>::cast(env, __owner_nativeId, in);
+    }
 }
 
-template<class T>
-constexpr jobject qtjambi_cast_sequential_iterator(JNIEnv *env, QtJambiScope& scope, T& in){
+template<class O, class T, class = void, std::enable_if_t<std::is_same_v<jobject,O>, size_t> = 0>
+constexpr jobject qtjambi_cast(JNIEnv *env, QtJambiNativeID __owner_nativeId, T& in){
     typedef typename std::remove_reference<T>::type T_noref;
     typedef typename std::remove_cv<T_noref>::type T_noconst;
-    return QtJambiPrivate::qtjambi_sequential_iterator_caster<T_noconst>::cast(env, scope.relatedNativeID(), in);
+    if constexpr(QtJambiPrivate::supports_key<T>::value && QtJambiPrivate::supports_value<T>::value){
+        return QtJambiPrivate::qtjambi_associative_iterator_cast<T_noconst>::cast(env, __owner_nativeId, in);
+    }else{
+        return QtJambiPrivate::qtjambi_sequential_iterator_cast<T_noconst>::cast(env, __owner_nativeId, in);
+    }
 }
 
-template<class T>
-constexpr jobject qtjambi_cast_sequential_iterator(JNIEnv *env, QtJambiScope& scope, T* in){
+template<class O, class T, class = void, std::enable_if_t<std::is_same_v<jobject,O>, size_t> = 0>
+constexpr jobject qtjambi_cast(JNIEnv *env, QtJambiNativeID __owner_nativeId, T* in){
     typedef typename std::remove_reference<T*>::type T_noref;
     typedef typename std::remove_cv<T_noref>::type T_noconst;
-    return QtJambiPrivate::qtjambi_sequential_iterator_caster<T_noconst>::cast(env, scope.relatedNativeID(), in);
-}
-
-template<class T>
-constexpr jobject qtjambi_cast_associative_iterator(JNIEnv *env, QtJambiScope& scope, const T& in){
-    typedef typename std::remove_reference<const T>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-    return QtJambiPrivate::qtjambi_associative_iterator_caster<T_noconst>::cast(env, scope.relatedNativeID(), in);
-}
-
-template<class T>
-constexpr jobject qtjambi_cast_associative_iterator(JNIEnv *env, QtJambiScope& scope, T& in){
-    typedef typename std::remove_reference<T>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-    return QtJambiPrivate::qtjambi_associative_iterator_caster<T_noconst>::cast(env, scope.relatedNativeID(), in);
-}
-
-template<class T>
-constexpr jobject qtjambi_cast_associative_iterator(JNIEnv *env, QtJambiScope& scope, T* in){
-    typedef typename std::remove_reference<T*>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-    return QtJambiPrivate::qtjambi_associative_iterator_caster<T_noconst>::cast(env, scope.relatedNativeID(), in);
+    if constexpr(QtJambiPrivate::supports_key<T>::value && QtJambiPrivate::supports_value<T>::value){
+        return QtJambiPrivate::qtjambi_associative_iterator_cast<T_noconst>::cast(env, __owner_nativeId, in);
+    }else{
+        return QtJambiPrivate::qtjambi_sequential_iterator_cast<T_noconst>::cast(env, __owner_nativeId, in);
+    }
 }
 
 template<class O, class T, class = void, size_t = 0>
@@ -155,7 +146,7 @@ constexpr O qtjambi_cast(T&& in){
     }
 }
 
-template<class O, class T, std::enable_if_t<!std::is_assignable_v<QtJambiScope&,T> && !std::is_assignable_v<JNIEnv *&,T>, size_t> N>
+template<class O, class T, std::enable_if_t<!std::is_same_v<QtJambiNativeID,T> && !std::is_assignable_v<QtJambiScope&,T> && !std::is_assignable_v<JNIEnv *&,T>, size_t> N>
 constexpr O qtjambi_cast(T&& in, const char (&nativeTypeName)[N]){
     if constexpr(std::is_array_v<std::remove_reference_t<T>> && (QtJambiPrivate::jni_type<O>::isArray || std::is_same_v<O, jobject> || std::is_same_v<O, jcoreobject>)){
         return QtJambiPrivate::qtjambi_array_cast<O, std::decay_t<T>, size_t, true, const char(&)[N]>::cast(in, std::extent_v<std::remove_reference_t<T>>, nativeTypeName);
@@ -220,7 +211,7 @@ constexpr O qtjambi_cast(QtJambiScope& scope, T in, I&& size){
     return QtJambiPrivate::qtjambi_array_cast<O, T, I_noref, !(std::is_reference_v<I> || std::is_pointer_v<I>) || std::is_const_v<I>, QtJambiScope&>::cast(in, std::move(size), scope);
 }
 
-template<class O, class T, class I, std::enable_if_t<!std::is_assignable_v<QtJambiScope&,T> && !std::is_assignable_v<JNIEnv *&,T>, size_t> N>
+template<class O, class T, class I, std::enable_if_t<!std::is_same_v<QtJambiNativeID,T> && !std::is_assignable_v<QtJambiScope&,T> && !std::is_assignable_v<JNIEnv *&,T>, size_t> N>
 constexpr O qtjambi_cast(T in, I&& size, const char (&nativeTypeName)[N]){
     typedef typename std::remove_reference<I>::type I_noref;
     Q_STATIC_ASSERT_X(!std::is_pointer<I_noref>::value, "Integer type variable required as size.");
@@ -228,7 +219,7 @@ constexpr O qtjambi_cast(T in, I&& size, const char (&nativeTypeName)[N]){
     return QtJambiPrivate::qtjambi_array_cast<O, T, I_noref, !(std::is_reference_v<I> || std::is_pointer_v<I>) || std::is_const_v<I>, const char(&)[N]>::cast(in, std::move(size), nativeTypeName);
 }
 
-template<class O, class T, class I, std::enable_if_t<!std::is_assignable_v<QtJambiScope&,T> && !std::is_assignable_v<JNIEnv *&,T>, size_t> = 0>
+template<class O, class T, class I, std::enable_if_t<!std::is_same_v<QtJambiNativeID,T> && !std::is_assignable_v<QtJambiScope&,T> && !std::is_assignable_v<JNIEnv *&,T>, size_t> = 0>
 constexpr O qtjambi_cast(T in, I&& size){
     typedef typename std::remove_reference<I>::type I_noref;
     Q_STATIC_ASSERT_X(!std::is_pointer<I_noref>::value, "Integer type variable required as size.");

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,73 +34,13 @@
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/RegistryAPI>
 #include <QtJambi/qtjambi_cast.h>
+#include <QtGui/QPointingDevice>
 
 namespace QTest{
 void addColumn(const char* name, int id){
     QTest::addColumnInternal(id, name);
 }
 }
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-#include <QtGui/QTouchDevice>
-
-extern "C" JNIEXPORT jobject JNICALL Java_io_qt_test_QTest_touchEvent__Lio_qt_widgets_QWidget_2Lio_qt_gui_QTouchDevice_2Z
-(JNIEnv *env,
- jclass,
- jobject window0,
- jobject device1,
- jboolean autoCommit2,
- jboolean isWidget){
-    Q_UNUSED(isWidget)
-    struct QTouchEventSequence{
-        QTouchEventSequence(QWidget *widget, QTouchDevice *aDevice, bool autoCommit)
-            : sequence(QTest::touchEvent(widget, aDevice, autoCommit))
-        {
-        }
-        QTest::QTouchEventSequence sequence;
-    };
-
-    jobject _result{nullptr};
-    QTJAMBI_TRY{
-        QWidget *widget = QtJambiAPI::convertJavaObjectToQObject<QWidget>(env, window0);
-        QTouchDevice *device = QtJambiAPI::convertJavaInterfaceToNative<QTouchDevice>(env, device1);
-        QTest::QTouchEventSequence* sequence = &(new QTouchEventSequence(widget, device, autoCommit2))->sequence;
-        _result = qtjambi_cast<jobject>(env, sequence);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(env);
-    }QTJAMBI_TRY_END
-    return _result;
-}
-
-extern "C" JNIEXPORT jobject JNICALL Java_io_qt_test_QTest_touchEvent__Lio_qt_gui_QWindow_2Lio_qt_gui_QTouchDevice_2Z
-(JNIEnv *env,
- jclass,
- jobject window0,
- jobject device1,
- jboolean autoCommit2,
- jboolean isWidget){
-    Q_UNUSED(isWidget)
-    struct QTouchEventSequence{
-        QTouchEventSequence(QWindow *window, QTouchDevice *aDevice, bool autoCommit)
-            : sequence(QTest::touchEvent(window, aDevice, autoCommit))
-        {
-        }
-        QTest::QTouchEventSequence sequence;
-    };
-
-    jobject _result{nullptr};
-    QTJAMBI_TRY{
-        QWindow *widget = QtJambiAPI::convertJavaObjectToQObject<QWindow>(env, window0);
-        QTouchDevice *device = QtJambiAPI::convertJavaInterfaceToNative<QTouchDevice>(env, device1);
-        QTest::QTouchEventSequence* sequence = &(new QTouchEventSequence(widget, device, autoCommit2))->sequence;
-        _result = qtjambi_cast<jobject>(env, sequence);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(env);
-    }QTJAMBI_TRY_END
-    return _result;
-}
-#else
-#include <QtGui/QPointingDevice>
 
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_test_QTest_touchEvent
 (JNIEnv *env,
@@ -127,4 +67,3 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_test_QTest_touchEvent
     }QTJAMBI_TRY_END
     return _result;
 }
-#endif

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -53,6 +53,8 @@ const char* getInterface(const char*qt_name);
 const char * getQtName(const std::type_info& typeId);
 const char * getJavaName(const std::type_info& typeId);
 bool isFunctional(const std::type_info& typeId);
+bool isStdFunction(const std::type_info& typeId);
+bool isFunctionPointer(const std::type_info& typeId);
 bool isInterface(const std::type_info& typeId);
 const std::type_info* getInterfaceTypeForIID(const char*interface_iid);
 const std::type_info* getTypeByJavaName(const char * java_name);
@@ -65,20 +67,18 @@ const std::type_info* getTypeByQtName(const char * qt_name);
 const std::type_info* getTypeByQtName(const QString& qt_name);
 const std::type_info* getTypeByQtName(const QByteArray& qt_name);
 const std::type_info* getTypeByMetaObject(const QMetaObject* metaObject);
-int registeredMetaTypeID(const std::type_info& typeId);
+QMetaType registeredMetaType(const std::type_info& typeId);
 int registeredInterfaceOffset(const std::type_info& qt_base, const std::type_info& qt_interface);
 const QVector<const RegistryAPI::SignalMetaInfo>* signalMetaInfos(const QMetaObject* metaObject);
 QList<QMetaMethod> getExtraSignalsOfMetaObject(const QMetaObject* metaObject);
 RegistryAPI::ParameterInfoProviderFn registeredParameterInfoProviderFn(const QMetaObject* metaObject);
 bool isValueOwner(const QMetaObject* metaObject);
-const std::type_info* getTypeByMetaType(int metaType);
 const std::type_info* getTypeByMetaType(const QMetaType& metaType);
 PtrOwnerFunction registeredOwnerFunction(const std::type_info& typeId);
-NewContainerAccessFunction getSequentialContainerAccessFactory(const std::type_info& typeId);
+NewContainerAccessFunction getContainerAccessFactory(const std::type_info& typeId);
 bool isPolymorphicBase(const std::type_info& typeId);
-size_t getValueSize(const std::type_info& typeId);
-size_t getValueAlignment(const std::type_info& typeId);
-size_t getShellSize(const std::type_info& typeId);
+QPair<size_t,size_t> getValueSizeAndAlignment(const std::type_info& typeId);
+QPair<size_t,size_t> getShellSizeAndAlignment(const std::type_info& typeId);
 
 enum class EntryTypes
 {
@@ -86,7 +86,8 @@ enum class EntryTypes
     ObjectTypeInfo,
     EnumTypeInfo,
     FlagsTypeInfo,
-    FunctionalTypeInfo,
+    StdFunctionTypeInfo,
+    FunctionPointerTypeInfo,
     InterfaceValueTypeInfo,
     InterfaceTypeInfo,
     QObjectTypeInfo,
@@ -97,116 +98,87 @@ enum class EntryTypes
 };
 EntryTypes getEntryType(const std::type_info& typeId);
 
-const std::type_info* getEnumForFlag(const std::type_info& flag);
-const std::type_info* getFlagForEnum(const std::type_info& enumerator);
-QVector<RegistryAPI::FunctionInfo> virtualFunctions(const std::type_info& typeId);
 bool isInterface(const char*qt_interface);
 bool hasCustomMetaObject(const std::type_info& typeId, const QMetaObject** superTypeMetaObject = nullptr);
-const QMetaObject* superTypeForCustomMetaObject(const std::type_info& typeId);
+const QMetaObject* customMetaObject(const std::type_info& typeId);
 RegistryAPI::DestructorFn registeredDestructor(const std::type_info& typeId);
-TypeInfoSupplier registeredTypeInfoSupplier(const std::type_info& typeId);
 FunctionalResolver registeredFunctionalResolver(const std::type_info& typeId);
 jmethodID findInternalPrivateConstructor(JNIEnv *env, jclass clazz);
 QList<const std::type_info*> getPolymorphicBases(const std::type_info& typeId);
 
-struct InterfaceOffsetInfo{
-    QMap<size_t,uint> offsets;
-    QSet<size_t> interfaces;
-    QMap<size_t, QSet<const std::type_info*>> inheritedInterfaces;
-};
 void registeredInterfaceOffsets(const std::type_info& qt_type, InterfaceOffsetInfo* info);
 const InterfaceOffsetInfo* getInterfaceOffsets(JNIEnv *env, jclass clazz, const std::type_info& typeId, const SuperTypeInfos* superTypeInfos);
 const InterfaceOffsetInfo* getInterfaceOffsets(JNIEnv *env, jclass clazz);
 
 RegistryAPI::qHashFn registeredHashFunction(const std::type_info& typeId);
-OptionalBool isRegisteredAsPointerType(const std::type_info& typeId);
 jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature, jclass clazz, bool isStatic = false, jthrowable* exceptionOccurred = nullptr);
 //jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature, const char *className, bool isStatic = false, jthrowable* exceptionOccurred = nullptr);
-void registerJavaClassForCustomMetaType(JNIEnv *env, QMetaType metaType, jclass javaClass, bool isJObjectWrapped = false);
-bool isJObjectWrappedMetaType(QMetaType metaType);
+void registerJavaClassForCustomMetaType(JNIEnv *env, const QMetaType& metaType, jclass javaClass, bool isJObjectWrapped = false);
+bool isJObjectWrappedMetaType(const QMetaType& metaType);
 QMetaType getNativeWrapperType(const QMetaType& metaType);
-bool isNativeWrapperMetaType(QMetaType metaType);
+bool isNativeWrapperMetaType(const QMetaType& metaType);
 
-int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference, int superId = QMetaType::UnknownType);
+QMetaType registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference, const QMetaType& superMetaType = {});
 const QVector<const RegistryAPI::ConstructorInfo>* registeredConstructorInfos(const std::type_info& typeId);
 uint returnScopes(const std::type_info& typeId);
 jclass getArrayClass(JNIEnv *env, jclass cls, int arrayDepth);
 
-void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, const QString& fullJavaName, jclass clazz, QMetaType nativeWrapperType = {});
+void registerConverterVariant(JNIEnv *env, const QMetaType& metaType, QString qtName, const QString& fullJavaName, jclass clazz, const QMetaType& nativeWrapperType = {});
 
 void registerLambdaClass(JNIEnv *env, jclass lambdaClass, const char *className);
 
 const char * getJavaInterfaceName(const std::type_info& typeId);
 const std::type_info* getTypeByJavaName(QByteArray javaName);
 QMap<QString,QPair<size_t,size_t>> getRegisteredTypeSizesAndAlignments();
-void registerTypeInfo(const std::type_info& typeId, RegistryAPI::QtJambiTypeInfo info, const char *qt_name, const char *java_name, EntryTypes entryTypes);
+void registerTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, EntryTypes entryTypes);
 void registerTypeAlias(const std::type_info& typeId, const char *qt_name, const char *java_name);
-void registerContainerTypeInfo(const std::type_info& typeId, RegistryAPI::QtJambiTypeInfo info, const char *qt_name, const char *java_name, const char *java_interface);
-void registerMetaTypeID(const std::type_info& typeId,
+void registerContainerTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, const char *java_interface);
+void registerMetaType(const std::type_info& typeId,
                         const std::type_info& nonPointerTypeId,
-                        int qtMetaType,
+                        const QMetaType& metaType,
                         AbstractContainerAccess* access = nullptr,
                         const QSharedPointer<AbstractContainerAccess>& sharedAccess = {});
 
-struct PolymorphicIdHandler{
+struct PolymorphicIdHandler : QSharedData{
     PolymorphicIdHandler(const std::type_info& targetTypeId, PolymorphyHandler polymorphyHandler)
-        : m_targetTypeId(targetTypeId),
+        : QSharedData(),
+          m_targetTypeId(targetTypeId),
           m_polymorphyHandler(polymorphyHandler)
     {
     }
     const std::type_info& m_targetTypeId;
     PolymorphyHandler m_polymorphyHandler;
 };
-QList<const PolymorphicIdHandler*> getPolymorphicIdHandlers(const std::type_info& polymorphicBaseTypeId);
+QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>> getPolymorphicIdHandlers(const std::type_info& polymorphicBaseTypeId);
 const char * registeredInterfaceID(const std::type_info& typeId);
 const char * registeredInterfaceIDForClassName(const QString& className);
 bool isQObject(const std::type_info& typeId);
 QList<jclass> getFlatClassHirarchy(JNIEnv *env, jclass clazz);
 
-struct JObjectValueWrapperPrivate;
-
-class JObjectValueWrapper : public JObjectWrapper{
-public:
-    JObjectValueWrapper();
-    JObjectValueWrapper(const JObjectValueWrapper& other);
-    JObjectValueWrapper(JObjectValueWrapper&& other);
-    ~JObjectValueWrapper() override;
-    void assign(const JObjectWrapper &wrapper)override;
-    void assign(JNIEnv* env, JObjectWrapper &&wrapper)override;
-    JObjectValueWrapper& operator=(const JObjectValueWrapper &wrapper);
-    JObjectValueWrapper& operator=(JObjectValueWrapper &&wrapper);
-    void assign(JNIEnv* env, JObjectValueWrapper &&wrapper);
-    void assign(JNIEnv* env, jobject obj)override;
-    bool operator==(const JObjectValueWrapper &other) const;
-    bool operator<(const JObjectValueWrapper &other) const;
-    void writeTo(QDataStream &d)const;
-    void readFrom(QDataStream &d);
-    void serializeTo(QDataStream &d)const;
-    void serializeFrom(QDataStream &d);
-    bool isNull() const;
-    jobject value(JNIEnv* env) const;
-    static bool isValueType(QMetaType metaType);
-    static bool hasCustomDebugStreamOperator(QMetaType metaType);
-    static JObjectValueWrapper create(JNIEnv* env, jobject object, QMetaType metaType);
-private:
-    friend JObjectValueWrapperPrivate;
-    JObjectValueWrapper(const JObjectValueWrapperPrivate* methods);
-    JObjectValueWrapper(JNIEnv* env, jobject object, const JObjectValueWrapperPrivate* methods);
-    JObjectValueWrapper(JObjectWrapper&& object, const JObjectValueWrapperPrivate* methods);
-    static const QMetaObject *metaObject(const QtPrivate::QMetaTypeInterface *iface);
-    static void defaultCtr(const QtPrivate::QMetaTypeInterface *iface, void *target);
-    static void copyCtr(const QtPrivate::QMetaTypeInterface *, void *target, const void *other);
-    static void moveCtr(const QtPrivate::QMetaTypeInterface *, void *target, void *other);
-    static void dtor(const QtPrivate::QMetaTypeInterface *, void *target);
-    static bool equals(const QtPrivate::QMetaTypeInterface *iface, const void *value1, const void *value2);
-    static bool lessThan(const QtPrivate::QMetaTypeInterface *iface, const void *value1, const void *value2);
-    static void debugStream(const QtPrivate::QMetaTypeInterface *iface, QDebug &d, const void *value);
-    static void dataStreamOut(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, const void *value);
-    static void dataStreamIn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, void *value);
-    static void serializableDataStreamOut(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, const void *value);
-    static void serializableDataStreamIn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, void *value);
-    const JObjectValueWrapperPrivate* p;
+struct RegisteredTypeInfo{
+    EntryTypes entryType = EntryTypes::Unspecific;
+    QMetaType metaType;
+    const char * qtName = nullptr;
+    const char * javaName = nullptr;
+    const char * javaInterfaceName = nullptr;
+    const std::type_info* flagForEnum = nullptr;
+    QPair<size_t,size_t> valueSizeAndAlignment;
+    QPair<size_t,size_t> shellSizeAndAlignment;
+    const std::type_info* enumForFlag = nullptr;
+    QVector<RegistryAPI::FunctionInfo> virtualFunctions;
+    RegistryAPI::DestructorFn destructor = nullptr;
+    FunctionalResolver functionalResolver = nullptr;
+    PtrDeleterFunction deleter = nullptr;
+    PtrOwnerFunction ownerFunction = nullptr;
+    TypeInfoSupplier typeInfoSupplier = nullptr;
+    QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>> polymorphicIdHandlers;
+    NewContainerAccessFunction containerAccessFactory = nullptr;
+    const QMetaObject*  customMetaObject = nullptr;
+    const QMetaObject*  originalMetaObject = nullptr;
+    InterfaceOffsetInfo interfaceOffsetInfo;
 };
+
+RegisteredTypeInfo registeredTypeInfo(const std::type_info& typeId, const char* qtName);
 
 QMetaType createMetaType(QByteArrayView typeName,
                                         bool copyName,
@@ -228,6 +200,10 @@ QMetaType createMetaType(QByteArrayView typeName,
                                         QtPrivate::QMetaTypeInterface::MetaObjectFn metaObjectFn);
 
 QSharedPointer<AbstractContainerAccess> findContainerAccess(const QMetaType& metaType);
+
+const char* registerMetaTypeName(const QByteArray& typeName);
+const QMetaObject* metaobjectByMetaTypeInterface(const QtPrivate::QMetaTypeInterface* iface);
+bool isQmlJavaScriptOwnership(QObject * obj);
 
 struct JQObjectWrapperPrivate;
 

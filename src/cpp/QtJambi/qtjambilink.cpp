@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,7 +35,6 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "pch_p.h"
 
 #include <algorithm>
-#include <list>
 #include <cstring>
 
 #include <QtCore/private/qobject_p.h>
@@ -43,16 +42,9 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/private/qobject_p.h>
 
 #if defined(QTJAMBI_DEBUG_TOOLS)
-// Allow useful truncation on 32bit
-#define QTJAMBI_LINK_MAGIC (long(0xf6f700fff5f42f04ll))
-
-#define QTJAMBI_REGISTER_LINK registerLink(this);
-#define QTJAMBI_UNREGISTER_LINK unregisterLink(this);
-#define QTJAMBI_UNREGISTER_LINK_FINALLY if(this->m_flags.testFlag(QtJambiLink::Flag::IsListed)) unregisterLink(this);
+#define ON_DEBUG_TOOLS_ENABLED(expression)expression;
 #else
-#define QTJAMBI_REGISTER_LINK
-#define QTJAMBI_UNREGISTER_LINK
-#define QTJAMBI_UNREGISTER_LINK_FINALLY
+#define ON_DEBUG_TOOLS_ENABLED(expression)
 #endif
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
@@ -61,31 +53,934 @@ QT_WARNING_DISABLE_DEPRECATED
 
 #define AVAILABLE_IN_DELETION
 
-struct QObjectInDeletion{
-    QObjectInDeletion(JNIEnv* env, QtJambiLink* link);
-    ~QObjectInDeletion();
-    static void disposeQObject(QObject* pointer);
-private:
-#ifdef AVAILABLE_IN_DELETION
+#ifdef QTJAMBI_NO_METHOD_TRACE
+#define QTJAMBI_DEBUG_PRINT_WITH_ARGS(...)
+#define QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(...)
+#else
+#define QTJAMBI_DEBUG_PRINT_WITH_ARGS(...)\
+if(!QtJambiLink::isDebugMessagingDisabled())\
+    DebugAPI::printCleanupArgs(__FILE__, __LINE__, __FUNCTION__, __VA_ARGS__);
+#define QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(link, methodname)\
+    DebugAPI::MethodPrintFromLink __debug_method_print(link, methodname, __FILE__, __LINE__, __FUNCTION__);
 #endif
-};
-
-QObjectInDeletion::QObjectInDeletion(JNIEnv* env, QtJambiLink* link)
-{
-    Q_UNUSED(env)
-    Q_UNUSED(link)
-}
-
-QObjectInDeletion::~QObjectInDeletion(){
-}
-
-void QObjectInDeletion::disposeQObject(QObject* pointer){
-    Q_UNUSED(pointer)
-}
 
 namespace DebugAPI{
 void printCleanupArgs(const char *file, int line, const char *function, const char *format,...);
 }
+
+class SelfDeletingThread : public QThread
+{
+    Q_DECLARE_PRIVATE(QThread)
+public:
+    inline bool deleteLaterIfIsInFinish(){
+        QMutexLocker<QMutex> locker(&d_func()->mutex);
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
+        if(d_func()->isInFinish){
+#else
+        if(d_func()->threadState==QThreadPrivate::Finishing
+                || d_func()->threadState==QThreadPrivate::Finished){
+#endif
+            this->deleteLater();
+            return true;
+        }else{
+            return false;
+        }
+    }
+};
+
+struct QtJambiLinkWriteLock{
+    QtJambiLinkWriteLock() : storage(), locker(storage ? storage->linkLock() : nullptr) {
+    }
+    void unlock(){
+        locker.unlock();
+    }
+    void relock(){
+        locker.relock();
+    }
+private:
+    QtJambiStorageOptional storage;
+    QWriteLocker locker;
+};
+
+struct QtJambiLinkReadLock{
+    QtJambiLinkReadLock() : storage(), locker(storage ? storage->linkLock() : nullptr) {
+    }
+    void unlock(){
+        locker.unlock();
+    }
+    void relock(){
+        locker.relock();
+    }
+private:
+    QtJambiStorageOptional storage;
+    QReadLocker locker;
+};
+
+template<bool is_qobject = true, bool is_smart_pointer = false>
+class QtJambiLinkImpl : public QtJambiLink{
+protected:
+    typedef std::conditional_t<is_qobject,QObject,void> T;
+    QtJambiLinkImpl(JNIEnv *env, jobject nativeLink,
+                LINK_NAME_ARG(const char* qt_name)
+                T* pointer,
+                SafeBool created_by_java,
+                SafeBool is_shell,
+                JavaException& ocurredException)
+        : QtJambiLink(env, nativeLink,
+                      LINK_NAME_ARG(qt_name)
+                      created_by_java, is_shell, ocurredException),
+          m_pointer(pointer)
+    {
+        if(ocurredException){
+            m_pointer = nullptr;
+            QtJambiLink::m_flags.setFlag(QtJambiLink::Flag::IsJavaLinkDetached);
+        }else if constexpr(!is_qobject){
+            if(created_by_java){
+                registerPointer(m_pointer);
+            }
+        }
+    }
+public:
+    static constexpr bool IS_QOBJECT = is_qobject;
+    static constexpr bool IS_SMART_POINTER = is_smart_pointer;
+    bool isSmartPointer() const override final{
+        if constexpr(is_smart_pointer){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    void *pointer() const override{
+        if constexpr(is_qobject){
+            return
+#ifndef AVAILABLE_IN_DELETION
+                isInDestructor() ||
+#endif
+                !isInitialized() ? nullptr : m_pointer;
+        }else{
+            return m_pointer;
+        }
+    }
+    void *plainPointer() const override final{
+        return m_pointer;
+    }
+    QObject *qobject() const override{
+        if constexpr(is_qobject){
+            return m_pointer;
+        }else{
+            Q_ASSERT_X(false, "QtJambiLink", "Pointer is not QObject");
+            return nullptr;
+        }
+    }
+    bool isQObject() const override final{
+        if constexpr(is_qobject){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    bool qobjectDeleted() const override final {
+        if constexpr(is_qobject){
+            return !m_pointer;
+        }else{
+            return false;
+        }
+    }
+    void removeInterface(const std::type_info&) override{
+        clearAllDependencies();
+        setInDestructor();
+    }
+    void invalidate(JNIEnv *env) override {
+        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QtJambiLink::invalidate(JNIEnv *)")
+        invalidateDependentObjects(env);
+        releaseJavaObject(env);
+        void* pointer;
+        {
+            QtJambiLinkWriteLock locker;
+            pointer = m_pointer;
+            if constexpr(!is_qobject){
+                m_flags.setFlag(QtJambiLink::Flag::IsPointerRegistered, false);
+            }
+            m_pointer = nullptr;
+        }
+        if(pointer){
+            QTJAMBI_DEBUG_PRINT_WITH_ARGS("invalidate object %p of link %p", pointer, this)
+            if constexpr(!is_qobject){
+                unregisterPointer(pointer);
+            }
+            unregisterOffsets(pointer);
+        }
+        dispose();
+    }
+    template<bool enabled = is_qobject>
+    std::enable_if_t<enabled,void> setAsQObjectDeleted() {
+        if constexpr(is_qobject){
+            QTJAMBI_DEBUG_PRINT_WITH_ARGS("QtJambiLink::setAsQObjectDeleted() object %p of link %p", m_pointer, this)
+            {
+                QtJambiLinkWriteLock locker;
+                m_pointer = nullptr;
+            }
+        }
+    }
+    void setDefaultOwnership(JNIEnv *env) override
+    {
+        if (createdByJava()){
+            setJavaOwnership(env);
+        }else {
+            if constexpr(is_qobject){
+                if(m_pointer && m_pointer->parent())
+                    setCppOwnership(env);
+                else
+                    setSplitOwnership(env);
+            }else
+                setSplitOwnership(env);
+        }
+    }
+
+    void setJavaOwnership(JNIEnv *env) override
+    {
+        if(!m_flags.testFlag(Flag::JavaOwnership) && env){
+            if(m_flags.testFlag(Flag::NoGlobalRef)){
+                if(!Java::QtJambi::NativeUtility$NativeLink::releaseOwnershipForID(env, jlong(reinterpret_cast<void*>(this))))
+                    return;
+            }else{
+                Java::QtJambi::NativeUtility$NativeLink::releaseOwnership(env, m_nativeLink);
+            }
+            m_flags.setFlag(Flag::OwnershipMask, false);
+            m_flags.setFlag(Flag::JavaOwnership);
+            if constexpr(!is_qobject)
+                registerPointer(m_pointer);
+        }
+    }
+protected:
+    using QtJambiLink::m_flags;
+    using QtJambiLink::setJavaOwnership;
+    using QtJambiLink::detachJavaLink;
+    using QtJambiLink::releaseJavaObject;
+    using QtJambiLink::clearAllDependencies;
+    using QtJambiLink::setInDestructor;
+    using QtJambiLink::isInDestructor;
+    using QtJambiLink::isInitialized;
+    using QtJambiLink::invalidateDependentObjects;
+    using QtJambiLink::unregisterOffsets;
+    using QtJambiLink::dispose;
+    using QtJambiLink::unregisterPointer;
+    using QtJambiLink::createdByJava;
+    using QtJambiLink::metaType;
+    T *m_pointer;
+};
+
+template<bool is_qobject = false>
+class ObjectLink : public QtJambiLinkImpl<is_qobject>{
+    using Super = QtJambiLinkImpl<is_qobject>;
+protected:
+    virtual void deleteNow(JNIEnv *env, void*){
+        env->Throw(Java::Runtime::RuntimeException::newInstanceWithMessage(env, "Unable to delete object due to missing deleter or meta type information."));
+    }
+    virtual void addDeleter(const QExplicitlySharedDataPointer<ValueOwnerObjectDataPrivate>&, void*){}
+    virtual void postDeletion(const QPointer<const QObject>&, QThread*, QThreadObjectData*, void*){}
+    using Super::Super;
+    using Super::m_pointer;
+    using QtJambiLink::m_flags;
+    using QtJambiLink::isQThread;
+    using QtJambiLink::releaseJavaObject;
+    using QtJambiLink::detachJavaLink;
+    ~ObjectLink() override{
+        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "ObjectLink::~ObjectLink()")
+        if (!m_flags.testFlag(QtJambiLink::Flag::IsJavaLinkDetached) || !m_flags.testFlag(QtJambiLink::Flag::JavaObjectIsReleased) || m_pointer) {
+            try{
+                if(JniEnvironment env = isQThread() ? JniEnvironment{300} : DefaultJniEnvironment{300}){
+                    releaseJavaObject(env);
+                    detachJavaLink(env);
+                }
+            } catch (const std::exception& e) {
+                qCWarning(DebugAPI::internalCategory, "%s", e.what());
+            } catch (...) {
+            }
+        }
+    }
+    friend QtJambiLink;
+};
+
+template<>
+class ObjectLink<true> : public QtJambiLinkImpl<true>{
+    using Super = QtJambiLinkImpl<true>;
+public:
+    void init(JNIEnv* env) final override{
+        init(env, nullptr);
+    }
+protected:
+    ~ObjectLink() override{
+        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QObjectLink::~QObjectLink()")
+        if (!m_flags.testFlag(Flag::IsJavaLinkDetached) || !m_flags.testFlag(Flag::JavaObjectIsReleased) || m_pointer) {
+            try{
+                if(JniEnvironment env = isQThread() ? JniEnvironment{300} : DefaultJniEnvironment{300}){
+                    releaseJavaObject(env);
+                    if(isInitialized())
+                        deleteNativeObject(env);
+                    detachJavaLink(env);
+                }else if(isInitialized()){
+                    deleteNativeObject();
+                }
+            } catch (const std::exception& e) {
+                qCWarning(DebugAPI::internalCategory, "%s", e.what());
+            } catch (...) {
+            }
+        }
+    }
+    void deleteNativeObject(JNIEnv *env = nullptr, bool forced = false) final override{
+        if(m_pointer && !isDeleteLater()){
+            QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QtJambiLink::deleteNativeObject(JNIEnv *, bool)")
+            unregisterOffsets(m_pointer);
+            if(!isShell())
+                clearAllDependencies(env);
+
+            if (!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)) {
+                bool isCurrentThread = false;
+                QThread *objectThread = m_pointer->thread();
+                // Explicit dispose from current thread, delete object
+                if(!objectThread){
+                    if(m_pointer->parent()){
+                        qCWarning(DebugAPI::internalCategory, "Skip deletion of QObject '%s' [%s] (thread=none, parent='%s' [%s])",
+                                qPrintable(m_pointer->objectName()),
+                                m_pointer->metaObject()->className(),
+                                qPrintable(m_pointer->parent()->objectName()),
+                                m_pointer->parent()->metaObject()->className());
+                    }else{
+                        QtJambiExceptionBlocker __qt_exceptionBlocker;
+                        delete m_pointer;
+                        m_pointer = nullptr;
+                        __qt_exceptionBlocker.release(env);
+                    }
+                }else if ((isCurrentThread =
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+                                objectThread->isCurrentThread()
+#else
+                                objectThread == QThread::currentThread()
+#endif
+                            ) || !objectThread->isRunning() || objectThread==m_pointer) {
+                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call delete on object %p of type %s", m_pointer, QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QObject>::trySupplyType(m_pointer)).constData())
+                    if(m_pointer==objectThread || qobject_cast<QThread*>(m_pointer)){
+                        QThread* myThread;
+                        if(m_pointer==objectThread){
+                            myThread = objectThread;
+                        }else{
+                            myThread = qobject_cast<QThread*>(m_pointer);
+                        }
+                        QThreadData * threadData = QThreadData::get2(myThread);
+                        if(threadData->isAdopted){
+                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("Adopted thread expected to be automatically deleted")
+                            return;
+                        }
+                        if(static_cast<SelfDeletingThread*>(myThread)->deleteLaterIfIsInFinish()){
+                            setDeleteLater();
+                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("call deleteLater() on object %p of type %s", m_pointer, QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QObject>::trySupplyType(m_pointer)).constData())
+                            return;
+                        }
+                    }
+                    if(isCurrentThread){
+                        QtJambiExceptionBlocker __qt_exceptionBlocker;
+                        delete m_pointer;
+                        m_pointer = nullptr;
+                        __qt_exceptionBlocker.release(env);
+                    }else if(!objectThread->isRunning() && !m_pointer->parent() && !m_pointer->isWidgetType()){
+                        QtJambiExceptionBlocker __qt_exceptionBlocker;
+                        delete m_pointer;
+                        m_pointer = nullptr;
+                        __qt_exceptionBlocker.release(env);
+                    }else if(objectThread==m_pointer){
+                        if(objectThread->isRunning()){
+                            qCWarning(DebugAPI::internalCategory, "Trying to delete a running QThread '%s'",
+                                    qPrintable(m_pointer->objectName()));
+                        }
+                        QtJambiExceptionBlocker __qt_exceptionBlocker;
+                        delete m_pointer;
+                        m_pointer = nullptr;
+                        __qt_exceptionBlocker.release(env);
+                    }else if(m_pointer->parent()){
+                        qCWarning(DebugAPI::internalCategory, "Skip deletion of QObject '%s' [%s] (thread='%s', parent='%s' [%s])",
+                                qPrintable(objectThread->objectName()),
+                                qPrintable(m_pointer->objectName()),
+                                m_pointer->metaObject()->className(),
+                                qPrintable(m_pointer->parent()->objectName()),
+                                m_pointer->parent()->metaObject()->className());
+                    }else{
+                        qCWarning(DebugAPI::internalCategory, "Skip deletion of QObject '%s' [%s] (thread='%s', no parent)",
+                                qPrintable(objectThread->objectName()),
+                                qPrintable(m_pointer->objectName()),
+                                m_pointer->metaObject()->className());
+                    }
+
+                // We're in the main thread and we'll have an event loop
+                // running, so its safe to call delete later.
+                } else if (QAbstractEventDispatcher::instance(objectThread)) {
+                    setDeleteLater();
+                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call deleteLater() on object %p of type %s", m_pointer, QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QObject>::trySupplyType(m_pointer)).constData())
+                    m_pointer->deleteLater();
+
+                // If the QObject is in a non-main thread, check if that
+                // thread is a QThread, in which case it will run an eventloop
+                // and thus, do cleanup, hence deleteLater() is safe;
+                // Otherwise issue a warning.
+                }else{
+                    // currentThread is not objectThread
+                    // && objectThread not finished
+                    // && objectThread not pointer
+                    // && no QAbstractEventDispatcher
+                    QThreadObjectData* qthreadData = QThreadObjectData::ensureThreadUserData(objectThread);
+                    setDeleteLater();
+                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("attach QObject to thread shutdown procedure.")
+                    qthreadData->deleteAtThreadEnd(m_pointer);
+                }
+            }else{
+                // trust me it is possible that pointer is null
+                m_pointer = nullptr;
+                dispose();
+            }
+        }
+    }
+private:
+    virtual void init(JNIEnv* env, QSharedPointer<QtJambiLink>* replacement) = 0;
+    friend class QtJambiLink;
+    template<bool>
+    friend class QObjectPlainPointerLink;
+    friend LinkObjectData;
+    friend ThreadLinkObjectData;
+    using Super::Super;
+protected:
+    using Super::m_pointer;
+    using QtJambiLink::m_flags;
+    using QtJambiLink::releaseJavaObject;
+    using QtJambiLink::detachJavaLink;
+};
+
+template<typename Super>
+class InterfaceLink : public Super{
+protected:
+    ~InterfaceLink() override{
+        InterfaceLink::unregisterOffsets(plainPointer());
+    }
+public:
+    void unregisterOffsets(void *pointer) override{
+        if(pointer && !this->m_flags.testFlag(QtJambiLink::Flag::IsOffsetsUnregistered)){
+            QVector<void*> pointers;
+            for(auto i = m_interfaceOffsetInfo.offsets.keyValueBegin(); i!=m_interfaceOffsetInfo.offsets.keyValueEnd(); ++i){
+                pointers << reinterpret_cast<void*>( quintptr(pointer) + i.base().value() );
+            }
+            m_flags.setFlag(QtJambiLink::Flag::IsOffsetsUnregistered);
+            unregisterPointers(pointers);
+        }
+    }
+    void addInterface(const std::type_info& qtInterfaceType) override{
+        m_availableInterfaces << unique_id(qtInterfaceType);
+        size_t offset = m_interfaceOffsetInfo.offsets.value(unique_id(qtInterfaceType));
+        void* pointer = plainPointer();
+        if(offset>0){
+            registerPointer(reinterpret_cast<void*>( quintptr(pointer) + offset ));
+        }else{
+            const QSet<const std::type_info*> inheritedInterfaces = m_interfaceOffsetInfo.inheritedInterfaces[unique_id(qtInterfaceType)];
+            for(const std::type_info* ifaces : inheritedInterfaces){
+                Q_ASSERT(ifaces);
+                addInterface(*ifaces);
+            }
+        }
+    }
+    void removeInterface(const std::type_info& qtInterfaceType) override{
+        if(m_availableInterfaces.contains(unique_id(qtInterfaceType))){
+            m_availableInterfaces.remove(unique_id(qtInterfaceType));
+            void* pointer = plainPointer();
+            if(m_availableInterfaces.isEmpty())
+                clearAllDependencies();
+            if(m_interfaceOffsetInfo.offsets.contains(unique_id(qtInterfaceType))){
+                size_t offset = m_interfaceOffsetInfo.offsets.value(unique_id(qtInterfaceType));
+                if(offset>0)
+                    unregisterPointer(reinterpret_cast<void*>( quintptr(pointer) + offset ));
+                else
+                    setInDestructor();
+            }else{
+                const QSet<const std::type_info*> inheritedInterfaces = m_interfaceOffsetInfo.inheritedInterfaces[unique_id(qtInterfaceType)];
+                for(const std::type_info* ifaces : inheritedInterfaces){
+                    Q_ASSERT(ifaces);
+                    removeInterface(*ifaces);
+                }
+                setInDestructor();
+            }
+        }
+    }
+    bool isInterfaceAvailable(const std::type_info& qtInterfaceType) const override{
+        return m_availableInterfaces.contains(unique_id(qtInterfaceType));
+    }
+    void* typedPointer(const std::type_info& qtInterfaceType) const override{
+        void* ptr = pointer();
+        if(m_interfaceOffsetInfo.offsets.contains(unique_id(qtInterfaceType))){
+            if(!m_availableInterfaces.contains(unique_id(qtInterfaceType)))
+                return nullptr;
+            size_t offset = m_interfaceOffsetInfo.offsets.value(unique_id(qtInterfaceType));
+            if(offset>0)
+                return reinterpret_cast<void*>( quintptr(ptr) + offset );
+        }
+        return ptr;
+    }
+    bool isMultiInheritanceType() const override{
+        return true;
+    }
+    const InterfaceOffsetInfo* interfaceOffsetInfo() const override{
+        return &m_interfaceOffsetInfo;
+    }
+protected:
+    void setInterfaceOffsetInfo(const InterfaceOffsetInfo& interfaceOffsetInfo){
+        if(m_interfaceOffsetInfo.inheritedInterfaces.isEmpty()){
+            m_interfaceOffsetInfo = interfaceOffsetInfo;
+            m_availableInterfaces = interfaceOffsetInfo.interfaces;
+            quintptr pointer = quintptr(plainPointer());
+            for(auto i = m_interfaceOffsetInfo.offsets.keyValueBegin(); i!=m_interfaceOffsetInfo.offsets.keyValueEnd(); ++i){
+                QtJambiLink::registerPointer(reinterpret_cast<void*>( pointer + i.base().value() ));
+            }
+        }
+    }
+    using Super::plainPointer;
+    using Super::registerPointer;
+    using Super::unregisterPointer;
+    using Super::setInDestructor;
+    using Super::pointer;
+    using Super::clearAllDependencies;
+    using Super::unregisterPointers;
+    using QtJambiLink::m_flags;
+private:
+    InterfaceOffsetInfo m_interfaceOffsetInfo;
+    QSet<size_t> m_availableInterfaces;
+    using Super::Super;
+    friend QtJambiLink;
+};
+
+class DependentLinkInterface{
+protected:
+    DependentLinkInterface() = default;
+    virtual ~DependentLinkInterface();
+    virtual void setDependencyManager(DependencyManagerObjectData*) = 0;
+    friend QtJambiLink;
+    friend DependencyManagerObjectData;
+};
+
+DependentLinkInterface::~DependentLinkInterface(){}
+
+template<typename Super>
+class DependentLink : public Super, public DependentLinkInterface{
+protected:
+    void setDependencyManager(DependencyManagerObjectData* dependencyManager) override{
+        m_dependencyManager = dependencyManager;
+    }
+    void deleteNativeObject(JNIEnv *env, bool forced) override{
+        if(m_dependencyManager)
+            m_dependencyManager->removeDependentObject(*this);
+        Super::deleteNativeObject(env, forced);
+    }
+    void invalidate(JNIEnv *env) override{
+        if(m_dependencyManager)
+            m_dependencyManager->removeDependentObject(*this);
+        Super::invalidate(env);
+    }
+private:
+    using Super::Super;
+    DependencyManagerObjectData* m_dependencyManager;
+    friend QtJambiLink;
+};
+
+ExtendedLinkInterface::~ExtendedLinkInterface(){}
+
+template<typename Super>
+class ExtendedLink : public Super, public ExtendedLinkInterface{
+protected:
+public:
+    inline bool hasExtension()const override{return !m_extension.isNull(); }
+private:
+    using Super::Super;
+    QPointer<const QObject> m_extension;
+    friend QtJambiLink;
+};
+
+template<typename T, class = decltype(std::declval<T>().getOwner(std::declval<void*>()) )>
+std::true_type  hasGetOwner_test(const T&);
+std::false_type hasGetOwner_test(...);
+template<typename T> struct hasGetOwner : decltype(hasGetOwner_test(std::declval<T>())){};
+
+template<typename Super>
+class ContainerLink : public Super{
+protected:
+    ~ContainerLink() override {
+        if(m_containerAccess)
+            m_containerAccess->dispose();
+    }
+public:
+    inline AbstractContainerAccess* containerAccess() const override { return m_containerAccess; }
+protected:
+    const QObject* getOwner(void* pointer) {
+        Q_ASSERT(m_containerAccess);
+        const QObject* result = m_containerAccess->getOwner(pointer);
+        if constexpr(hasGetOwner<Super>::value){
+            if(!result)
+                result = Super::getOwner(pointer);
+        }
+        return result;
+    }
+    void deleteNow(JNIEnv *, void* pointer) override;
+    void addDeleter(const QExplicitlySharedDataPointer<ValueOwnerObjectDataPrivate>& vud, void* pointer) override;
+    void postDeletion(const QPointer<const QObject>& parent, QThread* ownerThread, QThreadObjectData* threadUserData, void* pointer) override;
+    void init(JNIEnv* env) override {
+        if(!Super::isInitialized()){
+            Super::init(env);
+            if(AbstractReferenceCountingContainer* rc = dynamic_cast<AbstractReferenceCountingContainer*>(m_containerAccess)){
+                jobject object = getJavaObjectLocalRef(env);
+                rc->updateRC(env, {object, plainPointer()});
+                env->DeleteLocalRef(object);
+            }
+        }
+    }
+    void dispose(){
+        if(m_containerAccess){
+            m_containerAccess->dispose();
+            m_containerAccess = nullptr;
+        }
+        Super::dispose();
+    }
+    AbstractContainerAccess * m_containerAccess = nullptr;
+    using Super::Super;
+    using Super::plainPointer;
+    using Super::getJavaObjectLocalRef;
+    friend class QtJambiLink;
+};
+
+template<typename Super>
+class MetaTypedLink : public Super{
+public:
+    inline const QMetaType* metaType() const override {return &m_meta_type;}
+protected:
+    void addDeleter(const QExplicitlySharedDataPointer<ValueOwnerObjectDataPrivate>& vud, void* pointer) override;
+    void postDeletion(const QPointer<const QObject>& parent, QThread* ownerThread, QThreadObjectData* threadUserData, void* pointer) override;
+    void deleteNow(JNIEnv *env, void* pointer) override;
+    QMetaType m_meta_type;
+    using Super::Super;
+    friend QtJambiLink;
+};
+
+template<typename Super>
+class OwnedLink : public Super{
+public:
+    inline PtrOwnerFunction ownerFunction() const override {return m_owner_function;}
+protected:
+    const QObject* getOwner(void* pointer) {
+        const QObject* result = m_owner_function(pointer);
+        if constexpr(hasGetOwner<Super>::value){
+            if(!result)
+                result = Super::getOwner(pointer);
+        }
+        return result;
+    }
+    PtrOwnerFunction m_owner_function;
+private:
+    using Super::Super;
+    friend QtJambiLink;
+};
+
+template<typename Super>
+class DeletableLink : public Super{
+public:
+    inline PtrDeleterFunction deleterFunction() const override {return m_deleter_function;}
+protected:
+    void addDeleter(const QExplicitlySharedDataPointer<ValueOwnerObjectDataPrivate>& vud, void* pointer) override;
+    void postDeletion(const QPointer<const QObject>& parent, QThread* ownerThread, QThreadObjectData* threadUserData, void* pointer) override;
+    void deleteNow(JNIEnv *env, void* pointer) override;
+    PtrDeleterFunction m_deleter_function;
+private:
+    using Super::Super;
+    friend QtJambiLink;
+};
+
+template<typename Super, bool is_shared_pointer = Super::IS_SMART_POINTER>
+struct OwnerInfo{
+    void* pointer{nullptr};
+    QPointer<const QObject> ownerPointer;
+    QThread* ownerThread{nullptr};
+    QExplicitlySharedDataPointer<ValueOwnerObjectDataPrivate> vud;
+};
+template<typename Super>
+struct OwnerInfo<Super,true> : OwnerInfo<Super,false>{
+    typedef typename std::conditional<std::is_same<typename Super::SmartPointerType,QWeakPointer<char>>::value, QSharedPointer<char>,
+                                      typename std::conditional<std::is_same<typename Super::SmartPointerType,std::weak_ptr<char>>::value, std::shared_ptr<char>, typename Super::SmartPointerType>::type>::type SharedPointerT;
+    SharedPointerT shared_pointer;
+};
+
+template<typename Super>
+class OwnedObjectLink : public Super {
+public:
+    void deleteNativeObject(JNIEnv *env = nullptr, bool forced = false) override;
+private:
+    OwnerInfo<Super> clearPointer(bool prepareDeletion){
+        OwnerInfo<Super> ownerInfo;
+        QtJambiLinkWriteLock locker;
+        if constexpr(Super::IS_SMART_POINTER){
+            if constexpr(std::is_same<typename Super::SmartPointerType,QWeakPointer<char>>::value
+                    || std::is_same<typename Super::SmartPointerType,std::weak_ptr<char>>::value){
+                ownerInfo.shared_pointer = this->m_smartPointer.lock();
+            }else{
+                ownerInfo.shared_pointer = this->m_smartPointer;
+            }
+            this->m_smartPointer = typename Super::SmartPointerType();
+        }
+        ownerInfo.pointer = this->m_pointer;
+        this->m_pointer = nullptr;
+        if(prepareDeletion){
+            if(const QObject* owner = getOwner(ownerInfo.pointer)){
+                const QObjectPrivate* p = QObjectPrivate::get(owner);
+                Q_ASSERT(p);
+                QThread* thread = p->threadData.loadAcquire()->thread.loadAcquire();
+                if (thread && thread->isRunning()
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+                        && !thread->isCurrentThread()
+#else
+                        && thread != QThread::currentThread()
+#endif
+                    ) {
+                    if(ValueOwnerObjectData* d = QtJambiObjectData::userData<ValueOwnerObjectData>(owner)){
+                        ownerInfo.vud = d->d;
+                    }
+                    if(!p->wasDeleted)
+                        ownerInfo.ownerPointer = owner;
+                    ownerInfo.ownerThread = thread;
+                }
+            }
+        }
+        return ownerInfo;
+    }
+protected:
+    using Super::getOwner;
+    using QtJambiLink::m_flags;
+    using QtJambiLink::isInitialized;
+private:
+    using Super::Super;
+    friend QtJambiLink;
+};
+
+class PlainObjectLink : public ObjectLink<false>{
+    using Super = ObjectLink<false>;
+public:
+    void deleteNativeObject(JNIEnv *env, bool forced = false) override;
+private:
+    using Super::Super;
+    friend QtJambiLink;
+};
+
+using PointerToContainerLink = OwnedObjectLink<ContainerLink<ObjectLink<false>>>;
+using DeletableObjectLink = DeletableLink<PlainObjectLink>;
+using MetaTypedObjectLink = MetaTypedLink<PlainObjectLink>;
+using OwnedMetaTypedObjectLink = OwnedObjectLink<OwnedLink<MetaTypedObjectLink>>;
+using DeletableOwnedObjectLink = OwnedObjectLink<DeletableLink<OwnedLink<ObjectLink<false>>>>;
+using DeletablePointerToContainerLink = OwnedObjectLink<DeletableLink<ContainerLink<ObjectLink<false>>>>;
+using DeletableOwnedPointerToContainerLink = OwnedObjectLink<OwnedLink<DeletableLink<ContainerLink<ObjectLink<false>>>>>;
+
+template<template<typename> class SmartPointer, typename T>
+class SmartPointerLink : public QtJambiLinkImpl<std::is_same_v<T,QObject>,true>{
+    using Super = QtJambiLinkImpl<std::is_same_v<T,QObject>,true>;
+public:
+    typedef SmartPointer<T> SmartPointerType;
+protected:
+    typedef std::conditional_t<std::is_same_v<T,QObject>, QObject, void> PointerType;
+    SmartPointerLink(JNIEnv *env, jobject nativeLink,
+                     LINK_NAME_ARG(const char *qt_name)
+                     SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                     PointerType* pointer,
+                     SmartPointerType*& smartPointer,
+                     JavaException& ocurredException);
+    ~SmartPointerLink() override{}
+    template<template<typename> class SmartPointer_, typename T_>
+    inline operator QSharedPointer<SmartPointerLink<SmartPointer_,T_>>() const {
+        return QtJambiLink::getStrongPointer().template staticCast<SmartPointerLink<SmartPointer_,T_>>();
+    }
+    template<template<typename> class SmartPointer_, typename T_>
+    inline operator QWeakPointer<SmartPointerLink<SmartPointer_,T_>>() const {
+        return QtJambiLink::getStrongPointer().template staticCast<SmartPointerLink<SmartPointer_,T_>>();
+    }
+public:
+    typedef typename std::conditional<std::is_same<SmartPointerType,QWeakPointer<T>>::value, QSharedPointer<T>,
+                                      typename std::conditional<std::is_same<SmartPointerType,std::weak_ptr<T>>::value, std::shared_ptr<T>, SmartPointerType>::type>::type SharedPointerT;
+    void setCppOwnership(JNIEnv *env) override final;
+    void setSplitOwnership(JNIEnv *env) override final;
+    void setJavaOwnership(JNIEnv *env) override final;
+    void setDefaultOwnership(JNIEnv *env) override final;
+    QtJambiLink::Ownership ownership() const override final;
+    virtual SharedPointerT getSmartPointer() const;
+private:
+    friend QtJambiLink;
+    using QtJambiLink::qobject;
+    using QtJambiLink::createdByJava;
+    template<template<typename> class, typename>
+    friend struct SmartPointerDeleter;
+protected:
+    using Super::m_pointer;
+    SmartPointerType m_smartPointer;
+    QtJambiLink::Ownership m_hiddenOwnership;
+};
+
+template<template<typename> class SmartPointer>
+class ObjectSmartPointerLink : public SmartPointerLink<SmartPointer,char>{
+    using Super = SmartPointerLink<SmartPointer,char>;
+protected:
+    using Super::Super;
+    ~ObjectSmartPointerLink() override;
+public:
+    typename Super::SharedPointerT getSmartPointer() const override;
+    bool isPointerZeroed() const { return m_flags.testFlag(QtJambiLink::Flag::IsDeleteLater); }
+    void setPointerZeroed(){ m_flags.setFlag(QtJambiLink::Flag::IsDeleteLater); }
+protected:
+    virtual void deleteNow(JNIEnv *, void*){}
+    virtual void addDeleter(const QExplicitlySharedDataPointer<ValueOwnerObjectDataPrivate>&, void*){}
+    virtual void postDeletion(const QPointer<const QObject>&, QThread*, QThreadObjectData*, void*){}
+    using Super::m_pointer;
+    friend QtJambiLink;
+    using QtJambiLink::m_flags;
+};
+
+template<template<typename> class SmartPointer>
+class PlainObjectSmartPointerLink : public ObjectSmartPointerLink<SmartPointer>{
+    using Super = ObjectSmartPointerLink<SmartPointer>;
+public:
+    void deleteNativeObject(JNIEnv *env = nullptr, bool forced = false) override;
+private:
+    using Super::Super;
+    friend QtJambiLink;
+};
+
+template<template<typename> class SmartPointer>
+using MetaTypedObjectSmartPointerLink = MetaTypedLink<PlainObjectSmartPointerLink<SmartPointer>>;
+template<template<typename> class SmartPointer>
+using DeletableObjectSmartPointerLink = DeletableLink<PlainObjectSmartPointerLink<SmartPointer>>;
+template<template<typename> class SmartPointer>
+using PlainOwnedObjectSmartPointerLink = OwnedObjectLink<OwnedLink<ObjectSmartPointerLink<SmartPointer>>>;
+template<template<typename> class SmartPointer>
+using OwnedMetaTypedObjectSmartPointerLink = MetaTypedLink<PlainOwnedObjectSmartPointerLink<SmartPointer>>;
+template<template<typename> class SmartPointer>
+using OwnedDeletableObjectSmartPointerLink = DeletableLink<PlainOwnedObjectSmartPointerLink<SmartPointer>>;
+template<template<typename> class SmartPointer>
+using ContainerObjectSmartPointerLink = OwnedObjectLink<ContainerLink<ObjectSmartPointerLink<SmartPointer>>>;
+
+template<typename Super>
+class ExtraSignalsLink : public Super{
+public:
+    jobject getExtraSignal(JNIEnv * env, const QMetaMethod& method) const override{
+        if(QObject* object = Super::m_pointer){
+            QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(object->metaObject());
+            if(extraSignals.contains(method)){
+                bool contains;
+                {
+                    auto locker = QtJambiObjectData::readLock();
+                    contains = m_extraSignals.contains(method.methodIndex());
+                    if(contains){
+                        return m_extraSignals.value(method.methodIndex()).object(env);
+                    }
+                }
+                if(!contains){
+                    JObjectWrapper signal = QtJambiMetaObject::resolveExtraSignal(env, QtJambiLink::getJavaObjectLocalRef(env), method);
+                    {
+                        auto locker = QtJambiObjectData::writeLock();
+                        if(!m_extraSignals.contains(method.methodIndex()))
+                            m_extraSignals[method.methodIndex()] = signal;
+                        else return m_extraSignals.value(method.methodIndex()).object(env);
+                    }
+                    return signal.object(env);
+                }
+            }
+        }
+        return nullptr;
+    }
+protected:
+    using Super::m_pointer;
+private:
+    using Super::Super;
+    mutable QHash<int,JObjectWrapper> m_extraSignals;
+    friend QtJambiLink;
+};
+
+using QObjectPointerLink = ObjectLink<true>;
+
+template<bool pending = false>
+class QObjectPlainPointerLink : public std::conditional_t<pending, ExtraSignalsLink<QObjectPointerLink>, QObjectPointerLink> {
+    using Super = std::conditional_t<pending, ExtraSignalsLink<QObjectPointerLink>, QObjectPointerLink>;
+    QObjectPlainPointerLink(JNIEnv *env, jobject nativeLink, jobject jobj,
+                              const QMetaObject* metaObject, QObject *ptr, SafeBool isQThread,
+                              SafeBool created_by_java, SafeBool is_shell,
+                              JavaException& ocurredException);
+    using QObjectPointerLink::init;
+    void init(JNIEnv* env, QSharedPointer<QtJambiLink>* replacement) override;
+    friend QtJambiLink;
+protected:
+    using QObjectPointerLink::m_pointer;
+};
+
+using PendingQObjectPointerLink = QObjectPlainPointerLink<true>;
+using PendingInterfaceQObjectPointerLink = InterfaceLink<PendingQObjectPointerLink>;
+using PlainQObjectPointerLink = QObjectPlainPointerLink<false>;
+using InterfaceQObjectPointerLink = InterfaceLink<PlainQObjectPointerLink>;
+using ExtraSignalsInterfaceQObjectPointerLink = ExtraSignalsLink<InterfaceQObjectPointerLink>;
+using ExtraSignalsQObjectPointerLink = ExtraSignalsLink<PlainQObjectPointerLink>;
+
+template<template<typename> class SmartPointer>
+class QObjectSmartPointerLink : public SmartPointerLink<SmartPointer,QObject>{
+    using Super = SmartPointerLink<SmartPointer,QObject>;
+protected:
+    QObjectSmartPointerLink(JNIEnv *env, jobject nativeLink,
+                              LINK_NAME_ARG(const char *qt_name)
+                              SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                              QObject* pointer,
+                              SmartPointer<QObject>*& smartPointer,
+                              JavaException& ocurredException);
+    ~QObjectSmartPointerLink() override;
+public:
+    typename Super::SharedPointerT getSmartPointer() const override;
+    void removeInterface(const std::type_info&) override{
+        setInDestructor();
+    }
+    bool isDeleteLater() const { return m_flags.testFlag(QtJambiLink::Flag::IsDeleteLater); }
+private:
+    void deleteNativeObject(JNIEnv *env = nullptr, bool forced = false) override final;
+    void setDeleteLater(){ m_flags.setFlag(QtJambiLink::Flag::IsDeleteLater); }
+    friend QtJambiLink;
+    friend LinkObjectData;
+    friend ThreadLinkObjectData;
+protected:
+    using Super::m_pointer;
+    using QtJambiLink::m_flags;
+    using QtJambiLink::setInDestructor;
+};
+
+template<template<typename> class SmartPointer>
+class PlainQObjectSmartPointerLink : public QObjectSmartPointerLink<SmartPointer>{
+    PlainQObjectSmartPointerLink(JNIEnv *env,
+                                   jobject nativeLink,
+                                   jobject jobj,
+                                   SafeBool created_by_java,
+                                   QtJambiLink::Ownership ownership,
+                                   SafeBool is_shell,
+                                   QObject* pointer,
+                                   SafeBool isQThread,
+                                   SmartPointer<QObject>*& smartPointer,
+                                   JavaException& ocurredException);
+    friend QtJambiLink;
+};
+
+template<template<typename> class SmartPointer>
+class QObjectWithPendingExtraSignalsSmartPointerLink : public ExtraSignalsLink<QObjectSmartPointerLink<SmartPointer>>{
+    QObjectWithPendingExtraSignalsSmartPointerLink(JNIEnv *env, jobject nativeLink, jobject jobj,
+                                                     SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                     QObject* pointer,
+                                                     SafeBool isQThread,
+                                                     SmartPointer<QObject>*& smartPointer,
+                                                     const QMetaObject* superTypeForCustomMetaObject,
+                                                     JavaException& ocurredException);
+    friend QtJambiLink;
+};
+
+template<template<typename> class SmartPointer>
+using QObjectWithExtraSignalsSmartPointerLink = ExtraSignalsLink<PlainQObjectSmartPointerLink<SmartPointer>>;
 
 bool operator !(QtJambiNativeID nativeId) { return nativeId == InvalidNativeID; }
 
@@ -112,44 +1007,6 @@ namespace TestAPI{
 void registerDebugCounter(DebugCounter){}
 }
 #endif
-#include "qtjambi_cast.h"
-
-#ifdef QTJAMBI_NO_METHOD_TRACE
-#define QTJAMBI_DEBUG_PRINT_WITH_ARGS(...)
-#define QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(...)
-#else
-#define QTJAMBI_DEBUG_PRINT_WITH_ARGS(...)\
-if(!QtJambiLink::isDebugMessagingDisabled())\
-    DebugAPI::printCleanupArgs(__FILE__, __LINE__, __FUNCTION__, __VA_ARGS__);
-#define QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(link, methodname)\
-    DebugAPI::MethodPrintFromLink __debug_method_print(link, methodname, __FILE__, __LINE__, __FUNCTION__);
-#endif
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#define MutexLocker QMutexLocker
-#else
-#define MutexLocker QMutexLocker<QMutex>
-#endif
-
-class SelfDeletingThread : public QThread
-{
-    Q_DECLARE_PRIVATE(QThread)
-public:
-    inline bool deleteLaterIfIsInFinish(){
-        MutexLocker locker(&d_func()->mutex);
-#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
-        if(d_func()->isInFinish){
-#else
-        if(d_func()->threadState==QThreadPrivate::Finishing
-                || d_func()->threadState==QThreadPrivate::Finished){
-#endif
-            this->deleteLater();
-            return true;
-        }else{
-            return false;
-        }
-    }
-};
 
 class AbstractDestructionEvent : public AbstractThreadEvent
 {
@@ -184,8 +1041,14 @@ AbstractDestructionEvent::AbstractDestructionEvent(const AbstractDestructionEven
 void AbstractDestructionEvent::execute(){
     if(m_pointer != nullptr){
         QThread* parentThread{nullptr};
-        if(m_parent && (parentThread = m_parent->thread())!=QThread::currentThread()){
-            QThreadUserData* threadData = QThreadUserData::ensureThreadUserData(parentThread);
+        if(m_parent && (parentThread = m_parent->thread()) &&
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+                !parentThread->isCurrentThread()
+#else
+                parentThread!=QThread::currentThread()
+#endif
+        ){
+            QThreadObjectData* threadData = QThreadObjectData::ensureThreadUserData(parentThread);
             QCoreApplication::postEvent(threadData->threadDeleter(), clone());
             return;
         }
@@ -267,22 +1130,14 @@ void DestructorEvent::destruct(void * pointer, const QSharedPointer<QtJambiLink>
 
 MetaTypeDestructionEvent::MetaTypeDestructionEvent(const QPointer<const QObject>& parent, const QWeakPointer<QtJambiLink>& link, void *pointer, const QMetaType& meta_type)
     : AbstractDestructionEvent(parent, link, pointer),
-      m_meta_type(meta_type
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                  .id()
-#endif
-                  )
+      m_meta_type(meta_type)
 {
     QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(link, "new MetaTypeDestructionEvent()")
 }
 
 MetaTypeDestructionEvent::MetaTypeDestructionEvent(const MetaTypeDestructionEvent& clone)
     : AbstractDestructionEvent(clone),
-      m_meta_type(clone.m_meta_type
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                  .id()
-#endif
-                  )
+      m_meta_type(clone.m_meta_type)
 {
 }
 
@@ -327,13 +1182,79 @@ ContainerDestructionEvent* ContainerDestructionEvent::clone() const{
     return new ContainerDestructionEvent(*this);
 }
 
+template<typename Super>
+class DanglingPointerCheckingLink : public Super{
+public:
+    void *pointer() const override{
+        void* ptr = m_pointer;
+        if(ptr){
+            if(checkedGetTypeInfo(m_typeInfoSupplier, ptr)==nullptr){
+                if(JniEnvironment env{128}){
+                    if(jobject obj = getJavaObjectLocalRef(env)){
+                        QString className = QtJambiAPI::getObjectClassName(env, obj).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+                        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Object of type %s points to dangling pointer %p", qPrintable(className), ptr) QTJAMBI_STACKTRACEINFO );
+                    }else{
+                        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Dangling pointer %p detected", ptr) QTJAMBI_STACKTRACEINFO );
+                    }
+                }else{
+                    ptr = nullptr;
+                }
+            }
+        }
+        return ptr;
+    }
+private:
+    using Super::Super;
+    using Super::m_pointer;
+    TypeInfoSupplier m_typeInfoSupplier = nullptr;
+    using QtJambiLink::getJavaObjectLocalRef;
+    friend QtJambiLink;
+};
+
+template<bool checkDanglingPointer = true>
+void checkValueOwner(JNIEnv* env, PtrOwnerFunction ownerFunction, void* ptr){
+    if(const QObject* obj = ownerFunction(ptr)){
+        if constexpr(checkDanglingPointer){
+            QtJambiAPI::checkDanglingPointer(env, obj);
+        }
+        const QObjectPrivate* p = QObjectPrivate::get(obj);
+        if(p && !p->wasDeleted){
+            ValueOwnerObjectData* vod{nullptr};
+            {
+                auto locker = QtJambiObjectData::readLock();
+                vod = QtJambiObjectData::userData<ValueOwnerObjectData>(obj);
+            }
+            if(!vod){
+                vod = new ValueOwnerObjectData(obj);
+                {
+                    auto locker = QtJambiObjectData::writeLock();
+                    ValueOwnerObjectData* _vod = QtJambiObjectData::userData<ValueOwnerObjectData>(obj);
+                    if(!_vod)
+                        vod = QtJambiObjectData::setUserData<ValueOwnerObjectData>(const_cast<QObject*>(obj), vod);
+                }
+                if(vod)
+                    delete vod;
+            }
+        }
+    }
+}
+
+template<typename Super>
+class PendingLink : public Super{
+    void init(JNIEnv* env) override {
+        if(!Super::isInitialized()){
+            Super::init(env);
+            checkValueOwner<false>(env, Super::ownerFunction(), Super::pointer());
+        }
+    }
+    using Super::Super;
+    friend class QtJambiLink;
+};
+
 #define THREAD_ID() reinterpret_cast<void*>(QThread::currentThreadId())
 
 #if defined(QTJAMBI_DEBUG_TOOLS)
-Q_GLOBAL_STATIC(QReadWriteLock, gStaticQtJambiLinkListLock);
-typedef SecureContainer<QSet<QtJambiLink*>,gStaticQtJambiLinkListLock> QtJambiLinkList;
-Q_GLOBAL_STATIC(QtJambiLinkList, gQtJambiLinkList);
-
+/*defined QTJAMBI_DEBUG_TOOLS*/
 void QtJambiLink::registerLink(QtJambiLink* link)
 {
     if(link->m_flags.testFlag(Flag::IsListed)) {
@@ -342,13 +1263,15 @@ void QtJambiLink::registerLink(QtJambiLink* link)
         return;
     }
 
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QWriteLocker lock(gStaticQtJambiLinkListLock());
-        gQtJambiLinkList->insert(link);
+        QWriteLocker lock(storage->lock());
+        storage->linkSet().insert(link);
         link->m_flags.setFlag(Flag::IsListed);
     }
 }
 
+/*defined QTJAMBI_DEBUG_TOOLS*/
 void QtJambiLink::unregisterLink(QtJambiLink* link)
 {
     if(!link->m_flags.testFlag(Flag::IsListed)) {
@@ -357,28 +1280,23 @@ void QtJambiLink::unregisterLink(QtJambiLink* link)
         return;
     }
 
-    if(!gQtJambiLinkList.isDestroyed()){
-        QWriteLocker lock(gStaticQtJambiLinkListLock());
-        gQtJambiLinkList->remove(link);
+    if(QtJambiStorageOptional storage{}){
+        QWriteLocker lock(storage->lock());
+        storage->linkSet().remove(link);
         link->m_flags.setFlag(Flag::IsListed, false);
     }
 }
 
-/* static */
-int QtJambiLink::linkCount()
-{
-    QReadLocker lock(gStaticQtJambiLinkListLock());
-    return gQtJambiLinkList->size();
-}
-
+/*defined QTJAMBI_DEBUG_TOOLS*/
 /* static */
 int QtJambiLink::dumpLinks(JNIEnv * env)
 {
     int count = 0;
-    QtJambiLinkList set;
+    QtJambiStorage::LinkSet set;
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker lock(gStaticQtJambiLinkListLock());
-        set = *gQtJambiLinkList;
+        QReadLocker lock(storage->lock());
+        set = storage->linkSet();
     }
     for(QtJambiLink* _link : qAsConst(set)) {
         QSharedPointer<QtJambiLink> sharedPointer = *_link;
@@ -393,11 +1311,11 @@ int QtJambiLink::dumpLinks(JNIEnv * env)
             QString objectName;
             bool hasParent = false;
             QThread* objectThread = nullptr;
-            if(_link->qobject()){
-                objectName = _link->qobject()->objectName();
-                objectThread = _link->qobject()->thread();
-                hasParent = _link->qobject()->parent();
-                QThread* objectAsThread = qobject_cast<QThread*>(_link->qobject());
+            if(QObject* qobj = _link->qobject()){
+                objectName = qobj->objectName();
+                objectThread = qobj->thread();
+                hasParent = qobj->parent();
+                QThread* objectAsThread = qobject_cast<QThread*>(qobj);
                 if(objectAsThread && objectAsThread->isRunning())
                     continue;
             }
@@ -430,21 +1348,30 @@ int QtJambiLink::dumpLinks(JNIEnv * env)
     return count;
 }
 
+/*defined QTJAMBI_DEBUG_TOOLS*/
 bool QtJambiLink::hasDeleteLaterEvents()
 {
-    QtJambiLinkList set;
+    QtJambiStorage::LinkSet set;
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker lock(gStaticQtJambiLinkListLock());
-        set = *gQtJambiLinkList;
+        QReadLocker lock(storage->lock());
+        set = storage->linkSet();
     }
     for(QtJambiLink* _link : qAsConst(set)) {
         QSharedPointer<QtJambiLink> linkPtr = *_link;
         if(!linkPtr)
             continue;
         if(_link->isQObject()){
-            if(_link->pointer()==QCoreApplicationPrivate::theMainThread.loadRelaxed())
+            if(_link->plainPointer()==QCoreApplicationPrivate::theMainThread.loadRelaxed())
                 continue;
-            if(_link->isDeleteLater() && _link->qobject() && _link->qobject()->thread()==QThread::currentThread()){
+            QObject* qobj;
+            QThread* thread;
+            if(_link->isDeleteLater() && (qobj = _link->qobject())
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+                    && (thread = qobj->thread()) && thread->isCurrentThread()){
+#else
+                    && qobj->thread()==QThread::currentThread()){
+#endif
                 return true;
             }
         }
@@ -452,48 +1379,20 @@ bool QtJambiLink::hasDeleteLaterEvents()
     return false;
 }
 
-/* static */
-bool QtJambiLink::checkLink(QtJambiLink* find)
-{
-    bool found = false;
-    if(find) {
-        QReadLocker lock(gStaticQtJambiLinkListLock());
-        return gQtJambiLinkList->contains(find);
-    }
-    if(!found)
-        fprintf(stderr, "QtJambiLink::QtJambiLinkList_check(%p): FAILED\n", static_cast<void*>(find));
-    return found;
-}
+#endif // defined(QTJAMBI_DEBUG_TOOLS)
 
-#endif
+QtJambiLinkObjectData::QtJambiLinkObjectData(const QWeakPointer<QtJambiLink> & link)
+  : m_link(link) {}
 
-Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gLinkAccessLock, (QReadWriteLock::Recursive))
-typedef SecureContainer<QHash<const void *, QWeakPointer<QtJambiLink> >,gLinkAccessLock> LinkHash;
-typedef SecureContainer<QMultiHash<const void *, QWeakPointer<QtJambiLink> >,gLinkAccessLock> MultiLinkHash;
-Q_GLOBAL_STATIC(MultiLinkHash, gUserObjectCache)
-Q_GLOBAL_STATIC(LinkHash, gQObjectCache)
-
-QtJambiLinkUserData::QtJambiLinkUserData(const QWeakPointer<QtJambiLink> & link)
-  :
-    m_link(link)
- { }
-
-void QtJambiLink::resetDataLink(QtJambiLinkUserData* data){
+void QtJambiLink::resetDataLink(QtJambiLinkObjectData* data){
     data->resetLink(*this);
 }
 
-QtJambiMetaObjectLinkUserData::QtJambiMetaObjectLinkUserData(const QWeakPointer<QtJambiLink> & link, const QMetaObject* metaObject)
-  :
-    QtJambiLinkUserData(link),
-    m_metaObject(metaObject)
- { }
+MetaObjectLinkObjectData::MetaObjectLinkObjectData(const QWeakPointer<QtJambiLink> & link, const QMetaObject* metaObject)
+  : LinkObjectData(link),
+    m_metaObject(metaObject){}
 
-QReadWriteLock* QtJambiLinkUserData::lock()
-{
-    return gLinkAccessLock;
-}
-
-ThreadLinkUserDataImpl::ThreadLinkUserDataImpl(QThread* thread)
+ThreadLinkObjectDataImpl::ThreadLinkObjectDataImpl(QThread* thread)
     : m_threadId(nullptr){
     if(thread){
         if(QThreadData* td = QThreadData::get2(thread)){
@@ -506,28 +1405,34 @@ namespace ThreadPrivate{
 void purgeLink(QSharedPointer<QtJambiLink>&& link);
 }
 
-void ThreadLinkUserDataImpl::clear(QSharedPointer<QtJambiLink>&& link){
+ThreadLinkObjectData::ThreadLinkObjectData(QThread* thread, const QWeakPointer<QtJambiLink> & link)
+    : QtJambiLinkObjectData(link), ThreadLinkObjectDataImpl(thread) {
+}
+
+ThreadLinkObjectData::~ThreadLinkObjectData(){
+    QSharedPointer<QtJambiLink> link = m_link.toStrongRef();
+    m_link.clear();
     if (link && link->isQObject()) {
-        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(link, "QtJambiLinkUserData::~QtJambiLinkUserData()")
+        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(link, "QtJambiLinkObjectData::~QtJambiLinkObjectData()")
         QTJAMBI_INCREASE_COUNTER(userDataDestroyedCount, link)
         if(link->isSmartPointer()){
             switch(link->smartPointerType()){
             case QtJambiLink::Flag::QSharedPointer:
-                reinterpret_cast<SmartPointerToQObjectLink<QSharedPointer>*>(link.data())->setAsQObjectDeleted();
+                reinterpret_cast<QObjectSmartPointerLink<QSharedPointer>*>(link.data())->setAsQObjectDeleted();
                 break;
             case QtJambiLink::Flag::QWeakPointer:
-                reinterpret_cast<SmartPointerToQObjectLink<QWeakPointer>*>(link.data())->setAsQObjectDeleted();
+                reinterpret_cast<QObjectSmartPointerLink<QWeakPointer>*>(link.data())->setAsQObjectDeleted();
                 break;
             case QtJambiLink::Flag::shared_ptr:
-                reinterpret_cast<SmartPointerToQObjectLink<std::shared_ptr>*>(link.data())->setAsQObjectDeleted();
+                reinterpret_cast<QObjectSmartPointerLink<std::shared_ptr>*>(link.data())->setAsQObjectDeleted();
                 break;
             case QtJambiLink::Flag::weak_ptr:
-                reinterpret_cast<SmartPointerToQObjectLink<std::weak_ptr>*>(link.data())->setAsQObjectDeleted();
+                reinterpret_cast<QObjectSmartPointerLink<std::weak_ptr>*>(link.data())->setAsQObjectDeleted();
                 break;
             default: break;
             }
         }else{
-            reinterpret_cast<PointerToQObjectLink*>(link.data())->setAsQObjectDeleted();
+            reinterpret_cast<QObjectPointerLink*>(link.data())->setAsQObjectDeleted();
         }
         // only reset the link when not a shell. Shells do this operation during shell destruction.
         // => QtJambiShellImpl::deleteShell()
@@ -561,54 +1466,36 @@ void ThreadLinkUserDataImpl::clear(QSharedPointer<QtJambiLink>&& link){
     }
 }
 
-QtJambiThreadLinkUserData::QtJambiThreadLinkUserData(QThread* thread, const QWeakPointer<QtJambiLink> & link)
-    : QtJambiLinkUserData(link), ThreadLinkUserDataImpl(thread) {
+MetaObjectThreadLinkObjectData::MetaObjectThreadLinkObjectData(QThread* thread, const QWeakPointer<QtJambiLink> & link, const QMetaObject* metaObject)
+    : ThreadLinkObjectData(thread, link), m_metaObject(metaObject) {
 }
 
-QtJambiThreadLinkUserData::~QtJambiThreadLinkUserData(){
-    QSharedPointer<QtJambiLink> link = m_link.toStrongRef();
-    m_link.clear();
-    ThreadLinkUserDataImpl::clear(std::move(link));
-}
-
-QtJambiMetaObjectThreadLinkUserData::QtJambiMetaObjectThreadLinkUserData(QThread* thread, const QWeakPointer<QtJambiLink> & link, const QMetaObject* metaObject)
-    : QtJambiMetaObjectLinkUserData(link, metaObject), ThreadLinkUserDataImpl(thread) {
-}
-
-QtJambiMetaObjectThreadLinkUserData::~QtJambiMetaObjectThreadLinkUserData(){
-    QSharedPointer<QtJambiLink> link = m_link.toStrongRef();
-    m_link.clear();
-    ThreadLinkUserDataImpl::clear(std::move(link));
-}
-
-QTJAMBI_OBJECTUSERDATA_ID_IMPL(,QtJambiLinkUserData::)
-
-QtJambiLinkUserData::~QtJambiLinkUserData()
+LinkObjectData::~LinkObjectData()
 {
     try{
         QSharedPointer<QtJambiLink> link = m_link.toStrongRef();
         m_link.clear();
         if (link && link->isQObject()) {
-            QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(link, "QtJambiLinkUserData::~QtJambiLinkUserData()")
+            QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(link, "QtJambiLinkObjectData::~QtJambiLinkObjectData()")
             QTJAMBI_INCREASE_COUNTER(userDataDestroyedCount, link)
             if(link->isSmartPointer()){
                 switch(link->smartPointerType()){
                 case QtJambiLink::Flag::QSharedPointer:
-                    reinterpret_cast<SmartPointerToQObjectLink<QSharedPointer>*>(link.data())->setAsQObjectDeleted();
+                    reinterpret_cast<QObjectSmartPointerLink<QSharedPointer>*>(link.data())->setAsQObjectDeleted();
                     break;
                 case QtJambiLink::Flag::QWeakPointer:
-                    reinterpret_cast<SmartPointerToQObjectLink<QWeakPointer>*>(link.data())->setAsQObjectDeleted();
+                    reinterpret_cast<QObjectSmartPointerLink<QWeakPointer>*>(link.data())->setAsQObjectDeleted();
                     break;
                 case QtJambiLink::Flag::shared_ptr:
-                    reinterpret_cast<SmartPointerToQObjectLink<std::shared_ptr>*>(link.data())->setAsQObjectDeleted();
+                    reinterpret_cast<QObjectSmartPointerLink<std::shared_ptr>*>(link.data())->setAsQObjectDeleted();
                     break;
                 case QtJambiLink::Flag::weak_ptr:
-                    reinterpret_cast<SmartPointerToQObjectLink<std::weak_ptr>*>(link.data())->setAsQObjectDeleted();
+                    reinterpret_cast<QObjectSmartPointerLink<std::weak_ptr>*>(link.data())->setAsQObjectDeleted();
                     break;
                 default: break;
                 }
             }else{
-                reinterpret_cast<PointerToQObjectLink*>(link.data())->setAsQObjectDeleted();
+                reinterpret_cast<QObjectPointerLink*>(link.data())->setAsQObjectDeleted();
             }
             // only reset the link when not a shell. Shells do this operation during shell destruction.
             // => QtJambiShellImpl::deleteShell()
@@ -636,8 +1523,7 @@ QtJambiLinkUserData::~QtJambiLinkUserData()
                     ThreadPrivate::purgeLink(std::move(link));
             }
         }else{
-            QWriteLocker locker(QtJambiLinkUserData::lock());
-            Q_UNUSED(locker)
+            QtJambiLinkWriteLock locker;
         }
     } catch (const std::exception& e) {
         qCWarning(DebugAPI::internalCategory, "%s", e.what());
@@ -645,7 +1531,7 @@ QtJambiLinkUserData::~QtJambiLinkUserData()
     }
 }
 
-void QtJambiLinkUserData::clear(JNIEnv * env){
+void QtJambiLinkObjectData::clear(JNIEnv * env){
     QSharedPointer<QtJambiLink> link = m_link.toStrongRef();
     m_link.clear();
     if(link){
@@ -658,68 +1544,68 @@ void QtJambiLinkUserData::clear(JNIEnv * env){
     }
 }
 
-QTJAMBI_OBJECTUSERDATA_ID_IMPL(,ValueOwnerUserData::)
-
-ValueOwnerUserData::ValueOwnerUserData(const QObject* object) : QtJambiObjectData(), m_object(object) {
-
-}
-
-ValueOwnerUserData::~ValueOwnerUserData(){
-    while(!m_deleters.isEmpty()){
-        try{
-            m_deleters.takeFirst()();
-        } catch (const std::exception& e) {
-            qCWarning(DebugAPI::internalCategory, "%s", e.what());
-        } catch (...) {
+struct ValueOwnerObjectDataPrivate : QSharedData{
+    ValueOwnerObjectDataPrivate(const QObject* object) : QSharedData(), m_object(object){}
+    ~ValueOwnerObjectDataPrivate(){
+        while(!m_deleters.isEmpty()){
+            try{
+                m_deleters.takeFirst()();
+            } catch (const std::exception& e) {
+                qCWarning(DebugAPI::internalCategory, "%s", e.what());
+            } catch (...) {
+            }
         }
     }
-}
-
-void ValueOwnerUserData::addDeleter(const QtJambiUtils::Runnable& deleter){
-    m_deleters << deleter;
-}
-
-void ValueOwnerUserData::addDeleter(QtJambiUtils::Runnable&& deleter){
-    m_deleters << std::move(deleter);
-}
-
-static volatile int sObjectCacheMode = 2;
-int QtJambiLink::getObjectCacheMode()
-{
-    return sObjectCacheMode;
-}
-
-void QtJambiLink::setObjectCacheMode(int object_cache_mode)
-{
-    sObjectCacheMode = object_cache_mode;
-}
-
-int QtJambiLink::getObjectCacheOperationCount()
-{
-    int count;
-    {
-        QWriteLocker lock(gLinkAccessLock());
-        Q_UNUSED(lock)
-        count = int(gUserObjectCache()->count());
+    void addDeleter(const QtJambiUtils::Runnable& deleter){
+        QtJambiLinkWriteLock locker;
+        m_deleters << deleter;
     }
-    return count;
+    void addDeleter(QtJambiUtils::Runnable&& deleter){
+        QtJambiLinkWriteLock locker;
+        m_deleters << std::move(deleter);
+    }
+    inline const QPointer<const QObject>& pointer() const { return m_object; }
+    QPointer<const QObject> m_object;
+    QList<QtJambiUtils::Runnable> m_deleters;
+};
+
+ValueOwnerObjectData::ValueOwnerObjectData(const QObject* object) : QtJambiObjectData(), d(new ValueOwnerObjectDataPrivate(object)) {
+
+}
+
+ValueOwnerObjectData::~ValueOwnerObjectData(){
+    QExplicitlySharedDataPointer<ValueOwnerObjectDataPrivate> _d;
+    {
+        QtJambiLinkWriteLock locker;
+        d.swap(_d);
+    }
+}
+
+void ValueOwnerObjectData::addDeleter(const QtJambiUtils::Runnable& deleter){
+    d->addDeleter(deleter);
+}
+
+void ValueOwnerObjectData::addDeleter(QtJambiUtils::Runnable&& deleter){
+    d->addDeleter(std::move(deleter));
+}
+
+const QPointer<const QObject>& ValueOwnerObjectData::pointer() const {
+    return d->pointer();
 }
 
 void QtJambiLink::registerQObjectInitialization(void *ptr, const QSharedPointer<QtJambiLink>& link) {
-    if(QtJambiLink::getObjectCacheMode() != 0) {
-        QWriteLocker locker(gLinkAccessLock());
-        Q_UNUSED(locker)
-        Q_ASSERT(gQObjectCache());
-        gQObjectCache->insert(ptr, link.toWeakRef());
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker lock(storage->linkLock());
+        storage->qObjectCache().insert(ptr, link.toWeakRef());
     }
 }
 
 void QtJambiLink::unregisterQObjectInitialization(void *ptr) {
-    if(QtJambiLink::getObjectCacheMode() != 0) {
-        QWriteLocker locker(gLinkAccessLock());
-        Q_UNUSED(locker)
-        if(LinkHash* h = gQObjectCache())
-            h->remove(ptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker lock(storage->linkLock());
+        storage->qObjectCache().remove(ptr);
     }
 }
 
@@ -736,47 +1622,9 @@ jobject QtJambiLink::getNativeLink(JNIEnv *env, jobject java){
     return nativeLink;
 }
 
-QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeQObject(JNIEnv *env, jobject& javaObject, jclass clazz, QObject *object)
-{
-    Q_ASSERT(env);
-    Q_ASSERT(javaObject);
-    Q_ASSERT(object);
-
-    // Initialize the link
-    jobject nativeLink = getNativeLink(env, javaObject);
-    const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, env->GetObjectClass(javaObject));
-    JavaException ocurredException;
-    PointerToQObjectLink* qtJambiLink;
-    bool isQThread = Java::QtCore::QThread::isAssignableFrom(env, clazz);
-    const QMetaObject* metaObject = object->metaObject();
-    QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(metaObject);
-    if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-        if(extraSignals.isEmpty())
-            qtJambiLink = new PointerToQObjectInterfaceLink(env, nativeLink, javaObject, *interfaceOffsets, metaObject, object, isQThread, false, false, ocurredException);
-        else
-            qtJambiLink = new PointerToQObjectInterfaceWithExtraSignalsLink(env, nativeLink, javaObject, *interfaceOffsets, metaObject, object, isQThread, false, false, ocurredException);
-    }else{
-        if(extraSignals.isEmpty())
-            qtJambiLink = new PointerToQObjectLink(env, nativeLink, javaObject, metaObject, object, isQThread, false, false, ocurredException);
-        else
-            qtJambiLink = new PointerToQObjectWithExtraSignalsLink(env, nativeLink, javaObject, metaObject, object, isQThread, false, false, ocurredException);
-    }
-    if(ocurredException){
-        qtJambiLink->dispose();
-        ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
-    }else{
-        QSharedPointer<QtJambiLink> replacement;
-        qtJambiLink->init(env, &replacement);
-        if(replacement){
-            qtJambiLink->dispose();
-            javaObject = replacement->getJavaObjectLocalRef(env);
-            return replacement;
-        }
-    }
-    //qtJambiLink->setCppOwnership(env);
-
-    return *qtJambiLink;
+template<typename Ptr>
+QSharedPointer<QtJambiLink> asSharedPointer(Ptr&& qtJambiLink){
+    return *qtJambiLink.release();
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeQObject(JNIEnv *env, jobject& javaObject, QObject *object, SafeBool isQThread, const QMetaObject* superTypeForCustomMetaObject)
@@ -789,21 +1637,20 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeQObject(JNIEnv *env,
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    PointerToPendingQObjectLink* qtJambiLink = new PointerToPendingQObjectLink(env, nativeLink, javaObject, superTypeForCustomMetaObject, object, isQThread, false, false, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    typedef PendingQObjectPointerLink Link;
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{new Link(env, nativeLink, javaObject, superTypeForCustomMetaObject, object, isQThread, false, false, ocurredException)};
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         QSharedPointer<QtJambiLink> replacement;
         qtJambiLink->init(env, &replacement);
         if(replacement){
-            qtJambiLink->dispose();
             javaObject = replacement->getJavaObjectLocalRef(env);
             return replacement;
         }
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeQObject(JNIEnv *env, jobject& javaObject, QObject *object, SafeBool isQThread)
@@ -815,27 +1662,25 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeQObject(JNIEnv *env,
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    PointerToQObjectLink* qtJambiLink;
+    std::unique_ptr<PlainQObjectPointerLink, QtJambiLink::LinkDisposer> qtJambiLink;
     const QMetaObject* metaObject = object->metaObject();
     QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(metaObject);
     if(extraSignals.isEmpty())
-        qtJambiLink = new PointerToQObjectLink(env, nativeLink, javaObject, metaObject, object, isQThread, false, false, ocurredException);
+        qtJambiLink.reset(new QObjectPlainPointerLink(env, nativeLink, javaObject, metaObject, object, isQThread, false, false, ocurredException));
     else
-        qtJambiLink = new PointerToQObjectWithExtraSignalsLink(env, nativeLink, javaObject, metaObject, object, isQThread, false, false, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+        qtJambiLink.reset(new ExtraSignalsQObjectPointerLink(env, nativeLink, javaObject, metaObject, object, isQThread, false, false, ocurredException));
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         QSharedPointer<QtJambiLink> replacement;
         qtJambiLink->init(env, &replacement);
         if(replacement){
-            qtJambiLink->dispose();
             javaObject = replacement->getJavaObjectLocalRef(env);
             return replacement;
         }
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeQObject(JNIEnv *env, jobject& javaObject, QObject *object, SafeBool isQThread,
@@ -848,27 +1693,30 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeQObject(JNIEnv *env,
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    PointerToQObjectLink* qtJambiLink;
+    std::unique_ptr<PlainQObjectPointerLink, QtJambiLink::LinkDisposer> qtJambiLink;
     const QMetaObject* metaObject = object->metaObject();
     QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(metaObject);
-    if(extraSignals.isEmpty())
-        qtJambiLink = new PointerToQObjectInterfaceLink(env, nativeLink, javaObject, interfaceOffsetInfo, metaObject, object, isQThread, false, false, ocurredException);
-    else
-        qtJambiLink = new PointerToQObjectInterfaceWithExtraSignalsLink(env, nativeLink, javaObject, interfaceOffsetInfo, metaObject, object, isQThread, false, false, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    if(extraSignals.isEmpty()){
+        InterfaceQObjectPointerLink* link;
+        qtJambiLink.reset(link = new InterfaceQObjectPointerLink(env, nativeLink, javaObject, metaObject, object, isQThread, false, false, ocurredException));
+        link->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    }else{
+        ExtraSignalsInterfaceQObjectPointerLink* link;
+        qtJambiLink.reset(link = new ExtraSignalsInterfaceQObjectPointerLink(env, nativeLink, javaObject, metaObject, object, isQThread, false, false, ocurredException));
+        link->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    }
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         QSharedPointer<QtJambiLink> replacement;
         qtJambiLink->init(env, &replacement);
         if(replacement){
-            qtJambiLink->dispose();
             javaObject = replacement->getJavaObjectLocalRef(env);
             return replacement;
         }
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeQObject(JNIEnv *env, jobject& javaObject, QObject *object, SafeBool isQThread,
@@ -883,21 +1731,20 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeQObject(JNIEnv *env,
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    PointerToPendingQObjectInterfaceLink* qtJambiLink = new PointerToPendingQObjectInterfaceLink(env, nativeLink, javaObject, interfaceOffsetInfo, superTypeForCustomMetaObject, object, isQThread, false, false, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<PendingInterfaceQObjectPointerLink, QtJambiLink::LinkDisposer> qtJambiLink{new PendingInterfaceQObjectPointerLink(env, nativeLink, javaObject, superTypeForCustomMetaObject, object, isQThread, false, false, ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         QSharedPointer<QtJambiLink> replacement;
         qtJambiLink->init(env, &replacement);
         if(replacement){
-            qtJambiLink->dispose();
             javaObject = replacement->getJavaObjectLocalRef(env);
             return replacement;
         }
     }
-    return *qtJambiLink;
+    return asSharedPointer(std::move(qtJambiLink));
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewQObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, const QMetaObject* metaObject, QObject *object, const SuperTypeInfos* superTypeInfos, SafeBool created_by_java, SafeBool is_shell, SafeBool hasCustomMetaObject, JavaException& ocurredException)
@@ -910,36 +1757,39 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewQObject(JNIEnv *env, jc
 
         // Initialize the link
         const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, objectClass, typeId, superTypeInfos);
-        PointerToQObjectLink* qtJambiLink;
+        std::unique_ptr<QObjectPointerLink, QtJambiLink::LinkDisposer> qtJambiLink;
         if(hasCustomMetaObject){
             if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-                qtJambiLink = new PointerToPendingQObjectInterfaceLink(env, nativeLink, javaObject, *interfaceOffsets, metaObject, object, false, created_by_java, is_shell, ocurredException);
+                PendingInterfaceQObjectPointerLink* link;
+                qtJambiLink.reset(link = new PendingInterfaceQObjectPointerLink(env, nativeLink, javaObject, metaObject, object, false, created_by_java, is_shell, ocurredException));
+                link->setInterfaceOffsetInfo(*interfaceOffsets);
             }else{
-                qtJambiLink = new PointerToPendingQObjectLink(env, nativeLink, javaObject, metaObject, object, false, created_by_java, is_shell, ocurredException);
+                qtJambiLink.reset(new PendingQObjectPointerLink(env, nativeLink, javaObject, metaObject, object, false, created_by_java, is_shell, ocurredException));
             }
         }else{
             QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(metaObject);
             if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
                 if(extraSignals.isEmpty()){
-                    qtJambiLink = new PointerToQObjectInterfaceLink(env, nativeLink, javaObject, *interfaceOffsets, metaObject, object, false, created_by_java, is_shell, ocurredException);
+                    InterfaceQObjectPointerLink* link;
+                    qtJambiLink.reset(link = new InterfaceQObjectPointerLink(env, nativeLink, javaObject, metaObject, object, false, created_by_java, is_shell, ocurredException));
+                    link->setInterfaceOffsetInfo(*interfaceOffsets);
                 }else{
-                    qtJambiLink = new PointerToQObjectInterfaceWithExtraSignalsLink(env, nativeLink, javaObject, *interfaceOffsets, metaObject, object, false, created_by_java, is_shell, ocurredException);
+                    ExtraSignalsInterfaceQObjectPointerLink* link;
+                    qtJambiLink.reset(link = new ExtraSignalsInterfaceQObjectPointerLink(env, nativeLink, javaObject, metaObject, object, false, created_by_java, is_shell, ocurredException));
+                    link->setInterfaceOffsetInfo(*interfaceOffsets);
                 }
             }else{
                 if(extraSignals.isEmpty()){
-                    qtJambiLink = new PointerToQObjectLink(env, nativeLink, javaObject, metaObject, object, false, created_by_java, is_shell, ocurredException);
+                    qtJambiLink.reset(new PlainQObjectPointerLink(env, nativeLink, javaObject, metaObject, object, false, created_by_java, is_shell, ocurredException));
                 }else{
-                    qtJambiLink = new PointerToQObjectWithExtraSignalsLink(env, nativeLink, javaObject, metaObject, object, false, created_by_java, is_shell, ocurredException);
+                    qtJambiLink.reset(new ExtraSignalsQObjectPointerLink(env, nativeLink, javaObject, metaObject, object, false, created_by_java, is_shell, ocurredException));
                 }
             }
         }
-        if(ocurredException){
-            qtJambiLink->dispose();
-        }else{
-            return *qtJambiLink;
-        }
+        if(Q_LIKELY(!ocurredException))
+            return asSharedPointer(std::move(qtJambiLink));
     }
-    return QSharedPointer<QtJambiLink>();
+    return {};
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewQObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, const QMetaObject* metaObject, QThread *object, const SuperTypeInfos* superTypeInfos, SafeBool created_by_java, SafeBool is_shell, SafeBool hasCustomMetaObject, JavaException& ocurredException)
@@ -952,36 +1802,39 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewQObject(JNIEnv *env, jc
 
         // Initialize the link
         const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, objectClass, typeId, superTypeInfos);
-        PointerToQObjectLink* qtJambiLink;
+        std::unique_ptr<QObjectPointerLink, QtJambiLink::LinkDisposer> qtJambiLink;
         if(hasCustomMetaObject){
             if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-                qtJambiLink = new PointerToPendingQObjectInterfaceLink(env, nativeLink, javaObject, *interfaceOffsets, metaObject, object, true, created_by_java, is_shell, ocurredException);
+                PendingInterfaceQObjectPointerLink* link;
+                qtJambiLink.reset(link = new PendingInterfaceQObjectPointerLink(env, nativeLink, javaObject, metaObject, object, true, created_by_java, is_shell, ocurredException));
+                link->setInterfaceOffsetInfo(*interfaceOffsets);
             }else{
-                qtJambiLink = new PointerToPendingQObjectLink(env, nativeLink, javaObject, metaObject, object, true, created_by_java, is_shell, ocurredException);
+                qtJambiLink.reset(new PendingQObjectPointerLink(env, nativeLink, javaObject, metaObject, object, true, created_by_java, is_shell, ocurredException));
             }
         }else{
             QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(metaObject);
             if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
                 if(extraSignals.isEmpty()){
-                    qtJambiLink = new PointerToQObjectInterfaceLink(env, nativeLink, javaObject, *interfaceOffsets, metaObject, object, true, created_by_java, is_shell, ocurredException);
+                    InterfaceQObjectPointerLink* link;
+                    qtJambiLink.reset(link = new InterfaceQObjectPointerLink(env, nativeLink, javaObject, metaObject, object, true, created_by_java, is_shell, ocurredException));
+                    link->setInterfaceOffsetInfo(*interfaceOffsets);
                 }else{
-                    qtJambiLink = new PointerToQObjectInterfaceWithExtraSignalsLink(env, nativeLink, javaObject, *interfaceOffsets, metaObject, object, true, created_by_java, is_shell, ocurredException);
+                    ExtraSignalsInterfaceQObjectPointerLink* link;
+                    qtJambiLink.reset(link = new ExtraSignalsInterfaceQObjectPointerLink(env, nativeLink, javaObject, metaObject, object, true, created_by_java, is_shell, ocurredException));
+                    link->setInterfaceOffsetInfo(*interfaceOffsets);
                 }
             }else{
                 if(extraSignals.isEmpty()){
-                    qtJambiLink = new PointerToQObjectLink(env, nativeLink, javaObject, metaObject, object, true, created_by_java, is_shell, ocurredException);
+                    qtJambiLink.reset(new PlainQObjectPointerLink(env, nativeLink, javaObject, metaObject, object, true, created_by_java, is_shell, ocurredException));
                 }else{
-                    qtJambiLink = new PointerToQObjectWithExtraSignalsLink(env, nativeLink, javaObject, metaObject, object, true, created_by_java, is_shell, ocurredException);
+                    qtJambiLink.reset(new ExtraSignalsQObjectPointerLink(env, nativeLink, javaObject, metaObject, object, true, created_by_java, is_shell, ocurredException));
                 }
             }
         }
-        if(ocurredException){
-            qtJambiLink->dispose();
-        }else{
-            return *qtJambiLink;
-        }
+        if(Q_LIKELY(!ocurredException))
+            return asSharedPointer(std::move(qtJambiLink));
     }
-    return QSharedPointer<QtJambiLink>();
+    return {};
 }
 
 template<template<typename> class SmartPointer>
@@ -1002,27 +1855,31 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToQObject(JNIE
     QObject* object = smartPointer.get();
     Q_ASSERT(object);
     JavaException ocurredException;
-    SmartPointerToQObjectLink<SmartPointer>* qtJambiLink;
+    std::unique_ptr<QObjectSmartPointerLink<SmartPointer>, QtJambiLink::LinkDisposer> qtJambiLink;
     SmartPointer<QObject>* smartPointerTarget{nullptr};
     const QMetaObject* metaObject = object->metaObject();
     QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(metaObject);
-    if(extraSignals.isEmpty())
-        qtJambiLink = new SmartPointerToPlainQObjectInterfaceLink(env, nativeLink, javaObject, interfaceOffsetInfo, created_by_java, QtJambiLink::Ownership::None, is_shell, object, isQThread, smartPointerTarget, ocurredException);
-    else
-        qtJambiLink = new SmartPointerToQObjectInterfaceWithExtraSignalsLink(env, nativeLink, javaObject, interfaceOffsetInfo, created_by_java, QtJambiLink::Ownership::None, is_shell, object, isQThread, smartPointerTarget, ocurredException);
+    if(extraSignals.isEmpty()){
+        InterfaceLink<PlainQObjectSmartPointerLink<SmartPointer>>* link;
+        qtJambiLink.reset(link = new InterfaceLink<PlainQObjectSmartPointerLink<SmartPointer>>(env, nativeLink, javaObject, created_by_java, QtJambiLink::Ownership::None, is_shell, object, isQThread, smartPointerTarget, ocurredException));
+        link->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    }else{
+        InterfaceLink<QObjectWithExtraSignalsSmartPointerLink<SmartPointer>>* link;
+        qtJambiLink.reset(link = new InterfaceLink<QObjectWithExtraSignalsSmartPointerLink<SmartPointer>>(env, nativeLink, javaObject, created_by_java, QtJambiLink::Ownership::None, is_shell, object, isQThread, smartPointerTarget, ocurredException));
+        link->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    }
     *smartPointerTarget = smartPointer;
-    if(ocurredException){
-        qtJambiLink->dispose();
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    if(qtJambiLink->qobject()->parent())
+        if(object->parent())
             qtJambiLink->setCppOwnership(env);
         else
             qtJambiLink->setJavaOwnership(env);
-    return *qtJambiLink;
+        return asSharedPointer(std::move(qtJambiLink));
+    }
 }
 
 template<template<typename> class SmartPointer>
@@ -1045,22 +1902,23 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToQObject(JNIE
     QObject* object = smartPointer.get();
     Q_ASSERT(object);
     JavaException ocurredException;
-    SmartPointerToQObjectLink<SmartPointer>* qtJambiLink;
     SmartPointer<QObject>* smartPointerTarget{nullptr};
-    qtJambiLink = new SmartPointerToQObjectInterfaceWithPendingExtraSignalsLink(env, nativeLink, javaObject, interfaceOffsetInfo, created_by_java, QtJambiLink::Ownership::None, is_shell, object, isQThread, smartPointerTarget, superTypeForCustomMetaObject, ocurredException);
+    typedef InterfaceLink<QObjectWithPendingExtraSignalsSmartPointerLink<SmartPointer>> Link;
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{
+        new Link(env, nativeLink, javaObject, created_by_java, QtJambiLink::Ownership::None, is_shell, object, isQThread, smartPointerTarget, superTypeForCustomMetaObject, ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
     *smartPointerTarget = smartPointer;
-    if(ocurredException){
-        qtJambiLink->dispose();
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    if(qtJambiLink->qobject()->parent())
+        if(object->parent())
             qtJambiLink->setCppOwnership(env);
         else
             qtJambiLink->setJavaOwnership(env);
-    return *qtJambiLink;
+        return asSharedPointer(std::move(qtJambiLink));
+    }
 }
 
 template<template<typename> class SmartPointer>
@@ -1076,22 +1934,20 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToQObject(JNIE
     QObject* object = smartPointer.get();
     Q_ASSERT(object);
     JavaException ocurredException;
-    SmartPointerToQObjectLink<SmartPointer>* qtJambiLink;
     SmartPointer<QObject>* smartPointerTarget{nullptr};
-    qtJambiLink = new SmartPointerToQObjectWithPendingExtraSignalsLink(env, nativeLink, javaObject, created_by_java, QtJambiLink::Ownership::None, is_shell, object, isQThread, smartPointerTarget, superTypeForCustomMetaObject, ocurredException);
+    std::unique_ptr<QObjectSmartPointerLink<SmartPointer>, QtJambiLink::LinkDisposer> qtJambiLink{new QObjectWithPendingExtraSignalsSmartPointerLink(env, nativeLink, javaObject, created_by_java, QtJambiLink::Ownership::None, is_shell, object, isQThread, smartPointerTarget, superTypeForCustomMetaObject, ocurredException)};
     *smartPointerTarget = smartPointer;
-    if(ocurredException){
-        qtJambiLink->dispose();
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    if(qtJambiLink->qobject()->parent())
+        if(object->parent())
             qtJambiLink->setCppOwnership(env);
         else
             qtJambiLink->setJavaOwnership(env);
-    return *qtJambiLink;
+        return asSharedPointer(std::move(qtJambiLink));
+    }
 }
 
 template<template<typename> class SmartPointer>
@@ -1106,26 +1962,25 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToQObject(JNIE
     QObject* object = smartPointer.get();
     Q_ASSERT(object);
     JavaException ocurredException;
-    SmartPointerToQObjectLink<SmartPointer>* qtJambiLink;
     SmartPointer<QObject>* smartPointerTarget{nullptr};
     QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(object->metaObject());
+    std::unique_ptr<PlainQObjectSmartPointerLink<SmartPointer>, QtJambiLink::LinkDisposer> qtJambiLink;
     if(extraSignals.isEmpty())
-        qtJambiLink = new SmartPointerToPlainQObjectLink(env, nativeLink, javaObject, created_by_java, QtJambiLink::Ownership::None, is_shell, object, isQThread, smartPointerTarget, ocurredException);
+        qtJambiLink.reset(new PlainQObjectSmartPointerLink<SmartPointer>(env, nativeLink, javaObject, created_by_java, QtJambiLink::Ownership::None, is_shell, object, isQThread, smartPointerTarget, ocurredException));
     else
-        qtJambiLink = new SmartPointerToQObjectWithExtraSignalsLink(env, nativeLink, javaObject, created_by_java, QtJambiLink::Ownership::None, is_shell, object, isQThread, smartPointerTarget, ocurredException);
+        qtJambiLink.reset(new QObjectWithExtraSignalsSmartPointerLink<SmartPointer>(env, nativeLink, javaObject, created_by_java, QtJambiLink::Ownership::None, is_shell, object, isQThread, smartPointerTarget, ocurredException));
     *smartPointerTarget = smartPointer;
-    if(ocurredException){
-        qtJambiLink->dispose();
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    if(qtJambiLink->qobject()->parent())
+        if(object->parent())
             qtJambiLink->setCppOwnership(env);
         else
             qtJambiLink->setJavaOwnership(env);
-    return *qtJambiLink;
+        return asSharedPointer(std::move(qtJambiLink));
+    }
 }
 
 template<template<typename> class SmartPointer>
@@ -1143,32 +1998,38 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToQObject(J
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    SmartPointerToQObjectLink<SmartPointer>* qtJambiLink;
     SmartPointer<QObject>* smartPointerTarget{nullptr};
+    std::unique_ptr<QObjectSmartPointerLink<SmartPointer>, QtJambiLink::LinkDisposer> qtJambiLink;
     if(superTypeForCustomMetaObject){
-        qtJambiLink = new SmartPointerToQObjectInterfaceWithPendingExtraSignalsLink(env, nativeLink, javaObject, interfaceOffsetInfo, created_by_java, ownership, is_shell, object, isQThread, smartPointerTarget, superTypeForCustomMetaObject, ocurredException);
+        InterfaceLink<QObjectWithPendingExtraSignalsSmartPointerLink<SmartPointer>>* link;
+        qtJambiLink.reset(link = new InterfaceLink<QObjectWithPendingExtraSignalsSmartPointerLink<SmartPointer>>(env, nativeLink, javaObject, created_by_java, ownership, is_shell, object, isQThread, smartPointerTarget, superTypeForCustomMetaObject, ocurredException));
+        link->setInterfaceOffsetInfo(interfaceOffsetInfo);
     }else{
         const QMetaObject* metaObject = object->metaObject();
         QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(metaObject);
-        if(extraSignals.isEmpty())
-            qtJambiLink = new SmartPointerToPlainQObjectInterfaceLink(env, nativeLink, javaObject, interfaceOffsetInfo, created_by_java, ownership, is_shell, object, isQThread, smartPointerTarget, ocurredException);
-        else
-            qtJambiLink = new SmartPointerToQObjectInterfaceWithExtraSignalsLink(env, nativeLink, javaObject, interfaceOffsetInfo, created_by_java, ownership, is_shell, object, isQThread, smartPointerTarget, ocurredException);
+        if(extraSignals.isEmpty()){
+            InterfaceLink<PlainQObjectSmartPointerLink<SmartPointer>>* link;
+            qtJambiLink.reset(link = new InterfaceLink<PlainQObjectSmartPointerLink<SmartPointer>>(env, nativeLink, javaObject, created_by_java, ownership, is_shell, object, isQThread, smartPointerTarget, ocurredException));
+            link->setInterfaceOffsetInfo(interfaceOffsetInfo);
+        }else{
+            InterfaceLink<QObjectWithExtraSignalsSmartPointerLink<SmartPointer>>* link;
+            qtJambiLink.reset(link = new InterfaceLink<QObjectWithExtraSignalsSmartPointerLink<SmartPointer>>(env, nativeLink, javaObject, created_by_java, ownership, is_shell, object, isQThread, smartPointerTarget, ocurredException));
+            link->setInterfaceOffsetInfo(interfaceOffsetInfo);
+        }
     }
     *smartPointerTarget = smartPointer;
-    if(ocurredException){
-        qtJambiLink->dispose();
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
+        if constexpr(std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value || std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value){
+            qtJambiLink->QtJambiLink::setJavaOwnership(env);
+        }else{
+            qtJambiLink->QtJambiLink::setCppOwnership(env);
+        }
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    if constexpr(std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value || std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value){
-        qtJambiLink->QtJambiLink::setJavaOwnership(env);
-    }else{
-        qtJambiLink->QtJambiLink::setCppOwnership(env);
-    }
-    return *qtJambiLink;
 }
 
 template<template<typename> class SmartPointer, typename T>
@@ -1229,29 +2090,16 @@ struct SmartDeleterFunctionDeleter : SmartPointerDeleter<SmartPointer,char>{
 
 template<template<typename> class SmartPointer>
 struct SmartMetaTypeDeleter : SmartPointerDeleter<SmartPointer,char>{
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    int elementMetaType;
-#else
     QMetaType elementMetaType;
-#endif
     SmartMetaTypeDeleter(const QMetaType& _elementMetaType, QWeakPointer<SmartPointerLink<SmartPointer,char>>&& link)
-        : SmartPointerDeleter<SmartPointer,char>(std::move(link)), elementMetaType(_elementMetaType
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                          .id()
-                      #endif
-                          )
+        : SmartPointerDeleter<SmartPointer,char>(std::move(link)), elementMetaType(_elementMetaType)
     {
     }
     void operator()(char* ptr){
         if(SmartPointerDeleter<SmartPointer,char>::pushToJava())
             return;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        if(elementMetaType!=QMetaType::UnknownType)
-            QMetaType::destroy(elementMetaType, ptr);
-#else
         if(elementMetaType.isValid())
             elementMetaType.destroy(ptr);
-#endif
     }
 };
 
@@ -1277,19 +2125,12 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToQObject(J
     typedef typename std::conditional<std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value, QSharedPointer<QObject>,
                                       typename std::conditional<std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value, std::shared_ptr<QObject>, SmartPointer<QObject>>::type>::type SharedPointerT;
     typedef typename std::conditional</*if*/std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value,
-                                      /*then*/SmartPointerToQObjectLink<QSharedPointer>,
+                                      /*then*/QObjectSmartPointerLink<QSharedPointer>,
                                       /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value,
-                                                                        /*then*/SmartPointerToQObjectLink<std::shared_ptr>,
+                                                                        /*then*/QObjectSmartPointerLink<std::shared_ptr>,
                                                                         /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<QObject>,QSharedPointer<QObject>>::value,
-                                                                                                          /*then*/SmartPointerToQObjectLink<QWeakPointer>,
-                                                                                                          /*else*/SmartPointerToQObjectLink<std::weak_ptr>>::type>::type>::type LinkType;
-    typedef typename std::conditional</*if*/std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value,
-                                      /*then*/QSharedPointer<QObject>,
-                                      /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value,
-                                                                        /*then*/std::shared_ptr<QObject>,
-                                                                        /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<QObject>,QSharedPointer<QObject>>::value,
-                                                                                                          /*then*/QWeakPointer<QObject>,
-                                                                                                          /*else*/std::weak_ptr<QObject>>::type>::type>::type TargetSmartPointer;
+                                                                                                          /*then*/QObjectSmartPointerLink<QWeakPointer>,
+                                                                                                          /*else*/QObjectSmartPointerLink<std::weak_ptr>>::type>::type>::type Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(object);
@@ -1297,34 +2138,41 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToQObject(J
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    LinkType* qtJambiLink;
-    TargetSmartPointer* smartPointerTarget{nullptr};
+    typename Link::SmartPointerType* smartPointerTarget{nullptr};
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink;
     if(superTypeForCustomMetaObject){
-        qtJambiLink = new SmartPointerToQObjectWithPendingExtraSignalsLink(env, nativeLink, javaObject, created_by_java, ownership, is_shell, object, isQThread, smartPointerTarget, superTypeForCustomMetaObject, ocurredException);
+        qtJambiLink.reset(new QObjectWithPendingExtraSignalsSmartPointerLink(env, nativeLink, javaObject, created_by_java, ownership, is_shell, object, isQThread, smartPointerTarget, superTypeForCustomMetaObject, ocurredException));
     }else{
         QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(object->metaObject());
         if(extraSignals.isEmpty())
-            qtJambiLink = new SmartPointerToPlainQObjectLink(env, nativeLink, javaObject, created_by_java, ownership, is_shell, object, isQThread, smartPointerTarget, ocurredException);
-        else
-            qtJambiLink = new SmartPointerToQObjectWithExtraSignalsLink(env, nativeLink, javaObject, created_by_java, ownership, is_shell, object, isQThread, smartPointerTarget, ocurredException);
+            qtJambiLink.reset(new PlainQObjectSmartPointerLink(env, nativeLink, javaObject, created_by_java, ownership, is_shell, object, isQThread, smartPointerTarget, ocurredException));
+        else{
+            typedef typename std::conditional</*if*/std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value,
+                                              /*then*/QObjectWithExtraSignalsSmartPointerLink<QSharedPointer>,
+                                              /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value,
+                                                                                /*then*/QObjectWithExtraSignalsSmartPointerLink<std::shared_ptr>,
+                                                                                /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<QObject>,QSharedPointer<QObject>>::value,
+                                                                                                                  /*then*/QObjectWithExtraSignalsSmartPointerLink<QWeakPointer>,
+                                                                                                                  /*else*/QObjectWithExtraSignalsSmartPointerLink<std::weak_ptr>>::type>::type>::type ExtraLink;
+            qtJambiLink.reset(new ExtraLink(env, nativeLink, javaObject, created_by_java, ownership, is_shell, object, isQThread, smartPointerTarget, ocurredException));
+        }
     }
     SharedPointerT sharedPointer;
     sharedPointer = SharedPointerT(object, LinkedQObjectDeleter<SmartPointer>(*qtJambiLink));
     smartPointer = sharedPointer;
-    *smartPointerTarget = TargetSmartPointer(sharedPointer);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    *smartPointerTarget = typename Link::SmartPointerType(sharedPointer);
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
+        if constexpr(std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value || std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value){
+            qtJambiLink->QtJambiLink::setJavaOwnership(env);
+        }else{
+            qtJambiLink->QtJambiLink::setCppOwnership(env);
+        }
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    if constexpr(std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value || std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value){
-        qtJambiLink->QtJambiLink::setJavaOwnership(env);
-    }else{
-        qtJambiLink->QtJambiLink::setCppOwnership(env);
-    }
-    return *qtJambiLink;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToQObject(JNIEnv *env, jobject javaObject,
@@ -1492,7 +2340,6 @@ QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForSmartPointerToObje
                                                                                           LINK_NAME_ARG(const char* qt_name)
                                                                                           SafeBool created_by_java, SafeBool is_shell,
                                                                                           const QObject* extension,
-                                                                                          PtrOwnerFunction ownerFunction,
                                                                                           const SmartPointer<char>& smartPointer)
 {
     Q_ASSERT(env);
@@ -1503,22 +2350,85 @@ QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForSmartPointerToObje
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
     SmartPointer<char>* smartPointerTarget{nullptr};
-    auto qtJambiLink = new ExtendedSmartPointerToObjectLink<SmartPointer>(env, nativeLink,
-                                                                                  LINK_NAME_ARG(qt_name)
-                                                                                  created_by_java, QtJambiLink::Ownership::None, is_shell, extension,
-                                                                                  ownerFunction, smartPointer.get(),
-                                                                                  smartPointerTarget,
-                                                                                  ocurredException);
+    typedef ExtendedLink<PlainObjectSmartPointerLink<SmartPointer>> Link;
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{new Link(env, nativeLink,
+                                                                   LINK_NAME_ARG(qt_name)
+                                                                   created_by_java, QtJambiLink::Ownership::None, is_shell,
+                                                                   smartPointer.get(),
+                                                                   smartPointerTarget,
+                                                                   ocurredException)};
+    qtJambiLink->m_extension = extension;
     *smartPointerTarget = smartPointer;
-    if(ocurredException){
-        qtJambiLink->dispose();
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
+        qtJambiLink->setJavaOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    qtJambiLink->setJavaOwnership(env);
-    return *qtJambiLink;
+}
+
+template<template<typename> class SmartPointer>
+QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                          LINK_NAME_ARG(const char* qt_name)
+                                                                                          SafeBool created_by_java, SafeBool is_shell,
+                                                                                          const QObject* extension,
+                                                                                          PtrOwnerFunction ownerFunction,
+                                                                                          const SmartPointer<char>& smartPointer)
+{
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(smartPointer);
+    if(ownerFunction)
+        checkValueOwner(env, ownerFunction, smartPointer.get());
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    SmartPointer<char>* smartPointerTarget{nullptr};
+    std::unique_ptr<ExtendedLink<PlainOwnedObjectSmartPointerLink<SmartPointer>>, QtJambiLink::LinkDisposer> qtJambiLink{
+        new ExtendedLink<PlainOwnedObjectSmartPointerLink<SmartPointer>>(env, nativeLink,
+                                                                   LINK_NAME_ARG(qt_name)
+                                                                   created_by_java, QtJambiLink::Ownership::None, is_shell,
+                                                                   smartPointer.get(),
+                                                                   smartPointerTarget,
+                                                                   ocurredException)};
+    qtJambiLink->m_owner_function = ownerFunction;
+    qtJambiLink->m_extension = extension;
+    *smartPointerTarget = smartPointer;
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        qtJambiLink->setJavaOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
+    }
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                          LINK_NAME_ARG(const char* qt_name)
+                                                                                          SafeBool created_by_java, SafeBool is_shell,
+                                                                                          const QObject* extension,
+                                                                                          const std::shared_ptr<char>& smartPointer){
+    return createExtendedLinkForSmartPointerToObject<std::shared_ptr>(env, javaObject,
+                                                                     LINK_NAME_ARG(qt_name)
+                                                                     created_by_java, is_shell,
+                                                                     extension,
+                                                                     smartPointer);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                          LINK_NAME_ARG(const char* qt_name)
+                                                                                          SafeBool created_by_java, SafeBool is_shell,
+                                                                                          const QObject* extension,
+                                                                                          const QSharedPointer<char>& smartPointer){
+    return createExtendedLinkForSmartPointerToObject<QSharedPointer>(env, javaObject,
+                                                                     LINK_NAME_ARG(qt_name)
+                                                                     created_by_java, is_shell,
+                                                                     extension,
+                                                                     smartPointer);
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
@@ -1560,12 +2470,58 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
     typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
                                       typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
     typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
-                                      /*then*/QSharedPointer<char>,
+                                      /*then*/InterfaceLink<OwnedMetaTypedObjectSmartPointerLink<QSharedPointer>>,
                                       /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
-                                                                        /*then*/std::shared_ptr<char>,
+                                                                        /*then*/InterfaceLink<OwnedMetaTypedObjectSmartPointerLink<std::shared_ptr>>,
                                                                         /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
-                                                                                                          /*then*/QWeakPointer<char>,
-                                                                                                          /*else*/std::weak_ptr<char>>::type>::type>::type TargetSmartPointer;
+                                                                                                          /*then*/InterfaceLink<OwnedMetaTypedObjectSmartPointerLink<QWeakPointer>>,
+                                                                                                          /*else*/InterfaceLink<OwnedMetaTypedObjectSmartPointerLink<std::weak_ptr>>>::type>::type>::type Link;
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(pointer);
+    if(ownerFunction)
+        checkValueOwner(env, ownerFunction, pointer);
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    typename Link::SmartPointerType* smartPointerTarget{nullptr};
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{new Link(env, nativeLink,
+                                                                          LINK_NAME_ARG(elementMetaType.name())
+                                                                          created_by_java, ownership, is_shell,
+                                                                          pointer, smartPointerTarget, ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    qtJambiLink->m_owner_function = ownerFunction;
+    SharedPointerT sharedPointer(reinterpret_cast<char*>(pointer), SmartMetaTypeDeleter<SmartPointer>(elementMetaType, *qtJambiLink.get()));
+    smartPointer = sharedPointer;
+    *smartPointerTarget = typename Link::SmartPointerType(sharedPointer);
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        qtJambiLink->setJavaOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
+    }
+}
+
+template<template<typename> class SmartPointer>
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  SmartPointer<char>& smartPointer,
+                                                                                  const QMetaType& elementMetaType,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
+                                      typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
+    typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
+                                      /*then*/InterfaceLink<MetaTypedObjectSmartPointerLink<QSharedPointer>>,
+                                      /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
+                                                                        /*then*/InterfaceLink<MetaTypedObjectSmartPointerLink<std::shared_ptr>>,
+                                                                        /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
+                                                                                                          /*then*/InterfaceLink<MetaTypedObjectSmartPointerLink<QWeakPointer>>,
+                                                                                                          /*else*/InterfaceLink<MetaTypedObjectSmartPointerLink<std::weak_ptr>>>::type>::type>::type Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(pointer);
@@ -1573,22 +2529,53 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    TargetSmartPointer* smartPointerTarget{nullptr};
-    auto qtJambiLink = new MetaTypedSmartPointerToObjectInterfaceLink(env, nativeLink, interfaceOffsetInfo,
-                                                                      elementMetaType,
-                                                                      created_by_java, ownership, is_shell, ownerFunction, pointer, smartPointerTarget, ocurredException);
-    SharedPointerT sharedPointer(reinterpret_cast<char*>(pointer), SmartMetaTypeDeleter<SmartPointer>(elementMetaType, *qtJambiLink));
+    typename Link::SmartPointerType* smartPointerTarget{nullptr};
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{new Link(env, nativeLink,
+                                                                          LINK_NAME_ARG(elementMetaType.name())
+                                                                          created_by_java, ownership, is_shell,
+                                                                          pointer, smartPointerTarget, ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    SharedPointerT sharedPointer(reinterpret_cast<char*>(pointer), SmartMetaTypeDeleter<SmartPointer>(elementMetaType, *qtJambiLink.get()));
     smartPointer = sharedPointer;
-    *smartPointerTarget = TargetSmartPointer(sharedPointer);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    *smartPointerTarget = typename Link::SmartPointerType(sharedPointer);
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
+        qtJambiLink->setJavaOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    qtJambiLink->setJavaOwnership(env);
-    return *qtJambiLink;
+}
+
+template<template<typename> class SmartPointer>
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  LINK_NAME_ARG(const char* qt_name)
+                                                                                  SafeBool created_by_java, SafeBool is_shell,
+                                                                                  const SmartPointer<char>& smartPointer,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(smartPointer);
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    SmartPointer<char>* smartPointerTarget{nullptr};
+    std::unique_ptr<InterfaceLink<PlainObjectSmartPointerLink<SmartPointer>>, QtJambiLink::LinkDisposer> qtJambiLink{new InterfaceLink<PlainObjectSmartPointerLink<SmartPointer>>(env, nativeLink,
+                                                                            LINK_NAME_ARG(qt_name)
+                                                                            created_by_java, QtJambiLink::Ownership::None, is_shell, smartPointer.get(), smartPointerTarget, ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    *smartPointerTarget = smartPointer;
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        qtJambiLink->setJavaOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
+    }
 }
 
 template<template<typename> class SmartPointer>
@@ -1601,24 +2588,27 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToObject(JNIEn
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(smartPointer);
+    Q_ASSERT(ownerFunction);
+    checkValueOwner(env, ownerFunction, smartPointer.get());
 
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
     SmartPointer<char>* smartPointerTarget{nullptr};
-    auto qtJambiLink = new SmartPointerToObjectInterfaceLink(env, nativeLink, interfaceOffsetInfo,
-                                                            LINK_NAME_ARG(qt_name)
-                                                            created_by_java, QtJambiLink::Ownership::None, is_shell, ownerFunction, smartPointer.get(), smartPointerTarget, ocurredException);
+    std::unique_ptr<InterfaceLink<PlainOwnedObjectSmartPointerLink<SmartPointer>>, QtJambiLink::LinkDisposer> qtJambiLink{new InterfaceLink<PlainOwnedObjectSmartPointerLink<SmartPointer>>(env, nativeLink,
+                                                                            LINK_NAME_ARG(qt_name)
+                                                                            created_by_java, QtJambiLink::Ownership::None, is_shell, smartPointer.get(), smartPointerTarget, ocurredException)};
+    qtJambiLink->m_owner_function = ownerFunction;
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
     *smartPointerTarget = smartPointer;
-    if(ocurredException){
-        qtJambiLink->dispose();
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
+        qtJambiLink->setJavaOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    qtJambiLink->setJavaOwnership(env);
-    return *qtJambiLink;
 }
 
 template<template<typename> class SmartPointer>
@@ -1632,12 +2622,63 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
     typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
                                       typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
     typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
-                                      /*then*/QSharedPointer<char>,
+                                      /*then*/OwnedMetaTypedObjectSmartPointerLink<QSharedPointer>,
                                       /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
-                                                                        /*then*/std::shared_ptr<char>,
+                                                                        /*then*/OwnedMetaTypedObjectSmartPointerLink<std::shared_ptr>,
                                                                         /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
-                                                                                                          /*then*/QWeakPointer<char>,
-                                                                                                          /*else*/std::weak_ptr<char>>::type>::type>::type TargetSmartPointer;
+                                                                                                          /*then*/OwnedMetaTypedObjectSmartPointerLink<QWeakPointer>,
+                                                                                                          /*else*/OwnedMetaTypedObjectSmartPointerLink<std::weak_ptr>>::type>::type>::type Link;
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(pointer);
+    Q_ASSERT(ownerFunction);
+    checkValueOwner(env, ownerFunction, pointer);
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    typename Link::SmartPointerType* smartPointerTarget{nullptr};
+
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{new Link(env, nativeLink,
+                                LINK_NAME_ARG(elementMetaType.name())
+                                created_by_java, ownership, is_shell,
+                                pointer,
+                                smartPointerTarget, ocurredException)};
+    qtJambiLink->m_owner_function = ownerFunction;
+    qtJambiLink->m_meta_type = elementMetaType;
+    SharedPointerT sharedPointer(reinterpret_cast<char*>(pointer), SmartMetaTypeDeleter<SmartPointer>(elementMetaType, *qtJambiLink.get()));
+    smartPointer = sharedPointer;
+    *smartPointerTarget = typename Link::SmartPointerType(sharedPointer);
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        if constexpr(std::is_same<SmartPointer<char>,QWeakPointer<char>>::value || std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value){
+            qtJambiLink->QtJambiLink::setJavaOwnership(env);
+        }else{
+            qtJambiLink->QtJambiLink::setCppOwnership(env);
+        }
+        return asSharedPointer(std::move(qtJambiLink));
+    }
+}
+
+template<template<typename> class SmartPointer>
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  SmartPointer<char>& smartPointer,
+                                                                                  const QMetaType& elementMetaType)
+{
+    typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
+                                      typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
+    typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
+                                      /*then*/MetaTypedObjectSmartPointerLink<QSharedPointer>,
+                                      /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
+                                                                        /*then*/MetaTypedObjectSmartPointerLink<std::shared_ptr>,
+                                                                        /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
+                                                                                                          /*then*/MetaTypedObjectSmartPointerLink<QWeakPointer>,
+                                                                                                          /*else*/MetaTypedObjectSmartPointerLink<std::weak_ptr>>::type>::type>::type Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(pointer);
@@ -1645,28 +2686,30 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    TargetSmartPointer* smartPointerTarget{nullptr};
-    auto qtJambiLink = new MetaTypedSmartPointerToObjectLink(env, nativeLink,
-                                                             elementMetaType,
-                                                             created_by_java, ownership, is_shell,
-                                                             ownerFunction, pointer,
-                                                             smartPointerTarget, ocurredException);
-    SharedPointerT sharedPointer(reinterpret_cast<char*>(pointer), SmartMetaTypeDeleter<SmartPointer>(elementMetaType, *qtJambiLink));
+    typename Link::SmartPointerType* smartPointerTarget{nullptr};
+
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{
+        new Link(env, nativeLink,
+                                LINK_NAME_ARG(elementMetaType.name())
+                                created_by_java, ownership, is_shell,
+                                pointer,
+                                smartPointerTarget, ocurredException)};
+    qtJambiLink->m_meta_type = elementMetaType;
+    SharedPointerT sharedPointer(reinterpret_cast<char*>(pointer), SmartMetaTypeDeleter<SmartPointer>(elementMetaType, *qtJambiLink.get()));
     smartPointer = sharedPointer;
-    *smartPointerTarget = TargetSmartPointer(sharedPointer);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    *smartPointerTarget = typename Link::SmartPointerType(sharedPointer);
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
+        if constexpr(std::is_same<SmartPointer<char>,QWeakPointer<char>>::value || std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value){
+            qtJambiLink->QtJambiLink::setJavaOwnership(env);
+        }else{
+            qtJambiLink->QtJambiLink::setCppOwnership(env);
+        }
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    if constexpr(std::is_same<SmartPointer<char>,QWeakPointer<char>>::value || std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value){
-        qtJambiLink->QtJambiLink::setJavaOwnership(env);
-    }else{
-        qtJambiLink->QtJambiLink::setCppOwnership(env);
-    }
-    return *qtJambiLink;
 }
 
 template<template<typename> class SmartPointer>
@@ -1681,12 +2724,63 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
     typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
                                       typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
     typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
-                                      /*then*/QSharedPointer<char>,
+                                      /*then*/InterfaceLink<PlainOwnedObjectSmartPointerLink<QSharedPointer>>,
                                       /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
-                                                                        /*then*/std::shared_ptr<char>,
+                                                                        /*then*/InterfaceLink<PlainOwnedObjectSmartPointerLink<std::shared_ptr>>,
                                                                         /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
-                                                                                                          /*then*/QWeakPointer<char>,
-                                                                                                          /*else*/std::weak_ptr<char>>::type>::type>::type TargetSmartPointer;
+                                                                                                          /*then*/InterfaceLink<PlainOwnedObjectSmartPointerLink<QWeakPointer>>,
+                                                                                                          /*else*/InterfaceLink<PlainOwnedObjectSmartPointerLink<std::weak_ptr>>>::type>::type>::type Link;
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(pointer);
+    Q_ASSERT(ownerFunction);
+    checkValueOwner(env, ownerFunction, pointer);
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    typename Link::SmartPointerType* smartPointerTarget{nullptr};
+
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{new Link(env, nativeLink,
+                                                                          LINK_NAME_ARG(qt_name)
+                                                                          created_by_java, ownership, is_shell, pointer, smartPointerTarget, ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    qtJambiLink->m_owner_function = ownerFunction;
+    SharedPointerT sharedPointer(reinterpret_cast<char*>(pointer), SmartDeleterFunctionDeleter<SmartPointer>{deleterFunction, *qtJambiLink.get()});
+    smartPointer = sharedPointer;
+    *smartPointerTarget = typename Link::SmartPointerType(sharedPointer);
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        if constexpr(std::is_same<SmartPointer<char>,QWeakPointer<char>>::value || std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value){
+            qtJambiLink->QtJambiLink::setJavaOwnership(env);
+        }else{
+            qtJambiLink->QtJambiLink::setCppOwnership(env);
+        }
+        return asSharedPointer(std::move(qtJambiLink));
+    }
+}
+
+template<template<typename> class SmartPointer>
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  LINK_NAME_ARG(const char* qt_name)
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  SmartPointer<char>& smartPointer,
+                                                                                  PtrDeleterFunction deleterFunction,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
+                                      typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
+    typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
+                                      /*then*/InterfaceLink<PlainObjectSmartPointerLink<QSharedPointer>>,
+                                      /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
+                                                                        /*then*/InterfaceLink<PlainObjectSmartPointerLink<std::shared_ptr>>,
+                                                                        /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
+                                                                                                          /*then*/InterfaceLink<PlainObjectSmartPointerLink<QWeakPointer>>,
+                                                                                                          /*else*/InterfaceLink<PlainObjectSmartPointerLink<std::weak_ptr>>>::type>::type>::type Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(pointer);
@@ -1694,26 +2788,27 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    TargetSmartPointer* smartPointerTarget{nullptr};
-    auto qtJambiLink = new SmartPointerToObjectInterfaceLink(env, nativeLink, interfaceOffsetInfo,
-                                                            LINK_NAME_ARG(qt_name)
-                                                            created_by_java, ownership, is_shell, ownerFunction, pointer, smartPointerTarget, ocurredException);
-    SharedPointerT sharedPointer(reinterpret_cast<char*>(pointer), SmartDeleterFunctionDeleter<SmartPointer>{deleterFunction, *qtJambiLink});
+    typename Link::SmartPointerType* smartPointerTarget{nullptr};
+
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{new Link(env, nativeLink,
+                                                                          LINK_NAME_ARG(qt_name)
+                                                                          created_by_java, ownership, is_shell, pointer, smartPointerTarget, ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    SharedPointerT sharedPointer(reinterpret_cast<char*>(pointer), SmartDeleterFunctionDeleter<SmartPointer>{deleterFunction, *qtJambiLink.get()});
     smartPointer = sharedPointer;
-    *smartPointerTarget = TargetSmartPointer(sharedPointer);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    *smartPointerTarget = typename Link::SmartPointerType(sharedPointer);
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
+        if constexpr(std::is_same<SmartPointer<char>,QWeakPointer<char>>::value || std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value){
+            qtJambiLink->QtJambiLink::setJavaOwnership(env);
+        }else{
+            qtJambiLink->QtJambiLink::setCppOwnership(env);
+        }
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    if constexpr(std::is_same<SmartPointer<char>,QWeakPointer<char>>::value || std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value){
-        qtJambiLink->QtJambiLink::setJavaOwnership(env);
-    }else{
-        qtJambiLink->QtJambiLink::setCppOwnership(env);
-    }
-    return *qtJambiLink;
 }
 
 template<template<typename> class SmartPointer>
@@ -1728,12 +2823,61 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
     typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
                                       typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
     typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
-                                      /*then*/QSharedPointer<char>,
+                                      /*then*/PlainOwnedObjectSmartPointerLink<QSharedPointer>,
                                       /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
-                                                                        /*then*/std::shared_ptr<char>,
+                                                                        /*then*/PlainOwnedObjectSmartPointerLink<std::shared_ptr>,
                                                                         /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
-                                                                                                          /*then*/QWeakPointer<char>,
-                                                                                                          /*else*/std::weak_ptr<char>>::type>::type>::type TargetSmartPointer;
+                                                                                                          /*then*/PlainOwnedObjectSmartPointerLink<QWeakPointer>,
+                                                                                                          /*else*/PlainOwnedObjectSmartPointerLink<std::weak_ptr>>::type>::type>::type Link;
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(pointer);
+    Q_ASSERT(ownerFunction);
+    checkValueOwner(env, ownerFunction, pointer);
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    typename Link::SmartPointerType* smartPointerTarget{nullptr};
+
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{new Link(env, nativeLink,
+                                                                          LINK_NAME_ARG(qt_name)
+                                                                          created_by_java, ownership, is_shell, pointer, smartPointerTarget, ocurredException)};
+    qtJambiLink->m_owner_function = ownerFunction;
+    SharedPointerT sharedPointer(reinterpret_cast<char*>(pointer), SmartDeleterFunctionDeleter<SmartPointer>{deleterFunction, *qtJambiLink.get()});
+    smartPointer = sharedPointer;
+    *smartPointerTarget = typename Link::SmartPointerType(sharedPointer);
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        if constexpr(std::is_same<SmartPointer<char>,QWeakPointer<char>>::value || std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value){
+            qtJambiLink->QtJambiLink::setJavaOwnership(env);
+        }else{
+            qtJambiLink->QtJambiLink::setCppOwnership(env);
+        }
+        return asSharedPointer(std::move(qtJambiLink));
+    }
+}
+
+template<template<typename> class SmartPointer>
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  LINK_NAME_ARG(const char* qt_name)
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  SmartPointer<char>& smartPointer,
+                                                                                  PtrDeleterFunction deleterFunction)
+{
+    typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
+                                      typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
+    typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
+                                      /*then*/PlainObjectSmartPointerLink<QSharedPointer>,
+                                      /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
+                                                                        /*then*/PlainObjectSmartPointerLink<std::shared_ptr>,
+                                                                        /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
+                                                                                                          /*then*/PlainObjectSmartPointerLink<QWeakPointer>,
+                                                                                                          /*else*/PlainObjectSmartPointerLink<std::weak_ptr>>::type>::type>::type Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(pointer);
@@ -1741,26 +2885,303 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    TargetSmartPointer* smartPointerTarget{nullptr};
-    auto qtJambiLink = new SmartPointerToObjectLink(env, nativeLink,
-                                                 LINK_NAME_ARG(qt_name)
-                                                 created_by_java, ownership, is_shell, ownerFunction, pointer, smartPointerTarget, ocurredException);
-    SharedPointerT sharedPointer(reinterpret_cast<char*>(pointer), SmartDeleterFunctionDeleter<SmartPointer>{deleterFunction, *qtJambiLink});
+    typename Link::SmartPointerType* smartPointerTarget{nullptr};
+
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{new Link(env, nativeLink,
+                                                                          LINK_NAME_ARG(qt_name)
+                                                                          created_by_java, ownership, is_shell, pointer, smartPointerTarget, ocurredException)};
+    SharedPointerT sharedPointer(reinterpret_cast<char*>(pointer), SmartDeleterFunctionDeleter<SmartPointer>{deleterFunction, *qtJambiLink.get()});
     smartPointer = sharedPointer;
-    *smartPointerTarget = TargetSmartPointer(sharedPointer);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    *smartPointerTarget = typename Link::SmartPointerType(sharedPointer);
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
+        if constexpr(std::is_same<SmartPointer<char>,QWeakPointer<char>>::value || std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value){
+            qtJambiLink->QtJambiLink::setJavaOwnership(env);
+        }else{
+            qtJambiLink->QtJambiLink::setCppOwnership(env);
+        }
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    if constexpr(std::is_same<SmartPointer<char>,QWeakPointer<char>>::value || std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value){
-        qtJambiLink->QtJambiLink::setJavaOwnership(env);
-    }else{
-        qtJambiLink->QtJambiLink::setCppOwnership(env);
-    }
-    return *qtJambiLink;
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  QSharedPointer<char>& smartPointer,
+                                                                                  const QMetaType& elementMetaType,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    return createLinkForNewSmartPointerToObject<QSharedPointer>(env, javaObject,
+                                                             created_by_java, ownership, is_shell,
+                                                             pointer,
+                                                             smartPointer,
+                                                             elementMetaType,
+                                                             interfaceOffsetInfo);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
+                                                                                  void* pointer,
+                                                                                  QSharedPointer<char>& smartPointer,
+                                                                                  const QMetaType& elementMetaType,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    return createLinkForNewSmartPointerToObject<QSharedPointer>(env, javaObject,
+                                                             created_by_java, ownership, is_shell,
+                                                             ownerFunction,
+                                                             pointer,
+                                                             smartPointer,
+                                                             elementMetaType,
+                                                             interfaceOffsetInfo);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  std::shared_ptr<char>& smartPointer,
+                                                                                  const QMetaType& elementMetaType,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    return createLinkForNewSmartPointerToObject<std::shared_ptr>(env, javaObject,
+                                                             created_by_java, ownership, is_shell,
+                                                             pointer,
+                                                             smartPointer,
+                                                             elementMetaType,
+                                                             interfaceOffsetInfo);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
+                                                                                  void* pointer,
+                                                                                  std::shared_ptr<char>& smartPointer,
+                                                                                  const QMetaType& elementMetaType,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    return createLinkForNewSmartPointerToObject<std::shared_ptr>(env, javaObject,
+                                                             created_by_java, ownership, is_shell,
+                                                             ownerFunction,
+                                                             pointer,
+                                                             smartPointer,
+                                                             elementMetaType,
+                                                             interfaceOffsetInfo);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  QWeakPointer<char>& smartPointer,
+                                                                                  const QMetaType& elementMetaType,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    return createLinkForNewSmartPointerToObject<QWeakPointer>(env, javaObject,
+                                                             created_by_java, ownership, is_shell,
+                                                             pointer,
+                                                             smartPointer,
+                                                             elementMetaType,
+                                                             interfaceOffsetInfo);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
+                                                                                  void* pointer,
+                                                                                  QWeakPointer<char>& smartPointer,
+                                                                                  const QMetaType& elementMetaType,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    return createLinkForNewSmartPointerToObject<QWeakPointer>(env, javaObject,
+                                                             created_by_java, ownership, is_shell,
+                                                             ownerFunction,
+                                                             pointer,
+                                                             smartPointer,
+                                                             elementMetaType,
+                                                             interfaceOffsetInfo);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  std::weak_ptr<char>& smartPointer,
+                                                                                  const QMetaType& elementMetaType,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    return createLinkForNewSmartPointerToObject<std::weak_ptr>(env, javaObject,
+                                                             created_by_java, ownership, is_shell,
+                                                             pointer,
+                                                             smartPointer,
+                                                             elementMetaType,
+                                                             interfaceOffsetInfo);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
+                                                                                  void* pointer,
+                                                                                  std::weak_ptr<char>& smartPointer,
+                                                                                  const QMetaType& elementMetaType,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    return createLinkForNewSmartPointerToObject<std::weak_ptr>(env, javaObject,
+                                                             created_by_java, ownership, is_shell,
+                                                             ownerFunction,
+                                                             pointer,
+                                                             smartPointer,
+                                                             elementMetaType,
+                                                             interfaceOffsetInfo);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  LINK_NAME_ARG(const char* qt_name)
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  QSharedPointer<char>& smartPointer,
+                                                                                  PtrDeleterFunction deleterFunction,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    return createLinkForNewSmartPointerToObject<QSharedPointer>(env, javaObject,
+                                                             LINK_NAME_ARG(qt_name)
+                                                             created_by_java, ownership, is_shell,
+                                                             pointer,
+                                                             smartPointer,
+                                                             deleterFunction,
+                                                             interfaceOffsetInfo);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  LINK_NAME_ARG(const char* qt_name)
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
+                                                                                  void* pointer,
+                                                                                  QSharedPointer<char>& smartPointer,
+                                                                                  PtrDeleterFunction deleterFunction,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    return createLinkForNewSmartPointerToObject<QSharedPointer>(env, javaObject,
+                                                             LINK_NAME_ARG(qt_name)
+                                                             created_by_java, ownership, is_shell,
+                                                             ownerFunction,
+                                                             pointer,
+                                                             smartPointer,
+                                                             deleterFunction,
+                                                             interfaceOffsetInfo);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  LINK_NAME_ARG(const char* qt_name)
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  QWeakPointer<char>& smartPointer,
+                                                                                  PtrDeleterFunction deleterFunction,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    return createLinkForNewSmartPointerToObject<QWeakPointer>(env, javaObject,
+                                                             LINK_NAME_ARG(qt_name)
+                                                             created_by_java, ownership, is_shell,
+                                                             pointer,
+                                                             smartPointer,
+                                                             deleterFunction,
+                                                             interfaceOffsetInfo);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  LINK_NAME_ARG(const char* qt_name)
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
+                                                                                  void* pointer,
+                                                                                  QWeakPointer<char>& smartPointer,
+                                                                                  PtrDeleterFunction deleterFunction,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    return createLinkForNewSmartPointerToObject<QWeakPointer>(env, javaObject,
+                                                             LINK_NAME_ARG(qt_name)
+                                                             created_by_java, ownership, is_shell,
+                                                             ownerFunction,
+                                                             pointer,
+                                                             smartPointer,
+                                                             deleterFunction,
+                                                             interfaceOffsetInfo);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  LINK_NAME_ARG(const char* qt_name)
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  std::shared_ptr<char>& smartPointer,
+                                                                                  PtrDeleterFunction deleterFunction,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    return createLinkForNewSmartPointerToObject<std::shared_ptr>(env, javaObject,
+                                                             LINK_NAME_ARG(qt_name)
+                                                             created_by_java, ownership, is_shell,
+                                                             pointer,
+                                                             smartPointer,
+                                                             deleterFunction,
+                                                             interfaceOffsetInfo);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  LINK_NAME_ARG(const char* qt_name)
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
+                                                                                  void* pointer,
+                                                                                  std::shared_ptr<char>& smartPointer,
+                                                                                  PtrDeleterFunction deleterFunction,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    return createLinkForNewSmartPointerToObject<std::shared_ptr>(env, javaObject,
+                                                             LINK_NAME_ARG(qt_name)
+                                                             created_by_java, ownership, is_shell,
+                                                             ownerFunction,
+                                                             pointer,
+                                                             smartPointer,
+                                                             deleterFunction,
+                                                             interfaceOffsetInfo);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  LINK_NAME_ARG(const char* qt_name)
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  std::weak_ptr<char>& smartPointer,
+                                                                                  PtrDeleterFunction deleterFunction,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    return createLinkForNewSmartPointerToObject<std::weak_ptr>(env, javaObject,
+                                                             LINK_NAME_ARG(qt_name)
+                                                             created_by_java, ownership, is_shell,
+                                                             pointer,
+                                                             smartPointer,
+                                                             deleterFunction,
+                                                             interfaceOffsetInfo);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  LINK_NAME_ARG(const char* qt_name)
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
+                                                                                  void* pointer,
+                                                                                  std::weak_ptr<char>& smartPointer,
+                                                                                  PtrDeleterFunction deleterFunction,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    return createLinkForNewSmartPointerToObject<std::weak_ptr>(env, javaObject,
+                                                             LINK_NAME_ARG(qt_name)
+                                                             created_by_java, ownership, is_shell,
+                                                             ownerFunction,
+                                                             pointer,
+                                                             smartPointer,
+                                                             deleterFunction,
+                                                             interfaceOffsetInfo);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  LINK_NAME_ARG(const char* qt_name)
+                                                                                  SafeBool created_by_java, SafeBool is_shell,
+                                                                                  const QSharedPointer<char>& smartPointer,
+                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    return createLinkForSmartPointerToObject<QSharedPointer>(env, javaObject,
+                                                             LINK_NAME_ARG(qt_name)
+                                                             created_by_java, is_shell,
+                                                             smartPointer,
+                                                             interfaceOffsetInfo);
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
@@ -1777,139 +3198,16 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToObject(JNIEn
                                                              interfaceOffsetInfo);
 }
 
-QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
-                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
-                                                                                  void* pointer,
-                                                                                  QSharedPointer<char>& smartPointer,
-                                                                                  const QMetaType& elementMetaType,
-                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
-{
-    return createLinkForNewSmartPointerToObject<QSharedPointer>(env, javaObject,
-                                                             created_by_java, ownership, is_shell,
-                                                             ownerFunction,
-                                                             pointer,
-                                                             smartPointer,
-                                                             elementMetaType,
-                                                             interfaceOffsetInfo);
-}
-
-QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
-                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
-                                                                                  void* pointer,
-                                                                                  std::shared_ptr<char>& smartPointer,
-                                                                                  const QMetaType& elementMetaType,
-                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
-{
-    return createLinkForNewSmartPointerToObject<std::shared_ptr>(env, javaObject,
-                                                             created_by_java, ownership, is_shell,
-                                                             ownerFunction,
-                                                             pointer,
-                                                             smartPointer,
-                                                             elementMetaType,
-                                                             interfaceOffsetInfo);
-}
-
-QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
-                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
-                                                                                  void* pointer,
-                                                                                  QWeakPointer<char>& smartPointer,
-                                                                                  const QMetaType& elementMetaType,
-                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
-{
-    return createLinkForNewSmartPointerToObject<QWeakPointer>(env, javaObject,
-                                                             created_by_java, ownership, is_shell,
-                                                             ownerFunction,
-                                                             pointer,
-                                                             smartPointer,
-                                                             elementMetaType,
-                                                             interfaceOffsetInfo);
-}
-
-QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
-                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
-                                                                                  void* pointer,
-                                                                                  std::weak_ptr<char>& smartPointer,
-                                                                                  const QMetaType& elementMetaType,
-                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
-{
-    return createLinkForNewSmartPointerToObject<std::weak_ptr>(env, javaObject,
-                                                             created_by_java, ownership, is_shell,
-                                                             ownerFunction,
-                                                             pointer,
-                                                             smartPointer,
-                                                             elementMetaType,
-                                                             interfaceOffsetInfo);
-}
-
-QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
                                                                                   LINK_NAME_ARG(const char* qt_name)
-                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
-                                                                                  void* pointer,
-                                                                                  QSharedPointer<char>& smartPointer,
-                                                                                  PtrDeleterFunction deleterFunction,
+                                                                                  SafeBool created_by_java, SafeBool is_shell,
+                                                                                  const std::shared_ptr<char>& smartPointer,
                                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo)
 {
-    return createLinkForNewSmartPointerToObject<QSharedPointer>(env, javaObject,
+    return createLinkForSmartPointerToObject<std::shared_ptr>(env, javaObject,
                                                              LINK_NAME_ARG(qt_name)
-                                                             created_by_java, ownership, is_shell,
-                                                             ownerFunction,
-                                                             pointer,
+                                                             created_by_java, is_shell,
                                                              smartPointer,
-                                                             deleterFunction,
-                                                             interfaceOffsetInfo);
-}
-
-QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
-                                                                                  LINK_NAME_ARG(const char* qt_name)
-                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
-                                                                                  void* pointer,
-                                                                                  QWeakPointer<char>& smartPointer,
-                                                                                  PtrDeleterFunction deleterFunction,
-                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
-{
-    return createLinkForNewSmartPointerToObject<QWeakPointer>(env, javaObject,
-                                                             LINK_NAME_ARG(qt_name)
-                                                             created_by_java, ownership, is_shell,
-                                                             ownerFunction,
-                                                             pointer,
-                                                             smartPointer,
-                                                             deleterFunction,
-                                                             interfaceOffsetInfo);
-}
-
-QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
-                                                                                  LINK_NAME_ARG(const char* qt_name)
-                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
-                                                                                  void* pointer,
-                                                                                  std::shared_ptr<char>& smartPointer,
-                                                                                  PtrDeleterFunction deleterFunction,
-                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
-{
-    return createLinkForNewSmartPointerToObject<std::shared_ptr>(env, javaObject,
-                                                             LINK_NAME_ARG(qt_name)
-                                                             created_by_java, ownership, is_shell,
-                                                             ownerFunction,
-                                                             pointer,
-                                                             smartPointer,
-                                                             deleterFunction,
-                                                             interfaceOffsetInfo);
-}
-
-QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
-                                                                                  LINK_NAME_ARG(const char* qt_name)
-                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
-                                                                                  void* pointer,
-                                                                                  std::weak_ptr<char>& smartPointer,
-                                                                                  PtrDeleterFunction deleterFunction,
-                                                                                  const InterfaceOffsetInfo& interfaceOffsetInfo)
-{
-    return createLinkForNewSmartPointerToObject<std::weak_ptr>(env, javaObject,
-                                                             LINK_NAME_ARG(qt_name)
-                                                             created_by_java, ownership, is_shell,
-                                                             ownerFunction,
-                                                             pointer,
-                                                             smartPointer,
-                                                             deleterFunction,
                                                              interfaceOffsetInfo);
 }
 
@@ -1930,7 +3228,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToObject(JNIEn
 template<template<typename> class SmartPointer>
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
                                               LINK_NAME_ARG(const char* qt_name)
-                                              SafeBool created_by_java, SafeBool is_shell, PtrOwnerFunction ownerFunction,
+                                              SafeBool created_by_java, SafeBool is_shell,
                                               const SmartPointer<char>& smartPointer)
 {
     Q_ASSERT(env);
@@ -1941,19 +3239,75 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToObject(JNIEn
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
     SmartPointer<char>* smartPointerTarget{nullptr};
-    auto qtJambiLink = new SmartPointerToObjectLink(env, nativeLink,
-                                                 LINK_NAME_ARG(qt_name)
-                                                 created_by_java, QtJambiLink::Ownership::None, is_shell, ownerFunction, smartPointer.get(), smartPointerTarget, ocurredException);
+    typedef PlainObjectSmartPointerLink<SmartPointer> Link;
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{new Link(env, nativeLink,
+                                                                            LINK_NAME_ARG(qt_name)
+                                                                            created_by_java, QtJambiLink::Ownership::None, is_shell, smartPointer.get(), smartPointerTarget, ocurredException)};
     *smartPointerTarget = smartPointer;
-    if(ocurredException){
-        qtJambiLink->dispose();
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
+        qtJambiLink->setJavaOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    qtJambiLink->setJavaOwnership(env);
-    return *qtJambiLink;
+}
+
+template<template<typename> class SmartPointer>
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                              LINK_NAME_ARG(const char* qt_name)
+                                              SafeBool created_by_java, SafeBool is_shell, PtrOwnerFunction ownerFunction,
+                                              const SmartPointer<char>& smartPointer)
+{
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(smartPointer);
+    Q_ASSERT(ownerFunction);
+    checkValueOwner(env, ownerFunction, smartPointer.get());
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    SmartPointer<char>* smartPointerTarget{nullptr};
+    typedef PlainOwnedObjectSmartPointerLink<SmartPointer> Link;
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{new Link(env, nativeLink,
+                                                                            LINK_NAME_ARG(qt_name)
+                                                                            created_by_java, QtJambiLink::Ownership::None, is_shell, smartPointer.get(), smartPointerTarget, ocurredException)};
+    qtJambiLink->m_owner_function = ownerFunction;
+    *smartPointerTarget = smartPointer;
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        qtJambiLink->setJavaOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
+    }
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                              LINK_NAME_ARG(const char* qt_name)
+                                              SafeBool created_by_java, SafeBool is_shell,
+                                              const QSharedPointer<char>& smartPointer)
+{
+    return createLinkForSmartPointerToObject<QSharedPointer>(env, javaObject,
+                                                      LINK_NAME_ARG(qt_name)
+                                                      created_by_java,
+                                                      is_shell,
+                                                      smartPointer);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                              LINK_NAME_ARG(const char* qt_name)
+                                              SafeBool created_by_java, SafeBool is_shell,
+                                              const std::shared_ptr<char>& smartPointer)
+{
+    return createLinkForSmartPointerToObject<std::shared_ptr>(env, javaObject,
+                                                      LINK_NAME_ARG(qt_name)
+                                                      created_by_java,
+                                                      is_shell,
+                                                      smartPointer);
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
@@ -1983,6 +3337,21 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToObject(JNIEn
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  QSharedPointer<char>& smartPointer,
+                                                                                  const QMetaType& elementMetaType)
+{
+    return createLinkForNewSmartPointerToObject<QSharedPointer>(env,
+                                                             javaObject,
+                                                             created_by_java,
+                                                             ownership, is_shell,
+                                                             pointer,
+                                                             smartPointer,
+                                                             elementMetaType);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
                                                                                   SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
                                                                                   void* pointer,
                                                                                   QSharedPointer<char>& smartPointer,
@@ -1993,6 +3362,21 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
                                                              created_by_java,
                                                              ownership, is_shell,
                                                              ownerFunction,
+                                                             pointer,
+                                                             smartPointer,
+                                                             elementMetaType);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  QWeakPointer<char>& smartPointer,
+                                                                                  const QMetaType& elementMetaType)
+{
+    return createLinkForNewSmartPointerToObject<QWeakPointer>(env,
+                                                             javaObject,
+                                                             created_by_java,
+                                                             ownership, is_shell,
                                                              pointer,
                                                              smartPointer,
                                                              elementMetaType);
@@ -2015,6 +3399,21 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  std::shared_ptr<char>& smartPointer,
+                                                                                  const QMetaType& elementMetaType)
+{
+    return createLinkForNewSmartPointerToObject<std::shared_ptr>(env,
+                                                             javaObject,
+                                                             created_by_java,
+                                                             ownership, is_shell,
+                                                             pointer,
+                                                             smartPointer,
+                                                             elementMetaType);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
                                                                                   SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
                                                                                   void* pointer,
                                                                                   std::shared_ptr<char>& smartPointer,
@@ -2025,6 +3424,21 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
                                                              created_by_java,
                                                              ownership, is_shell,
                                                              ownerFunction,
+                                                             pointer,
+                                                             smartPointer,
+                                                             elementMetaType);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  std::weak_ptr<char>& smartPointer,
+                                                                                  const QMetaType& elementMetaType)
+{
+    return createLinkForNewSmartPointerToObject<std::weak_ptr>(env,
+                                                             javaObject,
+                                                             created_by_java,
+                                                             ownership, is_shell,
                                                              pointer,
                                                              smartPointer,
                                                              elementMetaType);
@@ -2048,6 +3462,22 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
                                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  QSharedPointer<char>& smartPointer,
+                                                                                  PtrDeleterFunction deleterFunction)
+{
+    return createLinkForNewSmartPointerToObject<QSharedPointer>(env, javaObject,
+                                                             LINK_NAME_ARG(qt_name)
+                                                             created_by_java,
+                                                             ownership, is_shell,
+                                                             pointer,
+                                                             smartPointer,
+                                                             deleterFunction);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  LINK_NAME_ARG(const char* qt_name)
                                                                                   SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
                                                                                   void* pointer,
                                                                                   QSharedPointer<char>& smartPointer,
@@ -2061,6 +3491,22 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
                                                              pointer,
                                                              smartPointer,
                                                              deleterFunction);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  LINK_NAME_ARG(const char* qt_name)
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  std::shared_ptr<char>& smartPointer,
+                                                                                  PtrDeleterFunction deleterFunction)
+{
+    return createLinkForNewSmartPointerToObject<std::shared_ptr>(env, javaObject,
+                                                              LINK_NAME_ARG(qt_name)
+                                                              created_by_java,
+                                                              ownership, is_shell,
+                                                              pointer,
+                                                              smartPointer,
+                                                              deleterFunction);
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
@@ -2082,6 +3528,22 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
                                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  QWeakPointer<char>& smartPointer,
+                                                                                  PtrDeleterFunction deleterFunction)
+{
+    return createLinkForNewSmartPointerToObject<QWeakPointer>(env, javaObject,
+                                                             LINK_NAME_ARG(qt_name)
+                                                             created_by_java,
+                                                             ownership, is_shell,
+                                                             pointer,
+                                                             smartPointer,
+                                                             deleterFunction);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  LINK_NAME_ARG(const char* qt_name)
                                                                                   SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PtrOwnerFunction ownerFunction,
                                                                                   void* pointer,
                                                                                   QWeakPointer<char>& smartPointer,
@@ -2095,6 +3557,22 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
                                                              pointer,
                                                              smartPointer,
                                                              deleterFunction);
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
+                                                                                  LINK_NAME_ARG(const char* qt_name)
+                                                                                  SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
+                                                                                  void* pointer,
+                                                                                  std::weak_ptr<char>& smartPointer,
+                                                                                  PtrDeleterFunction deleterFunction)
+{
+    return createLinkForNewSmartPointerToObject<std::weak_ptr>(env, javaObject,
+                                                              LINK_NAME_ARG(qt_name)
+                                                              created_by_java,
+                                                              ownership, is_shell,
+                                                              pointer,
+                                                              smartPointer,
+                                                              deleterFunction);
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JNIEnv *env, jobject javaObject,
@@ -2129,20 +3607,23 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToObject(JNIEn
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
     SmartPointer<char>* smartPointerTarget{nullptr};
-    auto qtJambiLink = new SmartPointerToContainerInterfaceLink<SmartPointer>(env, nativeLink, interfaceOffsetInfo,
-                                                                                      LINK_NAME_ARG(qt_name)
-                                                                                      false, QtJambiLink::Ownership::None, false, nullptr,
-                                                                                      smartPointer.get(), smartPointerTarget, containerAccess, ocurredException);
+    typedef InterfaceLink<ContainerObjectSmartPointerLink<SmartPointer>> Link;
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{new Link(env, nativeLink,
+                                                                                 LINK_NAME_ARG(qt_name)
+                                                                                 false, QtJambiLink::Ownership::None, false,
+                                                                                 smartPointer.get(), smartPointerTarget, ocurredException)};
+    qtJambiLink->m_containerAccess = containerAccess;
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+
     *smartPointerTarget = smartPointer;
-    if(ocurredException){
-        qtJambiLink->dispose();
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
+        qtJambiLink->setJavaOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    qtJambiLink->setJavaOwnership(env);
-    return *qtJambiLink;
 }
 
 template<template<typename> class SmartPointer>
@@ -2159,20 +3640,21 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToObject(JNIEn
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
     SmartPointer<char>* smartPointerTarget{nullptr};
-    auto qtJambiLink = new SmartPointerToContainerLink(env, nativeLink,
-                                                    LINK_NAME_ARG(qt_name)
-                                                    false, QtJambiLink::Ownership::None, false, nullptr,
-                                                       smartPointer.get(), smartPointerTarget, containerAccess, ocurredException);
+    typedef ContainerObjectSmartPointerLink<SmartPointer> Link;
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{new Link(env, nativeLink,
+                                                                            LINK_NAME_ARG(qt_name)
+                                                                            false, QtJambiLink::Ownership::None, false,
+                                                                            smartPointer.get(), smartPointerTarget, ocurredException)};
+    qtJambiLink->m_containerAccess = containerAccess;
     *smartPointerTarget = smartPointer;
-    if(ocurredException){
-        qtJambiLink->dispose();
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
+        qtJambiLink->setJavaOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    qtJambiLink->setJavaOwnership(env);
-    return *qtJambiLink;
 }
 
 template<template<typename> class SmartPointer>
@@ -2186,12 +3668,12 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
     typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
                                       typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
     typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
-                                      /*then*/QSharedPointer<char>,
+                                      /*then*/InterfaceLink<ContainerObjectSmartPointerLink<QSharedPointer>>,
                                       /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
-                                                                        /*then*/std::shared_ptr<char>,
+                                                                        /*then*/InterfaceLink<ContainerObjectSmartPointerLink<std::shared_ptr>>,
                                                                         /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
-                                                                                                          /*then*/QWeakPointer<char>,
-                                                                                                          /*else*/std::weak_ptr<char>>::type>::type>::type TargetSmartPointer;
+                                                                                                          /*then*/InterfaceLink<ContainerObjectSmartPointerLink<QWeakPointer>>,
+                                                                                                          /*else*/InterfaceLink<ContainerObjectSmartPointerLink<std::weak_ptr>>>::type>::type>::type Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(pointer);
@@ -2199,28 +3681,29 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    TargetSmartPointer* smartPointerTarget{nullptr};
-    auto qtJambiLink = new SmartPointerToContainerInterfaceLink(env, nativeLink, interfaceOffsetInfo,
-                                                                                      LINK_NAME_ARG(qt_name)
-                                                                                      false, ownership, false, nullptr,
-                                                                                      pointer, smartPointerTarget, containerAccess, ocurredException);
+    typename Link::SmartPointerType* smartPointerTarget{nullptr};
 
-    SharedPointerT sharedPointer(reinterpret_cast<char*>(pointer), SmartContainerDeleter<SmartPointer>(containerAccess, *qtJambiLink));
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{new Link(env, nativeLink,
+                                                                          LINK_NAME_ARG(qt_name)
+                                                                          false, ownership, false,
+                                                                          pointer, smartPointerTarget, ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    qtJambiLink->m_containerAccess = containerAccess;
+    SharedPointerT sharedPointer(reinterpret_cast<char*>(pointer), SmartContainerDeleter<SmartPointer>(containerAccess, *qtJambiLink.get()));
     smartPointer = sharedPointer;
-    *smartPointerTarget = TargetSmartPointer(sharedPointer);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    *smartPointerTarget = typename Link::SmartPointerType(sharedPointer);
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
+        if constexpr(std::is_same<SmartPointer<char>,QWeakPointer<char>>::value || std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value){
+            qtJambiLink->QtJambiLink::setJavaOwnership(env);
+        }else{
+            qtJambiLink->QtJambiLink::setCppOwnership(env);
+        }
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    if constexpr(std::is_same<SmartPointer<char>,QWeakPointer<char>>::value || std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value){
-        qtJambiLink->QtJambiLink::setJavaOwnership(env);
-    }else{
-        qtJambiLink->QtJambiLink::setCppOwnership(env);
-    }
-    return *qtJambiLink;
 }
 
 template<template<typename> class SmartPointer>
@@ -2233,12 +3716,12 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
     typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
                                       typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
     typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
-                                      /*then*/QSharedPointer<char>,
+                                      /*then*/ContainerObjectSmartPointerLink<QSharedPointer>,
                                       /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
-                                                                        /*then*/std::shared_ptr<char>,
+                                                                        /*then*/ContainerObjectSmartPointerLink<std::shared_ptr>,
                                                                         /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
-                                                                                                          /*then*/QWeakPointer<char>,
-                                                                                                          /*else*/std::weak_ptr<char>>::type>::type>::type TargetSmartPointer;
+                                                                                                          /*then*/ContainerObjectSmartPointerLink<QWeakPointer>,
+                                                                                                          /*else*/ContainerObjectSmartPointerLink<std::weak_ptr>>::type>::type>::type Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(pointer);
@@ -2246,26 +3729,27 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    TargetSmartPointer* smartPointerTarget{nullptr};
-    auto qtJambiLink = new SmartPointerToContainerLink(env, nativeLink,
-                                                    LINK_NAME_ARG(qt_name)
-                                                    false, ownership, false, nullptr, pointer, smartPointerTarget, containerAccess, ocurredException);
-    SharedPointerT sharedPointer(reinterpret_cast<char*>(pointer), SmartContainerDeleter<SmartPointer>(containerAccess, *qtJambiLink));
+    typename Link::SmartPointerType* smartPointerTarget{nullptr};
+
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{new Link(env, nativeLink,
+                                                                          LINK_NAME_ARG(qt_name)
+                                                                          false, ownership, false, pointer, smartPointerTarget, ocurredException)};
+    qtJambiLink->m_containerAccess = containerAccess;
+    SharedPointerT sharedPointer(reinterpret_cast<char*>(pointer), SmartContainerDeleter<SmartPointer>(containerAccess, *qtJambiLink.get()));
     smartPointer = sharedPointer;
-    *smartPointerTarget = TargetSmartPointer(sharedPointer);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    *smartPointerTarget = typename Link::SmartPointerType(sharedPointer);
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
+        if constexpr(std::is_same<SmartPointer<char>,QWeakPointer<char>>::value || std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value){
+            qtJambiLink->QtJambiLink::setJavaOwnership(env);
+        }else{
+            qtJambiLink->QtJambiLink::setCppOwnership(env);
+        }
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    if constexpr(std::is_same<SmartPointer<char>,QWeakPointer<char>>::value || std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value){
-        qtJambiLink->QtJambiLink::setJavaOwnership(env);
-    }else{
-        qtJambiLink->QtJambiLink::setCppOwnership(env);
-    }
-    return *qtJambiLink;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
@@ -2428,29 +3912,10 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
-                                                                       LINK_NAME_ARG(const char* qt_name)
-                                                                       SafeBool created_by_java, SafeBool isCopy, AbstractContainerAccess* containerAccess)
-{
-    Q_ASSERT(env);
-    Q_ASSERT(javaObject);
-    Q_ASSERT(ptr);
-    Q_ASSERT(containerAccess);
-    const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, env->GetObjectClass(javaObject));
-    if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-        return createLinkForNativeObject(env, javaObject, ptr,
-                                         LINK_NAME_ARG(qt_name)
-                                         created_by_java, isCopy, containerAccess, QtJambiLink::Ownership::None,
-                                         *interfaceOffsets);
-    }else{
-        return createLinkForNativeObject(env, javaObject, ptr,
-                                         LINK_NAME_ARG(qt_name)
-                                         created_by_java, isCopy, containerAccess, QtJambiLink::Ownership::None);
-    }
-}
-
-QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
-                                                                          LINK_NAME_ARG(const char* qt_name)
-                                                                          SafeBool created_by_java, SafeBool isCopy, AbstractContainerAccess* containerAccess, QtJambiLink::Ownership ownership)
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   SafeBool created_by_java, SafeBool isCopy,
+                                                                   AbstractContainerAccess* containerAccess,
+                                                                   QtJambiLink::Ownership ownership)
 {
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
@@ -2460,38 +3925,79 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    PointerToContainerLink* qtJambiLink = new PointerToContainerLink(env, nativeLink,
-                                                            LINK_NAME_ARG(qt_name)
-                                                            ptr,
-                                                            created_by_java, false,
-                                                            containerAccess, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    typedef PointerToContainerLink Link;
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{new Link(env, nativeLink,
+                                                                          LINK_NAME_ARG(qt_name)
+                                                                          ptr,
+                                                                          created_by_java, false,
+                                                                          ocurredException)};
+    qtJambiLink->m_containerAccess = containerAccess;
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java || isCopy){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java || isCopy){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
-                                                                          LINK_NAME_ARG(const char* qt_name)
-                                                                          SafeBool created_by_java, SafeBool isCopy, AbstractContainerAccess* containerAccess, QtJambiLink::Ownership ownership,
-                                                                          const InterfaceOffsetInfo& interfaceOffsetInfo)
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   AbstractContainerAccess* containerAccess,
+                                                                   SafeBool cppOwnership,
+                                                                   TypeInfoSupplier typeInfoSupplier)
+{
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(ptr);
+    Q_ASSERT(containerAccess);
+    Q_ASSERT(typeInfoSupplier);
+    if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
+        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+    }
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    typedef DanglingPointerCheckingLink<PointerToContainerLink> Link;
+    std::unique_ptr<Link, QtJambiLink::LinkDisposer> qtJambiLink{new Link(env, nativeLink,
+                                                                          LINK_NAME_ARG(qt_name)
+                                                                          ptr,
+                                                                          false, false,
+                                                                          ocurredException)};
+    qtJambiLink->m_containerAccess = containerAccess;
+    qtJambiLink->m_typeInfoSupplier = typeInfoSupplier;
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        if(cppOwnership)
+            qtJambiLink->setCppOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
+    }
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   SafeBool created_by_java, SafeBool isCopy,
+                                                                   AbstractContainerAccess* containerAccess,
+                                                                   QtJambiLink::Ownership ownership,
+                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo)
 {
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
@@ -2500,62 +4006,120 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
 
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
-    //const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, env->GetObjectClass(javaObject));
     JavaException ocurredException;
-    PointerToContainerInterfaceLink* qtJambiLink = new PointerToContainerInterfaceLink(env,
-                                                      nativeLink,
-                                                      interfaceOffsetInfo,
-                                                      LINK_NAME_ARG(qt_name)
-                                                      ptr, created_by_java, false,
-                                                      containerAccess, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<InterfaceLink<PointerToContainerLink>, QtJambiLink::LinkDisposer> qtJambiLink{new InterfaceLink<PointerToContainerLink>(env,
+                                                                                                                       nativeLink,
+                                                                                                                       LINK_NAME_ARG(qt_name)
+                                                                                                                       ptr, created_by_java, false,
+                                                                                                                       ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    qtJambiLink->m_containerAccess = containerAccess;
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java || isCopy){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java || isCopy){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
-                                                                        LINK_NAME_ARG(const char* qt_name)
-                                                                        SafeBool created_by_java, SafeBool isCopy, PtrDeleterFunction destructor_function, AbstractContainerAccess* containerAccess)
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   AbstractContainerAccess* containerAccess,
+                                                                   SafeBool cppOwnership,
+                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo,
+                                                                   TypeInfoSupplier typeInfoSupplier)
+{
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(ptr);
+    Q_ASSERT(containerAccess);
+    Q_ASSERT(typeInfoSupplier);
+    if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
+        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+    }
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    std::unique_ptr<DanglingPointerCheckingLink<InterfaceLink<PointerToContainerLink>>, QtJambiLink::LinkDisposer> qtJambiLink{new DanglingPointerCheckingLink<InterfaceLink<PointerToContainerLink>>(env, nativeLink,
+                                                                                                                                                          LINK_NAME_ARG(qt_name)
+                                                                                                                                                          ptr,
+                                                                                                                                                          false, false,
+                                                                                                                                                          ocurredException)};
+    qtJambiLink->m_containerAccess = containerAccess;
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    qtJambiLink->m_typeInfoSupplier = typeInfoSupplier;
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        if(cppOwnership)
+            qtJambiLink->setCppOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
+    }
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   PtrDeleterFunction destructor_function,
+                                                                   AbstractContainerAccess* containerAccess,
+                                                                   SafeBool cppOwnership,
+                                                                   TypeInfoSupplier typeInfoSupplier)
 {
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(ptr);
     Q_ASSERT(containerAccess);
     Q_ASSERT(destructor_function);
-    const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, env->GetObjectClass(javaObject));
-    if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-        return createLinkForNativeObject(env, javaObject, ptr,
-                                         LINK_NAME_ARG(qt_name)
-                                         created_by_java, isCopy, destructor_function, containerAccess, QtJambiLink::Ownership::None,
-                                         *interfaceOffsets);
+    Q_ASSERT(typeInfoSupplier);
+    if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
+        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+    }
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    std::unique_ptr<DanglingPointerCheckingLink<DeletablePointerToContainerLink>, QtJambiLink::LinkDisposer> qtJambiLink{new DanglingPointerCheckingLink<DeletablePointerToContainerLink>(env, nativeLink,
+                                                                                                                                                          LINK_NAME_ARG(qt_name)
+                                                                                                                                                          ptr, false, false,
+                                                                                                                                                          ocurredException)};
+    qtJambiLink->m_deleter_function = destructor_function;
+    qtJambiLink->m_containerAccess = containerAccess;
+    qtJambiLink->m_typeInfoSupplier = typeInfoSupplier;
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
     }else{
-        return createLinkForNativeObject(env, javaObject, ptr,
-                                         LINK_NAME_ARG(qt_name)
-                                         created_by_java, isCopy, destructor_function, containerAccess, QtJambiLink::Ownership::None);
+        qtJambiLink->init(env);
+        if(cppOwnership)
+            qtJambiLink->setCppOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
     }
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
-                                                                        LINK_NAME_ARG(const char* qt_name)
-                                                                        SafeBool created_by_java, SafeBool isCopy, PtrDeleterFunction destructor_function, AbstractContainerAccess* containerAccess, QtJambiLink::Ownership ownership)
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   SafeBool created_by_java, SafeBool isCopy,
+                                                                   PtrDeleterFunction destructor_function,
+                                                                   AbstractContainerAccess* containerAccess,
+                                                                   QtJambiLink::Ownership ownership)
 {
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
@@ -2566,37 +4130,82 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    DeletablePointerToContainerLink* qtJambiLink = new DeletablePointerToContainerLink(env, nativeLink,
-                                                            LINK_NAME_ARG(qt_name)
-                                                            ptr, created_by_java, false,
-                                                            destructor_function, containerAccess, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<DeletablePointerToContainerLink, QtJambiLink::LinkDisposer> qtJambiLink{new DeletablePointerToContainerLink(env, nativeLink,
+                                                                                                                                LINK_NAME_ARG(qt_name)
+                                                                                                                                ptr, created_by_java,
+                                                                                                                                false,
+                                                                                                                                ocurredException)};
+    qtJambiLink->m_deleter_function = destructor_function;
+    qtJambiLink->m_containerAccess = containerAccess;
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java || isCopy){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java || isCopy){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
-                                                                        LINK_NAME_ARG(const char* qt_name)
-                                                                        SafeBool created_by_java, SafeBool isCopy, PtrDeleterFunction destructor_function, AbstractContainerAccess* containerAccess, QtJambiLink::Ownership ownership,
-                                                                          const InterfaceOffsetInfo& interfaceOffsetInfo)
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   PtrDeleterFunction destructor_function,
+                                                                   AbstractContainerAccess* containerAccess,
+                                                                   SafeBool cppOwnership,
+                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo,
+                                                                   TypeInfoSupplier typeInfoSupplier)
+{
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(ptr);
+    Q_ASSERT(containerAccess);
+    Q_ASSERT(destructor_function);
+    if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
+        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+    }
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    std::unique_ptr<DanglingPointerCheckingLink<InterfaceLink<DeletablePointerToContainerLink>>, QtJambiLink::LinkDisposer> qtJambiLink{new DanglingPointerCheckingLink<InterfaceLink<DeletablePointerToContainerLink>>(env, nativeLink,
+                                                                                                                                                                            LINK_NAME_ARG(qt_name)
+                                                                                                                                                                            ptr, false, false,
+                                                                                                                                                                            ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    qtJambiLink->m_typeInfoSupplier = typeInfoSupplier;
+    qtJambiLink->m_deleter_function = destructor_function;
+    qtJambiLink->m_containerAccess = containerAccess;
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        if(cppOwnership)
+            qtJambiLink->setCppOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
+    }
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   SafeBool created_by_java, SafeBool isCopy,
+                                                                   PtrDeleterFunction destructor_function,
+                                                                   AbstractContainerAccess* containerAccess,
+                                                                   QtJambiLink::Ownership ownership,
+                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo)
 {
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
@@ -2607,38 +4216,42 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    DeletablePointerToContainerInterfaceLink* qtJambiLink = new DeletablePointerToContainerInterfaceLink(env, nativeLink,
-                                                                   interfaceOffsetInfo,
-                                                                   LINK_NAME_ARG(qt_name)
-                                                                   ptr, created_by_java, false,
-                                                                   destructor_function, containerAccess, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<InterfaceLink<DeletablePointerToContainerLink>, QtJambiLink::LinkDisposer> qtJambiLink{new InterfaceLink<DeletablePointerToContainerLink>(env, nativeLink,
+                                                                                                                                                    LINK_NAME_ARG(qt_name)
+                                                                                                                                                    ptr, created_by_java,
+                                                                                                                                                    false,
+                                                                                                                                                    ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    qtJambiLink->m_deleter_function = destructor_function;
+    qtJambiLink->m_containerAccess = containerAccess;
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java || isCopy){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java || isCopy){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr, const QMetaType& metaType,
-                                                                        SafeBool created_by_java, SafeBool is_shell, PtrOwnerFunction ownerFunction, QtJambiLink::Ownership ownership)
+                                                                   SafeBool created_by_java, SafeBool is_shell,
+                                                                   PtrOwnerFunction ownerFunction,
+                                                                   QtJambiLink::Ownership ownership)
 {
-    if(!ownerFunction){
+    if(Q_UNLIKELY(!ownerFunction)){
         return createLinkForNativeObject(env, javaObject, ptr, metaType,
                                    created_by_java, is_shell, ownership);
     }
@@ -2647,41 +4260,86 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(ptr);
     Q_ASSERT(ownerFunction);
     Q_ASSERT(metaType.isValid());
+    checkValueOwner(env, ownerFunction, ptr);
 
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    OwnedMetaTypedPointerToObjectLink* qtJambiLink = new OwnedMetaTypedPointerToObjectLink(env, nativeLink,
-                                                                     ptr, metaType, created_by_java,
-                                                                     is_shell, ownerFunction, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<OwnedMetaTypedObjectLink, QtJambiLink::LinkDisposer> qtJambiLink{new OwnedMetaTypedObjectLink(env, nativeLink,
+                                                                                                                                    LINK_NAME_ARG(metaType.name())
+                                                                                                                                    ptr, created_by_java,
+                                                                                                                                    is_shell, ocurredException)};
+    qtJambiLink->m_meta_type = metaType;
+    qtJambiLink->m_owner_function = ownerFunction;
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr, const QMetaType& metaType,
-                                                                          SafeBool created_by_java, SafeBool is_shell, PtrOwnerFunction ownerFunction, QtJambiLink::Ownership ownership,
-                                                                          const InterfaceOffsetInfo& interfaceOffsetInfo)
+                                                                   PtrOwnerFunction ownerFunction,
+                                                                   SafeBool cppOwnership,
+                                                                   TypeInfoSupplier typeInfoSupplier)
 {
-    if(!ownerFunction){
+    if(Q_UNLIKELY(!ownerFunction)){
+        return createLinkForNativeObject(env, javaObject, ptr, metaType, cppOwnership, typeInfoSupplier);
+    }
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(ptr);
+    Q_ASSERT(ownerFunction);
+    Q_ASSERT(metaType.isValid());
+    Q_ASSERT(typeInfoSupplier);
+    if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
+        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+    }
+    checkValueOwner(env, ownerFunction, ptr);
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    std::unique_ptr<DanglingPointerCheckingLink<OwnedMetaTypedObjectLink>, QtJambiLink::LinkDisposer> qtJambiLink{new DanglingPointerCheckingLink<OwnedMetaTypedObjectLink>(env, nativeLink,
+                                                                                                                                                              LINK_NAME_ARG(metaType.name())
+                                                                                                                                                              ptr, false,
+                                                                                                                                                              false, ocurredException)};
+    qtJambiLink->m_meta_type = metaType;
+    qtJambiLink->m_owner_function = ownerFunction;
+    qtJambiLink->m_typeInfoSupplier = typeInfoSupplier;
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        if(cppOwnership)
+            qtJambiLink->setCppOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
+    }
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr, const QMetaType& metaType,
+                                                                   SafeBool created_by_java, SafeBool is_shell,
+                                                                   PtrOwnerFunction ownerFunction, QtJambiLink::Ownership ownership,
+                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    if(Q_UNLIKELY(!ownerFunction)){
         return createLinkForNativeObject(env, javaObject, ptr, metaType,
                                          created_by_java, is_shell, ownership,
                                          interfaceOffsetInfo);
@@ -2691,35 +4349,81 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(ptr);
     Q_ASSERT(ownerFunction);
     Q_ASSERT(metaType.isValid());
+    checkValueOwner(env, ownerFunction, ptr);
 
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    OwnedMetaTypedPointerToObjectInterfaceLink* qtJambiLink = new OwnedMetaTypedPointerToObjectInterfaceLink(env, nativeLink,
-                                                                              interfaceOffsetInfo,
-                                                                              ptr, metaType, created_by_java,
-                                                                              is_shell, ownerFunction, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<InterfaceLink<OwnedMetaTypedObjectLink>, QtJambiLink::LinkDisposer> qtJambiLink{new InterfaceLink<OwnedMetaTypedObjectLink>(env, nativeLink,
+                                                                                                                                                                  LINK_NAME_ARG(metaType.name())
+                                                                                                                                                                  ptr, created_by_java,
+                                                                                                                                                                  is_shell, ocurredException)};
+    qtJambiLink->m_meta_type = metaType;
+    qtJambiLink->m_owner_function = ownerFunction;
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr, const QMetaType& metaType,
+                                                                   PtrOwnerFunction ownerFunction, SafeBool cppOwnership,
+                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo,
+                                                                   TypeInfoSupplier typeInfoSupplier)
+{
+    if(Q_UNLIKELY(!ownerFunction)){
+        return createLinkForNativeObject(env, javaObject, ptr, metaType,
+                                         cppOwnership, interfaceOffsetInfo, typeInfoSupplier);
+    }
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(ptr);
+    Q_ASSERT(ownerFunction);
+    Q_ASSERT(metaType.isValid());
+    Q_ASSERT(typeInfoSupplier);
+    if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
+        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+    }
+    checkValueOwner(env, ownerFunction, ptr);
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    std::unique_ptr<DanglingPointerCheckingLink<InterfaceLink<OwnedMetaTypedObjectLink>>, QtJambiLink::LinkDisposer> qtJambiLink{new DanglingPointerCheckingLink<InterfaceLink<OwnedMetaTypedObjectLink>>(env, nativeLink,
+                                                                                                                                                                                            LINK_NAME_ARG(metaType.name())
+                                                                                                                                                                                            ptr, false,
+                                                                                                                                                                                            false, ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    qtJambiLink->m_meta_type = metaType;
+    qtJambiLink->m_owner_function = ownerFunction;
+    qtJambiLink->m_typeInfoSupplier = typeInfoSupplier;
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        if(cppOwnership)
+            qtJambiLink->setCppOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
+    }
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr, const QMetaType& metaType,
@@ -2733,29 +4437,65 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    MetaTypedPointerToObjectLink* qtJambiLink = new MetaTypedPointerToObjectLink(env, nativeLink,
-                                                                ptr, metaType, created_by_java, is_shell, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<MetaTypedObjectLink, QtJambiLink::LinkDisposer> qtJambiLink{new MetaTypedObjectLink(env, nativeLink,
+                                                                                                                          LINK_NAME_ARG(metaType.name())
+                                                                                                                          ptr, created_by_java, is_shell,
+                                                                                                                          ocurredException)};
+    qtJambiLink->m_meta_type = metaType;
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
+                                                                   const QMetaType& metaType,
+                                                                   SafeBool cppOwnership,
+                                                                   TypeInfoSupplier typeInfoSupplier)
+{
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(ptr);
+    Q_ASSERT(metaType.isValid());
+    Q_ASSERT(typeInfoSupplier);
+    if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
+        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+    }
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    std::unique_ptr<DanglingPointerCheckingLink<MetaTypedObjectLink>, QtJambiLink::LinkDisposer> qtJambiLink{new DanglingPointerCheckingLink<MetaTypedObjectLink>(env, nativeLink,
+                                                                                                                                                    LINK_NAME_ARG(metaType.name())
+                                                                                                                                                    ptr, false, false, ocurredException)};
+    qtJambiLink->m_meta_type = metaType;
+    qtJambiLink->m_typeInfoSupplier = typeInfoSupplier;
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        if(cppOwnership)
+            qtJambiLink->setCppOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
+    }
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr, const QMetaType& metaType,
@@ -2770,35 +4510,76 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    MetaTypedPointerToObjectInterfaceLink* qtJambiLink = new MetaTypedPointerToObjectInterfaceLink(env, nativeLink, interfaceOffsetInfo,
-                                                                         ptr, metaType, created_by_java, is_shell, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<InterfaceLink<MetaTypedObjectLink>, QtJambiLink::LinkDisposer> qtJambiLink{new InterfaceLink<MetaTypedObjectLink>(env, nativeLink,
+                                                                                                                                                        LINK_NAME_ARG(metaType.name())
+                                                                                                                                                        ptr, created_by_java,
+                                                                                                                                                        is_shell, ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    qtJambiLink->m_meta_type = metaType;
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
+                                                                   const QMetaType& metaType,
+                                                                   SafeBool cppOwnership,
+                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo,
+                                                                   TypeInfoSupplier typeInfoSupplier)
+{
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(ptr);
+    Q_ASSERT(metaType.isValid());
+    Q_ASSERT(typeInfoSupplier);
+    if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
+        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+    }
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    std::unique_ptr<DanglingPointerCheckingLink<InterfaceLink<MetaTypedObjectLink>>, QtJambiLink::LinkDisposer> qtJambiLink{new DanglingPointerCheckingLink<InterfaceLink<MetaTypedObjectLink>>(env, nativeLink,
+                                                                                                                                                                                  LINK_NAME_ARG(metaType.name())
+                                                                                                                                                                                  ptr, false, false,
+                                                                                                                                                                                  ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    qtJambiLink->m_meta_type = metaType;
+    qtJambiLink->m_typeInfoSupplier = typeInfoSupplier;
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        if(cppOwnership)
+            qtJambiLink->setCppOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
+    }
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForDependentObject(JNIEnv *env, jobject javaObject, void *ptr, const QMetaType& metaType,
-                                                                        SafeBool created_by_java, SafeBool is_shell, PtrOwnerFunction ownerFunction, const QObject* dependsOn, QtJambiLink::Ownership ownership)
+                                                                      SafeBool created_by_java, SafeBool is_shell, PtrOwnerFunction ownerFunction,
+                                                                      const QObject* dependsOn, QtJambiLink::Ownership ownership)
 {
-    if(!ownerFunction){
+    if(Q_UNLIKELY(!ownerFunction)){
         return createLinkForDependentObject(env, javaObject, ptr, metaType,
                                    created_by_java, is_shell, dependsOn, ownership);
     }
@@ -2807,43 +4588,47 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForDependentObject(JNIEnv *en
     Q_ASSERT(ptr);
     Q_ASSERT(ownerFunction);
     Q_ASSERT(metaType.isValid());
+    checkValueOwner(env, ownerFunction, ptr);
 
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    OwnedDependentMetaTypedPointerToObjectLink* qtJambiLink = new OwnedDependentMetaTypedPointerToObjectLink(env, nativeLink,
-                                                                              ptr, metaType, created_by_java,
-                                                                              is_shell, ownerFunction, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<DependentLink<OwnedMetaTypedObjectLink>, QtJambiLink::LinkDisposer> qtJambiLink{new DependentLink<OwnedMetaTypedObjectLink>(env, nativeLink,
+                                                                                                                                                                  LINK_NAME_ARG(metaType.name())
+                                                                                                                                                                  ptr, created_by_java,
+                                                                                                                                                                  is_shell, ocurredException)};
+    qtJambiLink->m_meta_type = metaType;
+    qtJambiLink->m_owner_function = ownerFunction;
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        QSharedPointer<QtJambiLink> shared = asSharedPointer(std::move(qtJambiLink));
+        QtJambiLink::registerDependentObject(dependsOn, shared);
+        return shared;
     }
-    QSharedPointer<QtJambiLink> shared = *qtJambiLink;
-    QtJambiLink::registerDependentObject(dependsOn, shared);
-    return shared;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForDependentObject(JNIEnv *env, jobject javaObject, void *ptr, const QMetaType& metaType,
-                                                                        SafeBool created_by_java, SafeBool is_shell, PtrOwnerFunction ownerFunction, const QObject* dependsOn, QtJambiLink::Ownership ownership,
-                                                                             const InterfaceOffsetInfo& interfaceOffsetInfo)
+                                                                      SafeBool created_by_java, SafeBool is_shell, PtrOwnerFunction ownerFunction,
+                                                                      const QObject* dependsOn, QtJambiLink::Ownership ownership,
+                                                                      const InterfaceOffsetInfo& interfaceOffsetInfo)
 {
-    if(!ownerFunction){
+    if(Q_UNLIKELY(!ownerFunction)){
         return createLinkForDependentObject(env, javaObject, ptr, metaType,
                                    created_by_java, is_shell, dependsOn, ownership);
     }
@@ -2852,37 +4637,40 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForDependentObject(JNIEnv *en
     Q_ASSERT(ptr);
     Q_ASSERT(ownerFunction);
     Q_ASSERT(metaType.isValid());
+    checkValueOwner(env, ownerFunction, ptr);
 
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    OwnedDependentMetaTypedPointerToObjectInterfaceLink* qtJambiLink = new OwnedDependentMetaTypedPointerToObjectInterfaceLink(env, nativeLink,
-                                                                                       interfaceOffsetInfo,
-                                                                                       ptr, metaType, created_by_java,
-                                                                                       is_shell, ownerFunction, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<DependentLink<InterfaceLink<OwnedMetaTypedObjectLink>>, QtJambiLink::LinkDisposer> qtJambiLink{new DependentLink<InterfaceLink<OwnedMetaTypedObjectLink>>(env, nativeLink,
+                                                                                                                                                                                                LINK_NAME_ARG(metaType.name())
+                                                                                                                                                                                                ptr, created_by_java,
+                                                                                                                                                                                                is_shell, ocurredException)};
+    qtJambiLink->m_meta_type = metaType;
+    qtJambiLink->m_owner_function = ownerFunction;
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        QSharedPointer<QtJambiLink> shared = asSharedPointer(std::move(qtJambiLink));
+        QtJambiLink::registerDependentObject(dependsOn, shared);
+        return shared;
     }
-    QSharedPointer<QtJambiLink> shared = *qtJambiLink;
-    QtJambiLink::registerDependentObject(dependsOn, shared);
-    return shared;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForDependentObject(JNIEnv *env, jobject javaObject, void *ptr,
@@ -2899,32 +4687,32 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForDependentObject(JNIEnv *en
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    DependentDeletablePointerToObjectLink* qtJambiLink = new DependentDeletablePointerToObjectLink(env, nativeLink,
-                                                                         LINK_NAME_ARG(qt_name)
-                                                                         ptr, created_by_java, is_shell, destructor_function, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<DependentLink<DeletableObjectLink>, QtJambiLink::LinkDisposer> qtJambiLink{new DependentLink<DeletableObjectLink>(env, nativeLink,
+                                                                                                                                            LINK_NAME_ARG(qt_name)
+                                                                                                                                            ptr, created_by_java, is_shell, ocurredException)};
+    qtJambiLink->m_deleter_function = destructor_function;
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        QSharedPointer<QtJambiLink> shared = asSharedPointer(std::move(qtJambiLink));
+        QtJambiLink::registerDependentObject(dependsOn, shared);
+        return shared;
     }
-    QSharedPointer<QtJambiLink> shared = *qtJambiLink;
-    QtJambiLink::registerDependentObject(dependsOn, shared);
-    return shared;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForObject(JNIEnv *env, jobject javaObject, void *ptr,
@@ -2941,30 +4729,31 @@ QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForObject(JNIEnv *env
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    ExtendedDeletablePointerToObjectLink* qtJambiLink = new ExtendedDeletablePointerToObjectLink(env, nativeLink,
-                                                                         LINK_NAME_ARG(qt_name)
-                                                                         ptr, created_by_java, is_shell, destructor_function, extension, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<ExtendedLink<DeletableObjectLink>, QtJambiLink::LinkDisposer> qtJambiLink{new ExtendedLink<DeletableObjectLink>(env, nativeLink,
+                                                                                                                                          LINK_NAME_ARG(qt_name)
+                                                                                                                                          ptr, created_by_java, is_shell, ocurredException)};
+    qtJambiLink->m_deleter_function = destructor_function;
+    qtJambiLink->m_extension = extension;
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForDependentObject(JNIEnv *env, jobject javaObject, void *ptr, const QMetaType& metaType,
@@ -2978,36 +4767,41 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForDependentObject(JNIEnv *en
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    DependentMetaTypedPointerToObjectLink* qtJambiLink = new DependentMetaTypedPointerToObjectLink(env, nativeLink,
-                                                                         ptr, metaType, created_by_java, is_shell, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<DependentLink<MetaTypedObjectLink>, QtJambiLink::LinkDisposer> qtJambiLink{new DependentLink<MetaTypedObjectLink>(env, nativeLink,
+                                                                                                                                                        LINK_NAME_ARG(metaType.name())
+                                                                                                                                                        ptr, created_by_java,
+                                                                                                                                                        is_shell, ocurredException)};
+    qtJambiLink->m_meta_type = metaType;
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        QSharedPointer<QtJambiLink> shared = asSharedPointer(std::move(qtJambiLink));
+        QtJambiLink::registerDependentObject(dependsOn, shared);
+        return shared;
     }
-    QSharedPointer<QtJambiLink> shared = *qtJambiLink;
-    QtJambiLink::registerDependentObject(dependsOn, shared);
-    return shared;
 }
 
-QSharedPointer<QtJambiLink> QtJambiLink::createLinkForDependentObject(JNIEnv *env, jobject javaObject, void *ptr, const QMetaType& metaType,
-                                                                             SafeBool created_by_java, SafeBool is_shell, const QObject* dependsOn, QtJambiLink::Ownership ownership,
-                                                                             const InterfaceOffsetInfo& interfaceOffsetInfo)
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForDependentObject(JNIEnv *env, jobject javaObject, void *ptr,
+                                                                      const QMetaType& metaType,
+                                                                      SafeBool created_by_java, SafeBool is_shell,
+                                                                      const QObject* dependsOn,
+                                                                      QtJambiLink::Ownership ownership,
+                                                                      const InterfaceOffsetInfo& interfaceOffsetInfo)
 {
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
@@ -3017,44 +4811,49 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForDependentObject(JNIEnv *en
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    DependentMetaTypedPointerToObjectInterfaceLink* qtJambiLink = new DependentMetaTypedPointerToObjectInterfaceLink(env, nativeLink,
-                                                                                  interfaceOffsetInfo,
-                                                                                  ptr, metaType, created_by_java, is_shell, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<DependentLink<InterfaceLink<MetaTypedObjectLink>>, QtJambiLink::LinkDisposer> qtJambiLink{new DependentLink<InterfaceLink<MetaTypedObjectLink>>(env, nativeLink,
+                                                                                                                                                                                      LINK_NAME_ARG(metaType.name())
+                                                                                                                                                                                      ptr, created_by_java,
+                                                                                                                                                                                      is_shell, ocurredException)};
+    qtJambiLink->m_meta_type = metaType;
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        QSharedPointer<QtJambiLink> shared = asSharedPointer(std::move(qtJambiLink));
+        QtJambiLink::registerDependentObject(dependsOn, shared);
+        return shared;
     }
-    QSharedPointer<QtJambiLink> shared = *qtJambiLink;
-    QtJambiLink::registerDependentObject(dependsOn, shared);
-    return shared;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
-                                                                        LINK_NAME_ARG(const char* qt_name)
-                                                                        SafeBool created_by_java, SafeBool is_shell, PtrDeleterFunction deleter_function, PtrOwnerFunction ownerFunction, QtJambiLink::Ownership ownership)
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   SafeBool created_by_java, SafeBool is_shell,
+                                                                   PtrDeleterFunction deleter_function,
+                                                                   PtrOwnerFunction ownerFunction,
+                                                                   QtJambiLink::Ownership ownership)
 {
-    if(!ownerFunction){
+    if(Q_UNLIKELY(!ownerFunction)){
         return createLinkForNativeObject(env, javaObject, ptr,
                                    LINK_NAME_ARG(qt_name)
                                    created_by_java, is_shell, deleter_function, ownership);
     }
-    if(!deleter_function){
+    if(Q_UNLIKELY(!deleter_function)){
         return createLinkForNativeObject(env, javaObject, ptr,
                                    LINK_NAME_ARG(qt_name)
                                    created_by_java, is_shell, ownership);
@@ -3064,50 +4863,105 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(ptr);
     Q_ASSERT(ownerFunction);
     Q_ASSERT(deleter_function);
+    checkValueOwner(env, ownerFunction, ptr);
 
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    DeletableOwnedPointerToObjectLink* qtJambiLink = new DeletableOwnedPointerToObjectLink(env, nativeLink,
-                                                                     LINK_NAME_ARG(qt_name)
-                                                                     ptr, created_by_java,
-                                                                     is_shell, deleter_function,
-                                                                     ownerFunction, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<DeletableOwnedObjectLink, QtJambiLink::LinkDisposer> qtJambiLink{new DeletableOwnedObjectLink(env, nativeLink,
+                                                                                                                                    LINK_NAME_ARG(qt_name)
+                                                                                                                                    ptr, created_by_java,
+                                                                                                                                    is_shell,
+                                                                                                                                    ocurredException)};
+    qtJambiLink->m_deleter_function = deleter_function;
+    qtJambiLink->m_owner_function = ownerFunction;
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
-                                                                          LINK_NAME_ARG(const char* qt_name)
-                                                                          SafeBool created_by_java, SafeBool is_shell, PtrDeleterFunction deleter_function, PtrOwnerFunction ownerFunction, QtJambiLink::Ownership ownership,
-                                                                          const InterfaceOffsetInfo& interfaceOffsetInfo)
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   PtrDeleterFunction deleter_function,
+                                                                   PtrOwnerFunction ownerFunction,
+                                                                   SafeBool cppOwnership,
+                                                                   TypeInfoSupplier typeInfoSupplier)
 {
-    if(!ownerFunction){
+    if(Q_UNLIKELY(!ownerFunction)){
+        return createLinkForNativeObject(env, javaObject, ptr,
+                                   LINK_NAME_ARG(qt_name)
+                                   deleter_function, cppOwnership, typeInfoSupplier);
+    }
+    if(Q_UNLIKELY(!deleter_function)){
+        return createLinkForNativeObject(env, javaObject, ptr,
+                                   LINK_NAME_ARG(qt_name)
+                                   cppOwnership, typeInfoSupplier);
+    }
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(ptr);
+    Q_ASSERT(ownerFunction);
+    Q_ASSERT(deleter_function);
+    Q_ASSERT(typeInfoSupplier);
+    if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
+        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+    }
+    checkValueOwner(env, ownerFunction, ptr);
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    std::unique_ptr<DanglingPointerCheckingLink<DeletableOwnedObjectLink>, QtJambiLink::LinkDisposer> qtJambiLink{new DanglingPointerCheckingLink<DeletableOwnedObjectLink>(env, nativeLink,
+                                                                                                                                                              LINK_NAME_ARG(qt_name)
+                                                                                                                                                              ptr, false,
+                                                                                                                                                              false, ocurredException)};
+    qtJambiLink->m_deleter_function = deleter_function;
+    qtJambiLink->m_owner_function = ownerFunction;
+    qtJambiLink->m_typeInfoSupplier = typeInfoSupplier;
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        if(cppOwnership)
+            qtJambiLink->setCppOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
+    }
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   SafeBool created_by_java, SafeBool is_shell,
+                                                                   PtrDeleterFunction deleter_function,
+                                                                   PtrOwnerFunction ownerFunction,
+                                                                   QtJambiLink::Ownership ownership,
+                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    if(Q_UNLIKELY(!ownerFunction)){
         return createLinkForNativeObject(env, javaObject, ptr,
                                    LINK_NAME_ARG(qt_name)
                                    created_by_java, is_shell, deleter_function, ownership,
                                    interfaceOffsetInfo);
     }
-    if(!deleter_function){
+    if(Q_UNLIKELY(!deleter_function)){
         return createLinkForNativeObject(env, javaObject, ptr,
                                    LINK_NAME_ARG(qt_name)
                                    created_by_java, is_shell, ownership,
@@ -3118,44 +4972,101 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(ptr);
     Q_ASSERT(ownerFunction);
     Q_ASSERT(deleter_function);
+    checkValueOwner(env, ownerFunction, ptr);
 
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    DeletableOwnedPointerToObjectInterfaceLink* qtJambiLink = new DeletableOwnedPointerToObjectInterfaceLink(env, nativeLink,
-                                                                              interfaceOffsetInfo,
-                                                                              LINK_NAME_ARG(qt_name)
-                                                                              ptr, created_by_java,
-                                                                              is_shell, deleter_function,
-                                                                              ownerFunction, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<InterfaceLink<DeletableOwnedObjectLink>, QtJambiLink::LinkDisposer> qtJambiLink{new InterfaceLink<DeletableOwnedObjectLink>(env, nativeLink,
+                                                                                                                                                      LINK_NAME_ARG(qt_name)
+                                                                                                                                                      ptr, created_by_java,
+                                                                                                                                                      is_shell, ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    qtJambiLink->m_deleter_function = deleter_function;
+    qtJambiLink->m_owner_function = ownerFunction;
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
-                                                                        LINK_NAME_ARG(const char* qt_name)
-                                                                        SafeBool created_by_java, SafeBool is_shell, PtrDeleterFunction deleter_function, QtJambiLink::Ownership ownership)
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   PtrDeleterFunction deleter_function,
+                                                                   PtrOwnerFunction ownerFunction,
+                                                                   SafeBool cppOwnership,
+                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo,
+                                                                   TypeInfoSupplier typeInfoSupplier)
 {
-    if(!deleter_function){
+    if(Q_UNLIKELY(!ownerFunction)){
+        return createLinkForNativeObject(env, javaObject, ptr,
+                                   LINK_NAME_ARG(qt_name)
+                                   deleter_function, cppOwnership,
+                                   interfaceOffsetInfo, typeInfoSupplier);
+    }
+    if(Q_UNLIKELY(!deleter_function)){
+        return createLinkForNativeObject(env, javaObject, ptr,
+                                   LINK_NAME_ARG(qt_name)
+                                   cppOwnership,
+                                   interfaceOffsetInfo, typeInfoSupplier);
+    }
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(ptr);
+    Q_ASSERT(ownerFunction);
+    Q_ASSERT(deleter_function);
+    Q_ASSERT(typeInfoSupplier);
+    if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
+        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+    }
+    checkValueOwner(env, ownerFunction, ptr);
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    std::unique_ptr<DanglingPointerCheckingLink<InterfaceLink<DeletableOwnedObjectLink>>, QtJambiLink::LinkDisposer> qtJambiLink{new DanglingPointerCheckingLink<InterfaceLink<DeletableOwnedObjectLink>>(env, nativeLink,
+                                                                                                                                                                                LINK_NAME_ARG(qt_name)
+                                                                                                                                                                                ptr, false,
+                                                                                                                                                                                false, ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    qtJambiLink->m_deleter_function = deleter_function;
+    qtJambiLink->m_owner_function = ownerFunction;
+    qtJambiLink->m_typeInfoSupplier = typeInfoSupplier;
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        if(cppOwnership)
+            qtJambiLink->setCppOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
+    }
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   SafeBool created_by_java, SafeBool is_shell,
+                                                                   PtrDeleterFunction deleter_function,
+                                                                   QtJambiLink::Ownership ownership)
+{
+    if(Q_UNLIKELY(!deleter_function)){
         return createLinkForNativeObject(env, javaObject, ptr,
                                    LINK_NAME_ARG(qt_name)
                                    created_by_java, is_shell, ownership);
@@ -3168,39 +5079,83 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    DeletablePointerToObjectLink* qtJambiLink = new DeletablePointerToObjectLink(env, nativeLink,
-                                                                LINK_NAME_ARG(qt_name)
-                                                                ptr, created_by_java,
-                                                                is_shell, deleter_function, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<DeletableObjectLink, QtJambiLink::LinkDisposer> qtJambiLink{new DeletableObjectLink(env, nativeLink,
+                                                                                                                          LINK_NAME_ARG(qt_name)
+                                                                                                                          ptr, created_by_java,
+                                                                                                                          is_shell, ocurredException)};
+    qtJambiLink->m_deleter_function = deleter_function;
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
-                                                                          LINK_NAME_ARG(const char* qt_name)
-                                                                          SafeBool created_by_java, SafeBool is_shell, PtrDeleterFunction deleter_function, QtJambiLink::Ownership ownership,
-                                                                          const InterfaceOffsetInfo& interfaceOffsetInfo)
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   PtrDeleterFunction deleter_function,
+                                                                   SafeBool cppOwnership,
+                                                                   TypeInfoSupplier typeInfoSupplier)
 {
-    if(!deleter_function){
+    if(Q_UNLIKELY(!deleter_function)){
+        return createLinkForNativeObject(env, javaObject, ptr,
+                                   LINK_NAME_ARG(qt_name)
+                                   cppOwnership, typeInfoSupplier);
+    }
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(ptr);
+    Q_ASSERT(deleter_function);
+    Q_ASSERT(typeInfoSupplier);
+    if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
+        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+    }
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    std::unique_ptr<DanglingPointerCheckingLink<DeletableObjectLink>, QtJambiLink::LinkDisposer> qtJambiLink{new DanglingPointerCheckingLink<DeletableObjectLink>(env, nativeLink,
+                                                                                                                                                    LINK_NAME_ARG(qt_name)
+                                                                                                                                                    ptr, false,
+                                                                                                                                                    false,
+                                                                                                                                                    ocurredException)};
+    qtJambiLink->m_typeInfoSupplier = typeInfoSupplier;
+    qtJambiLink->m_deleter_function = deleter_function;
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        if(cppOwnership)
+            qtJambiLink->setCppOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
+    }
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   SafeBool created_by_java, SafeBool is_shell,
+                                                                   PtrDeleterFunction deleter_function,
+                                                                   QtJambiLink::Ownership ownership,
+                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo)
+{
+    if(Q_UNLIKELY(!deleter_function)){
         return createLinkForNativeObject(env, javaObject, ptr,
                                          LINK_NAME_ARG(qt_name)
                                          created_by_java, is_shell, ownership,
@@ -3214,37 +5169,84 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    DeletablePointerToObjectInterfaceLink* qtJambiLink = new DeletablePointerToObjectInterfaceLink(env, nativeLink,
-                                                                         interfaceOffsetInfo,
-                                                                         LINK_NAME_ARG(qt_name)
-                                                                         ptr, created_by_java,
-                                                                         is_shell, deleter_function, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<InterfaceLink<DeletableObjectLink>, QtJambiLink::LinkDisposer> qtJambiLink{new InterfaceLink<DeletableObjectLink>(env, nativeLink,
+                                                                                                                                            LINK_NAME_ARG(qt_name)
+                                                                                                                                            ptr, created_by_java,
+                                                                                                                                            is_shell, ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    qtJambiLink->m_deleter_function = deleter_function;
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
-                                                                          LINK_NAME_ARG(const char* qt_name)
-                                                                          SafeBool created_by_java, SafeBool is_shell, QtJambiLink::Ownership ownership)
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   PtrDeleterFunction deleter_function,
+                                                                   SafeBool cppOwnership,
+                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo,
+                                                                   TypeInfoSupplier typeInfoSupplier)
+{
+    if(Q_UNLIKELY(!deleter_function)){
+        return createLinkForNativeObject(env, javaObject, ptr,
+                                         LINK_NAME_ARG(qt_name)
+                                         cppOwnership,
+                                         interfaceOffsetInfo, typeInfoSupplier);
+    }
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(ptr);
+    Q_ASSERT(deleter_function);
+    Q_ASSERT(typeInfoSupplier);
+    if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
+        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+    }
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    std::unique_ptr<DanglingPointerCheckingLink<InterfaceLink<DeletableObjectLink>>, QtJambiLink::LinkDisposer> qtJambiLink{
+        new DanglingPointerCheckingLink<InterfaceLink<DeletableObjectLink>>(env, nativeLink,
+                                                                    LINK_NAME_ARG(qt_name)
+                                                                    ptr, false,
+                                                                    false,
+                                                                    ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    qtJambiLink->m_typeInfoSupplier = typeInfoSupplier;
+    qtJambiLink->m_deleter_function = deleter_function;
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        if(cppOwnership)
+            qtJambiLink->setCppOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
+    }
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   SafeBool created_by_java, SafeBool is_shell,
+                                                                   QtJambiLink::Ownership ownership)
 {
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
@@ -3253,36 +5255,69 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    PointerToObjectLink* qtJambiLink = new PointerToObjectLink(env, nativeLink,
-                                              LINK_NAME_ARG(qt_name)
-                                              ptr, created_by_java, is_shell, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<PlainObjectLink, QtJambiLink::LinkDisposer> qtJambiLink{new PlainObjectLink(env, nativeLink,
+                                                                                                        LINK_NAME_ARG(qt_name)
+                                                                                                        ptr, created_by_java, is_shell, ocurredException)};
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
-                                                                          LINK_NAME_ARG(const char* qt_name)
-                                                                          SafeBool created_by_java, SafeBool is_shell, QtJambiLink::Ownership ownership,
-                                                                          const InterfaceOffsetInfo& interfaceOffsetInfo)
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   SafeBool cppOwnership,
+                                                                   TypeInfoSupplier typeInfoSupplier)
+{
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(ptr);
+    Q_ASSERT(typeInfoSupplier);
+    if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
+        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+    }
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    std::unique_ptr<DanglingPointerCheckingLink<PlainObjectLink>, QtJambiLink::LinkDisposer> qtJambiLink{new DanglingPointerCheckingLink<PlainObjectLink>(env, nativeLink,
+                                                                                                                                  LINK_NAME_ARG(qt_name)
+                                                                                                                                  ptr, false, false, ocurredException)};
+    qtJambiLink->m_typeInfoSupplier = typeInfoSupplier;
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        if(cppOwnership)
+            qtJambiLink->setCppOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
+    }
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   SafeBool created_by_java,
+                                                                   SafeBool is_shell,
+                                                                   QtJambiLink::Ownership ownership,
+                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo)
 {
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
@@ -3291,36 +5326,69 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     // Initialize the link
     jobject nativeLink = getNativeLink(env, javaObject);
     JavaException ocurredException;
-    PointerToObjectInterfaceLink* qtJambiLink = new PointerToObjectInterfaceLink(env, nativeLink,
-                                                                interfaceOffsetInfo,
-                                                                LINK_NAME_ARG(qt_name)
-                                                                ptr, created_by_java, is_shell, ocurredException);
-    if(ocurredException){
-        qtJambiLink->dispose();
+    std::unique_ptr<InterfaceLink<PlainObjectLink>, QtJambiLink::LinkDisposer> qtJambiLink{new InterfaceLink<PlainObjectLink>(env, nativeLink,
+                                                                                                                          LINK_NAME_ARG(qt_name)
+                                                                                                                          ptr, created_by_java, is_shell, ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
-    }
-    switch(ownership){
-    case QtJambiLink::Ownership::Java:
-        qtJambiLink->setJavaOwnership(env);
-        break;
-    case QtJambiLink::Ownership::Cpp:
-        qtJambiLink->setCppOwnership(env);
-        break;
-    default:
-        if(created_by_java){
+        switch(ownership){
+        case QtJambiLink::Ownership::Java:
             qtJambiLink->setJavaOwnership(env);
+            break;
+        case QtJambiLink::Ownership::Cpp:
+            qtJambiLink->setCppOwnership(env);
+            break;
+        default:
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            break;
         }
-        break;
+        return asSharedPointer(std::move(qtJambiLink));
     }
-    return *qtJambiLink;
+}
+
+QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
+                                                                   LINK_NAME_ARG(const char* qt_name)
+                                                                   SafeBool cppOwnership,
+                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo,
+                                                                   TypeInfoSupplier typeInfoSupplier)
+{
+    Q_ASSERT(env);
+    Q_ASSERT(javaObject);
+    Q_ASSERT(ptr);
+    Q_ASSERT(typeInfoSupplier);
+    if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
+        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+    }
+
+    // Initialize the link
+    jobject nativeLink = getNativeLink(env, javaObject);
+    JavaException ocurredException;
+    std::unique_ptr<DanglingPointerCheckingLink<InterfaceLink<PlainObjectLink>>, QtJambiLink::LinkDisposer> qtJambiLink{new DanglingPointerCheckingLink<InterfaceLink<PlainObjectLink>>(env, nativeLink,
+                                                                                                                                                    LINK_NAME_ARG(qt_name)
+                                                                                                                                                    ptr, false, false, ocurredException)};
+    qtJambiLink->setInterfaceOffsetInfo(interfaceOffsetInfo);
+    qtJambiLink->m_typeInfoSupplier = typeInfoSupplier;
+    if(Q_UNLIKELY(ocurredException)){
+        ocurredException.raise();
+        return {};
+    }else{
+        qtJambiLink->init(env);
+        if(cppOwnership)
+            qtJambiLink->setCppOwnership(env);
+        return asSharedPointer(std::move(qtJambiLink));
+    }
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, const QMetaType& metaType, SafeBool created_by_java, SafeBool is_shell, PtrOwnerFunction ownerFunction, JavaException& ocurredException)
 {
-    if(!ownerFunction){
+    if(Q_UNLIKELY(!ownerFunction)){
         return createLinkForNewObject(env, objectClass, nativeLink, javaObject, typeId, ptr, superTypeInfos, metaType, created_by_java, is_shell, ocurredException);
     }
     if(!ocurredException){
@@ -3332,24 +5400,27 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewObject(JNIEnv *env, jcl
 
         // Initialize the link
         const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, objectClass, typeId, superTypeInfos);
-        QtJambiLink* qtJambiLink;
+        std::unique_ptr<OwnedMetaTypedObjectLink, QtJambiLink::LinkDisposer> qtJambiLink;
         if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-            qtJambiLink = new OwnedMetaTypedPointerToObjectInterfaceLink(env, nativeLink, *interfaceOffsets,
-                                                           ptr, metaType, created_by_java, is_shell, ownerFunction, ocurredException);
+            PendingLink<InterfaceLink<OwnedMetaTypedObjectLink>>* link;
+            qtJambiLink.reset(link = new PendingLink<InterfaceLink<OwnedMetaTypedObjectLink>>(env, nativeLink,
+                                                                                                       LINK_NAME_ARG(metaType.name())
+                                                                                                       ptr, created_by_java, is_shell, ocurredException));
+            link->setInterfaceOffsetInfo(*interfaceOffsets);
         }else{
-            qtJambiLink = new OwnedMetaTypedPointerToObjectLink(env, nativeLink,
-                                                  ptr, metaType, created_by_java, is_shell, ownerFunction, ocurredException);
+            qtJambiLink.reset(new PendingLink<OwnedMetaTypedObjectLink>(env, nativeLink,
+                                                                                 LINK_NAME_ARG(metaType.name())
+                                                                                 ptr, created_by_java, is_shell, ocurredException));
         }
-        if(ocurredException){
-            qtJambiLink->dispose();
-        }else{
-            if(created_by_java){
+        qtJambiLink->m_meta_type = metaType;
+        qtJambiLink->m_owner_function = ownerFunction;
+        if(Q_LIKELY(!ocurredException)){
+            if(created_by_java)
                 qtJambiLink->setJavaOwnership(env);
-            }
-            return *qtJambiLink;
+            return asSharedPointer(std::move(qtJambiLink));
         }
     }
-    return QSharedPointer<QtJambiLink>();
+    return {};
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos,
@@ -3363,26 +5434,28 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewObject(JNIEnv *env, jcl
 
         // Initialize the link
         const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, objectClass, typeId, superTypeInfos);
-        QtJambiLink* qtJambiLink;
+        std::unique_ptr<PointerToContainerLink, QtJambiLink::LinkDisposer> qtJambiLink;
         if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-            qtJambiLink = new PointerToContainerInterfaceLink(env, nativeLink, *interfaceOffsets,
+            InterfaceLink<PointerToContainerLink>* link;
+            qtJambiLink.reset(link = new InterfaceLink<PointerToContainerLink>(env, nativeLink,
                                                               LINK_NAME_ARG(getQtName(typeId))
-                                                              ptr, created_by_java, is_shell, containerAccess, ocurredException);
+                                                              ptr, created_by_java, is_shell, ocurredException));
+            link->setInterfaceOffsetInfo(*interfaceOffsets);
+            link->m_containerAccess = containerAccess;
         }else{
-            qtJambiLink = new PointerToContainerLink(env, nativeLink,
+            PointerToContainerLink* link;
+            qtJambiLink.reset(link = new PointerToContainerLink(env, nativeLink,
                                                      LINK_NAME_ARG(getQtName(typeId))
-                                                     ptr, created_by_java, is_shell, containerAccess, ocurredException);
+                                                     ptr, created_by_java, is_shell, ocurredException));
+            link->m_containerAccess = containerAccess;
         }
-        if(ocurredException){
-            qtJambiLink->dispose();
-        }else{
-            if(created_by_java){
+        if(Q_LIKELY(!ocurredException)){
+            if(created_by_java)
                 qtJambiLink->setJavaOwnership(env);
-            }
-            return *qtJambiLink;
+            return asSharedPointer(std::move(qtJambiLink));
         }
     }
-    return QSharedPointer<QtJambiLink>();
+    return {};
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, SafeBool created_by_java, SafeBool is_shell, AbstractContainerAccess* containerAccess, PtrDeleterFunction destructor_function, JavaException& ocurredException)
@@ -3395,26 +5468,27 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewObject(JNIEnv *env, jcl
 
         // Initialize the link
         const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, objectClass, typeId, superTypeInfos);
-        QtJambiLink* qtJambiLink;
+        std::unique_ptr<DeletablePointerToContainerLink, QtJambiLink::LinkDisposer> qtJambiLink;
         if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-            qtJambiLink = new DeletablePointerToContainerInterfaceLink(env, nativeLink, *interfaceOffsets,
-                                                                       LINK_NAME_ARG(getQtName(typeId))
-                                                                       ptr, created_by_java, is_shell, destructor_function, containerAccess, ocurredException);
+            InterfaceLink<DeletablePointerToContainerLink>* link;
+            qtJambiLink.reset(link = new InterfaceLink<DeletablePointerToContainerLink>(env, nativeLink,
+                                                                           LINK_NAME_ARG(getQtName(typeId))
+                                                                           ptr, created_by_java, is_shell, ocurredException));
+            link->setInterfaceOffsetInfo(*interfaceOffsets);
         }else{
-            qtJambiLink = new DeletablePointerToContainerLink(env, nativeLink,
-                                                              LINK_NAME_ARG(getQtName(typeId))
-                                                              ptr, created_by_java, is_shell, destructor_function, containerAccess, ocurredException);
+            qtJambiLink.reset(new DeletablePointerToContainerLink(env, nativeLink,
+                                                                  LINK_NAME_ARG(getQtName(typeId))
+                                                                  ptr, created_by_java, is_shell, ocurredException));
         }
-        if(ocurredException){
-            qtJambiLink->dispose();
-        }else{
-            if(created_by_java){
+        qtJambiLink->m_deleter_function = destructor_function;
+        qtJambiLink->m_containerAccess = containerAccess;
+        if(Q_LIKELY(!ocurredException)){
+            if(created_by_java)
                 qtJambiLink->setJavaOwnership(env);
-            }
-            return *qtJambiLink;
+            return asSharedPointer(std::move(qtJambiLink));
         }
     }
-    return QSharedPointer<QtJambiLink>();
+    return {};
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, SafeBool created_by_java, SafeBool is_shell, AbstractContainerAccess* containerAccess, PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, JavaException& ocurredException)
@@ -3424,29 +5498,32 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewObject(JNIEnv *env, jcl
         Q_ASSERT(javaObject);
         Q_ASSERT(ptr);
         Q_ASSERT(containerAccess);
+        Q_ASSERT(ownerFunction);
 
         // Initialize the link
         const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, objectClass, typeId, superTypeInfos);
-        QtJambiLink* qtJambiLink;
+        std::unique_ptr<DeletableOwnedPointerToContainerLink, QtJambiLink::LinkDisposer> qtJambiLink;
         if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-            qtJambiLink = new DeletableOwnedPointerToContainerInterfaceLink(env, nativeLink, *interfaceOffsets,
+            PendingLink<InterfaceLink<DeletableOwnedPointerToContainerLink>>* link;
+            qtJambiLink.reset(link = new PendingLink<InterfaceLink<DeletableOwnedPointerToContainerLink>>(env, nativeLink,
+                                                                                LINK_NAME_ARG(getQtName(typeId))
+                                                                                ptr, created_by_java, is_shell, ocurredException));
+            link->setInterfaceOffsetInfo(*interfaceOffsets);
+        }else{
+            qtJambiLink.reset(new PendingLink<DeletableOwnedPointerToContainerLink>(env, nativeLink,
                                                                        LINK_NAME_ARG(getQtName(typeId))
-                                                                       ptr, created_by_java, is_shell, destructor_function, ownerFunction, containerAccess, ocurredException);
-        }else{
-            qtJambiLink = new DeletableOwnedPointerToContainerLink(env, nativeLink,
-                                                              LINK_NAME_ARG(getQtName(typeId))
-                                                              ptr, created_by_java, is_shell, destructor_function, ownerFunction, containerAccess, ocurredException);
+                                                                       ptr, created_by_java, is_shell, ocurredException));
         }
-        if(ocurredException){
-            qtJambiLink->dispose();
-        }else{
-            if(created_by_java){
+        qtJambiLink->m_owner_function = ownerFunction;
+        qtJambiLink->m_deleter_function = destructor_function;
+        qtJambiLink->m_containerAccess = containerAccess;
+        if(Q_LIKELY(!ocurredException)){
+            if(created_by_java)
                 qtJambiLink->setJavaOwnership(env);
-            }
-            return *qtJambiLink;
+            return asSharedPointer(std::move(qtJambiLink));
         }
     }
-    return QSharedPointer<QtJambiLink>();
+    return {};
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, const QMetaType& metaType, SafeBool created_by_java, SafeBool is_shell, JavaException& ocurredException)
@@ -3459,29 +5536,35 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewObject(JNIEnv *env, jcl
 
         // Initialize the link
         const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, objectClass, typeId, superTypeInfos);
-        QtJambiLink* qtJambiLink;
+        std::unique_ptr<QtJambiLink, QtJambiLink::LinkDisposer> qtJambiLink;
         if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-            qtJambiLink = new MetaTypedPointerToObjectInterfaceLink(env, nativeLink, *interfaceOffsets,
-                                                           ptr, metaType, created_by_java, is_shell, ocurredException);
+            InterfaceLink<MetaTypedObjectLink>* link;
+            qtJambiLink.reset(link = new InterfaceLink<MetaTypedObjectLink>(env, nativeLink,
+                                                                                     LINK_NAME_ARG(metaType.name())
+                                                                                     ptr, created_by_java,
+                                                                                     is_shell, ocurredException));
+            link->setInterfaceOffsetInfo(*interfaceOffsets);
+            link->m_meta_type = metaType;
         }else{
-            qtJambiLink = new MetaTypedPointerToObjectLink(env, nativeLink,
-                                                  ptr, metaType, created_by_java, is_shell, ocurredException);
+            MetaTypedObjectLink* link;
+            qtJambiLink.reset(link = new MetaTypedObjectLink(env, nativeLink,
+                                                                      LINK_NAME_ARG(metaType.name())
+                                                                      ptr, created_by_java,
+                                                                      is_shell, ocurredException));
+            link->m_meta_type = metaType;
         }
-        if(ocurredException){
-            qtJambiLink->dispose();
-        }else{
-            if(created_by_java){
+        if(Q_LIKELY(!ocurredException)){
+            if(created_by_java)
                 qtJambiLink->setJavaOwnership(env);
-            }
-            return *qtJambiLink;
+            return asSharedPointer(std::move(qtJambiLink));
         }
     }
-    return QSharedPointer<QtJambiLink>();
+    return {};
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, SafeBool created_by_java, SafeBool is_shell, PtrDeleterFunction deleter_function, PtrOwnerFunction ownerFunction, JavaException& ocurredException)
 {
-    if(!ownerFunction){
+    if(Q_UNLIKELY(!ownerFunction)){
         return createLinkForNewObject(env, objectClass, nativeLink, javaObject, typeId, ptr, superTypeInfos, created_by_java, is_shell, deleter_function, ocurredException);
     }
     if(!ocurredException){
@@ -3493,31 +5576,32 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewObject(JNIEnv *env, jcl
 
         // Initialize the link
         const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, objectClass, typeId, superTypeInfos);
-        QtJambiLink* qtJambiLink;
+        std::unique_ptr<DeletableOwnedObjectLink, QtJambiLink::LinkDisposer> qtJambiLink;
         if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-            qtJambiLink = new DeletableOwnedPointerToObjectInterfaceLink(env, nativeLink, *interfaceOffsets,
-                                                           LINK_NAME_ARG(getQtName(typeId))
-                                                           ptr, created_by_java, is_shell, deleter_function, ownerFunction, ocurredException);
+            PendingLink<InterfaceLink<DeletableOwnedObjectLink>>* link;
+            qtJambiLink.reset(link = new PendingLink<InterfaceLink<DeletableOwnedObjectLink>>(env, nativeLink,
+                                                                             LINK_NAME_ARG(getQtName(typeId))
+                                                                             ptr, created_by_java, is_shell, ocurredException));
+            link->setInterfaceOffsetInfo(*interfaceOffsets);
         }else{
-            qtJambiLink = new DeletableOwnedPointerToObjectLink(env, nativeLink,
-                                                  LINK_NAME_ARG(getQtName(typeId))
-                                                  ptr, created_by_java, is_shell, deleter_function, ownerFunction, ocurredException);
+            qtJambiLink.reset(new PendingLink<DeletableOwnedObjectLink>(env, nativeLink,
+                                                                    LINK_NAME_ARG(getQtName(typeId))
+                                                                    ptr, created_by_java, is_shell, ocurredException));
         }
-        if(ocurredException){
-            qtJambiLink->dispose();
-        }else{
-            if(created_by_java){
+        qtJambiLink->m_deleter_function = deleter_function;
+        qtJambiLink->m_owner_function = ownerFunction;
+        if(Q_LIKELY(!ocurredException)){
+            if(created_by_java)
                 qtJambiLink->setJavaOwnership(env);
-            }
-            return *qtJambiLink;
+            return asSharedPointer(std::move(qtJambiLink));
         }
     }
-    return QSharedPointer<QtJambiLink>();
+    return {};
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, SafeBool created_by_java, SafeBool is_shell, PtrDeleterFunction deleter_function, JavaException& ocurredException)
 {
-    if(!deleter_function){
+    if(Q_UNLIKELY(!deleter_function)){
         return createLinkForNewObject(env, objectClass, nativeLink, javaObject, typeId, ptr, superTypeInfos, created_by_java, is_shell, ocurredException);
     }
     if(!ocurredException){
@@ -3528,26 +5612,26 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewObject(JNIEnv *env, jcl
 
         // Initialize the link
         const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, objectClass, typeId, superTypeInfos);
-        QtJambiLink* qtJambiLink;
+        std::unique_ptr<DeletableObjectLink, QtJambiLink::LinkDisposer> qtJambiLink;
         if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-            qtJambiLink = new DeletablePointerToObjectInterfaceLink(env, nativeLink, *interfaceOffsets,
-                                                           LINK_NAME_ARG(getQtName(typeId))
-                                                           ptr, created_by_java, is_shell, deleter_function, ocurredException);
+            InterfaceLink<DeletableObjectLink>* link;
+            qtJambiLink.reset(link = new InterfaceLink<DeletableObjectLink>(env, nativeLink,
+                                                                        LINK_NAME_ARG(getQtName(typeId))
+                                                                        ptr, created_by_java, is_shell, ocurredException));
+            link->setInterfaceOffsetInfo(*interfaceOffsets);
         }else{
-            qtJambiLink = new DeletablePointerToObjectLink(env, nativeLink,
-                                                  LINK_NAME_ARG(getQtName(typeId))
-                                                  ptr, created_by_java, is_shell, deleter_function, ocurredException);
+            qtJambiLink.reset(new DeletableObjectLink(env, nativeLink,
+                                                               LINK_NAME_ARG(getQtName(typeId))
+                                                               ptr, created_by_java, is_shell, ocurredException));
         }
-        if(ocurredException){
-            qtJambiLink->dispose();
-        }else{
-            if(created_by_java){
+        qtJambiLink->m_deleter_function = deleter_function;
+        if(Q_LIKELY(!ocurredException)){
+            if(created_by_java)
                 qtJambiLink->setJavaOwnership(env);
-            }
-            return *qtJambiLink;
+            return asSharedPointer(std::move(qtJambiLink));
         }
     }
-    return QSharedPointer<QtJambiLink>();
+    return {};
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, SafeBool created_by_java, SafeBool is_shell, JavaException& ocurredException)
@@ -3559,26 +5643,25 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewObject(JNIEnv *env, jcl
 
         // Initialize the link
         const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, objectClass, typeId, superTypeInfos);
-        QtJambiLink* qtJambiLink;
+        std::unique_ptr<PlainObjectLink, QtJambiLink::LinkDisposer> qtJambiLink;
         if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-            qtJambiLink = new PointerToObjectInterfaceLink(env, nativeLink, *interfaceOffsets,
-                                                           LINK_NAME_ARG(getQtName(typeId))
-                                                           ptr, created_by_java, is_shell, ocurredException);
+            InterfaceLink<PlainObjectLink>* link;
+            qtJambiLink.reset(link = new InterfaceLink<PlainObjectLink>(env, nativeLink,
+                                                               LINK_NAME_ARG(getQtName(typeId))
+                                                               ptr, created_by_java, is_shell, ocurredException));
+            link->setInterfaceOffsetInfo(*interfaceOffsets);
         }else{
-            qtJambiLink = new PointerToObjectLink(env, nativeLink,
-                                                  LINK_NAME_ARG(getQtName(typeId))
-                                                  ptr, created_by_java, is_shell, ocurredException);
+            qtJambiLink.reset(new PlainObjectLink(env, nativeLink,
+                                                      LINK_NAME_ARG(getQtName(typeId))
+                                                      ptr, created_by_java, is_shell, ocurredException));
         }
-        if(ocurredException){
-            qtJambiLink->dispose();
-        }else{
-            if(created_by_java){
+        if(Q_LIKELY(!ocurredException)){
+            if(created_by_java)
                 qtJambiLink->setJavaOwnership(env);
-            }
-            return *qtJambiLink;
+            return asSharedPointer(std::move(qtJambiLink));
         }
     }
-    return QSharedPointer<QtJambiLink>();
+    return {};
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForOwnedObject(JNIEnv *env, jobject javaObject, void *ptr,
@@ -3593,45 +5676,51 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForOwnedObject(JNIEnv *env, j
     jobject nativeLink = getNativeLink(env, javaObject);
     const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, env->GetObjectClass(javaObject));
     JavaException ocurredException;
-    PointerToObjectLink* qtJambiLink;
+    std::unique_ptr<PlainObjectLink, QtJambiLink::LinkDisposer> qtJambiLink;
     if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
         if(deleter_function){
-            qtJambiLink = new DeletablePointerToObjectInterfaceLink(env, nativeLink, *interfaceOffsets,
-                                                           LINK_NAME_ARG(qt_name)
-                                                           ptr, false, false, deleter_function, ocurredException);
+            InterfaceLink<DeletableObjectLink>* link;
+            qtJambiLink.reset(link = new InterfaceLink<DeletableObjectLink>(env, nativeLink,
+                                                                        LINK_NAME_ARG(qt_name)
+                                                                        ptr, false, false, ocurredException));
+            link->setInterfaceOffsetInfo(*interfaceOffsets);
+            link->m_deleter_function = deleter_function;
         }else{
-            qtJambiLink = new PointerToObjectInterfaceLink(env, nativeLink, *interfaceOffsets,
-                                                           LINK_NAME_ARG(qt_name)
-                                                           ptr, false, false, ocurredException);
+            InterfaceLink<PlainObjectLink>* link;
+            qtJambiLink.reset(link = new InterfaceLink<PlainObjectLink>(env, nativeLink,
+                                                               LINK_NAME_ARG(qt_name)
+                                                               ptr, false, false, ocurredException));
+            link->setInterfaceOffsetInfo(*interfaceOffsets);
         }
     }else{
         if(deleter_function){
-                qtJambiLink = new DeletablePointerToObjectLink(env, nativeLink,
-                                                      LINK_NAME_ARG(qt_name)
-                                                      ptr, false, false, deleter_function, ocurredException);
+            DeletableObjectLink* link;
+            qtJambiLink.reset(link = new DeletableObjectLink(env, nativeLink,
+                                                               LINK_NAME_ARG(qt_name)
+                                                               ptr, false, false, ocurredException));
+            link->m_deleter_function = deleter_function;
         }else{
-                qtJambiLink = new PointerToObjectLink(env, nativeLink,
+            qtJambiLink.reset(new PlainObjectLink(env, nativeLink,
                                                       LINK_NAME_ARG(qt_name)
-                                                      ptr, false, false, ocurredException);
+                                                      ptr, false, false, ocurredException));
         }
     }
-    if(ocurredException){
-        qtJambiLink->dispose();
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
+        QSharedPointer<QtJambiLink> shared = asSharedPointer(std::move(qtJambiLink));
+        if(QSharedPointer<QtJambiLink> _owner = QtJambiLink::fromNativeId(owner)){
+            _owner->registerDependentObject(shared);
+        }
+        if(deleter_function){
+            shared->setJavaOwnership(env);
+        }else{
+            shared->setSplitOwnership(env);
+        }
+        return shared;
     }
-    QSharedPointer<QtJambiLink> shared = *qtJambiLink;
-    if(QSharedPointer<QtJambiLink> _owner = QtJambiLink::fromNativeId(owner)){
-        _owner->registerDependentObject(shared);
-    }
-    if(deleter_function){
-        qtJambiLink->setJavaOwnership(env);
-    }else{
-        qtJambiLink->setSplitOwnership(env);
-    }
-    return shared;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForOwnedObject(JNIEnv *env, jobject javaObject, void *ptr,
@@ -3646,29 +5735,30 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForOwnedObject(JNIEnv *env, j
     jobject nativeLink = getNativeLink(env, javaObject);
     const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, env->GetObjectClass(javaObject));
     JavaException ocurredException;
-    PointerToObjectLink* qtJambiLink;
+    std::unique_ptr<PlainObjectLink, QtJambiLink::LinkDisposer> qtJambiLink;
     if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-        qtJambiLink = new PointerToObjectInterfaceLink(env, nativeLink, *interfaceOffsets,
-                                                       LINK_NAME_ARG(qt_name)
-                                                       ptr, false, false, ocurredException);
+        InterfaceLink<PlainObjectLink>* link;
+        qtJambiLink.reset(link = new InterfaceLink<PlainObjectLink>(env, nativeLink,
+                                                           LINK_NAME_ARG(qt_name)
+                                                           ptr, false, false, ocurredException));
+        link->setInterfaceOffsetInfo(*interfaceOffsets);
     }else{
-        qtJambiLink = new PointerToObjectLink(env, nativeLink,
-                                              LINK_NAME_ARG(qt_name)
-                                              ptr, false, false, ocurredException);
+        qtJambiLink.reset(new PlainObjectLink(env, nativeLink,
+                                                  LINK_NAME_ARG(qt_name)
+                                                  ptr, false, false, ocurredException));
     }
-    if(ocurredException){
-        qtJambiLink->dispose();
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
+        qtJambiLink->setSplitOwnership(env);
+        QSharedPointer<QtJambiLink> shared = asSharedPointer(std::move(qtJambiLink));
+        if(QSharedPointer<QtJambiLink> _owner = QtJambiLink::fromNativeId(owner)){
+            _owner->registerDependentObject(shared);
+        }
+        return shared;
     }
-    qtJambiLink->setSplitOwnership(env);
-    QSharedPointer<QtJambiLink> shared = *qtJambiLink;
-    if(QSharedPointer<QtJambiLink> _owner = QtJambiLink::fromNativeId(owner)){
-        _owner->registerDependentObject(shared);
-    }
-    return shared;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
@@ -3683,29 +5773,33 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     jobject nativeLink = getNativeLink(env, javaObject);
     const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, env->GetObjectClass(javaObject));
     JavaException ocurredException;
-    PointerToObjectLink* qtJambiLink;
+    std::unique_ptr<PointerToContainerLink, QtJambiLink::LinkDisposer> qtJambiLink;
     if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-        qtJambiLink = new PointerToContainerInterfaceLink(env, nativeLink, *interfaceOffsets,
-                                                       LINK_NAME_ARG(qt_name)
-                                                       ptr, false, false, containerAccess, ocurredException);
+        InterfaceLink<PointerToContainerLink>* link;
+        qtJambiLink.reset(link = new InterfaceLink<PointerToContainerLink>(env, nativeLink,
+                                                              LINK_NAME_ARG(qt_name)
+                                                              ptr, false, false, ocurredException));
+        link->setInterfaceOffsetInfo(*interfaceOffsets);
+        link->m_containerAccess = containerAccess;
     }else{
-        qtJambiLink = new PointerToContainerLink(env, nativeLink,
-                                              LINK_NAME_ARG(qt_name)
-                                              ptr, false, false, containerAccess, ocurredException);
+        PointerToContainerLink* link;
+        qtJambiLink.reset(link = new PointerToContainerLink(env, nativeLink,
+                                                     LINK_NAME_ARG(qt_name)
+                                                     ptr, false, false, ocurredException));
+        link->m_containerAccess = containerAccess;
     }
-    if(ocurredException){
-        qtJambiLink->dispose();
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
+        qtJambiLink->setSplitOwnership(env);
+        QSharedPointer<QtJambiLink> shared = asSharedPointer(std::move(qtJambiLink));
+        if(QSharedPointer<QtJambiLink> _owner = QtJambiLink::fromNativeId(owner)){
+            _owner->registerDependentObject(shared);
+        }
+        return shared;
     }
-    qtJambiLink->setSplitOwnership(env);
-    QSharedPointer<QtJambiLink> shared = *qtJambiLink;
-    if(QSharedPointer<QtJambiLink> _owner = QtJambiLink::fromNativeId(owner)){
-        _owner->registerDependentObject(shared);
-    }
-    return shared;
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
@@ -3720,47 +5814,53 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     jobject nativeLink = getNativeLink(env, javaObject);
     const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, env->GetObjectClass(javaObject));
     JavaException ocurredException;
-    PointerToObjectLink* qtJambiLink;
+    std::unique_ptr<DeletablePointerToContainerLink, QtJambiLink::LinkDisposer> qtJambiLink;
     if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
-        qtJambiLink = new DeletablePointerToContainerInterfaceLink(env, nativeLink, *interfaceOffsets,
-                                                       LINK_NAME_ARG(qt_name)
-                                                       ptr, false, false, destructor_function, containerAccess, ocurredException);
+        InterfaceLink<DeletablePointerToContainerLink>* link;
+        qtJambiLink.reset(link = new InterfaceLink<DeletablePointerToContainerLink>(env, nativeLink,
+                                                                       LINK_NAME_ARG(qt_name)
+                                                                       ptr, false, false, ocurredException));
+        link->setInterfaceOffsetInfo(*interfaceOffsets);
     }else{
-        qtJambiLink = new DeletablePointerToContainerLink(env, nativeLink,
-                                              LINK_NAME_ARG(qt_name)
-                                              ptr, false, false, destructor_function, containerAccess, ocurredException);
+        qtJambiLink.reset(new DeletablePointerToContainerLink(env, nativeLink,
+                                                              LINK_NAME_ARG(qt_name)
+                                                              ptr, false, false, ocurredException));
     }
-    if(ocurredException){
-        qtJambiLink->dispose();
+    qtJambiLink->m_deleter_function = destructor_function;
+    qtJambiLink->m_containerAccess = containerAccess;
+    if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
-        Q_ASSERT(false);// should not reach this
+        return {};
     }else{
         qtJambiLink->init(env);
+        if(destructor_function){
+            qtJambiLink->setJavaOwnership(env);
+        }else{
+            qtJambiLink->setSplitOwnership(env);
+        }
+        QSharedPointer<QtJambiLink> shared = asSharedPointer(std::move(qtJambiLink));
+        if(QSharedPointer<QtJambiLink> _owner = QtJambiLink::fromNativeId(owner)){
+            _owner->registerDependentObject(shared);
+        }
+        return shared;
     }
-    if(destructor_function){
-        qtJambiLink->setJavaOwnership(env);
-    }else{
-        qtJambiLink->setSplitOwnership(env);
-    }
-    QSharedPointer<QtJambiLink> shared = *qtJambiLink;
-    if(QSharedPointer<QtJambiLink> _owner = QtJambiLink::fromNativeId(owner)){
-        _owner->registerDependentObject(shared);
-    }
-    return shared;
 }
 
 jobject QtJambiLink::findObjectForPointer(JNIEnv* env, jclass clazz, const void *ptr){
     jobject result = nullptr;
-    if (ptr && gLinkAccessLock->tryLockForRead(2000)){
-        Q_ASSERT(gUserObjectCache());
-        QList<QWeakPointer<QtJambiLink>> values = gUserObjectCache->values(ptr);
-        gLinkAccessLock->unlock();
-        for(const QWeakPointer<QtJambiLink>& wlink : qAsConst(values)){
-            if(QSharedPointer<QtJambiLink> link = wlink){
-                jobject obj = link->getJavaObjectLocalRef(env);
-                if(obj && env->IsInstanceOf(obj, clazz)){
-                    result = obj;
-                    break;
+    Q_ASSERT(ptr);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        if(storage->linkLock()->tryLockForRead(2000)){
+            const QList<QWeakPointer<QtJambiLink>> values = storage->userObjectCache().values(ptr);
+            storage->linkLock()->unlock();
+            for(const QWeakPointer<QtJambiLink>& wlink : values){
+                if(QSharedPointer<QtJambiLink> link = wlink){
+                    jobject obj = link->getJavaObjectLocalRef(env);
+                    if(obj && env->IsInstanceOf(obj, clazz)){
+                        result = obj;
+                        break;
+                    }
                 }
             }
         }
@@ -3771,16 +5871,18 @@ jobject QtJambiLink::findObjectForPointer(JNIEnv* env, jclass clazz, const void 
 QList<QSharedPointer<QtJambiLink>> QtJambiLink::findLinksForPointer(const void *ptr)
 {
     QList<QSharedPointer<QtJambiLink>> result;
-    if (ptr && gLinkAccessLock->tryLockForRead(2000)){
-        Q_ASSERT(gUserObjectCache());
-        if(gUserObjectCache->contains(ptr)){
-            const QList<QWeakPointer<QtJambiLink>> values = gUserObjectCache->values(ptr);
-            for(const QWeakPointer<QtJambiLink>& wlink : values){
-                if(QSharedPointer<QtJambiLink> link = wlink)
-                    result << link;
+    if (Q_LIKELY(ptr)){
+        QtJambiStorage* storage = getQtJambiStorage();
+        {
+            if(storage->linkLock()->tryLockForRead(2000)){
+                const QList<QWeakPointer<QtJambiLink>> values = storage->userObjectCache().values(ptr);
+                storage->linkLock()->unlock();
+                for(const QWeakPointer<QtJambiLink>& wlink : values){
+                    if(QSharedPointer<QtJambiLink> link = wlink)
+                        result << link;
+                }
             }
         }
-        gLinkAccessLock->unlock();
     }
     return result;
 }
@@ -3789,22 +5891,15 @@ QSharedPointer<QtJambiLink> QtJambiLink::findLinkForQObject(const QObject *o)
 {
     if (!o)
         return {};
+    QtJambiStorage* storage = getQtJambiStorage();
     {
-        QReadLocker locker(QtJambiLinkUserData::lock());
-        if(QtJambiLinkUserData *p = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, o)){
-            QSharedPointer<QtJambiLink> link = p->link();
-            return link;
+        QReadLocker locker(storage->linkLock());
+        if(QtJambiLinkObjectData *p = QtJambiObjectData::userData<QtJambiLinkObjectData>(o)){
+            return p->link();
         }
+        return storage->qObjectCache().value(o);
     }
-    {
-        QReadLocker locker(gLinkAccessLock());
-        Q_UNUSED(locker)
-        Q_ASSERT(gQObjectCache());
-        if(!gQObjectCache->contains(o))
-            return {};
-        QSharedPointer<QtJambiLink> link = (*gQObjectCache())[o];
-        return link;
-    }
+    return {};
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::fromNativeId(QtJambiNativeID native_id){
@@ -3881,15 +5976,15 @@ void* QtJambiLink::findPointerForJavaObject(JNIEnv *env, jobject java)
         env->ExceptionClear();
     }
     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, java)){
-        if(link->pointer())
-            return link->pointer();
+        if(void* ptr = link->pointer())
+            return ptr;
     }else if (!env->IsSameObject(nullptr, java))
         Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, java).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
     return nullptr;
 }
 
 namespace QtSharedPointer{
-ExternalRefCountData* ExternalRefCountWithCustomDeleter<QtJambiLink, NormalDeleter>::fromLink(QtJambiLink * link){
+ExternalRefCountData* ExternalRefCountWithCustomDeleter<QtJambiLink, NormalDeleter>::create(QtJambiLink * link, QtSharedPointer::NormalDeleter, DestroyerFn){
     link->m_refCount->strongref.ref();
     link->m_refCount->weakref.ref();
     return link->m_refCount;
@@ -3900,15 +5995,13 @@ struct ExternalRefCountWithCustomDeleter<QtJambiLink, ExternalRefCountData*>{
     typedef const void* DestroyerFn;
     static constexpr char safetyCheckDeleter = 0;
     static constexpr char deleter = 0;
-    static inline ExternalRefCountData* create(QtJambiLink *,
-                                               ExternalRefCountData* result,
-                                               DestroyerFn){
+    static constexpr inline ExternalRefCountData* create(QtJambiLink *, ExternalRefCountData* result, DestroyerFn){
         return result;
     }
 };
 }
 
-QSharedPointer<QtJambiLink> QtJambiLink::getStrongPointer() const{
+QSharedPointer<QtJambiLink> QtJambiLink::getStrongPointer() const {
     if(Q_LIKELY(m_refCount->strongref.fetchAndAddAcquire(1)>0)){
         m_refCount->weakref.ref();
         return {const_cast<QtJambiLink*>(this), m_refCount};
@@ -3950,6 +6043,47 @@ const char* QtJambiLink::qtTypeName() const{
     return m_qtTypeName;
 }
 #endif
+void QtJambiLink::onDispose(JNIEnv *env){
+    if(!m_flags.testFlag(QtJambiLink::Flag::IsManaged)){
+        if(!m_flags.testFlag(QtJambiLink::Flag::BlockDeletion)){
+            JavaException throwable;
+            m_flags.setFlag(QtJambiLink::Flag::BlockDeletion, true);
+            QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QtJambiLink::onDispose(JNIEnv *)")
+            setJavaOwnership(env);
+            deleteNativeObject(env, true);
+            if(env->ExceptionCheck()){
+                jthrowable t = env->ExceptionOccurred();
+                env->ExceptionClear();
+                throwable = JavaException(env, t);
+            }
+            detachJavaLink(env);
+            QTJAMBI_INCREASE_COUNTER_THIS(disposeCalledCount)
+            m_flags.setFlag(QtJambiLink::Flag::BlockDeletion, false);
+            throwable.raise();
+        }
+    }
+}
+void QtJambiLink::onClean(JNIEnv *env){
+    if(!m_flags.testFlag(QtJambiLink::Flag::HasBeenCleaned)){
+        if(!m_flags.testFlag(QtJambiLink::Flag::BlockDeletion)){
+            JavaException throwable;
+            m_flags.setFlag(QtJambiLink::Flag::BlockDeletion, true);
+            QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QtJambiLink::onClean(JNIEnv *)")
+            QTJAMBI_INCREASE_COUNTER_THIS(cleanCallerCount)
+            releaseJavaObject(env);
+            deleteNativeObject(env);
+            if(env->ExceptionCheck()){
+                jthrowable t = env->ExceptionOccurred();
+                env->ExceptionClear();
+                throwable = JavaException(env, t);
+            }
+            detachJavaLink(env);
+            m_flags.setFlag(QtJambiLink::Flag::HasBeenCleaned);
+            m_flags.setFlag(QtJambiLink::Flag::BlockDeletion, false);
+            throwable.raise();
+        }
+    }
+}
 
 jobject QtJambiLink::nativeLink(JNIEnv* env) const {
     if(m_flags.testFlag(Flag::NoGlobalRef)){
@@ -3995,7 +6129,7 @@ void QtJambiLink::setJavaOwnership(JNIEnv *env)
         m_flags.setFlag(Flag::OwnershipMask, false);
         m_flags.setFlag(Flag::JavaOwnership);
         if(!isQObject())
-            registerPointer(pointer());
+            registerPointer(plainPointer());
     }
 }
 
@@ -4098,10 +6232,47 @@ void QtJambiLink::dispose(){
     }
 }
 
+QString QtJambiLink::describe() const{
+    QString strg;
+    if(isQObject()){
+        if(QObject* qobj = qobject()){
+            strg += QString("class=%1, objectName=%2, ")
+                        .arg(QLatin1String(qobj->metaObject()->className()), qobj->objectName());
+        }
+#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
+        else if(m_qtTypeName){
+            strg += QString("class=%1, ").arg(QLatin1String(m_qtTypeName));
+        }
+#endif
+    }else{
+        if(const QMetaType* m = metaType()){
+            strg += QString("metaType=%1 (%2), ").arg(QLatin1String(m->name())).arg(m->id());
+        }
+#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
+        else if(m_qtTypeName){
+            strg += QString("metaType=%1, ").arg(QLatin1String(m_qtTypeName));
+        }
+#endif
+    }
+    strg += QString("createdByJava=%1, hasBeenCleaned=%2, isJavaLinkDetached=%3, ownership=%4")
+            .arg(createdByJava() ? "true" : "false",
+                     m_flags.testFlag(QtJambiLink::Flag::HasBeenCleaned) ? "true" : "false",
+                     m_flags.testFlag(QtJambiLink::Flag::IsJavaLinkDetached) ? "true" : "false");
+    if(m_flags.testFlag(QtJambiLink::Flag::JavaOwnership)) strg = strg.arg("Java");
+    else if(m_flags.testFlag(QtJambiLink::Flag::CppOwnership)) strg = strg.arg("Cpp");
+    else if(m_flags.testFlag(QtJambiLink::Flag::SplitOwnership)) strg = strg.arg("Split");
+    else strg = strg.arg("InvalidOwnership");
+    return QString("[%1]").arg(strg);
+}
+
 // ### BEGIN #######################  QtJambiLink  ######################### BEGIN ####
 
 void QtJambiLink::LinkDeleter::operator()(QtJambiLink* link){
     delete link;
+}
+
+void QtJambiLink::LinkDisposer::operator()(QtJambiLink* link){
+    link->dispose();
 }
 
 QtJambiLink::QtJambiLink(JNIEnv *env, jobject nativeLink,
@@ -4146,12 +6317,12 @@ QtJambiLink::QtJambiLink(JNIEnv *env, jobject nativeLink,
     }else{
         m_nativeLink = env->NewGlobalRef(nativeLink);
     }
-    QTJAMBI_REGISTER_LINK
+    ON_DEBUG_TOOLS_ENABLED(registerLink(this))
     QTJAMBI_INCREASE_COUNTER_THIS(linkConstructedCount)
 }
 
 QtJambiLink::~QtJambiLink(){
-    QTJAMBI_UNREGISTER_LINK
+    ON_DEBUG_TOOLS_ENABLED(unregisterLink(this))
     QTJAMBI_INCREASE_COUNTER_THIS(linkDestroyedCount)
     if(m_flags.testFlag(Flag::NoGlobalRef) || m_nativeLink){
         if(JniEnvironment env = isQThread() ? JniEnvironment{300} : DefaultJniEnvironment{300}){
@@ -4261,42 +6432,32 @@ void* QtJambiLink::typedPointer(const std::type_info&) const{
     return pointer();
 }
 
-void QtJambiLink::unregisterOffsets() {
-}
-
-void QtJambiLink::registerPointer(const QSharedPointer<QtJambiLink>& link) {
-    if(link && link->pointer()) {
-        link->registerPointer(link->pointer());
-    }
+void QtJambiLink::unregisterOffsets(void *) {
 }
 
 void QtJambiLink::registerPointer(void *ptr) {
-    if(QtJambiLink::getObjectCacheMode() != 0) {
-        QWriteLocker locker(gLinkAccessLock());
-        Q_UNUSED(locker)
-        Q_ASSERT(gUserObjectCache());
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker locker(storage->linkLock());
         QWeakPointer<QtJambiLink> wp = *this;
-        if(!gUserObjectCache->contains(ptr, wp)){
-            gUserObjectCache->insert(ptr, wp);
+        if(!storage->userObjectCache().contains(ptr, wp)){
+            storage->userObjectCache().insert(ptr, wp);
             m_flags.setFlag(Flag::IsPointerRegistered);
         }
     }
 }
 
 void QtJambiLink::unregisterPointer(void *ptr) {
-    if(QtJambiLink::getObjectCacheMode() != 0
-            && m_flags.testFlag(Flag::IsPointerRegistered)
-            && !gLinkAccessLock.isDestroyed()
-            && !gUserObjectCache.isDestroyed()) {
-        QWriteLocker locker(gLinkAccessLock());
-        Q_UNUSED(locker)
-        if(MultiLinkHash* h = gUserObjectCache()){
-            const QList<QWeakPointer<QtJambiLink>> values = h->values(ptr);
+    if(m_flags.testFlag(Flag::IsPointerRegistered)) {
+        QtJambiStorageRef storage;
+        if(ptr){
+            QWriteLocker locker(storage->linkLock());
+            const QList<QWeakPointer<QtJambiLink>> values = storage->userObjectCache().values(ptr);
             QWeakPointer<QtJambiLink> wp = *this;
             for(const QWeakPointer<QtJambiLink>& wlink : values){
                 QSharedPointer<QtJambiLink> link(wlink);
                 if(!link || link==wp){
-                    h->remove(ptr, link.toWeakRef());
+                    storage->userObjectCache().remove(ptr, link.toWeakRef());
                 }
             }
         }
@@ -4304,20 +6465,16 @@ void QtJambiLink::unregisterPointer(void *ptr) {
 }
 
 void QtJambiLink::unregisterPointers(const QVector<void*>& pointers){
-    if(QtJambiLink::getObjectCacheMode() != 0
-            && !gLinkAccessLock.isDestroyed()
-            && !gUserObjectCache.isDestroyed()) {
-        QWriteLocker locker(gLinkAccessLock());
-        Q_UNUSED(locker)
-        if(MultiLinkHash* h = gUserObjectCache()){
-            QWeakPointer<QtJambiLink> wp = *this;
-            for(void* ptr : pointers){
-                const QList<QWeakPointer<QtJambiLink>> values = h->values(ptr);
-                for(const QWeakPointer<QtJambiLink>& wlink : values){
-                    QSharedPointer<QtJambiLink> link(wlink);
-                    if(!link || link==wp){
-                        h->remove(ptr, link.toWeakRef());
-                    }
+    QtJambiStorageRef storage;
+    if(!pointers.isEmpty()){
+        QWriteLocker locker(storage->linkLock());
+        QWeakPointer<QtJambiLink> wp = *this;
+        for(void* ptr : pointers){
+            const QList<QWeakPointer<QtJambiLink>> values = storage->userObjectCache().values(ptr);
+            for(const QWeakPointer<QtJambiLink>& wlink : values){
+                QSharedPointer<QtJambiLink> link(wlink);
+                if(!link || link==wp){
+                    storage->userObjectCache().remove(ptr, link.toWeakRef());
                 }
             }
         }
@@ -4326,7 +6483,7 @@ void QtJambiLink::unregisterPointers(const QVector<void*>& pointers){
 
 #if defined(QTJAMBI_DEBUG_TOOLS)
 const char* QtJambiLink::debugFlagsToString(char *s) const {
-    *s++ = (char(int(ownership()) + '0'));
+    *s++ = (char(int(QtJambiLink::ownership()) + '0'));
     *s++ = ((m_flags.testFlag(Flag::JavaObjectIsReleased)) ? 'R' : '.');
     *s++ = ((m_flags.testFlag(Flag::HasDependencies)) ? 'H' : '.');
     *s++ = ((m_flags.testFlag(Flag::IsDependent)) ? 'd' : '.');
@@ -4340,476 +6497,19 @@ const char* QtJambiLink::debugFlagsToString(char *s) const {
 }
 #endif
 
-// ### END #######################  QtJambiLink  ######################### END ####
-
-// ### BEGIN ####################  PointerToObjectLink  ###################### BEGIN ####
-
-MetaTypedPointerToObjectLink::MetaTypedPointerToObjectLink(JNIEnv *env, jobject nativeLink,
-                                                                                   void *ptr, const QMetaType& metaType, SafeBool created_by_java, SafeBool is_shell, JavaException& ocurredException)
-    :  PointerToObjectLink(env, nativeLink,
-                                           LINK_NAME_META_TYPE_ARG(metaType)
-                                           ptr, created_by_java, is_shell, ocurredException), m_meta_type(metaType
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                                                                                            .id()
-#endif
-                                                                                               ) {}
-
-PointerToContainerLink::PointerToContainerLink(JNIEnv *env, jobject nativeLink,
-                    LINK_NAME_ARG(const char* qt_name)
-                    void *ptr, SafeBool created_by_java, SafeBool is_shell,
-                    AbstractContainerAccess* containerAccess, JavaException& ocurredException)
-    : PointerToObjectLink(env, nativeLink,
-                                                           LINK_NAME_ARG(qt_name)
-                                                           ptr, created_by_java, is_shell, ocurredException), m_containerAccess(containerAccess) {}
-
-PointerToContainerLink::~PointerToContainerLink(){
-    if(m_containerAccess)
-        m_containerAccess->dispose();
-}
-
-void PointerToContainerLink::deleteNativeObject(JNIEnv *env, bool forced)
-{
-    if (m_pointer && m_containerAccess){
-        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "PointerToContainerLink::deleteNativeObject(JNIEnv *, bool)")
-        if(!isShell())
-            clearAllDependencies(env);
-        unregisterPointer(m_pointer);
-        unregisterOffsets();
-        m_flags.setFlag(Flag::IsPointerRegistered, false);
-        if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
-            void* pointer = m_pointer;
-            m_pointer = nullptr;
-            QWriteLocker locker(QtJambiLinkUserData::lock());
-            if(const QObject* obj = m_containerAccess->getOwner(pointer)){
-                const QObjectPrivate* p = QObjectPrivate::get(obj);
-                Q_ASSERT(p);
-                QThread* ownerThread =
-                        p->threadData.loadAcquire()->thread.loadAcquire();
-                if (ownerThread->isRunning() && ownerThread != QThread::currentThread()) {
-                    if(ValueOwnerUserData* vud = QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, obj)){
-                        if(p->wasDeleted){
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("delete container %p of type %s", pointer, static_cast<const char*>(m_qtTypeName))
-#else
-                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("delete container %p", pointer)
-#endif
-                            void* _pointer = pointer;
-                            AbstractContainerAccess *const containerAccess = m_containerAccess;
-                            m_containerAccess = nullptr;
-                            vud->addDeleter([containerAccess,_pointer](){
-                                containerAccess->deleteContainer(_pointer);
-                                containerAccess->dispose();
-                            });
-                            dispose();
-                        }else{
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("use QtJambiDestructor for object %p of type %s", pointer, static_cast<const char*>(m_qtTypeName))
-#else
-                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("use QtJambiDestructor for object %p", pointer)
-#endif
-                            setDeleteLater();    // qobject still exists at the time we cut it away (and we have shoved dtor to event system)
-                            QThreadUserData::Result threadDataResult = QThreadUserData::ensureThreadUserDataLocked(ownerThread);
-                            if (QAbstractEventDispatcher::instance(ownerThread)) {
-                                ContainerDestructionEvent* event = new ContainerDestructionEvent(vud->pointer(), *this, pointer, m_containerAccess);
-                                m_containerAccess = nullptr;
-                                if(threadDataResult.initRequired){
-                                    locker.unlock();
-                                    threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                    locker.relock();
-                                }
-                                QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
-                            }else{
-                                void* _pointer = pointer;
-                                AbstractContainerAccess * containerAccess = m_containerAccess;
-                                m_containerAccess = nullptr;
-                                threadDataResult.threadUserData->doAtThreadEnd([containerAccess,_pointer](){
-                                    containerAccess->deleteContainer(_pointer);
-                                    containerAccess->dispose();
-                                });
-                                if(threadDataResult.initRequired){
-                                    locker.unlock();
-                                    threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                    locker.relock();
-                                }
-                            }
-                            pointer = nullptr;
-                        }
-                    }else if(!p->wasDeleted){
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                        QTJAMBI_DEBUG_PRINT_WITH_ARGS("use QtJambiDestructor for object %p of type %s", pointer, static_cast<const char*>(m_qtTypeName))
-#else
-                        QTJAMBI_DEBUG_PRINT_WITH_ARGS("use QtJambiDestructor for object %p", pointer)
-#endif
-                        setDeleteLater();    // qobject still exists at the time we cut it away (and we have shoved dtor to event system)
-                        QThreadUserData::Result threadDataResult = QThreadUserData::ensureThreadUserDataLocked(ownerThread);
-                        if (QAbstractEventDispatcher::instance(ownerThread)) {
-                            ContainerDestructionEvent* event = new ContainerDestructionEvent(obj, *this, pointer, m_containerAccess);
-                            m_containerAccess = nullptr;
-                            if(threadDataResult.initRequired){
-                                locker.unlock();
-                                threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                locker.relock();
-                            }
-                            QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
-                        }else{
-                            void* _pointer = pointer;
-                            AbstractContainerAccess * containerAccess = m_containerAccess;
-                            m_containerAccess = nullptr;
-                            threadDataResult.threadUserData->doAtThreadEnd([containerAccess,_pointer](){
-                                containerAccess->deleteContainer(_pointer);
-                                containerAccess->dispose();
-                            });
-                            if(threadDataResult.initRequired){
-                                locker.unlock();
-                                threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                locker.relock();
-                            }
-                        }
-                        pointer = nullptr;
-                    }
-                }
-            }
-            if(pointer && m_containerAccess){
-                locker.unlock();
-                {
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("delete container %p of type %s", pointer, static_cast<const char*>(m_qtTypeName))
-#else
-                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("delete container %p", pointer)
-#endif
-                    m_containerAccess->deleteContainer(pointer);
-                }
-                locker.relock();
-                m_containerAccess->dispose();
-                m_containerAccess = nullptr;
-                dispose();
-            }
-        }else{
-            if(m_containerAccess){
-                m_containerAccess->dispose();
-                m_containerAccess = nullptr;
-            }
-            dispose();
-        }
-    }
-}
-
-DeletablePointerToContainerLink::DeletablePointerToContainerLink(JNIEnv *env, jobject nativeLink,
-                    LINK_NAME_ARG(const char* qt_name)
-                    void *ptr, SafeBool created_by_java, SafeBool is_shell,
-                    PtrDeleterFunction destructor_function, AbstractContainerAccess* containerAccess, JavaException& ocurredException)
-    : PointerToContainerLink(env, nativeLink,
-                   LINK_NAME_ARG(qt_name)
-                   ptr, created_by_java, is_shell, containerAccess, ocurredException), m_deleter_function(destructor_function) {
-    Q_ASSERT(destructor_function);
-}
-
-void DeletablePointerToContainerLink::deleteNativeObject(JNIEnv *env, bool forced)
-{
-    if (m_pointer){
-        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "DeletablePointerToObjectLink::deleteNativeObject(JNIEnv *, bool)")
-        if(!isShell())
-            clearAllDependencies(env);
-        unregisterPointer(m_pointer);
-        unregisterOffsets();
-        m_flags.setFlag(Flag::IsPointerRegistered, false);
-        if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
-            void* pointer = m_pointer;
-            m_pointer = nullptr;
-            QWriteLocker locker(QtJambiLinkUserData::lock());
-            Q_UNUSED(locker)
-            if(const QObject* obj = m_containerAccess->getOwner(pointer)){
-                const QObjectPrivate* p = QObjectPrivate::get(obj);
-                Q_ASSERT(p);
-                QThread* ownerThread =
-                        p->threadData.loadAcquire()->thread.loadAcquire();
-                if (ownerThread->isRunning() && ownerThread != QThread::currentThread()) {
-                    if(ValueOwnerUserData* vud = QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, obj)){
-                        if(p->wasDeleted){
-                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("call destructor_function on object %p", pointer)
-                            QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
-                            PtrDeleterFunction _deleter_function = m_deleter_function;
-                            void* _pointer = pointer;
-                            bool isShell = this->isShell();
-                            vud->addDeleter([_deleter_function,_pointer,isShell](){
-                                _deleter_function(_pointer, isShell);
-                            });
-                            dispose();
-                        }else{
-                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("use QtJambiDestructor for object %p", pointer)
-                            setDeleteLater();    // qobject still exists at the time we cut it away (and we have shoved dtor to event system)
-                            QThreadUserData::Result threadDataResult = QThreadUserData::ensureThreadUserDataLocked(ownerThread);
-                            if (QAbstractEventDispatcher::instance(ownerThread)) {
-                                DestructorEvent* event = new DestructorEvent(vud->pointer(), *this, pointer, m_deleter_function, isShell());
-                                if(threadDataResult.initRequired){
-                                    locker.unlock();
-                                    threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                    locker.relock();
-                                }
-                                QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
-                            }else{
-                                PtrDeleterFunction _deleter_function = m_deleter_function;
-                                void* _pointer = pointer;
-                                bool isShell = this->isShell();
-                                threadDataResult.threadUserData->doAtThreadEnd([_deleter_function, _pointer, isShell](){
-                                    _deleter_function(_pointer, isShell);
-                                });
-                                if(threadDataResult.initRequired){
-                                    locker.unlock();
-                                    threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                    locker.relock();
-                                }
-                            }
-                        }
-                        pointer = nullptr;
-                    }else if(!p->wasDeleted){
-                        QTJAMBI_DEBUG_PRINT_WITH_ARGS("use QtJambiDestructor for object %p", pointer)
-                        setDeleteLater();    // qobject still exists at the time we cut it away (and we have shoved dtor to event system)
-                        QThreadUserData::Result threadDataResult = QThreadUserData::ensureThreadUserDataLocked(ownerThread);
-                        if (QAbstractEventDispatcher::instance(ownerThread)) {
-                            DestructorEvent* event = new DestructorEvent(obj, *this, pointer, m_deleter_function, isShell());
-                            if(threadDataResult.initRequired){
-                                locker.unlock();
-                                threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                locker.relock();
-                            }
-                            QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
-                        }else{
-                            PtrDeleterFunction _deleter_function = m_deleter_function;
-                            void* _pointer = pointer;
-                            bool isShell = this->isShell();
-                            threadDataResult.threadUserData->doAtThreadEnd([_deleter_function, _pointer, isShell](){
-                                _deleter_function(_pointer, isShell);
-                            });
-                            if(threadDataResult.initRequired){
-                                locker.unlock();
-                                threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                locker.relock();
-                            }
-                        }
-                        pointer = nullptr;
-                    }
-                }
-            }
-            if(pointer){
-                QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
-                locker.unlock();
-                {
-                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call destructor_function on object %p", pointer)
-                    m_deleter_function(pointer, isShell());
-                }
-                locker.relock();
-                dispose();
-            }
-        }else{
-            dispose();
-        }
-    }
-}
-
-DeletableOwnedPointerToContainerLink::DeletableOwnedPointerToContainerLink(JNIEnv *env, jobject nativeLink,
-                    LINK_NAME_ARG(const char* qt_name)
-                    void *ptr, SafeBool created_by_java, SafeBool is_shell,
-                    PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, AbstractContainerAccess* containerAccess, JavaException& ocurredException)
-    : DeletablePointerToContainerLink(env, nativeLink,
-                                                           LINK_NAME_ARG(qt_name)
-                                                           ptr, created_by_java, is_shell, destructor_function, containerAccess, ocurredException), m_owner_function(ownerFunction) {
-    Q_ASSERT(ownerFunction);
-}
-
-void DeletableOwnedPointerToContainerLink::deleteNativeObject(JNIEnv *env, bool forced)
-{
-    if (m_pointer){
-        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "DeletablePointerToObjectLink::deleteNativeObject(JNIEnv *, bool)")
-        if(!isShell())
-            clearAllDependencies(env);
-        unregisterPointer(m_pointer);
-        unregisterOffsets();
-        m_flags.setFlag(Flag::IsPointerRegistered, false);
-        if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
-            void* pointer = m_pointer;
-            m_pointer = nullptr;
-            QWriteLocker locker(QtJambiLinkUserData::lock());
-            Q_UNUSED(locker)
-            const QObject* obj = m_owner_function(pointer);
-            if(!obj)
-                obj = m_containerAccess->getOwner(pointer);
-            if(obj){
-                const QObjectPrivate* p = QObjectPrivate::get(obj);
-                Q_ASSERT(p);
-                QThread* ownerThread =
-                        p->threadData.loadAcquire()->thread.loadAcquire();
-                if (ownerThread->isRunning() && ownerThread != QThread::currentThread()) {
-                    if(ValueOwnerUserData* vud = QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, obj)){
-                        if(p->wasDeleted){
-                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("call destructor_function on object %p", pointer)
-                            QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
-                            PtrDeleterFunction _deleter_function = m_deleter_function;
-                            void* _pointer = pointer;
-                            bool isShell = this->isShell();
-                            vud->addDeleter([_deleter_function,_pointer,isShell](){
-                                _deleter_function(_pointer, isShell);
-                            });
-                            dispose();
-                        }else{
-                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("use QtJambiDestructor for object %p", pointer)
-                            setDeleteLater();    // qobject still exists at the time we cut it away (and we have shoved dtor to event system)
-                            QThreadUserData::Result threadDataResult = QThreadUserData::ensureThreadUserDataLocked(ownerThread);
-                            if (QAbstractEventDispatcher::instance(ownerThread)) {
-                                DestructorEvent* event = new DestructorEvent(vud->pointer(), *this, pointer, m_deleter_function, isShell());
-                                if(threadDataResult.initRequired){
-                                    locker.unlock();
-                                    threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                    locker.relock();
-                                }
-                                QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
-                            }else{
-                                PtrDeleterFunction _deleter_function = m_deleter_function;
-                                void* _pointer = pointer;
-                                bool isShell = this->isShell();
-                                threadDataResult.threadUserData->doAtThreadEnd([_deleter_function, _pointer, isShell](){
-                                    _deleter_function(_pointer, isShell);
-                                });
-                                if(threadDataResult.initRequired){
-                                    locker.unlock();
-                                    threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                    locker.relock();
-                                }
-                            }
-                        }
-                        pointer = nullptr;
-                    }else if(!p->wasDeleted){
-                        QTJAMBI_DEBUG_PRINT_WITH_ARGS("use QtJambiDestructor for object %p", pointer)
-                        setDeleteLater();    // qobject still exists at the time we cut it away (and we have shoved dtor to event system)
-                        QThreadUserData::Result threadDataResult = QThreadUserData::ensureThreadUserDataLocked(ownerThread);
-                        if (QAbstractEventDispatcher::instance(ownerThread)) {
-                            DestructorEvent* event = new DestructorEvent(obj, *this, pointer, m_deleter_function, isShell());
-                            if(threadDataResult.initRequired){
-                                locker.unlock();
-                                threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                locker.relock();
-                            }
-                            QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
-                        }else{
-                            PtrDeleterFunction _deleter_function = m_deleter_function;
-                            void* _pointer = pointer;
-                            bool isShell = this->isShell();
-                            threadDataResult.threadUserData->doAtThreadEnd([_deleter_function, _pointer, isShell](){
-                                _deleter_function(_pointer, isShell);
-                            });
-                            if(threadDataResult.initRequired){
-                                locker.unlock();
-                                threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                locker.relock();
-                            }
-                        }
-                        pointer = nullptr;
-                    }
-                }
-            }
-            if(pointer){
-                QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
-                locker.unlock();
-                {
-                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call destructor_function on object %p", pointer)
-                    m_deleter_function(pointer, isShell());
-                }
-                locker.relock();
-                dispose();
-            }
-        }else{
-            dispose();
-        }
-    }
-}
-
-OwnedMetaTypedPointerToObjectLink::OwnedMetaTypedPointerToObjectLink(JNIEnv *env, jobject nativeLink,
-                    void *ptr, const QMetaType& metaType, SafeBool created_by_java, SafeBool is_shell,
-                    PtrOwnerFunction ownerFunction, JavaException& ocurredException)
-    : MetaTypedPointerToObjectLink(env, nativeLink,
-                                                           ptr, metaType, created_by_java, is_shell, ocurredException), m_owner_function(ownerFunction) {
-    Q_ASSERT(m_owner_function);
-}
-
-DeletableOwnedPointerToObjectLink::DeletableOwnedPointerToObjectLink(JNIEnv *env, jobject nativeLink,
-                    LINK_NAME_ARG(const char* qt_name)
-                    void *ptr, SafeBool created_by_java, SafeBool is_shell,
-                    PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, JavaException& ocurredException)
-    : PointerToObjectLink(env, nativeLink,
-                                                            LINK_NAME_ARG(qt_name)
-                                                            ptr, created_by_java, is_shell,
-                                                            ocurredException), m_owner_function(ownerFunction), m_deleter_function(destructor_function) {
-    Q_ASSERT(m_owner_function);
-    Q_ASSERT(m_deleter_function);
-}
-
-DeletablePointerToObjectLink::DeletablePointerToObjectLink(JNIEnv *env, jobject nativeLink,
-                    LINK_NAME_ARG(const char* qt_name)
-                    void *ptr, SafeBool created_by_java, SafeBool is_shell,
-                    PtrDeleterFunction destructor_function, JavaException& ocurredException)
-    : PointerToObjectLink(env, nativeLink,
-                                                            LINK_NAME_ARG(qt_name)
-                                                            ptr, created_by_java, is_shell,
-                                                            ocurredException), m_deleter_function(destructor_function) {
-    Q_ASSERT(m_deleter_function);
-}
-
-PointerToObjectLink::PointerToObjectLink(JNIEnv *env, jobject nativeLink,
-                                         LINK_NAME_ARG(const char *qt_name)
-                                         void *ptr, SafeBool created_by_java, SafeBool is_shell, JavaException& ocurredException) :
-    QtJambiLink(env, nativeLink,
-                LINK_NAME_ARG(qt_name)
-                created_by_java, is_shell, ocurredException),
-    m_pointer(ptr)
-{
-    if(!ocurredException){
-        if(created_by_java){
-            registerPointer(m_pointer);
-        }
-    }else{
-        m_flags.setFlag(Flag::IsJavaLinkDetached);
-        m_pointer = nullptr;
-    }
-}
-
-PointerToObjectLink::~PointerToObjectLink()
-{
-    QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "PointerToObjectLink::~PointerToObjectLink()")
-    if (!m_flags.testFlag(Flag::IsJavaLinkDetached) || !m_flags.testFlag(Flag::JavaObjectIsReleased) || m_pointer) {
-        try{
-            if(JniEnvironment env = isQThread() ? JniEnvironment{300} : DefaultJniEnvironment{300}){
-                releaseJavaObject(env);
-                deleteNativeObject(env);
-                detachJavaLink(env);
-            }else{
-                deleteNativeObject();
-            }
-        } catch (const std::exception& e) {
-            qCWarning(DebugAPI::internalCategory, "%s", e.what());
-        } catch (...) {
-        }
-    }
-}
-
-bool PointerToObjectLink::isSmartPointer() const { return false; }
-
-DependentLink::~DependentLink(){}
-
 inline size_t qHash(const QWeakPointer<QtJambiLink>& ptr, size_t seed = 0){
     return qHash(ptr.lock().get(), seed);
 }
 
-QTJAMBI_OBJECTUSERDATA_ID_IMPL(,DependencyManagerUserData::)
-
-DependencyManagerUserData::DependencyManagerUserData() : QtJambiObjectData() {
+DependencyManagerObjectData::DependencyManagerObjectData() : QtJambiObjectData() {
 }
 
-DependencyManagerUserData::~DependencyManagerUserData(){
+DependencyManagerObjectData::~DependencyManagerObjectData(){
     QSet<QWeakPointer<QtJambiLink>> dependentObjects;
     QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>> finalizations;
     QSet<QWeakPointer<QtJambiLink>> qpropertyObjects;
     {
-        QWriteLocker locker(QtJambiLinkUserData::lock());
+        QtJambiLinkWriteLock locker;
         dependentObjects.swap(m_dependentObjects);
         finalizations.swap(m_finalizations);
         qpropertyObjects.swap(m_condestroyedObjects);
@@ -4828,15 +6528,14 @@ DependencyManagerUserData::~DependencyManagerUserData(){
     }
 }
 
-void DependencyManagerUserData::invalidateDependentObjects(QObject* obj, JNIEnv* env){
+void DependencyManagerObjectData::invalidateDependentObjects(QObject* obj, JNIEnv* env){
     QSet<QWeakPointer<QtJambiLink>> dependentObjects;
-    bool deleteThis = false;
+    DependencyManagerObjectData* d{nullptr};
     {
-        QWriteLocker locker(QtJambiLinkUserData::lock());
+        QtJambiLinkWriteLock locker;
         dependentObjects.swap(m_dependentObjects);
         if(m_condestroyedObjects.isEmpty() && m_finalizations.isEmpty()){
-            QTJAMBI_SET_OBJECTUSERDATA(DependencyManagerUserData, obj, nullptr);
-            deleteThis = true;
+            d = QtJambiObjectData::setUserData<DependencyManagerObjectData>(obj, nullptr);
         }
     }
     for(const QWeakPointer<QtJambiLink>& weakLink : qAsConst(dependentObjects)){
@@ -4845,20 +6544,21 @@ void DependencyManagerUserData::invalidateDependentObjects(QObject* obj, JNIEnv*
         }
     }
     dependentObjects.clear();
-    if(deleteThis)
-        delete this;
+    if(d)
+        delete d;
 }
 
-void DependencyManagerUserData::clear(QObject* obj){
+void DependencyManagerObjectData::clear(QObject* obj){
     QSet<QWeakPointer<QtJambiLink>> dependentObjects;
     QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>> finalizations;
     QSet<QWeakPointer<QtJambiLink>> condestroyedObjects;
+    DependencyManagerObjectData* d{nullptr};
     {
-        QWriteLocker locker(QtJambiLinkUserData::lock());
+        QtJambiLinkWriteLock locker;
         dependentObjects.swap(m_dependentObjects);
         finalizations.swap(m_finalizations);
         condestroyedObjects.swap(m_condestroyedObjects);
-        QTJAMBI_SET_OBJECTUSERDATA(DependencyManagerUserData, obj, nullptr);
+        d = QtJambiObjectData::setUserData<DependencyManagerObjectData>(obj, nullptr);
     }
     if(!dependentObjects.isEmpty()
             || !finalizations.isEmpty()
@@ -4867,25 +6567,27 @@ void DependencyManagerUserData::clear(QObject* obj){
             clear(env, dependentObjects, finalizations, condestroyedObjects);
         }
     }
+    if(d && d!=this)
+        delete d;
     delete this;
 }
 
-void DependencyManagerUserData::clear(QObject* obj, JNIEnv* env){
+void DependencyManagerObjectData::clear(QObject* obj, JNIEnv* env){
     QSet<QWeakPointer<QtJambiLink>> dependentObjects;
     QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>> finalizations;
     QSet<QWeakPointer<QtJambiLink>> condestroyedObjects;
     {
-        QWriteLocker locker(QtJambiLinkUserData::lock());
+        QtJambiLinkWriteLock locker;
         dependentObjects.swap(m_dependentObjects);
         finalizations.swap(m_finalizations);
         condestroyedObjects.swap(m_condestroyedObjects);
-        QTJAMBI_SET_OBJECTUSERDATA(DependencyManagerUserData, obj, nullptr);
+        QtJambiObjectData::setUserData<DependencyManagerObjectData>(obj, nullptr);
     }
     clear(env, dependentObjects, finalizations, condestroyedObjects);
     delete this;
 }
 
-void DependencyManagerUserData::clear(JNIEnv* env,
+void DependencyManagerObjectData::clear(JNIEnv* env,
                                       QSet<QWeakPointer<QtJambiLink>>& dependentObjects,
                                       QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>>& finalizations,
                                       QSet<QWeakPointer<QtJambiLink>>& condestroyedObjects){
@@ -4909,10 +6611,10 @@ void DependencyManagerUserData::clear(JNIEnv* env,
     condestroyedObjects.clear();
 }
 
-void DependencyManagerUserData::addDependentObject(const QSharedPointer<QtJambiLink>& dependent){
-    QWriteLocker locker(QtJambiLinkUserData::lock());
+void DependencyManagerObjectData::addDependentObject(const QSharedPointer<QtJambiLink>& dependent){
+    auto locker = QtJambiObjectData::writeLock();
     m_dependentObjects.insert(dependent.toWeakRef());
-    if(DependentLink* dlink = dynamic_cast<DependentLink*>(dependent.data())){
+    if(DependentLinkInterface* dlink = dynamic_cast<DependentLinkInterface*>(dependent.data())){
         dlink->setDependencyManager(this);
     }else{
 #if QT_VERSION >= QT_VERSION_CHECK(6,1,0)
@@ -4931,84 +6633,92 @@ void DependencyManagerUserData::addDependentObject(const QSharedPointer<QtJambiL
     }
 }
 
-void DependencyManagerUserData::removeDependentObject(const QSharedPointer<QtJambiLink>& dependent){
-    QWriteLocker locker(QtJambiLinkUserData::lock());
+void DependencyManagerObjectData::removeDependentObject(const QSharedPointer<QtJambiLink>& dependent){
+    QtJambiLinkWriteLock locker;
     m_dependentObjects.remove(dependent.toWeakRef());
-    if(DependentLink* dlink = dynamic_cast<DependentLink*>(dependent.data())){
+    if(DependentLinkInterface* dlink = dynamic_cast<DependentLinkInterface*>(dependent.data())){
         dlink->setDependencyManager(nullptr);
     }
 }
 
-void DependencyManagerUserData::addConDestroyedObject(const QSharedPointer<QtJambiLink>& link){
-    QWriteLocker locker(QtJambiLinkUserData::lock());
+void DependencyManagerObjectData::addConDestroyedObject(const QSharedPointer<QtJambiLink>& link){
+    auto locker = QtJambiObjectData::writeLock();
     m_condestroyedObjects.insert(link.toWeakRef());
 }
 
-void DependencyManagerUserData::removeConDestroyedObject(const QSharedPointer<QtJambiLink>& link){
-    QWriteLocker locker(QtJambiLinkUserData::lock());
+void DependencyManagerObjectData::removeConDestroyedObject(const QSharedPointer<QtJambiLink>& link){
+    QtJambiLinkWriteLock locker;
     m_condestroyedObjects.remove(link.toWeakRef());
 }
 
-void DependencyManagerUserData::addFinalization(void* data, FinalizationExecutor executor, FinalizationDeleter deleter){
+void DependencyManagerObjectData::addFinalization(void* data, FinalizationExecutor executor, FinalizationDeleter deleter){
+    auto locker = QtJambiObjectData::writeLock();
     m_finalizations[data] = {executor, deleter};
 }
 
-void DependencyManagerUserData::addFinalization(JNIEnv* env, jobject data, FinalizationExecutor executor, FinalizationDeleter deleter){
+void DependencyManagerObjectData::addFinalization(JNIEnv* env, jobject data, FinalizationExecutor executor, FinalizationDeleter deleter){
+    auto id = Java::Runtime::System::identityHashCode(env, data);
+    auto locker = QtJambiObjectData::writeLock();
     m_finalizations[data] = {executor, deleter};
-    m_finalizationData[Java::Runtime::System::identityHashCode(env, data)] = data;
+    m_finalizationData[id] = data;
 }
 
-void DependencyManagerUserData::removeFinalization(JNIEnv* env, void* data, bool execute){
+void DependencyManagerObjectData::removeFinalization(JNIEnv* env, void* data, bool execute){
+    auto locker = QtJambiObjectData::writeLock();
     QPair<FinalizationExecutor,FinalizationDeleter> fun = m_finalizations[data];
     if(m_finalizations.remove(data)){
+        locker.unlock();
         if(execute && fun.first)
             fun.first(env, data);
         if(fun.second)
             fun.second(env, data);
+        locker.relock();
     }
 }
 
-void DependencyManagerUserData::removeFinalization(JNIEnv* env, jobject data, bool execute){
+void DependencyManagerObjectData::removeFinalization(JNIEnv* env, jobject data, bool execute){
+    auto locker = QtJambiObjectData::writeLock();
     QPair<FinalizationExecutor,FinalizationDeleter> fun = m_finalizations[data];
     if(m_finalizations.remove(data)){
+        locker.unlock();
         if(execute && fun.first)
             fun.first(env, data);
         if(fun.second)
             fun.second(env, data);
+        locker.relock();
     }
 }
 
-bool DependencyManagerUserData::hasDependencies() const{
+bool DependencyManagerObjectData::hasDependencies() const{
+    auto locker = QtJambiObjectData::readLock();
     return !m_dependentObjects.empty() && !m_condestroyedObjects.empty();
 }
 
-DependencyManagerUserData* DependencyManagerUserData::instance(const QObject* object, bool forceConstruction){
-    DependencyManagerUserData* dm{nullptr};
+DependencyManagerObjectData* DependencyManagerObjectData::instance(const QObject* object, bool forceConstruction){
+    DependencyManagerObjectData* dm{nullptr};
     {
-        QReadLocker locker(QtJambiLinkUserData::lock());
-        dm = QTJAMBI_GET_OBJECTUSERDATA(DependencyManagerUserData, object);
+        QtJambiLinkReadLock locker;
+        dm = QtJambiObjectData::userData<DependencyManagerObjectData>(object);
     }
     if(!dm && forceConstruction){
-        QWriteLocker locker(QtJambiLinkUserData::lock());
-        if(!(dm = QTJAMBI_GET_OBJECTUSERDATA(DependencyManagerUserData, object))){
-            QTJAMBI_SET_OBJECTUSERDATA(DependencyManagerUserData, const_cast<QObject*>(object), dm = new DependencyManagerUserData());
+        dm = new DependencyManagerObjectData();
+        QtJambiLinkWriteLock locker;
+        DependencyManagerObjectData* _dm = QtJambiObjectData::userData<DependencyManagerObjectData>(object);
+        if(_dm){
+            delete dm;
+            dm = _dm;
+        }else{
+            _dm = QtJambiObjectData::setUserData<DependencyManagerObjectData>(const_cast<QObject*>(object), dm);
+            if(_dm)
+                delete _dm;
         }
     }
     return dm;
 }
 
-Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gDependencyLock, (QReadWriteLock::Recursive))
-typedef SecureContainer<QMultiHash<QSharedPointer<QtJambiLink>, QWeakPointer<QtJambiLink>>,gDependencyLock> DependencyHash;
-Q_GLOBAL_STATIC(DependencyHash, gDependencies)
-Q_GLOBAL_STATIC(DependencyHash, gConDestroyedDependencies)
-typedef SecureContainer<QHash<jint,void*>,gDependencyLock> FinalizationDataHash;
-typedef SecureContainer<QHash<QSharedPointer<QtJambiLink>, QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>>>,gDependencyLock> FinalizationHash;
-Q_GLOBAL_STATIC(FinalizationHash, gFinalizations)
-Q_GLOBAL_STATIC(FinalizationDataHash, gFinalizationData)
-
 void QtJambiLink::registerConDestroyedObject(JNIEnv * env, const QObject* object, const QSharedPointer<QtJambiLink>& link){
     if(!link->m_flags.testFlag(Flag::IsManaged)){
-        DependencyManagerUserData* dm = DependencyManagerUserData::instance(object);
+        DependencyManagerObjectData* dm = DependencyManagerObjectData::instance(object);
         dm->addConDestroyedObject(link);
         link->setCppOwnership(env);
         link->m_flags.setFlag(Flag::NoNativeDeletion);
@@ -5017,7 +6727,7 @@ void QtJambiLink::registerConDestroyedObject(JNIEnv * env, const QObject* object
 }
 void QtJambiLink::unregisterConDestroyedObject(JNIEnv * env, const QObject* object, const QSharedPointer<QtJambiLink>& link){
     if(link->m_flags.testFlag(Flag::IsManaged)){
-        DependencyManagerUserData* dm = DependencyManagerUserData::instance(object);
+        DependencyManagerObjectData* dm = DependencyManagerObjectData::instance(object);
         dm->removeConDestroyedObject(link);
         link->setJavaOwnership(env);
         link->m_flags.setFlag(Flag::NoNativeDeletion, false);
@@ -5028,7 +6738,7 @@ void QtJambiLink::unregisterConDestroyedObject(JNIEnv * env, const QObject* obje
 void QtJambiLink::registerDependentObject(const QObject* object, const QSharedPointer<QtJambiLink>& link){
     if(object && !link->isShell() && !link->isSmartPointer() && !link->m_flags.testFlag(Flag::IsDependent)){
         if(!link->isQObject()){
-            DependencyManagerUserData* dm = DependencyManagerUserData::instance(object);
+            DependencyManagerObjectData* dm = DependencyManagerObjectData::instance(object);
             dm->addDependentObject(link);
         }
         if(link->ownership()!=Ownership::Java)
@@ -5040,7 +6750,7 @@ void QtJambiLink::registerDependentObject(const QObject* object, const QSharedPo
 void QtJambiLink::unregisterDependentObject(const QObject* object, const QSharedPointer<QtJambiLink>& link){
     if(object && !link->isShell() && !link->isSmartPointer() && link->m_flags.testFlag(Flag::IsDependent)){
         if(!link->isQObject()){
-            if(DependencyManagerUserData* dm = DependencyManagerUserData::instance(object, false)){
+            if(DependencyManagerObjectData* dm = DependencyManagerObjectData::instance(object, false)){
                 dm->removeDependentObject(link);
             }
         }
@@ -5051,7 +6761,7 @@ void QtJambiLink::unregisterDependentObject(const QObject* object, const QShared
 
 void QtJambiLink::addFinalization(const QObject* object, void* data, FinalizationExecutor executor, FinalizationDeleter deleter){
     if(object){
-        if(DependencyManagerUserData* dm = DependencyManagerUserData::instance(object)){
+        if(DependencyManagerObjectData* dm = DependencyManagerObjectData::instance(object)){
             dm->addFinalization(data, executor, deleter);
         }
     }
@@ -5059,7 +6769,7 @@ void QtJambiLink::addFinalization(const QObject* object, void* data, Finalizatio
 
 void QtJambiLink::addFinalization(const QObject* object, JNIEnv * env, jobject data, FinalizationExecutor executor, FinalizationDeleter deleter){
     if(object){
-        if(DependencyManagerUserData* dm = DependencyManagerUserData::instance(object)){
+        if(DependencyManagerObjectData* dm = DependencyManagerObjectData::instance(object)){
             dm->addFinalization(env, data, executor, deleter);
         }
     }
@@ -5072,10 +6782,12 @@ void QtJambiLink::addFinalization(void* data, FinalizationExecutor executor, Fin
         QSharedPointer<QtJambiLink> sp = *this;
         if(!m_flags.testFlag(Flag::HasDependencies))
             m_flags.setFlag(Flag::HasDependencies);
-        QWriteLocker locker(gDependencyLock());
-        Q_UNUSED(locker)
-        QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>>& container = (*gFinalizations)[sp];
-        container[data] = {executor, deleter};
+        QtJambiStorage* storage = getQtJambiStorage();
+        {
+            QWriteLocker locker(storage->lock());
+            QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>>& container = storage->finalizations()[sp];
+            container[data] = {executor, deleter};
+        }
     }
 }
 
@@ -5086,11 +6798,14 @@ void QtJambiLink::addFinalization(JNIEnv * env, jobject data, FinalizationExecut
         QSharedPointer<QtJambiLink> sp = *this;
         if(!m_flags.testFlag(Flag::HasDependencies))
             m_flags.setFlag(Flag::HasDependencies);
-        QWriteLocker locker(gDependencyLock());
-        Q_UNUSED(locker)
-        QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>>& container = (*gFinalizations)[sp];
-        container[data] = {executor, deleter};
-        (*gFinalizationData)[Java::Runtime::System::identityHashCode(env, data)] = data;
+        QtJambiStorage* storage = getQtJambiStorage();
+        jint hash = Java::Runtime::System::identityHashCode(env, data);
+        {
+            QWriteLocker locker(storage->lock());
+            QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>>& container = storage->finalizations()[sp];
+            container[data] = {executor, deleter};
+            storage->finalizationData()[hash] = data;
+        }
     }
 }
 
@@ -5101,10 +6816,13 @@ void QtJambiLink::removeFinalization(JNIEnv * env, void* data, bool execute){
         if(!m_flags.testFlag(Flag::HasDependencies))
             m_flags.setFlag(Flag::HasDependencies);
         QSharedPointer<QtJambiLink> sp = *this;
-        QWriteLocker locker(gDependencyLock());
-        Q_UNUSED(locker)
-        QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>>& container = (*gFinalizations)[sp];
-        QPair<FinalizationExecutor,FinalizationDeleter> fun = container.take(data);
+        QtJambiStorage* storage = getQtJambiStorage();
+        QPair<FinalizationExecutor,FinalizationDeleter> fun;
+        {
+            QWriteLocker locker(storage->lock());
+            QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>>& container = storage->finalizations()[sp];
+            fun = container.take(data);
+        }
         if(execute && fun.first)
             fun.first(env, data);
         if(fun.second)
@@ -5119,11 +6837,15 @@ void QtJambiLink::removeFinalization(JNIEnv * env, jobject data, bool execute){
         if(!m_flags.testFlag(Flag::HasDependencies))
             m_flags.setFlag(Flag::HasDependencies);
         QSharedPointer<QtJambiLink> sp = *this;
-        QWriteLocker locker(gDependencyLock());
-        Q_UNUSED(locker)
-        QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>>& container = (*gFinalizations)[sp];
-        void* ptr = gFinalizationData->take(Java::Runtime::System::identityHashCode(env, data));
-        QPair<FinalizationExecutor,FinalizationDeleter> fun = container.take(ptr);
+        QtJambiStorage* storage = getQtJambiStorage();
+        QPair<FinalizationExecutor,FinalizationDeleter> fun;
+        jint hash = Java::Runtime::System::identityHashCode(env, data);
+        {
+            QWriteLocker locker(storage->lock());
+            QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>>& container = storage->finalizations()[sp];
+            void* ptr = storage->finalizationData().take(hash);
+            fun = container.take(ptr);
+        }
         if(execute && fun.first)
             fun.first(env, data);
         if(fun.second)
@@ -5133,7 +6855,7 @@ void QtJambiLink::removeFinalization(JNIEnv * env, jobject data, bool execute){
 
 void QtJambiLink::removeFinalization(const QObject* object, JNIEnv * env, void* data, bool execute){
     if(object){
-        if(DependencyManagerUserData* ddata = DependencyManagerUserData::instance(object, false)){
+        if(DependencyManagerObjectData* ddata = DependencyManagerObjectData::instance(object, false)){
             ddata->removeFinalization(env, data, execute);
         }
     }
@@ -5141,7 +6863,7 @@ void QtJambiLink::removeFinalization(const QObject* object, JNIEnv * env, void* 
 
 void QtJambiLink::removeFinalization(const QObject* object, JNIEnv * env, jobject data, bool execute){
     if(object){
-        if(DependencyManagerUserData* ddata = DependencyManagerUserData::instance(object, false)){
+        if(DependencyManagerObjectData* ddata = DependencyManagerObjectData::instance(object, false)){
             ddata->removeFinalization(env, data, execute);
         }
     }
@@ -5156,10 +6878,12 @@ void QtJambiLink::registerDependentObject(const QSharedPointer<QtJambiLink>& lin
             if(!m_flags.testFlag(Flag::HasDependencies))
                 m_flags.setFlag(Flag::HasDependencies);
             QSharedPointer<QtJambiLink> sp = *this;
-            QWriteLocker locker(gDependencyLock());
-            Q_UNUSED(locker)
-            gDependencies->insert(sp, link);
-            gDependencies->remove(sp, QWeakPointer<QtJambiLink>{});
+            QtJambiStorage* storage = getQtJambiStorage();
+            {
+                QWriteLocker locker(storage->lock());
+                storage->dependencies().insert(sp, link);
+                storage->dependencies().remove(sp, QWeakPointer<QtJambiLink>{});
+            }
         }
         if(link->ownership()!=Ownership::Java)
             link->m_flags.setFlag(Flag::NoNativeDeletion);
@@ -5174,12 +6898,14 @@ void QtJambiLink::unregisterDependentObject(const QSharedPointer<QtJambiLink>& l
     }else if(!link->isShell() && !link->isQObject() && !link->isSmartPointer() && link->m_flags.testFlag(Flag::IsDependent)){
         if(!link->isQObject()){
             QSharedPointer<QtJambiLink> sp = *this;
-            QWriteLocker locker(gDependencyLock());
-            Q_UNUSED(locker)
-            gDependencies->remove(sp, link);
-            gDependencies->remove(sp, QWeakPointer<QtJambiLink>{});
-            if(!gDependencies->contains(sp))
-                m_flags.setFlag(Flag::HasDependencies, false);
+            QtJambiStorage* storage = getQtJambiStorage();
+            {
+                QWriteLocker locker(storage->lock());
+                storage->dependencies().remove(sp, link);
+                storage->dependencies().remove(sp, QWeakPointer<QtJambiLink>{});
+                if(!storage->dependencies().contains(sp))
+                    m_flags.setFlag(Flag::HasDependencies, false);
+            }
         }
         link->m_flags.setFlag(Flag::IsDependent, false);
         link->m_flags.setFlag(Flag::NoNativeDeletion, false);
@@ -5194,13 +6920,15 @@ void QtJambiLink::registerConDestroyedObject(JNIEnv * env, const QSharedPointer<
         QSharedPointer<QtJambiLink> sp = *this;
         if(!m_flags.testFlag(Flag::HasDependencies))
             m_flags.setFlag(Flag::HasDependencies);
-        QWriteLocker locker(gDependencyLock());
-        Q_UNUSED(locker)
-        gConDestroyedDependencies->insert(sp, link);
-        gConDestroyedDependencies->remove(sp, QWeakPointer<QtJambiLink>{});
+        QtJambiStorage* storage = getQtJambiStorage();
+        {
+            QWriteLocker locker(storage->lock());
+            storage->conDestroyedDependencies().insert(sp, link);
+            storage->conDestroyedDependencies().remove(sp, QWeakPointer<QtJambiLink>{});
+            link->m_flags.setFlag(Flag::NoNativeDeletion);
+            link->m_flags.setFlag(Flag::IsManaged);
+        }
         link->setCppOwnership(env);
-        link->m_flags.setFlag(Flag::NoNativeDeletion);
-        link->m_flags.setFlag(Flag::IsManaged);
     }
 }
 
@@ -5210,15 +6938,17 @@ void QtJambiLink::unregisterConDestroyedObject(JNIEnv * env, const QSharedPointe
         unregisterConDestroyedObject(env, qobject(), link);
     }else if(link->m_flags.testFlag(Flag::IsManaged)){
         QSharedPointer<QtJambiLink> sp = *this;
-        QWriteLocker locker(gDependencyLock());
-        Q_UNUSED(locker)
-        gConDestroyedDependencies->remove(sp, link);
-        gConDestroyedDependencies->remove(sp, QWeakPointer<QtJambiLink>{});
-        if(!gConDestroyedDependencies->contains(sp))
-            m_flags.setFlag(Flag::HasDependencies, false);
+        QtJambiStorage* storage = getQtJambiStorage();
+        {
+            QWriteLocker locker(storage->lock());
+            storage->conDestroyedDependencies().remove(sp, link);
+            storage->conDestroyedDependencies().remove(sp, QWeakPointer<QtJambiLink>{});
+            if(!storage->conDestroyedDependencies().contains(sp))
+                m_flags.setFlag(Flag::HasDependencies, false);
+            link->m_flags.setFlag(Flag::IsManaged, false);
+            link->m_flags.setFlag(Flag::NoNativeDeletion, false);
+        }
         link->setJavaOwnership(env);
-        link->m_flags.setFlag(Flag::IsManaged, false);
-        link->m_flags.setFlag(Flag::NoNativeDeletion, false);
     }
 }
 
@@ -5230,7 +6960,7 @@ void QtJambiLink::invalidateDependentObjects(JNIEnv *env)
         if(!isInDestructor())
 #endif
         if(QObject* obj = qobject()){
-            if(DependencyManagerUserData* dm = DependencyManagerUserData::instance(obj, false)){
+            if(DependencyManagerObjectData* dm = DependencyManagerObjectData::instance(obj, false)){
                 dm->invalidateDependentObjects(obj, env);
             }
         }
@@ -5238,11 +6968,11 @@ void QtJambiLink::invalidateDependentObjects(JNIEnv *env)
     if(m_flags.testFlag(Flag::HasDependencies)){
         QSharedPointer<QtJambiLink> sp = *this;
         QList<QWeakPointer<QtJambiLink>> dependentObjects;
+        QtJambiStorage* storage = getQtJambiStorage();
         {
-            QWriteLocker locker(gDependencyLock());
-            Q_UNUSED(locker)
-            dependentObjects = gDependencies->values(sp);
-            gDependencies->remove(sp);
+            QWriteLocker locker(storage->lock());
+            dependentObjects = storage->dependencies().values(sp);
+            storage->dependencies().remove(sp);
         }
         for(const QWeakPointer<QtJambiLink>& weakLink : qAsConst(dependentObjects)){
             if(QSharedPointer<QtJambiLink> link = weakLink.toStrongRef()){
@@ -5260,7 +6990,7 @@ void QtJambiLink::clearAllDependencies(JNIEnv *env)
         if(!isInDestructor())
 #endif
         if(QObject* obj = qobject()){
-            if(DependencyManagerUserData* dm = DependencyManagerUserData::instance(obj, false)){
+            if(DependencyManagerObjectData* dm = DependencyManagerObjectData::instance(obj, false)){
                 dm->clear(obj, env);
             }
         }
@@ -5270,14 +7000,14 @@ void QtJambiLink::clearAllDependencies(JNIEnv *env)
         QList<QWeakPointer<QtJambiLink>> conDestroyedObjects;
         QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>> finalizations;
         QSharedPointer<QtJambiLink> sp = *this;
+        QtJambiStorage* storage = getQtJambiStorage();
         {
-            QWriteLocker locker(gDependencyLock());
-            Q_UNUSED(locker)
-            dependentObjects = gDependencies->values(sp);
-            gDependencies->remove(sp);
-            finalizations = gFinalizations->take(sp);
-            conDestroyedObjects = gConDestroyedDependencies->values(sp);
-            gConDestroyedDependencies->remove(sp);
+            QWriteLocker locker(storage->lock());
+            dependentObjects = storage->dependencies().values(sp);
+            storage->dependencies().remove(sp);
+            finalizations = storage->finalizations().take(sp);
+            conDestroyedObjects = storage->conDestroyedDependencies().values(sp);
+            storage->conDestroyedDependencies().remove(sp);
         }
         for(const QWeakPointer<QtJambiLink>& weakLink : qAsConst(conDestroyedObjects)){
             if(QSharedPointer<QtJambiLink> link = weakLink.toStrongRef()){
@@ -5301,7 +7031,7 @@ void QtJambiLink::clearAllDependencies(){
     if(!isInDestructor()){
         if(isQObject()){
             if(QObject* obj = qobject()){
-                if(DependencyManagerUserData* dm = DependencyManagerUserData::instance(obj, false)){
+                if(DependencyManagerObjectData* dm = DependencyManagerObjectData::instance(obj, false)){
                     dm->clear(obj);
                 }
             }
@@ -5311,14 +7041,14 @@ void QtJambiLink::clearAllDependencies(){
                 QList<QWeakPointer<QtJambiLink>> conDestroyedObjects;
                 QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>> finalizations;
                 QSharedPointer<QtJambiLink> sp = *this;
+                QtJambiStorage* storage = getQtJambiStorage();
                 {
-                    QWriteLocker locker(gDependencyLock());
-                    Q_UNUSED(locker)
-                    dependentObjects = gDependencies->values(sp);
-                    gDependencies->remove(sp);
-                    finalizations = gFinalizations->take(sp);
-                    conDestroyedObjects = gConDestroyedDependencies->values(sp);
-                    gConDestroyedDependencies->remove(sp);
+                    QWriteLocker locker(storage->lock());
+                    dependentObjects = storage->dependencies().values(sp);
+                    storage->dependencies().remove(sp);
+                    finalizations = storage->finalizations().take(sp);
+                    conDestroyedObjects = storage->conDestroyedDependencies().values(sp);
+                    storage->conDestroyedDependencies().remove(sp);
                 }
                 if(!conDestroyedObjects.isEmpty()
                         || !finalizations.isEmpty()
@@ -5353,827 +7083,269 @@ void QtJambiLink::disposeManaged(JNIEnv *env){
     }
 }
 
-void *PointerToObjectLink::pointer() const {
-    return m_pointer;
-}
-
-QObject *PointerToObjectLink::qobject() const { Q_ASSERT_X(false, "QtJambiLink", "Pointer is not QObject"); return nullptr; }
-
-void PointerToObjectLink::invalidate(JNIEnv *env) {
-    QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "PointerToObjectLink::invalidate(JNIEnv *)")
-    invalidateDependentObjects(env);
-    releaseJavaObject(env);
-    detachJavaLink(env);
-    if(m_pointer) {
-        QTJAMBI_DEBUG_PRINT_WITH_ARGS("invalidate object %p of link %p", m_pointer, this)
-        unregisterPointer(m_pointer);
-        unregisterOffsets();
-        m_flags.setFlag(Flag::IsPointerRegistered, false);
-        m_pointer = nullptr;
+void PlainObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
+{
+    if (m_pointer){
+        if(!isShell())
+            clearAllDependencies(env);
+        void* pointer;
+        {
+            QtJambiLinkWriteLock locker;
+            pointer = m_pointer;
+            m_pointer = nullptr;
+        }
+        if(pointer){
+            unregisterPointer(pointer);
+            unregisterOffsets(pointer);
+            m_flags.setFlag(Flag::IsPointerRegistered, false);
+            if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
+                deleteNow(env, pointer);
+                pointer = nullptr;
+            }
+        }
     }
     dispose();
 }
 
-void PointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
+template<typename Super>
+void OwnedObjectLink<Super>::deleteNativeObject(JNIEnv *env, bool forced)
 {
-    if (m_pointer){
-        if(!isShell())
-            clearAllDependencies(env);
-        unregisterPointer(m_pointer);
-        unregisterOffsets();
-        m_flags.setFlag(Flag::IsPointerRegistered, false);
-        if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
-            m_pointer = nullptr;
-            dispose();
-            env->Throw(Java::Runtime::RuntimeException::newInstanceWithMessage(env, "Unable to delete object due to missing deleter or meta type information."));
-        }else{
-            dispose();
-        }
-    }
-}
-
-void PointerToObjectLink::onClean(JNIEnv *env)
-{
-    if(!m_flags.testFlag(Flag::HasBeenCleaned)){
-        if(!m_flags.testFlag(Flag::BlockDeletion)){
-            JavaException throwable;
-            m_flags.setFlag(Flag::BlockDeletion, true);
-            QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QtJambiLink::onClean(JNIEnv *)")
-            QTJAMBI_INCREASE_COUNTER_THIS(cleanCallerCount)
-            releaseJavaObject(env);
-            deleteNativeObject(env);
-            if(env->ExceptionCheck()){
-                jthrowable t = env->ExceptionOccurred();
-                env->ExceptionClear();
-                throwable = JavaException(env, t);
-            }
-            detachJavaLink(env);
-            m_flags.setFlag(Flag::HasBeenCleaned);
-            m_flags.setFlag(Flag::BlockDeletion, false);
-            throwable.raise();
-        }
-    }
-}
-
-// This allows the Java language to attempt to expedite the disposal of the C++ object
-//  (when that this possible), however its possible the C++ object will not be destroyed
-//  as the Java side does not own it.
-// Entry point for QtJambiObject#dispose() method
-void PointerToObjectLink::onDispose(JNIEnv *env)
-{
-    if(!m_flags.testFlag(Flag::IsManaged)){
-        if(!m_flags.testFlag(Flag::BlockDeletion)){
-            JavaException throwable;
-            m_flags.setFlag(Flag::BlockDeletion, true);
-            QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QtJambiLink::onDispose(JNIEnv *)")
-            setJavaOwnership(env);
-            deleteNativeObject(env, true);
-            if(env->ExceptionCheck()){
-                jthrowable t = env->ExceptionOccurred();
-                env->ExceptionClear();
-                throwable = JavaException(env, t);
-            }
-            detachJavaLink(env);
-            QTJAMBI_INCREASE_COUNTER_THIS(disposeCalledCount)
-            m_flags.setFlag(Flag::BlockDeletion, false);
-            throwable.raise();
-        }
-    }
-}
-
-void PointerToObjectLink::init(JNIEnv* env){
-    //if(!isInitialized()){
-        QtJambiLink::init(env);
-    //}
-}
-
-void OwnedMetaTypedPointerToObjectLink::init(JNIEnv* env){
-    if(!isInitialized()){
-        PointerToObjectLink::init(env);
-        if(const QObject* obj = m_owner_function(pointer())){
-            const QObjectPrivate* p = QObjectPrivate::get(obj);
-            if(p && !p->wasDeleted){
-                ValueOwnerUserData* vod;
-                {
-                    QReadLocker locker(QtJambiLinkUserData::lock());
-                    Q_UNUSED(locker)
-                    vod = QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, obj);
-                }
-                if(!vod){
-                    QWriteLocker locker(QtJambiLinkUserData::lock());
-                    Q_UNUSED(locker)
-                    vod = QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, obj);
-                    if(!vod)
-                        QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, const_cast<QObject*>(obj), new ValueOwnerUserData(obj));
-                }
-            }
-        }
-    }
-}
-
-void DeletableOwnedPointerToObjectLink::init(JNIEnv* env){
-    if(!isInitialized()){
-        PointerToObjectLink::init(env);
-        if(const QObject* obj = m_owner_function(pointer())){
-            const QObjectPrivate* p = QObjectPrivate::get(obj);
-            if(p && !p->wasDeleted){
-                ValueOwnerUserData* vod;
-                {
-                    QReadLocker locker(QtJambiLinkUserData::lock());
-                    Q_UNUSED(locker)
-                    vod = QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, obj);
-                }
-                if(!vod){
-                    QWriteLocker locker(QtJambiLinkUserData::lock());
-                    Q_UNUSED(locker)
-                    vod = QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, obj);
-                    if(!vod)
-                        QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, const_cast<QObject*>(obj), new ValueOwnerUserData(obj));
-                }
-            }
-        }
-    }
-}
-
-void MetaTypedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
-{
-    if (m_pointer){
-        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "MetaTypedPointerToObjectLink::deleteNativeObject(JNIEnv *, bool)")
-        if(!isShell())
-            clearAllDependencies(env);
-        unregisterPointer(m_pointer);
-        unregisterOffsets();
-        m_flags.setFlag(Flag::IsPointerRegistered, false);
-        if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
-            void* pointer = m_pointer;
-            m_pointer = nullptr;
-            QTJAMBI_DEBUG_PRINT_WITH_ARGS("call QMetaType::destroy() on object %p of type %s", pointer, static_cast<const char*>(m_meta_type.name()))
-            m_meta_type.destroy(pointer);
-            dispose();
-        }else{
-            dispose();
-        }
-    }
-}
-
-void OwnedMetaTypedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
-{
-    if (m_pointer){
-        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "MetaTypedPointerToObjectLink::deleteNativeObject(JNIEnv *, bool)")
-        if(!isShell())
-            clearAllDependencies(env);
-        unregisterPointer(m_pointer);
-        unregisterOffsets();
-        m_flags.setFlag(Flag::IsPointerRegistered, false);
-        if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
-            void* pointer = m_pointer;
-            m_pointer = nullptr;
-            QWriteLocker locker(QtJambiLinkUserData::lock());
-            Q_UNUSED(locker)
-            if(const QObject* obj = m_owner_function(pointer)){
-                const QObjectPrivate* p = QObjectPrivate::get(obj);
-                Q_ASSERT(p);
-                QThread* ownerThread =
-                        p->threadData.loadAcquire()->thread.loadAcquire();
-                if (ownerThread->isRunning() && ownerThread != QThread::currentThread()) {
-                    if(ValueOwnerUserData* vud = QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, obj)){
-                        if(p->wasDeleted){
-                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("call QMetaType::destroy() on object %p of type %s", pointer, static_cast<const char*>(m_meta_type.name()))
-                            void* _pointer = pointer;
-                            QMetaType meta_type = m_meta_type;
-                            vud->addDeleter([meta_type,_pointer](){
-                                meta_type.destroy(_pointer);
-                            });
-                            dispose();
-                        }else{
-                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("use QtJambiDestructor for object %p of type %s", pointer, static_cast<const char*>(m_meta_type.name()))
-                            setDeleteLater();    // qobject still exists at the time we cut it away (and we have shoved dtor to event system)
-                            QThreadUserData::Result threadDataResult = QThreadUserData::ensureThreadUserDataLocked(ownerThread);
-                            if (QAbstractEventDispatcher::instance(ownerThread)) {
-                                MetaTypeDestructionEvent* event = new MetaTypeDestructionEvent(vud->pointer(), *this, pointer, m_meta_type);
-                                if(threadDataResult.initRequired){
-                                    locker.unlock();
-                                    threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                    locker.relock();
-                                }
-                                QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
+    if (this->m_pointer){
+        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QtJambiLink::deleteNativeObject(JNIEnv *, bool)")
+        if(!this->isShell())
+            this->clearAllDependencies(env);
+        bool nativeDeletion = !m_flags.testFlag(QtJambiLink::Flag::NoNativeDeletion)
+                && (m_flags.testFlag(QtJambiLink::Flag::JavaOwnership) || forced);
+        OwnerInfo<Super> ownerInfo = clearPointer(nativeDeletion);
+        this->unregisterPointer(ownerInfo.pointer);
+        this->unregisterOffsets(ownerInfo.pointer);
+        this->m_flags.setFlag(QtJambiLink::Flag::IsPointerRegistered, false);
+        if(nativeDeletion){
+            if(ownerInfo.ownerThread){
+                if(ownerInfo.ownerPointer){
+                    this->setDeleteLater();    // qobject still exists at the time we cut it away (and we have shoved dtor to event system)
+                    QThreadObjectData* threadUserData = QThreadObjectData::ensureThreadUserData(ownerInfo.ownerThread);
+                    if constexpr(Super::IS_SMART_POINTER){
+                        if(ownerInfo.shared_pointer){
+                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("use deleter event for shared pointer")
+                            if (QAbstractEventDispatcher::instance(ownerInfo.ownerThread)) {
+                                DestructorEvent* event = new DestructorEvent(ownerInfo.ownerPointer, *this,
+                                                                             new typename OwnerInfo<Super>::SharedPointerT(ownerInfo.shared_pointer),
+                                                                             [](void * ptr,bool){delete reinterpret_cast<typename OwnerInfo<Super>::SharedPointerT*>(ptr);}, this->isShell());
+                                QCoreApplication::postEvent(threadUserData->threadDeleter(), event);
                             }else{
-                                void* _pointer = pointer;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-                                QMetaType meta_type = m_meta_type;
-                                threadDataResult.threadUserData->doAtThreadEnd([meta_type,_pointer](){
-                                    meta_type.destroy(_pointer);
+                                threadUserData->doAtThreadEnd([_shared_pointer = typename OwnerInfo<Super>::SharedPointerT(ownerInfo.shared_pointer)]() mutable {
+                                    _shared_pointer = typename OwnerInfo<Super>::SharedPointerT();
                                 });
-#else
-                                int meta_type = m_meta_type.id();
-                                threadDataResult.threadUserData->doAtThreadEnd([meta_type,_pointer](){
-                                    QMetaType::destroy(meta_type, _pointer);
-                                });
-#endif
-                                if(threadDataResult.initRequired){
-                                    locker.unlock();
-                                    threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                    locker.relock();
-                                }
+                                if(!this->isShell())
+                                    this->dispose();
                             }
-                        }
-                        pointer = nullptr;
-                    }else if(!p->wasDeleted){
-                        QTJAMBI_DEBUG_PRINT_WITH_ARGS("use QtJambiDestructor for object %p of type %s", pointer, static_cast<const char*>(m_meta_type.name()))
-                        setDeleteLater();    // qobject still exists at the time we cut it away (and we have shoved dtor to event system)
-                        QThreadUserData::Result threadDataResult = QThreadUserData::ensureThreadUserDataLocked(ownerThread);
-                        if (QAbstractEventDispatcher::instance(ownerThread)) {
-                            MetaTypeDestructionEvent* event = new MetaTypeDestructionEvent(obj, *this, pointer, m_meta_type);
-                            if(threadDataResult.initRequired){
-                                locker.unlock();
-                                threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                locker.relock();
-                            }
-                            QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
+                            ownerInfo.shared_pointer = typename OwnerInfo<Super>::SharedPointerT();
                         }else{
-                            void* _pointer = pointer;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-                            QMetaType meta_type = m_meta_type;
-                            threadDataResult.threadUserData->doAtThreadEnd([meta_type,_pointer](){
-                                meta_type.destroy(_pointer);
-                            });
-#else
-                            int meta_type = m_meta_type.id();
-                            threadDataResult.threadUserData->doAtThreadEnd([meta_type,_pointer](){
-                                QMetaType::destroy(meta_type, _pointer);
-                            });
-#endif
-                            if(threadDataResult.initRequired){
-                                locker.unlock();
-                                threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                locker.relock();
-                            }
+                            this->postDeletion(ownerInfo.ownerPointer, ownerInfo.ownerThread, threadUserData, ownerInfo.pointer);
+                            ownerInfo.pointer = nullptr;
                         }
-                        pointer = nullptr;
+                    }else{
+                        this->postDeletion(ownerInfo.ownerPointer, ownerInfo.ownerThread, threadUserData, ownerInfo.pointer);
+                        ownerInfo.pointer = nullptr;
+                    }
+                }else if(ownerInfo.vud){
+                    QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
+                    if constexpr(Super::IS_SMART_POINTER){
+                        if(ownerInfo.shared_pointer){
+                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("call shared pointer deleter function")
+                            ownerInfo.vud->addDeleter([shared_pointer = typename OwnerInfo<Super>::SharedPointerT(ownerInfo.shared_pointer)]()mutable{
+                                shared_pointer = typename OwnerInfo<Super>::SharedPointerT();
+                            });
+                            if(!this->isShell())
+                                this->dispose();
+                        }else{
+                            this->addDeleter(ownerInfo.vud, ownerInfo.pointer);
+                            ownerInfo.pointer = nullptr;
+                        }
+                    }else{
+                        this->addDeleter(ownerInfo.vud, ownerInfo.pointer);
+                        ownerInfo.pointer = nullptr;
                     }
                 }
             }
-            if(pointer){
-                locker.unlock();
-                {
-                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call QMetaType::destroy() on object %p of type %s", pointer, static_cast<const char*>(m_meta_type.name()))
-                    m_meta_type.destroy(pointer);
+
+            if constexpr(Super::IS_SMART_POINTER){
+                if(ownerInfo.shared_pointer){
+                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call shared pointer deleter function")
+                    QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
+                    ownerInfo.shared_pointer = typename OwnerInfo<Super>::SharedPointerT();
+                    if(!this->isShell())
+                        this->dispose();
+                }else if(ownerInfo.pointer){
+                    this->deleteNow(env, ownerInfo.pointer);
+                    ownerInfo.pointer = nullptr;
                 }
-                locker.relock();
-                dispose();
+            }else{
+                if(ownerInfo.pointer){
+                    this->deleteNow(env, ownerInfo.pointer);
+                    ownerInfo.pointer = nullptr;
+                }
             }
         }else{
-            dispose();
+            this->dispose();
+        }
+    }else{
+        this->dispose();
+    }
+}
+
+template<bool pending>
+QObjectPlainPointerLink<pending>::QObjectPlainPointerLink(JNIEnv *env, jobject nativeLink,
+                                                              jobject jobj, const QMetaObject* metaObject,
+                                                              QObject *ptr, SafeBool isQThread, SafeBool created_by_java,
+                                                              SafeBool is_shell, JavaException& ocurredException)
+    : Super(env, nativeLink,
+            LINK_NAME_ARG(metaObject->className())
+            ptr, created_by_java, is_shell, ocurredException)
+{
+    if(Q_LIKELY(!ocurredException)){
+        this->setIsQThread(isQThread);
+        QtJambiMetaObject::resolveSignals(env, jobj, metaObject, ocurredException);
+        if constexpr(pending){
+            this->m_flags.setFlag(QtJambiLink::Flag::IsPendingValueOwner, isValueOwner(metaObject));
         }
     }
 }
 
-void DeletableOwnedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
-{
-    if (m_pointer){
-        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "DeletablePointerToObjectLink::deleteNativeObject(JNIEnv *, bool)")
-        if(!isShell())
-            clearAllDependencies(env);
-        unregisterPointer(m_pointer);
-        unregisterOffsets();
-        m_flags.setFlag(Flag::IsPointerRegistered, false);
-        if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
-            void* pointer = m_pointer;
-            m_pointer = nullptr;
-            QWriteLocker locker(QtJambiLinkUserData::lock());
-            Q_UNUSED(locker)
-            if(const QObject* obj = m_owner_function(pointer)){
-                const QObjectPrivate* p = QObjectPrivate::get(obj);
-                Q_ASSERT(p);
-                QThread* ownerThread =
-                        p->threadData.loadAcquire()->thread.loadAcquire();
-                if (ownerThread->isRunning() && ownerThread != QThread::currentThread()) {
-                    if(ValueOwnerUserData* vud = QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, obj)){
-                        if(p->wasDeleted){
-                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("call destructor_function on object %p", pointer)
-                            QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
-                            PtrDeleterFunction _deleter_function = m_deleter_function;
-                            void* _pointer = pointer;
-                            bool isShell = this->isShell();
-                            vud->addDeleter([_deleter_function,_pointer,isShell](){
-                                _deleter_function(_pointer, isShell);
-                            });
-                            dispose();
-                        }else{
-                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("use QtJambiDestructor for object %p", pointer)
-                            setDeleteLater();    // qobject still exists at the time we cut it away (and we have shoved dtor to event system)
-                            QThreadUserData::Result threadDataResult = QThreadUserData::ensureThreadUserDataLocked(ownerThread);
-                            if (QAbstractEventDispatcher::instance(ownerThread)) {
-                                DestructorEvent* event = new DestructorEvent(vud->pointer(), *this, pointer, m_deleter_function, isShell());
-                                if(threadDataResult.initRequired){
-                                    locker.unlock();
-                                    threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                    locker.relock();
-                                }
-                                QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
-                            }else{
-                                PtrDeleterFunction _deleter_function = m_deleter_function;
-                                void* _pointer = pointer;
-                                bool isShell = this->isShell();
-                                threadDataResult.threadUserData->doAtThreadEnd([_deleter_function, _pointer, isShell](){
-                                    _deleter_function(_pointer, isShell);
-                                });
-                                if(threadDataResult.initRequired){
-                                    locker.unlock();
-                                    threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                    locker.relock();
-                                }
-                            }
-                        }
-                        pointer = nullptr;
-                    }else if(!p->wasDeleted){
-                        QTJAMBI_DEBUG_PRINT_WITH_ARGS("use QtJambiDestructor for object %p", pointer)
-                        setDeleteLater();    // qobject still exists at the time we cut it away (and we have shoved dtor to event system)
-                        QThreadUserData::Result threadDataResult = QThreadUserData::ensureThreadUserDataLocked(ownerThread);
-                        if (QAbstractEventDispatcher::instance(ownerThread)) {
-                            DestructorEvent* event = new DestructorEvent(obj, *this, pointer, m_deleter_function, isShell());
-                            if(threadDataResult.initRequired){
-                                locker.unlock();
-                                threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                locker.relock();
-                            }
-                            QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
-                        }else{
-                            PtrDeleterFunction _deleter_function = m_deleter_function;
-                            void* _pointer = pointer;
-                            bool isShell = this->isShell();
-                            threadDataResult.threadUserData->doAtThreadEnd([_deleter_function, _pointer, isShell](){
-                                _deleter_function(_pointer, isShell);
-                            });
-                            if(threadDataResult.initRequired){
-                                locker.unlock();
-                                threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                locker.relock();
-                            }
-                        }
-                        pointer = nullptr;
-                    }
-                }
-            }
-            if(pointer){
-                QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
-                locker.unlock();
-                {
-                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call destructor_function on object %p", pointer)
-                    m_deleter_function(pointer, isShell());
-                }
-                locker.relock();
-                dispose();
-            }
-        }else{
-            dispose();
-        }
-    }
-}
-
-template<template<typename> class SmartPointer>
-void SmartPointerToContainerLink<SmartPointer>::init(JNIEnv* env){
-    SmartPointerToObjectLink<SmartPointer>::init(env);
-    if(AbstractReferenceCountingContainer* rc = dynamic_cast<AbstractReferenceCountingContainer*>(m_containerAccess)){
-        jobject object = getJavaObjectLocalRef(env);
-        rc->updateRC(env, {object, pointer()});
-        env->DeleteLocalRef(object);
-    }
-}
-
-void PointerToContainerLink::init(JNIEnv* env){
-    PointerToObjectLink::init(env);
-    if(AbstractReferenceCountingContainer* rc = dynamic_cast<AbstractReferenceCountingContainer*>(m_containerAccess)){
-        jobject object = getJavaObjectLocalRef(env);
-        rc->updateRC(env, {object, m_pointer});
-        env->DeleteLocalRef(object);
-    }
-}
-
-void DeletablePointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
-{
-    if (m_pointer){
-        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "DeletablePointerToObjectLink::deleteNativeObject(JNIEnv *, bool)")
-        if(!isShell())
-            clearAllDependencies(env);
-        unregisterPointer(m_pointer);
-        unregisterOffsets();
-        m_flags.setFlag(Flag::IsPointerRegistered, false);
-        if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
-            void* pointer = m_pointer;
-            m_pointer = nullptr;
-            QTJAMBI_DEBUG_PRINT_WITH_ARGS("call destructor_function on object %p", pointer)
-            QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
-            m_deleter_function(pointer, isShell());
-        }
-        dispose();
-    }
-}
-
-// ### END ######################  PointerToObjectLink  ######################## END ####
-
-// ### BEGIN ###################  PointerToQObjectLink  ###################### BEGIN ####
-
-PointerToQObjectWithExtraSignalsLink::PointerToQObjectWithExtraSignalsLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMetaObject* metaObject, QObject *object, SafeBool isQThread, SafeBool created_by_java, SafeBool is_shell, JavaException& ocurredException)
-    : PointerToQObjectLink(env, nativeLink, jobj, metaObject, object, isQThread, created_by_java, is_shell, ocurredException)
-{
-}
-
-PointerToQObjectLink::PointerToQObjectLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMetaObject* metaObject, QObject *object, SafeBool isQThread, SafeBool created_by_java, SafeBool is_shell, JavaException& ocurredException) :
-    QtJambiLink(env, nativeLink,
-                LINK_NAME_ARG(metaObject->className())
-                created_by_java, is_shell, ocurredException),
-    m_pointer(object)
-{
-    setIsQThread(isQThread);
-    QtJambiMetaObject::resolveSignals(env, jobj, metaObject, ocurredException);
-    // Fetch the user data id
-    if(ocurredException){
-        m_flags.setFlag(Flag::IsJavaLinkDetached);
-    }
-}
-
-void PointerToQObjectLink::init(JNIEnv* env){
-    init(env, nullptr);
-}
-
-void PointerToQObjectLink::init(JNIEnv* env, QSharedPointer<QtJambiLink>* replacement){
-    if(!isInitialized()){
+template<bool pending>
+void QObjectPlainPointerLink<pending>::init(JNIEnv* env, QSharedPointer<QtJambiLink>* replacement){
+    if(!this->isInitialized()){
         QtJambiLink::init(env);
-        QObject* object = qobject();
+        QObject* object = m_pointer;
         QSharedPointer<QtJambiLink> _this = *this;
         Q_ASSERT(object);
-        const QMetaObject* metaObject = object->metaObject();
+        const QMetaObject* metaObject{nullptr};
+        bool _isValueOwner = this->m_flags.testFlag(QtJambiLink::Flag::IsPendingValueOwner);
+        if constexpr(pending){
+            Q_UNUSED(metaObject)
+            _isValueOwner = this->m_flags.testFlag(QtJambiLink::Flag::IsPendingValueOwner);
+        }else{
+            metaObject = object->metaObject();
+            _isValueOwner = isValueOwner(metaObject);
+        }
+
+        QtJambiLinkObjectData* lud{nullptr};
+        ValueOwnerObjectData* vud{nullptr};
         {
-            bool _isValueOwner = isValueOwner(metaObject);
-            if(isQThread() && object!=QCoreApplicationPrivate::theMainThread.loadRelaxed()){
-                if(QThread* thread = static_cast<QThread*>(object)){
-                    QThreadUserData* data;
-                    {
-                        QWriteLocker locker(QtJambiLinkUserData::lock());
-                        if(replacement){
-                            if(QtJambiLinkUserData* d = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, object)){
-                                *replacement = d->link();
-                                if(*replacement)
-                                    return;
+            auto locker = QtJambiObjectData::readLock();
+            if(_isValueOwner)
+                vud = QtJambiObjectData::userData<ValueOwnerObjectData>(object);
+            lud = QtJambiObjectData::userData<QtJambiLinkObjectData>(object);
+        }
+        if(lud){
+            if(replacement){
+                if constexpr(pending){
+                    if(QSharedPointer<QtJambiLink> other = lud->link()){
+                        jobject obj1 = this->getJavaObjectLocalRef(env);
+                        jobject obj2 = other->getJavaObjectLocalRef(env);
+                        if(!env->IsSameObject(obj1, obj2)){
+                            jclass class1 = env->GetObjectClass(obj1);
+                            jclass class2 = env->GetObjectClass(obj2);
+                            if(env->IsSameObject(class1, class2)){
+                                *replacement = other;
+                                return;
                             }
                         }
-                        data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
-                        QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, object, new QtJambiMetaObjectThreadLinkUserData(thread, _this, metaObject));
-                        if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, object)){
-                            QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, object, new ValueOwnerUserData(object));
-                        }
                     }
-                    if(!data)
-                        ThreadPrivate::fromQThread(env, getJavaObjectLocalRef(env), thread, _this);
                 }else{
-                    QWriteLocker locker(QtJambiLinkUserData::lock());
-                    if(replacement){
-                        if(QtJambiLinkUserData* d = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, object)){
-                            *replacement = d->link();
-                            if(*replacement)
-                                return;
-                        }
-                    }
-                    QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, object, new QtJambiMetaObjectLinkUserData(_this, metaObject));
-                    if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, object)){
-                        QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, object, new ValueOwnerUserData(object));
-                    }
+                    *replacement = lud->link();
+                    if(*replacement)
+                        return;
                 }
+            }
+            QtJambiLink::resetDataLink(lud);
+        }
+        if(_isValueOwner && !vud)
+            vud = new ValueOwnerObjectData(object);
+        if(this->isQThread() && object!=QCoreApplicationPrivate::theMainThread.loadRelaxed()){
+            QThread* thread = static_cast<QThread*>(object);
+            QSharedPointer<QtJambiLink> _this = *this;
+            QThreadObjectData* data{nullptr};
+            QtJambiLink::setIsQThread(true);
+            if(lud){
+                if(vud){
+                    auto locker = QtJambiObjectData::writeLock();
+                    data = QtJambiObjectData::userData<QThreadObjectData>(thread);
+                    vud = QtJambiObjectData::setUserData<ValueOwnerObjectData>(object, vud);
+                }else{
+                    auto locker = QtJambiObjectData::readLock();
+                    data = QtJambiObjectData::userData<QThreadObjectData>(thread);
+                }
+                lud = nullptr; // don't delete
             }else{
-                QWriteLocker locker(QtJambiLinkUserData::lock());
-                if(replacement){
-                    if(QtJambiLinkUserData* d = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, object)){
-                        *replacement = d->link();
-                        if(*replacement)
-                            return;
-                    }
+                if constexpr(pending){
+                    lud = new ThreadLinkObjectData(thread, _this);
+                }else{
+                    lud = new MetaObjectThreadLinkObjectData(thread, _this, metaObject);
                 }
-                QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, object, new QtJambiMetaObjectLinkUserData(_this, metaObject));
-                if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, object)){
-                    QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, object, new ValueOwnerUserData(object));
+                {
+                    auto locker = QtJambiObjectData::writeLock();
+                    data = QtJambiObjectData::userData<QThreadObjectData>(thread);
+                    lud = QtJambiObjectData::setUserData<QtJambiLinkObjectData>(thread, lud);
+                    if(vud)
+                        vud = QtJambiObjectData::setUserData<ValueOwnerObjectData>(object, vud);
+                }
+            }
+            if(!data)
+                ThreadPrivate::fromQThread(env, this->getJavaObjectLocalRef(env), thread, _this);
+        }else{
+            if(lud){
+                if(vud){
+                    auto locker = QtJambiObjectData::writeLock();
+                    vud = QtJambiObjectData::setUserData<ValueOwnerObjectData>(object, vud);
+                }
+                lud = nullptr; // don't delete
+            }else{
+                if constexpr(pending){
+                    lud = new LinkObjectData(*this);
+                }else{
+                    lud = new MetaObjectLinkObjectData(*this, metaObject);
+                }
+                {
+                    auto locker = QtJambiObjectData::writeLock();
+                    lud = QtJambiObjectData::setUserData<QtJambiLinkObjectData>(object, lud);
+                    if(vud)
+                        vud = QtJambiObjectData::setUserData<ValueOwnerObjectData>(object, vud);
                 }
             }
         }
+        if(vud)
+            delete vud;
+        if(lud)
+            delete lud;
 #if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-        m_qtTypeName = metaObject->className();
+        if constexpr(!pending){
+            this->m_qtTypeName = metaObject->className();
+        }
 #endif
-        if(createdByJava()){
+        if(this->createdByJava()){
             if(object->parent())
-                setCppOwnership(env);
+                this->setCppOwnership(env);
             else
-                setJavaOwnership(env);
+                this->setJavaOwnership(env);
         }else{
             if(object->parent())
-                setCppOwnership(env);
+                this->setCppOwnership(env);
             else
-                setSplitOwnership(env);
+                this->setSplitOwnership(env);
         }
     }
 }
 
-PointerToQObjectLink::~PointerToQObjectLink()
-{
-    QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "PointerToQObjectLink::~PointerToQObjectLink()")
-    if (!m_flags.testFlag(Flag::IsJavaLinkDetached) || !m_flags.testFlag(Flag::JavaObjectIsReleased) || m_pointer) {
+template<template<typename> class SmartPointer>
+ObjectSmartPointerLink<SmartPointer>::~ObjectSmartPointerLink(){
+    QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "ObjectSmartPointerLink::~ObjectSmartPointerLink()")
+    if (!QtJambiLink::m_flags.testFlag(QtJambiLink::Flag::IsJavaLinkDetached) || !QtJambiLink::m_flags.testFlag(QtJambiLink::Flag::JavaObjectIsReleased) || this->m_pointer) {
         try{
-            if(JniEnvironment env = isQThread() ? JniEnvironment{300} : DefaultJniEnvironment{300}){
-                releaseJavaObject(env);
-                deleteNativeObject(env);
-                detachJavaLink(env);
-            }else{
-                deleteNativeObject();
-            }
-        } catch (const std::exception& e) {
-            qCWarning(DebugAPI::internalCategory, "%s", e.what());
-        } catch (...) {
-        }
-    }
-}
-
-bool PointerToQObjectLink::isSmartPointer() const { return false; }
-
-void PointerToQObjectLink::removeInterface(const std::type_info&){
-    clearAllDependencies();
-    setInDestructor();
-}
-
-void PointerToObjectLink::removeInterface(const std::type_info&){
-    clearAllDependencies();
-    setInDestructor();
-}
-
-void *PointerToQObjectLink::pointer() const {
-    return m_pointer;
-}
-
-QObject *PointerToQObjectLink::qobject() const {
-    return
-#ifndef AVAILABLE_IN_DELETION
-            isInDestructor() ||
-#endif
-            !isInitialized() ? nullptr : m_pointer;
-}
-
-void PointerToQObjectLink::setAsQObjectDeleted() {
-    QTJAMBI_DEBUG_PRINT_WITH_ARGS("PointerToQObjectLink::setAsQObjectDeleted() object %p of link %p", m_pointer, this)
-    {
-        QWriteLocker locker(QtJambiLinkUserData::lock());
-        Q_UNUSED(locker)
-        m_pointer = nullptr;
-    }
-}
-
-void PointerToQObjectLink::invalidate(JNIEnv *env) {
-    QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "PointerToQObjectLink::invalidate(JNIEnv *)")
-    {
-        invalidateDependentObjects(env);
-        releaseJavaObject(env);
-        QWriteLocker locker(QtJambiLinkUserData::lock());
-        Q_UNUSED(locker)
-        if(m_pointer) {
-            QTJAMBI_DEBUG_PRINT_WITH_ARGS("invalidate object %p of link %p", m_pointer, this)
-            unregisterOffsets();
-            m_pointer = nullptr;
-        }
-        dispose();
-    }
-}
-
-void PointerToQObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
-{
-    if(m_pointer && !isDeleteLater()){
-        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "PointerToQObjectLink::deleteNativeObject(JNIEnv *, bool)")
-        unregisterOffsets();
-        if(!isShell())
-            clearAllDependencies(env);
-
-        if(isInitialized()){
-            if (!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)) {
-                QThread *currentThread = QThread::currentThread();
-                QThread *objectThread = m_pointer->thread();
-                // Explicit dispose from current thread, delete object
-                if(!objectThread){
-                    if(m_pointer->parent()){
-                        qCWarning(DebugAPI::internalCategory, "Skip deletion of QObject '%s' [%s] (thread=none, parent='%s' [%s])",
-                                qPrintable(m_pointer->objectName()),
-                                m_pointer->metaObject()->className(),
-                                qPrintable(m_pointer->parent()->objectName()),
-                                m_pointer->parent()->metaObject()->className());
-                    }else{
-                        QtJambiExceptionBlocker __qt_exceptionBlocker;
-                        {
-                            QObjectInDeletion d(env, this);
-                            delete m_pointer;
-                        }
-                        __qt_exceptionBlocker.release(env);
-                    }
-                }else if (currentThread == objectThread || !objectThread->isRunning() || objectThread==m_pointer) {
-                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call delete on object %p of type %s", m_pointer, QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QObject>::trySupplyType(m_pointer)).constData())
-                    if(m_pointer==objectThread || qobject_cast<QThread*>(m_pointer)){
-                        QThread* myThread;
-                        if(m_pointer==objectThread){
-                            myThread = objectThread;
-                        }else{
-                            myThread = qobject_cast<QThread*>(m_pointer);
-                        }
-                        QThreadData * threadData = QThreadData::get2(myThread);
-                        if(threadData->isAdopted){
-                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("Adopted thread expected to be automatically deleted")
-                            return;
-                        }
-                        if(static_cast<SelfDeletingThread*>(myThread)->deleteLaterIfIsInFinish()){
-                            setDeleteLater();
-                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("call deleteLater() on object %p of type %s", m_pointer, QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QObject>::trySupplyType(m_pointer)).constData())
-                            return;
-                        }
-                    }
-                    if(currentThread == objectThread){
-                        QtJambiExceptionBlocker __qt_exceptionBlocker;
-                        {
-                            QObjectInDeletion d(env, this);
-                            delete m_pointer;
-                        }
-                        __qt_exceptionBlocker.release(env);
-                    }else if(!objectThread->isRunning() && !m_pointer->parent() && !m_pointer->isWidgetType()){
-                        QtJambiExceptionBlocker __qt_exceptionBlocker;
-                        {
-                            QObjectInDeletion d(env, this);
-                            delete m_pointer;
-                        }
-                        __qt_exceptionBlocker.release(env);
-                    }else if(objectThread==m_pointer){
-                        if(objectThread->isRunning()){
-                            qCWarning(DebugAPI::internalCategory, "Trying to delete a running QThread '%s'",
-                                    qPrintable(m_pointer->objectName()));
-                        }
-                        QtJambiExceptionBlocker __qt_exceptionBlocker;
-                        {
-                            QObjectInDeletion d(env, this);
-                            delete m_pointer;
-                        }
-                        __qt_exceptionBlocker.release(env);
-                    }else if(m_pointer->parent()){
-                        qCWarning(DebugAPI::internalCategory, "Skip deletion of QObject '%s' [%s] (thread='%s', parent='%s' [%s])",
-                                qPrintable(objectThread->objectName()),
-                                qPrintable(m_pointer->objectName()),
-                                m_pointer->metaObject()->className(),
-                                qPrintable(m_pointer->parent()->objectName()),
-                                m_pointer->parent()->metaObject()->className());
-                    }else{
-                        qCWarning(DebugAPI::internalCategory, "Skip deletion of QObject '%s' [%s] (thread='%s', no parent)",
-                                qPrintable(objectThread->objectName()),
-                                qPrintable(m_pointer->objectName()),
-                                m_pointer->metaObject()->className());
-                    }
-
-                // We're in the main thread and we'll have an event loop
-                // running, so its safe to call delete later.
-                } else if (QAbstractEventDispatcher::instance(objectThread)) {
-                    setDeleteLater();
-                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call deleteLater() on object %p of type %s", m_pointer, QtJambiAPI::typeName(QtJambiPrivate::CheckPointer<QObject>::trySupplyType(m_pointer)).constData())
-                    QObjectInDeletion::disposeQObject(m_pointer);
-                    m_pointer->deleteLater();
-
-                // If the QObject is in a non-main thread, check if that
-                // thread is a QThread, in which case it will run an eventloop
-                // and thus, do cleanup, hence deleteLater() is safe;
-                // Otherwise issue a warning.
-                }else{
-                    // currentThread is not objectThread
-                    // && objectThread not finished
-                    // && objectThread not pointer
-                    // && no QAbstractEventDispatcher
-                    QThreadUserData* qthreadData = QThreadUserData::ensureThreadUserData(objectThread);
-                    setDeleteLater();
-                    QObjectInDeletion::disposeQObject(m_pointer);
-                    QTJAMBI_DEBUG_PRINT_WITH_ARGS("attach QObject to thread shutdown procedure.")
-                    qthreadData->deleteAtThreadEnd(m_pointer);
-                }
-            }else{
-                // trust me it is possible that pointer is null
-                QObjectInDeletion::disposeQObject(m_pointer);
-                m_pointer = nullptr;
-                dispose();
-            }
-        }
-    }
-}
-// Entry point for JVM finalization QtJambiObject#finalize()
-void PointerToQObjectLink::onClean(JNIEnv *env)
-{
-    if(!m_flags.testFlag(Flag::HasBeenCleaned)){
-        if(!m_flags.testFlag(Flag::BlockDeletion)){
-            m_flags.setFlag(Flag::BlockDeletion, true);
-            QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QtJambiLink::onClean(JNIEnv *)")
-            QTJAMBI_INCREASE_COUNTER_THIS(cleanCallerCount)
-            releaseJavaObject(env);
-            deleteNativeObject(env);
-            detachJavaLink(env);
-            m_flags.setFlag(Flag::HasBeenCleaned);
-            m_flags.setFlag(Flag::BlockDeletion, false);
-        }
-    }
-}
-
-// This allows the Java language to attempt to expedite the disposal of the C++ object
-//  (when that this possible), however its possible the C++ object will not be destroyed
-//  as the Java side does not own it.
-// Entry point for QtJambiObject#dispose() method
-void PointerToQObjectLink::onDispose(JNIEnv *env)
-{
-    if(!m_flags.testFlag(Flag::IsManaged)){
-        if(!m_flags.testFlag(Flag::BlockDeletion)){
-            m_flags.setFlag(Flag::BlockDeletion, true);
-            QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QtJambiLink::onDispose(JNIEnv *)")
-            setJavaOwnership(env);
-            deleteNativeObject(env, true);
-            detachJavaLink(env);
-            QTJAMBI_INCREASE_COUNTER_THIS(disposeCalledCount)
-            m_flags.setFlag(Flag::BlockDeletion, false);
-        }
-    }
-}
-
-// ### END #####################  PointerToQObjectLink  ######################## END ####
-
-template<template<typename> class SmartPointer>
-ExtendedSmartPointerToObjectLink<SmartPointer>::ExtendedSmartPointerToObjectLink(JNIEnv *env, jobject nativeLink,
-                                                                                 LINK_NAME_ARG(const char* qt_name)
-                                                                                 SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, const QObject* extension,
-                                                                                 PtrOwnerFunction ownerFunction,
-                                                                                 void* pointer,
-                                                                                 SmartPointer<char>*& smartPointer,
-                                                                                 JavaException& ocurredException)
-    : SmartPointerToObjectLink<SmartPointer>(env, nativeLink,
-                                             LINK_NAME_ARG(qt_name)
-                                             created_by_java, ownership, is_shell,
-                                             ownerFunction,
-                                             pointer,
-                                             smartPointer,
-                                             ocurredException), ExtendedLink(), m_extension(extension){}
-
-// ### BEGIN #################  SmartPointerToObjectLink  ################### BEGIN ###
-
-template<template<typename> class SmartPointer>
-SmartPointerToContainerLink<SmartPointer>::SmartPointerToContainerLink(JNIEnv *env, jobject nativeLink,
-                                                                       LINK_NAME_ARG(const char* qt_name)
-                                                                       SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
-                                                                       PtrOwnerFunction ownerFunction,
-                                                                       void* pointer,
-                                                                       SmartPointer<char>*& smartPointer,
-                                                                       AbstractContainerAccess* containerAccess,
-                                                                       JavaException& ocurredException) :
-    SmartPointerToObjectLink<SmartPointer>(env, nativeLink,
-                                           LINK_NAME_ARG(qt_name)
-                                           created_by_java, ownership, is_shell,
-                                           ownerFunction,
-                                           pointer,
-                                           smartPointer,
-                                           ocurredException),
-    m_containerAccess(containerAccess)
-{
-}
-
-template<template<typename> class SmartPointer>
-SmartPointerToContainerLink<SmartPointer>::~SmartPointerToContainerLink(){
-    m_containerAccess->dispose();
-}
-
-template<template<typename> class SmartPointer>
-SmartPointerToObjectLink<SmartPointer>::SmartPointerToObjectLink(JNIEnv *env, jobject nativeLink,
-                                                                 LINK_NAME_ARG(const char *qt_name)
-                                                                 SafeBool created_by_java, QtJambiLink::Ownership ownership,
-                                                                 SafeBool is_shell,
-                                                                 PtrOwnerFunction ownerFunction,
-                                                                 void* pointer,
-                                                                 SmartPointer<char>*& smartPointer,
-                                                                 JavaException& ocurredException) :
-    SmartPointerLink<SmartPointer,char>(env, nativeLink,
-                       LINK_NAME_ARG(qt_name)
-                       created_by_java, ownership, is_shell, smartPointer, ocurredException),
-    m_pointer(pointer),
-    m_owner_function(ownerFunction)
-{
-    if(!ocurredException){
-        this->registerPointer(pointer);
-    }else{
-        this->m_flags.setFlag(QtJambiLink::Flag::IsJavaLinkDetached);
-        m_pointer = nullptr;
-    }
-}
-
-template<template<typename> class SmartPointer>
-SmartPointerToObjectLink<SmartPointer>::~SmartPointerToObjectLink(){
-    QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "SmartPointerToObjectLink::~SmartPointerToObjectLink()")
-    if (!QtJambiLink::m_flags.testFlag(QtJambiLink::Flag::IsJavaLinkDetached) || !QtJambiLink::m_flags.testFlag(QtJambiLink::Flag::JavaObjectIsReleased) || m_pointer) {
-        try{
-            if(JniEnvironment env = isQThread() ? JniEnvironment{300} : DefaultJniEnvironment{300}){
-                releaseJavaObject(env);
-                deleteNativeObject(env);
-                detachJavaLink(env);
-            }else{
-                deleteNativeObject();
+            if(JniEnvironment env = this->isQThread() ? JniEnvironment{300} : DefaultJniEnvironment{300}){
+                this->releaseJavaObject(env);
+                this->detachJavaLink(env);
             }
         } catch (const std::exception& e) {
             qCWarning(DebugAPI::internalCategory, "%s", e.what());
@@ -6183,14 +7355,14 @@ SmartPointerToObjectLink<SmartPointer>::~SmartPointerToObjectLink(){
 }
 
 template<template<typename> class SmartPointer>
-typename SmartPointerLink<SmartPointer,char>::SharedPointerT SmartPointerToObjectLink<SmartPointer>::getSmartPointer() const {
+typename SmartPointerLink<SmartPointer,char>::SharedPointerT ObjectSmartPointerLink<SmartPointer>::getSmartPointer() const {
     if(m_pointer)
         return SmartPointerLink<SmartPointer,char>::getSmartPointer();
     else return{};
 }
 
 template<>
-QSharedPointer<char> SmartPointerToObjectLink<QWeakPointer>::getSmartPointer() const {
+QSharedPointer<char> ObjectSmartPointerLink<QWeakPointer>::getSmartPointer() const {
     if(m_pointer){
         QSharedPointer<char> result = SmartPointerLink<QWeakPointer,char>::getSmartPointer();
         if(!result){
@@ -6207,7 +7379,7 @@ QSharedPointer<char> SmartPointerToObjectLink<QWeakPointer>::getSmartPointer() c
 }
 
 template<>
-std::shared_ptr<char> SmartPointerToObjectLink<std::weak_ptr>::getSmartPointer() const {
+std::shared_ptr<char> ObjectSmartPointerLink<std::weak_ptr>::getSmartPointer() const {
     if(m_pointer){
         std::shared_ptr<char> result = SmartPointerLink<std::weak_ptr,char>::getSmartPointer();
         if(!result){
@@ -6223,345 +7395,164 @@ std::shared_ptr<char> SmartPointerToObjectLink<std::weak_ptr>::getSmartPointer()
     }else return{};
 }
 
-template<template<typename> class SmartPointer>
-void SmartPointerToObjectLink<SmartPointer>::init(JNIEnv* env){
-    if(!isInitialized()){
-        QtJambiLink::init(env);
-        if(m_owner_function){
-            if(const QObject* obj = m_owner_function(pointer())){
-                const QObjectPrivate* p = QObjectPrivate::get(obj);
-                if(p && !p->wasDeleted){
-                    ValueOwnerUserData* vod;
-                    {
-                        QReadLocker locker(QtJambiLinkUserData::lock());
-                        Q_UNUSED(locker)
-                        vod = QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, obj);
-                    }
-                    if(!vod){
-                        QWriteLocker locker(QtJambiLinkUserData::lock());
-                        Q_UNUSED(locker)
-                        vod = QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, obj);
-                        if(!vod)
-                            QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, const_cast<QObject*>(obj), new ValueOwnerUserData(obj));
-                    }
-                }
-            }
-        }
+template<typename Super>
+void ContainerLink<Super>::addDeleter(const QExplicitlySharedDataPointer<ValueOwnerObjectDataPrivate>& vud, void* pointer){
+    QTJAMBI_DEBUG_PRINT_WITH_ARGS("use deleter event for object %p", pointer)
+    Q_ASSERT(this->m_containerAccess);
+    vud->addDeleter([containerAccess = QSharedPointer<AbstractContainerAccess>(this->m_containerAccess, &containerDisposer), pointer, isShell = this->isShell()](){
+        containerAccess->deleteContainer(pointer);
+    });
+    this->m_containerAccess = nullptr;
+    if(!this->isShell())
+        this->dispose();
+}
+
+template<typename Super>
+void ContainerLink<Super>::postDeletion(const QPointer<const QObject>& parent, QThread* ownerThread, QThreadObjectData* threadUserData, void* pointer){
+    QTJAMBI_DEBUG_PRINT_WITH_ARGS("use deleter event for object %p", pointer)
+    Q_ASSERT(this->m_containerAccess);
+    if (QAbstractEventDispatcher::instance(ownerThread)) {
+        ContainerDestructionEvent* event = new ContainerDestructionEvent(parent, *this, pointer, this->m_containerAccess);
+        this->m_containerAccess = nullptr;
+        QCoreApplication::postEvent(threadUserData->threadDeleter(), event);
+    }else{
+        threadUserData->doAtThreadEnd([containerAccess = QSharedPointer<AbstractContainerAccess>(this->m_containerAccess, &containerDisposer), pointer, isShell = this->isShell()](){
+            containerAccess->deleteContainer(pointer);
+        });
+        this->m_containerAccess = nullptr;
+        if(!this->isShell())
+            this->dispose();
     }
 }
 
-template<template<typename> class SmartPointer>
-void SmartPointerToObjectLink<SmartPointer>::invalidate(JNIEnv *env) {
-    QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "SmartPointerToObjectLink::invalidate(JNIEnv *)")
-    invalidateDependentObjects(env);
-    releaseJavaObject(env);
-    detachJavaLink(env);
-    if(m_pointer) {
-        QTJAMBI_DEBUG_PRINT_WITH_ARGS("invalidate object %p of link %p", m_pointer, this)
-        unregisterPointer(m_pointer);
-        unregisterOffsets();
-        this->m_flags.setFlag(QtJambiLink::Flag::IsPointerRegistered, false);
-        m_pointer = nullptr;
+template<typename Super>
+void ContainerLink<Super>::deleteNow(JNIEnv *, void* pointer) {
+    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call deleteContainer on object %p", pointer)
+    Q_ASSERT(m_containerAccess);
+    QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
+    m_containerAccess->deleteContainer(pointer);
+    if(!this->isShell())
+        this->dispose();
+}
+
+template<typename Super>
+void DeletableLink<Super>::addDeleter(const QExplicitlySharedDataPointer<ValueOwnerObjectDataPrivate>& vud, void* pointer){
+    QTJAMBI_DEBUG_PRINT_WITH_ARGS("use deleter event for object %p", pointer)
+    QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
+    vud->addDeleter([deleter_function = this->m_deleter_function, pointer, isShell = this->isShell()](){
+        deleter_function(pointer, isShell);
+    });
+    if(!this->isShell())
+        this->dispose();
+}
+
+template<typename Super>
+void DeletableLink<Super>::postDeletion(const QPointer<const QObject>& parent, QThread* ownerThread, QThreadObjectData* threadUserData, void* pointer){
+    QTJAMBI_DEBUG_PRINT_WITH_ARGS("use deleter event for object %p", pointer)
+    if (QAbstractEventDispatcher::instance(ownerThread)) {
+        DestructorEvent* event = new DestructorEvent(parent, *this, pointer, this->m_deleter_function, this->isShell());
+        QCoreApplication::postEvent(threadUserData->threadDeleter(), event);
+    }else{
+        threadUserData->doAtThreadEnd([deleter_function = this->m_deleter_function, pointer, isShell = this->isShell()](){
+            deleter_function(pointer, isShell);
+        });
+        if(!this->isShell())
+            this->dispose();
     }
-    dispose();
+}
+
+template<typename Super>
+void DeletableLink<Super>::deleteNow(JNIEnv *, void* pointer){
+    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call deleter_function on object %p", pointer)
+    QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
+    this->m_deleter_function(pointer, this->isShell());
+    if(!this->isShell())
+        this->dispose();
+}
+
+template<typename Super>
+void MetaTypedLink<Super>::addDeleter(const QExplicitlySharedDataPointer<ValueOwnerObjectDataPrivate>& vud, void* pointer){
+    QTJAMBI_DEBUG_PRINT_WITH_ARGS("use deleter event on object %p of type %s", pointer, static_cast<const char*>(m_meta_type.name()))
+    QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
+    vud->addDeleter([metaType = this->m_meta_type, pointer](){
+        metaType.destroy(pointer);
+    });
+    if(!this->isShell())
+        this->dispose();
+}
+
+template<typename Super>
+void MetaTypedLink<Super>::postDeletion(const QPointer<const QObject>& parent, QThread* ownerThread, QThreadObjectData* threadUserData, void* pointer){
+    QTJAMBI_DEBUG_PRINT_WITH_ARGS("use deleter event on object %p of type %s", pointer, static_cast<const char*>(m_meta_type.name()))
+    if (QAbstractEventDispatcher::instance(ownerThread)) {
+        MetaTypeDestructionEvent* event = new MetaTypeDestructionEvent(parent, *this, pointer, this->m_meta_type);
+        QCoreApplication::postEvent(threadUserData->threadDeleter(), event);
+    }else{
+        threadUserData->doAtThreadEnd([metaType = this->m_meta_type,pointer](){
+            metaType.destroy(pointer);
+        });
+        if(!this->isShell())
+            this->dispose();
+    }
+}
+
+template<typename Super>
+void MetaTypedLink<Super>::deleteNow(JNIEnv *, void* pointer){
+    QTJAMBI_DEBUG_PRINT_WITH_ARGS("call QMetaType::destroy() on object %p of type %s", pointer, static_cast<const char*>(m_meta_type.name()))
+    QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
+    this->m_meta_type.destroy(pointer);
+    if(!this->isShell())
+        this->dispose();
 }
 
 template<template<typename> class SmartPointer>
-void SmartPointerToObjectLink<SmartPointer>::deleteNativeObject(JNIEnv *env, bool){
+void PlainObjectSmartPointerLink<SmartPointer>::deleteNativeObject(JNIEnv *env, bool){
     typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
                                       typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
-    if(m_pointer){
-        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "SmartPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool)")
-        unregisterOffsets();
-        unregisterPointer(m_pointer);
+    if(this->m_pointer){
+        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QtJambiLink::deleteNativeObject(JNIEnv *env, bool)")
+        if(!this->isShell())
+            this->clearAllDependencies(env);
+        this->unregisterOffsets(this->m_pointer);
+        this->unregisterPointer(this->m_pointer);
         this->m_flags.setFlag(QtJambiLink::Flag::IsPointerRegistered, false);
-        if(!isShell())
-            clearAllDependencies(env);
 
         SharedPointerT shared_pointer;
         if constexpr(std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value
                 || std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value){
-            shared_pointer = m_smartPointer.lock();
+            shared_pointer = this->m_smartPointer.lock();
         }else{
-            shared_pointer = m_smartPointer;
+            shared_pointer = this->m_smartPointer;
         }
-        m_smartPointer = SmartPointer<char>();
-        void* pointer = m_pointer;
-        m_pointer = nullptr;
-        PtrDeleterFunction deleter_function = deleterFunction();
-        const QMetaType* metaTypePtr = metaType();
-        AbstractContainerAccess* _containerAccess = containerAccess();
-        if(m_owner_function){
-            QWriteLocker locker(QtJambiLinkUserData::lock());
-            Q_UNUSED(locker)
-            if(const QObject* obj = m_owner_function(pointer)){
-                const QObjectPrivate* p = QObjectPrivate::get(obj);
-                Q_ASSERT(p);
-                QThread* ownerThread =
-                            p->threadData.loadAcquire()->thread.loadAcquire();
-                if (ownerThread->isRunning() && ownerThread != QThread::currentThread()) {
-                    if(ValueOwnerUserData* vud = QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, obj)){
-                        if(p->wasDeleted){
-                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("call shared pointer deleter function")
-                            QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
-                            if(shared_pointer){
-                                vud->addDeleter([_shared_pointer = SharedPointerT(shared_pointer)]()mutable{
-                                    _shared_pointer = SharedPointerT();
-                                });
-                            }else{
-                                void* _pointer = pointer;
-                                if(PtrDeleterFunction fn = deleterFunction()){
-                                    bool isShell = this->isShell();
-                                    vud->addDeleter([fn,_pointer, isShell](){
-                                        fn(_pointer, isShell);
-                                    });
-                                }else if(const QMetaType* mt = metaType()){
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-                                    QMetaType meta_type = *mt;
-                                    vud->addDeleter([meta_type,_pointer](){
-                                        meta_type.destroy(_pointer);
-                                    });
-#else
-                                    int meta_type = mt->id();
-                                    vud->addDeleter([meta_type,_pointer](){
-                                        QMetaType::destroy(meta_type, _pointer);
-                                    });
-#endif
-                                }
-                                pointer = nullptr;
-                            }
-                            dispose();
-                        }else{
-                            QTJAMBI_DEBUG_PRINT_WITH_ARGS("use QtJambiDestructor (calling shared pointer deleter function)")
-                            setDeleteLater();    // qobject still exists at the time we cut it away (and we have shoved dtor to event system)
-                            QThreadUserData::Result threadDataResult = QThreadUserData::ensureThreadUserDataLocked(ownerThread);
-                            if(shared_pointer){
-                                if (QAbstractEventDispatcher::instance(ownerThread)) {
-                                    DestructorEvent* event = new DestructorEvent(vud->pointer(), *this, new SharedPointerT(shared_pointer), [](void * ptr,bool){delete reinterpret_cast<SharedPointerT*>(ptr);}, isShell());
-                                    if(threadDataResult.initRequired){
-                                        locker.unlock();
-                                        threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                        locker.relock();
-                                    }
-                                    QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
-                                }else{
-                                    threadDataResult.threadUserData->doAtThreadEnd([_shared_pointer = SharedPointerT(shared_pointer)]() mutable {
-                                        _shared_pointer = SharedPointerT();
-                                    });
-                                    if(threadDataResult.initRequired){
-                                        locker.unlock();
-                                        threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                        locker.relock();
-                                    }
-                                }
-                                shared_pointer = SharedPointerT();
-                            }else{
-                                if(_containerAccess){
-                                    if (QAbstractEventDispatcher::instance(ownerThread)) {
-                                        ContainerDestructionEvent* event = new ContainerDestructionEvent(obj, *this, pointer, _containerAccess->clone());
-                                        if(threadDataResult.initRequired){
-                                            locker.unlock();
-                                            threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                            locker.relock();
-                                        }
-                                        QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
-                                    }else{
-                                        void* _pointer = pointer;
-                                        threadDataResult.threadUserData->doAtThreadEnd([_containerAccess = QSharedPointer<AbstractContainerAccess>(_containerAccess->clone(), &containerDisposer), _pointer](){
-                                            _containerAccess->deleteContainer(_pointer);
-                                        });
-                                        if(threadDataResult.initRequired){
-                                            locker.unlock();
-                                            threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                            locker.relock();
-                                        }
-                                    }
-                                }else if(deleter_function){
-                                    if (QAbstractEventDispatcher::instance(ownerThread)) {
-                                        DestructorEvent* event = new DestructorEvent(vud->pointer(), *this, pointer, deleter_function, isShell());
-                                        if(threadDataResult.initRequired){
-                                            locker.unlock();
-                                            threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                            locker.relock();
-                                        }
-                                        QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
-                                    }else{
-                                        void* _pointer = pointer;
-                                        bool isShell = this->isShell();
-                                        threadDataResult.threadUserData->doAtThreadEnd([deleter_function, _pointer, isShell](){
-                                            deleter_function(_pointer, isShell);
-                                        });
-                                        if(threadDataResult.initRequired){
-                                            locker.unlock();
-                                            threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                            locker.relock();
-                                        }
-                                    }
-                                }else if(metaTypePtr){
-                                    if (QAbstractEventDispatcher::instance(ownerThread)) {
-                                        MetaTypeDestructionEvent* event = new MetaTypeDestructionEvent(vud->pointer(), *this, pointer, *metaTypePtr);
-                                        if(threadDataResult.initRequired){
-                                            locker.unlock();
-                                            threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                            locker.relock();
-                                        }
-                                        QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
-                                    }else{
-                                        void* _pointer = pointer;
-        #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-                                        QMetaType meta_type = *metaTypePtr;
-                                        threadDataResult.threadUserData->doAtThreadEnd([meta_type,_pointer](){
-                                            meta_type.destroy(_pointer);
-                                        });
-        #else
-                                        int meta_type = metaTypePtr->id();
-                                        threadDataResult.threadUserData->doAtThreadEnd([meta_type,_pointer](){
-                                            QMetaType::destroy(meta_type, _pointer);
-                                        });
-        #endif
-                                        if(threadDataResult.initRequired){
-                                            locker.unlock();
-                                            threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                            locker.relock();
-                                        }
-                                    }
-                                }
-                                pointer = nullptr;
-                            }
-                        }
-                    }else if(!p->wasDeleted){
-                        QTJAMBI_DEBUG_PRINT_WITH_ARGS("use QtJambiDestructor (calling shared pointer deleter function)")
-                        setDeleteLater();    // qobject still exists at the time we cut it away (and we have shoved dtor to event system)
-                        QThreadUserData::Result threadDataResult = QThreadUserData::ensureThreadUserDataLocked(ownerThread);
-                        if(shared_pointer){
-                            if (QAbstractEventDispatcher::instance(ownerThread)) {
-                                DestructorEvent* event = new DestructorEvent(obj, *this, new SharedPointerT(shared_pointer), [](void * ptr,bool){delete reinterpret_cast<SharedPointerT*>(ptr);}, isShell());
-                                if(threadDataResult.initRequired){
-                                    locker.unlock();
-                                    threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                    locker.relock();
-                                }
-                                QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
-                            }else{
-                                threadDataResult.threadUserData->doAtThreadEnd([_shared_pointer = SharedPointerT(shared_pointer)]() mutable {
-                                    _shared_pointer = SharedPointerT();
-                                });
-                                if(threadDataResult.initRequired){
-                                    locker.unlock();
-                                    threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                    locker.relock();
-                                }
-                            }
-                            shared_pointer = SharedPointerT();
-                        }else{
-                            if(_containerAccess){
-                                if (QAbstractEventDispatcher::instance(ownerThread)) {
-                                    ContainerDestructionEvent* event = new ContainerDestructionEvent(obj, *this, pointer, _containerAccess->clone());
-                                    if(threadDataResult.initRequired){
-                                        locker.unlock();
-                                        threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                        locker.relock();
-                                    }
-                                    QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
-                                }else{
-                                    void* _pointer = pointer;
-                                    threadDataResult.threadUserData->doAtThreadEnd([_containerAccess = QSharedPointer<AbstractContainerAccess>(_containerAccess->clone(), &containerDisposer), _pointer](){
-                                        _containerAccess->deleteContainer(_pointer);
-                                    });
-                                    if(threadDataResult.initRequired){
-                                        locker.unlock();
-                                        threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                        locker.relock();
-                                    }
-                                }
-                            }else if(deleter_function){
-                                if (QAbstractEventDispatcher::instance(ownerThread)) {
-                                    DestructorEvent* event = new DestructorEvent(obj, *this, pointer, deleter_function, isShell());
-                                    if(threadDataResult.initRequired){
-                                        locker.unlock();
-                                        threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                        locker.relock();
-                                    }
-                                    QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
-                                }else{
-                                    void* _pointer = pointer;
-                                    bool isShell = this->isShell();
-                                    threadDataResult.threadUserData->doAtThreadEnd([deleter_function, _pointer, isShell](){
-                                        deleter_function(_pointer, isShell);
-                                    });
-                                    if(threadDataResult.initRequired){
-                                        locker.unlock();
-                                        threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                        locker.relock();
-                                    }
-                                }
-                            }else if(metaTypePtr){
-                                if (QAbstractEventDispatcher::instance(ownerThread)) {
-                                    MetaTypeDestructionEvent* event = new MetaTypeDestructionEvent(obj, *this, pointer, *metaTypePtr);
-                                    if(threadDataResult.initRequired){
-                                        locker.unlock();
-                                        threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                        locker.relock();
-                                    }
-                                    QCoreApplication::postEvent(threadDataResult.threadUserData->threadDeleter(), event);
-                                }else{
-                                    void* _pointer = pointer;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-                                    QMetaType meta_type = *metaTypePtr;
-                                    threadDataResult.threadUserData->doAtThreadEnd([meta_type,_pointer](){
-                                        meta_type.destroy(_pointer);
-                                    });
-#else
-                                    int meta_type = metaTypePtr->id();
-                                    threadDataResult.threadUserData->doAtThreadEnd([meta_type,_pointer](){
-                                        QMetaType::destroy(meta_type, _pointer);
-                                    });
-#endif
-                                    if(threadDataResult.initRequired){
-                                        locker.unlock();
-                                        threadDataResult.threadUserData->initializeDefault(ownerThread);
-                                        locker.relock();
-                                    }
-                                }
-                            }
-                            pointer = nullptr;
-                        }
-                    }
-                }
-            }
+        void* pointer;
+        {
+            QtJambiLinkWriteLock locker;
+            pointer = this->m_pointer;
+            this->m_pointer = nullptr;
+            this->m_smartPointer = SmartPointer<char>();
         }
-
         if(shared_pointer){
             QTJAMBI_DEBUG_PRINT_WITH_ARGS("call shared pointer deleter function")
             QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
             shared_pointer = SharedPointerT();
-            dispose();
+            if(!this->isShell())
+                this->dispose();
         }else if(pointer){
-            QTJAMBI_DEBUG_PRINT_WITH_ARGS("call shared pointer deleter function")
-            QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
-            if(_containerAccess){
-                _containerAccess->deleteContainer(pointer);
-            }else if(deleter_function){
-                deleter_function(pointer, isShell());
-            }else if(metaTypePtr){
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-                metaTypePtr->destroy(pointer);
-#else
-                QMetaType::destroy(metaTypePtr->id(), pointer);
-#endif
-            }
-            dispose();
+            this->deleteNow(env, pointer);
+            pointer = nullptr;
         }
+    }else{
+        this->dispose();
     }
 }
 
 template<template<typename> class SmartPointer, typename T>
 SmartPointerLink<SmartPointer,T>::SmartPointerLink(JNIEnv *env, jobject nativeLink,
                    LINK_NAME_ARG(const char *qt_name)
-                   SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, SmartPointer<T>*& smartPointer, JavaException& ocurredException)
-    : QtJambiLink(env, nativeLink,
+                   SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, PointerType* pointer, SmartPointer<T>*& smartPointer, JavaException& ocurredException)
+    : Super(env, nativeLink,
                   LINK_NAME_ARG(qt_name)
-                  created_by_java, is_shell, ocurredException), m_smartPointer(), m_hiddenOwnership(ownership) {
+                  pointer, created_by_java, is_shell, ocurredException), m_smartPointer(), m_hiddenOwnership(ownership) {
     if constexpr(std::is_same<SmartPointer<T>,QSharedPointer<T>>::value){
         this->m_flags.setFlag(QtJambiLink::Flag::QSharedPointer);
     }else if constexpr(std::is_same<SmartPointer<T>,QWeakPointer<T>>::value){
@@ -6595,14 +7586,26 @@ void SmartPointerLink<SmartPointer,T>::setJavaOwnership(JNIEnv *env) {
 }
 
 template<template<typename> class SmartPointer, typename T>
-void SmartPointerLink<SmartPointer,T>::setDefaultOwnership(JNIEnv *) {
+void SmartPointerLink<SmartPointer,T>::setDefaultOwnership(JNIEnv *env) {
     if(m_hiddenOwnership!=QtJambiLink::Ownership::None){
         if (createdByJava())
             m_hiddenOwnership = QtJambiLink::Ownership::Java;
-        else if(!isQObject() || (!qobjectDeleted() && qobject()->parent()==nullptr))
-            m_hiddenOwnership = QtJambiLink::Ownership::Split;
-        else
-            m_hiddenOwnership = QtJambiLink::Ownership::Cpp;
+        else{
+            if constexpr(std::is_same_v<T,void>){
+                Q_UNUSED(env)
+                m_hiddenOwnership = QtJambiLink::Ownership::Split;
+            }else{
+                if(QObject* obj = qobject()){
+                    if(obj->parent()==nullptr)
+                        m_hiddenOwnership = QtJambiLink::Ownership::Split;
+                    else
+                        m_hiddenOwnership = QtJambiLink::Ownership::Cpp;
+                }else{
+                    QtJambiLink::setJavaOwnership(env);
+                    m_hiddenOwnership = QtJambiLink::Ownership::Java;
+                }
+            }
+        }
     }
 }
 
@@ -6618,61 +7621,12 @@ typename SmartPointerLink<SmartPointer,T>::SharedPointerT SmartPointerLink<Smart
     return SmartPointerLink<SmartPointer,T>::SharedPointerT(m_smartPointer);
 }
 
-template<template<typename> class SmartPointer>
-void SmartPointerToObjectLink<SmartPointer>::onClean(JNIEnv *env)
-{
-    if(!this->m_flags.testFlag(QtJambiLink::Flag::HasBeenCleaned)){
-        if(!this->m_flags.testFlag(QtJambiLink::Flag::BlockDeletion)){
-            JavaException throwable;
-            this->m_flags.setFlag(QtJambiLink::Flag::BlockDeletion, true);
-            QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QtJambiLink::onClean(JNIEnv *)")
-            QTJAMBI_INCREASE_COUNTER_THIS(cleanCallerCount)
-            releaseJavaObject(env);
-            deleteNativeObject(env);
-            if(env->ExceptionCheck()){
-                jthrowable t = env->ExceptionOccurred();
-                env->ExceptionClear();
-                throwable = JavaException(env, t);
-            }
-            detachJavaLink(env);
-            this->m_flags.setFlag(QtJambiLink::Flag::HasBeenCleaned);
-            this->m_flags.setFlag(QtJambiLink::Flag::BlockDeletion, false);
-            throwable.raise();
-        }
-    }
-}
+// #### END ##################  ObjectSmartPointerLink  ##################### END ####
 
-// This allows the Java language to attempt to expedite the disposal of the C++ object
-//  (when that this possible), however its possible the C++ object will not be destroyed
-//  as the Java side does not own it.
-// Entry point for QtJambiObject#dispose() method
-template<template<typename> class SmartPointer>
-void SmartPointerToObjectLink<SmartPointer>::onDispose(JNIEnv *env)
-{
-    if(!this->m_flags.testFlag(QtJambiLink::Flag::BlockDeletion)){
-        JavaException throwable;
-        this->m_flags.setFlag(QtJambiLink::Flag::BlockDeletion, true);
-        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QtJambiLink::onDispose(JNIEnv *)")
-        setJavaOwnership(env);
-        deleteNativeObject(env, true);
-        if(env->ExceptionCheck()){
-            jthrowable t = env->ExceptionOccurred();
-            env->ExceptionClear();
-            throwable = JavaException(env, t);
-        }
-        detachJavaLink(env);
-        QTJAMBI_INCREASE_COUNTER_THIS(disposeCalledCount)
-        this->m_flags.setFlag(QtJambiLink::Flag::BlockDeletion, false);
-        throwable.raise();
-    }
-}
-
-// #### END ##################  SmartPointerToObjectLink  ##################### END ####
-
-// ### BEGIN #################  SmartPointerToQObjectLink  ################### BEGIN ###
+// ### BEGIN #################  QObjectSmartPointerLink  ################### BEGIN ###
 
 template<template<typename> class SmartPointer>
-SmartPointerToQObjectLink<SmartPointer>::SmartPointerToQObjectLink(JNIEnv *env, jobject nativeLink,
+QObjectSmartPointerLink<SmartPointer>::QObjectSmartPointerLink(JNIEnv *env, jobject nativeLink,
                                                                    LINK_NAME_ARG(const char *qt_name)
                                                                    SafeBool created_by_java, QtJambiLink::Ownership ownership,
                                                                    SafeBool is_shell,
@@ -6681,21 +7635,21 @@ SmartPointerToQObjectLink<SmartPointer>::SmartPointerToQObjectLink(JNIEnv *env, 
                                                                    JavaException& ocurredException)
     : SmartPointerLink<SmartPointer,QObject>(env, nativeLink,
                                              LINK_NAME_ARG(qt_name)
-                                             created_by_java, ownership, is_shell, smartPointer, ocurredException),
-      m_pointer(pointer)
+                                             created_by_java, ownership, is_shell, pointer, smartPointer, ocurredException)
 {
 }
 
 template<template<typename> class SmartPointer>
-SmartPointerToQObjectLink<SmartPointer>::~SmartPointerToQObjectLink(){
-    QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "SmartPointerToQObjectLink::~SmartPointerToQObjectLink()")
+QObjectSmartPointerLink<SmartPointer>::~QObjectSmartPointerLink(){
+    QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QObjectSmartPointerLink::~QObjectSmartPointerLink()")
     if (!QtJambiLink::m_flags.testFlag(QtJambiLink::Flag::IsJavaLinkDetached) || !QtJambiLink::m_flags.testFlag(QtJambiLink::Flag::JavaObjectIsReleased) || m_pointer) {
         try{
             if(JniEnvironment env = QtJambiLink::isQThread() ? JniEnvironment{300} : DefaultJniEnvironment{300}){
                 QtJambiLink::releaseJavaObject(env);
-                deleteNativeObject(env);
+                if(QtJambiLink::isInitialized())
+                    deleteNativeObject(env);
                 QtJambiLink::detachJavaLink(env);
-            }else{
+            }else if(QtJambiLink::isInitialized()){
                 deleteNativeObject();
             }
         } catch (const std::exception& e) {
@@ -6706,14 +7660,14 @@ SmartPointerToQObjectLink<SmartPointer>::~SmartPointerToQObjectLink(){
 }
 
 template<template<typename> class SmartPointer>
-typename SmartPointerLink<SmartPointer,QObject>::SharedPointerT SmartPointerToQObjectLink<SmartPointer>::getSmartPointer() const {
+typename SmartPointerLink<SmartPointer,QObject>::SharedPointerT QObjectSmartPointerLink<SmartPointer>::getSmartPointer() const {
     if(m_pointer)
         return SmartPointerLink<SmartPointer,QObject>::getSmartPointer();
     else return{};
 }
 
 template<>
-QSharedPointer<QObject> SmartPointerToQObjectLink<QWeakPointer>::getSmartPointer() const {
+QSharedPointer<QObject> QObjectSmartPointerLink<QWeakPointer>::getSmartPointer() const {
     if(m_pointer){
         QSharedPointer<QObject> result = SmartPointerLink<QWeakPointer,QObject>::getSmartPointer();
         if(!result)
@@ -6723,7 +7677,7 @@ QSharedPointer<QObject> SmartPointerToQObjectLink<QWeakPointer>::getSmartPointer
 }
 
 template<>
-std::shared_ptr<QObject> SmartPointerToQObjectLink<std::weak_ptr>::getSmartPointer() const {
+std::shared_ptr<QObject> QObjectSmartPointerLink<std::weak_ptr>::getSmartPointer() const {
     if(m_pointer){
         std::shared_ptr<QObject> result = SmartPointerLink<std::weak_ptr,QObject>::getSmartPointer();
         if(!result)
@@ -6733,39 +7687,39 @@ std::shared_ptr<QObject> SmartPointerToQObjectLink<std::weak_ptr>::getSmartPoint
 }
 
 template<template<typename> class SmartPointer>
-void SmartPointerToQObjectLink<SmartPointer>::invalidate(JNIEnv *env) {
-    QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "SmartPointerToQObjectLink::invalidate(JNIEnv *)")
-    QtJambiLink::invalidateDependentObjects(env);
-    QtJambiLink::releaseJavaObject(env);
-    QtJambiLink::dispose();
-}
-
-template<template<typename> class SmartPointer>
-void SmartPointerToQObjectLink<SmartPointer>::deleteNativeObject(JNIEnv *env, bool){
+void QObjectSmartPointerLink<SmartPointer>::deleteNativeObject(JNIEnv *env, bool){
     typedef typename std::conditional<std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value, QSharedPointer<QObject>,
                                       typename std::conditional<std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value, std::shared_ptr<QObject>, SmartPointer<QObject>>::type>::type SharedPointerT;
-    QObject* obj = m_pointer;
+    QObject* obj;
     SharedPointerT shared_pointer;
-    if constexpr(std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value
-            || std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value){
-        shared_pointer = m_smartPointer.lock();
-    }else{
-        shared_pointer = m_smartPointer;
+    {
+        QtJambiLinkWriteLock locker;
+        if constexpr(std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value
+                || std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value){
+            shared_pointer = this->m_smartPointer.lock();
+        }else{
+            shared_pointer = this->m_smartPointer;
+        }
+        this->m_smartPointer = SmartPointer<QObject>();
+        obj = m_pointer;
+        m_pointer = nullptr;
     }
-    m_smartPointer = SmartPointer<QObject>();
-    m_pointer = nullptr;
     if (obj && !isDeleteLater()){
-        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "SmartPointerToQObjectLink::deleteNativeObject(JNIEnv *env, bool)")
-        unregisterOffsets();
-        if(!isShell())
-            clearAllDependencies(env);
+        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QtJambiLink::deleteNativeObject(JNIEnv *env, bool)")
+        if(!this->isShell())
+            this->clearAllDependencies(env);
+        this->unregisterOffsets(obj);
 
         QThread *objectThread = obj->thread();
 
-        QThread *currentThread = QThread::currentThread();
-
         // Explicit dispose from current thread, delete object
-        if (!objectThread || currentThread == objectThread || !objectThread->isRunning()) {
+        if (!objectThread
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+                || objectThread->isCurrentThread()
+#else
+                || objectThread==QThread::currentThread()
+#endif
+                || !objectThread->isRunning()) {
 //             printf(" - straight up delete %s [%s]\n",
 //                    qPrintable(qobj->objectName()),
 //                    qobj->metaObject()->className());
@@ -6773,12 +7727,10 @@ void SmartPointerToQObjectLink<SmartPointer>::deleteNativeObject(JNIEnv *env, bo
             if(objectThread && obj==objectThread){
                 if(QThreadData::get2(objectThread)->isAdopted){
                     QTJAMBI_DEBUG_PRINT_WITH_ARGS("Adopted thread expected to be automatically deleted")
-                    QObjectInDeletion::disposeQObject(obj);
                     return;
                 }
                 if(static_cast<SelfDeletingThread*>(objectThread)->deleteLaterIfIsInFinish()){
                     setDeleteLater();
-                    QObjectInDeletion::disposeQObject(obj);
                     QTJAMBI_DEBUG_PRINT_WITH_ARGS("call QObject::deleteLater()")
                     return;
                 }
@@ -6786,7 +7738,6 @@ void SmartPointerToQObjectLink<SmartPointer>::deleteNativeObject(JNIEnv *env, bo
             {
                 QtJambiExceptionBlocker __qt_exceptionBlocker;
                 {
-                    QObjectInDeletion d(env, this);
                     if(shared_pointer)
                         shared_pointer = SharedPointerT();
                     else
@@ -6801,7 +7752,6 @@ void SmartPointerToQObjectLink<SmartPointer>::deleteNativeObject(JNIEnv *env, bo
                 {
                     QtJambiExceptionBlocker __qt_exceptionBlocker;
                     {
-                        QObjectInDeletion d(env, this);
                         if(shared_pointer)
                             shared_pointer = SharedPointerT();
                         else
@@ -6810,8 +7760,7 @@ void SmartPointerToQObjectLink<SmartPointer>::deleteNativeObject(JNIEnv *env, bo
                     __qt_exceptionBlocker.release(env);
                 }
             }else{
-                QThreadUserData* threadData = QThreadUserData::ensureThreadUserData(objectThread);
-                QObjectInDeletion::disposeQObject(obj);
+                QThreadObjectData* threadData = QThreadObjectData::ensureThreadUserData(objectThread);
                 setDeleteLater();
                 QTJAMBI_DEBUG_PRINT_WITH_ARGS("attach QObject to thread shutdown procedure.")
                 if(shared_pointer){
@@ -6836,432 +7785,8 @@ void SmartPointerToQObjectLink<SmartPointer>::deleteNativeObject(JNIEnv *env, bo
     }
 }
 
-// Entry point for JVM finalization QtJambiObject#finalize()
 template<template<typename> class SmartPointer>
-void SmartPointerToQObjectLink<SmartPointer>::onClean(JNIEnv *env)
-{
-    if(!this->m_flags.testFlag(QtJambiLink::Flag::HasBeenCleaned)){
-        if(!this->m_flags.testFlag(QtJambiLink::Flag::BlockDeletion)){
-            this->m_flags.setFlag(QtJambiLink::Flag::BlockDeletion, true);
-            QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QtJambiLink::onClean(JNIEnv *)")
-            QTJAMBI_INCREASE_COUNTER_THIS(cleanCallerCount)
-            QtJambiLink::releaseJavaObject(env);
-            deleteNativeObject(env);
-            QtJambiLink::detachJavaLink(env);
-            this->m_flags.setFlag(QtJambiLink::Flag::HasBeenCleaned);
-            this->m_flags.setFlag(QtJambiLink::Flag::BlockDeletion, false);
-        }
-    }
-}
-
-// This allows the Java language to attempt to expedite the disposal of the C++ object
-//  (when that this possible), however its possible the C++ object will not be destroyed
-//  as the Java side does not own it.
-// Entry point for QtJambiObject#dispose() method
-template<template<typename> class SmartPointer>
-void SmartPointerToQObjectLink<SmartPointer>::onDispose(JNIEnv *env)
-{
-    if(!this->m_flags.testFlag(QtJambiLink::Flag::BlockDeletion)){
-        this->m_flags.setFlag(QtJambiLink::Flag::BlockDeletion, true);
-        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QtJambiLink::onDispose(JNIEnv *)")
-        QtJambiLink::setJavaOwnership(env);
-        deleteNativeObject(env, true);
-        QtJambiLink::detachJavaLink(env);
-        QTJAMBI_INCREASE_COUNTER_THIS(disposeCalledCount)
-        this->m_flags.setFlag(QtJambiLink::Flag::BlockDeletion, false);
-    }
-}
-
-bool PointerToQObjectLink::isQObject() const {
-    return true;
-}
-
-bool PointerToObjectLink::isQObject() const {
-    return false;
-}
-
-PointerToPendingQObjectLink::PointerToPendingQObjectLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMetaObject* metaObject, QObject *ptr, SafeBool isQThread, SafeBool created_by_java, SafeBool is_shell, JavaException& ocurredException)
-    : PointerToQObjectLink(env, nativeLink, jobj, metaObject, ptr, isQThread, created_by_java, is_shell, ocurredException)
-{
-    m_flags.setFlag(Flag::IsPendingValueOwner, isValueOwner(metaObject));
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-        m_qtTypeName = metaObject->className();
-#endif
-}
-
-void PointerToPendingQObjectLink::init(JNIEnv* env, QSharedPointer<QtJambiLink>* replacement){
-    if(!isInitialized()){
-        QtJambiLink::init(env);
-        QObject* object = qobject();
-        QSharedPointer<QtJambiLink> _this = *this;
-        Q_ASSERT(object);
-        if(isQThread() && object!=QCoreApplicationPrivate::theMainThread.loadRelaxed()){
-            if(QThread* thread = static_cast<QThread*>(object)){
-                QThreadUserData* data;
-                {
-                    QWriteLocker locker(QtJambiLinkUserData::lock());
-                    data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
-                    if(QtJambiLinkUserData* lud = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, object)){
-                        if(replacement){
-                            if(QSharedPointer<QtJambiLink> other = lud->link()){
-                                jobject obj1 = getJavaObjectLocalRef(env);
-                                jobject obj2 = other->getJavaObjectLocalRef(env);
-                                if(!env->IsSameObject(obj1, obj2)){
-                                    jclass class1 = env->GetObjectClass(obj1);
-                                    jclass class2 = env->GetObjectClass(obj2);
-                                    if(env->IsSameObject(class1, class2)){
-                                        *replacement = other;
-                                        return;
-                                    }
-                                }
-                            }
-                        }
-                        QtJambiLink::resetDataLink(lud);
-                    }else{
-                        QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, object, new QtJambiThreadLinkUserData(thread, _this));
-                    }
-                    if(m_flags.testFlag(Flag::IsPendingValueOwner) && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, object)){
-                        QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, object, new ValueOwnerUserData(object));
-                    }
-                }
-                if(!data)
-                    ThreadPrivate::fromQThread(env, getJavaObjectLocalRef(env), thread, _this);
-            }else{
-                QWriteLocker locker(QtJambiLinkUserData::lock());
-                if(QtJambiLinkUserData* lud = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, object)){
-                    if(replacement){
-                        if(QSharedPointer<QtJambiLink> other = lud->link()){
-                            jobject obj1 = getJavaObjectLocalRef(env);
-                            jobject obj2 = other->getJavaObjectLocalRef(env);
-                            if(!env->IsSameObject(obj1, obj2)){
-                                jclass class1 = env->GetObjectClass(obj1);
-                                jclass class2 = env->GetObjectClass(obj2);
-                                if(env->IsSameObject(class1, class2)){
-                                    *replacement = other;
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                    QtJambiLink::resetDataLink(lud);
-                }else{
-                    QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, object, new QtJambiLinkUserData(_this));
-                }
-                if(m_flags.testFlag(Flag::IsPendingValueOwner) && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, object)){
-                    QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, object, new ValueOwnerUserData(object));
-                }
-            }
-        }else{
-            QWriteLocker locker(QtJambiLinkUserData::lock());
-            Q_UNUSED(locker)
-            QtJambiLinkUserData* lud = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, object);
-            if(lud){
-                if(replacement){
-                    if(QSharedPointer<QtJambiLink> other = lud->link()){
-                        jobject obj1 = getJavaObjectLocalRef(env);
-                        jobject obj2 = other->getJavaObjectLocalRef(env);
-                        if(!env->IsSameObject(obj1, obj2)){
-                            jclass class1 = env->GetObjectClass(obj1);
-                            jclass class2 = env->GetObjectClass(obj2);
-                            if(env->IsSameObject(class1, class2)){
-                                *replacement = other;
-                                return;
-                            }
-                        }
-                    }
-                }
-                QtJambiLink::resetDataLink(lud);
-            }else{
-                QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, object, new QtJambiLinkUserData(_this));
-            }
-            if(m_flags.testFlag(Flag::IsPendingValueOwner) && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, object)){
-                QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, object, new ValueOwnerUserData(object));
-            }
-        }
-        if(createdByJava()){
-            if(object->parent())
-                setCppOwnership(env);
-            else
-                setJavaOwnership(env);
-        }else{
-            if(object->parent())
-                setCppOwnership(env);
-            else
-                setSplitOwnership(env);
-        }
-    }
-}
-
-jobject PointerToPendingQObjectLink::getExtraSignal(JNIEnv * env, const QMetaMethod& method) const{
-    if(QObject* object = qobject()){
-        QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(object->metaObject());
-        if(extraSignals.contains(method)){
-            QReadLocker rlocker(QtJambiLinkUserData::lock());
-            if(!m_extraSignals.contains(method.methodIndex())){
-                rlocker.unlock();
-                JObjectWrapper signal = QtJambiMetaObject::resolveExtraSignal(env, getJavaObjectLocalRef(env), method);
-                {
-                    QWriteLocker wlocker(QtJambiLinkUserData::lock());
-                    if(!m_extraSignals.contains(method.methodIndex()))
-                        m_extraSignals[method.methodIndex()] = signal;
-                }
-                rlocker.relock();
-            }
-            return m_extraSignals.value(method.methodIndex()).object(env);
-        }
-    }
-    return nullptr;
-}
-
-PointerToPendingQObjectInterfaceLink::PointerToPendingQObjectInterfaceLink(JNIEnv *env, jobject nativeLink, jobject jobj, const InterfaceOffsetInfo& interfaceOffsetInfo, const QMetaObject* metaObject, QObject *ptr, SafeBool isQThread, SafeBool created_by_java, SafeBool is_shell, JavaException& ocurredException)
-    : PointerToQObjectInterfaceLink(env, nativeLink, jobj, interfaceOffsetInfo, metaObject, ptr, isQThread, created_by_java, is_shell, ocurredException)
-{
-    m_flags.setFlag(Flag::IsPendingValueOwner, isValueOwner(metaObject));
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-        m_qtTypeName = metaObject->className();
-#endif
-}
-
-void PointerToPendingQObjectInterfaceLink::init(JNIEnv* env, QSharedPointer<QtJambiLink>* replacement){
-    if(!isInitialized()){
-        QtJambiLink::init(env);
-        QObject* object = qobject();
-        Q_ASSERT(object);
-        if(isQThread() && object!=QCoreApplicationPrivate::theMainThread.loadRelaxed()){
-            if(QThread* thread = static_cast<QThread*>(object)){
-                QThreadUserData* data;
-                QSharedPointer<QtJambiLink> _this = *this;
-                {
-                    QWriteLocker locker(QtJambiLinkUserData::lock());
-                    data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
-                    if(QtJambiLinkUserData* lud = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, object)){
-                        if(replacement){
-                            if(QSharedPointer<QtJambiLink> other = lud->link()){
-                                jobject obj1 = getJavaObjectLocalRef(env);
-                                jobject obj2 = other->getJavaObjectLocalRef(env);
-                                if(!env->IsSameObject(obj1, obj2)){
-                                    jclass class1 = env->GetObjectClass(obj1);
-                                    jclass class2 = env->GetObjectClass(obj2);
-                                    if(env->IsSameObject(class1, class2)){
-                                        *replacement = other;
-                                        return;
-                                    }
-                                }
-                            }
-                        }
-                        QtJambiLink::resetDataLink(lud);
-                    }else{
-                        QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, object, new QtJambiThreadLinkUserData(thread, _this));
-                    }
-                    if(m_flags.testFlag(Flag::IsPendingValueOwner) && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, object)){
-                        QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, object, new ValueOwnerUserData(object));
-                    }
-                }
-                if(!data)
-                    ThreadPrivate::fromQThread(env, getJavaObjectLocalRef(env), thread, _this);
-            }else{
-                QWriteLocker locker(QtJambiLinkUserData::lock());
-                if(QtJambiLinkUserData* lud = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, object)){
-                    if(replacement){
-                        if(QSharedPointer<QtJambiLink> other = lud->link()){
-                            jobject obj1 = getJavaObjectLocalRef(env);
-                            jobject obj2 = other->getJavaObjectLocalRef(env);
-                            if(!env->IsSameObject(obj1, obj2)){
-                                jclass class1 = env->GetObjectClass(obj1);
-                                jclass class2 = env->GetObjectClass(obj2);
-                                if(env->IsSameObject(class1, class2)){
-                                    *replacement = other;
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                    QtJambiLink::resetDataLink(lud);
-                }else{
-                    QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, object, new QtJambiLinkUserData(*this));
-                }
-                if(m_flags.testFlag(Flag::IsPendingValueOwner) && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, object)){
-                    QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, object, new ValueOwnerUserData(object));
-                }
-            }
-        }else{
-            QWriteLocker locker(QtJambiLinkUserData::lock());
-            Q_UNUSED(locker)
-            if(QtJambiLinkUserData* lud = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, object)){
-                if(replacement){
-                    if(QSharedPointer<QtJambiLink> other = lud->link()){
-                        jobject obj1 = getJavaObjectLocalRef(env);
-                        jobject obj2 = other->getJavaObjectLocalRef(env);
-                        if(!env->IsSameObject(obj1, obj2)){
-                            jclass class1 = env->GetObjectClass(obj1);
-                            jclass class2 = env->GetObjectClass(obj2);
-                            if(env->IsSameObject(class1, class2)){
-                                *replacement = other;
-                                return;
-                            }
-                        }
-                    }
-                }
-                QtJambiLink::resetDataLink(lud);
-            }else{
-                QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, object, new QtJambiLinkUserData(*this));
-            }
-            if(m_flags.testFlag(Flag::IsPendingValueOwner) && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, object)){
-                QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, object, new ValueOwnerUserData(object));
-            }
-        }
-        if(createdByJava()){
-            if(object->parent())
-                setCppOwnership(env);
-            else
-                setJavaOwnership(env);
-        }else{
-            if(object->parent())
-                setCppOwnership(env);
-            else
-                setSplitOwnership(env);
-        }
-    }
-}
-
-jobject PointerToPendingQObjectInterfaceLink::getExtraSignal(JNIEnv * env, const QMetaMethod& method) const{
-    if(QObject* object = qobject()){
-        QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(object->metaObject());
-        if(extraSignals.contains(method)){
-            QReadLocker rlocker(QtJambiLinkUserData::lock());
-            if(!m_extraSignals.contains(method.methodIndex())){
-                rlocker.unlock();
-                JObjectWrapper signal = QtJambiMetaObject::resolveExtraSignal(env, getJavaObjectLocalRef(env), method);
-                {
-                    QWriteLocker wlocker(QtJambiLinkUserData::lock());
-                    if(!m_extraSignals.contains(method.methodIndex()))
-                        m_extraSignals[method.methodIndex()] = signal;
-                }
-                rlocker.relock();
-            }
-            return m_extraSignals.value(method.methodIndex()).object(env);
-        }
-    }
-    return nullptr;
-}
-
-jobject PointerToQObjectWithExtraSignalsLink::getExtraSignal(JNIEnv * env, const QMetaMethod& method) const{
-    if(QObject* object = qobject()){
-        QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(object->metaObject());
-        if(extraSignals.contains(method)){
-            QReadLocker rlocker(QtJambiLinkUserData::lock());
-            if(!m_extraSignals.contains(method.methodIndex())){
-                rlocker.unlock();
-                JObjectWrapper signal = QtJambiMetaObject::resolveExtraSignal(env, getJavaObjectLocalRef(env), method);
-                {
-                    QWriteLocker wlocker(QtJambiLinkUserData::lock());
-                    if(!m_extraSignals.contains(method.methodIndex()))
-                        m_extraSignals[method.methodIndex()] = signal;
-                }
-                rlocker.relock();
-            }
-            return m_extraSignals.value(method.methodIndex()).object(env);
-        }
-    }
-    return nullptr;
-}
-
-jobject PointerToQObjectInterfaceWithExtraSignalsLink::getExtraSignal(JNIEnv * env, const QMetaMethod& method) const{
-    if(QObject* object = qobject()){
-        QList<QMetaMethod> extraSignals = getExtraSignalsOfMetaObject(object->metaObject());
-        if(extraSignals.contains(method)){
-            QReadLocker rlocker(QtJambiLinkUserData::lock());
-            if(!m_extraSignals.contains(method.methodIndex())){
-                rlocker.unlock();
-                JObjectWrapper signal = QtJambiMetaObject::resolveExtraSignal(env, getJavaObjectLocalRef(env), method);
-                {
-                    QWriteLocker wlocker(QtJambiLinkUserData::lock());
-                    if(!m_extraSignals.contains(method.methodIndex()))
-                        m_extraSignals[method.methodIndex()] = signal;
-                }
-                rlocker.relock();
-            }
-            return m_extraSignals.value(method.methodIndex()).object(env);
-        }
-    }
-    return nullptr;
-}
-
-QString PointerToObjectLink::describe() const{
-    QString strg = "[deletionPolicy=%1, createdByJava=%2, hasBeenCleaned=%3, isJavaLinkDetached=%4, isDeleteLater=%5, ownership=%6, metaType=%7, metaTypeId=%8]";
-    strg = strg.arg("Normal");
-    strg = strg
-            .arg(createdByJava() ? "true" : "false",
-                    m_flags.testFlag(Flag::HasBeenCleaned) ? "true" : "false",
-                    m_flags.testFlag(Flag::IsJavaLinkDetached) ? "true" : "false",
-                    isDeleteLater() ? "true" : "false");
-    if(m_flags.testFlag(Flag::JavaOwnership)) strg = strg.arg("Java");
-    else if(m_flags.testFlag(Flag::CppOwnership)) strg = strg.arg("Cpp");
-    else if(m_flags.testFlag(Flag::SplitOwnership)) strg = strg.arg("Split");
-    else strg = strg.arg("InvalidOwnership");
-    if(metaType()){
-        strg = strg.arg(QLatin1String(metaType()->name()));
-        strg = strg.arg(metaType()->id());
-    }else{
-        strg = strg.arg(QLatin1String("UnknownType"));
-        strg = strg.arg(0);
-    }
-    return strg;
-}
-
-QString PointerToQObjectLink::describe() const{
-    QString strg;
-    if(qobject()){
-        strg += QString("class=%1, objectName=%2, ")
-                    .arg(QLatin1String(qobject()->metaObject()->className()), qobject()->objectName());
-    }
-    strg += QString("createdByJava=%1, hasBeenCleaned=%2, isJavaLinkDetached=%3, ownership=%4")
-            .arg(createdByJava() ? "true" : "false",
-                     m_flags.testFlag(Flag::HasBeenCleaned) ? "true" : "false",
-                     m_flags.testFlag(Flag::IsJavaLinkDetached) ? "true" : "false");
-    if(m_flags.testFlag(Flag::JavaOwnership)) strg = strg.arg("Java");
-    else if(m_flags.testFlag(Flag::CppOwnership)) strg = strg.arg("Cpp");
-    else if(m_flags.testFlag(Flag::SplitOwnership)) strg = strg.arg("Split");
-    else strg = strg.arg("InvalidOwnership");
-    return QString("[%1]").arg(strg);
-}
-
-template<template<typename> class SmartPointer>
-QString SmartPointerToObjectLink<SmartPointer>::describe() const{
-    QString strg = "[deletionPolicy=%1, createdByJava=%2, hasBeenCleaned=%3, objectInvalid=%4, pointerZeroed=%5, ownership=%6, metaType=%7, metaTypeId=%8]";
-    if(m_owner_function) strg = strg.arg("InSpecificThread");
-    else strg = strg.arg("Normal");
-    strg = strg
-            .arg(QtJambiLink::createdByJava() ? "true" : "false",
-                    this->m_flags.testFlag(QtJambiLink::Flag::HasBeenCleaned) ? "true" : "false",
-                    this->m_flags.testFlag(QtJambiLink::Flag::IsJavaLinkDetached) ? "true" : "false",
-                    isPointerZeroed() ? "true" : "false");
-    if(this->m_flags.testFlag(QtJambiLink::Flag::JavaOwnership)) strg = strg.arg("JavaOwnership");
-    else if(this->m_flags.testFlag(QtJambiLink::Flag::CppOwnership)) strg = strg.arg("CppOwnership");
-    else if(this->m_flags.testFlag(QtJambiLink::Flag::SplitOwnership)) strg = strg.arg("SplitOwnership");
-    else strg = strg.arg("InvalidOwnership");
-    return strg;
-}
-
-template<template<typename> class SmartPointer>
-QString SmartPointerToQObjectLink<SmartPointer>::describe() const{
-    QString strg;
-    if(qobject()){
-        strg += QString("class=%1, objectName=%2, ").arg(QLatin1String(qobject()->metaObject()->className()), qobject()->objectName());
-    }
-    strg += QString("createdByJava=%1, hasBeenCleaned=%2, objectInvalid=%3, ownership=%4")
-            .arg(QtJambiLink::createdByJava() ? "true" : "false",
-                     this->m_flags.testFlag(QtJambiLink::Flag::HasBeenCleaned) ? "true" : "false",
-                     this->m_flags.testFlag(QtJambiLink::Flag::IsJavaLinkDetached) ? "true" : "false");
-    if(this->m_flags.testFlag(QtJambiLink::Flag::JavaOwnership)) strg = strg.arg("JavaOwnership");
-    else if(this->m_flags.testFlag(QtJambiLink::Flag::CppOwnership)) strg = strg.arg("CppOwnership");
-    else if(this->m_flags.testFlag(QtJambiLink::Flag::SplitOwnership)) strg = strg.arg("SplitOwnership");
-    else strg = strg.arg("InvalidOwnership");
-    return QString("[%1]").arg(strg);
-}
-
-template<template<typename> class SmartPointer>
-SmartPointerToQObjectWithPendingExtraSignalsLink<SmartPointer>::SmartPointerToQObjectWithPendingExtraSignalsLink(JNIEnv *env,
+QObjectWithPendingExtraSignalsSmartPointerLink<SmartPointer>::QObjectWithPendingExtraSignalsSmartPointerLink(JNIEnv *env,
                                                                                                                  jobject nativeLink,
                                                                                                                  jobject jobj,
                                                                                                                  SafeBool created_by_java,
@@ -7272,10 +7797,9 @@ SmartPointerToQObjectWithPendingExtraSignalsLink<SmartPointer>::SmartPointerToQO
                                                                                                                  SmartPointer<QObject>*& smartPointer,
                                                                                                                  const QMetaObject* superTypeForCustomMetaObject,
                                                                                                                  JavaException& ocurredException)
-    : SmartPointerToQObjectLink<SmartPointer>(env, nativeLink,
+    : ExtraSignalsLink<QObjectSmartPointerLink<SmartPointer>>(env, nativeLink,
                                 LINK_NAME_ARG(superTypeForCustomMetaObject->className())
-                                created_by_java, ownership, is_shell, pointer, smartPointer, ocurredException),
-      m_extraSignals()
+                                created_by_java, ownership, is_shell, pointer, smartPointer, ocurredException)
 {
     jobject local = env->NewLocalRef(jobj);
     if(!ocurredException){
@@ -7283,44 +7807,67 @@ SmartPointerToQObjectWithPendingExtraSignalsLink<SmartPointer>::SmartPointerToQO
     }
     if(!ocurredException){
         bool _isValueOwner = isValueOwner(superTypeForCustomMetaObject);
+        QtJambiLinkObjectData* lud{nullptr};
+        ValueOwnerObjectData* vud{nullptr};
+        {
+            auto locker = QtJambiObjectData::readLock();
+            if(_isValueOwner)
+                vud = QtJambiObjectData::userData<ValueOwnerObjectData>(pointer);
+            lud = QtJambiObjectData::userData<QtJambiLinkObjectData>(pointer);
+        }
+        if(_isValueOwner && !vud)
+            vud = new ValueOwnerObjectData(pointer);
+        if(lud) {
+            QtJambiLink::resetDataLink(lud);
+        }
         if(isQThread && pointer!=QCoreApplicationPrivate::theMainThread.loadRelaxed()){
-            if(QThread* thread = static_cast<QThread*>(pointer)){
-                QSharedPointer<QtJambiLink> _this = *this;
-                QThreadUserData* data;
-                {
-                    QWriteLocker locker(QtJambiLinkUserData::lock());
-                    data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
-                    QtJambiLink::setIsQThread(true);
-                    if(QtJambiLinkUserData* lud = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, pointer))
-                        QtJambiLink::resetDataLink(lud);
-                    QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, thread, new QtJambiThreadLinkUserData(thread, _this));
-                    if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, pointer)){
-                        QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, pointer, new ValueOwnerUserData(pointer));
-                    }
+            QThread* thread = static_cast<QThread*>(pointer);
+            QSharedPointer<QtJambiLink> _this = *this;
+            QThreadObjectData* data{nullptr};
+            QtJambiLink::setIsQThread(true);
+            if(lud){
+                if(vud){
+                    auto locker = QtJambiObjectData::writeLock();
+                    data = QtJambiObjectData::userData<QThreadObjectData>(thread);
+                    vud = QtJambiObjectData::setUserData<ValueOwnerObjectData>(pointer, vud);
+                }else{
+                    auto locker = QtJambiObjectData::readLock();
+                    data = QtJambiObjectData::userData<QThreadObjectData>(thread);
                 }
-                if(!data)
-                    ThreadPrivate::fromQThread(env, jobj, thread, _this);
+                lud = nullptr; // don't delete
             }else{
-                QWriteLocker locker(QtJambiLinkUserData::lock());
-                if(QtJambiLinkUserData* lud = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, pointer))
-                    QtJambiLink::resetDataLink(lud);
-                QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, pointer, new QtJambiLinkUserData(*this));
-                if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, pointer)){
-                    QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, pointer, new ValueOwnerUserData(pointer));
+                lud = new ThreadLinkObjectData(thread, _this);
+                {
+                    auto locker = QtJambiObjectData::writeLock();
+                    data = QtJambiObjectData::userData<QThreadObjectData>(thread);
+                    lud = QtJambiObjectData::setUserData<QtJambiLinkObjectData>(thread, lud);
+                    if(vud)
+                        vud = QtJambiObjectData::setUserData<ValueOwnerObjectData>(pointer, vud);
                 }
             }
+            if(!data)
+                ThreadPrivate::fromQThread(env, jobj, thread, _this);
         }else{
-            QWriteLocker locker(QtJambiLinkUserData::lock());
-            Q_UNUSED(locker)
-            QtJambiLinkUserData* lud = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, pointer);
-            if(lud)
-                QtJambiLink::resetDataLink(lud);
-            else
-                QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, pointer, new QtJambiLinkUserData(*this));
-            if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, pointer)){
-                QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, pointer, new ValueOwnerUserData(pointer));
+            if(lud) {
+                if(vud){
+                    auto locker = QtJambiObjectData::writeLock();
+                    vud = QtJambiObjectData::setUserData<ValueOwnerObjectData>(pointer, vud);
+                }
+                lud = nullptr; // don't delete
+            }else{
+                lud = new LinkObjectData(*this);
+                {
+                    auto locker = QtJambiObjectData::writeLock();
+                    lud = QtJambiObjectData::setUserData<QtJambiLinkObjectData>(pointer, lud);
+                    if(vud)
+                        vud = QtJambiObjectData::setUserData<ValueOwnerObjectData>(pointer, vud);
+                }
             }
         }
+        if(vud)
+            delete vud;
+        if(lud)
+            delete lud;
     }else{
         this->m_flags.setFlag(QtJambiLink::Flag::IsJavaLinkDetached);
     }
@@ -7328,45 +7875,7 @@ SmartPointerToQObjectWithPendingExtraSignalsLink<SmartPointer>::SmartPointerToQO
 }
 
 template<template<typename> class SmartPointer>
-SmartPointerToQObjectWithPendingExtraSignalsLink<SmartPointer>::SmartPointerToQObjectWithPendingExtraSignalsLink(JNIEnv *env, jobject nativeLink,
-                                                                                                                 LINK_NAME_ARG(const char *qt_name)
-                                                                                                                 SafeBool created_by_java,
-                                                                                                                 QtJambiLink::Ownership ownership,
-                                                                                                                 SafeBool is_shell,
-                                                                                                                 QObject* pointer,
-                                                                                                                 SmartPointer<QObject>*& smartPointer,
-                                                                                                                 JavaException& ocurredException)
-    : SmartPointerToQObjectLink<SmartPointer>(env, nativeLink,
-                                LINK_NAME_ARG(qt_name)
-                                created_by_java, ownership, is_shell, pointer, smartPointer, ocurredException),
-      m_extraSignals()
-{
-}
-
-template<template<typename> class SmartPointer>
-jobject SmartPointerToQObjectWithPendingExtraSignalsLink<SmartPointer>::getExtraSignal(JNIEnv * env, const QMetaMethod& method) const{
-    if(QObject* object = this->qobject()){
-        QList<QMetaMethod> _extraSignals = getExtraSignalsOfMetaObject(object->metaObject());
-        if(_extraSignals.contains(method)){
-            QReadLocker rlocker(QtJambiLinkUserData::lock());
-            if(!m_extraSignals.contains(method.methodIndex())){
-                rlocker.unlock();
-                JObjectWrapper signal = QtJambiMetaObject::resolveExtraSignal(env, QtJambiLink::getJavaObjectLocalRef(env), method);
-                {
-                    QWriteLocker wlocker(QtJambiLinkUserData::lock());
-                    if(!m_extraSignals.contains(method.methodIndex()))
-                        m_extraSignals[method.methodIndex()] = signal;
-                }
-                rlocker.relock();
-            }
-            return m_extraSignals.value(method.methodIndex()).object(env);
-        }
-    }
-    return nullptr;
-}
-
-template<template<typename> class SmartPointer>
-SmartPointerToPlainQObjectLink<SmartPointer>::SmartPointerToPlainQObjectLink(JNIEnv *env,
+PlainQObjectSmartPointerLink<SmartPointer>::PlainQObjectSmartPointerLink(JNIEnv *env,
                                                                              jobject nativeLink,
                                                                              jobject jobj,
                                                                              SafeBool created_by_java,
@@ -7376,7 +7885,7 @@ SmartPointerToPlainQObjectLink<SmartPointer>::SmartPointerToPlainQObjectLink(JNI
                                                                              SafeBool isQThread,
                                                                              SmartPointer<QObject>*& smartPointer,
                                                                              JavaException& ocurredException)
-    : SmartPointerToQObjectLink<SmartPointer>(env, nativeLink,
+    : QObjectSmartPointerLink<SmartPointer>(env, nativeLink,
                                 LINK_NAME_ARG(pointer->metaObject()->className())
                                 created_by_java, ownership, is_shell, pointer, smartPointer, ocurredException)
 {
@@ -7387,511 +7896,251 @@ SmartPointerToPlainQObjectLink<SmartPointer>::SmartPointerToPlainQObjectLink(JNI
     }
     if(!ocurredException){
         bool _isValueOwner = isValueOwner(metaObject);
+        QtJambiLinkObjectData* lud{nullptr};
+        ValueOwnerObjectData* vud{nullptr};
+        {
+            auto locker = QtJambiObjectData::readLock();
+            if(_isValueOwner)
+                vud = QtJambiObjectData::userData<ValueOwnerObjectData>(pointer);
+            lud = QtJambiObjectData::userData<QtJambiLinkObjectData>(pointer);
+        }
+        if(_isValueOwner && !vud)
+            vud = new ValueOwnerObjectData(pointer);
+        if(lud) {
+            QtJambiLink::resetDataLink(lud);
+        }
         if(isQThread && pointer!=QCoreApplicationPrivate::theMainThread.loadRelaxed()){
-            if(QThread* thread = static_cast<QThread*>(pointer)){
-                QSharedPointer<QtJambiLink> _this = *this;
-                QThreadUserData* data;
-                {
-                    QWriteLocker locker(QtJambiLinkUserData::lock());
-                    data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
-                    QtJambiLink::setIsQThread(true);
-                    if(QtJambiLinkUserData* lud = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, pointer))
-                        QtJambiLink::resetDataLink(lud);
-                    QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, thread, new QtJambiMetaObjectThreadLinkUserData(thread, _this, metaObject));
-                    if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, pointer)){
-                        QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, pointer, new ValueOwnerUserData(pointer));
-                    }
+            QThread* thread = static_cast<QThread*>(pointer);
+            QSharedPointer<QtJambiLink> _this = *this;
+            QThreadObjectData* data{nullptr};
+            QtJambiLink::setIsQThread(true);
+            if(lud){
+                if(vud){
+                    auto locker = QtJambiObjectData::writeLock();
+                    data = QtJambiObjectData::userData<QThreadObjectData>(thread);
+                    vud = QtJambiObjectData::setUserData<ValueOwnerObjectData>(pointer, vud);
+                }else{
+                    auto locker = QtJambiObjectData::readLock();
+                    data = QtJambiObjectData::userData<QThreadObjectData>(thread);
                 }
-                if(!data)
-                    ThreadPrivate::fromQThread(env, jobj, thread, _this);
+                lud = nullptr; // don't delete
             }else{
-                QWriteLocker locker(QtJambiLinkUserData::lock());
-                if(QtJambiLinkUserData* lud = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, pointer))
-                    QtJambiLink::resetDataLink(lud);
-                QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, pointer, new QtJambiMetaObjectLinkUserData(*this, metaObject));
-                if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, pointer)){
-                    QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, pointer, new ValueOwnerUserData(pointer));
+                lud = new MetaObjectThreadLinkObjectData(thread, _this, metaObject);
+                {
+                    auto locker = QtJambiObjectData::writeLock();
+                    data = QtJambiObjectData::userData<QThreadObjectData>(thread);
+                    lud = QtJambiObjectData::setUserData<QtJambiLinkObjectData>(thread, lud);
+                    if(vud)
+                        vud = QtJambiObjectData::setUserData<ValueOwnerObjectData>(pointer, vud);
                 }
             }
+            if(!data)
+                ThreadPrivate::fromQThread(env, jobj, thread, _this);
         }else{
-            QWriteLocker locker(QtJambiLinkUserData::lock());
-            if(QtJambiLinkUserData* lud = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, pointer))
-                QtJambiLink::resetDataLink(lud);
-            QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, pointer, new QtJambiMetaObjectLinkUserData(*this, metaObject));
-            if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, pointer)){
-                QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, pointer, new ValueOwnerUserData(pointer));
+            if(lud) {
+                if(vud){
+                    auto locker = QtJambiObjectData::writeLock();
+                    vud = QtJambiObjectData::setUserData<ValueOwnerObjectData>(pointer, vud);
+                }
+                lud = nullptr; // don't delete
+            }else{
+                lud = new MetaObjectLinkObjectData(*this, metaObject);
+                {
+                    auto locker = QtJambiObjectData::writeLock();
+                    lud = QtJambiObjectData::setUserData<QtJambiLinkObjectData>(pointer, lud);
+                    if(vud)
+                        vud = QtJambiObjectData::setUserData<ValueOwnerObjectData>(pointer, vud);
+                }
             }
         }
+        if(vud)
+            delete vud;
+        if(lud)
+            delete lud;
     }else{
         this->m_flags.setFlag(QtJambiLink::Flag::IsJavaLinkDetached);
     }
     env->DeleteLocalRef(local);
 }
 
+namespace QtJambiPrivate{
+
 template<template<typename> class SmartPointer>
-SmartPointerToQObjectWithExtraSignalsLink<SmartPointer>::SmartPointerToQObjectWithExtraSignalsLink(JNIEnv *env,
-                                                                                                   jobject nativeLink,
-                                                                                                   jobject jobj,
-                                                                                                   SafeBool created_by_java,
-                                                                                                   QtJambiLink::Ownership ownership,
-                                                                                                   SafeBool is_shell,
-                                                                                                   QObject* pointer,
-                                                                                                   SafeBool isQThread,
-                                                                                                   SmartPointer<QObject>*& smartPointer,
-                                                                                                   JavaException& ocurredException)
-    : SmartPointerToQObjectWithPendingExtraSignalsLink<SmartPointer>(env, nativeLink,
-                                                       LINK_NAME_ARG(pointer->metaObject()->className())
-                                                       created_by_java, ownership, is_shell, pointer, smartPointer, ocurredException)
-{
-    jobject local = env->NewLocalRef(jobj);
-    const QMetaObject* metaObject = pointer->metaObject();
-    if(!ocurredException){
-        QtJambiMetaObject::resolveSignals(env, jobj, metaObject, ocurredException);
+struct QObjectLink{//QSharedPointer
+    typedef SmartPointerLink<QSharedPointer,QObject> Shared;
+    typedef SmartPointerLink<QWeakPointer,QObject> Weak;
+};
+
+template<>
+struct QObjectLink<QWeakPointer>{
+    typedef SmartPointerLink<QSharedPointer,QObject> Shared;
+    typedef SmartPointerLink<QWeakPointer,QObject> Weak;
+};
+
+template<>
+struct QObjectLink<std::shared_ptr>{
+    typedef SmartPointerLink<std::shared_ptr,QObject> Shared;
+    typedef SmartPointerLink<std::weak_ptr,QObject> Weak;
+};
+
+template<>
+struct QObjectLink<std::weak_ptr>{
+    typedef SmartPointerLink<std::shared_ptr,QObject> Shared;
+    typedef SmartPointerLink<std::weak_ptr,QObject> Weak;
+};
+
+template<template<typename> class SmartPointer>
+struct PointerLink{//QSharedPointer
+    typedef SmartPointerLink<QSharedPointer,char> Shared;
+    typedef SmartPointerLink<QWeakPointer,char> Weak;
+};
+
+template<>
+struct PointerLink<std::shared_ptr>{
+    typedef SmartPointerLink<std::shared_ptr,char> Shared;
+    typedef SmartPointerLink<std::weak_ptr,char> Weak;
+};
+
+template<>
+struct PointerLink<QWeakPointer>{
+    typedef SmartPointerLink<QSharedPointer,char> Shared;
+    typedef SmartPointerLink<QWeakPointer,char> Weak;
+};
+
+template<>
+struct PointerLink<std::weak_ptr>{
+    typedef SmartPointerLink<std::shared_ptr,char> Shared;
+    typedef SmartPointerLink<std::weak_ptr,char> Weak;
+};
+
+template<template<typename> class SmartPointer>
+bool convertToNativeSmartPointer(const QSharedPointer<QtJambiLink>& link, SmartPointer<QObject>& output){
+    if(link->isSmartPointer()){
+        switch(link->smartPointerType()){
+        case SmartPointerUtility<SmartPointer>::SharedPointerFlag:
+            if(link->isQObject()){
+                auto sp = SmartPointerUtility<SmartPointer>::template SharedPointer<QObject>(static_cast<typename QObjectLink<SmartPointer>::Shared*>(link.data())->getSmartPointer());
+                output = sp;
+            }else{
+                auto sp = SmartPointerUtility<SmartPointer>::template SharedPointer<char>(static_cast<typename PointerLink<SmartPointer>::Shared*>(link.data())->getSmartPointer());
+                output = SmartPointerUtility<SmartPointer>::template SharedPointer<QObject>(sp, reinterpret_cast<QObject*>(link->pointer()));
+            }
+            return true;
+        case SmartPointerUtility<SmartPointer>::WeakPointerFlag:
+            if(link->isQObject()){
+                auto sp = SmartPointerUtility<SmartPointer>::template SharedPointer<QObject>(static_cast<typename QObjectLink<SmartPointer>::Weak*>(link.data())->getSmartPointer());
+                output = sp;
+            }else{
+                auto sp = SmartPointerUtility<SmartPointer>::template SharedPointer<char>(static_cast<typename PointerLink<SmartPointer>::Weak*>(link.data())->getSmartPointer());
+                output = SmartPointerUtility<SmartPointer>::template SharedPointer<QObject>(sp, reinterpret_cast<QObject*>(link->pointer()));
+            }
+            return true;
+        default:
+            break;
+        }
     }
-    if(!ocurredException){
-        bool _isValueOwner = isValueOwner(metaObject);
-        if(isQThread && pointer!=QCoreApplicationPrivate::theMainThread.loadRelaxed()){
-            if(QThread* thread = static_cast<QThread*>(pointer)){
-                QSharedPointer<QtJambiLink> _this = *this;
-                QThreadUserData* data;
-                {
-                    QWriteLocker locker(QtJambiLinkUserData::lock());
-                    data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread);
-                    QtJambiLink::setIsQThread(true);
-                    if(QtJambiLinkUserData* lud = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, pointer))
-                        QtJambiLink::resetDataLink(lud);
-                    QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, thread, new QtJambiMetaObjectThreadLinkUserData(thread, _this, metaObject));
-                    if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, pointer)){
-                        QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, pointer, new ValueOwnerUserData(pointer));
+    return false;
+}
+
+bool convertToNativeSmartPointer(const QSharedPointer<QtJambiLink>& link, QSharedPointer<QObject>& output){
+    return convertToNativeSmartPointer<QSharedPointer>(link, output);
+}
+bool convertToNativeSmartPointer(const QSharedPointer<QtJambiLink>& link, QWeakPointer<QObject>& output){
+    return convertToNativeSmartPointer<QWeakPointer>(link, output);
+}
+bool convertToNativeSmartPointer(const QSharedPointer<QtJambiLink>& link, std::shared_ptr<QObject>& output){
+    return convertToNativeSmartPointer<std::shared_ptr>(link, output);
+}
+bool convertToNativeSmartPointer(const QSharedPointer<QtJambiLink>& link, std::weak_ptr<QObject>& output){
+    return convertToNativeSmartPointer<std::weak_ptr>(link, output);
+}
+
+template<template<typename> class SmartPointer>
+bool convertToNativeSmartPointer(const QSharedPointer<QtJambiLink>& link, SmartPointer<char>& output, const std::type_info* typeId = nullptr){
+    if(link->isSmartPointer()){
+        if(typeId){
+            void *ptr{nullptr};
+            switch(link->smartPointerType()){
+            case SmartPointerUtility<SmartPointer>::SharedPointerFlag:
+                if(link->isQObject()){
+                    auto sp = SmartPointerUtility<SmartPointer>::template SharedPointer<QObject>(static_cast<typename QObjectLink<SmartPointer>::Shared*>(link.data())->getSmartPointer());
+                    ptr = link->typedPointer(*typeId);
+                    if(ptr){
+                        output = SmartPointerUtility<SmartPointer>::template SharedPointer<char>(sp, reinterpret_cast<char*>(ptr));
+                    }else{
+                        output = SmartPointerUtility<SmartPointer>::template SharedPointer<char>(sp, reinterpret_cast<char*>(link->pointer()));
+                    }
+                }else{
+                    auto sp = SmartPointerUtility<SmartPointer>::template SharedPointer<char>(static_cast<typename PointerLink<SmartPointer>::Shared*>(link.data())->getSmartPointer());
+                    ptr = link->typedPointer(*typeId);
+                    if(ptr){
+                        output = SmartPointerUtility<SmartPointer>::template SharedPointer<char>(sp, reinterpret_cast<char*>(ptr));
+                    }else{
+                        output = sp;
                     }
                 }
-                if(!data)
-                    ThreadPrivate::fromQThread(env, jobj, thread, _this);
-            }else{
-                QWriteLocker locker(QtJambiLinkUserData::lock());
-                if(QtJambiLinkUserData* lud = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, pointer))
-                    QtJambiLink::resetDataLink(lud);
-                QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, pointer, new QtJambiMetaObjectLinkUserData(*this, metaObject));
-                if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, pointer)){
-                    QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, pointer, new ValueOwnerUserData(pointer));
+                return true;
+            case SmartPointerUtility<SmartPointer>::WeakPointerFlag:
+                if(link->isQObject()){
+                    auto sp = SmartPointerUtility<SmartPointer>::template SharedPointer<QObject>(static_cast<typename QObjectLink<SmartPointer>::Weak*>(link.data())->getSmartPointer());
+                    ptr = link->typedPointer(*typeId);
+                    if(ptr){
+                        output = SmartPointerUtility<SmartPointer>::template SharedPointer<char>(sp, reinterpret_cast<char*>(ptr));
+                    }else{
+                        output = SmartPointerUtility<SmartPointer>::template SharedPointer<char>(sp, reinterpret_cast<char*>(link->pointer()));
+                    }
+                }else{
+                    auto sp = SmartPointerUtility<SmartPointer>::template SharedPointer<char>(static_cast<typename PointerLink<SmartPointer>::Weak*>(link.data())->getSmartPointer());
+                    ptr = link->typedPointer(*typeId);
+                    if(ptr){
+                        output = SmartPointerUtility<SmartPointer>::template SharedPointer<char>(sp, reinterpret_cast<char*>(ptr));
+                    }else{
+                        output = sp;
+                    }
                 }
+                return true;
+            default:
+                break;
             }
         }else{
-            QWriteLocker locker(QtJambiLinkUserData::lock());
-            if(QtJambiLinkUserData* lud = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, pointer))
-                QtJambiLink::resetDataLink(lud);
-            QTJAMBI_SET_OBJECTUSERDATA(QtJambiLinkUserData, pointer, new QtJambiMetaObjectLinkUserData(*this, metaObject));
-            if(_isValueOwner && !QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, pointer)){
-                QTJAMBI_SET_OBJECTUSERDATA(ValueOwnerUserData, pointer, new ValueOwnerUserData(pointer));
+            switch(link->smartPointerType()){
+            case SmartPointerUtility<SmartPointer>::SharedPointerFlag:
+                if(link->isQObject()){
+                    auto sp = SmartPointerUtility<SmartPointer>::template SharedPointer<QObject>(static_cast<typename QObjectLink<SmartPointer>::Shared*>(link.data())->getSmartPointer());
+                    output = SmartPointerUtility<SmartPointer>::template SharedPointer<char>(sp, reinterpret_cast<char*>(link->pointer()));
+                }else{
+                    auto sp = SmartPointerUtility<SmartPointer>::template SharedPointer<char>(static_cast<typename PointerLink<SmartPointer>::Shared*>(link.data())->getSmartPointer());
+                    output = sp;
+                }
+                return true;
+            case SmartPointerUtility<SmartPointer>::WeakPointerFlag:
+                if(link->isQObject()){
+                    auto sp = SmartPointerUtility<SmartPointer>::template SharedPointer<QObject>(static_cast<typename QObjectLink<SmartPointer>::Weak*>(link.data())->getSmartPointer());
+                    output = SmartPointerUtility<SmartPointer>::template SharedPointer<char>(sp, reinterpret_cast<char*>(link->pointer()));
+                }else{
+                    auto sp = SmartPointerUtility<SmartPointer>::template SharedPointer<char>(static_cast<typename PointerLink<SmartPointer>::Weak*>(link.data())->getSmartPointer());
+                    output = sp;
+                }
+                return true;
+            default:
+                break;
             }
         }
-    }else{
-        this->m_flags.setFlag(QtJambiLink::Flag::IsJavaLinkDetached);
     }
-    env->DeleteLocalRef(local);
+    return false;
 }
 
-// ### END #################  SmartPointerToQObjectLink  ################### END ###
-
-PointerToQObjectInterfaceWithExtraSignalsLink::PointerToQObjectInterfaceWithExtraSignalsLink(JNIEnv *env, jobject nativeLink, jobject jobj, const InterfaceOffsetInfo& interfaceOffsetInfo, const QMetaObject* metaObject, QObject *ptr, SafeBool isQThread, SafeBool created_by_java, SafeBool is_shell, JavaException& ocurredException)
-    : PointerToQObjectInterfaceLink(env, nativeLink, jobj, interfaceOffsetInfo, metaObject, ptr, isQThread, created_by_java, is_shell, ocurredException)
-{
+bool convertToNativeSmartPointer(const QSharedPointer<QtJambiLink>& link, QSharedPointer<char>& output, const std::type_info* typeId){
+    return convertToNativeSmartPointer<QSharedPointer>(link, output, typeId);
+}
+bool convertToNativeSmartPointer(const QSharedPointer<QtJambiLink>& link, QWeakPointer<char>& output, const std::type_info* typeId){
+    return convertToNativeSmartPointer<QWeakPointer>(link, output, typeId);
+}
+bool convertToNativeSmartPointer(const QSharedPointer<QtJambiLink>& link, std::shared_ptr<char>& output, const std::type_info* typeId){
+    return convertToNativeSmartPointer<std::shared_ptr>(link, output, typeId);
+}
+bool convertToNativeSmartPointer(const QSharedPointer<QtJambiLink>& link, std::weak_ptr<char>& output, const std::type_info* typeId){
+    return convertToNativeSmartPointer<std::weak_ptr>(link, output, typeId);
 }
 
-PointerToQObjectInterfaceLink::PointerToQObjectInterfaceLink(JNIEnv *env, jobject nativeLink, jobject jobj, const InterfaceOffsetInfo& interfaceOffsetInfo, const QMetaObject* metaObject, QObject *ptr, SafeBool isQThread, SafeBool created_by_java, SafeBool is_shell, JavaException& ocurredException)
-    : PointerToQObjectLink(env, nativeLink, jobj, metaObject, ptr, isQThread, created_by_java, is_shell, ocurredException), m_interfaceOffsetInfo(interfaceOffsetInfo), m_availableInterfaces(interfaceOffsetInfo.interfaces)
-{
 }
-
-PointerToObjectInterfaceLink::PointerToObjectInterfaceLink(JNIEnv *env, jobject nativeLink, const InterfaceOffsetInfo& interfaceOffsetInfo,
-                                                           LINK_NAME_ARG(const char *qt_name)
-                                                           void *ptr, SafeBool created_by_java, SafeBool is_shell, JavaException& ocurredException)
-    : PointerToObjectLink(env, nativeLink,
-                          LINK_NAME_ARG(qt_name)
-                          ptr, created_by_java, is_shell, ocurredException), m_interfaceOffsetInfo(interfaceOffsetInfo), m_availableInterfaces(interfaceOffsetInfo.interfaces)
-{
-}
-
-OwnedMetaTypedPointerToObjectInterfaceLink::OwnedMetaTypedPointerToObjectInterfaceLink(JNIEnv *env, jobject nativeLink, const InterfaceOffsetInfo& interfaceOffsetInfo,
-                                                           void *ptr, const QMetaType& metaType, SafeBool created_by_java, SafeBool is_shell, PtrOwnerFunction ownerFunction, JavaException& ocurredException)
-    : OwnedMetaTypedPointerToObjectLink(env, nativeLink,
-                          ptr, metaType, created_by_java, is_shell, ownerFunction, ocurredException), m_interfaceOffsetInfo(interfaceOffsetInfo), m_availableInterfaces(interfaceOffsetInfo.interfaces)
-{
-}
-
-PointerToContainerInterfaceLink::PointerToContainerInterfaceLink(JNIEnv *env, jobject nativeLink, const InterfaceOffsetInfo& interfaceOffsetInfo,
-                                                           LINK_NAME_ARG(const char *qt_name)
-                                                           void *ptr, SafeBool created_by_java, SafeBool is_shell, AbstractContainerAccess* containerAccess, JavaException& ocurredException)
-    : PointerToContainerLink(env, nativeLink,
-                          LINK_NAME_ARG(qt_name)
-                          ptr, created_by_java, is_shell, containerAccess, ocurredException), m_interfaceOffsetInfo(interfaceOffsetInfo), m_availableInterfaces(interfaceOffsetInfo.interfaces)
-{
-}
-
-MetaTypedPointerToObjectInterfaceLink::MetaTypedPointerToObjectInterfaceLink(JNIEnv *env, jobject nativeLink, const InterfaceOffsetInfo& interfaceOffsetInfo,
-                                                           void *ptr, const QMetaType& metaType, SafeBool created_by_java, SafeBool is_shell, JavaException& ocurredException)
-    : MetaTypedPointerToObjectLink(env, nativeLink,
-                          ptr, metaType, created_by_java, is_shell, ocurredException), m_interfaceOffsetInfo(interfaceOffsetInfo), m_availableInterfaces(interfaceOffsetInfo.interfaces)
-{
-}
-
-DeletablePointerToObjectInterfaceLink::DeletablePointerToObjectInterfaceLink(JNIEnv *env, jobject nativeLink, const InterfaceOffsetInfo& interfaceOffsetInfo,
-                                                           LINK_NAME_ARG(const char *qt_name)
-                                                           void *ptr, SafeBool created_by_java, SafeBool is_shell, PtrDeleterFunction destructor_function, JavaException& ocurredException)
-    : DeletablePointerToObjectLink(env, nativeLink,
-                          LINK_NAME_ARG(qt_name)
-                          ptr, created_by_java, is_shell, destructor_function, ocurredException), m_interfaceOffsetInfo(interfaceOffsetInfo), m_availableInterfaces(interfaceOffsetInfo.interfaces)
-{
-}
-
-DeletablePointerToContainerInterfaceLink::DeletablePointerToContainerInterfaceLink(JNIEnv *env, jobject nativeLink, const InterfaceOffsetInfo& interfaceOffsetInfo,
-                                                           LINK_NAME_ARG(const char *qt_name)
-                                                           void *ptr, SafeBool created_by_java, SafeBool is_shell, PtrDeleterFunction destructor_function, AbstractContainerAccess* containerAccess, JavaException& ocurredException)
-    : DeletablePointerToContainerLink(env, nativeLink,
-                          LINK_NAME_ARG(qt_name)
-                          ptr, created_by_java, is_shell, destructor_function, containerAccess, ocurredException), m_interfaceOffsetInfo(interfaceOffsetInfo), m_availableInterfaces(interfaceOffsetInfo.interfaces)
-{
-}
-
-DeletableOwnedPointerToObjectInterfaceLink::DeletableOwnedPointerToObjectInterfaceLink(JNIEnv *env, jobject nativeLink, const InterfaceOffsetInfo& interfaceOffsetInfo,
-                                                           LINK_NAME_ARG(const char *qt_name)
-                                                           void *ptr, SafeBool created_by_java, SafeBool is_shell, PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, JavaException& ocurredException)
-    : DeletableOwnedPointerToObjectLink(env, nativeLink,
-                          LINK_NAME_ARG(qt_name)
-                          ptr, created_by_java, is_shell, destructor_function, ownerFunction, ocurredException), m_interfaceOffsetInfo(interfaceOffsetInfo), m_availableInterfaces(interfaceOffsetInfo.interfaces)
-{
-}
-
-DeletableOwnedPointerToContainerInterfaceLink::DeletableOwnedPointerToContainerInterfaceLink(JNIEnv *env, jobject nativeLink, const InterfaceOffsetInfo& interfaceOffsetInfo,
-                                                           LINK_NAME_ARG(const char *qt_name)
-                                                           void *ptr, SafeBool created_by_java, SafeBool is_shell, PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, AbstractContainerAccess* containerAccess, JavaException& ocurredException)
-    : DeletableOwnedPointerToContainerLink(env, nativeLink,
-                          LINK_NAME_ARG(qt_name)
-                          ptr, created_by_java, is_shell, destructor_function, ownerFunction, containerAccess, ocurredException), m_interfaceOffsetInfo(interfaceOffsetInfo), m_availableInterfaces(interfaceOffsetInfo.interfaces)
-{
-}
-
-template<template<typename> class SmartPointer>
-SmartPointerToObjectInterfaceLink<SmartPointer>::SmartPointerToObjectInterfaceLink(JNIEnv *env,
-                                                                                   jobject nativeLink,
-                                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo,
-                                                                                   LINK_NAME_ARG(const char* qt_name)
-                                                                                   SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
-                                                                                   PtrOwnerFunction ownerFunction,
-                                                                                   void* pointer,
-                                                                                   SmartPointer<char>*& smartPointer,
-                                                                                   JavaException& ocurredException)
-    : SmartPointerToObjectLink<SmartPointer>(env, nativeLink,
-                                 LINK_NAME_ARG(qt_name)
-                                 created_by_java, ownership, is_shell, ownerFunction, pointer, smartPointer, ocurredException),
-      m_interfaceOffsetInfo(interfaceOffsetInfo), m_availableInterfaces(interfaceOffsetInfo.interfaces)
-{
-    for(auto i = interfaceOffsetInfo.offsets.keyValueBegin(); i!=interfaceOffsetInfo.offsets.keyValueEnd(); ++i){
-        QtJambiLink::registerPointer(reinterpret_cast<void*>( quintptr(pointer) + i.base().value() ));
-    }
-}
-
-template<template<typename> class SmartPointer>
-SmartPointerToContainerInterfaceLink<SmartPointer>::SmartPointerToContainerInterfaceLink(JNIEnv *env, jobject nativeLink,
-                                                                                         const InterfaceOffsetInfo& interfaceOffsetInfo,
-                                                                                         LINK_NAME_ARG(const char* qt_name)
-                                                                                         SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell,
-                                                                                         PtrOwnerFunction ownerFunction,
-                                                                                         void* pointer,
-                                                                                         SmartPointer<char>*& smartPointer,
-                                                                                         AbstractContainerAccess* containerAccess,
-                                                                                         JavaException& ocurredException)
-    : SmartPointerToContainerLink<SmartPointer>(env, nativeLink,
-                                          LINK_NAME_ARG(qt_name)
-                                          created_by_java, ownership, is_shell, ownerFunction, pointer, smartPointer, containerAccess, ocurredException),
-      m_interfaceOffsetInfo(interfaceOffsetInfo), m_availableInterfaces(interfaceOffsetInfo.interfaces)
-{
-    for(auto i = interfaceOffsetInfo.offsets.keyValueBegin(); i!=interfaceOffsetInfo.offsets.keyValueEnd(); ++i){
-        QtJambiLink::registerPointer(reinterpret_cast<void*>( quintptr(pointer) + i.base().value() ));
-    }
-}
-
-template<template<typename> class SmartPointer>
-SmartPointerToPlainQObjectInterfaceLink<SmartPointer>::SmartPointerToPlainQObjectInterfaceLink(JNIEnv *env,
-                                                                                               jobject nativeLink,
-                                                                                               jobject jobj,
-                                                                                               const InterfaceOffsetInfo& interfaceOffsetInfo,
-                                                                                               SafeBool created_by_java,
-                                                                                               QtJambiLink::Ownership ownership,
-                                                                                               SafeBool is_shell,
-                                                                                               QObject* pointer,
-                                                                                               SafeBool isQThread,
-                                                                                               SmartPointer<QObject>*& smartPointer,
-                                                                                               JavaException& ocurredException)
-    : SmartPointerToPlainQObjectLink<SmartPointer>(env, nativeLink, jobj, created_by_java, ownership, is_shell, pointer, isQThread, smartPointer, ocurredException),
-      m_interfaceOffsetInfo(interfaceOffsetInfo), m_availableInterfaces(interfaceOffsetInfo.interfaces)
-{
-    for(auto i = interfaceOffsetInfo.offsets.keyValueBegin(); i!=interfaceOffsetInfo.offsets.keyValueEnd(); ++i){
-        QtJambiLink::registerPointer(reinterpret_cast<void*>( quintptr(pointer) + i.base().value() ));
-    }
-}
-
-template<template<typename> class SmartPointer>
-SmartPointerToQObjectInterfaceWithPendingExtraSignalsLink<SmartPointer>::SmartPointerToQObjectInterfaceWithPendingExtraSignalsLink(JNIEnv *env,
-                                                                                                                                   jobject nativeLink,
-                                                                                                                                   jobject jobj,
-                                                                                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo,
-                                                                                                                                   SafeBool created_by_java,
-                                                                                                                                   QtJambiLink::Ownership ownership,
-                                                                                                                                   SafeBool is_shell,
-                                                                                                                                   QObject* pointer,
-                                                                                                                                   SafeBool isQThread,
-                                                                                                                                   SmartPointer<QObject>*& smartPointer,
-                                                                                                                                   const QMetaObject* superTypeForCustomMetaObject,
-                                                                                                                                   JavaException& ocurredException)
-    : SmartPointerToQObjectWithPendingExtraSignalsLink<SmartPointer>(env, nativeLink, jobj, created_by_java, ownership, is_shell, pointer, isQThread, smartPointer, superTypeForCustomMetaObject, ocurredException),
-      m_interfaceOffsetInfo(interfaceOffsetInfo), m_availableInterfaces(interfaceOffsetInfo.interfaces)
-{
-    for(auto i = interfaceOffsetInfo.offsets.keyValueBegin(); i!=interfaceOffsetInfo.offsets.keyValueEnd(); ++i){
-        QtJambiLink::registerPointer(reinterpret_cast<void*>( quintptr(pointer) + i.base().value() ));
-    }
-}
-
-template<template<typename> class SmartPointer>
-SmartPointerToQObjectInterfaceWithExtraSignalsLink<SmartPointer>::SmartPointerToQObjectInterfaceWithExtraSignalsLink(JNIEnv *env,
-                                                                                                                     jobject nativeLink,
-                                                                                                                     jobject jobj,
-                                                                                                                     const InterfaceOffsetInfo& interfaceOffsetInfo,
-                                                                                                                     SafeBool created_by_java,
-                                                                                                                     QtJambiLink::Ownership ownership,
-                                                                                                                     SafeBool is_shell,
-                                                                                                                     QObject* pointer,
-                                                                                                                     SafeBool isQThread,
-                                                                                                                     SmartPointer<QObject>*& smartPointer,
-                                                                                                                     JavaException& ocurredException)
-    : SmartPointerToQObjectWithExtraSignalsLink<SmartPointer>(env, nativeLink, jobj, created_by_java, ownership, is_shell, pointer, isQThread, smartPointer, ocurredException),
-      m_interfaceOffsetInfo(interfaceOffsetInfo), m_availableInterfaces(interfaceOffsetInfo.interfaces)
-{
-    for(auto i = interfaceOffsetInfo.offsets.keyValueBegin(); i!=interfaceOffsetInfo.offsets.keyValueEnd(); ++i){
-        QtJambiLink::registerPointer(reinterpret_cast<void*>( quintptr(pointer) + i.base().value() ));
-    }
-}
-
-ExtendedLink::~ExtendedLink(){}
-
-ExtendedDeletablePointerToObjectLink::ExtendedDeletablePointerToObjectLink(JNIEnv *env, jobject nativeLink,
-                                                                             LINK_NAME_ARG(const char* qt_name)
-                                                                             void *ptr, SafeBool created_by_java, SafeBool is_shell, PtrDeleterFunction destructor_function,
-                                                                             const QObject* extension, JavaException& ocurredException)
-    : DeletablePointerToObjectLink(env, nativeLink,
-                                   LINK_NAME_ARG(qt_name)
-                                   ptr, created_by_java, is_shell, destructor_function, ocurredException),
-    ExtendedLink(),
-    m_extension(extension)
-{}
-
-DependentDeletablePointerToObjectLink::DependentDeletablePointerToObjectLink(JNIEnv *env, jobject nativeLink,
-                                                           LINK_NAME_ARG(const char* qt_name)
-                                                           void *ptr, SafeBool created_by_java, SafeBool is_shell, PtrDeleterFunction destructor_function, JavaException& ocurredException)
-    : DeletablePointerToObjectLink(env, nativeLink,
-                          LINK_NAME_ARG(qt_name)
-                          ptr, created_by_java, is_shell, destructor_function, ocurredException)
-{}
-
-void DependentDeletablePointerToObjectLink::setDependencyManager(DependencyManagerUserData* dependencyManager) {
-    m_dependencyManager = dependencyManager;
-}
-
-void DependentDeletablePointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced){
-    if(m_dependencyManager)
-        m_dependencyManager->removeDependentObject(*this);
-    DeletablePointerToObjectLink::deleteNativeObject(env, forced);
-}
-
-void DependentDeletablePointerToObjectLink::invalidate(JNIEnv *env){
-    if(m_dependencyManager)
-        m_dependencyManager->removeDependentObject(*this);
-    DeletablePointerToObjectLink::invalidate(env);
-}
-
-DependentMetaTypedPointerToObjectLink::DependentMetaTypedPointerToObjectLink(JNIEnv *env, jobject nativeLink,
-                                                                             void *ptr, const QMetaType& metaType, SafeBool created_by_java, SafeBool is_shell, JavaException& ocurredException)
-    : MetaTypedPointerToObjectLink(env, nativeLink, ptr, metaType, created_by_java, is_shell, ocurredException)
-{}
-
-void DependentMetaTypedPointerToObjectLink::setDependencyManager(DependencyManagerUserData* dependencyManager) {
-    m_dependencyManager = dependencyManager;
-}
-
-void DependentMetaTypedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced){
-    if(m_dependencyManager)
-        m_dependencyManager->removeDependentObject(*this);
-    MetaTypedPointerToObjectLink::deleteNativeObject(env, forced);
-}
-
-void DependentMetaTypedPointerToObjectLink::invalidate(JNIEnv *env){
-    if(m_dependencyManager)
-        m_dependencyManager->removeDependentObject(*this);
-    MetaTypedPointerToObjectLink::invalidate(env);
-}
-
-OwnedDependentMetaTypedPointerToObjectLink::OwnedDependentMetaTypedPointerToObjectLink(JNIEnv *env, jobject nativeLink,
-                    void *ptr, const QMetaType& metaType, SafeBool created_by_java, SafeBool is_shell,
-                    PtrOwnerFunction ownerFunction, JavaException& ocurredException)
-    : OwnedMetaTypedPointerToObjectLink(env, nativeLink,
-       ptr, metaType, created_by_java, is_shell,
-       ownerFunction, ocurredException){}
-
-void OwnedDependentMetaTypedPointerToObjectLink::setDependencyManager(DependencyManagerUserData* dependencyManager) {
-    m_dependencyManager = dependencyManager;
-}
-
-void OwnedDependentMetaTypedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced){
-    if(m_dependencyManager)
-        m_dependencyManager->removeDependentObject(*this);
-    OwnedMetaTypedPointerToObjectLink::deleteNativeObject(env, forced);
-}
-
-void OwnedDependentMetaTypedPointerToObjectLink::invalidate(JNIEnv *env){
-    if(m_dependencyManager)
-        m_dependencyManager->removeDependentObject(*this);
-    OwnedMetaTypedPointerToObjectLink::invalidate(env);
-}
-
-DependentMetaTypedPointerToObjectInterfaceLink::DependentMetaTypedPointerToObjectInterfaceLink(JNIEnv *env, jobject nativeLink, const InterfaceOffsetInfo& interfaceOffsetInfo,
-                                               void *ptr, const QMetaType& metaType, SafeBool created_by_java, SafeBool is_shell, JavaException& ocurredException)
-    : MetaTypedPointerToObjectInterfaceLink(env, nativeLink, interfaceOffsetInfo,
-                                            ptr, metaType, created_by_java, is_shell, ocurredException)
-{
-}
-
-
-void DependentMetaTypedPointerToObjectInterfaceLink::setDependencyManager(DependencyManagerUserData* dependencyManager) {
-    m_dependencyManager = dependencyManager;
-}
-
-void DependentMetaTypedPointerToObjectInterfaceLink::deleteNativeObject(JNIEnv *env, bool forced){
-    if(m_dependencyManager)
-        m_dependencyManager->removeDependentObject(*this);
-    MetaTypedPointerToObjectInterfaceLink::deleteNativeObject(env, forced);
-}
-
-void DependentMetaTypedPointerToObjectInterfaceLink::invalidate(JNIEnv *env){
-    if(m_dependencyManager)
-        m_dependencyManager->removeDependentObject(*this);
-    MetaTypedPointerToObjectInterfaceLink::invalidate(env);
-}
-
-OwnedDependentMetaTypedPointerToObjectInterfaceLink::OwnedDependentMetaTypedPointerToObjectInterfaceLink(JNIEnv *env, jobject nativeLink, const InterfaceOffsetInfo& interfaceOffsetInfo,
-                                               void *ptr, const QMetaType& metaType, SafeBool created_by_java, SafeBool is_shell, PtrOwnerFunction ownerFunction, JavaException& ocurredException)
-    : OwnedMetaTypedPointerToObjectInterfaceLink(env, nativeLink, interfaceOffsetInfo,
-                                            ptr, metaType, created_by_java, is_shell, ownerFunction, ocurredException)
-{
-}
-
-
-void OwnedDependentMetaTypedPointerToObjectInterfaceLink::setDependencyManager(DependencyManagerUserData* dependencyManager) {
-    m_dependencyManager = dependencyManager;
-}
-
-void OwnedDependentMetaTypedPointerToObjectInterfaceLink::deleteNativeObject(JNIEnv *env, bool forced){
-    if(m_dependencyManager)
-        m_dependencyManager->removeDependentObject(*this);
-    OwnedMetaTypedPointerToObjectInterfaceLink::deleteNativeObject(env, forced);
-}
-
-void OwnedDependentMetaTypedPointerToObjectInterfaceLink::invalidate(JNIEnv *env){
-    if(m_dependencyManager)
-        m_dependencyManager->removeDependentObject(*this);
-    OwnedMetaTypedPointerToObjectInterfaceLink::invalidate(env);
-}
-
-#define INTERFACE_METHODS4(LINKTYPE,DESTRUCTOR,LINKSUPERTYPE,TEMPLATE) \
-TEMPLATE \
-LINKTYPE::~DESTRUCTOR()\
-{\
-    LINKTYPE::unregisterOffsets();\
-}\
-TEMPLATE \
-void LINKTYPE::unregisterOffsets() {\
-    if(!this->m_flags.testFlag(QtJambiLink::Flag::IsOffsetsUnregistered)){\
-        QVector<void*> pointers;\
-        for(auto i = m_interfaceOffsetInfo.offsets.keyValueBegin(); i!=m_interfaceOffsetInfo.offsets.keyValueEnd(); ++i){\
-            pointers << reinterpret_cast<void*>( quintptr(this->pointer()) + i.base().value() );\
-        }\
-        this->unregisterPointers(pointers);\
-        this->m_flags.setFlag(QtJambiLink::Flag::IsOffsetsUnregistered);\
-    }\
-}\
-TEMPLATE \
-void LINKTYPE::addInterface(const std::type_info& qtInterfaceType){\
-    m_availableInterfaces << unique_id(qtInterfaceType);\
-    size_t offset = m_interfaceOffsetInfo.offsets.value(unique_id(qtInterfaceType));\
-    if(offset>0){\
-        this->registerPointer(reinterpret_cast<void*>( quintptr(this->pointer()) + offset ));\
-    }else{\
-        const QSet<const std::type_info*> inheritedInterfaces = m_interfaceOffsetInfo.inheritedInterfaces[unique_id(qtInterfaceType)];\
-        for(const std::type_info* ifaces : inheritedInterfaces){\
-            Q_ASSERT(ifaces);\
-            this->addInterface(*ifaces);\
-        }\
-    }\
-}\
-TEMPLATE \
-void LINKTYPE::removeInterface(const std::type_info& qtInterfaceType){\
-    if(m_availableInterfaces.contains(unique_id(qtInterfaceType))){\
-        m_availableInterfaces.remove(unique_id(qtInterfaceType));\
-        if(m_availableInterfaces.isEmpty())\
-            this->clearAllDependencies(); \
-        if(m_interfaceOffsetInfo.offsets.contains(unique_id(qtInterfaceType))){\
-            size_t offset = m_interfaceOffsetInfo.offsets.value(unique_id(qtInterfaceType));\
-            if(offset>0)\
-                this->unregisterPointer(reinterpret_cast<void*>( quintptr(this->pointer()) + offset ));\
-            else\
-                this->setInDestructor();\
-        }else{\
-            const QSet<const std::type_info*> inheritedInterfaces = m_interfaceOffsetInfo.inheritedInterfaces[unique_id(qtInterfaceType)];\
-            for(const std::type_info* ifaces : inheritedInterfaces){\
-                Q_ASSERT(ifaces);\
-                this->removeInterface(*ifaces);\
-            }\
-            this->setInDestructor();\
-        }\
-    }\
-}\
-TEMPLATE \
-void* LINKTYPE::typedPointer(const std::type_info& qtInterfaceType) const{\
-    if(m_interfaceOffsetInfo.offsets.contains(unique_id(qtInterfaceType))){\
-        if(!m_availableInterfaces.contains(unique_id(qtInterfaceType)))\
-            return nullptr;\
-        size_t offset = m_interfaceOffsetInfo.offsets.value(unique_id(qtInterfaceType));\
-        if(offset>0)\
-            return reinterpret_cast<void*>( quintptr(this->pointer()) + offset );\
-    }\
-    return this->pointer();\
-}\
-TEMPLATE \
-bool LINKTYPE::isMultiInheritanceType() const{\
-    return true;\
-}\
-TEMPLATE \
-bool LINKTYPE::isInterfaceAvailable(const std::type_info& qtInterfaceType) const{\
-    return m_availableInterfaces.contains(unique_id(qtInterfaceType));\
-}\
-TEMPLATE \
-const InterfaceOffsetInfo* LINKTYPE::interfaceOffsetInfo() const{\
-    return &m_interfaceOffsetInfo;\
-}
-
-#define INTERFACE_METHODS(LINKTYPE,LINKSUPERTYPE) INTERFACE_METHODS4(LINKTYPE,LINKTYPE,LINKSUPERTYPE, )
-#define TEMPLATE_INTERFACE_METHODS(LINKTYPE,LINKSUPERTYPE) INTERFACE_METHODS4(LINKTYPE<SmartPointer>,LINKTYPE,LINKSUPERTYPE<SmartPointer>,template<template<typename> class SmartPointer>)
-
-INTERFACE_METHODS(DeletableOwnedPointerToObjectInterfaceLink, PointerToObjectLink)
-INTERFACE_METHODS(DeletablePointerToObjectInterfaceLink, PointerToObjectLink)
-INTERFACE_METHODS(OwnedMetaTypedPointerToObjectInterfaceLink, PointerToObjectLink)
-INTERFACE_METHODS(MetaTypedPointerToObjectInterfaceLink, PointerToObjectLink)
-INTERFACE_METHODS(PointerToObjectInterfaceLink, PointerToObjectLink)
-INTERFACE_METHODS(PointerToQObjectInterfaceLink, PointerToQObjectLink)
-INTERFACE_METHODS(PointerToContainerInterfaceLink, PointerToContainerLink)
-INTERFACE_METHODS(DeletablePointerToContainerInterfaceLink, DeletablePointerToContainerLink)
-INTERFACE_METHODS(DeletableOwnedPointerToContainerInterfaceLink, DeletableOwnedPointerToContainerLink)
-TEMPLATE_INTERFACE_METHODS(SmartPointerToPlainQObjectInterfaceLink, SmartPointerToPlainQObjectLink)
-TEMPLATE_INTERFACE_METHODS(SmartPointerToQObjectInterfaceWithPendingExtraSignalsLink, SmartPointerToQObjectWithPendingExtraSignalsLink)
-TEMPLATE_INTERFACE_METHODS(SmartPointerToQObjectInterfaceWithExtraSignalsLink, SmartPointerToQObjectWithExtraSignalsLink)
-TEMPLATE_INTERFACE_METHODS(SmartPointerToObjectInterfaceLink, SmartPointerToObjectLink)
-TEMPLATE_INTERFACE_METHODS(SmartPointerToContainerInterfaceLink, SmartPointerToContainerLink)

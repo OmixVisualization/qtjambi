@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -45,7 +45,6 @@ TypeSystem{
     NamespaceType{
         name: "Qt3DExtras::Quick"
         generate: false
-        since: [5, 7]
     }
     
     ObjectType{
@@ -68,6 +67,5 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 7]
     }
 }

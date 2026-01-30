@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,7 +36,7 @@
 
 namespace RegistryAPI{
 template<typename T>
-int registerMetaType(const QByteArray& typeName);
+QMetaType registerMetaType(const QByteArray& typeName);
 }
 
 enum class QtJambiNativeID : jlong;
@@ -181,7 +181,7 @@ template<typename Iterator> struct supports_mutableAssIterator : std::conditiona
                                                                 && !std::is_const<typename std::remove_reference<decltype(std::declval<Iterator>().value())>::type>::value, std::true_type, std::false_type>::type{};
 
 template<typename Iterator, bool isMutable = supports_mutableAssIterator<Iterator>::value>
-struct qtjambi_associative_iterator_caster{
+struct qtjambi_associative_iterator_cast{
     static jobject cast(JNIEnv * env, QtJambiNativeID nativeId, typename std::conditional<std::is_pointer<Iterator>::value, Iterator, const Iterator&>::type iter){
         return QtJambiAPI::convertQAssociativeIteratorToJavaObject(env, nativeId,
             new Iterator(iter),
@@ -194,7 +194,7 @@ struct qtjambi_associative_iterator_caster{
 };
 
 template<typename Iterator>
-struct qtjambi_associative_iterator_caster<Iterator,true>{
+struct qtjambi_associative_iterator_cast<Iterator,true>{
     struct IteratorContainer{
         Iterator i;
     };
@@ -221,7 +221,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerBegin<Container, K, T, true>{
     static jobject function(JNIEnv *env, const ExtendedContainerInfo& ptr) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        return qtjambi_associative_iterator_caster<decltype(container->begin())>::cast(env, ptr.nativeId, container->begin());
+        return qtjambi_associative_iterator_cast<decltype(container->begin())>::cast(env, ptr.nativeId, container->begin());
     }
 };
 
@@ -237,7 +237,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerConstBegin<Container, K, T, true>{
     static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        return qtjambi_associative_iterator_caster<decltype(container->constBegin())>::cast(env, ptr.nativeId, container->constBegin());
+        return qtjambi_associative_iterator_cast<decltype(container->constBegin())>::cast(env, ptr.nativeId, container->constBegin());
     }
 };
 
@@ -323,7 +323,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerEnd<Container, K, T, true>{
     static jobject function(JNIEnv *env, const ExtendedContainerInfo& ptr) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        return qtjambi_associative_iterator_caster<decltype(container->end())>::cast(env, ptr.nativeId, container->end());
+        return qtjambi_associative_iterator_cast<decltype(container->end())>::cast(env, ptr.nativeId, container->end());
     }
 };
 
@@ -339,7 +339,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerConstEnd<Container, K, T, true>{
     static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        return qtjambi_associative_iterator_caster<decltype(container->constEnd())>::cast(env, ptr.nativeId, container->constEnd());
+        return qtjambi_associative_iterator_cast<decltype(container->constEnd())>::cast(env, ptr.nativeId, container->constEnd());
     }
 };
 
@@ -355,7 +355,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerFindPair<Container, K, T, true>{
     static jobject function(JNIEnv *env, const ExtendedContainerInfo& ptr, jobject key) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        return qtjambi_associative_iterator_caster<typename Container<K,T>::iterator>::cast(env, ptr.nativeId, container->find(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env)));
+        return qtjambi_associative_iterator_cast<typename Container<K,T>::iterator>::cast(env, ptr.nativeId, container->find(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env)));
     }
 };
 
@@ -371,7 +371,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerConstFindPair<Container, K, T, true>{
     static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr, jobject key) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        return qtjambi_associative_iterator_caster<typename Container<K,T>::const_iterator>::cast(env, ptr.nativeId, container->constFind(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env)));
+        return qtjambi_associative_iterator_cast<typename Container<K,T>::const_iterator>::cast(env, ptr.nativeId, container->constFind(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env)));
     }
 };
 
@@ -531,7 +531,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerLowerBound<Container, K, T, true>{
     static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr, jobject key) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        return qtjambi_associative_iterator_caster<typename Container<K,T>::const_iterator>::cast(env, ptr.nativeId, container->lowerBound(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env)));
+        return qtjambi_associative_iterator_cast<typename Container<K,T>::const_iterator>::cast(env, ptr.nativeId, container->lowerBound(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env)));
     }
 };
 
@@ -547,7 +547,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerUpperBound<Container, K, T, true>{
     static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr, jobject key) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        return qtjambi_associative_iterator_caster<typename Container<K,T>::const_iterator>::cast(env, ptr.nativeId, container->upperBound(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env)));
+        return qtjambi_associative_iterator_cast<typename Container<K,T>::const_iterator>::cast(env, ptr.nativeId, container->upperBound(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env)));
     }
 };
 
@@ -865,7 +865,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerFindPairs<Container, K, T, true>{
     static jobject function(JNIEnv *env, const ExtendedContainerInfo& ptr, jobject key, jobject object) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        return qtjambi_associative_iterator_caster<typename Container<K,T>::iterator>::cast(env, ptr.nativeId, container->find(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env), qtjambi_cast<T,jobject,JNIEnv*>::cast(object, env)));
+        return qtjambi_associative_iterator_cast<typename Container<K,T>::iterator>::cast(env, ptr.nativeId, container->find(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env), qtjambi_cast<T,jobject,JNIEnv*>::cast(object, env)));
     }
 };
 
@@ -881,7 +881,7 @@ template<template<typename K, typename T> class Container, typename K, typename 
 struct AssociativeContainerConstFindPairs<Container, K, T, true>{
     static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr, jobject key, jobject object) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        return qtjambi_associative_iterator_caster<typename Container<K,T>::const_iterator>::cast(env, ptr.nativeId, container->constFind(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env), qtjambi_cast<T,jobject,JNIEnv*>::cast(object, env)));
+        return qtjambi_associative_iterator_cast<typename Container<K,T>::const_iterator>::cast(env, ptr.nativeId, container->constFind(qtjambi_cast<K,jobject,JNIEnv*>::cast(key, env), qtjambi_cast<T,jobject,JNIEnv*>::cast(object, env)));
     }
 };
 
@@ -1357,8 +1357,11 @@ public:
             Q_UNUSED(env);
         }
     }
-    size_t sizeOf() override {
+    size_t sizeOf() const override {
         return sizeof(QMap<K,T>);
+    }
+    size_t alignOf() const override {
+        return alignof(QMap<K,T>);
     }
     void* constructContainer(void* placement) override {
         return new(placement) QMap<K,T>();
@@ -1381,7 +1384,7 @@ public:
         return true;
     }
 
-    int registerContainer(const QByteArray& containerTypeName) override {
+    QMetaType registerContainer(const QByteArray& containerTypeName) override {
         return RegistryAPI::registerMetaType<QMap<K,T>>(containerTypeName, this);
     }
 
@@ -1821,8 +1824,11 @@ public:
         return ContainerContentType<T>::isContainer && ContainerContentType<T>::needsReferenceCounting;
     }
 
-    size_t sizeOf() override {
+    size_t sizeOf() const override {
         return sizeof(QMultiMap<K,T>);
+    }
+    size_t alignOf() const override {
+        return alignof(QMultiMap<K,T>);
     }
 
     void* constructContainer(void* placement) override {
@@ -1873,7 +1879,7 @@ public:
         }
     }
 
-    int registerContainer(const QByteArray& containerTypeName) override {
+    QMetaType registerContainer(const QByteArray& containerTypeName) override {
         return RegistryAPI::registerMetaType<QMultiMap<K,T>>(containerTypeName, this);
     }
 
@@ -2439,12 +2445,15 @@ public:
         }
     }
 
-    int registerContainer(const QByteArray& containerTypeName) override {
+    QMetaType registerContainer(const QByteArray& containerTypeName) override {
         return RegistryAPI::registerMetaType<QHash<K,T>>(containerTypeName, this);
     }
 
-    size_t sizeOf() override {
+    size_t sizeOf() const override {
         return sizeof(QHash<K,T>);
+    }
+    size_t alignOf() const override {
+        return alignof(QHash<K,T>);
     }
     void* constructContainer(void* placement) override {
         return new(placement) QHash<K,T>();
@@ -2900,12 +2909,15 @@ public:
             Q_UNUSED(env);
         }
     }
-    int registerContainer(const QByteArray& containerTypeName) override {
+    QMetaType registerContainer(const QByteArray& containerTypeName) override {
         return RegistryAPI::registerMetaType<QMultiHash<K,T>>(containerTypeName, this);
     }
 
-    size_t sizeOf() override {
+    size_t sizeOf() const override {
         return sizeof(QMultiHash<K,T>);
+    }
+    size_t alignOf() const override {
+        return alignof(QMultiHash<K,T>);
     }
     void* constructContainer(void* placement) override {
         return new(placement) QMultiHash<K,T>();
@@ -3386,8 +3398,11 @@ public:
     void assign(JNIEnv *, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override {
         (*reinterpret_cast<QPair<K,T>*>(container.container)) = (*reinterpret_cast<const QPair<K,T>*>(other.container));
     }
-    size_t sizeOf() override {
+    size_t sizeOf() const override {
         return sizeof(QPair<K,T>);
+    }
+    size_t alignOf() const override {
+        return alignof(QPair<K,T>);
     }
     void* constructContainer(void* placement) override {
         return new(placement) QPair<K,T>();
@@ -3410,7 +3425,7 @@ public:
         return true;
     }
 
-    int registerContainer(const QByteArray& containerTypeName) override {
+    QMetaType registerContainer(const QByteArray& containerTypeName) override {
         return RegistryAPI::registerMetaType<QPair<K,T>>(containerTypeName, this);
     }
 

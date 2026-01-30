@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -75,7 +75,7 @@ public class QQueue<T> extends QList<T> implements Queue<T>
      * <p>See <code><a href="https://doc.qt.io/qt/qqueue.html">QQueue::<wbr>QQueue(const QQueue&lt;T> &amp;)</a></code></p>
      * @param other container
      */
-	public QQueue(@StrictNonNull Collection<T> other) {
+	public QQueue(@StrictNonNull Collection<? extends T> other) {
 		super(other);
 	}
 

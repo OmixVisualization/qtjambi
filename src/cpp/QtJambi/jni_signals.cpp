@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -186,12 +186,8 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_SignalUtility_00024NativeC
     try{
         QMetaObject::Connection* connection = QtJambiAPI::objectFromNativeId<QMetaObject::Connection>(nativeId);
         QObjectPrivate::Connection* ptr = reinterpret_cast<ConnectionAccess*>(connection)->d_ptr;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         size_t hashValue = qHash(ptr);
         __java_return_value = jint(quint64(hashValue) ^ quint64(hashValue) >> 32);
-#else
-        __java_return_value = qHash(ptr);
-#endif
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
@@ -425,21 +421,14 @@ bool checkThreadOnSignalEmit(QObject* object);
 
 Q_LOGGING_CATEGORY(internalSignalCategory, "io.qtjambi.internal.signal")
 
-Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gSignalEmitThreadCheckHandlerLock, (QReadWriteLock::Recursive));
-Q_GLOBAL_STATIC(JObjectWrapper, gSignalEmitThreadCheckHandler)
-
 void installSignalEmitThreadCheckHandler(JNIEnv *env, jobject handler){
-    QWriteLocker locker(gSignalEmitThreadCheckHandlerLock());
-    if(handler)
-        *gSignalEmitThreadCheckHandler = JObjectWrapper(env, handler);
-    else
-        gSignalEmitThreadCheckHandler->clear(env);
-}
-
-void clearInstallSignalEmitThreadCheckHandler(JNIEnv *env){
-    if(!gSignalEmitThreadCheckHandler.isDestroyed() && env){
-        QWriteLocker locker(gSignalEmitThreadCheckHandlerLock());
-        gSignalEmitThreadCheckHandler->clear(env);
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker locker(storage->lock());
+        if(handler)
+            storage->signalEmitThreadCheckHandler().assign(env, handler);
+        else
+            storage->signalEmitThreadCheckHandler().clear(env);
     }
 }
 
@@ -479,10 +468,11 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_SignalUtility_emitNativeSi
                 }
                 if (!failed) {
                     if(!checkThreadOnSignalEmit(o)){
-                        jobject signalEmitThreadCheckHandler;
+                        jobject signalEmitThreadCheckHandler{nullptr};
+                        QtJambiStorage* storage = getQtJambiStorage();
                         {
-                            QReadLocker locker(gSignalEmitThreadCheckHandlerLock());
-                            signalEmitThreadCheckHandler = gSignalEmitThreadCheckHandler->object(env);
+                            QReadLocker locker(storage->lock());
+                            signalEmitThreadCheckHandler = storage->signalEmitThreadCheckHandler().object(env);
                         }
                         if(signalEmitThreadCheckHandler){
                             jobject qobject = link->getJavaObjectLocalRef(env);
@@ -540,11 +530,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_connectNa
         QMetaMethod qt_signalMethod = senderMetaObject->method(signal);
         QObject* deletable = nullptr;
         QObject* context = QtJambiAPI::objectFromNativeId<QObject>(contextNativeId);
-        int reducedConnectionType = (connectionType & ~Qt::UniqueConnection)
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-                                    & ~Qt::SingleShotConnection
-#endif
-            ;
+        int reducedConnectionType = (connectionType & ~Qt::UniqueConnection) & ~Qt::SingleShotConnection;
         QThread* senderAsThread = dynamic_cast<QThread*>(sender);
         if(reducedConnectionType==Qt::AutoConnection || reducedConnectionType==Qt::DirectConnection){
             if(senderAsThread && !context){
@@ -1144,10 +1130,79 @@ namespace QtJambiAPI{
             for(int i=0; i<method.parameterCount(); ++i){
                 QMetaType sourceType = signal.parameterMetaType(i);
                 QMetaType targetType = method.parameterMetaType(i);
-                if(targetType==QMetaType::fromType<JObjectWrapper>()){
+                if(targetType.id()==QMetaType::UInt
+                    || targetType.id()==QMetaType::Int
+                    || targetType==QMetaType::fromType<int>()
+                    || targetType==QMetaType::fromType<qint32>()
+                    || targetType==QMetaType::fromType<quint32>()){
                     if(JniEnvironment env{200}){
                         jclass clazz = CoreAPI::getClassForMetaType(env, sourceType);
-                        if(Java::QtJambi::QFlags::isAssignableFrom(env, clazz)){
+                        if((Java::QtJambi::QFlags::isAssignableFrom(env, clazz)
+#if QT_VERSION >= QT_VERSION_CHECK(6,9,0)
+                             && !Java::QtJambi::QLongFlags::isAssignableFrom(env, clazz)
+#endif
+                             ) || Java::QtJambi::QtEnumerator::isAssignableFrom(env, clazz)
+                               || Java::Runtime::Enum::isAssignableFrom(env, clazz)){
+                            converter.insert(i);
+                            continue;
+                        }
+                    }
+                }else if(targetType.id()==QMetaType::LongLong
+                           || targetType.id()==QMetaType::ULongLong
+                           || targetType==QMetaType::fromType<qint64>()
+                           || targetType==QMetaType::fromType<quint64>()){
+                    if(JniEnvironment env{200}){
+                        jclass clazz = CoreAPI::getClassForMetaType(env, sourceType);
+                        if(Java::QtJambi::QtLongEnumerator::isAssignableFrom(env, clazz)
+#if QT_VERSION >= QT_VERSION_CHECK(6,9,0)
+                            || Java::QtJambi::QLongFlags::isAssignableFrom(env, clazz)
+#endif
+                        ){
+                            converter.insert(i);
+                            continue;
+                        }
+                    }
+                }else if(targetType.id()==QMetaType::Short
+                           || targetType.id()==QMetaType::UShort
+                           || targetType==QMetaType::fromType<qint16>()
+                           || targetType==QMetaType::fromType<quint16>()
+                           || targetType==QMetaType::fromType<short>()
+                           || targetType==QMetaType::fromType<ushort>()){
+                    if(JniEnvironment env{200}){
+                        jclass clazz = CoreAPI::getClassForMetaType(env, sourceType);
+                        if(Java::QtJambi::QtShortEnumerator::isAssignableFrom(env, clazz)){
+                            converter.insert(i);
+                            continue;
+                        }
+                    }
+                }else if(targetType.id()==QMetaType::Char
+                           || targetType.id()==QMetaType::UChar
+                           || targetType.id()==QMetaType::SChar
+                           || targetType==QMetaType::fromType<qint8>()
+                           || targetType==QMetaType::fromType<quint8>()
+                           || targetType==QMetaType::fromType<char>()
+                           || targetType==QMetaType::fromType<uchar>()
+                           || targetType==QMetaType::fromType<signed char>()
+                           || targetType==QMetaType::fromType<std::byte>()){
+                    if(JniEnvironment env{200}){
+                        jclass clazz = CoreAPI::getClassForMetaType(env, sourceType);
+                        if(Java::QtJambi::QtByteEnumerator::isAssignableFrom(env, clazz)){
+                            converter.insert(i);
+                            continue;
+                        }
+                    }
+                }else if(targetType==QMetaType::fromType<JObjectWrapper>()){
+                    if(JniEnvironment env{200}){
+                        jclass clazz = CoreAPI::getClassForMetaType(env, sourceType);
+                        if(Java::QtJambi::QFlags::isAssignableFrom(env, clazz)
+#if QT_VERSION >= QT_VERSION_CHECK(6,9,0)
+                            || Java::QtJambi::QLongFlags::isAssignableFrom(env, clazz)
+#endif
+                            || Java::Runtime::Enum::isAssignableFrom(env, clazz)
+                            || Java::QtJambi::QtEnumerator::isAssignableFrom(env, clazz)
+                            || Java::QtJambi::QtByteEnumerator::isAssignableFrom(env, clazz)
+                            || Java::QtJambi::QtLongEnumerator::isAssignableFrom(env, clazz)
+                            || Java::QtJambi::QtShortEnumerator::isAssignableFrom(env, clazz)){
                             converter.insert(i);
                             continue;
                         }
@@ -1156,13 +1211,10 @@ namespace QtJambiAPI{
                         return false;
                     }
                 }else if(targetType==QMetaType::fromType<JCollectionWrapper>()
-                         || targetType==QMetaType::fromType<JMapWrapper>()
-                         || targetType==QMetaType::fromType<JIteratorWrapper>()){
+                         || targetType==QMetaType::fromType<JMapWrapper>()){
                     if(!isJObjectWrappedMetaType(sourceType) && !JObjectValueWrapper::isValueType(sourceType)){
                         return false;
                     }
-                }else if(targetType==QMetaType::fromType<JEnumWrapper>()){
-                    converter.insert(i);
                 }
             }
             return true;

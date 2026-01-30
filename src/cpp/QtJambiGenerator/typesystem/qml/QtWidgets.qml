@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -743,11 +743,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
     }
     
     EnumType{
-        name: "QDirModel::Roles"
-        until: 5
-    }
-    
-    EnumType{
         name: "QGraphicsItem::CacheMode"
     }
     
@@ -1092,7 +1087,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
         }
         RejectEnumValue{
             name: "PE_IndicatorTabTearLeft"
-            since: [5, 7]
         }
     }
     
@@ -1113,7 +1107,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
         }
         RejectEnumValue{
             name: "SE_TabBarTearIndicatorLeft"
-            since: [5, 7]
         }
     }
     
@@ -1311,14 +1304,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
     }
     
     EnumType{
-        name: "QStyle::StyleHint"
-        extensible: true
-        RejectEnumValue{
-            name: "SH_ScrollBar_StopMouseOverSlider"
-        }
-    }
-    
-    EnumType{
         name: "QTextEdit::AutoFormattingFlag"
     }
     
@@ -1449,7 +1434,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1466,7 +1450,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1485,7 +1468,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1507,7 +1489,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1524,7 +1505,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1541,7 +1521,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1558,7 +1537,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1575,7 +1553,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1592,7 +1569,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1609,7 +1585,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1648,7 +1623,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1665,7 +1639,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1682,7 +1655,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1699,7 +1671,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1716,7 +1687,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1738,7 +1708,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1755,7 +1724,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1772,7 +1740,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1789,7 +1756,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1806,7 +1772,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1823,7 +1788,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1840,7 +1804,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
     }
     
@@ -1857,7 +1820,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 name: "set"
                 deprecated: true
             }
-            since: [5, 12]
         }
         ModifyField{
             name: "widget"
@@ -2311,11 +2273,6 @@ try{
             }
         }
         ModifyFunction{
-            signature: "resetMatrix()"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
             signature: "setGraphicsEffect(QGraphicsEffect*)"
             ModifyArgument{
                 index: 1
@@ -2600,11 +2557,6 @@ try{
             }
         }
         ModifyFunction{
-            signature: "resetMatrix()"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
             signature: "QAbstractGraphicsShapeItem(QGraphicsItem*)"
             ModifyArgument{
                 index: 1
@@ -2626,26 +2578,6 @@ try{
         ModifyFunction{
             signature: "update()"
             remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "horizontalStepsPerItem()const"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setHorizontalStepsPerItem(int)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setVerticalStepsPerItem(int)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "verticalStepsPerItem()const"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "edit(QModelIndex,QAbstractItemView::EditTrigger,QEvent*)"
@@ -2763,57 +2695,6 @@ try{
     }
     
     ObjectType{
-        name: "QActionGroup"
-        Rejection{
-            functionName: "selected"
-        }
-        EnumType{
-            name: "ExclusionPolicy"
-            since: [5, 14]
-        }
-        ModifyFunction{
-            signature: "addAction(QAction*)"
-            threadAffinity: true
-            ModifyArgument{
-                index: 1
-                threadAffinity: true
-                ReferenceCount{
-                    variableName: "__rcActions"
-                    action: ReferenceCount.Add
-                }
-            }
-            InjectCode{
-                position: Position.End
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "QtJambi_LibraryUtilities.internal.setReferenceCount(%1, QAction.class, \"__rcActionGroup\", false, false, this);"}
-            }
-        }
-        ModifyFunction{
-            signature: "removeAction(QAction*)"
-            threadAffinity: true
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcActions"
-                    action: ReferenceCount.Take
-                }
-            }
-            InjectCode{
-                position: Position.End
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "QtJambi_LibraryUtilities.internal.setReferenceCount(%1, QAction.class, \"__rcActionGroup\", false, false, null);"}
-            }
-        }
-        until: 5
-    }
-    
-    ObjectType{
         name: "QCheckBox"
     }
     
@@ -2896,37 +2777,12 @@ try{
     ObjectType{
         name: "QDialog"
         ModifyFunction{
-            signature: "setExtension(QWidget*)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
             signature: "open()"
             threadAffinity: true
         }
         ModifyFunction{
             signature: "exec()"
             threadAffinity: true
-        }
-        ModifyFunction{
-            signature: "extension()const"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "orientation()const"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setOrientation(Qt::Orientation)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "showExtension(bool)"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "setVisible(bool)"
@@ -2965,35 +2821,6 @@ try{
                 }
             }
         }
-    }
-    
-    ObjectType{
-        name: "QDirModel"
-        ModifyFunction{
-            signature: "parent()const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setIconProvider(QFileIconProvider*)"
-            threadAffinity: true
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcIconProvider"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "iconProvider()const"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    ownership: Ownership.Ignore
-                }
-            }
-        }
-        until: 5
     }
     
     ObjectType{
@@ -3285,11 +3112,6 @@ try{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "resetMatrix()"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
             signature: "setFocusProxy(QGraphicsItem*)"
             threadAffinity: true
             ModifyArgument{
@@ -3331,7 +3153,9 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "boolean _hasParent = %1.parentItem()!=null;"}
+                Text{content: String.raw`
+                    boolean isCppOwnership = %1==null || QtJambi_LibraryUtilities.internal.isCppOwnership(%1);
+                    `}
             }
             InjectCode{
                 position: Position.End
@@ -3339,7 +3163,7 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (!_hasParent && (%1.toGraphicsObject()==null || %1.toGraphicsObject().parent() == null) )\n"+
+                Text{content: "if (!isCppOwnership && (%1.toGraphicsObject()==null || %1.toGraphicsObject().parent() == null) )\n"+
                               "    QtJambi_LibraryUtilities.internal.setCppOwnership(%1);"}
             }
         }
@@ -3359,7 +3183,7 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (%1.parentItem() == null && (%1.toGraphicsObject()==null || %1.toGraphicsObject().parent() == null) )\n"+
+                Text{content: "if (%1!=null && %1.parentItem() == null && (%1.toGraphicsObject()==null || %1.toGraphicsObject().parent() == null) )\n"+
                               "    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%1);"}
             }
         }
@@ -3377,11 +3201,6 @@ try{
         ModifyFunction{
             signature: "type() const"
             remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "resetMatrix()"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "setFocusProxy(QGraphicsItem*)"
@@ -3498,11 +3317,6 @@ try{
         ModifyFunction{
             signature: "type() const"
             remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "resetMatrix()"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "setFocusProxy(QGraphicsItem*)"
@@ -3719,7 +3533,6 @@ try{
                 index: 1
                 invalidateAfterUse: true
             }
-            since: 6
         }
         ModifyFunction{
             signature: "paintSection(QPainter*,QRect,int)const"
@@ -3798,12 +3611,6 @@ try{
                 index: 1
                 invalidateAfterUse: true
             }
-        }
-        ModifyFunction{
-            signature: "selected(QPixmap,QPalette,bool)const"
-            Remove{
-            }
-            until: 5
         }
         ModifyFunction{
             signature: "setItemEditorFactory(QItemEditorFactory*)"
@@ -4227,7 +4034,6 @@ try{
                 index: 1
                 invalidateAfterUse: true
             }
-            since: 6
         }
         ModifyFunction{
             signature: "addAction<Func1>(QIcon,QString,Func1,QKeySequence)"
@@ -4487,7 +4293,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 index: 1
                 invalidateAfterUse: true
             }
-            since: 6
         }
         ModifyFunction{
             signature: "addAction<Func1>(QString,Func1)"
@@ -4601,7 +4406,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 fileName: "io.qt.gui.*"
                 location: Include.Java
             }
-            since: 6
             until: [6, 2]
         }
         InjectCode{
@@ -4706,53 +4510,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
             }
         }
-    }
-    
-    ObjectType{
-        name: "QShortcut"
-        ModifyFunction{
-            signature: "QShortcut(QKeySequence,QWidget*,const char*,const char*,Qt::ShortcutContext)"
-            access: Modification.Private
-            ModifyArgument{
-                index: 2
-                NoNullPointer{
-                }
-            }
-            ModifyArgument{
-                index: 3
-                RemoveDefaultExpression{
-                }
-                ReplaceType{
-                    modifiedType: "java.lang.Object"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "const char* %out = nullptr;\n"+
-                                  "Q_UNUSED(%in)"}
-                }
-            }
-            ModifyArgument{
-                index: 4
-                RemoveDefaultExpression{
-                }
-                ReplaceType{
-                    modifiedType: "java.lang.Object"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "const char* %out = nullptr;\n"+
-                                  "Q_UNUSED(%in)"}
-                }
-            }
-        }
-        InjectCode{
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiWidgets.java"
-                quoteAfterLine: "class QShortcut__"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        until: 5
     }
     
     ObjectType{
@@ -4925,11 +4682,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
             }
         }
-        ModifyFunction{
-            signature: "sortByColumn(int)"
-            remove: RemoveFlag.All
-            until: 5
-        }
     }
     
     ValueType{
@@ -5084,128 +4836,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
             }
         }
-        ModifyFunction{
-            signature: "sortByColumn(int)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-    }
-    
-    ObjectType{
-        name: "QUndoCommand"
-        ModifyFunction{
-            signature: "mergeWith(const QUndoCommand*)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QUndoGroup"
-        ModifyFunction{
-            signature: "createUndoAction(QObject *, const QString &) const"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    codeClass: CodeClass.Shell
-                    ownership: Ownership.Cpp
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "createRedoAction(QObject *, const QString &) const"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    codeClass: CodeClass.Shell
-                    ownership: Ownership.Cpp
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "addStack(QUndoStack*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcStacks"
-                    action: ReferenceCount.Add
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "removeStack(QUndoStack*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcStacks"
-                    action: ReferenceCount.Take
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setActiveStack(QUndoStack*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QUndoStack"
-        ModifyFunction{
-            signature: "createUndoAction(QObject *, const QString &) const"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    codeClass: CodeClass.Shell
-                    ownership: Ownership.Cpp
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "createRedoAction(QObject *, const QString &) const"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    codeClass: CodeClass.Shell
-                    ownership: Ownership.Cpp
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "push(QUndoCommand *)"
-            ModifyArgument{
-                index: 1
-                DefineOwnership{
-                    codeClass: CodeClass.Java
-                    ownership: Ownership.Cpp
-                }
-            }
-        }
-        until: 5
     }
     
     ObjectType{
@@ -5441,7 +5071,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -5451,6 +5080,17 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
     
     ObjectType{
         name: "QStyle"
+        EnumType{
+            name: "StyleHint"
+            extensible: true
+            RejectEnumValue{
+                name: "SH_ScrollBar_StopMouseOverSlider"
+            }
+            RejectEnumValue{
+                name: "SH_ComboBox_ListMouseTracking_Current"
+                since: [6,11]
+            }
+        }
         ModifyFunction{
             signature: "drawItemPixmap(QPainter*,QRect,int,QPixmap)const"
             ModifyArgument{
@@ -5565,31 +5205,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 Text{content: "if(!member.startsWith(\"1\") || !member.startsWith(\"2\")) member = '1'+member;"}
             }
         }
-        ModifyFunction{
-            signature: "getRgba(uint,bool*,QWidget*)"
-            threadAffinity: Affinity.UI
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "java.lang.@Nullable Integer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = ok ? QtJambiAPI::toJavaIntegerObject(%env, %in) : nullptr;"}
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
-                }
-            }
-            until: 5
-        }
     }
     
     ObjectType{
@@ -5681,11 +5296,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     action: ReferenceCount.Set
                 }
             }
-        }
-        ModifyFunction{
-            signature: "margin()const"
-            remove: RemoveFlag.All
-            until: 5
         }
         InjectCode{
             ImportFile{
@@ -7216,31 +6826,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             }
         }
         ModifyFunction{
-            signature: "getDouble(QWidget *, const QString &, const QString &, double, double, double, int, bool *, Qt::WindowFlags)"
-            threadAffinity: Affinity.UI
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "java.lang.@Nullable Double"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = ok ? QtJambiAPI::toJavaDoubleObject(%env, %in) : nullptr;"}
-                }
-            }
-            ModifyArgument{
-                index: 8
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "getDouble(QWidget *, const QString &, const QString &, double, double, double, int, bool *, Qt::WindowFlags, double)"
             threadAffinity: Affinity.UI
             ModifyArgument{
@@ -7608,11 +7193,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             }
             InjectCode{
                 target: CodeClass.Java
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -7683,9 +7265,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             ModifyArgument{
                 index: 1
                 threadAffinity: true
-                DefineOwnership{
-                    codeClass: CodeClass.Java
-                    ownership: Ownership.Cpp
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
                 }
             }
         }
@@ -7696,7 +7277,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 index: 1
                 threadAffinity: true
                 DefineOwnership{
-                    codeClass: CodeClass.Java
+                    codeClass: CodeClass.Native
                     ownership: Ownership.Cpp
                 }
             }
@@ -7704,12 +7285,14 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
         ModifyFunction{
             signature: "addEllipse(qreal,qreal,qreal,qreal, const QPen &, const QBrush &)"
             threadAffinity: true
-            ModifyArgument{
-                index: "return"
-                DefineOwnership{
-                    codeClass: CodeClass.Java
-                    ownership: Ownership.Cpp
-                }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                Text{content: String.raw`
+                    QtJambiNativeID result_nativeId = QtJambiAPI::javaObjectToNativeId(%env, __java_return_value);
+                    QtJambiAPI::setCppOwnership(%env, result_nativeId);
+                    CoreAPI::registerDependentObject(result_nativeId, __this_nativeId);
+                    `}
             }
             ModifyArgument{
                 index: 5
@@ -7724,62 +7307,61 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             signature: "addEllipse(const QRectF &, const QPen &, const QBrush &)"
             threadAffinity: true
             ModifyArgument{
-                index: "return"
-                DefineOwnership{
-                    codeClass: CodeClass.Java
-                    ownership: Ownership.Cpp
-                }
-            }
-            ModifyArgument{
                 index: 2
                 noImplicitCalls: true
             }
             ModifyArgument{
                 index: 3
                 noImplicitCalls: true
+            }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                Text{content: String.raw`
+                    QtJambiNativeID result_nativeId = QtJambiAPI::javaObjectToNativeId(%env, __java_return_value);
+                    QtJambiAPI::setCppOwnership(%env, result_nativeId);
+                    CoreAPI::registerDependentObject(result_nativeId, __this_nativeId);
+                    `}
             }
         }
         ModifyFunction{
             signature: "addLine(qreal,qreal,qreal,qreal, const QPen &)"
             threadAffinity: true
             ModifyArgument{
-                index: "return"
-                DefineOwnership{
-                    codeClass: CodeClass.Java
-                    ownership: Ownership.Cpp
-                }
-            }
-            ModifyArgument{
                 index: 5
                 noImplicitCalls: true
+            }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                Text{content: String.raw`
+                    QtJambiNativeID result_nativeId = QtJambiAPI::javaObjectToNativeId(%env, __java_return_value);
+                    QtJambiAPI::setCppOwnership(%env, result_nativeId);
+                    CoreAPI::registerDependentObject(result_nativeId, __this_nativeId);
+                    `}
             }
         }
         ModifyFunction{
             signature: "addLine(const QLineF &, const QPen &)"
             threadAffinity: true
             ModifyArgument{
-                index: "return"
-                DefineOwnership{
-                    codeClass: CodeClass.Java
-                    ownership: Ownership.Cpp
-                }
-            }
-            ModifyArgument{
                 index: 2
                 noImplicitCalls: true
+            }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                Text{content: String.raw`
+                    QtJambiNativeID result_nativeId = QtJambiAPI::javaObjectToNativeId(%env, __java_return_value);
+                    QtJambiAPI::setCppOwnership(%env, result_nativeId);
+                    CoreAPI::registerDependentObject(result_nativeId, __this_nativeId);
+                    `}
             }
         }
         ModifyFunction{
             signature: "addPath(const QPainterPath &, const QPen &, const QBrush &)"
             threadAffinity: true
             ModifyArgument{
-                index: "return"
-                DefineOwnership{
-                    codeClass: CodeClass.Java
-                    ownership: Ownership.Cpp
-                }
-            }
-            ModifyArgument{
                 index: 2
                 noImplicitCalls: true
             }
@@ -7787,29 +7369,33 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 index: 3
                 noImplicitCalls: true
             }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                Text{content: String.raw`
+                    QtJambiNativeID result_nativeId = QtJambiAPI::javaObjectToNativeId(%env, __java_return_value);
+                    QtJambiAPI::setCppOwnership(%env, result_nativeId);
+                    CoreAPI::registerDependentObject(result_nativeId, __this_nativeId);
+                    `}
+            }
         }
         ModifyFunction{
             signature: "addPixmap(const QPixmap &)"
             threadAffinity: true
-            ModifyArgument{
-                index: "return"
-                DefineOwnership{
-                    codeClass: CodeClass.Java
-                    ownership: Ownership.Cpp
-                }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                Text{content: String.raw`
+                    QtJambiNativeID result_nativeId = QtJambiAPI::javaObjectToNativeId(%env, __java_return_value);
+                    QtJambiAPI::setCppOwnership(%env, result_nativeId);
+                    CoreAPI::registerDependentObject(result_nativeId, __this_nativeId);
+                    `}
             }
         }
         ModifyFunction{
             signature: "addPolygon(const QPolygonF &, const QPen &, const QBrush &)"
             threadAffinity: true
             ModifyArgument{
-                index: "return"
-                DefineOwnership{
-                    codeClass: CodeClass.Java
-                    ownership: Ownership.Cpp
-                }
-            }
-            ModifyArgument{
                 index: 2
                 noImplicitCalls: true
             }
@@ -7817,17 +7403,19 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 index: 3
                 noImplicitCalls: true
             }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                Text{content: String.raw`
+                    QtJambiNativeID result_nativeId = QtJambiAPI::javaObjectToNativeId(%env, __java_return_value);
+                    QtJambiAPI::setCppOwnership(%env, result_nativeId);
+                    CoreAPI::registerDependentObject(result_nativeId, __this_nativeId);
+                    `}
+            }
         }
         ModifyFunction{
             signature: "addRect(qreal,qreal,qreal,qreal, const QPen &, const QBrush &)"
             threadAffinity: true
-            ModifyArgument{
-                index: "return"
-                DefineOwnership{
-                    codeClass: CodeClass.Java
-                    ownership: Ownership.Cpp
-                }
-            }
             ModifyArgument{
                 index: 5
                 noImplicitCalls: true
@@ -7836,17 +7424,19 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 index: 6
                 noImplicitCalls: true
             }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                Text{content: String.raw`
+                    QtJambiNativeID result_nativeId = QtJambiAPI::javaObjectToNativeId(%env, __java_return_value);
+                    QtJambiAPI::setCppOwnership(%env, result_nativeId);
+                    CoreAPI::registerDependentObject(result_nativeId, __this_nativeId);
+                    `}
+            }
         }
         ModifyFunction{
             signature: "addRect(const QRectF &, const QPen &, const QBrush &)"
             threadAffinity: true
-            ModifyArgument{
-                index: "return"
-                DefineOwnership{
-                    codeClass: CodeClass.Java
-                    ownership: Ownership.Cpp
-                }
-            }
             ModifyArgument{
                 index: 2
                 noImplicitCalls: true
@@ -7855,53 +7445,72 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 index: 3
                 noImplicitCalls: true
             }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                Text{content: String.raw`
+                    QtJambiNativeID result_nativeId = QtJambiAPI::javaObjectToNativeId(%env, __java_return_value);
+                    QtJambiAPI::setCppOwnership(%env, result_nativeId);
+                    CoreAPI::registerDependentObject(result_nativeId, __this_nativeId);
+                    `}
+            }
         }
         ModifyFunction{
             signature: "addSimpleText(const QString &, const QFont &)"
             threadAffinity: true
             ModifyArgument{
-                index: "return"
-                DefineOwnership{
-                    codeClass: CodeClass.Java
-                    ownership: Ownership.Cpp
-                }
-            }
-            ModifyArgument{
                 index: 2
                 noImplicitCalls: true
+            }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                Text{content: String.raw`
+                    QtJambiNativeID result_nativeId = QtJambiAPI::javaObjectToNativeId(%env, __java_return_value);
+                    QtJambiAPI::setCppOwnership(%env, result_nativeId);
+                    CoreAPI::registerDependentObject(result_nativeId, __this_nativeId);
+                    `}
             }
         }
         ModifyFunction{
             signature: "addText(const QString &, const QFont &)"
             threadAffinity: true
             ModifyArgument{
-                index: "return"
-                DefineOwnership{
-                    codeClass: CodeClass.Java
-                    ownership: Ownership.Cpp
-                }
-            }
-            ModifyArgument{
                 index: 2
                 noImplicitCalls: true
             }
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Cpp
+                }
+            }
+            // no dependency necessary, as it returns QObject
         }
         ModifyFunction{
             signature: "addWidget(QWidget*,Qt::WindowFlags)"
             threadAffinity: true
             ModifyArgument{
-                index: "return"
+                index: 0
                 DefineOwnership{
-                    codeClass: CodeClass.Java
+                    codeClass: CodeClass.Native
                     ownership: Ownership.Cpp
                 }
             }
             ModifyArgument{
                 index: 1
-                DefineOwnership{
-                    codeClass: CodeClass.Java
-                    ownership: Ownership.Cpp
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
                 }
+            }
+            InjectCode{
+                position: Position.End
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    InternalAccess.NativeIdInfo __widget__NativeIdInfo = QtJambi_LibraryUtilities.internal.checkedNativeIdInfo(%1);
+                    if (__widget__NativeIdInfo.needsReferenceCounting())
+                        __qt_return_value.__rcWidget = %1;`}
             }
         }
         ModifyFunction{
@@ -7956,7 +7565,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 index: 1
                 threadAffinity: true
                 DefineOwnership{
-                    codeClass: CodeClass.Java
+                    codeClass: CodeClass.Native
                     ownership: Ownership.Default
                 }
             }
@@ -7978,13 +7587,30 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             ModifyArgument{
                 index: 0
                 DefineOwnership{
-                    codeClass: CodeClass.Shell
+                    codeClass: CodeClass.Native
                     ownership: Ownership.Cpp
                 }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
+            }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                Text{content: String.raw`
+                    CoreAPI::registerDependentObject(QtJambiAPI::javaObjectToNativeId(%env, __java_return_value), __this_nativeId);
+                    `}
+            }
+            InjectCode{
+                position: Position.End
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
                 }
+                Text{content: String.raw`
+                    if(%1!=null){
+                        for(QGraphicsItem item : %1){
+                            if(item.toGraphicsObject()==null || item.toGraphicsObject().parent() == null)
+                                QtJambi_LibraryUtilities.internal.setCppOwnership(item);
+                        }
+                    }`}
             }
         }
         ModifyFunction{
@@ -8165,16 +7791,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             }
         }
         ModifyFunction{
-            signature: "setFirstItemColumnSpanned(const QTreeWidgetItem*,bool)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "setCurrentItem(QTreeWidgetItem*)"
             ModifyArgument{
                 index: 1
@@ -8191,42 +7807,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     action: ReferenceCount.Ignore
                 }
             }
-        }
-        ModifyFunction{
-            signature: "setItemExpanded(const QTreeWidgetItem*,bool)"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "isItemExpanded(const QTreeWidgetItem*)const"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setItemHidden(const QTreeWidgetItem*,bool)"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "isItemHidden(const QTreeWidgetItem*)const"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "isItemSelected(const QTreeWidgetItem*)const"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setItemSelected(const QTreeWidgetItem*,bool)"
-            Remove{
-            }
-            until: 5
         }
         ModifyFunction{
             signature: "setItemWidget(QTreeWidgetItem*,int,QWidget*)"
@@ -8253,17 +7833,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     action: ReferenceCount.Set
                 }
             }
-        }
-        ModifyFunction{
-            signature: "items(const QMimeData*)const"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "indexFromItem(QTreeWidgetItem *, int) const"
-            remove: RemoveFlag.All
-            since: [5, 7]
-            until: 5
         }
         InjectCode{
             InsertTemplate{
@@ -8322,11 +7891,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 index: 1
                 invalidateAfterUse: true
             }
-        }
-        ModifyFunction{
-            signature: "elidedText(QFontMetrics, int, Qt::TextElideMode, QString)"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "createEditor(QWidget *, const QStyleOptionViewItem &, const QModelIndex &) const"
@@ -8402,26 +7966,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     ownership: Ownership.Java
                 }
             }
-        }
-        ModifyFunction{
-            signature: "backgroundColor()const"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setBackgroundColor(QColor)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setTextColor(QColor)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "textColor()const"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "type()const"
@@ -8521,26 +8065,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     ownership: Ownership.Java
                 }
             }
-        }
-        ModifyFunction{
-            signature: "backgroundColor()const"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setBackgroundColor(QColor)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setTextColor(QColor)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "textColor()const"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "type()const"
@@ -8763,26 +8287,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
             }
         }
-        ModifyFunction{
-            signature: "backgroundColor(int)const"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setBackgroundColor(int, QColor)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setTextColor(int, QColor)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "textColor(int)const"
-            remove: RemoveFlag.All
-            until: 5
-        }
         InjectCode{
             InsertTemplate{
                 name: "core.to_iterator"
@@ -8934,30 +8438,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             }
         }
         ModifyFunction{
-            signature: "setItemHidden(const QListWidgetItem*,bool)"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "isItemHidden(const QListWidgetItem*)const"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setItemSelected(const QListWidgetItem*,bool)"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "isItemSelected(const QListWidgetItem*)const"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "takeItem(int)"
             ModifyArgument{
                 index: "return"
@@ -9012,12 +8492,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     action: ReferenceCount.Set
                 }
             }
-        }
-        ModifyFunction{
-            signature: "indexFromItem(QListWidgetItem *)const"
-            remove: RemoveFlag.All
-            since: [5, 11]
-            until: 5
         }
         ModifyFunction{
             signature: "currentItem()const"
@@ -9582,14 +9056,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "nativeEvent(const QByteArray &, void *, long *)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
             signature: "nativeEvent(const QByteArray &, void *, qintptr *)"
             remove: RemoveFlag.All
-            since: 6
         }
         ModifyFunction{
             signature: "actionEvent(QActionEvent*)"
@@ -9680,22 +9148,12 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             }
         }
         ModifyFunction{
-            signature: "enterEvent(QEvent*)"
-            threadAffinity: Affinity.UI
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "enterEvent(QEnterEvent*)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
             }
-            since: 6
         }
         ModifyFunction{
             signature: "focusInEvent(QFocusEvent*)"
@@ -9953,7 +9411,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     action: ReferenceCount.Ignore
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "setLayout(QLayout*)"
@@ -10201,58 +9658,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     expression: "new io.qt.core.QRect(new io.qt.core.QPoint(0, 0), new io.qt.core.QSize(-1, -1))"
                 }
             }
-        }
-        ModifyFunction{
-            signature: "getContentsMargins(int*,int*,int*,int*)const"
-            threadAffinity: Affinity.UI
-            InjectCode{
-                position: Position.Beginning
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "if(%1.length<4) throw new IllegalArgumentException(\"An array of length 4 expected.\");"}
-            }
-            ModifyArgument{
-                index: 1
-                rename: "margins"
-                ReplaceType{
-                    modifiedType: "int @NonNull[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 4;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, %in, %out_size);"}
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "int* %out = __qt_%1+1;"}
-                }
-            }
-            ModifyArgument{
-                index: 3
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "int* %out = __qt_%1+2;"}
-                }
-            }
-            ModifyArgument{
-                index: 4
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "int* %out = __qt_%1+3;"}
-                }
-            }
-            until: 5
         }
     }
     
@@ -10633,11 +10038,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             }
         }
         ModifyFunction{
-            signature: "QDateTimeEdit(const QVariant &, QVariant::Type, QWidget *)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
             signature: "setCalendarWidget(QCalendarWidget*)"
             threadAffinity: Affinity.UI
             ModifyArgument{
@@ -10739,12 +10139,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
         ModifyFunction{
             signature: "picture()const"
             remove: RemoveFlag.All
-            since: [5, 15]
         }
         ModifyFunction{
             signature: "pixmap()const"
             remove: RemoveFlag.All
-            since: [5, 15]
         }
         ModifyFunction{
             signature: "picture(Qt::ReturnByValueConstant)const"
@@ -10757,7 +10155,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     Text{content: "Qt::ReturnByValueConstant %out = Qt::ReturnByValue;"}
                 }
             }
-            since: [5, 15]
         }
         ModifyFunction{
             signature: "pixmap(Qt::ReturnByValueConstant)const"
@@ -10770,7 +10167,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     Text{content: "Qt::ReturnByValueConstant %out = Qt::ReturnByValue;"}
                 }
             }
-            since: [5, 15]
         }
     }
     
@@ -10865,8 +10261,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.widgets.QFileDialog$@NonNull Result<java.lang.@NonNull String>"
+                    modifiedType: "io.qt.widgets.QFileDialog$@Nullable Result<java.lang.@NonNull String>"
                 }
+                comment: "file name including selected filter. Returns <code>null</code> if dialog was canceled."
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "if(!%in.isEmpty()){\n"+
@@ -10891,8 +10288,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.widgets.QFileDialog$@NonNull Result<io.qt.core.@NonNull QStringList>"
+                    modifiedType: "io.qt.widgets.QFileDialog$@Nullable Result<io.qt.core.@NonNull QStringList>"
                 }
+                comment: "file names including selected filter. Returns <code>null</code> if dialog was canceled."
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "if(!%in.isEmpty()){\n"+
@@ -10917,8 +10315,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.widgets.QFileDialog$@NonNull Result<java.lang.@NonNull String>"
+                    modifiedType: "io.qt.widgets.QFileDialog$@Nullable Result<java.lang.@NonNull String>"
                 }
+                comment: "file name including selected filter. Returns <code>null</code> if dialog was canceled."
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "if(!%in.isEmpty()){\n"+
@@ -10943,8 +10342,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.widgets.QFileDialog$@NonNull Result<io.qt.core.@NonNull QUrl>"
+                    modifiedType: "io.qt.widgets.QFileDialog$@Nullable Result<io.qt.core.@NonNull QUrl>"
                 }
+                comment: "file url including selected filter. Returns <code>null</code> if dialog was canceled."
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "if(!%in.isEmpty()){\n"+
@@ -10969,8 +10369,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.widgets.QFileDialog$@NonNull Result<io.qt.core.@NonNull QList<io.qt.core.@NonNull QUrl>>"
+                    modifiedType: "io.qt.widgets.QFileDialog$@Nullable Result<io.qt.core.@NonNull QList<io.qt.core.@NonNull QUrl>>"
                 }
+                comment: "file urls including selected filter. Returns <code>null</code> if dialog was canceled."
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "if(!%in.isEmpty()){\n"+
@@ -10995,8 +10396,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.widgets.QFileDialog$@NonNull Result<io.qt.core.@NonNull QUrl>"
+                    modifiedType: "io.qt.widgets.QFileDialog$@Nullable Result<io.qt.core.@NonNull QUrl>"
                 }
+                comment: "file url including selected filter. Returns <code>null</code> if dialog was canceled."
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "if(!%in.isEmpty()){\n"+
@@ -11016,6 +10418,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 ReplaceType{
                     modifiedType: "java.util.function.BiConsumer<@NonNull String,io.qt.core.@NonNull QByteArray>"
                 }
+                comment: "Consumer processing file name and file content"
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "std::function<void(const QString&,const QByteArray&)> %out;\n"+
@@ -11044,6 +10447,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 ReplaceType{
                     modifiedType: "java.util.function.BiConsumer<@NonNull String,io.qt.core.@NonNull QByteArray>"
                 }
+                comment: "Consumer processing file name and file content"
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "std::function<void(const QString&,const QByteArray&)> %out;\n"+
@@ -11079,18 +10483,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     action: ReferenceCount.Set
                 }
             }
-            since: 6
-        }
-        ModifyFunction{
-            signature: "setIconProvider(QFileIconProvider*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcIconProvider"
-                    action: ReferenceCount.Set
-                }
-            }
-            until: 5
         }
         ModifyFunction{
             signature: "setItemDelegate(QAbstractItemDelegate*)"
@@ -11155,7 +10547,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 index: 1
                 invalidateAfterUse: true
             }
-            since: 6
         }
         ModifyFunction{
             signature: "setTabButton(int,QTabBar::ButtonPosition,QWidget*)"
@@ -11184,6 +10575,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     ownership: Ownership.Java
                 }
             }
+            since: [6,10]
         }
     }
     
@@ -11461,18 +10853,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             }
         }
         ModifyFunction{
-            signature: "setItemSelected(const QTableWidgetItem*,bool)"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "isItemSelected(const QTableWidgetItem*)const"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "setModel(QAbstractItemModel*)"
             threadAffinity: Affinity.UI
             ModifyArgument{
@@ -11484,12 +10864,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     action: ReferenceCount.Set
                 }
             }
-        }
-        ModifyFunction{
-            signature: "indexFromItem(QTableWidgetItem *) const"
-            remove: RemoveFlag.All
-            since: [5, 11]
-            until: 5
         }
     }
     
@@ -11645,11 +11019,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
         ModifyFunction{
             signature: "setReadOnly(bool)"
             threadAffinity: Affinity.UI
-        }
-        ModifyFunction{
-            signature: "getTextMargins(int*,int*,int*,int*)const"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "createStandardContextMenu()"
@@ -12014,16 +11383,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             threadAffinity: Affinity.UI
         }
         ModifyFunction{
-            signature: "setAutoCompletion(bool)"
-            threadAffinity: Affinity.UI
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setAutoCompletionCaseSensitivity(Qt::CaseSensitivity)"
-            threadAffinity: Affinity.UI
-            until: 5
-        }
-        ModifyFunction{
             signature: "setDuplicatesEnabled(bool)"
             threadAffinity: Affinity.UI
         }
@@ -12131,26 +11490,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             }
         }
         ModifyFunction{
-            signature: "autoCompletion()const"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "autoCompletionCaseSensitivity()const"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setAutoCompletion(bool)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setAutoCompletionCaseSensitivity(Qt::CaseSensitivity)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
             signature: "findData(const QVariant&,int,Qt::MatchFlags)const"
             ModifyArgument{
                 index: 3
@@ -12252,70 +11591,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
     }
     
     ObjectType{
-        name: "QAction"
-        EnumType{
-            name: "ActionEvent"
-        }
-        EnumType{
-            name: "MenuRole"
-        }
-        EnumType{
-            name: "Priority"
-        }
-        ModifyFunction{
-            signature: "setMenu(QMenu*)"
-            threadAffinity: true
-            ModifyArgument{
-                index: 1
-                threadAffinity: true
-                ReferenceCount{
-                    variableName: "__rcMenu"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "io.qt.gui.*"
-                location: Include.Java
-            }
-        }
-        InjectCode{
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiWidgets.java"
-                quoteAfterLine: "class QAction___"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        ModifyFunction{
-            signature: "setActionGroup(QActionGroup*)"
-            threadAffinity: true
-            ModifyArgument{
-                index: 1
-                threadAffinity: true
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            InjectCode{
-                position: Position.End
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "if (__rcActionGroup != null) {\n"+
-                              "    QtJambi_LibraryUtilities.internal.removeFromCollectionReferenceCount(__rcActionGroup, QActionGroup.class, \"__rcActions\", false, this);\n"+
-                              "}\n"+
-                              "__rcActionGroup = %1;\n"+
-                              "if (__rcActionGroup != null) {\n"+
-                              "    QtJambi_LibraryUtilities.internal.addReferenceCount(__rcActionGroup, QActionGroup.class, \"__rcActions\", false, false, this);\n"+
-                              "}"}
-            }
-        }
-        until: 5
-    }
-    
-    ObjectType{
         name: "QApplication"
         EnumType{
             name: "ColorSpec"
@@ -12324,7 +11599,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
         Rejection{functionName: "compressEvent"}
         Rejection{
             functionName: "nativeInterface"
-            since: 6
         }
         ExtraIncludes{
             Include{
@@ -12359,16 +11633,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
         ModifyFunction{
             signature: "setNavigationMode(Qt::NavigationMode)"
             ppCondition: "defined(QT_KEYPAD_NAVIGATION)"
-        }
-        ModifyFunction{
-            signature: "keypadNavigationEnabled()"
-            ppCondition: "defined(QT_KEYPAD_NAVIGATION)"
-            until: [5, 15]
-        }
-        ModifyFunction{
-            signature: "setKeypadNavigationEnabled(bool)"
-            ppCondition: "defined(QT_KEYPAD_NAVIGATION)"
-            until: [5, 15]
         }
         ModifyFunction{
             signature: "setActiveWindow(QWidget*)"
@@ -12467,8 +11731,13 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "applicationData->update(%env);\n"+
-                              "QTJAMBI_SET_OBJECTUSERDATA(ApplicationData, __qt_this, applicationData.release());"}
+                Text{content: String.raw`
+applicationData->update(%env);
+{
+    auto locker = QtJambiObjectData::writeLock();
+    applicationData.reset(QtJambiObjectData::setUserData<ApplicationData>(__qt_this, applicationData.release()));
+}
+`}
             }
         }
         ModifyFunction{
@@ -12476,13 +11745,20 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "QCoreApplication* instance = QCoreApplication::instance();\n"+
-                              "if (!instance)\n"+
-                              "    JavaException::raiseRuntimeException(%env, \"QApplication has not been initialized with QApplication.initialize()\" QTJAMBI_STACKTRACEINFO );\n"+
-                              "else if(instance->thread()!=QThread::currentThread())\n"+
-                              "    JavaException::raiseRuntimeException(%env, \"exec() must be called from the main thread.\" QTJAMBI_STACKTRACEINFO );\n"+
-                              "else if(QThreadData::get2(instance->thread())->eventLoops.size()>0)\n"+
-                              "    JavaException::raiseRuntimeException(%env, \"The event loop is already running.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+QCoreApplication* instance = QCoreApplication::instance();
+QThread* objectThread;
+if (!instance)
+    JavaException::raiseRuntimeException(%env, "QApplication has not been initialized with QApplication.initialize()" QTJAMBI_STACKTRACEINFO );
+else if((objectThread = instance->thread()) &&
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+                    !objectThread->isCurrentThread())
+#else
+                    objectThread!=QThread::currentThread())
+#endif
+    JavaException::raiseRuntimeException(%env, "exec() must be called from the main thread." QTJAMBI_STACKTRACEINFO );
+else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
+    JavaException::raiseRuntimeException(%env, "The event loop is already running." QTJAMBI_STACKTRACEINFO );`}
             }
         }
         Template{
@@ -12552,50 +11828,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
     }
     
     ObjectType{
-        name: "QMouseEventTransition"
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QKeyEventTransition"
-        until: 5
-    }
-    
-    ObjectType{
         name: "QCommandLinkButton"
-    }
-    
-    ObjectType{
-        name: "QFileSystemModel"
-        EnumType{
-            name: "Roles"
-            until: 5
-        }
-        EnumType{
-            name: "Option"
-            since: [5, 14]
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setIconProvider(QFileIconProvider*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcIconProvider"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "iconProvider()const"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    ownership: Ownership.Ignore
-                }
-            }
-        }
-        until: 5
     }
     
     ObjectType{
@@ -12892,18 +12125,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             }
         }
         ModifyFunction{
-            signature: "QGraphicsLayoutItem(QGraphicsLayoutItem*)"
-            InjectCode{
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "if (%1 instanceof QGraphicsWidget)\n"+
-                              "    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);"}
-            }
-            until: [5, 14]
-        }
-        ModifyFunction{
             signature: "QGraphicsLayoutItem(QGraphicsLayoutItem*,bool)"
             InjectCode{
                 ArgumentMap{
@@ -12913,7 +12134,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 Text{content: "if (%1 instanceof QGraphicsWidget)\n"+
                               "    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);"}
             }
-            since: [5, 15]
         }
         ModifyFunction{
             signature: "setParentLayoutItem(QGraphicsLayoutItem*)"
@@ -13304,6 +12524,14 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     ownership: Ownership.Java
                 }
             }
+            InjectCode{
+                position: Position.End
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    InternalAccess.NativeIdInfo __widget__NativeIdInfo = QtJambi_LibraryUtilities.internal.checkedNativeIdInfo(%1);
+                    if (__widget__NativeIdInfo.needsReferenceCounting())
+                        __qt_return_value.__rcWidget = %1;`}
+            }
         }
         ModifyFunction{
             signature: "createProxyForChildWidget(QWidget*)"
@@ -13315,13 +12543,17 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             ModifyArgument{
                 index: 0
                 DefineOwnership{
-                    codeClass: CodeClass.Shell
-                    ownership: Ownership.Cpp
-                }
-                DefineOwnership{
                     codeClass: CodeClass.Native
                     ownership: Ownership.Java
                 }
+            }
+            InjectCode{
+                position: Position.End
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    InternalAccess.NativeIdInfo __widget__NativeIdInfo = QtJambi_LibraryUtilities.internal.checkedNativeIdInfo(%1);
+                    if (__widget__NativeIdInfo.needsReferenceCounting())
+                        __qt_return_value.__rcWidget = %1;`}
             }
         }
         ModifyFunction{
@@ -13329,20 +12561,11 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             threadAffinity: true
             ModifyArgument{
                 index: 1
-                threadAffinity: true
                 ReferenceCount{
-                    action: ReferenceCount.Ignore
+                    variableName: "__rcWidget"
+                    action: ReferenceCount.Set
+                    access: Modification.Friendly
                 }
-            }
-            InjectCode{
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "if (%1 != null)\n"+
-                              "    QtJambi_LibraryUtilities.internal.setCppOwnership(%1);\n"+
-                              "else if (widget() != null)\n"+
-                              "    QtJambi_LibraryUtilities.internal.setDefaultOwnership(widget());"}
             }
         }
     }
@@ -14628,18 +13851,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
         EnumType{
             name: "ScrollMetric"
         }
-    }
-    
-    ObjectType{
-        name: "QOpenGLWidget"
-        EnumType{
-            name: "UpdateBehavior"
-        }
-        ModifyFunction{
-            signature: "paintGL()"
-            isPaintMethod: true
-        }
-        until: 5
     }
     
     NamespaceType{

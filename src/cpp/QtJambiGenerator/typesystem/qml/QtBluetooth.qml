@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -51,19 +51,6 @@ TypeSystem{
         name: "QtDBus"
         mode: RequiredLibrary.Mandatory
         platforms: ["linux"]
-        since: 6
-    }
-    
-    RequiredLibrary{
-        name: "QtConcurrent"
-        mode: RequiredLibrary.Mandatory
-        until: 5
-    }
-
-    RequiredLibrary{
-        name: "QtNetwork"
-        mode: RequiredLibrary.Mandatory
-        until: 5
     }
     
     Rejection{
@@ -139,10 +126,6 @@ TypeSystem{
 
         EnumType{
             name: "MajorDeviceClass"
-            RejectEnumValue{
-                name: "NetworkDevice"
-                until: 5
-            }
         }
 
         EnumType{
@@ -194,76 +177,10 @@ TypeSystem{
                 location: Include.Local
             }
         }
-        InjectCode{
-            until: [5, 13]
-            Text{content: "public final static class ServiceUuids implements Iterable<QBluetoothUuid>{\n"+
-                          "    private ServiceUuids(java.util.List<QBluetoothUuid> serviceUuids, DataCompleteness completeness) {\n"+
-                          "        super();\n"+
-                          "        this.serviceUuids = serviceUuids;\n"+
-                          "        this.completeness = completeness;\n"+
-                          "    }\n"+
-                          "\n"+
-                          "    public final java.util.List<io.qt.bluetooth.QBluetoothUuid> serviceUuids;\n"+
-                          "    public final DataCompleteness completeness;\n"+
-                          "\n"+
-                          "    @Override\n"+
-                          "    public java.util.Iterator<QBluetoothUuid> iterator() {\n"+
-                          "        return serviceUuids.iterator();\n"+
-                          "    }\n"+
-                          "}"}
-        }
-        ModifyFunction{
-            signature: "serviceUuids(QBluetoothDeviceInfo::DataCompleteness *) const"
-            ModifyArgument{
-                index: 1
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QBluetoothDeviceInfo::DataCompleteness* %out = nullptr;"}
-                }
-            }
-            since: [5, 14]
-            until: 5
-        }
-        ModifyFunction{
-            signature: "serviceUuids(QBluetoothDeviceInfo::DataCompleteness *) const"
-            ModifyArgument{
-                index: 1
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QBluetoothDeviceInfo::DataCompleteness completeness;\n"+
-                                  "QBluetoothDeviceInfo::DataCompleteness* %out = &completeness;"}
-                }
-            }
-            ModifyArgument{
-                index: 0
-                NoNullPointer{}
-                ReplaceType{
-                    modifiedType: "io.qt.bluetooth.QBluetoothDeviceInfo$ServiceUuids"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = Java::QtBluetooth::QBluetoothDeviceInfo$ServiceUuids::newInstance(%env, qtjambi_cast<jobject>(%env, std::move(%in)), qtjambi_cast<jobject>(%env, completeness));"}
-                }
-            }
-            until: [5, 13]
-        }
     }
     
     ValueType{
         name: "QBluetoothHostInfo"
-    }
-    
-    ValueType{
-        name: "QBluetoothTransferRequest"
-
-        EnumType{
-            name: "Attribute"
-        }
-        until: 5
     }
     
     ValueType{
@@ -329,20 +246,11 @@ TypeSystem{
             since: 6.6
         }
         ModifyFunction{
-            signature: "operator==(QBluetoothUuid)const"
-            ModifyArgument{
-                index: 1
-                InhibitImplicitCall{type: "QUuid"}
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "operator==(QBluetoothUuid,QBluetoothUuid)"
             ModifyArgument{
                 index: 2
                 InhibitImplicitCall{type: "QUuid"}
             }
-            since: 6
         }
         ModifyFunction{
             signature: "QBluetoothUuid<>(quint128, QSysInfo::Endian)"
@@ -558,20 +466,11 @@ TypeSystem{
             rename: "socketErrorString"
         }
         ModifyFunction{
-            signature: "connectToService(QBluetoothAddress,QBluetoothUuid,QIODevice::OpenMode)"
-            ModifyArgument{
-                index: 2
-                noImplicitCalls: true
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "connectToService(QBluetoothAddress,QBluetoothUuid,QIODeviceBase::OpenMode)"
             ModifyArgument{
                 index: 2
                 noImplicitCalls: true
             }
-            since: 6
         }
     }
     
@@ -628,27 +527,7 @@ public final boolean listen(io.qt.bluetooth.@NonNull QBluetoothAddress address, 
     ObjectType{
         name: "QBluetoothTransferManager"
     }
-    
-    ObjectType{
-        name: "QBluetoothTransferReply"
 
-        EnumType{
-            name: "TransferError"
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setManager(QBluetoothTransferManager*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcManager"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        until: 5
-    }
-    
     ObjectType{
         name: "QLowEnergyController"
 
@@ -727,17 +606,6 @@ public final boolean listen(io.qt.bluetooth.@NonNull QBluetoothAddress address, 
                 }
             }
             since: [6, 2]
-        }
-        ModifyFunction{
-            signature: "createCentral(QBluetoothAddress,QBluetoothAddress,QObject*)"
-            ModifyArgument{
-                index: "return"
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-            until: 5
         }
         ModifyFunction{
             signature: "createPeripheral(QObject *)"

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -391,12 +391,12 @@ class QFontDialog__java_ extends QFontDialog {
 
 class QFileDialog__java_ extends QFileDialog {
     /**
-     * Result class for <a href="@docRoot/qfiledialog.html#getOpenFileName"><code>QFileDialog::getOpenFileName(QWidget*,QString,QString,QString,QString*,Options)</code></a>,
-     * <a href="@docRoot/qfiledialog.html#getOpenFileNames"><code>QFileDialog::getOpenFileNames(QWidget*,QString,QString,QString,QString*,Options)</code></a>,
-     * <a href="@docRoot/qfiledialog.html#getOpenFileUrl"><code>QFileDialog::getOpenFileUrl(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</code></a>,
-     * <a href="@docRoot/qfiledialog.html#getOpenFileUrls"><code>QFileDialog::getOpenFileUrls(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</code></a>,
-     * <a href="@docRoot/qfiledialog.html#getSaveFileName"><code>QFileDialog::getSaveFileName(QWidget*,QString,QString,QString,QString*,Options)</code></a> and
-     * <a href="@docRoot/qfiledialog.html#getSaveFileUrl"><code>QFileDialog::getSaveFileUrl(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</code></a>.
+     * Result class for {@link QFileDialog#getOpenFileName(QWidget, String, String, String, Options)},
+     * {@link QFileDialog#getOpenFileNames(QWidget, String, String, String, Options)},
+     * {@link QFileDialog#getOpenFileUrls(QWidget, String, String, String, Options, java.util.Collection)},
+     * {@link QFileDialog#getSaveFileName(QWidget, String, String, String, Options)} and
+     * {@link QFileDialog#getSaveFileUrl(QWidget, String, String, String, Options, java.util.Collection)}
+     * providing result including selected filter.
      */
     public static final class Result<R> {
         @NativeAccess
@@ -406,7 +406,7 @@ class QFileDialog__java_ extends QFileDialog {
         }
 
         public final R result;
-        public final String selectedFilter;
+        public final @NonNull String selectedFilter;
     }
     
     /**

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -31,69 +31,36 @@
 
 #include "pch_p.h"
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-#define qtjambiMetaType QMetaType::fromType
-//qMetaTypeId
-void * pointerConstructHelper(void * where, const void *pointer);
-void destructHelper(void *);
-#else
-#define qtjambiMetaType QMetaType::fromType
-#endif
-
 extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_MetaTypeUtility_registerRefMetaType(JNIEnv *env, jclass, jint id, jboolean isPointer, jboolean isReference){
     try{
         QMetaType metaType(id);
-        if(metaType==qtjambiMetaType<JObjectWrapper>()
-                || metaType==qtjambiMetaType<JMapWrapper>()
-                || metaType==qtjambiMetaType<JCollectionWrapper>()
-                || metaType==qtjambiMetaType<JObjectArrayWrapper>()
-                || metaType==qtjambiMetaType<JIntArrayWrapper>()
-                || metaType==qtjambiMetaType<JLongArrayWrapper>()
-                || metaType==qtjambiMetaType<JByteArrayWrapper>()
-                || metaType==qtjambiMetaType<JShortArrayWrapper>()
-                || metaType==qtjambiMetaType<JDoubleArrayWrapper>()
-                || metaType==qtjambiMetaType<JFloatArrayWrapper>()
-                || metaType==qtjambiMetaType<JCharArrayWrapper>()
-                || metaType==qtjambiMetaType<JBooleanArrayWrapper>()
-                || metaType==qtjambiMetaType<JIteratorWrapper>()
-                || metaType==qtjambiMetaType<JEnumWrapper>())
+        if(metaType==QMetaType::fromType<JObjectWrapper>()
+                || metaType==QMetaType::fromType<JMapWrapper>()
+                || metaType==QMetaType::fromType<JCollectionWrapper>()
+                || metaType==QMetaType::fromType<JObjectArrayWrapper>()
+                || metaType==QMetaType::fromType<JIntArrayWrapper>()
+                || metaType==QMetaType::fromType<JLongArrayWrapper>()
+                || metaType==QMetaType::fromType<JByteArrayWrapper>()
+                || metaType==QMetaType::fromType<JShortArrayWrapper>()
+                || metaType==QMetaType::fromType<JDoubleArrayWrapper>()
+                || metaType==QMetaType::fromType<JFloatArrayWrapper>()
+                || metaType==QMetaType::fromType<JCharArrayWrapper>()
+                || metaType==QMetaType::fromType<JBooleanArrayWrapper>())
             return id;
         QByteArray typeName(metaType.name());
         if(isPointer){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            if(!typeName.endsWith("*")
-                    && !typeName.contains("(*)")
-                    && !typeName.contains("(__cdecl*)")){
-#else
             if(!(metaType.flags() & QMetaType::IsPointer)){
-#endif
                 if(!typeName.endsWith("*")){
                     typeName = QMetaObject::normalizedType(typeName + "*");
                 }
                 QMetaType::TypeFlags flags;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
                 flags |= QMetaType::IsPointer;
-#endif
                 if(metaType.metaObject()){
                     if(metaType.metaObject()->inherits(&QObject::staticMetaObject))
                         flags |= QMetaType::PointerToQObject;
                     else
                         flags |= QMetaType::PointerToGadget;
                 }
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                QMetaType::Destructor destructor = &destructHelper;
-                QMetaType::Constructor constructor = &pointerConstructHelper;
-                int typeId = QMetaType::registerNormalizedType(
-                        typeName,
-                        destructor,
-                        constructor,
-                        sizeof(void*),
-                        flags,
-                        metaType.metaObject()
-                    );
-                RegistryAPI::registerComparator(new QtPrivate::BuiltInComparatorFunction<void*>(), typeId);
-                return typeId;
-#else
                 QMetaType _metaType = createMetaType(typeName,
                                                     true,
                                                     /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::defaultCtr,
@@ -117,7 +84,6 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_MetaTypeUtility_registerRe
                     registerConverterVariant(env, _metaType, typeName, QtJambiAPI::getClassName(env, clazz).replace('.', '/'), clazz);
                 }
                 return _metaType.id();
-#endif
             }
         }else if(isReference){
             return 0;
@@ -128,20 +94,6 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_MetaTypeUtility_registerRe
                     typeName = QMetaObject::normalizedType(typeName + "&");
                 }
                 QMetaType::TypeFlags flags;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                QMetaType::Destructor destructor = &destructHelper;
-                QMetaType::Constructor constructor = &pointerConstructHelper;
-                int typeId = QMetaType::registerNormalizedType(
-                    typeName,
-                    destructor,
-                    constructor,
-                    sizeof(void*),
-                    flags,
-                    metaType.metaObject()
-                    );
-                RegistryAPI::registerComparator(new QtPrivate::BuiltInComparatorFunction<void*>(), typeId);
-                return typeId;
-#else
                 QMetaType _metaType = createMetaType(typeName,
                                                      true,
                                                      /*.defaultCtr=*/ nullptr,
@@ -165,7 +117,6 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_MetaTypeUtility_registerRe
                     registerConverterVariant(env, _metaType, typeName, QtJambiAPI::getClassName(env, clazz).replace('.', '/'), clazz);
                 }
                 return _metaType.id();
-#endif
             }
         }
         return id;
@@ -224,11 +175,7 @@ extern "C" JNIEXPORT jstring JNICALL Java_io_qt_internal_MetaTypeUtility_interna
 extern "C" JNIEXPORT int JNICALL Java_io_qt_internal_MetaTypeUtility_findMetaType(JNIEnv *env, jclass, jstring name){
     try{
         const char* _name = env->GetStringUTFChars(name, nullptr);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        int result = QMetaType::type(_name);
-#else
         int result = QMetaType::fromName(_name).id();
-#endif
         env->ReleaseStringUTFChars(name, _name);
         return result;
     }catch(const JavaException& exn){
@@ -238,63 +185,37 @@ extern "C" JNIEXPORT int JNICALL Java_io_qt_internal_MetaTypeUtility_findMetaTyp
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_MetaTypeUtility_isObjectWrapperType(JNIEnv *, jclass, jint metaTypeId){
-    return metaTypeId == registeredMetaTypeID(typeid(JObjectWrapper))
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    return metaTypeId == registeredMetaType(typeid(JObjectWrapper)).id()
             || isJObjectWrappedMetaType(QMetaType(metaTypeId))
-#endif
-            || metaTypeId == registeredMetaTypeID(typeid(JCollectionWrapper))
-            || metaTypeId == registeredMetaTypeID(typeid(JMapWrapper))
-            || metaTypeId == registeredMetaTypeID(typeid(JIteratorWrapper));
+            || metaTypeId == registeredMetaType(typeid(JCollectionWrapper)).id()
+            || metaTypeId == registeredMetaType(typeid(JMapWrapper)).id();
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_MetaTypeUtility_isCustomValueType(JNIEnv *, jclass, jint metaTypeId){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     return JObjectValueWrapper::isValueType(QMetaType(metaTypeId));
-#else
-    Q_UNUSED(metaTypeId)
-    return false;
-#endif
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_MetaTypeUtility_metaTypeHasDataStreamOperators(JNIEnv *, jclass, jint metaTypeId){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QMetaType metaType(metaTypeId);
     return metaType.iface()->dataStreamIn || metaType.iface()->dataStreamOut;
-#else
-    Q_UNUSED(metaTypeId)
-    return false;
-#endif
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_MetaTypeUtility_metaTypeHasDebugStreamOperator(JNIEnv *, jclass, jint metaTypeId){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     return JObjectValueWrapper::hasCustomDebugStreamOperator(QMetaType(metaTypeId));
-#else
-    Q_UNUSED(metaTypeId)
-    return false;
-#endif
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_MetaTypeUtility_registerCustomDataStreamOperators(JNIEnv *, jclass, jint metaTypeId){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QMetaType metaType(metaTypeId);
     if(!metaType.iface()->dataStreamIn && !metaType.iface()->dataStreamOut){
         const_cast<QtPrivate::QMetaTypeInterface*>(metaType.iface())->dataStreamIn = QtPrivate::QDataStreamOperatorForType<JObjectWrapper>::dataStreamIn;
         const_cast<QtPrivate::QMetaTypeInterface*>(metaType.iface())->dataStreamOut = QtPrivate::QDataStreamOperatorForType<JObjectWrapper>::dataStreamOut;
     }
-#else
-    Q_UNUSED(metaTypeId)
-#endif
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_MetaTypeUtility_registerCustomDebugStreamOperator(JNIEnv *, jclass, jint metaTypeId){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QMetaType metaType(metaTypeId);
     if(!JObjectValueWrapper::hasCustomDebugStreamOperator(metaType))
         const_cast<QtPrivate::QMetaTypeInterface*>(metaType.iface())->debugStream = QtPrivate::QDebugStreamOperatorForType<JObjectWrapper>::debugStream;
-#else
-    Q_UNUSED(metaTypeId)
-#endif
 }
 
 extern "C" JNIEXPORT bool JNICALL Java_io_qt_internal_MetaTypeUtility_registerConverter
@@ -307,7 +228,6 @@ extern "C" JNIEXPORT bool JNICALL Java_io_qt_internal_MetaTypeUtility_registerCo
  jobject converterFn
  )
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QMetaType metaType1(metaTypeId1);
     QMetaType metaType2(metaTypeId2);
     if(!QMetaType::hasRegisteredConverterFunction(metaType1, metaType2)){
@@ -343,28 +263,15 @@ extern "C" JNIEXPORT bool JNICALL Java_io_qt_internal_MetaTypeUtility_registerCo
             }, metaType1, metaType2);
         }
     }
-#else
-    Q_UNUSED(env)
-    Q_UNUSED(metaTypeId1)
-    Q_UNUSED(class1)
-    Q_UNUSED(metaTypeId2)
-    Q_UNUSED(class2)
-    Q_UNUSED(converterFn)
-#endif
     return false;
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_MetaTypeUtility_registerQmlListProperty(JNIEnv *env, jclass, jstring type){
     try{
         QByteArray _type = qtjambi_cast<QByteArray>(env, type);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        int id = QMetaType::type("QQmlListProperty<QObject>");
-        id = QMetaType::registerNormalizedTypedef(_type, id);
-#else
         QMetaType t = QMetaType::fromName("QQmlListProperty<QObject>");
-        int id = t.id();
         if(const QtPrivate::QMetaTypeInterface * copy = t.iface()){
-            id = createMetaType(QMetaObject::normalizedType(_type),
+            t = createMetaType(QMetaObject::normalizedType(_type),
                                 true,
                                 /*.defaultCtr=*/ copy->defaultCtr,
                                 /*.copyCtr=*/ copy->copyCtr,
@@ -380,10 +287,9 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_MetaTypeUtility_registerQm
                                 /*.alignment=*/ copy->alignment,
                                 /*.typeId=*/ QMetaType::UnknownType,
                                 /*.flags=*/ QMetaType::TypeFlags(int(copy->flags)),
-                                nullptr, copy->metaObjectFn).id();
+                                nullptr, copy->metaObjectFn);
         }
-#endif
-        return id;
+        return t.id();
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }

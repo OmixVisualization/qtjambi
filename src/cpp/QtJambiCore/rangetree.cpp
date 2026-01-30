@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -378,6 +378,7 @@ void QGenericTableItemModelImpl<GenericTable>::initializeTree(QRangeModel *itemM
     case TreeType::MutableTree:
         if(model.is_mutable_range){
             if(model.is_list_range){
+#if QT_VERSION < QT_VERSION_CHECK(6,11,0)
                 switch(model.rowType){
                 case RowType::Data:
                     initializeTree<true,true,false,true,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
@@ -498,6 +499,7 @@ void QGenericTableItemModelImpl<GenericTable>::initializeTree(QRangeModel *itemM
                 default:
                     break;
                 }
+#endif // QT_VERSION < QT_VERSION_CHECK(6,11,0)
             }
         }
         break;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -51,7 +51,7 @@ public:
     ObjectDataContainer& operator=(ObjectDataContainer&& other);
     bool operator==(const ObjectDataContainer& other);
     void swap(ObjectDataContainer& other);
-    void setUserData(const std::type_info& id, QtJambiObjectData* data);
+    QtJambiObjectData* setUserData(const std::type_info& id, QtJambiObjectData* data);
     QtJambiObjectData* userData(const std::type_info& id) const;
     bool isEmpty() const;
 private:
@@ -75,9 +75,11 @@ ObjectDataContainerPrivate::ObjectDataContainerPrivate() : indexes(), data() {
 
 ObjectDataContainerPrivate::~ObjectDataContainerPrivate(){
     QVector<QtJambiObjectData*> _data;
-    {
-        QWriteLocker locker(QtJambiLinkUserData::lock());
-        Q_UNUSED(locker)
+    if(QtJambiStorageOptional storage{}){
+        QWriteLocker locker(storage->lock());
+        data.swap(_data);
+        indexes.clear();
+    }else{
         data.swap(_data);
         indexes.clear();
     }
@@ -99,7 +101,7 @@ ObjectDataContainer::ObjectDataContainer(ObjectDataContainer&& other)
 ObjectDataContainer::ObjectDataContainer(const std::type_info& id, QtJambiObjectData* data)
     : ObjectDataContainer()
 {
-    setUserData(id, data);
+    (void)setUserData(id, data);
 }
 
 ObjectDataContainer::~ObjectDataContainer(){}
@@ -124,7 +126,7 @@ void ObjectDataContainer::swap(ObjectDataContainer& other){
 
 bool ObjectDataContainer::isEmpty()const{
     if(p){
-        for(QtJambiObjectData* d : p->data){
+        for(QtJambiObjectData* d : std::as_const(p->data)){
             if(d)
                 return false;
         }
@@ -132,11 +134,11 @@ bool ObjectDataContainer::isEmpty()const{
     return true;
 }
 
-void ObjectDataContainer::setUserData(const std::type_info& id, QtJambiObjectData* data){
+QtJambiObjectData* ObjectDataContainer::setUserData(const std::type_info& id, QtJambiObjectData* data){
     auto idx = p->indexes.indexOf(unique_id(id));
     if(idx<0){
         if(!data)
-            return;
+            return nullptr;
         idx = p->indexes.size();
         if(p->indexes.size()<=idx)
             p->indexes.resize(idx+1, 0);
@@ -144,10 +146,12 @@ void ObjectDataContainer::setUserData(const std::type_info& id, QtJambiObjectDat
     }
     if(p->data.size()<=idx){
         if(!data)
-            return;
+            return nullptr;
         p->data.resize(idx+1, nullptr);
     }
+    QtJambiObjectData* current = p->data[idx];
     p->data[idx] = data;
+    return current;
 }
 
 QtJambiObjectData* ObjectDataContainer::userData(const std::type_info& id) const{
@@ -173,11 +177,77 @@ bool useHiddenObjectData(JNIEnv *env = nullptr){
 QtJambiObjectData::QtJambiObjectData(){}
 QtJambiObjectData::~QtJambiObjectData(){}
 
+struct QtJambiObjectDataReadLockPrivate{
+    QtJambiObjectDataReadLockPrivate() : locker(getQtJambiStorage()->linkLock()) {
+    }
+    void unlock(){
+        locker.unlock();
+    }
+    void relock(){
+        locker.relock();
+    }
+private:
+    QReadLocker locker;
+};
+
+QtJambiObjectDataReadLock::QtJambiObjectDataReadLock(QtJambiObjectDataReadLockPrivate&_p) : p(&_p){
+}
+
+QtJambiObjectDataReadLock::~QtJambiObjectDataReadLock(){
+    delete p;
+}
+
+void QtJambiObjectDataReadLock::unlock(){
+    p->unlock();
+}
+
+void QtJambiObjectDataReadLock::relock(){
+    p->relock();
+}
+
+struct QtJambiObjectDataWriteLockPrivate{
+    QtJambiObjectDataWriteLockPrivate() : locker(getQtJambiStorage()->linkLock()) {
+    }
+    void unlock(){
+        locker.unlock();
+    }
+    void relock(){
+        locker.relock();
+    }
+private:
+    QWriteLocker locker;
+};
+
+QtJambiObjectDataWriteLock::QtJambiObjectDataWriteLock(QtJambiObjectDataWriteLockPrivate&_p) : p(&_p){
+}
+
+QtJambiObjectDataWriteLock::~QtJambiObjectDataWriteLock(){
+    delete p;
+}
+
+void QtJambiObjectDataWriteLock::unlock(){
+    p->unlock();
+}
+
+void QtJambiObjectDataWriteLock::relock(){
+    p->relock();
+}
+
+QtJambiObjectDataWriteLock QtJambiObjectData::writeLock()
+{
+    return QtJambiObjectDataWriteLock(*new QtJambiObjectDataWriteLockPrivate());
+}
+
+QtJambiObjectDataReadLock QtJambiObjectData::readLock()
+{
+    return QtJambiObjectDataReadLock(*new QtJambiObjectDataReadLockPrivate());
+}
+
 QtJambiObjectData* QtJambiObjectData::userData(const QObject* object, const std::type_info& id)
 {
     using namespace QtJambiPrivate;
     const QObjectPrivate* p = object ? QObjectPrivate::get(object) : nullptr;
-    if(p && p->extraData && (!p->wasDeleted || typeid_not_equals(id, typeid(ValueOwnerUserData)))){
+    if(p && p->extraData && (!p->wasDeleted || typeid_not_equals(id, typeid(ValueOwnerObjectData)))){
         if(useHiddenObjectData()){
             const auto i = p->extraData->propertyNames.size();
             if(i>=0 && i<p->extraData->propertyValues.size()){
@@ -204,11 +274,12 @@ QtJambiObjectData* QtJambiObjectData::userData(const QObject* object, const std:
     return nullptr;
 }
 
-void QtJambiObjectData::setUserData(QObject* object, const std::type_info& id, QtJambiObjectData* data)
+QtJambiObjectData* QtJambiObjectData::setUserData(QObject* object, const std::type_info& id, QtJambiObjectData* data)
 {
     using namespace QtJambiPrivate;
+    QtJambiObjectData* old = nullptr;
     QObjectPrivate* p = object ? QObjectPrivate::get(object) : nullptr;
-    if(p && (typeid_not_equals(id, typeid(ValueOwnerUserData)) || !p->wasDeleted)){
+    if(p && (typeid_not_equals(id, typeid(ValueOwnerObjectData)) || !p->wasDeleted)){
 #if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
         if (!p->extraData)
             p->extraData = new QObjectPrivate::ExtraData;
@@ -223,7 +294,7 @@ void QtJambiObjectData::setUserData(QObject* object, const std::type_info& id, Q
             if(i<p->extraData->propertyValues.size()
                     && p->extraData->propertyValues[i].metaType()==QMetaType::fromType<ObjectDataContainer>()){
                 if(ObjectDataContainer* container = reinterpret_cast<ObjectDataContainer*>(p->extraData->propertyValues[i].data())){
-                    container->setUserData(id, data);
+                    old = container->setUserData(id, data);
                     if(!data && container->isEmpty()){
                         p->extraData->propertyValues.takeAt(i);
                     }
@@ -242,7 +313,7 @@ void QtJambiObjectData::setUserData(QObject* object, const std::type_info& id, Q
             const auto i = p->extraData->propertyNames.indexOf(name);
             if(i>=0 && p->extraData->propertyValues[i].metaType()==QMetaType::fromType<ObjectDataContainer>()){
                 if(ObjectDataContainer* container = reinterpret_cast<ObjectDataContainer*>(p->extraData->propertyValues[i].data())){
-                    container->setUserData(id, data);
+                    old = container->setUserData(id, data);
                     if(!data && container->isEmpty()){
                         p->extraData->propertyNames.takeAt(i);
                         p->extraData->propertyValues.takeAt(i);
@@ -258,6 +329,7 @@ void QtJambiObjectData::setUserData(QObject* object, const std::type_info& id, Q
             }
         }
     }
+    return old;
 }
 
 bool QtJambiObjectData::isRejectedUserProperty(const QObject* object, const char * propertyName) {
@@ -276,7 +348,7 @@ void forceRemoveObjectData(QObject* object){
     using namespace QtJambiPrivate;
     QVariant variant;
     {
-        QWriteLocker locker(QtJambiLinkUserData::lock());
+        auto locker = QtJambiObjectData::writeLock();
         QObjectPrivate* p = object ? QObjectPrivate::get(object) : nullptr;
         if(p && p->extraData && !p->wasDeleted){
             if(useHiddenObjectData()){

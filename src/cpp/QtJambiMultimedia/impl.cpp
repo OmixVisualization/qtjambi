@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -50,7 +50,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/multimedia,QAbstractVideoBuffer$MapResult,
 }
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 extern "C" JNIEXPORT jlong JNICALL Java_io_qt_multimedia_QAudioFrame_getPositionToIndex(JNIEnv *env, jclass, jint config){
     switch(config){
     case QAudioFormat::ChannelConfigUnknown: return jlong(&QAudioFrame<QAudioFormat::ChannelConfigUnknown, QAudioFormat::Int32>::positionToIndex);
@@ -74,23 +73,16 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_multimedia_QAudioFrame_positionToIn
     typedef int(*PositionToIndex)(QAudioFormat::AudioChannelPosition pos);
     return reinterpret_cast<PositionToIndex>(positionToIndexFunction)(QAudioFormat::AudioChannelPosition(pos));
 }
-#endif
 
 #if defined(Q_OS_ANDROID)
 void initialize_meta_info_QtMultimedia(){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-#define ORG_QTPROJECT_QT "org/qtproject/qt/"
-#else
-#define ORG_QTPROJECT_QT "org/qtproject/qt5/"
-#endif
     if(JniEnvironment env{300}){
         jobject activity = nullptr;
         try{
             activity = Java::Android::QtNative::activity(env);
         }catch(...){}
         jclass cls = nullptr;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-        cls = env->FindClass(ORG_QTPROJECT_QT "android/multimedia/QtAudioDeviceManager");
+        cls = env->FindClass("org/qtproject/qt/android/multimedia/QtAudioDeviceManager");
         if(env->ExceptionCheck())
             env->ExceptionClear();
         if(cls){
@@ -103,9 +95,8 @@ void initialize_meta_info_QtMultimedia(){
                     env->ExceptionClear();
             }
         }
-#endif
 
-        cls = env->FindClass(ORG_QTPROJECT_QT "android/multimedia/QtMultimediaUtils");
+        cls = env->FindClass("org/qtproject/qt/android/multimedia/QtMultimediaUtils");
         if(env->ExceptionCheck())
             env->ExceptionClear();
         if(cls){
@@ -118,7 +109,6 @@ void initialize_meta_info_QtMultimedia(){
                     env->ExceptionClear();
             }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             method = env->GetStaticMethodID(cls, "setActivity", "(Landroid/app/Activity;Ljava/lang/Object;)V");
             if(env->ExceptionCheck())
                 env->ExceptionClear();
@@ -131,7 +121,6 @@ void initialize_meta_info_QtMultimedia(){
                 if(env->ExceptionCheck())
                     env->ExceptionClear();
             }
-#endif
         }
     }
 }

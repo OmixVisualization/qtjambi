@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -45,6 +45,10 @@ enum class QtJambiNativeID : jlong;
 template <typename T>
 class QFuture;
 
+namespace QtPrivate{
+struct QBindableInterface;
+}
+
 class QTJAMBI_EXPORT ApplicationData : public QtJambiObjectData
 {
 public:
@@ -58,7 +62,6 @@ public:
     char** chars();
     int& size();
     void update(JNIEnv *env);
-    QTJAMBI_OBJECTUSERDATA_ID_DECL
 private:
     static std::unique_ptr<ApplicationData> initialize(JNIEnv *env, jobjectArray array, const std::type_info& constructedType, bool checkMainThread = true);
     ApplicationData(int m_size, char** m_chars);
@@ -82,8 +85,6 @@ jobject convertQObjectToJavaObjectCppOwnership(JNIEnv *env, const O *qt_object)
 }
 
 QTJAMBI_EXPORT void ckeckLinkExtension(JNIEnv *env, QtJambiNativeID nativeId);
-
-QTJAMBI_EXPORT QReadWriteLock* objectDataLock();
 
 QTJAMBI_EXPORT QIODevice* newDirectAddressDevice(JNIEnv* env, jobject buffer, QObject *parent = nullptr);
 
@@ -149,9 +150,9 @@ QTJAMBI_EXPORT void invokeAndCatch(JNIEnv *__jni_env, void* ptr, void(*expressio
 
 QTJAMBI_EXPORT QVariant convertCheckedObjectToQVariant(JNIEnv *env, jobject object, const QMetaType& metaType);
 
-QTJAMBI_EXPORT int metaTypeId(JNIEnv *env, jclass clazz, jobjectArray instantiations = nullptr);
+QTJAMBI_EXPORT QMetaType registeredMetaType(JNIEnv *env, jclass clazz, jobjectArray instantiations = nullptr);
 
-QTJAMBI_EXPORT int registerMetaType(JNIEnv *env, jclass containerType, jobjectArray instantiations);
+QTJAMBI_EXPORT QMetaType registerMetaType(JNIEnv *env, jclass containerType, jobjectArray instantiations);
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0) && QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
 QTJAMBI_EXPORT void cleanContinuation(JNIEnv*, QFutureInterfaceBase* b);
@@ -240,6 +241,14 @@ QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, quint8 qt_enum, jcla
 QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, quint16 qt_enum, jclass cls);
 
 QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, quint64 qt_enum, jclass cls);
+
+QTJAMBI_EXPORT void registerMetaTypeOfPointer(const void* pointer, QMetaType&& metaType);
+
+QTJAMBI_EXPORT QMetaType unregisterMetaTypeOfPointer(const void* pointer);
+
+QTJAMBI_EXPORT const QtPrivate::QBindableInterface* registeredBindableInterface(size_t hash);
+
+QTJAMBI_EXPORT const QtPrivate::QBindableInterface* registerBindableInterface(size_t hash, const QtPrivate::QBindableInterface* iface);
 
 template<typename E>
 jobject convertEnumToJavaObject(JNIEnv *env, E qt_enum)

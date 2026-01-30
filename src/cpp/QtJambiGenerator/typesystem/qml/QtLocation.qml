@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -212,7 +212,6 @@ TypeSystem{
                     action: ReferenceCount.Set
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "createGeocodingManagerEngine(const QMap<QString,QVariant> &,QGeoServiceProvider::Error *,QString *) const"

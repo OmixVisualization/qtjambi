@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -251,6 +251,7 @@ final class LibraryUtility {
         List<String> systemLibraries = null;
         List<String> jniLibdirsPrepended = null;
         List<String> jniLibdirs = null;
+        boolean isProcessTmpDeploymentDir = false;
         try {
             libInfix = QtJambi_LibraryUtilities.properties.getProperty("qtjambi.libinfix");
             if(QtJambi_LibraryUtilities.qtMajorVersion>6 || (Integer.compare(QtJambi_LibraryUtilities.qtMajorVersion, 6)==0 && QtJambi_LibraryUtilities.qtMinorVersion>=7)) {
@@ -339,31 +340,67 @@ final class LibraryUtility {
         if(operatingSystem!=OperatingSystem.Android) {
 	        try{
 	        	Preferences preferences = Preferences.userNodeForPackage(LibraryUtility.class);
-	        	Preferences pids = preferences.node("qtjambi.pids");
-	        	for(String pid : pids.keys()) {
-	        		if(!RetroHelper.isProcessAlive(pid)) {
-	        			String dir = pids.get(pid, "");
-	        			File jambiTempDir = new File(dir);
-	        			if(jambiTempDir.exists() && jambiTempDir.isDirectory()) {
-	        				clearAndDelete(jambiTempDir);
-	        			}
-        				pids.remove(pid);
-        				pids.sync();
-	        		}
+	        	{
+		        	Preferences pids = preferences.node("qtjambi.pids");
+		        	for(String pid : pids.keys()) {
+		        		if(!RetroHelper.isProcessAlive(pid)) {
+		        			String dir = pids.get(pid, "");
+		        			File jambiTempDir = new File(dir);
+		        			if(jambiTempDir.exists() && jambiTempDir.isDirectory()) {
+		        				try{
+		        					clearAndDelete(jambiTempDir);
+		        				}catch(Throwable t) {}
+		        			}
+		        			if(!jambiTempDir.exists()) {
+		        				pids.remove(pid);
+		        			}
+	        				try{
+	        					pids.sync();
+	        				}catch(Throwable t) {}
+		        		}
+		        	}
+		        	if(pids.keys().length==0) {
+		        		preferences.remove("qtjambi.pids");
+		        	}
 	        	}
-	        	if(pids.keys().length==0) {
-	        		preferences.remove("qtjambi.pids");
-	        		preferences.sync();
+	        	{
+		        	Preferences ppids = preferences.node("qtjambi.previous.pids");
+		        	for(String pid : ppids.keys()) {
+		        		if(!RetroHelper.isProcessAlive(pid)) {
+		        			String dir = ppids.get(pid, "");
+		        			File jambiTempDir = new File(dir);
+		        			if(jambiTempDir.exists() && jambiTempDir.isDirectory()) {
+		        				try{
+		        					clearAndDelete(jambiTempDir);
+		        				}catch(Throwable t) {}
+		        			}
+		        			if(!jambiTempDir.exists()) {
+		        				ppids.remove(pid);
+		        			}
+	        				try{
+	        					ppids.sync();
+	        				}catch(Throwable t) {}
+		        		}
+		        	}
+		        	if(ppids.keys().length==0) {
+		        		preferences.remove("qtjambi.previous.pids");
+		        	}
 	        	}
-	    		String dirs = preferences.get("qtjambi.previous.deployment.dir", null);
-	    		if(dirs!=null && !dirs.isEmpty()) {
-	    	        preferences.remove("qtjambi.previous.deployment.dir");
-	    	        for(String dir : dirs.split("\\"+File.pathSeparator)) {
-	        			File jambiTempDir = new File(dir);
-	        			if(jambiTempDir.exists() && jambiTempDir.isDirectory())
-	        				clearAndDelete(jambiTempDir);
-	    	        }
-	    		}
+	        	{
+		    		String dirs = preferences.get("qtjambi.previous.deployment.dir", null);
+		    		if(dirs!=null && !dirs.isEmpty()) {
+		    	        preferences.remove("qtjambi.previous.deployment.dir");
+		    	        for(String dir : dirs.split("\\"+File.pathSeparator)) {
+		        			File jambiTempDir = new File(dir);
+		        			if(jambiTempDir.exists() && jambiTempDir.isDirectory()) {
+		        				try{
+		        					clearAndDelete(jambiTempDir);
+		        				}catch(Throwable t) {}
+		        			}
+		    	        }
+		    		}
+	        	}
+	    		preferences.sync();
 	        }catch(Throwable t) {}
         }
         try {
@@ -590,7 +627,7 @@ final class LibraryUtility {
     					}
 			        	if (f!=null && f.exists()) {
 			        		loadQtFromLibraryPath = true;
-			        		if(!loadQtJambiFromLibraryPath && !isOSNameSpecified && _osArchName.equals("windows-x64")) {
+			        		if(!isOSNameSpecified && operatingSystem==OperatingSystem.Windows && _osArchName.equals("windows-x64")) {
 			        			// check mingw
 			        			File util = new File(path, "libstdc++-6.dll");
 			        			if(util.exists()) {
@@ -617,6 +654,11 @@ final class LibraryUtility {
 		        String deploymentdir = System.getProperty("io.qt.deploymentdir", "");
 		        boolean keepDeployment = Boolean.getBoolean("io.qt.keep-temp-deployment");
 		        String dirprefix = "v";
+		        String dirinfix = "";
+		        //if((isMinGWBuilt!=null && isMinGWBuilt) || architecture!=Architecture.x86_64) 
+		        {
+		        	dirinfix = "-" + _osArchName;
+		        }
 		        if(deploymentdir!=null 
 		        		&& !deploymentdir.isEmpty()
 		        		&& !"tmp".equalsIgnoreCase(deploymentdir)
@@ -657,31 +699,33 @@ final class LibraryUtility {
 	        				dirprefix = "QtJambi";
 		        		tmpDir = deploymentDir;
 		        	}
-	        		jambiDeploymentDir = new File(tmpDir, dirprefix + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch);
+	        		jambiDeploymentDir = new File(tmpDir, dirprefix + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch+dirinfix);
 		        }else {
 			        if(keepDeployment) {
 			        	switch (operatingSystem) {
 						default:
 							if(operatingSystem.isUnixLike()) {
 								if(!tmpDir.getAbsolutePath().startsWith(System.getProperty("user.home"))) {
-									jambiDeploymentDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + "_" + System.getProperty("user.name"));
+									jambiDeploymentDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch+dirinfix + "_" + System.getProperty("user.name"));
 									break;
 								}
 							}
-				        	jambiDeploymentDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch);
+				        	jambiDeploymentDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch+dirinfix);
 							break;
 			        	}
 			        }else {
 			        	if(RetroHelper.processName()!=null && !RetroHelper.processName().isEmpty()){
-				        	jambiDeploymentDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + "_" + RetroHelper.processName());
+			        		isProcessTmpDeploymentDir = true;
+				        	jambiDeploymentDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch+dirinfix + "_" + RetroHelper.processName());
 				        	try{
 					        	Preferences preferences = Preferences.userNodeForPackage(LibraryUtility.class);
 					        	Preferences pids = preferences.node("qtjambi.pids");
 					        	pids.put(RetroHelper.processName(), jambiDeploymentDir.getAbsolutePath());
 					        	pids.sync();
+					        	preferences.sync();
 					        }catch(Throwable t) {}
 				        }else {
-				        	jambiDeploymentDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + "_" + System.getProperty("user.name"));
+				        	jambiDeploymentDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + dirinfix + "_" + System.getProperty("user.name"));
 				        }
 			        }
 		        }
@@ -732,7 +776,7 @@ final class LibraryUtility {
 		        				dirprefix = "QtJambi";
 			        		tmpDir = deploymentDir;
 			        	}
-		        		jambiHeadersDir = new File(tmpDir, dirprefix + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch);
+		        		jambiHeadersDir = new File(tmpDir, dirprefix + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + dirinfix);
 			        }else if("tmp".equalsIgnoreCase(headersdir)
 			        		|| "temp".equalsIgnoreCase(headersdir)){
 				        if(deleteTmpDeployment) {
@@ -740,24 +784,25 @@ final class LibraryUtility {
 							default:
 								if(operatingSystem.isUnixLike()) {
 									if(!tmpDir.getAbsolutePath().startsWith(System.getProperty("user.home"))) {
-										jambiHeadersDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + "_" + System.getProperty("user.name"));
+										jambiHeadersDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + dirinfix + "_" + System.getProperty("user.name"));
 										break;
 									}
 								}
-								jambiHeadersDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch);
+								jambiHeadersDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + dirinfix);
 								break;
 				        	}
 				        }else {
 				        	if(RetroHelper.processName()!=null && !RetroHelper.processName().isEmpty()){
-				        		jambiHeadersDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + "_" + RetroHelper.processName());
+				        		jambiHeadersDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + dirinfix + "_" + RetroHelper.processName());
 					        	try{
 						        	Preferences preferences = Preferences.userNodeForPackage(LibraryUtility.class);
 						        	Preferences pids = preferences.node("qtjambi.pids");
 						        	pids.put(RetroHelper.processName(), jambiDeploymentDir.getAbsolutePath());
 						        	pids.sync();
+						        	preferences.sync();
 						        }catch(Throwable t) {}
 					        }else {
-					        	jambiHeadersDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + "_" + System.getProperty("user.name"));
+					        	jambiHeadersDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + dirinfix + "_" + System.getProperty("user.name"));
 					        }
 				        }
 			        }else {
@@ -809,7 +854,7 @@ final class LibraryUtility {
 		        				dirprefix = "QtJambi";
 			        		tmpDir = deploymentDir;
 			        	}
-		        		jambiSourcesDir = new File(tmpDir, dirprefix + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch);
+		        		jambiSourcesDir = new File(tmpDir, dirprefix + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + dirinfix);
 			        }else if("tmp".equalsIgnoreCase(sourcesdir)
 			        		|| "temp".equalsIgnoreCase(sourcesdir)){
 				        if(deleteTmpDeployment) {
@@ -817,24 +862,25 @@ final class LibraryUtility {
 							default:
 								if(operatingSystem.isUnixLike()) {
 									if(!tmpDir.getAbsolutePath().startsWith(System.getProperty("user.home"))) {
-										jambiSourcesDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + "_" + System.getProperty("user.name"));
+										jambiSourcesDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + dirinfix + "_" + System.getProperty("user.name"));
 										break;
 									}
 								}
-								jambiSourcesDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch);
+								jambiSourcesDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + dirinfix);
 								break;
 				        	}
 				        }else {
 				        	if(RetroHelper.processName()!=null && !RetroHelper.processName().isEmpty()){
-				        		jambiSourcesDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + "_" + RetroHelper.processName());
+				        		jambiSourcesDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + dirinfix + "_" + RetroHelper.processName());
 					        	try{
 						        	Preferences preferences = Preferences.userNodeForPackage(LibraryUtility.class);
 						        	Preferences pids = preferences.node("qtjambi.pids");
 						        	pids.put(RetroHelper.processName(), jambiDeploymentDir.getAbsolutePath());
 						        	pids.sync();
+						        	preferences.sync();
 						        }catch(Throwable t) {}
 					        }else {
-					        	jambiSourcesDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + "_" + System.getProperty("user.name"));
+					        	jambiSourcesDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + dirinfix + "_" + System.getProperty("user.name"));
 					        }
 				        }
 			        }else {
@@ -1401,6 +1447,13 @@ final class LibraryUtility {
 	            		qtJambiLibraryPath = new File(qtjambiSpec.extractionDir(), "lib");
 	            		break;
 	            	}
+	            	if(isProcessTmpDeploymentDir) {
+	            		try {
+	            			clearAndDelete(jambiDeploymentDir);
+		            	}catch(Throwable t) {
+	            			t.printStackTrace();
+	            		}
+	            	}
 	            	for(LibraryBundle spec : nativeDeployments) {
 	            		if(spec.compiler()!=null && qtjambiSpec.compiler()!=null && !spec.compiler().equals(qtjambiSpec.compiler())) {
 	            			if(operatingSystem==OperatingSystem.Windows) {
@@ -1600,12 +1653,11 @@ final class LibraryUtility {
 	        	clearAndDelete(jambiDeploymentDir);
 	        	if(jambiDeploymentDir.exists() && jambiDeploymentDir.isDirectory()) {
 	        		logger.log(Level.FINEST, "Preparing pending deletion...");
-	        		String dirs = preferences.get("qtjambi.previous.deployment.dir", null);
-	        		if(dirs!=null && !dirs.isEmpty()) {
-	        			preferences.put("qtjambi.previous.deployment.dir", dirs + File.pathSeparator + jambiDeploymentDir.getAbsolutePath());
-	        		}else {
-	        			preferences.put("qtjambi.previous.deployment.dir", jambiDeploymentDir.getAbsolutePath());
-	        		}
+	        		Preferences ppids = preferences.node("qtjambi.previous.pids");
+	        		ppids.put(RetroHelper.processName(), jambiDeploymentDir.getAbsolutePath());
+	        		try {
+	        			ppids.sync();
+	        		}catch(Throwable t) {}
 	        	}
 	    	}else {
 	    		logger.log(Level.FINEST, ()->"Tmp deployment directory "+jambiDeploymentDir.getAbsolutePath()+" does not exist.");
@@ -1618,6 +1670,9 @@ final class LibraryUtility {
 	        	}
 	        	pids.sync();
 	        }catch(Throwable t) {}
+        	try {
+	        	preferences.sync();
+        	}catch(Throwable t) {}
         }
     }
 

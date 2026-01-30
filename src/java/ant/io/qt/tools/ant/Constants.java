@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -63,8 +63,9 @@ public abstract class Constants {
     public static final String JAMBIIMPORTSDIR          = "qtjambi.jambi.importsdir";
     public static final String CACHEKEY                 = "qtjambi.version.cachekey";
     public static final String VERSION                  = "qtjambi.version";
-    public static final String BUNDLE_VERSION           = "qtjambi.version.bundle";
-    public static final String BUNDLE_VERSION_MODE      = "qtjambi.version.bundle.mode";
+    public static final String QT_BUNDLE_VERSION        = "qtjambi.qtversion.bundle";
+    public static final String QT_BUNDLE_VERSION_MODE   = "qtjambi.qtversion.bundle.mode";
+    public static final String QT_SUFFIX_VERSION        = "qtjambi.qtversion.suffix";
     public static final String SUFFIX_VERSION           = "qtjambi.version.suffix";
     public static final String JAVA_HOME_TARGET         = "java.home.target"; // build
     public static final String JAVA8_HOME_TARGET        = "java8.home.target"; // build

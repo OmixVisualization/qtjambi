@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,13 +34,8 @@
 
 #if defined(Q_OS_ANDROID)
 void initialize_meta_info_QtNfc(){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-#define ORG_QTPROJECT_QT "org/qtproject/qt/"
-#else
-#define ORG_QTPROJECT_QT "org/qtproject/qt5/"
-#endif
     if(JniEnvironment env{300}){
-        jclass cls = env->FindClass(ORG_QTPROJECT_QT "android/nfc/QtNfc");
+        jclass cls = env->FindClass("org/qtproject/qt/android/nfc/QtNfc");
         if(env->ExceptionCheck())
             env->ExceptionClear();
         if(cls){

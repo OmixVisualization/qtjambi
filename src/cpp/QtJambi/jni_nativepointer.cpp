@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -58,7 +58,7 @@ size_t getValueSizeForClass(JNIEnv *env, jclass object_class)
     if(jclass cls = JavaAPI::resolveClosestQtSuperclass(env, object_class, nullptr)){
         QString javaClassName = QtJambiAPI::getClassName(env, cls).replace(".", "/");
         if(const std::type_info* qtClassName = getTypeByJavaName(javaClassName)){
-            result = getValueSize(*qtClassName);
+            result = getValueSizeAndAlignment(*qtClassName).first;
         }
     }
     return result;
@@ -70,7 +70,7 @@ size_t getShellSizeForClass(JNIEnv *env, jclass object_class)
     if(jclass cls = JavaAPI::resolveClosestQtSuperclass(env, object_class, nullptr)){
         QString javaClassName = QtJambiAPI::getClassName(env, cls).replace(".", "/");
         if(const std::type_info* qtClassName = getTypeByJavaName(javaClassName)){
-            result = getShellSize(*qtClassName);
+            result = getShellSizeAndAlignment(*qtClassName).first;
         }
     }
     return result;
@@ -130,7 +130,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_qt_QNativePointer_readPointer
     return reinterpret_cast<jlong>((reinterpret_cast<void **>(ptr))[pos]);
 }
 
-bool isValueType(JNIEnv * __jni_env, jclass valueType, int* metaTypeId = nullptr);
+bool isValueType(JNIEnv * __jni_env, jclass valueType, QMetaType* metaType = nullptr);
 
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QNativePointer_readObject
   (JNIEnv * __jni_env, jclass, jlong ptr, jclass valueType, jlong pos, jboolean readOnly, jint type, jlong size)
@@ -143,8 +143,8 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QNativePointer_readObject
             return QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, &reinterpret_cast<void **>(ptr)[pos], valueType);
         }else if(size>0){
             void* _ptr = reinterpret_cast<char*>(ptr) + size_t(pos) * size;
-            int metaTypeId;
-            bool isValue = isValueType(__jni_env, valueType, &metaTypeId);
+            QMetaType metaType;
+            bool isValue = isValueType(__jni_env, valueType, &metaType);
             if(readOnly && !isValue){
                 JavaException::raiseIllegalArgumentException(__jni_env, "Cannot read non-value typed object from read-only buffer." QTJAMBI_STACKTRACEINFO);
             }
@@ -167,10 +167,10 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QNativePointer_fromArray
         jsize len = array ? env->GetArrayLength(array) : 0;
         if (len == 0)
             return nullptr;
-        int metaTypeId;
+        QMetaType metaType;
         size_t size = getValueSizeForClass(env, valueType);
-        bool isValue = isValueType(env, valueType, &metaTypeId);
-        if(size<=0 || !isValue || metaTypeId==QMetaType::UnknownType){
+        bool isValue = isValueType(env, valueType, &metaType);
+        if(size<=0 || !isValue || !metaType.isValid()){
             JavaException::raiseIllegalArgumentException(env, "Array does not contain clonable values." QTJAMBI_STACKTRACEINFO );
         }
 
@@ -190,7 +190,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QNativePointer_fromArray
             }
 
             if (ptr){
-                QMetaType::construct(metaTypeId, buf + size_t(i) * size, ptr);
+                metaType.construct(buf + size_t(i) * size, ptr);
             }
         }
 

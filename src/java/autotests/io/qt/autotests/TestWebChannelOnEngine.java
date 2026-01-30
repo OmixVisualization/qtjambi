@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -28,12 +28,9 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assume.assumeTrue;
+import static org.junit.Assume.*;
 
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import io.qt.*;
 import io.qt.autotests.generated.General;
@@ -57,6 +54,7 @@ public class TestWebChannelOnEngine extends ApplicationInitializer {
     	}
         Assume.assumeFalse("Cannot run on Android", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
         Assume.assumeFalse("Cannot run on Windows MINGW", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows) && !QLibraryInfo.build().contains("MSVC"));
+//        QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.OpenGLRhi);
     	QtUtilities.initializePackage("io.qt.webengine.widgets");
         QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
         ApplicationInitializer.testInitializeWithWidgets();

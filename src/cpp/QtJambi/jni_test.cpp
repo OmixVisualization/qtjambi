@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -65,14 +65,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_TestUtility_flushOut(JNIEn
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_TestUtility_flushErr(JNIEnv *, jclass){
     fflush(stderr);
-}
-
-extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_TestUtility_objectCacheMode(JNIEnv *, jclass){
-    return QtJambiLink::getObjectCacheMode();
-}
-
-extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_TestUtility_setObjectCacheMode(JNIEnv *, jclass, jint object_cache_mode){
-    QtJambiLink::setObjectCacheMode(object_cache_mode);
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_TestUtility_isSharedPointer(JNIEnv *__jni_env, jclass, QtJambiNativeID nativeId){

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,6 +43,7 @@ QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
 #include "containeraccess.h"
 #include "jobjectwrapper.h"
 #include "utils_p.h"
+#include "objectdata.h"
 
 void registerContainerConverter(SequentialContainerType collectionType, const QMetaType& containerMetaType, const QMetaType& elementMetaType);
 void registerContainerConverter(AssociativeContainerType mapType, const QMetaType& containerMetaType, const QMetaType& keyMetaType, const QMetaType& valueMetaType);
@@ -62,7 +63,7 @@ AbstractMultiMapAccess* checkContainerAccess(JNIEnv * env, AbstractMultiMapAcces
 
 void containerDisposer(AbstractContainerAccess* _access);
 
-int registerContainerMetaType(const QByteArray& typeName,
+QMetaType registerContainerMetaType(const QByteArray& typeName,
                      QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
                      QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr,
                      QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr,
@@ -80,11 +81,11 @@ int registerContainerMetaType(const QByteArray& typeName,
                      const QMetaObject *metaObject,
                      AfterRegistrationFunction afterRegistrationFunction,
                      const QSharedPointer<AbstractContainerAccess>& sharedAccess);
-QSharedPointer<AbstractContainerAccess> findContainerAccess(int metaType);
+QSharedPointer<AbstractContainerAccess> findContainerAccess(const QMetaType& metaType);
 
-void insertHashFunctionByMetaType(int type, const QtJambiUtils::QHashFunction& fct);
+void insertHashFunctionByMetaType(const QtPrivate::QMetaTypeInterface * type, const QtJambiUtils::QHashFunction& fct);
 
-void insertHashFunctionByMetaType(int type, QtJambiUtils::QHashFunction&& fct);
+void insertHashFunctionByMetaType(const QtPrivate::QMetaTypeInterface * type, QtJambiUtils::QHashFunction&& fct);
 
 class AbstractWrapperContainerAccess{
 protected:
@@ -109,7 +110,8 @@ public:
     AbstractSpanAccess* createSpanAccess(bool isConst) override;
 #endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
     void dispose() final override;
-    size_t sizeOf() final override;
+    size_t sizeOf() const final override;
+    size_t alignOf() const final override;
     void* constructContainer(void* placement) final override;
     void* constructContainer(void* placement, const void* container) override;
     void* constructContainer(JNIEnv * env, void* placement, const ConstContainerAndAccessInfo& copyOf) override;
@@ -118,7 +120,7 @@ public:
     bool destructContainer(void* container) final override;
     void assign(void*, const void* ) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    int registerContainer(const QByteArray& containerTypeName) final override;
+    QMetaType registerContainer(const QByteArray& containerTypeName) final override;
     const QMetaType& elementMetaType() final override;
     DataType elementType() override;
     AbstractContainerAccess* elementNestedContainerAccess() override;
@@ -183,14 +185,15 @@ public:
     void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
     void assign(void*, const void* ) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    size_t sizeOf() final override;
+    size_t sizeOf() const final override;
+    size_t alignOf() const final override;
     void* constructContainer(void* placement) final override;
     void* constructContainer(void* placement, const void* container) override;
     void* constructContainer(JNIEnv * env, void* placement, const ConstContainerAndAccessInfo& copyOf) override;
     void* constructContainer(void* placement, void* move) override;
     void* constructContainer(JNIEnv * env, void* placement, const ContainerAndAccessInfo& move) override;
     bool destructContainer(void* container) final override;
-    int registerContainer(const QByteArray& containerTypeName) override;
+    QMetaType registerContainer(const QByteArray& containerTypeName) override;
     const QMetaType& elementMetaType() override;
     DataType elementType() override;
     AbstractContainerAccess* elementNestedContainerAccess() override;
@@ -234,14 +237,15 @@ public:
     void detach(const ContainerInfo& container) final override;
     bool isSharedWith(const void* container, const void* container2) final override;
     void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    size_t sizeOf() final override;
+    size_t sizeOf() const final override;
+    size_t alignOf() const final override;
     void* constructContainer(void* placement) final override;
     void* constructContainer(void* placement, const void* container) override;
     void* constructContainer(JNIEnv * env, void* placement, const ConstContainerAndAccessInfo& copyOf) override;
     void* constructContainer(void* placement, void* move) override;
     void* constructContainer(JNIEnv * env, void* placement, const ContainerAndAccessInfo& move) override;
     bool destructContainer(void* container) final override;
-    int registerContainer(const QByteArray& containerTypeName) override;
+    QMetaType registerContainer(const QByteArray& containerTypeName) override;
     const QMetaType& keyMetaType() override;
     const QMetaType& valueMetaType() override;
     DataType keyType() override;
@@ -304,14 +308,15 @@ public:
     void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
     void assign(void*, const void* ) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    size_t sizeOf() final override;
+    size_t sizeOf() const final override;
+    size_t alignOf() const final override;
     void* constructContainer(void* placement) final override;
     void* constructContainer(void* placement, const void* container) override;
     void* constructContainer(JNIEnv * env, void* placement, const ConstContainerAndAccessInfo& copyOf) override;
     void* constructContainer(void* placement, void* move) override;
     void* constructContainer(JNIEnv * env, void* placement, const ContainerAndAccessInfo& move) override;
     bool destructContainer(void* container) final override;
-    int registerContainer(const QByteArray& containerTypeName) override;
+    QMetaType registerContainer(const QByteArray& containerTypeName) override;
     const QMetaType& keyMetaType() override;
     const QMetaType& valueMetaType() override;
     DataType keyType() override;
@@ -381,7 +386,8 @@ public:
     void detach(const ContainerInfo& container) final override;
     bool isSharedWith(const void* container, const void* container2) final override;
     void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    size_t sizeOf() final override;
+    size_t sizeOf() const final override;
+    size_t alignOf() const final override;
     void* constructContainer(void* placement) final override;
     void* constructContainer(void* placement, const void* container) override;
     void* constructContainer(JNIEnv * env, void* placement, const ConstContainerAndAccessInfo& copyOf) override;
@@ -390,7 +396,7 @@ public:
     bool destructContainer(void* container) final override;
     void assign(void*, const void* ) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    int registerContainer(const QByteArray& containerTypeName) override;
+    QMetaType registerContainer(const QByteArray& containerTypeName) override;
     const QMetaType& keyMetaType() override;
     const QMetaType& valueMetaType() override;
     DataType keyType() override;
@@ -448,14 +454,15 @@ public:
     void dispose() override;
     void assign(void*, const void* ) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    size_t sizeOf() final override;
+    size_t sizeOf() const final override;
+    size_t alignOf() const final override;
     void* constructContainer(void* placement) final override;
     void* constructContainer(void* placement, const void* container) override;
     void* constructContainer(JNIEnv * env, void* placement, const ConstContainerAndAccessInfo& copyOf) override;
     void* constructContainer(void* placement, void* move) override;
     void* constructContainer(JNIEnv * env, void* placement, const ContainerAndAccessInfo& move) override;
     bool destructContainer(void* container) final override;
-    int registerContainer(const QByteArray& containerTypeName) override;
+    QMetaType registerContainer(const QByteArray& containerTypeName) override;
     const QMetaType& keyMetaType() override;
     const QMetaType& valueMetaType() override;
     DataType keyType() override;
@@ -912,7 +919,8 @@ public:
     void* constructContainer(void* placement) override;
     void* constructContainer(void* placement, const void* container) override;
     void* constructContainer(JNIEnv * env, void* result, const ConstContainerAndAccessInfo& container) override;
-    size_t sizeOf() override;
+    size_t sizeOf() const override;
+    size_t alignOf() const override;
     void* constructContainer(void* result, void* container) override;
     void* constructContainer(JNIEnv * env, void* result, const ContainerAndAccessInfo& container) override;
 private:
@@ -932,7 +940,7 @@ public:
     void assign(void*, const void* ) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    int registerContainer(const QByteArray& typeName) override;
+    QMetaType registerContainer(const QByteArray& typeName) override;
     jobject first(JNIEnv * env, const void* container) override;
     void setFirst(JNIEnv *env, void* container, jobject first) override;
     jobject second(JNIEnv * env, const void* container) override;
@@ -1405,7 +1413,8 @@ public:
     void* constructContainer(void* placement) override;
     void* constructContainer(void* placement, const void* container) override;
     void* constructContainer(JNIEnv * env, void* result, const ConstContainerAndAccessInfo& container) override;
-    size_t sizeOf() override;
+    size_t sizeOf() const override;
+    size_t alignOf() const override;
     void* constructContainer(void* result, void* container) override;
     void* constructContainer(JNIEnv * env, void* result, const ContainerAndAccessInfo& container) override;
 private:
@@ -1417,14 +1426,14 @@ private:
     static void dtor(const QtPrivate::QMetaTypeInterface *iface, void *ptr);
     static bool equalsFn(const QtPrivate::QMetaTypeInterface *iface, const void *ptr1, const void *ptr2);
     static void debugStreamFn(const QtPrivate::QMetaTypeInterface *iface, QDebug &s, const void *ptr);
-    static QtMetaContainerPrivate::QMetaSequenceInterface* createMetaSequenceInterface(int newMetaType);
+    static QtMetaContainerPrivate::QMetaSequenceInterface* createMetaSequenceInterface(QMetaType newMetaType);
     qsizetype size(const void* container) override;
     jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
     jobject createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
 public:
     void assign(void*, const void* ) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    int registerContainer(const QByteArray& typeName) override;
+    QMetaType registerContainer(const QByteArray& typeName) override;
     bool isConst() override;
     jint size(JNIEnv * env, const void* container) override;
     jint size_bytes(JNIEnv * env, const void* container) override;
@@ -1509,7 +1518,8 @@ public:
     void* constructContainer(void* placement, const void* container) override;
     void* constructContainer(JNIEnv * env, void* result, const ConstContainerAndAccessInfo& container) override;
     bool destructContainer(void* container) override;
-    size_t sizeOf() override;
+    size_t sizeOf() const override;
+    size_t alignOf() const override;
     void* constructContainer(void* result, void* container) override;
     void* constructContainer(JNIEnv * env, void* result, const ContainerAndAccessInfo& container) override;
     struct iterator{
@@ -1559,7 +1569,7 @@ private:
 public:
     void assign(void* container, const void* other) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    int registerContainer(const QByteArray& containerTypeName) override;
+    QMetaType registerContainer(const QByteArray& containerTypeName) override;
     const QMetaType& elementMetaType() override;
     DataType elementType() override;
     AbstractContainerAccess* elementNestedContainerAccess() override;
@@ -1614,7 +1624,7 @@ public:
     std::unique_ptr<AbstractListAccess::ElementIterator> elementIterator(const void* container) override;
     std::unique_ptr<AbstractListAccess::ElementIterator> elementIterator(void* container) override;
 private:
-    static QtMetaContainerPrivate::QMetaSequenceInterface* createMetaSequenceInterface(int newMetaType);
+    static QtMetaContainerPrivate::QMetaSequenceInterface* createMetaSequenceInterface(QMetaType newMetaType);
     void emplace(QListData* p, JNIEnv * env, jint index, jobject value, jint n);
     void emplace(QListData* p, qsizetype index, const void* value, qsizetype n);
     void *createHole(QListData *p, QArrayData::GrowthPosition pos, qsizetype where, qsizetype n);
@@ -1678,7 +1688,7 @@ public:
             );
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void assign(void* container, const void* other) override;
-    int registerContainer(const QByteArray& containerTypeName) override;
+    QMetaType registerContainer(const QByteArray& containerTypeName) override;
     void dispose() override;
     AbstractMapAccess* clone() override;
     const QObject* getOwner(const void* container) override;
@@ -1731,7 +1741,8 @@ public:
     ContainerAndAccessInfo values(JNIEnv *,const ConstContainerInfo&) override;
     bool keyLessThan(JNIEnv *,jobject,jobject) override;
     bool destructContainer(void* container) override;
-    size_t sizeOf() override;
+    size_t sizeOf() const override;
+    size_t alignOf() const override;
     void* constructContainer(void* placement) override;
     void* constructContainer(void* placement, const void* container) override;
     void* constructContainer(JNIEnv * env, void* result, const ConstContainerAndAccessInfo& container) override;
@@ -1752,9 +1763,8 @@ public:
 private:
     virtual IsBiContainerFunction getIsBiContainerFunction();
     virtual bool isMulti() const;
-    virtual ushort alignOf() const;
     bool equal(const void* containerA, const void* containerB);
-    static QtMetaContainerPrivate::QMetaAssociationInterface* createMetaAssociationInterface(int newMetaType);
+    static QtMetaContainerPrivate::QMetaAssociationInterface* createMetaAssociationInterface(QMetaType newMetaType);
 
     enum Colors {
         Red,
@@ -1971,7 +1981,7 @@ public:
             );
     void assign(void*, const void* ) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    int registerContainer(const QByteArray& containerTypeName) override;
+    QMetaType registerContainer(const QByteArray& containerTypeName) override;
     void dispose() override;
     bool isDetached(const void* container) override;
     void detach(const ContainerInfo& container) override;
@@ -2031,7 +2041,8 @@ public:
     bool contains(const void*,const void*) override;
     void insert(void* container,const void* key, const void* value) override;
     const void* value(const void*, const void*, const void*) override;
-    size_t sizeOf() override;
+    size_t sizeOf() const override;
+    size_t alignOf() const override;
     void* constructContainer(void* placement) override;
     void* constructContainer(void* placement, const void* container) override;
     void* constructContainer(JNIEnv * env, void* result, const ConstContainerAndAccessInfo& container) override;
@@ -2043,7 +2054,6 @@ public:
     std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(const void* container) override;
     std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(void* container) override;
 private:
-    ushort alignOf() const override;
     IsBiContainerFunction getIsBiContainerFunction() override;
     bool isMulti() const override;
 };
@@ -2092,7 +2102,7 @@ public:
     void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
     virtual void assign(void* container, const void* other) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    int registerContainer(const QByteArray& containerTypeName) override;
+    QMetaType registerContainer(const QByteArray& containerTypeName) override;
     void dispose() override;
     AbstractHashAccess* clone() override;
     const QObject* getOwner(const void* container) override;
@@ -2142,15 +2152,15 @@ public:
     bool contains(const void*,const void*) override;
     void insert(void* container,const void* key, const void* value = nullptr) override;
     const void* value(const void*, const void*, const void*) override;
-    size_t sizeOf() override;
+    size_t sizeOf() const override;
+    size_t alignOf() const override;
     std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(const void* container) override;
     std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(void* container) override;
 private:
-    virtual ushort alignOf() const;
     virtual IsBiContainerFunction getIsBiContainerFunction();
     jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
     jobject createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
-    static QtMetaContainerPrivate::QMetaAssociationInterface* createMetaAssociationInterface(int newMetaType);
+    static QtMetaContainerPrivate::QMetaAssociationInterface* createMetaAssociationInterface(QMetaType newMetaType);
     virtual void debugStream(QDebug &s, const void *ptr);
     virtual void dataStreamOut(QDataStream &s, const void *ptr);
     void dataStreamIn(QDataStream &s, void *ptr);
@@ -2354,7 +2364,7 @@ public:
             );
     void assign(void* container, const void* other) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    int registerContainer(const QByteArray& containerTypeName) override;
+    QMetaType registerContainer(const QByteArray& containerTypeName) override;
     void dispose() override;
     AbstractMultiHashAccess* clone() override;
     const QObject* getOwner(const void* container) override;
@@ -2415,12 +2425,12 @@ public:
     void* constructContainer(JNIEnv * env, void* result, const ConstContainerAndAccessInfo& container) override;
     void* constructContainer(void* result, void* container) override;
     void* constructContainer(JNIEnv * env, void* result, const ContainerAndAccessInfo& container) override;
-    size_t sizeOf() override;
+    size_t sizeOf() const override;
+    size_t alignOf() const override;
     std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(const void* container) override;
     std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(void* container) override;
 private:
     friend class AutoHashAccess;
-    ushort alignOf() const override;
     typedef AutoHashAccess::QHashData QHashData;
     struct MultiHashData{
         QHashData* d = nullptr;
@@ -2474,7 +2484,7 @@ public:
             );
     void assign(void*, const void* ) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    int registerContainer(const QByteArray& containerTypeName) override;
+    QMetaType registerContainer(const QByteArray& containerTypeName) override;
     void dispose() override;
     AutoSetAccess* clone() override;
     const QObject* getOwner(const void* container) override;
@@ -2511,11 +2521,12 @@ public:
     bool destructContainer(void* container) override;
     void* constructContainer(void* result, void* container) override;
     void* constructContainer(JNIEnv * env, void* result, const ContainerAndAccessInfo& container) override;
-    size_t sizeOf() override;
+    size_t sizeOf() const override;
+    size_t alignOf() const override;
     std::unique_ptr<AbstractSetAccess::ElementIterator> elementIterator(const void* container) override;
     std::unique_ptr<AbstractSetAccess::ElementIterator> elementIterator(void* container) override;
 private:
-    static QtMetaContainerPrivate::QMetaSequenceInterface* createMetaSequenceInterface(int newMetaType);
+    static QtMetaContainerPrivate::QMetaSequenceInterface* createMetaSequenceInterface(QMetaType newMetaType);
     typedef AutoHashAccess::QHashData QHashData;
     typedef AutoHashAccess::iterator iterator;
 };

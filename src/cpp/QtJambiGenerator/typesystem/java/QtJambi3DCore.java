@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -49,7 +49,7 @@ class QAbstractAspect___java extends QAbstractAspect {
     
 }// class
 
-class QEntity_6_ {
+class QEntity__ {
 
     /**
      * <p>See <a href="@docRoot/qt3dcore-qentity.html#componentsOfType"><code>Qt3DCore::QEntity::componentsOfType&lt;T>()const</code></a></p>
@@ -58,24 +58,6 @@ class QEntity_6_ {
     public final <T extends io.qt.qt3d.core.@Nullable QComponent> io.qt.core.@NonNull QList<T> componentsOfType(@StrictNonNull Class<T> type)
     {
         io.qt.core.QList<T> matchComponents = new io.qt.core.QList<T>(type);
-        for (io.qt.qt3d.core.QComponent component : components()) {
-            if (type.isInstance(component))
-                matchComponents.append(type.cast(component));
-        }
-        return matchComponents;
-    }
-    
-}// class
-
-class QEntity_5_ {
-
-    /**
-     * <p>See <a href="@docRoot/qt3dcore-qentity.html#componentsOfType"><code>Qt3DCore::QEntity::componentsOfType&lt;T>()const</code></a></p>
-     */
-    @QtUninvokable
-    public final <T extends io.qt.qt3d.core.@Nullable QComponent> io.qt.core.@NonNull QVector<T> componentsOfType(@StrictNonNull Class<T> type)
-    {
-        io.qt.core.QVector<T> matchComponents = new io.qt.core.QVector<T>(type);
         for (io.qt.qt3d.core.QComponent component : components()) {
             if (type.isInstance(component))
                 matchComponents.append(type.cast(component));

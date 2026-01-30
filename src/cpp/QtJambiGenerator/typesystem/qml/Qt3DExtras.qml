@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -45,7 +45,6 @@ TypeSystem{
     NamespaceType{
         name: "Qt3DExtras"
         generate: false
-        since: [5, 10]
     }
     
     ObjectType{
@@ -64,7 +63,6 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 10]
     }
     
     ObjectType{
@@ -90,42 +88,34 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QConeGeometry"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QConeMesh"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QCuboidMesh"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QCuboidGeometry"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QCylinderGeometry"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QCylinderMesh"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QDiffuseSpecularMaterial"
-        since: [5, 10]
     }
     
     ObjectType{
@@ -140,7 +130,6 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 10]
     }
     
     ObjectType{
@@ -165,12 +154,10 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QNormalDiffuseMapAlphaMaterial"
-        since: [5, 10]
     }
     
     ObjectType{
@@ -195,7 +182,6 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 10]
     }
     
     ObjectType{
@@ -230,37 +216,30 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QPhongAlphaMaterial"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QPhongMaterial"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QTexturedMetalRoughMaterial"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QExtrudedTextGeometry"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QExtrudedTextMesh"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QFirstPersonCameraController"
-        since: [5, 10]
     }
     
     ObjectType{
@@ -283,62 +262,50 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QGoochMaterial"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QMetalRoughMaterial"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QMorphPhongMaterial"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QOrbitCameraController"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QPerVertexColorMaterial"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QPlaneGeometry"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QPlaneMesh"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QSkyboxEntity"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QSphereGeometry"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QSphereMesh"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QSpriteGrid"
-        since: [5, 10]
         ExtraIncludes{
             Include{
                 fileName: "hashes.h"
@@ -383,17 +350,14 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QSpriteSheetItem"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QText2DEntity"
-        since: [5, 10]
     }
     
     ObjectType{
@@ -419,17 +383,14 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QTorusGeometry"
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QTorusMesh"
-        since: [5, 10]
     }
     
     ObjectType{
@@ -461,37 +422,30 @@ TypeSystem{
                 }
             }
         }
-        since: [5, 10]
     }
     
     ObjectType{
         name: "Qt3DExtras::QConeGeometryView"
-        since: 6
     }
     
     ObjectType{
         name: "Qt3DExtras::QCuboidGeometryView"
-        since: 6
     }
     
     ObjectType{
         name: "Qt3DExtras::QCylinderGeometryView"
-        since: 6
     }
     
     ObjectType{
         name: "Qt3DExtras::QPlaneGeometryView"
-        since: 6
     }
     
     ObjectType{
         name: "Qt3DExtras::QSphereGeometryView"
-        since: 6
     }
     
     ObjectType{
         name: "Qt3DExtras::QTorusGeometryView"
-        since: 6
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QAbstractSpriteSheet' set to non-final, as it is extended by other classes"}

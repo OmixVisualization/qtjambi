@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -32,12 +32,12 @@ import static org.junit.Assume.assumeTrue;
 
 import org.junit.*;
 
-import io.qt.QtInvokable;
-import io.qt.QtUtilities;
+import io.qt.*;
 import io.qt.autotests.generated.General;
 import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.qml.*;
+import io.qt.quick.*;
 import io.qt.webengine.core.*;
 import io.qt.webengine.quick.*;
 import io.qt.widgets.*;
@@ -51,6 +51,7 @@ public class TestWebEngineQuick extends ApplicationInitializer {
     			&& QLibraryInfo.version().compareTo(new QVersionNumber(6,5,4))>=0) {
     		Assert.assertFalse("env SYSTEM_VERSION_COMPAT=0 required to run WebEngine on macOS x86_64", "10.16".equals(General.stringSysctlByName("kern.osproductversion")));
     	}
+//    	QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.OpenGLRhi);
     	QtUtilities.initializePackage("io.qt.webengine.quick");
         QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
     	boolean found = false;
@@ -104,6 +105,7 @@ public class TestWebEngineQuick extends ApplicationInitializer {
 			@QtInvokable
 			public void accept(QJSValue value) {
 				received[0] = value.toVariant();
+				QApplication.quit();
 			}
         };
 //        QMetaObject.forType(consumer.getClass()).methods().forEach(m->System.out.println(m.cppMethodSignature()+" "+m.attributes()));
@@ -132,7 +134,7 @@ public class TestWebEngineQuick extends ApplicationInitializer {
         _settings.dispose();
         Assert.assertFalse(settings.isDisposed());
         settings.property("autoLoadImages");// should not crash
-    	QTimer.singleShot(2000, QApplication::quit);
+    	QTimer.singleShot(10000, QApplication::quit);
     	QApplication.exec();
     	Assert.assertTrue(received[0]!=null);
         engine.dispose();

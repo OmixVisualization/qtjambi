@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -28,12 +28,18 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QCoreApplication;
+import io.qt.core.QEventLoop;
 import io.qt.core.QLocale;
+import io.qt.core.QThread;
 import io.qt.core.QTimer;
 import io.qt.texttospeech.QTextToSpeech;
 import io.qt.widgets.QApplication;
@@ -46,34 +52,54 @@ public class TestTextToSpeech extends ApplicationInitializer {
     }
     
     @Test
-    public void test() {
-    	QTextToSpeech tts = new QTextToSpeech();
-    	Assert.assertEquals(tts.errorString(), QTextToSpeech.ErrorReason.NoError, tts.errorReason());
-    	tts.setLocale(QLocale.Language.English);
-    	boolean[] said = {false};
-    	tts.stateChanged.connect(state->{
-    		switch(state) {
-			case Error:
-	    		QTimer.singleShot(1000, QCoreApplication::quit);
-				break;
-			case Paused:
-				break;
-			case Ready:
-				break;
-			case Speaking:
-	    		said[0] = true;
-	    		QTimer.singleShot(1000, QCoreApplication::quit);
-				break;
-			case Synthesizing:
-				break;
-			default:
-				break;
-    		}
-    	});
-    	tts.say("Text to speech test");
-    	QTimer.singleShot(10000, QCoreApplication::quit);
+    public void test() throws InterruptedException {
+    	AtomicBoolean said = new AtomicBoolean(false);
+    	List<QThread> threads = new ArrayList<>();
+    	for(String engine : QTextToSpeech.availableEngines()) {
+	    	QThread thread = QThread.create(()->{
+	    		QEventLoop loop = new QEventLoop();
+	    		QTextToSpeech tts = new QTextToSpeech(engine);
+	        	Assert.assertEquals(tts.errorString(), QTextToSpeech.ErrorReason.NoError, tts.errorReason());
+	        	tts.setLocale(QLocale.Language.English);
+	        	tts.stateChanged.connect(state->{
+	        		switch(state) {
+	    			case Error:
+	    	    		QTimer.singleShot(3000, loop::quit);
+	    				break;
+	    			case Paused:
+	    				break;
+	    			case Ready:
+	    				break;
+	    			case Speaking:
+	    	    		said.set(true);
+	    	    		QTimer.singleShot(3000, loop::quit);
+	    				break;
+	    			case Synthesizing:
+	    				break;
+	    			default:
+	    				break;
+	        		}
+	        	});
+	        	tts.say("Text to speech test");
+	        	loop.exec();
+	        	loop.dispose();
+	        	tts.dispose();
+	    	});
+	    	thread.setDaemon(true);
+	    	thread.finished.connect(QCoreApplication::quit);
+	    	thread.start();
+	    	threads.add(thread);
+	    	Thread.sleep(1000);
+	    	if(said.get())
+	    		break;
+    	}
+    	QTimer.singleShot(15000, QCoreApplication::quit);
     	QApplication.exec();
-    	Assert.assertTrue("Text to speech test did not run", said[0]);
+    	for(QThread thread : threads) {
+	    	if(thread.isRunning())
+	    		thread.requestInterruption();
+    	}
+    	Assert.assertTrue("Text to speech test did not run", said.get());
     }
     
     public static void main(String args[]) {

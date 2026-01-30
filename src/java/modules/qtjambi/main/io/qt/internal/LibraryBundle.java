@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -337,6 +337,7 @@ final class LibraryBundle {
 	}
 	
 	static class Library {
+		private final static Map<Library,Thread> currentlyExtracting = new HashMap<>();
 	    private final String name;
 	    private final LibraryBundle depl;
 
@@ -367,12 +368,30 @@ final class LibraryBundle {
 		private boolean loaded;
 	    
 	    public boolean isExtracting() {
+	    	synchronized(currentlyExtracting) {
+	    		Thread extractor = currentlyExtracting.get(this);
+	    		if(extractor!=null && extractor!=Thread.currentThread()) {
+	    			try {
+						this.wait();
+					} catch (InterruptedException e) {
+					}
+	    		}
+	    	}
 	    	synchronized(this.extractionFunctions) {
 	    		return !extractionFunctions.isEmpty();
 	    	}
 	    }
 	    
 	    public boolean isQmlExtracting() {
+	    	synchronized(currentlyExtracting) {
+	    		Thread extractor = currentlyExtracting.get(this);
+	    		if(extractor!=null && extractor!=Thread.currentThread()) {
+	    			try {
+	    				currentlyExtracting.wait();
+					} catch (InterruptedException e) {
+					}
+	    		}
+	    	}
 	    	synchronized(this.qmlExtractionFunctions) {
 	    		return !qmlExtractionFunctions.isEmpty();
 	    	}
@@ -440,7 +459,20 @@ final class LibraryBundle {
 					else
 						first = this.extractionFunctions.get(0);
 				}
+				Thread extractor;
+				synchronized(currentlyExtracting) {
+					extractor = currentlyExtracting.get(this);
+					if(extractor==null) {
+						currentlyExtracting.put(this, Thread.currentThread());
+					}
+				}
 				first.extract();
+				if(extractor==null) {
+					synchronized(currentlyExtracting) {
+						currentlyExtracting.remove(this);
+						currentlyExtracting.notifyAll();
+					}
+				}
 			}
 		}
 		
@@ -454,7 +486,20 @@ final class LibraryBundle {
 					else
 						first = this.qmlExtractionFunctions.get(0);
 				}
+				Thread extractor;
+				synchronized(currentlyExtracting) {
+					extractor = currentlyExtracting.get(this);
+					if(extractor==null) {
+						currentlyExtracting.put(this, Thread.currentThread());
+					}
+				}
 				first.extract();
+				if(extractor==null) {
+					synchronized(currentlyExtracting) {
+						currentlyExtracting.remove(this);
+						currentlyExtracting.notifyAll();
+					}
+				}
 			}
 		}
 	}

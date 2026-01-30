@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -32,6 +32,8 @@
 #include "smartpointertest.h"
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/jobjectwrapper.h>
+
+QT_WARNING_DISABLE_DEPRECATED
 
 class SpacerItem : public QSpacerItem{
 public:
@@ -267,7 +269,6 @@ QByteArray SmartPointerTest::returnString(StringSupplier supplier){
     return supplier ? QByteArray{supplier()} : QByteArray{};
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 QScopedPointer<QObject> SmartPointerTest::createScopedObject(){
     QObject* uobj = new QStandardItemModel();
     uobj->setObjectName("ScopedModel");
@@ -296,4 +297,3 @@ void SmartPointerTest::useScopedEvent(){
 QScopedPointer<QObject> SmartPointerTest::asScopedPointer(QScopedPointer<QObject> object){
     return QScopedPointer<QObject>(object.take());
 }
-#endif

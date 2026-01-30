@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -89,19 +89,19 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#QSet">QSet::<wbr>QSet(const QSet&lt;T> &amp;)</a></code></p>
      * @param other container
      */
-    public QSet(@StrictNonNull Collection<T> other) {
+    public QSet(@StrictNonNull Collection<? extends T> other) {
         super(null);
 		QMetaType metaType = QList.findElementMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
     }
     
-    private QSet(QMetaType metaType, Collection<T> other) {
+    private QSet(QMetaType metaType, Collection<? extends T> other) {
         super(null);
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
     }
     
     @QtUninvokable
-    private native void initialize(Class<?> elementType, long elementMetaType, Collection<T> other);
+    private native void initialize(Class<?> elementType, long elementMetaType, Collection<? extends T> other);
     
     /**
      * Creates and returns a copy of this object.
@@ -204,21 +204,21 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#intersect">QSet::<wbr>intersect(QSet&lt;T>)</a></code></p>
      */
     @QtUninvokable
-    public final void intersect(java.util.@NonNull Collection<T> other)    {
+    public final void intersect(java.util.@NonNull Collection<? extends T> other)    {
         intersect(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
     @QtUninvokable
-    private native void intersect(long __this__nativeId, java.util.Collection<T> other);
+    private native void intersect(long __this__nativeId, java.util.Collection<? extends T> other);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#intersects">QSet::<wbr>intersects(QSet&lt;T>)const</a></code></p>
      */
     @QtUninvokable
-    public final boolean intersects(java.util.@NonNull Collection<T> other)    {
+    public final boolean intersects(java.util.@NonNull Collection<? extends T> other)    {
         return intersects(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
     @QtUninvokable
-    private native boolean intersects(long __this__nativeId, java.util.Collection<T> other);
+    private native boolean intersects(long __this__nativeId, java.util.Collection<? extends T> other);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#isEmpty">QSet::<wbr>isEmpty()const</a></code></p>
@@ -292,21 +292,21 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#subtract">QSet::<wbr>subtract(QSet&lt;T>)</a></code></p>
      */
     @QtUninvokable
-    public final void subtract(java.util.@NonNull Collection<T> other)    {
+    public final void subtract(java.util.@NonNull Collection<? extends T> other)    {
         subtract(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
     @QtUninvokable
-    private native void subtract(long __this__nativeId, java.util.Collection<T> other);
+    private native void subtract(long __this__nativeId, java.util.Collection<? extends T> other);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#unite">QSet::<wbr>unite(QSet&lt;T>)</a></code></p>
      */
     @QtUninvokable
-    public final void unite(java.util.@NonNull Collection<T> other)    {
+    public final void unite(java.util.@NonNull Collection<? extends T> other)    {
         unite(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
     @QtUninvokable
-    private native void unite(long __this__nativeId, java.util.Collection<T> other);
+    private native void unite(long __this__nativeId, java.util.Collection<? extends T> other);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#values">QSet::<wbr>values()const</a></code></p>
@@ -322,7 +322,7 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
      * <p>See <code>QSet::<wbr>operator=(QSet&lt;T>)</code></p>
      */
     @QtUninvokable
-    public final void assign(@StrictNonNull QSet<T> other) {
+    public final void assign(@StrictNonNull QSet<? extends T> other) {
 		assign(QtJambi_LibraryUtilities.internal.nativeId(this), other, QtJambi_LibraryUtilities.internal.nativeId(other));
     }
     

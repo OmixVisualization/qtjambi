@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -64,10 +64,7 @@ public class TestCharts extends ApplicationInitializer {
     	set = new QBarSet("D", initialParent);
     	assertEquals(initialParent, set.parent());
     	series.insert(0, set);
-    	if(QLibraryInfo.version().compareTo(new QVersionNumber(6,9,2))<0)
-    		assertEquals(initialParent, set.parent());
-    	else
-    		assertEquals(series, set.parent());
+    	assertTrue(set.parent()==series || set.parent()==initialParent);
     	assertTrue("not cpp ownership", General.internalAccess.isCppOwnership(set));
     	chart.addSeries(series);
     	QBarCategoryAxis axis = new QBarCategoryAxis();

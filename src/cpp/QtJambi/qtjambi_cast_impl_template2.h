@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -425,9 +425,12 @@ struct qtjambi_jobject_template2_cast<forward,
     static Out cast(In in, Args... args){
         if constexpr(forward){
             NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-            K* qo = _in.release();
+            K* qo = _in.get();
             jobject o = qtjambi_cast<jobject,K*, Args...>::cast(qo, args...);
-            qtjambi_ownership_decider<K, Args...>::setJavaOwnership(o, qo, args...);
+            if(o){
+                qtjambi_ownership_decider<K, Args...>::setJavaOwnership(o, qo, args...);
+                (void)_in.release();
+            }
             return o;
         }else{
             Q_STATIC_ASSERT_X(!(is_reference || is_pointer) ||cast_var_args<Args...>::hasScope, "Cannot cast jobject to std::unique_ptr<K,T> pointer or reference");

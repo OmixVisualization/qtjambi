@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -776,14 +776,11 @@ QString JavaGenerator::qualifiedJavaType(const MetaType *java_type, const MetaCl
                             || container->type()==ContainerTypeEntry::LinkedListContainer
                             )){
                     if(container->type()==ContainerTypeEntry::StringListContainer
-                            || container->type()==ContainerTypeEntry::ByteArrayListContainer){
+                            || container->type()==ContainerTypeEntry::ByteArrayListContainer
+                            || container->type()==ContainerTypeEntry::VectorContainer){
                         s = QStringLiteral(u"io.qt.core.QList");
                     }else{
-                        if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch)>=QT_VERSION_CHECK(6,0,0) && container->type()==ContainerTypeEntry::VectorContainer){
-                            s = QStringLiteral(u"io.qt.core.QList");
-                        }else{
-                            s = QStringLiteral(u"io.qt.core.")+java_type->typeEntry()->qualifiedCppName();
-                        }
+                        s = QStringLiteral(u"io.qt.core.")+java_type->typeEntry()->qualifiedCppName();
                     }
                     if ((option & SkipTemplateParameters) == 0) {
                         s += u'<';
@@ -955,10 +952,7 @@ QString JavaGenerator::qualifiedJavaType(const MetaType *java_type, const MetaCl
                 s += '>';
             }else if(type->type()==TypeEntry::JMapWrapperType){
                 s += "<?,?>";
-            }else if(type->type()==TypeEntry::JCollectionWrapperType
-                     || type->type()==TypeEntry::JIteratorWrapperType
-                     || type->type()==TypeEntry::JEnumWrapperType
-                     || type->type()==TypeEntry::JQFlagsWrapperType){
+            }else if(type->type()==TypeEntry::JCollectionWrapperType){
                 s += "<?>";
             }else if(type->isComplex()){
                 const ComplexTypeEntry *ctype = reinterpret_cast<const ComplexTypeEntry *>(type);
@@ -5713,7 +5707,10 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
                          .replace(QStringLiteral(u"QVoid"), QStringLiteral(u"Q")))
                   << "::<wbr/>";
             }
-            s << encodeHtml(f->originalSignature()).replace(",", ",<wbr/>");
+            if(f->originalSignature().isEmpty())
+                s << encodeHtml(f->minimalSignature()).replace(",", ",<wbr/>");
+            else
+                s << encodeHtml(f->originalSignature()).replace(",", ",<wbr/>");
             if(!f->href().isEmpty())
                 s << "</a>";
             s << "</code></p>" << Qt::endl;
@@ -5733,7 +5730,10 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
                                  .replace(QStringLiteral(u"QVoid"), QStringLiteral(u"Q")))
                           << "::<wbr/>";
                     }
-                    s << encodeHtml(f->originalSignature()).replace(",", ",<wbr/>");
+                    if(f->originalSignature().isEmpty())
+                        s << encodeHtml(f->minimalSignature()).replace(",", ",<wbr/>");
+                    else
+                        s << encodeHtml(f->originalSignature()).replace(",", ",<wbr/>");
                     if(!f->href().isEmpty())
                         s << "</a>";
                     s << "</code></li>" << Qt::endl;
@@ -5861,7 +5861,7 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
                     nonGenericType = QStringLiteral(u"java.lang.Character");
                 s << INDENT << "if(other instanceof " << nonGenericType << ")" << Qt::endl
                   << INDENT << "    return hashCode()==other.hashCode();" << Qt::endl
-                  << INDENT << "else return super.equals(other);";
+                  << INDENT << "else return super.equals(other);" << Qt::endl;
             }
             s << INDENT << "}" << Qt::endl << Qt::endl;
         }else if(cls->typeEntry()->isValue()){
@@ -6059,7 +6059,10 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
                          .replace(QStringLiteral(u"QVoid"), QStringLiteral(u"Q")))
                   << "::<wbr/>";
             }
-            s << encodeHtml(f->originalSignature()).replace(",", ",<wbr/>");
+            if(f->originalSignature().isEmpty())
+                s << encodeHtml(f->minimalSignature()).replace(",", ",<wbr/>");
+            else
+                s << encodeHtml(f->originalSignature()).replace(",", ",<wbr/>");
             if(!f->href().isEmpty())
                 s << "</a>";
             s << "</code></p>" << Qt::endl;
@@ -6079,7 +6082,10 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
                                  .replace(QStringLiteral(u"QVoid"), QStringLiteral(u"Q")))
                           << "::<wbr/>";
                     }
-                    s << encodeHtml(f->originalSignature()).replace(",", ",<wbr/>");
+                    if(f->originalSignature().isEmpty())
+                        s << encodeHtml(f->minimalSignature()).replace(",", ",<wbr/>");
+                    else
+                        s << encodeHtml(f->originalSignature()).replace(",", ",<wbr/>");
                     if(!f->href().isEmpty())
                         s << "</a>";
                     s << "</code></li>" << Qt::endl;
@@ -6117,7 +6123,7 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
             if(lines.isEmpty() && cls->hasHashFunction() && !cls->typeEntry()->isNativeIdBased() && !cls->typeEntry()->designatedInterface()){
                 s << Qt::endl
                   << INDENT << "/**" << Qt::endl
-                  << INDENT << " * Returns the objects's hash code computed by <code>qHash(" << cls->qualifiedCppName() << ")</code>." << Qt::endl
+                  << INDENT << " * Returns the objects's hash code computed by <code>qHash(" << encodeHtml(cls->qualifiedCppName()).replace(",", ",<wbr/>") << ")</code>." << Qt::endl
                   << INDENT << " */" << Qt::endl
                   << INDENT << "@QtUninvokable" << Qt::endl
                   << INDENT << "@Override" << Qt::endl
@@ -6130,7 +6136,7 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
                          && !cls->typeEntry()->skipMetaTypeRegistration())){
                 s << Qt::endl
                   << INDENT << "/**" << Qt::endl
-                  << INDENT << " * Returns the objects's hash code computed by <code>qHash(" << cls->qualifiedCppName() << ")</code>." << Qt::endl
+                  << INDENT << " * Returns the objects's hash code computed by <code>qHash(" << encodeHtml(cls->qualifiedCppName()).replace(",", ",<wbr/>") << ")</code>." << Qt::endl
                   << INDENT << " */" << Qt::endl
                   << INDENT << "@QtUninvokable" << Qt::endl
                   << INDENT << "@Override" << Qt::endl
@@ -7663,9 +7669,7 @@ void JavaGenerator::writeFunctionOverloads(QTextStream &s, const MetaFunction *j
                                                         }else if(alternativeType.typeName.contains(QStringLiteral(u"@Nullable"))){
                                                             s << "io.qt.core.QVariant.typedNullable(" << arg->modifiedArgumentName() << ", " << annotationFreeAlternativeType << ".class)";
                                                         }else{
-                                                            if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch)<QT_VERSION_CHECK(6,0,0))
-                                                                s << arg->modifiedArgumentName() << "==null ? new io.qt.core.QVariant(io.qt.core.QMetaType.qMetaTypeId(" << annotationFreeAlternativeType << ".class), null) : " << arg->modifiedArgumentName();
-                                                            else if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch)<QT_VERSION_CHECK(6,7,0))
+                                                            if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch)<QT_VERSION_CHECK(6,7,0))
                                                                 s << arg->modifiedArgumentName() << "==null ? new io.qt.core.QVariant(io.qt.core.QMetaType.fromType(" << annotationFreeAlternativeType << ".class), null) : " << arg->modifiedArgumentName();
                                                             else
                                                                 s << "io.qt.core.QVariant.fromMetaType(io.qt.core.QMetaType.fromType(" << annotationFreeAlternativeType << ".class), " << arg->modifiedArgumentName() << ")";
@@ -7678,9 +7682,7 @@ void JavaGenerator::writeFunctionOverloads(QTextStream &s, const MetaFunction *j
                                                 s << "(" << java_type.replace(u'$', u'.') << ")" << arg->modifiedArgumentName();
                                             }
                                         }else if(arg->type()->typeEntry()->isQVariant()){
-                                            if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch)<QT_VERSION_CHECK(6,0,0))
-                                                s << "new io.qt.core.QVariant(io.qt.core.QMetaType.qMetaTypeId(" << annotationFreeAlternativeType << ".class), " << arg->modifiedArgumentName() << ")";
-                                            else if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch)<QT_VERSION_CHECK(6,7,0))
+                                            if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch)<QT_VERSION_CHECK(6,7,0))
                                                 s << "new io.qt.core.QVariant(io.qt.core.QMetaType.fromType(" << annotationFreeAlternativeType << ".class), " << arg->modifiedArgumentName() << ")";
                                             else
                                                 s << "io.qt.core.QVariant.fromMetaType(io.qt.core.QMetaType.fromType(" << annotationFreeAlternativeType << ".class), " << arg->modifiedArgumentName() << ")";

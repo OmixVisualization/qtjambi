@@ -684,34 +684,66 @@ final class BundleGenerator {
 										boolean isForceDebugInfo, 
 										boolean isMinGWBuilt, 
 										QVersionNumber version) {
-		if(System.getProperty("os.name").toLowerCase().startsWith("windows")) {
-			File qmake = new File(binDir, "host-qmake.bat");
-			if(!qmake.exists())
-				qmake = new File(binDir, "qmake.exe");
-			if(!qmake.exists())
-				qmake = new File(binDir, "qmake.bat");
-			if(qmake.exists()) {
-				QProcess process = new QProcess();
-				process.start(qmake.getAbsolutePath(), QStringList.of("-query", "QT_VERSION"));
-				process.waitForFinished();
-				if(process.exitCode()==0) {
-					if(process.readAllStandardOutput().trimmed().toString().contains("."))
-						version = QVersionNumber.fromString(process.readAllStandardOutput().trimmed().toString());
+		if(version==null || version.toString().isEmpty()) {
+			if(System.getProperty("os.name").toLowerCase().startsWith("windows")) {
+				File qmake = new File(binDir, "host-qmake.bat");
+				if(!qmake.exists())
+					qmake = new File(binDir, "qmake.exe");
+				if(!qmake.exists())
+					qmake = new File(binDir, "qmake.bat");
+				if(qmake.exists()) {
+					QProcess process = new QProcess();
+					process.start(qmake.getAbsolutePath(), QStringList.of("-query", "QT_VERSION"));
+					process.waitForFinished();
+					if(process.exitCode()==0) {
+						String output = process.readAllStandardOutput().trimmed().toString();
+						String error = process.readAllStandardError().trimmed().toString();
+						if(output.contains("."))
+							version = QVersionNumber.fromString(output);
+						else if(error.contains("."))
+							version = QVersionNumber.fromString(error);
+						else {
+							System.out.println(process.readAllStandardOutput().trimmed().toString());
+							System.err.println(process.readAllStandardError().trimmed().toString());
+						}
+					}else {
+						System.out.println(process.readAllStandardOutput().trimmed().toString());
+						System.err.println(process.readAllStandardError().trimmed().toString());
+					}
+					process.dispose();
+				}else {
+					System.err.println("No qmake found: "+qmake.getAbsolutePath());
 				}
-				process.dispose();
-			}
-		}else {
-			File qmake = new File(binDir, "qmake");
-			if(qmake.exists()) {
-				QProcess process = new QProcess();
-				process.start(qmake.getAbsolutePath(), QStringList.of("-query", "QT_VERSION"));
-				process.waitForFinished();
-				if(process.exitCode()==0) {
-					if(process.readAllStandardOutput().trimmed().toString().contains("."))
-						version = QVersionNumber.fromString(process.readAllStandardOutput().trimmed().toString());
+			}else {
+				File qmake = new File(binDir, "qmake");
+				if(qmake.exists()) {
+					QProcess process = new QProcess();
+					process.start(qmake.getAbsolutePath(), QStringList.of("-query", "QT_VERSION"));
+					process.waitForFinished();
+					if(process.exitCode()==0) {
+						String output = process.readAllStandardOutput().trimmed().toString();
+						String error = process.readAllStandardError().trimmed().toString();
+						if(output.contains("."))
+							version = QVersionNumber.fromString(output);
+						else if(error.contains("."))
+							version = QVersionNumber.fromString(error);
+						else {
+							System.out.println(process.readAllStandardOutput().trimmed().toString());
+							System.err.println(process.readAllStandardError().trimmed().toString());
+						}
+					}else {
+						System.out.println(process.readAllStandardOutput().trimmed().toString());
+						System.err.println(process.readAllStandardError().trimmed().toString());
+					}
+					process.dispose();
+				}else {
+					System.err.println("No qmake found: "+qmake.getAbsolutePath());
 				}
-				process.dispose();
 			}
+		}
+		if(version==null || version.toString().isEmpty()) {
+			System.err.println("Unable to determine Qt version.");
+			System.exit(-1);
 		}
 		if(version!=null) {
 			Map<String,List<File>> libraries = Collections.synchronizedMap(new TreeMap<>());

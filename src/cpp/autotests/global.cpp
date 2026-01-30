@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
 **
 ** This file is part of Qt Jambi.
@@ -47,6 +47,11 @@
 #include <QtJambi/registryapi.h>
 #include "general.h"
 #include <QtJambi/qtjambi_cast.h>
+#include <cstdlib>
+#ifdef Q_OS_MAC
+#include <signal.h>
+#include <unistd.h>
+#endif
 
 QT_WARNING_DISABLE_DEPRECATED
 QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
@@ -142,12 +147,48 @@ void General::run(QRunnable* runnable){
     if(runnable)runnable->run();
 }
 
-void General::terminate(){
+void General::std_terminate(){
     std::terminate();
 }
 
-void General::abort(){
+void General::std_exit(int i){
+    std::exit(i);
+}
+
+void General::std_abort(){
     std::abort();
+}
+
+void General::c_kill(){
+#ifdef Q_OS_MAC
+    kill(getpid(), SIGKILL);
+#endif
+}
+
+void General::c_exit(int i){
+    exit(i);
+}
+
+void General::c_abort(){
+    abort();
+}
+
+void General::badAccess(){
+    qintptr p = 0x00CAFEBABE00;
+    QMutex* mutex = reinterpret_cast<QMutex*>(p);
+    mutex->lock();
+    mutex->unlock();
+}
+
+void General::uncaughtException(){
+    throw "General::uncaughtException";
+}
+
+void General::badVirtual(){
+    qintptr p = 0x00CAFEBABE00;
+    QObject* object = reinterpret_cast<QObject*>(p);
+    QEvent event(QEvent::Enter);
+    object->event(&event);
 }
 
 void General::qtjambi_jni_test(jobject object){
@@ -298,17 +339,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
             results << (qtjambi_cast<const QPair<int,QBrush>>(env, o)==p);
             //results << (qtjambi_cast<const QPair<int,QBrush>&>(env, o)==p); disallowed
         }
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        {
-            QLinkedList<QObject*> qlist;
-            qlist << nullptr << nullptr << new QObject();
-            jobject o = qtjambi_cast<jobject>(env, qlist);
-            QtJambiAPI::addToJavaCollection(env, list, o);
-            results << (qtjambi_cast<QLinkedList<QObject*>>(env, o)==qlist);
-            results << (qtjambi_cast<const QLinkedList<QObject*>>(env, o)==qlist);
-            //results << (qtjambi_cast<const QLinkedList<QObject*>&>(env, o)==qlist); disallowed
-        }
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
         {
             QStringList qlist;
             qlist << "4" << "6" << "12";
@@ -508,23 +538,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
             results << (qtjambi_cast<const QSet<QObject const*>&>(env, scope, o)==container);
         }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        {
-            QLinkedList<QString> container;
-            container << "D";
-            jobject o = qtjambi_cast<jobject>(env, scope, container);
-            QtJambiAPI::addToJavaCollection(env, list, o);
-            results << (qtjambi_cast<QLinkedList<QString>&>(env, scope, o)==container);
-        }
-
-        {
-            const QLinkedList<QObject*> container;
-            jobject o = qtjambi_cast<jobject>(env, scope, container);
-            QtJambiAPI::addToJavaCollection(env, list, o);
-            results << (qtjambi_cast<const QLinkedList<QObject*>&>(env, scope, o)==container);
-        }
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
-
 #ifndef QTJAMBI_NO_WIDGETS
         {
             QQueue<QGraphicsItem const*> container;
@@ -580,22 +593,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
             QtJambiAPI::addToJavaCollection(env, list, o);
             results << container.isSharedWith(qtjambi_cast<const QMap<float,QVariant>&>(env, scope, o));
         }
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        {
-            QMultiMap<QVariant,QVariant> container{{"6", 6}, {"3", 9}};
-            jobject o = qtjambi_cast<jobject>(env, scope, container);
-            QtJambiAPI::addToJavaCollection(env, list, o);
-            results << container.isSharedWith(qtjambi_cast<QMultiMap<QVariant,QVariant>&>(env, scope, o));
-        }
-
-        {
-            const QMultiMap<QVariant,QVariant> container{{"6", 6}, {"3", 9}};
-            jobject o = qtjambi_cast<jobject>(env, scope, container);
-            QtJambiAPI::addToJavaCollection(env, list, o);
-            results << container.isSharedWith(qtjambi_cast<const QMultiMap<QVariant,QVariant>&>(env, scope, o));
-        }
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
 
         {
             QMap<QString,QVariant> container{{"6", 6}, {"3", 9}};
@@ -687,7 +684,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
             }
         }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         {
             QUtf8StringView stringView(u8"U8 ö");
             QtJambiAPI::addToJavaCollection(env, list, qtjambi_cast<jobject>(env, stringView));
@@ -700,7 +696,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
             QAnyStringView stringView(u"U16 שּ");
             QtJambiAPI::addToJavaCollection(env, list, qtjambi_cast<jobject>(env, stringView));
         }
-#endif //QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         {
             QObject* q = qtjambi_cast<QObject*>(env, qObject);
             QtJambiAPI::addToJavaCollection(env, list, qtjambi_cast<jobject>(env, q));
@@ -851,14 +846,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
                 qtjambi_cast<QList<UnknownClass>>(env, scope, o);
             }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            {
-                QLinkedList<UnknownKey>* container = nullptr;
-                jobject o = qtjambi_cast<jobject>(env, scope, *container);
-                qtjambi_cast<QLinkedList<UnknownClass>>(env, scope, o);
-            }
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
-
             {
                 QQueue<UnknownKey>* container = nullptr;
                 jobject o = qtjambi_cast<jobject>(env, scope, *container);
@@ -888,14 +875,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
                 jobject o = qtjambi_cast<jobject>(env, scope, *container);
                 qtjambi_cast<const QList<UnknownClass>>(env, scope, o);
             }
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            {
-                const QLinkedList<UnknownKey>* container = nullptr;
-                jobject o = qtjambi_cast<jobject>(env, scope, *container);
-                qtjambi_cast<const QLinkedList<UnknownClass>>(env, scope, o);
-            }
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
 
             {
                 const QQueue<UnknownKey>* container = nullptr;
@@ -927,14 +906,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
                 qtjambi_cast<QSharedPointer<QList<UnknownClass>>>(env, scope, o);
             }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            {
-                QSharedPointer<QLinkedList<UnknownKey>>* container = nullptr;
-                jobject o = qtjambi_cast<jobject>(env, scope, *container);
-                qtjambi_cast<QSharedPointer<QLinkedList<UnknownClass>>>(env, scope, o);
-            }
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
-
             {
                 QSharedPointer<QQueue<UnknownKey>>* container = nullptr;
                 jobject o = qtjambi_cast<jobject>(env, scope, *container);
@@ -964,14 +935,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
                 jobject o = qtjambi_cast<jobject>(env, scope, *container);
                 qtjambi_cast<QSharedPointer<const QList<UnknownClass>>>(env, scope, o);
             }
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            {
-                QSharedPointer<const QLinkedList<UnknownKey>>* container = nullptr;
-                jobject o = qtjambi_cast<jobject>(env, scope, *container);
-                qtjambi_cast<QSharedPointer<const QLinkedList<UnknownClass>>>(env, scope, o);
-            }
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
 
             {
                 QSharedPointer<const QQueue<UnknownKey>>* container = nullptr;
@@ -1098,14 +1061,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
                 qtjambi_cast<QList<QString>>(env, scope, o);
             }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            {
-                QLinkedList<QString>* container = nullptr;
-                jobject o = qtjambi_cast<jobject>(env, scope, *container);
-                qtjambi_cast<QLinkedList<QString>>(env, scope, o);
-            }
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
-
             {
                 QQueue<QString>* container = nullptr;
                 jobject o = qtjambi_cast<jobject>(env, scope, *container);
@@ -1135,14 +1090,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
                 jobject o = qtjambi_cast<jobject>(env, scope, *container);
                 qtjambi_cast<const QList<QString>>(env, scope, o);
             }
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            {
-                const QLinkedList<QString>* container = nullptr;
-                jobject o = qtjambi_cast<jobject>(env, scope, *container);
-                qtjambi_cast<const QLinkedList<QString>>(env, scope, o);
-            }
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
 
             {
                 const QQueue<QString>* container = nullptr;
@@ -1174,14 +1121,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
                 qtjambi_cast<QSharedPointer<QList<QString>>>(env, scope, o);
             }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            {
-                QSharedPointer<QLinkedList<QString>>* container = nullptr;
-                jobject o = qtjambi_cast<jobject>(env, scope, *container);
-                qtjambi_cast<QSharedPointer<QLinkedList<QString>>>(env, scope, o);
-            }
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
-
             {
                 QSharedPointer<QQueue<QString>>* container = nullptr;
                 jobject o = qtjambi_cast<jobject>(env, scope, *container);
@@ -1211,14 +1150,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
                 jobject o = qtjambi_cast<jobject>(env, scope, *container);
                 qtjambi_cast<QSharedPointer<const QList<QString>>>(env, scope, o);
             }
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            {
-                QSharedPointer<const QLinkedList<QString>>* container = nullptr;
-                jobject o = qtjambi_cast<jobject>(env, scope, *container);
-                qtjambi_cast<QSharedPointer<const QLinkedList<QString>>>(env, scope, o);
-            }
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
 
             {
                 QSharedPointer<const QQueue<QString>>* container = nullptr;
@@ -1351,14 +1282,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
                 qtjambi_cast<QList<QString>*>(env, scope, o);
             }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            {
-                QLinkedList<QString>* container = nullptr;
-                jobject o = qtjambi_cast<jobject>(env, scope, container);
-                qtjambi_cast<QLinkedList<QString>*>(env, scope, o);
-            }
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
-
             {
                 QQueue<QString>* container = nullptr;
                 jobject o = qtjambi_cast<jobject>(env, scope, container);
@@ -1388,14 +1311,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
                 jobject o = qtjambi_cast<jobject>(env, scope, container);
                 qtjambi_cast<const QList<QString>*>(env, scope, o);
             }
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            {
-                const QLinkedList<QString>* container = nullptr;
-                jobject o = qtjambi_cast<jobject>(env, scope, container);
-                qtjambi_cast<const QLinkedList<QString>*>(env, scope, o);
-            }
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
 
             {
                 const QQueue<QString>* container = nullptr;
@@ -1427,14 +1342,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
                 qtjambi_cast<QSharedPointer<QList<QString>>*>(env, scope, o);
             }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            {
-                QSharedPointer<QLinkedList<QString>>* container = nullptr;
-                jobject o = qtjambi_cast<jobject>(env, scope, container);
-                qtjambi_cast<QSharedPointer<QLinkedList<QString>>*>(env, scope, o);
-            }
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
-
             {
                 QSharedPointer<QQueue<QString>>* container = nullptr;
                 jobject o = qtjambi_cast<jobject>(env, scope, container);
@@ -1464,14 +1371,6 @@ QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobj
                 jobject o = qtjambi_cast<jobject>(env, scope, container);
                 qtjambi_cast<QSharedPointer<const QList<QString>>*>(env, scope, o);
             }
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            {
-                QSharedPointer<const QLinkedList<QString>>* container = nullptr;
-                jobject o = qtjambi_cast<jobject>(env, scope, container);
-                qtjambi_cast<QSharedPointer<const QLinkedList<QString>>*>(env, scope, o);
-            }
-#endif //QT_VERSION < QT_VERSION_CHECK(6,0,0)
 
             {
                 QSharedPointer<const QQueue<QString>>* container = nullptr;

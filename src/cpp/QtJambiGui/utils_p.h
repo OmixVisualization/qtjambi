@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -40,11 +40,18 @@ namespace QtGui{
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QClipboard$Text,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QQuaternion$Axes,
-                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(xAxis)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(yAxis)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(zAxis))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QQuaternion$AxisAndAngle,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QQuaternion$EulerAngles,
-                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                     QTJAMBI_REPOSITORY_DECLARE_FLOAT_FIELD(pitch)
+                                     QTJAMBI_REPOSITORY_DECLARE_FLOAT_FIELD(yaw)
+                                     QTJAMBI_REPOSITORY_DECLARE_FLOAT_FIELD(roll)
+                                     )
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QTextCursor$SelectedTableCells,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 }

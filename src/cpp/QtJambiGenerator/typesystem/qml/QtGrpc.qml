@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -44,7 +44,6 @@ TypeSystem{
             Include{
                 fileName: "utils_p.h"
                 location: Include.Local
-                since: 6
             }
         }
     }
@@ -93,7 +92,6 @@ TypeSystem{
             Include{
                 fileName: "utils_p.h"
                 location: Include.Local
-                since: 6
             }
         }
         ModifyFunction{

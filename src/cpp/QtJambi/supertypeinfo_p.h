@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,6 +43,7 @@ struct SuperTypeInfo{
                     const QString& _className,
                     jclass _javaClass,
                     size_t _size,
+                    size_t _alignment,
                     bool _hasShell,
                     size_t _offset,
                     const QVector<ResolvedConstructorInfo>& _constructorInfos,
@@ -62,6 +63,7 @@ struct SuperTypeInfo{
     const QString& className() const;
     jclass javaClass() const;
     size_t size() const;
+    size_t alignment() const;
     bool hasShell() const;
     size_t offset() const;
     const QVector<ResolvedConstructorInfo>& constructorInfos() const;
@@ -72,6 +74,7 @@ private:
     QString m_className;
     jclass m_javaClass;
     size_t m_size;
+    size_t m_alignment;
     bool m_hasShell;
     size_t m_offset;
     QVector<ResolvedConstructorInfo> m_constructorInfos;
@@ -92,13 +95,13 @@ public:
     SuperTypeInfos& operator=(const SuperTypeInfos&);
     SuperTypeInfos& operator=(SuperTypeInfos&&);
     void assign(const SuperTypeInfos&);
-    void assign(JNIEnv *env, SuperTypeInfos&&);
+    void assign(SuperTypeInfos&&);
     jobject interfaceInfos() const;
     static SuperTypeInfos fromClass(JNIEnv *env, jclass cls);
 private:
     SuperTypeInfos(JNIEnv *env, jobject interfaceInfos);
     JObjectWrapper m_interfaceInfos;
-    friend void clearSuperTypesAtShutdown(JNIEnv *env);
+    friend void clearQtJambiStorage(JNIEnv* env, bool regular);
 };
 
 #endif // SUPERTYPEINFO_P_H

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -237,7 +237,7 @@ public class TestQVariant extends ApplicationInitializer {
     	assertEquals("JObjectWrapper", QMetaType.fromType(Object.class).name().toString());
     	assertEquals("JCollectionWrapper", QMetaType.fromType(List.class).name().toString());
     	assertEquals("JMapWrapper", QMetaType.fromType(Map.class).name().toString());
-    	assertEquals("JEnumWrapper", QMetaType.fromType(Enum.class).name().toString());
+    	assertEquals("java::lang::Enum", QMetaType.fromType(Enum.class).name().toString());
     	assertEquals("QWidget*", QMetaType.fromType(QWidget.class).name().toString());
     	assertEquals(new QSize(5, 5), QVariant.convert(new QSizeF(5, 5), QSize.class));
     	assertEquals(new QLine(6, 5, 8, 1), QVariant.convert(new QLineF(5.8, 5.2, 8.3, 1.2), QLine.class));

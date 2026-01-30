@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -188,60 +188,6 @@ TypeSystem{
                     ownership: Ownership.Ignore
                 }
             }
-        }
-        ModifyFunction{
-            signature: "getPageMargins(qreal*,qreal*,qreal*,qreal*,QPrinter::Unit)const"
-            ModifyArgument{
-                index: 1
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "qreal left = 0;\n"+
-                                  "qreal* %out = &left;"}
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "qreal top = 0;\n"+
-                                  "qreal* %out = &top;"}
-                }
-            }
-            ModifyArgument{
-                index: 3
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "qreal right = 0;\n"+
-                                  "qreal* %out = &right;"}
-                }
-            }
-            ModifyArgument{
-                index: 4
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "qreal bottom = 0;\n"+
-                                  "qreal* %out = &bottom;"}
-                }
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.core.@NonNull QMarginsF"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, QMarginsF(left, top, right, bottom));"}
-                }
-            }
-            until: 5
         }
     }
     

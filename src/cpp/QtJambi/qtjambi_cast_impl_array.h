@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,9 +34,6 @@
 
 namespace QtJambiPrivate {
 
-template<typename O, bool is_const, typename JArray, typename I, bool fixSize, typename... Args>
-struct qtjambi_jarray_to_native_cast_with_sizeconversion;
-
 template<typename JArray,
          typename T, bool t_is_const,
          typename I, typename... Args>
@@ -44,7 +41,7 @@ struct qtjambi_native_to_jarray_cast;
 
 template<typename O,
          bool is_const,
-         typename JArray, bool fixSize, typename... Args>
+         typename JArray, typename I, bool fixSize, typename... Args>
 struct qtjambi_jarray_to_native_cast;
 
 template<typename O,
@@ -55,11 +52,7 @@ static constexpr auto qtjambi_array_cast_impl() {
         return qtjambi_native_to_jarray_cast<O, typename std::remove_const<typename std::remove_pointer<T>::type>::type, std::is_const<typename std::remove_pointer<T>::type>::value, I, Args...>{};
     }else{
         Q_STATIC_ASSERT_X((QtJambiPrivate::is_jni_array_type<T>::value || std::is_same<T, jobject>::value || std::is_same<T, jcoreobject>::value), "Cannot cast types");
-        if constexpr(std::is_integral_v<I> && (std::is_signed_v<I> == std::is_signed_v<jsize>) && sizeof(I)==sizeof(jsize)){
-            return qtjambi_jarray_to_native_cast<typename std::remove_const<typename std::remove_pointer<O>::type>::type, std::is_const<typename std::remove_pointer<O>::type>::value, T, fixSize, Args...>{};
-        }else{
-            return qtjambi_jarray_to_native_cast_with_sizeconversion<typename std::remove_const<typename std::remove_pointer<O>::type>::type, std::is_const<typename std::remove_pointer<O>::type>::value, T, I, fixSize, Args...>{};
-        }
+        return qtjambi_jarray_to_native_cast<typename std::remove_const<typename std::remove_pointer<O>::type>::type, std::is_const<typename std::remove_pointer<O>::type>::value, T, I, fixSize, Args...>{};
     }
 }
 
@@ -158,10 +151,10 @@ private:
     }
 };
 
-template<typename O, bool is_const, typename JArray, bool fixSize, typename... Args>
+template<typename O, bool is_const, typename JArray, typename Int, bool fixSize, typename... Args>
 struct qtjambi_jarray_to_native_cast{
     typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type Out;
-    typedef std::conditional_t<fixSize, jsize, jsize&&> I;
+    typedef std::conditional_t<fixSize, Int, Int&&> I;
 
     static Out* cast(JArray in, I size, Args... args){
         auto env = cast_var_args<Args...>::env(args...);
@@ -176,11 +169,11 @@ struct qtjambi_jarray_to_native_cast{
             JArrayPointer* array = new JArrayPointer(env, in);
             cast_var_args<Args...>::scope(args...).addDeletion(array);
             if constexpr(fixSize){
-                if(size>=0 && array->size()>0 && array->size()<size){
+                if(size>=0 && array->size()>0 && Int(array->size())<size){
                     JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast array of size %1. Expected size: %2").arg(QString::number(array->size()), QString::number(size)) QTJAMBI_STACKTRACEINFO );
                 }
             }else{
-                size = jsize(array->size());
+                size = Int(array->size());
             }
             return reinterpret_cast<Out*>(array->pointer());
         }else{
@@ -198,11 +191,11 @@ private:
             });
             cast_var_args<Args...>::scope(args...).addDeletion(array);
             if constexpr(fixSize){
-                if(size>=0 && array->size()>0 && array->size()<size){
+                if(size>=0 && array->size()>0 && Int(array->size())<size){
                     JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast array of size %1. Expected size: %2").arg(QString::number(array->size()), QString::number(size)) QTJAMBI_STACKTRACEINFO );
                 }
             }else{
-                size = array->size();
+                size = Int(array->size());
             }
             return array->pointer();
         }else{
@@ -213,11 +206,11 @@ private:
             });
             cast_var_args<Args...>::scope(args...).addDeletion(array);
             if constexpr(fixSize){
-                if(size>=0 && array->size()>0 && array->size()<size){
+                if(size>=0 && array->size()>0 && Int(array->size())<size){
                     JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast array of size %1. Expected size: %2").arg(QString::number(array->size()), QString::number(size)) QTJAMBI_STACKTRACEINFO );
                 }
             }else{
-                size = array->size();
+                size = Int(array->size());
             }
             return array->pointer();
         }
@@ -241,23 +234,6 @@ private:
         }else{
             return nullptr;
         }
-    }
-};
-
-template<typename O, bool is_const, typename JArray, typename I, bool fixSize, typename... Args>
-struct qtjambi_jarray_to_native_cast_with_sizeconversion
-{
-    static auto cast(JArray in, I&& size, Args... args){
-        Q_STATIC_ASSERT(unuseArgs(sizeof(args)...));
-        jsize _size = jsize(size);
-        jsize* _sizePtr = &_size;
-        I* sizePtr = &size;
-        DoFinally __qt_do_finally([_sizePtr,sizePtr](){ *sizePtr = I(*_sizePtr); });
-        Q_UNUSED(__qt_do_finally)
-        return qtjambi_jarray_to_native_cast<
-            O,
-            is_const,
-            JArray, fixSize, Args...>::cast(in, std::move(_size), args...);
     }
 };
 

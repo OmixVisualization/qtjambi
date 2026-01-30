@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -52,8 +52,6 @@ struct FutureError : public QException {
     }
 };
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-
 BindableOwner::BindableOwner(QObject *parent) : QObject(parent)
 {
 
@@ -96,50 +94,6 @@ QFuture<QString> FutureHandler::throwInTheFuture(const QStringList& strings, ulo
             promise.addResult(strg);
     }, delay, strings);
 }
-
-#else
-
-QFuture<QString> FutureHandler::returnInTheFuture(const QStringList& strings, ulong delay){
-    QFutureInterface<QString> promise;
-    promise.reportStarted();
-    QtConcurrent::run([promise](ulong delay, QStringList strings) mutable {
-        QThread::msleep(delay);
-        for(const QString& strg : strings)
-            promise.reportResult(strg);
-        promise.reportFinished();
-    }, delay, strings);
-    return promise.future();
-}
-
-QFuture<QString> FutureHandler::throwInTheFuture(const QStringList& strings, ulong delay, int exceptionType){
-    QFutureInterface<QString> promise;
-    promise.reportStarted();
-    QtConcurrent::run([promise, exceptionType](ulong delay, QStringList strings) mutable {
-        QThread::msleep(delay);
-        try{
-            switch(exceptionType){
-            case 1: FutureException().raise();
-            case 2: FutureError().raise();
-            case 3: throw std::invalid_argument("X");
-            case 4: throw std::underflow_error("X");
-            case 5: throw std::bad_alloc();
-            case 6: throw "Char string exception";
-            case 7: throw 12345;
-            case 8: throw QString("QString exception");
-            default:
-                QException().raise();
-            }
-            for(const QString& strg : strings)
-                promise.reportResult(strg);
-        }catch(const QException& exn){
-            promise.reportException(exn);
-        }
-        promise.reportFinished();
-    }, delay, strings);
-    return promise.future();
-}
-
-#endif //QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
 QFuture<QString> FutureHandler::forward(QFuture<QString> future){
     return future;
@@ -266,11 +220,7 @@ QStringList FutureHandler::returnInTheFuture(QFuture<QString> future){
 QStringList FutureHandler::returnSequentialInTheFuture(QFuture<QString> future){
     QStringList results;
     for(int i = 0; i<5; ++i){
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         future.suspend();
-#else
-        future.pause();
-#endif
         QThread::msleep(500);
         future.resume();
         printf("progress: %i - \"%s\"\n", future.progressValue(), qPrintable(future.progressText()));
@@ -281,11 +231,7 @@ QStringList FutureHandler::returnSequentialInTheFuture(QFuture<QString> future){
 
 void FutureHandler::suspendInTheFuture(QFuture<QString> future){
     QThread::msleep(200);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     future.suspend();
-#else
-    future.pause();
-#endif
     future.waitForFinished();
 }
 
@@ -355,7 +301,6 @@ void FutureHandler::fillVariant(QFutureInterface<QVariant>& promise){
     promise.reportResult("789");
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 void FutureHandler::fillString(QPromise<QString>& promise){
     promise.addResult("A");
     promise.addResult("B");
@@ -378,5 +323,3 @@ void FutureHandler::fillVariant(QPromise<QVariant>& promise){
     promise.addResult("456");
     promise.addResult("789");
 }
-
-#endif // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)

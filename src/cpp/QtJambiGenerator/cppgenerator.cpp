@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -249,17 +249,10 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option op
                 s << ' ';
             return;
         }else{
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            int mtype = QMetaType::type(originalTypeDescription.toLatin1().constData());
-            if(mtype>QMetaType::UnknownType && mtype<=QMetaType::HighestInternalId){
-                originalTypeDescription = QMetaType::typeName(mtype);
-            }
-#else
             QMetaType mtype = QMetaType::fromName(originalTypeDescription.toLatin1().constData());
             if(mtype.id()>QMetaType::UnknownType && mtype.id()<=QMetaType::HighestInternalId){
                 originalTypeDescription = mtype.name();
             }
-#endif
             s << originalTypeDescription;
             if (!(options & SkipName) && !(options & NoSpace))
                 s << ' ';

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -198,9 +198,6 @@ class QJSEngine__{
     public final @NonNull QJSValue newQMetaObject(@NonNull Class<?> type) {
         return newQMetaObject(io.qt.core.QMetaObject.forType(type));
     }
-}// class
-
-class QJSEngine_6_{
     @QtUninvokable
     public final <T> T fromScriptValue(@NonNull QJSValue value, @NonNull Class<T> type, io.qt.core.@NonNull QMetaType @NonNull...instantiations) {
         return fromScriptValue(value, io.qt.core.QMetaType.fromType(type, instantiations));

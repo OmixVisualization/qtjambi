@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -350,7 +350,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_AbstractSpan_initializeFromBeg
             jvalue arguments[2];
             arguments[0].j = 0;
             arguments[1].j = 0;
-            QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object), __jni_object, &__qt_construct_QSpan_cref_Iterator, sizeof(QtJambiSpan), typeid(QSpan<QVariant>), 0, false, &QtJambiSpan::deleter, arguments);
+            QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object), __jni_object, &__qt_construct_QSpan_cref_Iterator, sizeof(QtJambiSpan), alignof(QtJambiSpan), typeid(QSpan<QVariant>), 0, false, &QtJambiSpan::deleter, arguments);
         }else{
             AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(ContainerAPI::fromNativeId(QtJambiNativeID(list)).second);
             Q_ASSERT(listAccess);
@@ -360,7 +360,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_AbstractSpan_initializeFromBeg
             arguments[1].j = size;
             bool isConst = dynamic_cast<AbstractSequentialIteratorAccess*>(container.second)==nullptr;
             QtJambiAPI::checkNullPointer(__jni_env, container.second, typeid(QList<QVariant>::const_iterator));
-            QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object), __jni_object, &__qt_construct_QSpan_cref_Iterator, sizeof(QtJambiSpan), typeid(QSpan<QVariant>), 0, false, listAccess->createSpanAccess(isConst), &QtJambiSpan::deleter, arguments, owner);
+            QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object), __jni_object, &__qt_construct_QSpan_cref_Iterator, sizeof(QtJambiSpan), alignof(QtJambiSpan), typeid(QSpan<QVariant>), 0, false, listAccess->createSpanAccess(isConst), &QtJambiSpan::deleter, arguments, owner);
         }
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -401,7 +401,7 @@ public:
         arguments[2].z = false;
         QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object),
                                  __jni_object,
-                                 &construct, sizeof(ManagedSpan), typeid(QSpan<QVariant>), 0, false,
+                                 &construct, sizeof(ManagedSpan), alignof(ManagedSpan), typeid(QSpan<QVariant>), 0, false,
                                  containerAccess,
                                  &ManagedSpan::deleter, arguments, owner);
         return arguments[2].z;
@@ -500,7 +500,7 @@ public:
             QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object),
                                      __jni_object,
                                      &__qt_construct_QSpan_cref_Iterator,
-                                     sizeof(QtJambiSpan), typeid(QSpan<QVariant>), 0, false,
+                                     sizeof(QtJambiSpan), alignof(QtJambiSpan), typeid(QSpan<QVariant>), 0, false,
                                      &QtJambiSpan::deleter, arguments);
             return false;
         }else{
@@ -509,7 +509,7 @@ public:
             arguments[1].z = false;
             QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object),
                                      __jni_object,
-                                     &construct, sizeof(ManagedSpan), typeid(QSpan<QVariant>), 0, false,
+                                     &construct, sizeof(ManagedSpan), alignof(ManagedSpan), typeid(QSpan<QVariant>), 0, false,
                                      QtJambiPrivate::QSpanAccess<NativeType>::newInstance(),
                                      &ManagedSpan::deleter, arguments, InvalidNativeID);
             return arguments[1].z;
@@ -741,15 +741,15 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_AbstractSpan_initializeFromClo
         arguments[2].j = offset + n;
         if(container.second){
             if(isArrayOrNondirectBuffer){
-                QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object), __jni_object, &__qt_construct_QSpan_cref_ManagedClone, sizeof(ManagedSpan), typeid(QSpan<QVariant>), 0, false, container.second->clone(), &ManagedSpan::deleter, arguments, owner);
+                QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object), __jni_object, &__qt_construct_QSpan_cref_ManagedClone, sizeof(ManagedSpan), alignof(ManagedSpan), typeid(QSpan<QVariant>), 0, false, container.second->clone(), &ManagedSpan::deleter, arguments, owner);
             }else{
-                QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object), __jni_object, &__qt_construct_QSpan_cref_Clone, sizeof(QtJambiSpan), typeid(QSpan<QVariant>), 0, false, container.second->clone(), &QtJambiSpan::deleter, arguments, owner);
+                QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object), __jni_object, &__qt_construct_QSpan_cref_Clone, sizeof(QtJambiSpan), alignof(QtJambiSpan), typeid(QSpan<QVariant>), 0, false, container.second->clone(), &QtJambiSpan::deleter, arguments, owner);
             }
         }else{
             if(isArrayOrNondirectBuffer){
-                QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object), __jni_object, &__qt_construct_QSpan_cref_ManagedClone, sizeof(ManagedSpan), typeid(QSpan<QVariant>), 0, false, &ManagedSpan::deleter, arguments);
+                QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object), __jni_object, &__qt_construct_QSpan_cref_ManagedClone, sizeof(ManagedSpan), alignof(ManagedSpan), typeid(QSpan<QVariant>), 0, false, &ManagedSpan::deleter, arguments);
             }else{
-                QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object), __jni_object, &__qt_construct_QSpan_cref_Clone, sizeof(QtJambiSpan), typeid(QSpan<QVariant>), 0, false, &QtJambiSpan::deleter, arguments);
+                QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object), __jni_object, &__qt_construct_QSpan_cref_Clone, sizeof(QtJambiSpan), alignof(QtJambiSpan), typeid(QSpan<QVariant>), 0, false, &QtJambiSpan::deleter, arguments);
             }
         }
     }QTJAMBI_CATCH(const JavaException& exn){

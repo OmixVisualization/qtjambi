@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,6 +34,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import io.qt.Nullable;
@@ -50,6 +51,7 @@ import io.qt.qml.QJSEngine;
 import io.qt.qml.QQmlComponent;
 import io.qt.qml.QQmlEngine;
 import io.qt.qml.QQmlListProperty;
+import io.qt.quick.QQuickItem;
 
 public class TestQmlVariant extends ApplicationInitializer{
 	
@@ -138,6 +140,7 @@ public class TestQmlVariant extends ApplicationInitializer{
 	
 	@Test
     public void test() {
+		QQuickItem item = new QQuickItem();
 		QVariant v = QVariant.fromValue(new MyColor());
 		assertEquals(MyColor.class.getName().replace(".", "::").replace("$", "::"), v.metaType().name());
 		QLogging.qInstallMessageHandler((t,c,m)->System.out.println(m));
@@ -147,11 +150,13 @@ public class TestQmlVariant extends ApplicationInitializer{
 		context.engine = engine;
 		engine.rootContext().setContextProperty("context", context);
 		String data = "import QtQml\n"
+				+ "import QtQuick\n"
 				+ "QtObject{\n"
 				+ "id: testObject\n"
 				+ "objectName: \"TestObject\"\n"
 				+ "property list<variant> variants\n"
 				+ "property list<QtObject> objects\n"
+				+ "property list<Item> items\n"
 				+ "property QtObject object\n"
 				+ "function test(){\n"
 				+ "var vec3d = context.data(0);\n"
@@ -187,7 +192,7 @@ public class TestQmlVariant extends ApplicationInitializer{
 		QObject object = component.create();
 		assertTrue(component.errorString(), object!=null);
 		QMetaMethod testMethod = object.metaObject().method("test");
-//		object.metaObject().properties().forEach(p->System.out.println(p.typeName()+" "+p.name()));
+		object.metaObject().properties().forEach(p->System.out.println(p.typeName()+" "+p.name()));
 		testMethod.invoke(object);
 		System.gc();
 		QCoreApplication.processEvents();
@@ -204,7 +209,8 @@ public class TestQmlVariant extends ApplicationInitializer{
 		assertTrue(variants.get(i++) instanceof QPlaceUser);
 		assertEquals("PlaceUserName", variants.get(i++));
 		assertEquals("PlaceUserId", variants.get(i++));
-		QQmlListProperty<?> objects = (QQmlListProperty<?>)object.property("objects");
+		@SuppressWarnings("unchecked")
+		QQmlListProperty<QObject> objects = (QQmlListProperty<QObject>)object.property("objects");
 		assertEquals(3, objects.count());
 		i = 0;
 		Object c1 = objects.at(i++);
@@ -219,9 +225,30 @@ public class TestQmlVariant extends ApplicationInitializer{
 		assertTrue(c3 instanceof Custom);
 		assertEquals(QJSEngine.ObjectOwnership.JavaOwnership, QJSEngine.objectOwnership((QObject)c3));
 		assertTrue(General.internalAccess.isJavaOwnership((QObject)c3));
+		assertTrue(objects.canAppend());
+		objects.append(new QObject(object));
+		assertEquals(4, objects.count());
 		c3 = object.property("object");
 		assertTrue(c3 instanceof Custom);
 		assertEquals(QJSEngine.ObjectOwnership.JavaOwnership, QJSEngine.objectOwnership((QObject)c3));
 		assertTrue(General.internalAccess.isJavaOwnership((QObject)c3));
+		@SuppressWarnings("unchecked")
+		QQmlListProperty<QObject> items = (QQmlListProperty<QObject>)object.property("items");
+		assertEquals(0, items.count());
+		assertTrue(items.canAppend());
+		try {
+			items.append(new QObject(object));
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+		items.append(item);
+		assertEquals(1, items.count());
+		try {
+			items.replace(0, new QObject(object));
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+		items.removeLast();
+		assertEquals(0, items.count());
 	}
 }

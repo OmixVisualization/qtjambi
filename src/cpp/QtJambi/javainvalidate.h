@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -44,6 +44,7 @@ protected:
 private:
     InvalidateAfterUsePrivate* p;
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
     Q_DISABLE_COPY_MOVE(AbstractInvalidateAfterUse)
 };
@@ -58,6 +59,7 @@ public:
     static void forcedInvalidate(JNIEnv *env, QtJambiNativeID nativeId);
     Q_DISABLE_COPY_MOVE(InvalidateAfterUse)
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -68,6 +70,7 @@ public:
 private:
     Q_DISABLE_COPY_MOVE(ForcedInvalidateAfterUse)
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -83,6 +86,7 @@ public:
 private:
     Q_DISABLE_COPY_MOVE(InvalidateContainerAfterUse)
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -92,6 +96,7 @@ public:
 private:
     Q_DISABLE_COPY_MOVE(ForcedInvalidateContainerAfterUse)
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -106,6 +111,7 @@ public:
 private:
     Q_DISABLE_COPY_MOVE(InvalidateArrayAfterUse)
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 
@@ -115,6 +121,7 @@ public:
 private:
     Q_DISABLE_COPY_MOVE(ForcedInvalidateArrayAfterUse)
     void* operator new(size_t) = delete;
+    void* operator new(size_t,size_t) = delete;
     void* operator new[](size_t) = delete;
 };
 

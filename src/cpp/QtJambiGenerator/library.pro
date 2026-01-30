@@ -1,6 +1,6 @@
 ###################################################################################################
 ##
-## Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+## Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ##
 ## This file is part of Qt Jambi.
 ##
@@ -130,8 +130,6 @@ HEADERS += \
         docindex/docnamespace.h \
         docindex/doctypedef.h \
         typesystem/qmltypesystemreader.h \
-        typesystem/xmltypesystemreader.h \
-        typesystem/xmltoqmlconverter.h \
         typesystem/qml_abstractobject.h \
         typesystem/qml_typesystem.h \
         typesystem/qml_include.h \
@@ -153,8 +151,6 @@ SOURCES += \
         typeparser.cpp \
         typesystem/codesnip.cpp \
         typesystem/qmltypesystemreader.cpp \
-        typesystem/xmltypesystemreader.cpp \
-        typesystem/xmltoqmlconverter.cpp \
         typesystem/modification.cpp \
         #typesystem/stackelement.cpp \
         typesystem/typedatabase.cpp \

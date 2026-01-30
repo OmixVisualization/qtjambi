@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,8 +36,6 @@
 #include "registryapi.h"
 #include "utils_p.h"
 
-typedef QExplicitlySharedDataPointer<const class QtJambiTypeEntry> QtJambiTypeEntryPtr;
-
 class QtJambiLink;
 
 class QtJambiTypeEntry : public QSharedData{
@@ -68,10 +66,12 @@ public:
     virtual jclass creatableClass() const;
     jmethodID creatorMethod() const;
     size_t valueSize() const;
+    size_t valueAlign() const;
     virtual uint offset(const std::type_info& toType) const;
 
     virtual QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset) const;
     virtual NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const = 0;
+    virtual NativeToJavaResult convertToJava(JNIEnv *env, void *qt_object, jobject& output) const;
     virtual bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const = 0;
     virtual bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jobject& output) const = 0;
     virtual bool convertToNative(JNIEnv *env, jobject input, void * output) const = 0;
@@ -82,14 +82,16 @@ public:
     static QtJambiTypeEntryPtr getTypeEntryByJavaName(JNIEnv* env, const QString& java_name);
     static QtJambiTypeEntryPtr getTypeEntryByQtName(JNIEnv* env, const char* qt_name);
     static QtJambiTypeEntryPtr getTypeEntryByIID(JNIEnv* env, const char* iid);
-    static NativeToJavaResult convertModelIndexNativeToJava(JNIEnv *env, const QModelIndex *qt_object, NativeToJavaConversionMode mode, jobject& output, QtJambiScope* scope = nullptr);
+    static NativeToJavaResult convertModelIndexNativeToJava(JNIEnv *env, QModelIndex &&qt_object, jobject& output);
+    static NativeToJavaResult convertModelIndexNativeToJava(JNIEnv *env, const QModelIndex &qt_object, NativeToJavaConversionMode mode, jobject& output);
+    static NativeToJavaResult convertModelIndexNativeToJava(JNIEnv *env, const QModelIndex &qt_object, NativeToJavaConversionMode mode, jobject& output, QtJambiScope& scope);
     static bool convertModelIndexJavaToNative(JNIEnv *env, jobject java_value, void * output);
 #if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
     static bool convertModelIndexJavaToNative(JNIEnv *env, jobject java_value, void * output, QtJambiScope& scope);
 #endif
 
 protected:
-    QtJambiTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size);
+    QtJambiTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size, size_t value_align);
 private:
     static QtJambiTypeEntryPtr getTypeEntry(JNIEnv* env, const std::type_info& typeId, bool recursive, const char* qtName);
     static jobject convertInvalidModelIndexToJava(JNIEnv *env);
@@ -99,6 +101,7 @@ private:
     const jclass m_java_class;
     const jmethodID m_creator_method;
     size_t m_value_size;
+    size_t m_value_align;
 };
 
 class FlagsTypeEntry;
@@ -107,7 +110,7 @@ class EnumTypeEntry : public QtJambiTypeEntry{
 public:
     bool isEnum() const final;
     const FlagsTypeEntry* flagType() const;
-    EnumTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size);
+    EnumTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size, size_t value_align);
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override;
     bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const override;
     bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jobject& output) const override;
@@ -121,7 +124,7 @@ class FlagsTypeEntry : public QtJambiTypeEntry{
 public:
     bool isFlags() const final;
     const EnumTypeEntry* enumType() const;
-    FlagsTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size, const EnumTypeEntry* enumType);
+    FlagsTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size, size_t value_align, const EnumTypeEntry* enumType);
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override;
     bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const override;
     bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jobject& output) const override;
@@ -132,7 +135,7 @@ private:
 
 class AbstractSimpleTypeEntry : public QtJambiTypeEntry{
 public:
-    AbstractSimpleTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
+    AbstractSimpleTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size, size_t value_align);
     bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const override;
     bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jobject& output) const override;
 private:
@@ -175,6 +178,7 @@ class ShellableTypeEntry : public QtJambiTypeEntry{
 public:
     bool isShellable() const final;
     size_t shellSize() const;
+    size_t shellAlign() const;
     const QVector<RegistryAPI::FunctionInfo>& virtualFunctions() const;
 protected:
     ShellableTypeEntry(JNIEnv* env,
@@ -184,11 +188,14 @@ protected:
                            jclass java_class,
                            jmethodID creator_method,
                            size_t value_size,
+                           size_t value_align,
                            size_t shell_size,
+                           size_t shell_align,
                            const QVector<RegistryAPI::FunctionInfo>& virtualFunctions
                            );
 private:
     size_t m_shell_size;
+    size_t m_shell_align;
     const QVector<RegistryAPI::FunctionInfo> m_virtualFunctions;
 };
 
@@ -202,8 +209,10 @@ protected:
                            const char *java_name,
                            jclass java_class,
                            jmethodID creator_method,
-                           size_t value_size,
-                           size_t shell_size,
+                          size_t value_size,
+                          size_t value_align,
+                          size_t shell_size,
+                          size_t shell_align,
                            const QVector<RegistryAPI::FunctionInfo>& virtualFunctions,
                            RegistryAPI::DestructorFn destructor
                         );
@@ -224,32 +233,44 @@ public:
                         jclass java_class,
                         jmethodID creator_method,
                         size_t value_size,
+                        size_t value_align,
                         size_t shell_size,
+                        size_t shell_align,
                         jclass java_impl_class,
                         jclass java_wrapper_class,
                         const QVector<RegistryAPI::FunctionInfo>& virtualFunctions,
                         RegistryAPI::DestructorFn destructor,
                         FunctionalResolver registered_functional_resolver,
-                        const QMetaType& qt_meta_type,
-                        bool is_std_function
+                        const QMetaType& qt_meta_type
                     );
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override;
     bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const override;
     bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jobject& output) const override;
-    bool convertToNative(JNIEnv *env, jobject input, void * output) const override;
-private:
+protected:
     jclass m_java_impl_class;
     jclass m_java_wrapper_class;
     FunctionalResolver m_registered_functional_resolver;
     QMetaType m_qt_meta_type;
-    bool m_is_std_function;
+};
+
+class StdFunctionalTypeEntry : public FunctionalTypeEntry{
+public:
+    using FunctionalTypeEntry::FunctionalTypeEntry;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, void *qt_object, jobject& output) const override;
+    bool convertToNative(JNIEnv *env, jobject input, void * output) const override;
+};
+
+class FunctionPointerTypeEntry : public FunctionalTypeEntry{
+public:
+    using FunctionalTypeEntry::FunctionalTypeEntry;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override;
+    bool convertToNative(JNIEnv *env, jobject input, void * output) const override;
 };
 
 class ObjectTypeAbstractEntry : public DestructableTypeEntry{
 public:
     bool isObject() const final;
     PtrDeleterFunction deleter() const;
-    TypeInfoSupplier typeInfoSupplier() const;
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override;
     bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const override;
     bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jobject& output) const override;
@@ -267,24 +288,25 @@ protected:
                     jclass java_class,
                     jmethodID creator_method,
                     size_t value_size,
+                    size_t value_align,
                     size_t shell_size,
+                    size_t shell_align,
                     PtrDeleterFunction deleter,
                     const QVector<RegistryAPI::FunctionInfo>& virtualFunctions,
-                    RegistryAPI::DestructorFn destructor,
-                    TypeInfoSupplier typeInfoSupplier
-                    );
+                    RegistryAPI::DestructorFn destructor
+                );
     struct CopyValueInfo{
         void* value;
         bool isCopy = false;
         AbstractContainerAccess* containerAccess = nullptr;
     };
+    virtual CopyValueInfo moveValue(JNIEnv *, void*) const = 0;
     virtual CopyValueInfo copyValue(JNIEnv *, const void*, bool makeCopyOfValue) const = 0;
     virtual QSharedPointer<QtJambiLink> createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *object, NativeToJavaConversionMode mode, bool isMetaCopy, AbstractContainerAccess* containerAccess = nullptr) const = 0;
     virtual QSharedPointer<QtJambiLink> createLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject, bool createdByJava, bool is_shell, const QSharedPointer<char>& smartPointer, PtrOwnerFunction ownerFunction = nullptr) const = 0;
     virtual QSharedPointer<QtJambiLink> createLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject, bool createdByJava, bool is_shell, const std::shared_ptr<char>& smartPointer, PtrOwnerFunction ownerFunction = nullptr) const = 0;
 private:
     PtrDeleterFunction m_deleter;
-    TypeInfoSupplier m_typeInfoSupplier;
 };
 
 class QObjectTypeAbstractEntry : public ShellableTypeEntry{
@@ -307,7 +329,9 @@ protected:
                      jclass java_class,
                      jmethodID creator_method,
                      size_t value_size,
+                     size_t value_align,
                      size_t shell_size,
+                     size_t shell_align,
                      const QVector<RegistryAPI::FunctionInfo>& virtualFunctions,
                      const QMetaObject* original_meta_object
                      );

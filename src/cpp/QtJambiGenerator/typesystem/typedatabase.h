@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -43,6 +43,8 @@
 #include <QVersionNumber>
 
 #include "typeentry.h"
+
+class QQmlEngine;
 
 namespace TS{
 
@@ -153,7 +155,7 @@ public:
 
     void initialize(const QString &filename, const QStringList &importInputDirectoryList, const QStringList &typeystemDirectoryList, const QVersionNumber& qtVersion, bool generate = true);
 
-    bool parseFile(const QString &filename, const QStringList &importInputDirectoryList, const QStringList &typeystemDirectoryList, bool generate = true, bool optional = false);
+    bool parseFile(QQmlEngine* engine, const QString &filename, const QStringList &importInputDirectoryList, const QStringList &typeystemDirectoryList, bool generate = true, bool optional = false);
 
     bool defined(QString name);
 

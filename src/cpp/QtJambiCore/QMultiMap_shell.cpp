@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -761,13 +761,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMultiMap_writeTo
         containerName += ",";
         containerName += containerAccess->valueMetaType().name();
         containerName += ">";
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        int metaType = containerAccess->registerContainer(containerName);
-        if(!QMetaType::save(*stream, metaType, container.first)){
-#else
         QMetaType metaType(containerAccess->registerContainer(containerName));
         if(!metaType.save(*stream, container.first)){
-#endif
             containerName.prepend("QDataStream& << ");
             JavaException::raiseQNoImplementationException(__jni_env, containerName.constData() QTJAMBI_STACKTRACEINFO );
         }
@@ -795,13 +790,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMultiMap_readFrom
         containerName += ",";
         containerName += containerAccess->valueMetaType().name();
         containerName += ">";
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        int metaType = containerAccess->registerContainer(containerName);
-        if(!QMetaType::load(*stream, metaType, container.first)){
-#else
         QMetaType metaType(containerAccess->registerContainer(containerName));
         if(!metaType.load(*stream, container.first)){
-#endif
             containerName.prepend("QDataStream& >> ");
             JavaException::raiseQNoImplementationException(__jni_env, containerName.constData() QTJAMBI_STACKTRACEINFO );
         }
@@ -830,16 +820,11 @@ extern "C" JNIEXPORT jstring JNICALL Java_io_qt_core_QMultiMap_toString
             containerName += ",";
             containerName += containerAccess->valueMetaType().name();
             containerName += ">";
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            int metaType = containerAccess->registerContainer(containerName);
-            CoreAPI::appendToDebugStream(stream.nospace(), metaType, container.first);
-#else
             QMetaType metaType(containerAccess->registerContainer(containerName));
             if(!metaType.debugStream(stream.nospace(), container.first)){
                 containerName.prepend("QDebug >> ");
                 JavaException::raiseQNoImplementationException(__jni_env, containerName.constData() QTJAMBI_STACKTRACEINFO );
             }
-#endif
         }
         result = qtjambi_cast<jstring>(__jni_env, strg);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -867,11 +852,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QMultiMap_hashCode
         containerName += ">";
         QMetaType metaType(containerAccess->registerContainer(containerName));
         size_t h = CoreAPI::computeHash(metaType, container.first);
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         result = jint(quint64(h) ^ quint64(h) >> 32);
-#else
-        result = jint(h);
-#endif
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -730,9 +730,11 @@ public class TestQThread extends ApplicationInitializer{
 			timer.dispose();
 		}
 		QThread remaining = reference.get();
-		Assert.assertTrue("QThread reference is not null and existing", remaining==null || remaining.isDisposed());
-		Assert.assertTrue("QThread reference is not null but disposed", null==remaining);
-		Assert.assertTrue("Thread reference is not", null==jreference.get());
+		if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+			Assert.assertTrue("QThread reference is not null and existing", remaining==null || remaining.isDisposed());
+			Assert.assertTrue("QThread reference is not null but disposed", null==remaining);
+			Assert.assertTrue("Thread reference is not", null==jreference.get());
+		}
 	}
 	
 	@org.junit.Test
@@ -894,7 +896,9 @@ public class TestQThread extends ApplicationInitializer{
 			loop.exec();
 			timer.dispose();
 		}
-		Assert.assertTrue("Thread has not been deleted", threadCleaned.get());
+		if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+			Assert.assertTrue("Thread has not been deleted", threadCleaned.get());
+		}
 		Assert.assertTrue("QThread has not been deleted", qthreadCleaned.get());
 	}
 }

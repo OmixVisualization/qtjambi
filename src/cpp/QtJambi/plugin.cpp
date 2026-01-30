@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -254,15 +254,9 @@ void registerPluginImporter(){
         result += QCborMap({{qint64(QtPluginMetaDataKeys::IID), QCborValue("io.qtjambi.PluginImporter")}}).toCborValue().toCbor();
         return result;
     }();
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QtPluginMetaDataFunction m = []()->const char *{
-        return metaData.constData();
-    };
-#else
     QtPluginMetaDataFunction m = []()->QPluginMetaData{
         return {reinterpret_cast<decltype(std::declval<QPluginMetaData>().data)>(metaData.constData()), size_t(metaData.size())};
     };
-#endif
     QStaticPlugin sp{i, m};
     sp.metaData();
     qRegisterStaticPluginFunction(sp);

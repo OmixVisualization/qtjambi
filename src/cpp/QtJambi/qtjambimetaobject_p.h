@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,56 +43,6 @@ typedef void (*StaticMetaCallFunction)(QObject *, QMetaObject::Call, int, void *
 class QtJambiMetaObjectPrivate;
 class SuperTypeInfos;
 
-class ParameterTypeInfo{
-public:
-    ParameterTypeInfo();
-    ParameterTypeInfo(
-            const QMetaType& metaType,
-            jclass _javaClass
-        );
-    ParameterTypeInfo(
-        const QMetaType& metaType,
-        const QString& typeName,
-        jclass _javaClass
-        );
-    ParameterTypeInfo(
-            const QMetaType& metaType,
-            jclass _javaClass,
-            QtJambiUtils::InternalToExternalConverter&& internalToExternalConverter,
-            QtJambiUtils::ExternalToInternalConverter&& externalToInternalConverter
-        );
-    ParameterTypeInfo(
-            const QMetaType& metaType,
-            const QString& typeName,
-            jclass _javaClass,
-            QtJambiUtils::InternalToExternalConverter&& internalToExternalConverter,
-            QtJambiUtils::ExternalToInternalConverter&& externalToInternalConverter
-        );
-    ParameterTypeInfo(const ParameterTypeInfo& other);
-    ParameterTypeInfo& operator=(const ParameterTypeInfo& other);
-    ParameterTypeInfo(ParameterTypeInfo&& other);
-    ParameterTypeInfo& operator=(ParameterTypeInfo&& other);
-
-    bool convertInternalToExternal(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& out, bool forceBoxedType) const;
-    bool convertExternalToInternal(JNIEnv* env, QtJambiScope* scope, jvalue in,void* & out, jValueType valueType) const;
-    jclass javaClass() const;
-    const QMetaType& metaType() const;
-    static QtJambiUtils::InternalToExternalConverter default_internalToExternalConverter();
-    static QtJambiUtils::ExternalToInternalConverter default_externalToInternalConverter();
-    static ParameterTypeInfo voidTypeInfo(JNIEnv* env);
-private:
-    void resolveI2E(JNIEnv* env);
-    void resolveE2I(JNIEnv* env);
-    QMetaType m_metaType;
-    QString m_typeName;
-    jclass m_javaClass;
-    QtJambiUtils::InternalToExternalConverter m_internalToExternalConverter;
-    QtJambiUtils::ExternalToInternalConverter m_externalToInternalConverter;
-    uint m_resolvedI2E : 1;
-    uint m_resolvedE2I : 1;
-    friend class QtJambiMetaObject;
-};
-
 struct JInvokableInfo{
     jclass declaringClass = nullptr;
     QVector<ParameterTypeInfo> parameterTypeInfos;
@@ -115,6 +65,8 @@ class QtJambiMetaObject;
 class InPlaceInitializer{
     const QtJambiMetaObject* m_metaObject;
     void* m_placement;
+    size_t m_size = 0;
+    size_t m_align = 0;
     QVector<ParameterTypeInfo> m_parameterTypeInfos;
     QtJambiAPI::ConstructorFn m_constructorFunction;
     QList<jclass> m_constructorArgumentFunctionTypes;
@@ -125,16 +77,16 @@ class InPlaceInitializer{
     InPlaceInitializer* m_parentInitializer = nullptr;
     QList<SuperInitializer*> m_superInitializers;
 public:
-    InPlaceInitializer(const QtJambiMetaObject* metaObject, void* placement,
+    InPlaceInitializer(const QtJambiMetaObject* metaObject, void* placement, size_t _size, size_t _align,
                        const JConstructorInfo& constructorInfo,
                        QVector<jvalue>&& arguments,
                        bool is_qml_call = false);
-    InPlaceInitializer(const QtJambiMetaObject* metaObject, void* placement,
+    InPlaceInitializer(const QtJambiMetaObject* metaObject, void* placement, size_t _size, size_t _align,
                        QtJambiAPI::ConstructorFn constructorFunction,
                        bool is_qml_call = false);
 protected:
     InPlaceInitializer(InPlaceInitializer* parentInitializer,
-                       const QtJambiMetaObject* metaObject, void* placement,
+                       const QtJambiMetaObject* metaObject, void* placement, size_t _size, size_t _align,
                        QVector<ParameterTypeInfo>&& parameterTypeInfos,
                        QtJambiAPI::ConstructorFn constructorFunction,
                        const QList<jclass>& constructorArgumentFunctionTypes,
@@ -157,7 +109,7 @@ class SuperInitializer : public InPlaceInitializer{
 public:
     SuperInitializer(JNIEnv *env,
                      InPlaceInitializer* parentInitializer,
-                     const QtJambiMetaObject* metaObject, void* placement,
+                     const QtJambiMetaObject* metaObject, void* placement, size_t _size, size_t _align,
                      QVector<ParameterTypeInfo>&& parameterTypeInfos,
                      QtJambiAPI::ConstructorFn constructorFunction,
                      const QList<jclass>& constructorArgumentFunctionTypes,
@@ -202,7 +154,7 @@ public:
         JObjectWrapper signalTypes;
         jclass signalClass;
         SignalInfo()
-            : metaObject(nullptr), methodIndex(-1), signalTypes(nullptr), signalClass(nullptr) {}
+            : metaObject(nullptr), methodIndex(-1), signalTypes(), signalClass(nullptr) {}
         SignalInfo(const QMetaObject* _metaObject, int _methodIndex, const JObjectWrapper& _signalTypes, jclass _signalClass)
             : metaObject(_metaObject), methodIndex(_methodIndex), signalTypes(_signalTypes), signalClass(_signalClass) {}
     };
@@ -229,6 +181,7 @@ private:
     Q_DISABLE_COPY_MOVE(QtJambiMetaObject)
     friend QtJambiMetaObjectPrivate;
     friend QtSharedPointer::CustomDeleter<QtJambiMetaObject,QtSharedPointer::NormalDeleter>;
+    friend void clearQtJambiStorage(JNIEnv* env, bool regular);
 };
 
 #endif // QTDYNAMICMETAOBJECT_P_H

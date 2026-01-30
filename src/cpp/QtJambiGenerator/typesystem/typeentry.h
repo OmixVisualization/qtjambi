@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -119,9 +119,6 @@ class TypeEntry {
             QAndroidJniObjectType,
             JMapWrapperType,
             JCollectionWrapperType,
-            JIteratorWrapperType,
-            JEnumWrapperType,
-            JQFlagsWrapperType,
             QCharType,
             ArrayType,
             TypeSystemType,
@@ -246,15 +243,6 @@ class TypeEntry {
         }
         bool isJCollectionWrapper() const {
             return m_type == JCollectionWrapperType;
-        }
-        bool isJIteratorWrapper() const {
-            return m_type == JIteratorWrapperType;
-        }
-        bool isJEnumWrapper() const {
-            return m_type == JEnumWrapperType;
-        }
-        bool isJQFlagsWrapper() const {
-            return m_type == JQFlagsWrapperType;
         }
         bool isArray() const {
             return m_type == ArrayType;

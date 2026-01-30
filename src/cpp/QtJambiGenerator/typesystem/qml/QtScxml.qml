@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -59,19 +59,6 @@ TypeSystem{
                       "            *%in = Java::Runtime::AtomicBoolean.get(%env, %out);\n"+
                       "        });\n"+
                       "}"}
-    }
-    
-    InjectCode{
-        target: CodeClass.MetaInfo
-        position: Position.Position1
-        until: [5, 11]
-        Text{content: "void initialize_meta_info_ForeachLoopBody();"}
-    }
-    
-    InjectCode{
-        target: CodeClass.MetaInfo
-        until: [5, 11]
-        Text{content: "initialize_meta_info_ForeachLoopBody();"}
     }
     
     NamespaceType{
@@ -200,30 +187,6 @@ TypeSystem{
     ObjectType{
         name: "QScxmlDataModel"
 
-        ObjectType{
-            name: "ForeachLoopBody"
-            forceAbstract: true
-            generate: false
-            ModifyFunction{
-                signature: "ForeachLoopBody()"
-                remove: RemoveFlag.All
-            }
-            ModifyFunction{
-                signature: "run(bool*)"
-                ModifyArgument{
-                    index: 1
-                    ReplaceType{
-                        modifiedType: "boolean @Nullable[]"
-                    }
-                    ConversionRule{
-                        codeClass: CodeClass.Native
-                        Text{content: "JBooleanArrayPointer %out(%env, %in);"}
-                    }
-                }
-            }
-            until: [5, 11]
-        }
-
         InterfaceType{
             name: "ForeachLoopBody"
             ExtraIncludes{
@@ -261,7 +224,6 @@ TypeSystem{
                     }
                 }
             }
-            since: [5, 12]
         }
         ModifyFunction{
             signature: "setStateMachine(QScxmlStateMachine*)"

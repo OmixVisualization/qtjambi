@@ -1,6 +1,6 @@
 ###################################################################################################
 ##
-## Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+## Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ##
 ## This file is part of Qt Jambi.
 ##
@@ -57,9 +57,7 @@ SOURCES +=\
     utils.cpp
 
 lessThan(QT_MAJOR_VERSION, 6):{
-    SOURCES += \
-    QVector_shell.cpp \
-    QLinkedList_shell.cpp
+    SOURCES +=
 }
 QT = core core-private
 CONFIG+=no_private_qt_headers_warning

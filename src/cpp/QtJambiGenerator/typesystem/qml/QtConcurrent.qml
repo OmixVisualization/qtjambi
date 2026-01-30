@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -767,24 +767,6 @@ TypeSystem{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiConcurrent.java"
                 quoteAfterLine: "class QtConcurrent___"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        InjectCode{
-            target: CodeClass.Java
-            until: [5, 15]
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiConcurrent.java"
-                quoteAfterLine: "class QtConcurrent_5__"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        InjectCode{
-            target: CodeClass.Java
-            since: 6
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiConcurrent.java"
-                quoteAfterLine: "class QtConcurrent_6__"
                 quoteBeforeLine: "}// class"
             }
         }

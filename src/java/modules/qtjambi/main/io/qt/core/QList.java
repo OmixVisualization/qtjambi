@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -160,7 +160,7 @@ public class QList<T> extends AbstractList<T> implements Cloneable
      * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#QList">QList::<wbr>QList(const QList&lt;T> &amp;)</a></code></p>
      * @param other container
      */
-    public QList(@StrictNonNull Collection<T> other) {
+    public QList(@StrictNonNull Collection<? extends T> other) {
 		super(null);
 		QMetaType metaType = findElementMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
@@ -177,11 +177,11 @@ public class QList<T> extends AbstractList<T> implements Cloneable
      * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#QList">QList::<wbr>QList(InputIterator,InputIterator)</a></code></p>
      * @param iterable
      */
-    public QList(@StrictNonNull Iterable<T> iterable) {
+    public QList(@StrictNonNull Iterable<? extends T> iterable) {
 		super(null);
 		QMetaType metaType;
 		if(iterable instanceof AbstractSpan) {
-			AbstractSpan<T> span = (AbstractSpan<T>)iterable;
+			AbstractSpan<? extends T> span = (AbstractSpan<? extends T>)iterable;
 			metaType = span._elementType();
 		}else if(iterable instanceof Collection) {
 			metaType = findElementMetaType((Collection<?>)iterable);
@@ -206,7 +206,7 @@ public class QList<T> extends AbstractList<T> implements Cloneable
     }
 
     @QtUninvokable
-    private native void initialize(Class<?> elementType, long elementMetaType, Iterable<T> other);
+    private native void initialize(Class<?> elementType, long elementMetaType, Iterable<? extends T> other);
     
     /**
      * Creates and returns a copy of this object.
@@ -221,11 +221,11 @@ public class QList<T> extends AbstractList<T> implements Cloneable
      * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#append-2">QList::<wbr>append(const QList&lt;T> &amp;)</a></code></p>
      */
     @QtUninvokable
-    public final void append(java.util.@NonNull Collection<T> t) {
+    public final void append(java.util.@NonNull Collection<? extends T> t) {
         appendList(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     }
     @QtUninvokable
-    private native void appendList(long __this__nativeId, java.util.Collection<T> t);
+    private native void appendList(long __this__nativeId, java.util.Collection<? extends T> t);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#append">QList::<wbr>append(T)</a></code></p>
@@ -1081,11 +1081,13 @@ public class QList<T> extends AbstractList<T> implements Cloneable
         	}
         	return result;
         }else {
-    		@SuppressWarnings("unchecked")
-			T[] allElements = (T[])new Object[elements.length+1];
-    		System.arraycopy(elements, 0, allElements, 1, elements.length);
-    		allElements[0] = element0;
-    		return ofTyped(metaType, allElements);
+        	QList<T> result = new QList<>(metaType);
+        	result.reserve(elements.length+1);
+        	result.append(element0);
+        	for (T t : elements) {
+        		result.append(t);
+        	}
+        	return result;
         }
 	}
     
@@ -1100,7 +1102,22 @@ public class QList<T> extends AbstractList<T> implements Cloneable
     public static @NonNull QStringList of(@NonNull String element0, @NonNull String @StrictNonNull...elements) {
     	String[] allElements = new String[elements.length+1];
 		System.arraycopy(elements, 0, allElements, 1, elements.length);
-		allElements[0] = (String)element0;
+		allElements[0] = element0;
+    	return new QStringList(allElements);
+    }
+    
+    /**
+     * Returns a QStringList containing given elements.
+     *
+     * @param element0 the first element
+     * @param elements subsequent elements
+     * @return a {@code QStringList} containing the specified element
+     */
+    @SafeVarargs
+    public static @NonNull QStringList of(@NonNull CharSequence element0, @NonNull CharSequence @StrictNonNull...elements) {
+    	CharSequence[] allElements = new CharSequence[elements.length+1];
+		System.arraycopy(elements, 0, allElements, 1, elements.length);
+		allElements[0] = element0;
     	return new QStringList(allElements);
     }
     
@@ -1357,12 +1374,15 @@ public class QList<T> extends AbstractList<T> implements Cloneable
 	@SafeVarargs
     public static <T> @NonNull QList<T> ofTyped(@StrictNonNull QMetaType metaType, T @StrictNonNull...elements) {
 		if(metaType.id()==QMetaType.Type.QString.value()) {
-			QList<T> result = (QList<T>)(QList<?>)new QStringList();
-	    	result.reserve(elements.length);
-			for (T t : elements) {
-				result.append(t);
+			if(elements instanceof CharSequence[]) {
+				return (QList<T>)(QList<?>)new QStringList((CharSequence[])elements);
+			}else if(elements instanceof String[]) {
+				return (QList<T>)(QList<?>)new QStringList((String[])elements);
+			}else if(elements instanceof QString[]) {
+				return (QList<T>)(QList<?>)new QStringList((QString[])elements);
+			}else {
+				return (QList<T>)(QList<?>)new QStringList((List<CharSequence>)(List<?>)Arrays.asList(elements));
 			}
-			return result;
 		}else {
 			if(metaType.id()==0)
 				throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QList.");

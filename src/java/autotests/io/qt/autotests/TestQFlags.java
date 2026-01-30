@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -167,7 +167,6 @@ public class TestQFlags extends ApplicationInitializer {
         }
     }
 
-    @SuppressWarnings({ "serial", "unlikely-arg-type" })
 	@Test
     public void run_equals() {
         assertEquals(new Flags(MyEnum.One), new Flags(MyEnum.One));

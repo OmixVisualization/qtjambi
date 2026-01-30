@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -60,7 +60,6 @@ import io.qt.core.QFile;
 import io.qt.core.QObject;
 import io.qt.core.QRegularExpression;
 import io.qt.core.QThread;
-import io.qt.internal.TestUtility;
 import io.qt.widgets.QApplication;
 
 public class TestQObject extends ApplicationInitializer {
@@ -81,7 +80,6 @@ public class TestQObject extends ApplicationInitializer {
     @Before
     public void setUp() {
     	System.out.println("Start test "+testClassName()+"."+testMethodName());
-    	TestUtility.setObjectCacheMode(TestUtility.OBJECT_CACHE_MODE_DISABLE);
 
         root = new QObject();
         root.setObjectName("root");
@@ -124,7 +122,6 @@ public class TestQObject extends ApplicationInitializer {
         child22 = null;
         // We need to undo this unusual setting to give any test cases that run after
         // within the same JVM a change of succeeding.
-        TestUtility.setObjectCacheMode(TestUtility.OBJECT_CACHE_MODE_DEFAULT);
         System.out.println("Test "+testClassName()+"."+testMethodName()+" finished!");
     }
 

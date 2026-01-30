@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -194,7 +194,8 @@ class CppImplGenerator : public CppGenerator {
                            int argument_index,
                            Option option = NoOption,
                            const QString& __jni_env = "__jni_env",
-                           const QString& qtjambi_scope = "");
+                           const QString& qtjambi_scope = "",
+                           const QString& this_nativeId = "");
 
         void writeQSequentialIteratorFunction(QTextStream &s,
                                       const MetaType *java_type,
@@ -203,7 +204,8 @@ class CppImplGenerator : public CppGenerator {
                                       Option option = NoOption,
                                       const QString& iteratorName = "const_iterator",
                                       const QString& __jni_env = "__jni_env",
-                                      const QString& qtjambi_scope = "");
+                                      const QString& qtjambi_scope = "",
+                                      const QString& this_nativeId = "");
 
         void writeQAssociativeIteratorFunction(QTextStream &s,
                                       const MetaType *java_type,
@@ -213,7 +215,8 @@ class CppImplGenerator : public CppGenerator {
                                       Option option = NoOption,
                                       const QString& iteratorName = "const_iterator",
                                       const QString& __jni_env = "__jni_env",
-                                      const QString& qtjambi_scope = "");
+                                      const QString& qtjambi_scope = "",
+                                      const QString& this_nativeId = "");
 
         bool writeConversionRule(QTextStream &s,
                                  TS::Language target_language,

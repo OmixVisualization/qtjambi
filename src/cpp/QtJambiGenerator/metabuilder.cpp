@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -37,9 +37,6 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#include <QTextCodec>
-#endif
 #include <QTextStream>
 #include <QVariant>
 
@@ -2156,7 +2153,7 @@ void MetaBuilder::addClass(MetaClass *cls) {
             if(m_classNames.contains(fullQualifiedName)){
                 //ReportHandler::warning("Duplicate class: "+fullQualifiedName);
             }
-            m_classNames.insert(fullQualifiedName, {});
+            m_classNames.insert(fullQualifiedName, QHashDummyValue{});
         }
         m_meta_classes << cls;
         if(m_current_class){
@@ -3567,11 +3564,7 @@ void MetaBuilder::figureOutDefaultEnumArguments() {
                         }
                     }
                 } else if (arg->type()->isPrimitive()) {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    QMetaType baseTypeId(QMetaType::type(qPrintable(arg->type()->typeEntry()->qualifiedCppName())));
-#else
                     QMetaType baseTypeId = QMetaType::fromName(qPrintable(arg->type()->typeEntry()->qualifiedCppName()));
-#endif
                     uint size = 32;
                     if(baseTypeId.isValid()){
                         size = uint(baseTypeId.sizeOf())*8;
@@ -3746,11 +3739,7 @@ MetaEnum *MetaBuilder::traverseEnum(EnumModelItem enum_item, MetaClass *enclosin
         TypeEntry *base_class_entry = types->findType(qPrintable(baseType));
         if(base_class_entry)
             baseType = base_class_entry->qualifiedCppName();
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        QMetaType baseTypeId(QMetaType::type(qPrintable(baseType)));
-#else
         QMetaType baseTypeId = QMetaType::fromName(qPrintable(baseType));
-#endif
         if(baseTypeId.isValid()){
             size = uint(baseTypeId.sizeOf()*8);
             if(size!=8 && size!=16 && size!=32 && size!=64){
@@ -4076,7 +4065,7 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
     meta_class->setProtectedUsingStatements(class_item->protectedUsingStatements());
     meta_class->setPublicUsingStatements(class_item->publicUsingStatements());
     QList<QPair<TypeInfo,int>> baseClasses = class_item->baseClasses();
-    if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6, 0, 0)){
+    {
         for(int i=0; i<baseClasses.size(); ++i){
             QString baseClassName = baseClasses[i].first.toString();
             if(baseClassName=="QList<QString>"){
@@ -6751,6 +6740,18 @@ void MetaBuilder::fixFunctions(MetaClass * cls) {
             for(const Include& incl : cls->typeEntry()->extraIncludes()){
                 extendedClass->typeEntry()->addExtraInclude(incl);
             }
+            for(const auto& m : cls->typeEntry()->functionModifications()){
+                extendedClass->typeEntry()->addFunctionModification(m);
+            }
+            for(const auto& m : cls->typeEntry()->fieldModifications()){
+                extendedClass->typeEntry()->addFieldModification(m);
+            }
+            for(const auto& c : cls->typeEntry()->codeSnips()){
+                extendedClass->typeEntry()->addCodeSnip(c);
+            }
+            for(const auto& c : cls->typeEntry()->implicitCasts()){
+                extendedClass->typeEntry()->addImplicitCast(c);
+            }
         }else{
             ReportHandler::warning(QString("Unable to extend class '%1'.").arg(cls->typeEntry()->extendType()));
         }
@@ -6837,7 +6838,7 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
     // we only support our own containers and ONLY if there is only one baseclass
     if (publicBaseClasses.size() == 1 && !publicBaseClasses.first().arguments().isEmpty()) {
         QStringList base = publicBaseClasses.first().qualifiedName();
-        if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6, 0, 0) && base==QStringList{"QVector"}){
+        if(base==QStringList{"QVector"}){
             base = QStringList{"QList"};
         }
         //for (auto i = scope.size(); i >= 0; --i)
@@ -8909,9 +8910,6 @@ void MetaBuilder::decideUsagePattern(MetaType *meta_type) {
                    type->isJObjectWrapper()
                    || type->isJMapWrapper()
                    || type->isJCollectionWrapper()
-                   || type->isJEnumWrapper()
-                   || type->isJIteratorWrapper()
-                   || type->isJQFlagsWrapper()
                 )
                && meta_type->indirections().size() == 0
                && ((meta_type->getReferenceType()==MetaType::Reference && meta_type->isConstant())
@@ -10233,6 +10231,10 @@ void MetaBuilder::setupEquals(MetaClass *cls) {
         case OperatorType::NotEquals:
             if(f->arguments().size()==1)
                 nequals << f;
+            break;
+        case OperatorType::None:
+            if(f->name()=="equals" && f->arguments().size()==1 && f->type() && f->type()->typeEntry()->targetLangName()=="boolean")
+                equals << f;
             break;
         default: break;
         }

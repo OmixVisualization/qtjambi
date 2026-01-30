@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -707,50 +707,7 @@ class QtConcurrent___ extends QtConcurrent {
         return run5(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e);
     }
     private native static <T,A,B,C,D,E> @NonNull QFuture<T> run5(@Nullable QThreadPool threadPool, Callable5<T,A,B,C,D,E> runnable, A a, B b, C c, D d, E e);
-    
-}// class
-
-class QtConcurrent_5__ extends QtConcurrent {
-    
-    @QtUninvokable
-    public static <T> @NonNull ThreadEngineStarter<@QtPrimitiveType Void> startMap(@StrictNonNull Collection<T> sequence, MapFunctor<T> functor) {
-        return startMap(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."));
-    }
-    
-    @QtUninvokable
-    public static <U, T> @NonNull ThreadEngineStarter<U> startMapped(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<U, T> functor){
-        return startMapped(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."));
-    }
-    
-    @QtUninvokable
-    public static <U, V, T> @NonNull ThreadEngineStarter<U> startMappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOptions options) {
-        return startMappedReduced(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), computeDefaultResult(reduceFunctor), options.value());
-    }
-    
-    @QtUninvokable
-    public static <U, V, T> @NonNull ThreadEngineStarter<U> startMappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, ReduceOption... options) {
-        return startMappedReduced(sequence, functor, reduceFunctor, new ReduceOptions(options));
-    }
-    
-    @QtUninvokable
-    public static <U, T> @NonNull ThreadEngineStarter<U> startFilteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
-        return startFilteredReduced(sequence, filteredFunctor, reduceFunctor, new ReduceOptions(options));
-    }
-    
-    @QtUninvokable
-    public static <U, T> @NonNull ThreadEngineStarter<U> startFilteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOptions options) {
-        return startFilteredReduced(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), computeDefaultResult(reduceFunctor), options.value());
-    }
-    
-    @QtUninvokable
-    public static <T> @NonNull ThreadEngineStarter<T> startFiltered(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
-        return startFiltered(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."));
-    }
-    
-}// class
-
-class QtConcurrent_6__ extends QtConcurrent {
-    
+        
     /**
      * Runnable with six arguments.
      * @see java.lang.Runnable

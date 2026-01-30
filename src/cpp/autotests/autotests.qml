@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -87,62 +87,6 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
             }
             since: 6.8
         }
-        ModifyFunction{
-            signature: "testStdFunctions(const QVector<Tulip::TestStdFunction>&)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.core.QVector<TestStdFunction>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QVector<Tulip::TestStdFunction> %out = qtjambi_cast<QVector<Tulip::TestStdFunction>>(%env, %in);"}
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "testEasingFunctions(const QVector<QEasingCurve::EasingFunction>&)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.core.QVector<io.qt.core.QEasingCurve.EasingFunction>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QVector<QEasingCurve::EasingFunction> %out = qtjambi_cast<QVector<QEasingCurve::EasingFunction>>(%env, %in);"}
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "testStdFunctions(const QLinkedList<Tulip::TestStdFunction>&)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.core.QLinkedList<TestStdFunction>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QLinkedList<Tulip::TestStdFunction> %out = qtjambi_cast<QLinkedList<Tulip::TestStdFunction>>(%env, %in);"}
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "testEasingFunctions(const QLinkedList<QEasingCurve::EasingFunction>&)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.core.QLinkedList<io.qt.core.QEasingCurve.EasingFunction>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QLinkedList<QEasingCurve::EasingFunction> %out = qtjambi_cast<QLinkedList<QEasingCurve::EasingFunction>>(%env, %in);"}
-                }
-            }
-            until: 5
-        }
     }
     
     ValueType{
@@ -160,48 +104,6 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
                     ownership: Ownership.Java
                 }
             }
-        }
-        ModifyFunction{
-            signature: "compare(QObject*, const QString&, const QVector<QObject*>&)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "io.qt.core.QVector<io.qt.core.QObject>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QVector<QObject*> %out = qtjambi_cast<QVector<QObject*>>(%env, %in);"}
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "compare(QObject*, const QString&, const QLinkedList<QObject*>&)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "io.qt.core.QLinkedList<io.qt.core.QObject>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QLinkedList<QObject*> %out = qtjambi_cast<QLinkedList<QObject*>>(%env, %in);"}
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "propertyType(const QObject*, QString)"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.core.QMetaType"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, QMetaType(%in));"}
-                }
-            }
-            until: 5
         }
     }
     
@@ -1252,12 +1154,9 @@ if(java.util.logging.Logger.getLogger("io.qt.autotests").isLoggable(java.util.lo
             }
         }
         CustomDestructor{
-            Text{content: "qtjambi_increase_destructorFunctionCalledCount(\"ValueType\");\n"+
-                          "#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)\n"+
-                          "QtPrivate::QMetaTypeForType<ValueType>::getDtor()(metaTypeInterface, ptr);\n"+
-                          "#else\n"+
-                          "QtMetaTypePrivate::QMetaTypeFunctionHelper<ValueType>::Destruct(ptr);\n"+
-                          "#endif // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)"}
+            Text{content: String.raw`
+                qtjambi_increase_destructorFunctionCalledCount("ValueType");
+                QtPrivate::QMetaTypeForType<ValueType>::getDtor()(metaTypeInterface, ptr);`}
         }
     }
     

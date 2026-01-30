@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -279,7 +279,7 @@ std::chrono::nanoseconds PerformanceTests::testConvertQModelIndexInvalid(int cou
     auto start = std::chrono::high_resolution_clock::now();
     for(int i=0; i<count; ++i){
         QtJambiScope scope;
-        QtJambiAPI::convertModelIndexToEphemeralJavaObject(env, scope, &index);
+        QtJambiAPI::convertModelIndexToEphemeralJavaObject(env, scope, index);
         //std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     auto end = std::chrono::high_resolution_clock::now();
@@ -311,7 +311,7 @@ std::chrono::nanoseconds PerformanceTests::testConvertQModelIndex(int count){
     auto start = std::chrono::high_resolution_clock::now();
     for(int i=0; i<count; ++i){
         QtJambiScope scope;
-        QtJambiAPI::convertModelIndexToEphemeralJavaObject(env, scope, &index);
+        QtJambiAPI::convertModelIndexToEphemeralJavaObject(env, scope, index);
         //std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     auto end = std::chrono::high_resolution_clock::now();

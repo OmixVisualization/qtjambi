@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -54,10 +54,10 @@ public:
     bool connectSignals(QObject* sender, bool useAnnotatedType);
     static void dumpMetaObject(const QMetaObject* metaObject);
 
-    JEnumWrapper receivedCustomEnum();
+    JObjectWrapper receivedCustomEnum();
     QColor receivedColor();
     QColor* receivedColorPtr();
-    JEnumWrapper receivedCustomQtEnum();
+    JObjectWrapper receivedCustomQtEnum();
     JObjectWrapper receivedQtFlags();
     JObjectWrapper receivedList();
     JObjectWrapper receivedNumber();
@@ -102,10 +102,10 @@ signals:
 public slots:
 
 private slots:
-    void receiveCustomEnum(JEnumWrapper value);
+    void receiveCustomEnum(JObjectWrapper value);
     void receiveColor(QColor value);
     void receiveColorPtr(QColor* value);
-    void receiveCustomQtEnum(JEnumWrapper value);
+    void receiveCustomQtEnum(JObjectWrapper value);
     void receiveQtFlags(JObjectWrapper value);
     void receiveList(JObjectWrapper value);
     void receiveNumber(JObjectWrapper value);
@@ -116,10 +116,10 @@ private slots:
     void receiveExtendedColor(JObjectWrapper value);
 
 private:
-    JEnumWrapper m_receivedEnum;
+    JObjectWrapper m_receivedEnum;
     QColor m_receivedColor;
     QColor* m_receivedColorPtr;
-    JEnumWrapper m_receivedQtEnum;
+    JObjectWrapper m_receivedQtEnum;
     JObjectWrapper m_receivedQtFlags;
     JObjectWrapper m_receivedList;
     JObjectWrapper m_receivedNumber;

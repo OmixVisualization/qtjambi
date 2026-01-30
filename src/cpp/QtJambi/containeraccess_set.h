@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -97,8 +97,12 @@ public:
         return new GenericSetAccess<_align, _size>(*this);
     }
 
-    size_t sizeOf() override {
+    size_t sizeOf() const override {
         return sizeof(QSet<T>);
+    }
+
+    size_t alignOf() const override {
+        return alignof(QSet<T>);
     }
 
     void assign(JNIEnv *, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override {
@@ -136,7 +140,7 @@ public:
         return true;
     }
 
-    int registerContainer(const QByteArray& containerTypeName) override {
+    QMetaType registerContainer(const QByteArray& containerTypeName) override {
         return QtJambiPrivate::registerSequentialContainerType<QSet<T>, _size>(containerTypeName, m_elementMetaTypeInfo.metaType(), this);
     }
 

@@ -1,7 +1,7 @@
 /****************************************************************************
  **
  ** Copyright (C) 1992-2009 Nokia. All rights reserved.
- ** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+ ** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
  **
  ** This file is part of Qt Jambi.
  **
@@ -9466,16 +9466,6 @@ class QObject___ extends QObject {
 
     @QtUninvokable
     private native boolean isObjectsThread(long __this__nativeId);
-}// class
-
-class QObject_5__ extends QObject {
-    @QtUninvokable
-    static QObject getQPropertyOwner(io.qt.internal.LambdaInfo info) {
-        return null;
-    }
-}// class
-
-class QObject_6__ extends QObject {
 
     private static Runnable MIGHT_HAVE_SIGNAL = () -> {
     };
@@ -14789,288 +14779,7 @@ class QCoreApplication___ extends QCoreApplication {
 
     private static native io.qt.core.QObject asSelectiveEventFilterMetaObjects(long objectId,
             io.qt.core.QMetaObject firstMetaObject, io.qt.core.QMetaObject[] metaObjects);
-}// class
 
-class QCoreApplication__5_ {
-    /**
-     * Reduces the number of native-to-java conversions by pre-filtering the
-     * receiver objects according to the given object name filter. The new event
-     * filter object is reparented to the parent of the given event filter object
-     * and takes ownership of it.
-     * 
-     * @param eventFilter
-     * @param regexp      object name regexp
-     * @param matchType   the match type
-     * @return selective event filter
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter,
-            io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
-        return asSelectiveEventFilter(eventFilter, regexp, 0, matchType,
-                io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
-    }
-
-    /**
-     * Reduces the number of native-to-java conversions by pre-filtering the
-     * receiver objects according to the given object name filter. The new event
-     * filter object is reparented to the parent of the given event filter object
-     * and takes ownership of it.
-     * 
-     * @param eventFilter
-     * @param regexp       object name regexp
-     * @param matchType    the match type
-     * @param matchOptions options for the match
-     * @return selective event filter
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter,
-            io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType,
-            io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return asSelectiveEventFilter(eventFilter, regexp, 0, matchType,
-                new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
-    }
-
-    /**
-     * Reduces the number of native-to-java conversions by pre-filtering the
-     * receiver objects according to the given object name filter. The new event
-     * filter object is reparented to the parent of the given event filter object
-     * and takes ownership of it.
-     * 
-     * @param eventFilter
-     * @param regexp       object name regexp
-     * @param matchOptions options for the match
-     * @return selective event filter
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter,
-            io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType,
-            io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        return asSelectiveEventFilter(eventFilter, regexp, 0, matchType, matchOptions);
-    }
-
-    /**
-     * Reduces the number of native-to-java conversions by pre-filtering the
-     * receiver objects according to the given object name filter. The new event
-     * filter object is reparented to the parent of the given event filter object
-     * and takes ownership of it.
-     * 
-     * @param eventFilter
-     * @param regexp      object name regexp
-     * @param offset      the offset of the match
-     * @return selective event filter
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter,
-            io.qt.core.@NonNull QRegularExpression regexp, int offset) {
-        return asSelectiveEventFilter(eventFilter, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch,
-                io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
-    }
-
-    /**
-     * Reduces the number of native-to-java conversions by pre-filtering the
-     * receiver objects according to the given object name filter. The new event
-     * filter object is reparented to the parent of the given event filter object
-     * and takes ownership of it.
-     * 
-     * @param eventFilter
-     * @param regexp       object name regexp
-     * @param offset       the offset of the match
-     * @param matchOptions options for the match
-     * @return selective event filter
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter,
-            io.qt.core.@NonNull QRegularExpression regexp, int offset,
-            io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return asSelectiveEventFilter(eventFilter, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch,
-                new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
-    }
-
-    /**
-     * Reduces the number of native-to-java conversions by pre-filtering the
-     * receiver objects according to the given object name filter. The new event
-     * filter object is reparented to the parent of the given event filter object
-     * and takes ownership of it.
-     * 
-     * @param eventFilter
-     * @param regexp       object name regexp
-     * @param offset       the offset of the match
-     * @param matchOptions options for the match
-     * @return selective event filter
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter,
-            io.qt.core.@NonNull QRegularExpression regexp, int offset,
-            io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        return asSelectiveEventFilter(eventFilter, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch,
-                matchOptions);
-    }
-
-    /**
-     * Reduces the number of native-to-java conversions by pre-filtering the
-     * receiver objects according to the given object name filter. The new event
-     * filter object is reparented to the parent of the given event filter object
-     * and takes ownership of it.
-     * 
-     * @param eventFilter
-     * @param regexp      object name regexp
-     * @return selective event filter
-     * @see io.qt.core.QRegularExpression#match(String)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter,
-            io.qt.core.@NonNull QRegularExpression regexp) {
-        return asSelectiveEventFilter(eventFilter, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch,
-                io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
-    }
-
-    /**
-     * Reduces the number of native-to-java conversions by pre-filtering the
-     * receiver objects according to the given object name filter. The new event
-     * filter object is reparented to the parent of the given event filter object
-     * and takes ownership of it.
-     * 
-     * @param eventFilter
-     * @param regexp       object name regexp
-     * @param matchOptions options for the match
-     * @return selective event filter
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter,
-            io.qt.core.@NonNull QRegularExpression regexp,
-            io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return asSelectiveEventFilter(eventFilter, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch,
-                new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
-    }
-
-    /**
-     * Reduces the number of native-to-java conversions by pre-filtering the
-     * receiver objects according to the given object name filter. The new event
-     * filter object is reparented to the parent of the given event filter object
-     * and takes ownership of it.
-     * 
-     * @param eventFilter
-     * @param regexp       object name regexp
-     * @param matchOptions options for the match
-     * @return selective event filter
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter,
-            io.qt.core.@NonNull QRegularExpression regexp,
-            io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        return asSelectiveEventFilter(eventFilter, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch,
-                matchOptions);
-    }
-
-    /**
-     * Reduces the number of native-to-java conversions by pre-filtering the
-     * receiver objects according to the given object name filter. The new event
-     * filter object is reparented to the parent of the given event filter object
-     * and takes ownership of it.
-     * 
-     * @param eventFilter
-     * @param regexp       object name regexp
-     * @param offset       the offset of the match
-     * @param matchType    the match type
-     * @param matchOptions options for the match
-     * @return selective event filter
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOption...)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter,
-            io.qt.core.@NonNull QRegularExpression regexp, int offset,
-            io.qt.core.QRegularExpression.@NonNull MatchType matchType,
-            io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return asSelectiveEventFilter(eventFilter, regexp, offset, matchType,
-                new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
-    }
-
-    /**
-     * Reduces the number of native-to-java conversions by pre-filtering the
-     * receiver objects according to the given object name filter. The new event
-     * filter object is reparented to the parent of the given event filter object
-     * and takes ownership of it.
-     * 
-     * @param eventFilter
-     * @param regexp      object name regexp
-     * @param offset      the offset of the match
-     * @param matchType   the match type
-     * @return selective event filter
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter,
-            io.qt.core.@NonNull QRegularExpression regexp, int offset,
-            io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
-        return asSelectiveEventFilter(eventFilter, regexp, offset, matchType,
-                io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
-    }
-
-    /**
-     * Reduces the number of native-to-java conversions by pre-filtering the
-     * receiver objects according to the given object name filter. The new event
-     * filter object is reparented to the parent of the given event filter object
-     * and takes ownership of it.
-     * 
-     * @param eventFilter
-     * @param regexp       object name regexp
-     * @param offset       the offset of the match
-     * @param matchType    the match type
-     * @param matchOptions options for the match
-     * @return selective event filter
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter,
-            io.qt.core.@NonNull QRegularExpression regexp, int offset,
-            io.qt.core.QRegularExpression.@NonNull MatchType matchType,
-            io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        java.util.Objects.requireNonNull(regexp, "Argument 'regexp': null not expected.");
-        if (!regexp.isValid())
-            throw new IllegalArgumentException("Argument 'regexp' invalid");
-        if (offset < 0)
-            throw new IllegalArgumentException("Argument 'offset' < 0");
-        return asSelectiveEventFilterObjectNameMatches(
-                QtJambi_LibraryUtilities.internal.checkedNativeId(
-                        java.util.Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")),
-                QtJambi_LibraryUtilities.internal.checkedNativeId(regexp), offset,
-                matchType == null ? 0 : matchType.value(), matchOptions == null ? 0 : matchOptions.value());
-    }
-
-    private static native io.qt.core.QObject asSelectiveEventFilterObjectNameMatches(long objectId, long regexp,
-            int offset, int matchType, int matchOptions);
-}// class
-
-class QCoreApplication__6_ {
     /**
      * Reduces the number of native-to-java conversions by pre-filtering the
      * receiver objects according to the given object name filter. The new event
@@ -15480,6 +15189,18 @@ class QPermission___ {
 
     private static native Request data(long nativeId);
 
+}// class
+
+class QStringConverter___ extends QStringConverter {
+     public static class FinalizeResult
+     {
+          private FinalizeResult(short invalidChars, byte error){
+               this.invalidChars = invalidChars;
+               this.error = FinalizeResultBase.Error.resolve(error);
+          }
+          public final short invalidChars;
+          public final FinalizeResultBase.Error error;
+     }
 }// class
 
 class QTranslator___ extends QTranslator {
@@ -15937,14 +15658,6 @@ class QByteArray___ extends QByteArray {
     @QtUninvokable
     public native static @NonNull QByteArray join(java.util.@NonNull Collection<@NonNull QByteArray> stringList,
             @NonNull QByteArray sep);
-
-}// class
-
-class QByteArray_5__ extends QByteArray {
-
-}// class
-
-class QByteArray_6__ extends QByteArray {
 
 }// class
 
@@ -17014,57 +16727,6 @@ class QJsonDocument___ {
     }
 }// class
 
-class QJsonDocument_5__ {
-
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #fromRawData(String, QJsonDocument.DataValidation)}.
-     * </p>
-     */
-    @QtUninvokable
-    public static @NonNull QJsonDocument fromRawData(@NonNull String data) {
-        return fromRawData(data, QJsonDocument.DataValidation.Validate);
-    }
-
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #fromRawData(byte[], QJsonDocument.DataValidation)}.
-     * </p>
-     */
-    @QtUninvokable
-    public static @NonNull QJsonDocument fromRawData(@NonNull String data,
-            QJsonDocument.@NonNull DataValidation validation) {
-        return fromRawData(data.getBytes(), validation);
-    }
-
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #fromRawData(byte[], QJsonDocument.DataValidation)}.
-     * </p>
-     */
-    @QtUninvokable
-    public static @NonNull QJsonDocument fromRawData(byte @NonNull [] data) {
-        return fromRawData(data, QJsonDocument.DataValidation.Validate);
-    }
-
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #fromRawData(java.nio.ByteBuffer, int, QJsonDocument.DataValidation)}.
-     * </p>
-     */
-    @QtUninvokable
-    public static @NonNull QJsonDocument fromRawData(byte @NonNull [] data,
-            QJsonDocument.@NonNull DataValidation validation) {
-        java.nio.ByteBuffer buffer = java.nio.ByteBuffer.wrap(data);
-        return fromRawData(buffer, buffer.capacity(), validation);
-    }
-
-}// class
-
 class QLockFile__ {
 
     /**
@@ -18009,218 +17671,7 @@ class QMetaType_toString__ extends QMetaType {
     }
 }// class
 
-class QVariant_5__ {
-    /**
-     * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "6.8.2")
-    public static void saveObject(@StrictNonNull QDataStream stream, @Nullable Object object) {
-        saveObject(stream, object, null);
-    }
-
-    /**
-     * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "6.8.2")
-    public static void saveObject(@StrictNonNull QDataStream stream, @Nullable Object object,
-            @Nullable Boolean @Nullable [] ok) {
-        QVariant variant = new QVariant(object);
-        int metaType = variant.userType();
-        stream.append(metaType);
-        boolean isOk = QMetaType.save(stream, metaType, object);
-        if (ok != null && ok.length > 0)
-            ok[0] = isOk;
-    }
-
-    /**
-     * @deprecated Use {@link QDataStream#readObject(Class, QMetaType...)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "6.8.2")
-    public static @Nullable Object loadObject(@StrictNonNull QDataStream stream) {
-        return loadObject(stream, null);
-    }
-
-    /**
-     * @deprecated Use {@link QDataStream#readObject(Class, QMetaType...)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "6.8.2")
-    public static @Nullable Object loadObject(@StrictNonNull QDataStream stream, @Nullable Boolean @Nullable [] ok) {
-        java.util.Optional<Object> optional = QMetaType.load(stream, stream.readInt());
-        if (ok != null && ok.length > 0)
-            ok[0] = optional.isPresent();
-        return optional.orElse(null);
-    }
-
-    /**
-     * Convenient static function for type conversion.
-     * 
-     * @see {@link #convert(int)}
-     */
-    public static Object convert(@Nullable Object obj, int metaType) {
-        return convert(obj, metaType, null);
-    }
-
-    /**
-     * Convenient static function for type conversion.
-     * 
-     * @see {@link #convert(int)}
-     */
-    public static Object convert(@Nullable Object obj, int metaType, boolean @Nullable [] ok) {
-        if (obj == null) {
-            if (ok != null && ok.length > 0)
-                ok[0] = true;
-            return QMetaType.create(metaType);
-        }
-        QVariant variant = new QVariant(obj);
-        if (obj != null && variant.userType() == metaType) {
-            if (ok != null && ok.length > 0)
-                ok[0] = true;
-            return obj;
-        } else if (variant.userType() == metaType || variant.convert(metaType)) {
-            if (ok != null && ok.length > 0)
-                ok[0] = true;
-            return variant.value();
-        } else {
-            if (ok != null && ok.length > 0)
-                ok[0] = false;
-            return null;
-        }
-    }
-
-    /**
-     * Convenient static function for type conversion.
-     * 
-     * @see {@link #convert(int)}
-     */
-    public static Object convert(@Nullable Object obj, @StrictNonNull QMetaType metaType) {
-        return convert(obj, metaType.id(), null);
-    }
-
-    /**
-     * Convenient static function for type conversion.
-     * 
-     * @see {@link #convert(int)}
-     */
-    public static Object convert(@Nullable Object obj, @StrictNonNull QMetaType metaType, boolean @Nullable [] ok) {
-        return convert(obj, metaType.id(), ok);
-    }
-
-    /**
-     * Convenient static function for type conversion.
-     * 
-     * @see {@link #convert(int)}
-     */
-    public static Object convert(@Nullable Object obj, QMetaType.@StrictNonNull Type metaType) {
-        return convert(obj, metaType.value(), null);
-    }
-
-    /**
-     * Convenient static function for type conversion.
-     * 
-     * @see {@link #convert(int)}
-     */
-    public static Object convert(@Nullable Object obj, QMetaType.@StrictNonNull Type metaType,
-            boolean @Nullable [] ok) {
-        return convert(obj, metaType.value(), ok);
-    }
-
-    /**
-     * Convenient static function for type conversion.
-     * 
-     * @see {@link #convert(int)}
-     */
-    public static Object convert(@Nullable Object obj, @StrictNonNull Type metaType) {
-        return convert(obj, metaType.value(), null);
-    }
-
-    /**
-     * Convenient static function for type conversion.
-     * 
-     * @see {@link #convert(int)}
-     */
-    public static Object convert(@Nullable Object obj, @StrictNonNull Type metaType, boolean @Nullable [] ok) {
-        return convert(obj, metaType.value(), ok);
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qvariant.html#canConvert"><code>QVariant::canConvert(int)const</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final boolean canConvert(QMetaType.@StrictNonNull Type targetType) {
-        return canConvert(targetType.value());
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qvariant.html#canConvert"><code>QVariant::canConvert(int)const</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final boolean canConvert(@StrictNonNull Type targetType) {
-        return canConvert(targetType.value());
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qvariant.html#convert"><code>QVariant::convert(int)</code></a>
-     * </p>
-     */
-    public final boolean convert(@StrictNonNull Class<?> cl,
-            @StrictNonNull QMetaType @StrictNonNull... instantiations) {
-        return convert(QMetaType.fromType(cl, instantiations).id());
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qvariant.html#QVariant-1"><code>QVariant::QVariant(int,const void*)</code></a></p>
-     */
-    public QVariant(QMetaType.@StrictNonNull Type metaType){
-        this(metaType.value(), null); 
-    }
-
-    /**
-     * Convenient static function for type conversion.
-     * 
-     * @see {@link #canConvert(int)}
-     */
-    @Deprecated(forRemoval = true, since = "6.8.2")
-    public static boolean canConvert(@Nullable Object obj, int targetType) {
-        QMetaType objectType = QMetaType.fromObject(obj);
-        if (objectType.id() == targetType)
-            return true;
-        QVariant variant = new QVariant(objectType.id(), obj);
-        return variant.canConvert(targetType);
-    }
-
-    /**
-     * Convenient static function for type conversion.
-     * 
-     * @see {@link #canConvert(int)}
-     */
-    public static boolean canConvert(@Nullable Object obj, QMetaType.@StrictNonNull Type type) {
-        return canConvert(obj, type.value());
-    }
-
-    private static Object getTypedNull(java.lang.Class<?> type, io.qt.core.QMetaType... instantiations) {
-        int metaTypeID = QMetaType.qRegisterMetaType(type, instantiations);
-        if (!type.isArray()) {
-            String typeName = QMetaType.typeName(metaTypeID);
-            if (!typeName.startsWith("JObjectWrapper") && !typeName.endsWith("*")) {
-                throw new IllegalArgumentException(typeName + " cannot be null.");
-            }
-        }
-        if (metaTypeID == QMetaType.Type.Nullptr.value()) {
-            return NULL;
-        }
-        return new Null(metaTypeID);
-    }
-}// class
-
-class QVariant_6__ {
+class QVariant___ {
 
     /**
      * <p>See <a href="@docRoot/qvariant.html#QVariant-1"><code>QVariant::QVariant(QMetaType,const void*)</code></a></p>
@@ -18434,9 +17885,6 @@ class QVariant_6__ {
         }
         return new Null(metaTypeID);
     }
-}// class
-
-class QVariant___ {
 
     /**
      * Create a variant for the native nullptr type.
@@ -48483,6 +47931,10 @@ size_t sizeof_QPropertyObserver_shell() {
     return sizeof(QPropertyObserver_shell);
 }
 
+size_t alignof_QPropertyObserver_shell() {
+    return alignof(QPropertyObserver_shell);
+}
+
 }// class
 
 class QUntypedBindable_java__ {
@@ -48732,44 +48184,7 @@ class QResource__ {
 
 }// class
 
-class QDataStream_5__ {
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public final <T> @NonNull QDataStream append(T object) {
-        int metaType = QMetaType.fromObject(object).id();
-        if (!QMetaType.save(this, metaType, object)) {
-            this.setStatus(Status.WriteFailed);
-            QLogging.qWarning("Unable to write object of type %1$s",
-                    object == null ? "null" : QtJambi_LibraryUtilities.internal.getClass(object).getTypeName());
-        }
-        return this;
-    }
-
-    /**
-     * <p>
-     * See <a href=
-     * "@docRoot/qdatastream.html#operator-gt-gt-1"><code>QDataStream::operator&gt;&gt;</code></a>
-     * </p>
-     */
-    @SuppressWarnings("unchecked")
-    @QtUninvokable
-    public final <T> T readObject(Class<T> cl, @NonNull QMetaType @NonNull... instantiations) {
-        int metaType = QMetaType.fromType(cl, instantiations).id();
-        java.util.Optional<Object> optional = QMetaType.load(this, metaType);
-        if (!optional.isPresent()) {
-            setStatus(Status.ReadCorruptData);
-            QLogging.qWarning("Unable to read object of type %1$s", QMetaType.typeName(metaType));
-        }
-        return (T) optional.orElse(null);
-    }
-}// class
-
-class QDataStream_6__ {
+class QDataStream___ {
     /**
      * <p>
      * See <a href=
@@ -48804,9 +48219,6 @@ class QDataStream_6__ {
         }
         return (T) optional.orElse(null);
     }
-}// class
-
-class QDataStream___ {
 
     /**
      * <p>
@@ -48830,6 +48242,152 @@ class QDataStream___ {
         writeRawData(v);
         return this;
     }
+}// class
+
+class QStringList__ {
+     /**
+      * <p>See <code>QStringList::<wbr/>QtJambiStringList(std::initializer_list&lt;QString&gt;)</code></p>
+      * @param strings
+      */
+     @SafeVarargs
+     public QStringList(java.lang.@NonNull String@NonNull  ... strings){
+          this(java.util.Arrays.asList(strings));
+     }
+
+     /**
+      * <p>See <code>QStringList::<wbr/>QtJambiStringList(std::initializer_list&lt;QString&gt;)</code></p>
+      * @param strings
+      */
+     @SafeVarargs
+     public <Stringable extends CharSequence> QStringList(@NonNull Stringable@NonNull... strings){
+         this(java.util.Arrays.asList(strings));
+     }
+
+     public final boolean addAllStrings(java.util.@NonNull Collection<? extends @NonNull CharSequence> c) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          return stringList.addAll(c);
+     }
+
+     public final boolean addAllStrings(int index, java.util.@NonNull Collection<? extends @NonNull CharSequence> c) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          return stringList.addAll(index, c);
+     }
+
+     public final void appendStrings(java.util.@NonNull Collection<? extends @NonNull CharSequence> t) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          stringList.append(t);
+     }
+
+     public final void append(@NonNull CharSequence t) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          stringList.append(t);
+     }
+
+     public final int count(@NonNull CharSequence t) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          return stringList.count(t);
+     }
+
+     public final boolean endsWith(@NonNull CharSequence t) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          return stringList.endsWith(t);
+     }
+
+     public final int indexOf(@NonNull CharSequence t, int from) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          return stringList.indexOf(t, from);
+     }
+
+     public final void insert(int i, @NonNull CharSequence t) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          stringList.insert(i, t);
+     }
+
+     public final int lastIndexOf(@NonNull CharSequence t, int from) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          return stringList.lastIndexOf(t, from);
+     }
+
+     public final void prepend(@NonNull CharSequence t) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          stringList.prepend(t);
+     }
+
+     public final int removeAll(@NonNull CharSequence t) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          return stringList.removeAll(t);
+     }
+
+     public final boolean removeOne(@NonNull CharSequence t) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          return stringList.removeOne(t);
+     }
+
+     public final void replace(int i, @NonNull CharSequence t) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          stringList.replace(i, t);
+     }
+
+     public final boolean startsWith(@NonNull CharSequence t) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          return stringList.startsWith(t);
+     }
+
+     public final @NonNull String value(int i, @NonNull CharSequence defaultValue) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          return (String)stringList.value(i, defaultValue);
+     }
+
+     public boolean add(@NonNull CharSequence e) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          return stringList.add(e);
+     }
+
+     public final void add(int index, @NonNull CharSequence e) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          stringList.add(index, e);
+     }
+
+     public final @NonNull String set(int index, @NonNull CharSequence e) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          return (String)stringList.set(index, e);
+     }
+
+     public final void fill(@NonNull CharSequence t) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          stringList.fill(t);
+     }
+
+     public final void fill(@NonNull CharSequence t, int size) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          stringList.fill(t, size);
+     }
+
+     public final void insert(int i, int n, @NonNull CharSequence t) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          QList<java.lang.@NonNull CharSequence> stringList = (QList)this;
+          stringList.insert(i, n, t);
+     }
 }// class
 
 class QString__ {
@@ -48961,27 +48519,7 @@ class QString__ {
     }
 }// class
 
-class QtGlobal_5_ {
-    /**
-     * <p>
-     * See <a href="@docRoot/qhash.html#qHash-28"><code>qHash(T,0)</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public static <T> int qHash(T object) throws UnsupportedOperationException {
-        return qHash(object, 0);
-    }
-
-    /**
-     * <p>
-     * See <a href="@docRoot/qhash.html#qHash-28"><code>qHash(T,int)</code></a>
-     * </p>
-     */
-    @QtUninvokable
-    public static native <T> int qHash(T object, int seed) throws UnsupportedOperationException;
-}// class
-
-class QtGlobal_6_ {
+class QtGlobal__ {
     /**
      * <p>
      * See <a href="@docRoot/qhash.html#qHash-28"><code>qHash(T,0)</code></a>
@@ -49283,185 +48821,7 @@ class QCborArray___ {
     }
 }// class
 
-class QRegularExpression_5__ {
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #globalMatch(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.
-     * </p>
-     */
-    @QtUninvokable
-    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject,
-            int offset, io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return globalMatch(subject, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch,
-                new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
-    }
-
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #globalMatch(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.
-     * </p>
-     */
-    @QtUninvokable
-    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject,
-            int offset, io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        return globalMatch(subject, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
-    }
-
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #match(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.
-     * </p>
-     */
-    @QtUninvokable
-    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject, int offset,
-            io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return match(subject, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch,
-                new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
-    }
-
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #match(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.
-     * </p>
-     */
-    @QtUninvokable
-    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject, int offset,
-            io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        return match(subject, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
-    }
-
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #globalMatch(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.
-     * </p>
-     */
-    @QtUninvokable
-    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject,
-            io.qt.core.QRegularExpression.@NonNull MatchType matchType,
-            io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return globalMatch(subject, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
-    }
-
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #globalMatch(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.
-     * </p>
-     */
-    @QtUninvokable
-    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject,
-            io.qt.core.QRegularExpression.@NonNull MatchType matchType,
-            io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        return globalMatch(subject, 0, matchType, matchOptions);
-    }
-
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #globalMatch(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.
-     * </p>
-     */
-    @QtUninvokable
-    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject,
-            io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
-        return globalMatch(subject, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(0));
-    }
-
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #globalMatch(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.
-     * </p>
-     */
-    @QtUninvokable
-    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject,
-            io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return globalMatch(subject, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch,
-                new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
-    }
-
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #globalMatch(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.
-     * </p>
-     */
-    @QtUninvokable
-    public final io.qt.core.@NonNull QRegularExpressionMatchIterator globalMatch(java.lang.@NonNull String subject,
-            io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        return globalMatch(subject, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
-    }
-
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #match(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.
-     * </p>
-     */
-    @QtUninvokable
-    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject,
-            io.qt.core.QRegularExpression.@NonNull MatchType matchType,
-            io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return match(subject, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
-    }
-
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #match(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.
-     * </p>
-     */
-    @QtUninvokable
-    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject,
-            io.qt.core.QRegularExpression.@NonNull MatchType matchType,
-            io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        return match(subject, 0, matchType, matchOptions);
-    }
-
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #match(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.
-     * </p>
-     */
-    @QtUninvokable
-    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject,
-            io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
-        return match(subject, 0, matchType, new io.qt.core.QRegularExpression.MatchOptions(0));
-    }
-
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #match(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.
-     * </p>
-     */
-    @QtUninvokable
-    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject,
-            io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return match(subject, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch,
-                new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
-    }
-
-    /**
-     * <p>
-     * Overloaded function for
-     * {@link #match(java.lang.String, int, io.qt.core.QRegularExpression.MatchType, io.qt.core.QRegularExpression.MatchOptions)}.
-     * </p>
-     */
-    @QtUninvokable
-    public final io.qt.core.@NonNull QRegularExpressionMatch match(java.lang.@NonNull String subject,
-            io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        return match(subject, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
-    }
-}// class
-
-class QRegularExpression_6__ {
+class QRegularExpression___ {
     /**
      * <p>
      * Overloaded function for
@@ -49662,9 +49022,6 @@ class QRegularExpression_6__ {
     }
 }// class
 
-class QRegularExpression___ {
-}// class
-
 class QAbstractFileEngineHandler___ {
     /**
      * Factory interface for file engine creation
@@ -49737,308 +49094,13 @@ class QAbstractFileEngineHandler___ {
     @QtUninvokable
     private static native QAbstractFileEngineHandler fromFileNameTestString(FileEngineFactory factory,
             int stringComparison, int caseSensitivity, String string);
-}// class
-
-class QAbstractFileEngineHandler_5__ {
-    /**
-     * Creates a file engine handler for file names having match with
-     * {@code regexp}. The returned handler object is owned by native library and is
-     * ignored by garbage collection. By calling {@code dispose()}, this file engine
-     * handler is uninstalled.
-     * 
-     * @param factory      the file engine factory
-     * @param regexp       file name regular expression
-     * @param matchType    the match type
-     * @param matchOptions options for the match
-     * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    @QtUninvokable
-    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory,
-            io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType,
-            io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        return fromFileNameTest(factory, regexp, 0, matchType, matchOptions);
-    }
 
     /**
      * Creates a file engine handler for file names having match with
      * {@code regexp}. The returned handler object is owned by native library and is
      * ignored by garbage collection. By calling {@code dispose()}, this file engine
      * handler is uninstalled.
-     * 
-     * @param factory      the file engine factory
-     * @param regexp       file name regular expression
-     * @param matchOptions options for the match
-     * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    @QtUninvokable
-    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory,
-            io.qt.core.@NonNull QRegularExpression regexp,
-            io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        return fromFileNameTest(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch, matchOptions);
-    }
-
-    /**
-     * Creates a file engine handler for file names having match with
-     * {@code regexp}. The returned handler object is owned by native library and is
-     * ignored by garbage collection. By calling {@code dispose()}, this file engine
-     * handler is uninstalled.
-     * 
-     * @param factory   the file engine factory
-     * @param regexp    file name regular expression
-     * @param matchType the match type
-     * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    @QtUninvokable
-    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory,
-            io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
-        return fromFileNameTest(factory, regexp, 0, matchType,
-                io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
-    }
-
-    /**
-     * Creates a file engine handler for file names having match with
-     * {@code regexp}. The returned handler object is owned by native library and is
-     * ignored by garbage collection. By calling {@code dispose()}, this file engine
-     * handler is uninstalled.
-     * 
-     * @param factory      the file engine factory
-     * @param regexp       file name regular expression
-     * @param matchType    the match type
-     * @param matchOptions options for the match
-     * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    @QtUninvokable
-    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory,
-            io.qt.core.@NonNull QRegularExpression regexp, io.qt.core.QRegularExpression.@NonNull MatchType matchType,
-            io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return fromFileNameTest(factory, regexp, 0, matchType,
-                new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
-    }
-
-    /**
-     * Creates a file engine handler for file names having match with
-     * {@code regexp}. The returned handler object is owned by native library and is
-     * ignored by garbage collection. By calling {@code dispose()}, this file engine
-     * handler is uninstalled.
-     * 
-     * @param factory      the file engine factory
-     * @param regexp       file name regular expression
-     * @param matchOptions options for the match
-     * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    @QtUninvokable
-    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory,
-            io.qt.core.@NonNull QRegularExpression regexp,
-            io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return fromFileNameTest(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch,
-                new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
-    }
-
-    /**
-     * Creates a file engine handler for file names having match with
-     * {@code regexp}. The returned handler object is owned by native library and is
-     * ignored by garbage collection. By calling {@code dispose()}, this file engine
-     * handler is uninstalled.
-     * 
-     * @param factory the file engine factory
-     * @param regexp  file name regular expression
-     * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    @QtUninvokable
-    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory,
-            io.qt.core.@NonNull QRegularExpression regexp) {
-        return fromFileNameTest(factory, regexp, 0, io.qt.core.QRegularExpression.MatchType.NormalMatch,
-                io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
-    }
-
-    /**
-     * Creates a file engine handler for file names having match with
-     * {@code regexp}. The returned handler object is owned by native library and is
-     * ignored by garbage collection. By calling {@code dispose()}, this file engine
-     * handler is uninstalled.
-     * 
-     * @param factory the file engine factory
-     * @param regexp  file name regular expression
-     * @param offset  the offset of the match
-     * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    @QtUninvokable
-    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory,
-            io.qt.core.@NonNull QRegularExpression regexp, int offset) {
-        return fromFileNameTest(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch,
-                io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
-    }
-
-    /**
-     * Creates a file engine handler for file names having match with
-     * {@code regexp}. The returned handler object is owned by native library and is
-     * ignored by garbage collection. By calling {@code dispose()}, this file engine
-     * handler is uninstalled.
-     * 
-     * @param factory      the file engine factory
-     * @param regexp       file name regular expression
-     * @param offset       the offset of the match
-     * @param matchType    the match type
-     * @param matchOptions options for the match
-     * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    @QtUninvokable
-    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory,
-            io.qt.core.@NonNull QRegularExpression regexp, int offset,
-            io.qt.core.QRegularExpression.@NonNull MatchType matchType,
-            io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return fromFileNameTest(factory, regexp, offset, matchType,
-                new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
-    }
-
-    /**
-     * Creates a file engine handler for file names having match with
-     * {@code regexp}. The returned handler object is owned by native library and is
-     * ignored by garbage collection. By calling {@code dispose()}, this file engine
-     * handler is uninstalled.
-     * 
-     * @param factory   the file engine factory
-     * @param regexp    file name regular expression
-     * @param offset    the offset of the match
-     * @param matchType the match type
-     * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    @QtUninvokable
-    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory,
-            io.qt.core.@NonNull QRegularExpression regexp, int offset,
-            io.qt.core.QRegularExpression.@NonNull MatchType matchType) {
-        return fromFileNameTest(factory, regexp, offset, matchType,
-                io.qt.core.QRegularExpression.MatchOption.NoMatchOption.asFlags());
-    }
-
-    /**
-     * Creates a file engine handler for file names having match with
-     * {@code regexp}. The returned handler object is owned by native library and is
-     * ignored by garbage collection. By calling {@code dispose()}, this file engine
-     * handler is uninstalled.
-     * 
-     * @param factory      the file engine factory
-     * @param regexp       file name regular expression
-     * @param offset       the offset of the match
-     * @param matchOptions options for the match
-     * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    @QtUninvokable
-    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory,
-            io.qt.core.@NonNull QRegularExpression regexp, int offset,
-            io.qt.core.QRegularExpression.@NonNull MatchOption @NonNull... matchOptions) {
-        return fromFileNameTest(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch,
-                new io.qt.core.QRegularExpression.MatchOptions(matchOptions));
-    }
-
-    /**
-     * Creates a file engine handler for file names having match with
-     * {@code regexp}. The returned handler object is owned by native library and is
-     * ignored by garbage collection. By calling {@code dispose()}, this file engine
-     * handler is uninstalled.
-     * 
-     * @param factory      the file engine factory
-     * @param regexp       file name regular expression
-     * @param offset       the offset of the match
-     * @param matchOptions options for the match
-     * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    @QtUninvokable
-    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory,
-            io.qt.core.@NonNull QRegularExpression regexp, int offset,
-            io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        return fromFileNameTest(factory, regexp, offset, io.qt.core.QRegularExpression.MatchType.NormalMatch,
-                matchOptions);
-    }
-
-    /**
-     * Creates a file engine handler for file names having match with
-     * {@code regexp}. The returned handler object is owned by native library and is
-     * ignored by garbage collection. By calling {@code dispose()}, this file engine
-     * handler is uninstalled.
-     * 
-     * @param factory      the file engine factory
-     * @param regexp       file name regular expression
-     * @param offset       the offset of the match
-     * @param matchType    the match type
-     * @param matchOptions options for the match
-     * @return a new installed file engine handler
-     * @see io.qt.core.QRegularExpression#match(String, int,
-     *      io.qt.core.QRegularExpression.MatchType,
-     *      io.qt.core.QRegularExpression.MatchOptions)
-     * @see io.qt.core.QRegularExpressionMatch#hasMatch()
-     */
-    @QtUninvokable
-    public static @NonNull QAbstractFileEngineHandler fromFileNameTest(@StrictNonNull FileEngineFactory factory,
-            io.qt.core.@NonNull QRegularExpression regexp, int offset,
-            io.qt.core.QRegularExpression.@NonNull MatchType matchType,
-            io.qt.core.QRegularExpression.@NonNull MatchOptions matchOptions) {
-        java.util.Objects.requireNonNull(regexp, "Argument 'regexp': null not expected.");
-        java.util.Objects.requireNonNull(factory, "Argument 'factory': null not expected.");
-        if (!regexp.isValid())
-            throw new IllegalArgumentException("Argument 'regexp' invalid");
-        if (offset < 0)
-            throw new IllegalArgumentException("Argument 'offset' < 0");
-        return fromFileNameTestRegexp(factory, QtJambi_LibraryUtilities.internal.checkedNativeId(regexp), offset,
-                matchType == null ? 0 : matchType.value(), matchOptions == null ? 0 : matchOptions.value());
-    }
-
-    @QtUninvokable
-    private static native QAbstractFileEngineHandler fromFileNameTestRegexp(FileEngineFactory factory, long regexp,
-            int offset, int matchType, int matchOptions);
-}// class
-
-class QAbstractFileEngineHandler_6__ {
-    /**
-     * Creates a file engine handler for file names having match with
-     * {@code regexp}. The returned handler object is owned by native library and is
-     * ignored by garbage collection. By calling {@code dispose()}, this file engine
-     * handler is uninstalled.
-     * 
+     *
      * @param factory      the file engine factory
      * @param regexp       file name regular expression
      * @param matchType    the match type
@@ -50061,7 +49123,7 @@ class QAbstractFileEngineHandler_6__ {
      * {@code regexp}. The returned handler object is owned by native library and is
      * ignored by garbage collection. By calling {@code dispose()}, this file engine
      * handler is uninstalled.
-     * 
+     *
      * @param factory      the file engine factory
      * @param regexp       file name regular expression
      * @param matchOptions options for the match
@@ -50083,7 +49145,7 @@ class QAbstractFileEngineHandler_6__ {
      * {@code regexp}. The returned handler object is owned by native library and is
      * ignored by garbage collection. By calling {@code dispose()}, this file engine
      * handler is uninstalled.
-     * 
+     *
      * @param factory   the file engine factory
      * @param regexp    file name regular expression
      * @param matchType the match type
@@ -50105,7 +49167,7 @@ class QAbstractFileEngineHandler_6__ {
      * {@code regexp}. The returned handler object is owned by native library and is
      * ignored by garbage collection. By calling {@code dispose()}, this file engine
      * handler is uninstalled.
-     * 
+     *
      * @param factory      the file engine factory
      * @param regexp       file name regular expression
      * @param matchType    the match type
@@ -50129,7 +49191,7 @@ class QAbstractFileEngineHandler_6__ {
      * {@code regexp}. The returned handler object is owned by native library and is
      * ignored by garbage collection. By calling {@code dispose()}, this file engine
      * handler is uninstalled.
-     * 
+     *
      * @param factory      the file engine factory
      * @param regexp       file name regular expression
      * @param matchOptions options for the match
@@ -50152,7 +49214,7 @@ class QAbstractFileEngineHandler_6__ {
      * {@code regexp}. The returned handler object is owned by native library and is
      * ignored by garbage collection. By calling {@code dispose()}, this file engine
      * handler is uninstalled.
-     * 
+     *
      * @param factory the file engine factory
      * @param regexp  file name regular expression
      * @return a new installed file engine handler
@@ -50173,7 +49235,7 @@ class QAbstractFileEngineHandler_6__ {
      * {@code regexp}. The returned handler object is owned by native library and is
      * ignored by garbage collection. By calling {@code dispose()}, this file engine
      * handler is uninstalled.
-     * 
+     *
      * @param factory the file engine factory
      * @param regexp  file name regular expression
      * @param offset  the offset of the match
@@ -50195,7 +49257,7 @@ class QAbstractFileEngineHandler_6__ {
      * {@code regexp}. The returned handler object is owned by native library and is
      * ignored by garbage collection. By calling {@code dispose()}, this file engine
      * handler is uninstalled.
-     * 
+     *
      * @param factory      the file engine factory
      * @param regexp       file name regular expression
      * @param offset       the offset of the match
@@ -50221,7 +49283,7 @@ class QAbstractFileEngineHandler_6__ {
      * {@code regexp}. The returned handler object is owned by native library and is
      * ignored by garbage collection. By calling {@code dispose()}, this file engine
      * handler is uninstalled.
-     * 
+     *
      * @param factory   the file engine factory
      * @param regexp    file name regular expression
      * @param offset    the offset of the match
@@ -50245,7 +49307,7 @@ class QAbstractFileEngineHandler_6__ {
      * {@code regexp}. The returned handler object is owned by native library and is
      * ignored by garbage collection. By calling {@code dispose()}, this file engine
      * handler is uninstalled.
-     * 
+     *
      * @param factory      the file engine factory
      * @param regexp       file name regular expression
      * @param offset       the offset of the match
@@ -50269,7 +49331,7 @@ class QAbstractFileEngineHandler_6__ {
      * {@code regexp}. The returned handler object is owned by native library and is
      * ignored by garbage collection. By calling {@code dispose()}, this file engine
      * handler is uninstalled.
-     * 
+     *
      * @param factory      the file engine factory
      * @param regexp       file name regular expression
      * @param offset       the offset of the match
@@ -50293,7 +49355,7 @@ class QAbstractFileEngineHandler_6__ {
      * {@code regexp}. The returned handler object is owned by native library and is
      * ignored by garbage collection. By calling {@code dispose()}, this file engine
      * handler is uninstalled.
-     * 
+     *
      * @param factory      the file engine factory
      * @param regexp       file name regular expression
      * @param offset       the offset of the match
@@ -50562,7 +49624,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMutexLocker_initialize_1nativ
     QTJAMBI_TRY {
         jvalue arguments;
         arguments.l = mutex0;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QMutexLocker_QRecursiveMutex__QRecursiveMutex_ptr, sizeof(QMutexLocker<QRecursiveMutex>), typeid(QMutexLocker<QRecursiveMutex>), 0, false, &deleter_QMutexLocker_QRecursiveMutex_, &arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QMutexLocker_QRecursiveMutex__QRecursiveMutex_ptr, sizeof(QMutexLocker<QRecursiveMutex>), alignof(QMutexLocker<QRecursiveMutex>), typeid(QMutexLocker<QRecursiveMutex>), 0, false, &deleter_QMutexLocker_QRecursiveMutex_, &arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -51054,7 +50116,7 @@ class QRangeModel__ {
         this(toRange(range), RowCategory.Default, parent);
     }
 
-    private static <T> QConstSpan<?> toRange(T[][] range) {
+    private static <T> QConstSpan<QConstSpan<T>> toRange(T[][] range) {
         QList<QConstSpan<T>> result = null;
         if (range.length == 0)
             throw new IllegalArgumentException("Array length must not be null.");
@@ -51250,7 +50312,7 @@ class QRangeModel__ {
          this(range, RowCategory.Default, parent);
      }
 
-    private static <T> QConstSpan<?> toRange(T[] range) {
+    private static <T> QConstSpan<T> toRange(T[] range) {
         if (range.length == 0)
             throw new IllegalArgumentException("Array length must not be null.");
         return QConstSpan.ofTyped(QList.findElementMetaType(java.util.Arrays.asList(range)), range);
@@ -51310,7 +50372,7 @@ class QRangeModel__ {
          this(range, RowCategory.Default, parent);
      }
 
-    private static <T> QConstSpan<?> toRange(java.util.Collection<T> range) {
+    private static <T> QConstSpan<T> toRange(java.util.Collection<T> range) {
         if (range.size() == 0)
             throw new IllegalArgumentException("Array length must not be null.");
         return QConstSpan.ofList(range);

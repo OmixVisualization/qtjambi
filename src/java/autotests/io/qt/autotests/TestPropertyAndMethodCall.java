@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -57,6 +57,7 @@ import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.PropertyAndMethodCallTest;
 import io.qt.core.QDataStream;
 import io.qt.core.QLibraryInfo;
+import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;
 import io.qt.core.QRectF;
@@ -345,35 +346,35 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 	@Test
 	public void testSignalCustomEnumNULL() {
 		Assume.assumeTrue("Checking enum null in Qt6 makes no sense", QLibraryInfo.version().majorVersion()==5);
-		object.connectSignals(javaObject, General.internalAccess.useAnnotatedType());
+		assertTrue("did not connect all", object.connectSignals(javaObject, General.internalAccess.useAnnotatedType()));
 		javaObject.customEnumChanged.emit(null);
 		assertEquals(null, object.receivedCustomEnum());
 	}
 
 	@Test
 	public void testSignalCustomEnum() {
-		object.connectSignals(javaObject, General.internalAccess.useAnnotatedType());
+		assertTrue("did not connect all", object.connectSignals(javaObject, General.internalAccess.useAnnotatedType()));
 		javaObject.customEnumChanged.emit(TestQObject.CustomEnum.Entry3);
 		assertEquals(TestQObject.CustomEnum.Entry3, object.receivedCustomEnum());
 	}
 
 	@Test
 	public void testSignalCustomQtEnumNULL() {
-		object.connectSignals(javaObject, General.internalAccess.useAnnotatedType());
+		assertTrue("did not connect all", object.connectSignals(javaObject, General.internalAccess.useAnnotatedType()));
 		javaObject.customQtEnumChanged.emit(null);
 		assertEquals(null, object.receivedCustomQtEnum());
 	}
 
 	@Test
 	public void testSignalCustomQtEnum() {
-		object.connectSignals(javaObject, General.internalAccess.useAnnotatedType());
+		assertTrue("did not connect all", object.connectSignals(javaObject, General.internalAccess.useAnnotatedType()));
 		javaObject.customQtEnumChanged.emit(TestQObject.CustomQtEnum.Entry3);
 		assertEquals(TestQObject.CustomQtEnum.Entry3, object.receivedCustomQtEnum());
 	}
 
 	@Test
 	public void testSignalQtFlags() {
-		object.connectSignals(javaObject, General.internalAccess.useAnnotatedType());
+		assertTrue("did not connect all", object.connectSignals(javaObject, General.internalAccess.useAnnotatedType()));
 		TestQObject.CustomQtFlags flags = new TestQObject.CustomQtFlags(TestQObject.CustomQtEnum.Entry1,
 				TestQObject.CustomQtEnum.Entry2);
 		javaObject.customQtFlagsChanged.emit(flags);
@@ -382,7 +383,7 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 
 	@Test
 	public void testSignalCustomQtValue() {
-		object.connectSignals(javaObject, General.internalAccess.useAnnotatedType());
+		assertTrue("did not connect all", object.connectSignals(javaObject, General.internalAccess.useAnnotatedType()));
 		TestQObject.CustomQtValue customQtValue = new TestQObject.CustomQtValue();
 		javaObject.customQtValueChanged.emit(customQtValue);
 		assertEquals(customQtValue, object.receivedCustomQtValue());
@@ -390,7 +391,7 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 	
 	@Test
 	public void testSignalCustomQtInterfaceValue() {
-		object.connectSignals(javaObject, General.internalAccess.useAnnotatedType());
+		assertTrue("did not connect all", object.connectSignals(javaObject, General.internalAccess.useAnnotatedType()));
 		TestQObject.CustomQtInterfaceValue customQtInterfaceValue = new TestQObject.CustomQtInterfaceValue();
 		javaObject.customQtInterfaceValueChanged.emit(customQtInterfaceValue);
 		assertEquals(customQtInterfaceValue, object.receivedCustomQtInterfaceValue());
@@ -398,7 +399,7 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 
 	@Test
 	public void testSignalCustomJavaType() {
-		object.connectSignals(javaObject, General.internalAccess.useAnnotatedType());
+		assertTrue("did not connect all", object.connectSignals(javaObject, General.internalAccess.useAnnotatedType()));
 		TestQObject.CustomJavaType customJavaType = new TestQObject.CustomJavaType();
 		javaObject.customJavaTypeChanged.emit(customJavaType);
 		assertEquals(customJavaType, object.receivedCustomJavaType());
@@ -406,7 +407,7 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 
 	@Test
 	public void testSignalDerivedQObject() {
-		object.connectSignals(javaObject, General.internalAccess.useAnnotatedType());
+		assertTrue("did not connect all", object.connectSignals(javaObject, General.internalAccess.useAnnotatedType()));
 		TestQObject.DerivedQObject derivedObject = new TestQObject.DerivedQObject();
 		javaObject.derivedQObjectChanged.emit(derivedObject);
 		assertEquals(derivedObject, object.receivedDerivedQObject());
@@ -415,7 +416,7 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 	@Test
 	public void testSignalExtendedColor() {
 		Assume.assumeTrue("Extended value types are available since Qt6", QLibraryInfo.version().majorVersion()>5);
-		object.connectSignals(javaObject, General.internalAccess.useAnnotatedType());
+		assertTrue("did not connect all", object.connectSignals(javaObject, General.internalAccess.useAnnotatedType()));
 		TestQObject.ExtendedColor extendedColor = new TestQObject.ExtendedColor(QRgba64.fromRgba64(0x014691ab6));
 		javaObject.extendedColorChanged.emit(extendedColor);
 		assertEquals(extendedColor, object.receivedExtendedColor());

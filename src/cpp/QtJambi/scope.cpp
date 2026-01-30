@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -163,15 +163,9 @@ QtJambiScope::~QtJambiScope(){
     }
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-void QtJambiScope::addDeletion(int metaTypeId, void* pointer){
-    addFinalAction([metaTypeId,pointer](){QMetaType::destroy(metaTypeId, pointer);});
-}
-#else
 void QtJambiScope::addDeletion(QMetaType metaType, void* pointer){
     addFinalAction([metaType,pointer](){metaType.destroy(pointer);});
 }
-#endif
 
 bool invalidateCollection(JNIEnv *env, jobject java_collection);
 bool forcedInvalidateCollection(JNIEnv *env, jobject java_collection);

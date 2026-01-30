@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -67,108 +67,6 @@ TypeSystem{
             signature: "devType() const"
             remove: RemoveFlag.All
         }
-    }
-    
-    ObjectType{
-        name: "QGraphicsSvgItem"
-        Rejection{enumName: "enum_1"}
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambiWidgets/hashes.h"
-                location: Include.Global
-            }
-            Include{
-                fileName: "QGraphicsItem"
-                location: Include.Global
-            }
-            Include{
-                fileName: "QSvgRenderer"
-                location: Include.Global
-            }
-            Include{
-                fileName: "QSize"
-                location: Include.Global
-            }
-        }
-        ModifyFunction{
-            signature: "type() const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "QGraphicsSvgItem(QGraphicsItem*)"
-            ModifyArgument{
-                index: 1
-                threadAffinity: true
-            }
-        }
-        ModifyFunction{
-            signature: "QGraphicsSvgItem(QString,QGraphicsItem*)"
-            ModifyArgument{
-                index: 2
-                threadAffinity: true
-            }
-        }
-        ModifyFunction{
-            signature: "setSharedRenderer(QSvgRenderer*)"
-            ModifyArgument{
-                index: 1
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Cpp
-                }
-            }
-            InjectCode{
-                position: Position.Beginning
-                Text{content: "QSvgRenderer oldRenderer = renderer();"}
-            }
-            InjectCode{
-                position: Position.End
-                Text{content: "if (oldRenderer != null)\n"+
-                              "    QtJambi_LibraryUtilities.internal.setDefaultOwnership(oldRenderer);"}
-            }
-        }
-        ModifyFunction{
-            signature: "QGraphicsSvgItem(QGraphicsItem*)"
-            InjectCode{
-                position: Position.End
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);"}
-            }
-        }
-        ModifyFunction{
-            signature: "QGraphicsSvgItem(const QString &,QGraphicsItem*)"
-            InjectCode{
-                position: Position.End
-                ArgumentMap{
-                    index: 2
-                    metaName: "%2"
-                }
-                Text{content: "if (%2 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);"}
-            }
-        }
-        until: 5
-    }
-
-    ObjectType{
-        name: "QSvgWidget"
-        ExtraIncludes{
-            Include{
-                fileName: "QByteArray"
-                location: Include.Global
-            }
-            Include{
-                fileName: "QSvgRenderer"
-                location: Include.Global
-            }
-            Include{
-                fileName: "QSize"
-                location: Include.Global
-            }
-        }
-        until: 5
     }
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'"}

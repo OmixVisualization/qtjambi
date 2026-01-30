@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -3321,34 +3321,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
     }
     
     RequiredLibrary{
-        name: "libGLESv2"
-        mode: RequiredLibrary.ProvideOnly
-        platforms: ["windows"]
-        until: 5
-    }
-    
-    RequiredLibrary{
-        name: "libEGL"
-        mode: RequiredLibrary.ProvideOnly
-        platforms: ["windows"]
-        until: 5
-    }
-    
-    RequiredLibrary{
-        name: "QtANGLE"
-        mode: RequiredLibrary.ProvideOnly
-        platforms: ["windows"]
-        until: [5, 14]
-    }
-    
-    RequiredLibrary{
-        name: "QtPrintSupport"
-        mode: RequiredLibrary.ProvideOnly
-        platforms: ["macos"]
-        until: 5
-    }
-    
-    RequiredLibrary{
         name: "QtSvg"
         mode: RequiredLibrary.ProvideOnly
     }
@@ -3358,30 +3330,20 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         mode: RequiredLibrary.ProvideOnly
         platforms: ["macos", "linux"]
     }
-    
-    RequiredLibrary{
-        name: "QtNetwork"
-        mode: RequiredLibrary.ProvideOnly
-        platforms: ["linux"]
-        until: 5
-    }
 
     RequiredLibrary{
         name: "QtNetwork"
         mode: RequiredLibrary.ProvideOnly
-        since: 6
     }
 
     RequiredLibrary{
         name: "QtOpenGL"
         mode: RequiredLibrary.ProvideOnly
-        since: 6
     }
 
     RequiredLibrary{
         name: "QtPdf"
         mode: RequiredLibrary.ProvideOnly
-        since: 6
     }
     
     RequiredLibrary{
@@ -3394,7 +3356,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         name: "QtWaylandEglClientHwIntegration"
         mode: RequiredLibrary.ProvideOnly
         platforms: ["linux"]
-        since: 6
     }
     
     RequiredLibrary{
@@ -3407,13 +3368,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         name: "QtOpenGL"
         mode: RequiredLibrary.ProvideOnly
         platforms: ["linux"]
-    }
-    
-    RequiredLibrary{
-        name: "QtWidgets"
-        mode: RequiredLibrary.ProvideOnly
-        platforms: ["macos", "linux"]
-        until: 5
     }
 
     RequiredLibrary{
@@ -3588,17 +3542,14 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
     
     Rejection{
         className: "QVulkanInstance"
-        since: [5, 10]
     }
     
     Rejection{
         className: "QVulkanWindow"
-        since: [5, 10]
     }
     
     Rejection{
         className: "QVulkanWindowRenderer"
-        since: [5, 10]
     }
     
     ValueType{
@@ -3672,6 +3623,9 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
 
         ValueType{
             name: "State"
+            Rejection{
+                fieldName: "qt_reserved"
+            }
         }
 
         EnumType{
@@ -4386,7 +4340,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -4412,54 +4365,10 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
         InjectCode{
             target: CodeClass.Native
             Text{content: "class QAction;"}
-        }
-        ModifyFunction{
-            signature: "QActionEvent(int, QAction *, QAction *)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QAction"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QAction* %out = static_cast<QAction*>(QtJambiAPI::convertJavaObjectToQObject(%env, %in));"}
-                }
-            }
-            ModifyArgument{
-                index: 3
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QAction* %out = static_cast<QAction*>(QtJambiAPI::convertJavaObjectToQObject(%env, %in));"}
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "action() const"
-            ModifyArgument{
-                index: 0
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = QtJambiAPI::convertQObjectToJavaObject(%env, %in, \"io/qt/widgets/QAction\");"}
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "before() const"
-            ModifyArgument{
-                index: 0
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = QtJambiAPI::convertQObjectToJavaObject(%env, %in, \"io/qt/widgets/QAction\");"}
-                }
-            }
-            until: 5
         }
     }
     
@@ -4515,16 +4424,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             rename: "intValue"
         }
         ModifyFunction{
-            signature: "device()const"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    ownership: Ownership.Ignore
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "clone()const"
             ModifyArgument{
                 index: "return"
@@ -4537,7 +4436,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "QNativeGestureEvent(Qt::NativeGestureType, const QPointingDevice *, int, QPointF, QPointF, QPointF, qreal, QPointF, quint64)"
@@ -4620,7 +4518,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -4685,7 +4582,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -4714,7 +4610,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -4779,7 +4674,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -4817,7 +4711,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -4855,7 +4748,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -4917,7 +4809,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -4970,7 +4861,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -5079,7 +4969,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -5173,7 +5062,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -5199,7 +5087,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -5225,7 +5112,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -5269,7 +5155,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -5298,7 +5183,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -5324,7 +5208,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -5554,7 +5437,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         ModifyFunction{
             signature: "QColor(QLatin1String)"
             remove: RemoveFlag.All
-            since: [5, 8]
             until: [6, 3]
         }
         ModifyFunction{
@@ -5565,12 +5447,10 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         ModifyFunction{
             signature: "QColor(QStringView)"
             remove: RemoveFlag.All
-            since: [5, 8]
         }
         ModifyFunction{
             signature: "setNamedColor(QLatin1String)"
             remove: RemoveFlag.All
-            since: [5, 8]
             until: [6, 3]
         }
         ModifyFunction{
@@ -5581,12 +5461,10 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         ModifyFunction{
             signature: "setNamedColor(QStringView)"
             remove: RemoveFlag.All
-            since: [5, 8]
         }
         ModifyFunction{
             signature: "isValidColor(QLatin1String)"
             remove: RemoveFlag.All
-            since: [5, 8]
             until: [6, 3]
         }
         ModifyFunction{
@@ -5597,7 +5475,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         ModifyFunction{
             signature: "isValidColor(QStringView)"
             remove: RemoveFlag.All
-            since: [5, 10]
         }
         ModifyFunction{
             signature: "QColor(const char*)"
@@ -5605,33 +5482,14 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             }
         }
         ModifyFunction{
-            signature: "getCmyk(int*,int*,int*,int*,int*)"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "getCmyk(int*,int*,int*,int*,int*) const"
             Remove{
             }
         }
         ModifyFunction{
-            signature: "getCmykF(qreal*,qreal*,qreal*,qreal*,qreal*)"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "getCmykF(qreal*,qreal*,qreal*,qreal*,qreal*) const"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "getCmykF(float*,float*,float*,float*,float*) const"
             Remove{
             }
-            since: 6
         }
         ModifyFunction{
             signature: "getHsv(int*,int*,int*,int*)const"
@@ -5639,16 +5497,9 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             }
         }
         ModifyFunction{
-            signature: "getHsvF(qreal*,qreal*,qreal*,qreal*)const"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "getHsvF(float*,float*,float*,float*) const"
             Remove{
             }
-            since: 6
         }
         ModifyFunction{
             signature: "getHsl(int*,int*,int*,int*)const"
@@ -5656,16 +5507,9 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             }
         }
         ModifyFunction{
-            signature: "getHslF(qreal*,qreal*,qreal*,qreal*)const"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "getHslF(float*,float*,float*,float*) const"
             Remove{
             }
-            since: 6
         }
         ModifyFunction{
             signature: "getRgb(int*,int*,int*,int*)const"
@@ -5673,26 +5517,9 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             }
         }
         ModifyFunction{
-            signature: "getRgbF(qreal*,qreal*,qreal*,qreal*)const"
-            Remove{
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "getRgbF(float*,float*,float*,float*) const"
             Remove{
             }
-            since: 6
-        }
-        ModifyFunction{
-            signature: "dark(int)const"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "light(int)const"
-            remove: RemoveFlag.All
-            until: 5
         }
         InjectCode{
             ImportFile{
@@ -5786,13 +5613,11 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         ModifyFunction{
             signature: "bitmap()const"
             remove: RemoveFlag.All
-            since: [5, 15]
             until: 6.4
         }
         ModifyFunction{
             signature: "mask()const"
             remove: RemoveFlag.All
-            since: [5, 15]
             until: 6.4
         }
         ModifyFunction{
@@ -5805,7 +5630,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     codeClass: CodeClass.Native
                     Text{content: "Qt::ReturnByValueConstant %out = Qt::ReturnByValue;"}
                 }
-                since: [5, 15]
                 until: 6.4
             }
             Remove{since: 6.5}
@@ -5820,7 +5644,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     codeClass: CodeClass.Native
                     Text{content: "Qt::ReturnByValueConstant %out = Qt::ReturnByValue;"}
                 }
-                since: [5, 15]
                 until: 6.4
             }
             Remove{since: 6.5}
@@ -5912,11 +5735,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
             }
         }
-        ModifyFunction{
-            signature: "start(Qt::DropActions)"
-            remove: RemoveFlag.All
-            until: 5
-        }
     }
     
     ObjectType{
@@ -6007,7 +5825,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -6123,7 +5940,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -6167,7 +5983,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -6199,7 +6014,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -6235,7 +6049,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -6261,7 +6074,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -6287,7 +6099,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -6313,7 +6124,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -6346,30 +6156,14 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
     ObjectType{
         name: "QHoverEvent"
         ModifyField{
-            name: "p"
-            read: false
-            write: true
-            rename: "posF"
-            until: 5
-        }
-        ModifyField{
-            name: "op"
-            read: false
-            write: true
-            rename: "oldPosF"
-            until: 5
-        }
-        ModifyField{
             name: "m_oldPos"
             read: false
             write: false
-            since: 6
         }
         ModifyField{
             name: "m_reserved"
             read: false
             write: false
-            since: 6
         }
         ModifyFunction{
             signature: "operator=(const QHoverEvent &)"
@@ -6391,7 +6185,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -6504,30 +6297,16 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
 
         ModifyFunction{
             signature: "operator==(QKeySequence::StandardKey)"
             remove: RemoveFlag.All
-            since: 6
         }
-    }
-    GlobalFunction{
-        signature: "operator==(QKeyEvent*,QKeySequence::StandardKey)"
-        remove: RemoveFlag.All
-        until: 5
     }
     
     ObjectType{
         name: "QTouchEvent"
-        ValueType{
-            name: "TouchPoint"
-            EnumType{
-                name: "InfoFlag"
-            }
-            until: 5
-        }
         Rejection{
             fieldName: "_window"
         }
@@ -6572,39 +6351,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             }
         }
         ModifyFunction{
-            signature: "setDevice(QTouchDevice*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcDevice"
-                    action: ReferenceCount.Set
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setTarget(QObject*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcTarget"
-                    action: ReferenceCount.Set
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setWindow(QWindow*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcWidget"
-                    action: ReferenceCount.Set
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "clone()const"
             ModifyArgument{
                 index: "return"
@@ -6617,7 +6363,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -6781,12 +6526,6 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         EnumType{
             name: "ResolveProperties"
         }
-        ModifyFunction{
-            signature: "QFont(const QFont &, QPaintDevice*)"
-            remove: RemoveFlag.All
-            since: [5, 12]
-            until: 5
-        }
         ValueType{
             name: "Tag"
             ImplicitCast{from: "java.lang.@StrictNonNull String"}
@@ -6875,15 +6614,6 @@ const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
                 location: Include.Global
             }
         }
-        ModifyFunction{
-            signature: "QFontDatabase()"
-            InjectCode{
-                position: Position.Beginning
-                Text{content: "if(io.qt.gui.QGuiApplication.instance()==null)\n"+
-                              "    throw new IllegalStateException(\"Cannot create QFontDatabase before initializing QGuiApplication.\");"}
-            }
-            until: 5
-        }
     }
     
     ValueType{
@@ -6902,11 +6632,6 @@ const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
         CustomConstructor{
             type: CustomConstructor.Default
             Text{content: "new(placement) QFontMetricsF(QFont());"}
-        }
-        ModifyFunction{
-            signature: "QFontMetricsF<0>(const QFont &, const QPaintDevice *)"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "boundingRect(QRectF,int,QString,int,int*)const"
@@ -6962,11 +6687,6 @@ const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
         CustomConstructor{
             type: CustomConstructor.Default
             Text{content: "new(placement) QFontMetrics(QFont());"}
-        }
-        ModifyFunction{
-            signature: "QFontMetrics<0>(const QFont &, const QPaintDevice *)"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "boundingRect(int,int,int,int,int,QString,int,int*)const"
@@ -7106,10 +6826,8 @@ const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
             signature: "QGradient(QGradient::Preset)"
             Remove{
             }
-            since: [5, 12]
         }
         InjectCode{
-            since: [5, 12]
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
                 quoteAfterLine: "class QGradient_java__"
@@ -7122,7 +6840,6 @@ const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
         name: "QGuiApplication"
         Rejection{
             functionName: "nativeInterface"
-            since: 6
         }
         ExtraIncludes{
             Include{
@@ -7253,7 +6970,11 @@ int& __qt_%1 = applicationData->size();`}
                 position: Position.End
                 Text{content: String.raw`
 applicationData->update(%env);
-QTJAMBI_SET_OBJECTUSERDATA(ApplicationData, __qt_this, applicationData.release());`}
+{
+    auto locker = QtJambiObjectData::writeLock();
+    applicationData.reset(QtJambiObjectData::setUserData<ApplicationData>(__qt_this, applicationData.release()));
+}
+`}
             }
         }
         ModifyFunction{
@@ -7264,6 +6985,7 @@ QTJAMBI_SET_OBJECTUSERDATA(ApplicationData, __qt_this, applicationData.release()
                 Text{content: String.raw`
 bool useQApplicationExec = false;
 QCoreApplication* instance = QCoreApplication::instance();
+QThread* objectThread;
 if (!instance)
     JavaException::raiseRuntimeException(%env, "QGuiApplication has not been initialized with QGuiApplication.initialize()" QTJAMBI_STACKTRACEINFO );
 else if(instance->inherits("QApplication")){
@@ -7275,9 +6997,14 @@ else if(instance->inherits("QApplication")){
     }QTJAMBI_TRY_END
     if(useQApplicationExec)
         __java_return_value = Java::QtWidgets::QApplication::exec(%env);
-}else if(instance->thread()!=QThread::currentThread())
+}else if((objectThread = instance->thread()) &&
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+                    !objectThread->isCurrentThread())
+#else
+                    objectThread!=QThread::currentThread())
+#endif
     JavaException::raiseRuntimeException(%env, "exec() must be called from the main thread." QTJAMBI_STACKTRACEINFO );
-else if(QThreadData::get2(instance->thread())->eventLoops.size()>0)
+else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
     JavaException::raiseRuntimeException(%env, "The event loop is already running." QTJAMBI_STACKTRACEINFO );
 if(!useQApplicationExec){`
                 }
@@ -7396,10 +7123,6 @@ const char* %out = info.name;
     
     ObjectType{
         name: "QIconEngine"
-        ValueType{
-            name: "AvailableSizesArgument"
-            until: 5
-        }
         EnumType{
             name: "IconEngineHook"
             extensible: true
@@ -7526,27 +7249,21 @@ default:
         }
         Rejection{
             functionName: "convertToFormat_helper"
-            since: 6
         }
         Rejection{
             functionName: "convertToFormat_inplace"
-            since: 6
         }
         Rejection{
             functionName: "rgbSwapped_inplace"
-            since: 6
         }
         Rejection{
             functionName: "rgbSwapped_helper"
-            since: 6
         }
         Rejection{
             functionName: "mirrored_inplace"
-            since: 6
         }
         Rejection{
             functionName: "mirrored_helper"
-            since: 6
         }
         ModifyFunction{
             signature: "devType() const"
@@ -7582,24 +7299,12 @@ default:
             remove: RemoveFlag.JavaAndNative
         }
         ModifyFunction{
-            signature: "QImage(uchar *, int, int, int, QImage::Format, QImageCleanupFunction, void *)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
             signature: "QImage(uchar *, int, int, qsizetype, QImage::Format, QImageCleanupFunction, void *)"
             remove: RemoveFlag.All
-            since: 6
-        }
-        ModifyFunction{
-            signature: "QImage(const uchar *, int, int, int, QImage::Format, QImageCleanupFunction, void *)"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "QImage(const uchar *, int, int, qsizetype, QImage::Format, QImageCleanupFunction, void *)"
             remove: RemoveFlag.All
-            since: 6
         }
         InjectCode{
             ImportFile{
@@ -7672,7 +7377,6 @@ default:
                 index: 1
                 InhibitImplicitCall{type: "byte @NonNull[]"; since: 6.2}
             }
-            since: 6
         }
         ModifyFunction{
             signature: "loadFromData(const uchar*,int,const char*)"
@@ -7698,7 +7402,6 @@ default:
                 index: 1
                 InhibitImplicitCall{type: "byte @NonNull[]"; since: 6.2}
             }
-            since: 6
         }
         ModifyFunction{
             signature: "bits()const"
@@ -7760,16 +7463,6 @@ default:
                 }
             }
         }
-        ModifyFunction{
-            signature: "description()const"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setDescription(QString)"
-            remove: RemoveFlag.All
-            until: 5
-        }
     }
     
     ObjectType{
@@ -7790,11 +7483,6 @@ default:
             signature: "setFormat(const QByteArray &)const"
             Remove{
             }
-        }
-        ModifyFunction{
-            signature: "name()const"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "setDevice(QIODevice*)"
@@ -7839,7 +7527,6 @@ default:
             }
         }
         InjectCode{
-            since: 6
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
                 quoteAfterLine: "class QImageIOHandler_6__"
@@ -7966,18 +7653,9 @@ default:
             name: "StandardKey"
         }
         InjectCode{
-            until: 5
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
-                quoteAfterLine: "class QKeySequence_5__"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        InjectCode{
-            since: 6
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
-                quoteAfterLine: "class QKeySequence_6__"
+                quoteAfterLine: "class QKeySequence__"
                 quoteBeforeLine: "}// class"
             }
         }
@@ -7989,7 +7667,6 @@ default:
             signature: "operator int() const"
             remove: RemoveFlag.All
         }
-        since: 6
     }
     
     ValueType{
@@ -8689,7 +8366,6 @@ default:
 
         EnumType{
             name: "Flag"
-            since: 6
         }
         ModifyFunction{
             signature: "data()"
@@ -8932,17 +8608,6 @@ default:
             functionName: "surfaceHandle"
         }
         ModifyFunction{
-            signature: "QOffscreenSurface(QScreen *)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcScreen"
-                    action: ReferenceCount.Set
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "QOffscreenSurface(QScreen *,QObject*)"
             ModifyArgument{
                 index: 1
@@ -8951,7 +8616,6 @@ default:
                     action: ReferenceCount.Set
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "setScreen(QScreen *)"
@@ -8962,18 +8626,6 @@ default:
                     action: ReferenceCount.Set
                 }
             }
-        }
-        ModifyFunction{
-            signature: "nativeHandle() const"
-            remove: RemoveFlag.JavaAndNative
-            since: [5, 9]
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setNativeHandle(void *)"
-            remove: RemoveFlag.JavaAndNative
-            since: [5, 9]
-            until: 5
         }
         ExtraIncludes{
             Include{
@@ -9176,7 +8828,6 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
 
         EnumType{
             name: "PdfVersion"
-            since: [5, 10]
         }
 
         EnumType{
@@ -9209,11 +8860,6 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
         ModifyFunction{
             signature: "devType() const"
             remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "devicePageLayout()"
-            remove: RemoveFlag.All
-            until: 5
         }
 
         ValueType{
@@ -9584,95 +9230,30 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "drawLines(const QVector<QPoint> &)"
-            Rename{
-                to: "drawLinesFromPoints"
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "drawLines(const QVector<QPointF> &)"
-            Rename{
-                to: "drawLinesFromPointsF"
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "drawLines(const QVector<QLineF> &)"
-            Rename{
-                to: "drawLinesF"
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "drawRects(const QVector<QRectF> &)"
-            Rename{
-                to: "drawRectsF"
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "drawLines(const QList<QPoint> &)"
             Rename{
                 to: "drawLinesFromPoints"
             }
-            since: 6
         }
         ModifyFunction{
             signature: "drawLines(const QList<QPointF> &)"
             Rename{
                 to: "drawLinesFromPointsF"
             }
-            since: 6
         }
         ModifyFunction{
             signature: "drawLines(const QList<QLineF> &)"
             Rename{
                 to: "drawLinesF"
             }
-            since: 6
         }
         ModifyFunction{
             signature: "drawRects(const QList<QRectF> &)"
             Rename{
                 to: "drawRectsF"
             }
-            since: 6
-        }
-        ModifyFunction{
-            signature: "initFrom(const QPaintDevice *)"
-            ModifyArgument{
-                index: 1
-                NoNullPointer{
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setRedirected(const QPaintDevice *, QPaintDevice *, const QPoint &)"
-            ModifyArgument{
-                index: 1
-                NoNullPointer{
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "restoreRedirected(const QPaintDevice *)"
-            ModifyArgument{
-                index: 1
-                NoNullPointer{
-                }
-            }
-            until: 5
         }
         InjectCode{
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
-                quoteAfterLine: "class QPainter_redir__"
-                quoteBeforeLine: "}// class"
-                until: 5
-            }
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
                 quoteAfterLine: "class QPainter___"
@@ -9738,46 +9319,6 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                               "    QtJambi_LibraryUtilities.internal.unregisterDependentObject(this, device);\n"+
                               "}"}
             }
-        }
-        ModifyFunction{
-            signature: "setRedirected(const QPaintDevice*, QPaintDevice*, const QPoint &)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            ModifyArgument{
-                index: 2
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            InjectCode{
-                position: Position.End
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                ArgumentMap{
-                    index: 2
-                    metaName: "%2"
-                }
-                Text{content: "__rcRedirections.put(%1, %2);"}
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "restoreRedirected(const QPaintDevice*)"
-            InjectCode{
-                position: Position.End
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "__rcRedirections.remove(%1);"}
-            }
-            until: 5
         }
         ModifyFunction{
             signature: "drawPixmapFragments(const QPainter::PixmapFragment *, int, const QPixmap &, QPainter::PixmapFragmentHints)"
@@ -9944,21 +9485,6 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
             }
         }
         ModifyFunction{
-            signature: "redirected(const QPaintDevice*,QPoint*)"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    ownership: Ownership.Ignore
-                }
-            }
-            ModifyArgument{
-                index: 1
-                NoNullPointer{
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "drawImage(QRectF,QImage,QRectF,Qt::ImageConversionFlags)"
             ModifyArgument{
                 index: 1
@@ -9979,14 +9505,6 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 index: 3
                 noImplicitCalls: true
             }
-        }
-        ModifyFunction{
-            signature: "drawRoundRect(QRectF,int,int)"
-            ModifyArgument{
-                index: 1
-                noImplicitCalls: true
-            }
-            until: 5
         }
         ModifyFunction{
             signature: "drawRoundedRect(QRectF,qreal,qreal,Qt::SizeMode)"
@@ -10133,135 +9651,6 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
         }
     }
     
-    ObjectType{
-        name: "QPictureIO"
-        ModifyFunction{
-            signature: "QPictureIO(QIODevice*,const char*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcDevice"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setIODevice(QIODevice*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcDevice"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        InjectCode{
-            Text{content: "private io.qt.core.QByteArray __rc_format;\n"+
-                          "\n"+
-                          "public QPictureIO(io.qt.core.QIODevice ioDevice, String format){\n"+
-                          "    this(ioDevice, new io.qt.core.QByteArray(format));\n"+
-                          "}\n"+
-                          "\n"+
-                          "public QPictureIO(java.lang.String fileName, String format){\n"+
-                          "    this(fileName, new io.qt.core.QByteArray(format));\n"+
-                          "}\n"+
-                          "\n"+
-                          "public final void setFormat(String format) {\n"+
-                          "    setFormat(new io.qt.core.QByteArray(format));\n"+
-                          "}"}
-        }
-        ModifyFunction{
-            signature: "QPictureIO(QIODevice*,const char*)"
-            access: Modification.Private
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcDevice"
-                    action: ReferenceCount.Set
-                }
-            }
-            ModifyArgument{
-                index: 2
-                NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.core.QByteArray"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QByteArray& %out_ba = qtjambi_cast<QByteArray&>(%env, %in);\n"+
-                                  "const char* %out = %out_ba.data();"}
-                }
-            }
-            InjectCode{
-                target: CodeClass.Java
-                position: Position.End
-                Text{content: "__rc_format = format;"}
-            }
-        }
-        ModifyFunction{
-            signature: "QPictureIO(QString,const char*)"
-            access: Modification.Private
-            ModifyArgument{
-                index: 2
-                NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.core.QByteArray"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QByteArray& %out_ba = qtjambi_cast<QByteArray&>(%env, %in);\n"+
-                                  "const char* %out = %out_ba.data();"}
-                }
-            }
-            InjectCode{
-                target: CodeClass.Java
-                position: Position.End
-                Text{content: "__rc_format = format;"}
-            }
-        }
-        ModifyFunction{
-            signature: "setFormat(const char*)"
-            access: Modification.Private
-            ModifyArgument{
-                index: 1
-                NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.core.QByteArray"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QByteArray& %out_ba = qtjambi_cast<QByteArray&>(%env, %in);\n"+
-                                  "const char* %out = %out_ba.data();"}
-                }
-            }
-            InjectCode{
-                target: CodeClass.Java
-                position: Position.End
-                Text{content: "__rc_format = arg__1;"}
-            }
-        }
-        until: 5
-    }
-    
-    FunctionalType{
-        name: "picture_io_handler"
-        javaName: "QPictureIOHandler"
-        ExtraIncludes{
-            Include{
-                fileName: "QtGui/QPictureIO"
-                location: Include.Global
-            }
-        }
-        ModifyArgument{
-            index: 1
-            invalidateAfterUse: true
-        }
-        until: 5
-    }
-    
     ValueType{
         name: "QRegion"
 
@@ -10401,16 +9790,6 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "fill(const QPaintDevice *, const QPoint &)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "fill(const QPaintDevice *, int, int)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
             signature: "fromImageInPlace(QImage &, Qt::ImageConversionFlags)"
             remove: RemoveFlag.All
         }
@@ -10467,16 +9846,6 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
         name: "QPixmapCache"
         ValueType{
             name: "Key"
-        }
-        ModifyFunction{
-            signature: "find(QString)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "find(QString,QPixmap&)"
-            remove: RemoveFlag.All
-            until: 5
         }
         InjectCode{
             ImportFile{
@@ -10619,6 +9988,17 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 location: Include.Local
             }
         }
+        ValueType{
+            name: "Axes"
+            generate: false
+            since: [6,11]
+        }
+        ObjectType{
+            name: "EulerAngles"
+            generate: false
+            template: true
+            since: [6,11]
+        }
         ModifyFunction{
             signature: "operator*=(const QQuaternion &)"
             rename: "multiply"
@@ -10682,6 +10062,26 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                     Text{content: "%out = Java::QtGui::QQuaternion$Axes::newInstance(%env, qtjambi_cast<jobject>(%env, std::move(xAxis)), qtjambi_cast<jobject>(%env, std::move(yAxis)), qtjambi_cast<jobject>(%env, std::move(zAxis)));"}
                 }
             }
+            Remove{
+                since: [6,11]
+            }
+        }
+        ModifyFunction{
+            signature: "toAxes()const"
+            Delegate{
+                name: "getAxes"
+            }
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.gui.QQuaternion$@NonNull Axes"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = Java::QtGui::QQuaternion$Axes::newInstance(%env, qtjambi_cast<jobject>(%env, std::move(%in.x)), qtjambi_cast<jobject>(%env, std::move(%in.y)), qtjambi_cast<jobject>(%env, std::move(%in.z)));"}
+                }
+            }
+            since: [6,11]
         }
         ModifyFunction{
             signature: "getAxisAndAngle(QVector3D *, float *) const"
@@ -10751,15 +10151,66 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
             }
             ModifyArgument{
                 index: 0
-                NoNullPointer{}
                 ReplaceType{
-                    modifiedType: "io.qt.gui.QQuaternion$EulerAngles"
+                    modifiedType: "io.qt.gui.QQuaternion$@NonNull EulerAngles"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtGui::QQuaternion$EulerAngles::newInstance(%env, aValue, bValue, cValue);"}
                 }
             }
+            Remove{
+                since: [6,11]
+            }
+        }
+        ModifyFunction{
+            signature: "eulerAngles()const"
+            Delegate{
+                name: "getEulerAngles"
+            }
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.gui.QQuaternion$@NonNull EulerAngles"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = Java::QtGui::QQuaternion$EulerAngles::newInstance(%env, %in.pitch, %in.yaw, %in.roll);"}
+                }
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "fromEulerAngles(QQuaternion::EulerAngles<float>)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.gui.QQuaternion$@NonNull EulerAngles"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QQuaternion::EulerAngles<float> %out = QQuaternion::EulerAngles<float>{Java::QtGui::QQuaternion$EulerAngles::pitch(%env, %in), Java::QtGui::QQuaternion$EulerAngles::yaw(%env, %in), Java::QtGui::QQuaternion$EulerAngles::roll(%env, %in)};"}
+                }
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "fromAxes(QQuaternion::Axes)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.gui.QQuaternion$@NonNull Axes"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        QQuaternion::Axes %out = QQuaternion::Axes{
+                                                    qtjambi_cast<QVector3D>(%env, Java::QtGui::QQuaternion$Axes::xAxis(%env, %in)),
+                                                    qtjambi_cast<QVector3D>(%env, Java::QtGui::QQuaternion$Axes::yAxis(%env, %in)),
+                                                    qtjambi_cast<QVector3D>(%env, Java::QtGui::QQuaternion$Axes::zAxis(%env, %in))};`}
+                }
+            }
+            since: [6,11]
         }
         InjectCode{
             ImportFile{
@@ -11317,7 +10768,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
 
         EnumType{
             name: "MarkerType"
-            since: [5, 14]
         }
     }
     
@@ -11342,16 +10792,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         ModifyFunction{
             signature: "isValid()const"
             access: Modification.NonFinal
-        }
-        ModifyFunction{
-            signature: "anchorName()const"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setAnchorName(QString)"
-            remove: RemoveFlag.All
-            until: 5
         }
     }
     
@@ -11383,7 +10823,10 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             }
             RejectEnumValue{
                 name: "OldFontFamily"
-                since: 6
+            }
+            RejectEnumValue{
+                name: "OldTextUnderlineColor"
+                since: [6,11]
             }
         }
         ModifyFunction{
@@ -11551,11 +10994,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             signature: "format()const"
             rename: "textListFormat"
         }
-        ModifyFunction{
-            signature: "isEmpty()const"
-            remove: RemoveFlag.All
-            until: 5
-        }
     }
     
     ObjectType{
@@ -11643,24 +11081,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             }
         }
         ModifyFunction{
-            signature: "QTextLayout<0>(const QString &, const QFont &, const QPaintDevice *)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "draw(QPainter *, const QPointF &, const QVector<QTextLayout::FormatRange> &, const QRectF &) const"
-            Access{
-                modifiers: Modification.Private
-            }
-            ModifyArgument{
-                index: 3
-                ReplaceDefaultExpression{
-                    expression: "java.util.Collections.emptyList()"
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "draw(QPainter *, const QPointF &, const QList<QTextLayout::FormatRange> &, const QRectF &) const"
             Access{
                 modifiers: Modification.Private
@@ -11671,7 +11091,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     expression: "java.util.Collections.emptyList()"
                 }
             }
-            since: 6
         }
     }
     
@@ -11714,7 +11133,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
 
         EnumType{
             name: "MarkdownFeature"
-            since: [5, 14]
         }
         ExtraIncludes{
             Include{
@@ -11768,17 +11186,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
     
     ObjectType{
         name: "QTextDocumentWriter"
-        ModifyFunction{
-            signature: "setCodec(QTextCodec*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcCodec"
-                    action: ReferenceCount.Set
-                }
-            }
-            until: 5
-        }
         ModifyFunction{
             signature: "setDevice(QIODevice*)"
             ModifyArgument{
@@ -11856,19 +11263,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             Remove{
             }
         }
-        ModifyFunction{
-            signature: "draw(QPainter*,QPointF,const QTextLayout::FormatRange*)const"
-            ModifyArgument{
-                index: 3
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QTextLayout::FormatRange *%out = nullptr;"}
-                }
-            }
-            until: 5
-        }
     }
     
     ValueType{
@@ -11905,16 +11299,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
     
     ObjectType{
         name: "QTouchDevice"
-
-        EnumType{
-            name: "CapabilityFlag"
-            until: 5
-        }
-
-        EnumType{
-            name: "DeviceType"
-            until: 5
-        }
     }
     
     ValueType{
@@ -12316,29 +11700,16 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             threadAffinity: true
         }
         ModifyFunction{
-            signature: "nativeEvent(const QByteArray &, void *, long *)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
             signature: "nativeEvent(const QByteArray &, void *, qintptr *)"
             remove: RemoveFlag.All
-            since: 6
         }
         ModifyFunction{
             signature: "setVulkanInstance(QVulkanInstance *)"
             remove: RemoveFlag.All
-            since: [5, 10]
         }
         ModifyFunction{
             signature: "vulkanInstance() const"
             remove: RemoveFlag.All
-            since: [5, 10]
-        }
-        ModifyFunction{
-            signature: "parent()const"
-            rename: "parentWindow"
-            until: 5
         }
         ModifyFunction{
             signature: "parent(QWindow::AncestorMode)const"
@@ -12347,7 +11718,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 RemoveDefaultExpression{
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "setParent(QWindow*)"
@@ -12717,7 +12087,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
     
     ObjectType{
         name: "QRangeCollection"
-        since: 6
     }
     
     ObjectType{
@@ -12784,12 +12153,10 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
     
     ValueType{
         name: "QPageRanges"
-        since: 6
     }
     
     ValueType{
         name: "QPageRanges::Range"
-        since: 6
     }
     
     ValueType{
@@ -12905,7 +12272,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
     
     ValueType{
         name: "QPointingDeviceUniqueId"
-        since: [5, 8]
     }
     
     ObjectType{
@@ -12930,7 +12296,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
     }
     
@@ -12956,241 +12321,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
-    }
-    
-    NamespaceType{
-        name: "QXcbWindowFunctions"
-
-        EnumType{
-            name: "WmWindowType"
-        }
-        ModifyFunction{
-            signature: "setWmWindowTypeIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setWmWindowRoleIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setWmWindowIconTextIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "visualIdIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setWmWindowIconText(QWindow*,QString)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setWmWindowRole(QWindow*,QByteArray)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setWmWindowType(QWindow*,QXcbWindowFunctions::WmWindowType)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        since: [5, 11]
-        until: 5
-    }
-
-    ObjectType{
-        name: "QLinuxFbFunctions"
-        Rejection{
-            className: "LoadKeymapType"
-        }
-        Rejection{
-            className: "SwitchLangType"
-        }
-        ModifyFunction{
-            signature: "loadKeymapTypeIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "switchLangTypeIdentifier()"
-            remove: RemoveFlag.All
-        }
-        since: [5, 11]
-        until: 5
-    }
-    
-    NamespaceType{
-        name: "QXcbScreenFunctions"
-        ModifyFunction{
-            signature: "virtualDesktopNumberIdentifier()"
-            remove: RemoveFlag.All
-        }
-        since: [5, 11]
-        until: 5
-    }
-    
-    NamespaceType{
-        name: "QWindowsWindowFunctions"
-
-        Rejection{className: "SetTouchWindowTouchType"}
-        Rejection{className: "SetHasBorderInFullScreen"}
-        Rejection{className: "SetHasBorderInFullScreenDefault"}
-        Rejection{className: "SetWindowActivationBehaviorType"}
-        Rejection{className: "IsTabletModeType"}
-
-        EnumType{
-            name: "TouchWindowTouchType"
-        }
-
-        EnumType{
-            name: "WindowActivationBehavior"
-        }
-        ModifyFunction{
-            signature: "setTouchWindowTouchTypeIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setHasBorderInFullScreenIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setWindowActivationBehaviorIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "isTabletModeIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setHasBorderInFullScreen(QWindow*,bool)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setTouchWindowTouchType(QWindow*,QWindowsWindowFunctions::TouchWindowTouchTypes)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        since: [5, 11]
-        until: 5
-    }
-    
-    NamespaceType{
-        name: "QXcbIntegrationFunctions"
-        ModifyFunction{
-            signature: "xEmbedSystemTrayVisualHasAlphaChannelIdentifier()"
-            remove: RemoveFlag.All
-        }
-        since: [5, 11]
-        until: 5
-    }
-    
-    NamespaceType{
-        name: "QCocoaWindowFunctions"
-        ModifyFunction{
-            signature: "bottomLeftClippedByNSWindowOffsetIdentifier()"
-            remove: RemoveFlag.All
-        }
-        since: [5, 11]
-        until: 5
-    }
-    
-    NamespaceType{
-        name: "QWaylandWindowFunctions"
-        ModifyFunction{
-            signature: "setSyncIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setDeSyncIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "isSyncIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setDeSync(QWindow*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setSync(QWindow*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        since: [5, 11]
-        until: 5
-    }
-    
-    NamespaceType{
-        name: "QEglFSFunctions"
-        Rejection{
-            functionName: "vsp2AddBlendListener"
-        }
-        Rejection{
-            className: "SwitchLangType"
-        }
-        ModifyFunction{
-            signature: "loadKeymapTypeIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "vsp2AddLayerTypeIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "vsp2RemoveLayerTypeIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "vsp2SetLayerBufferTypeIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "vsp2SetLayerPositionTypeIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "vsp2SetLayerAlphaTypeIdentifier()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "vsp2AddBlendListenerTypeIdentifier()"
-            remove: RemoveFlag.All
-        }
-        since: [5, 11]
-        until: 5
     }
     
     ValueType{
@@ -13219,7 +12350,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             name: "PrimaryPoints"
             since: 6.9
         }
-        since: [5, 14]
     }
     
     ValueType{
@@ -13229,7 +12359,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             position: Position.Beginning
             Text{content: "size_t qHash(const QColorTransform &value, size_t seed = 0);"}
         }
-        since: [5, 14]
     }
     
     ObjectType{
@@ -13317,7 +12446,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 Text{content: "QtJambi_LibraryUtilities.internal.setReferenceCount(%1, QAction.class, \"__rcActionGroup\", false, false, null);"}
             }
         }
-        since: 6
     }
     
     ObjectType{
@@ -13460,7 +12588,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
             }
         }
-        since: 6
     }
     
     ObjectType{
@@ -13472,7 +12599,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 invalidateAfterUse: true
             }
         }
-        since: 6
     }
     
     ObjectType{
@@ -13517,7 +12643,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
             }
         }
-        since: 6
     }
     
     ObjectType{
@@ -13581,21 +12706,10 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
             }
         }
-        since: 6
     }
     
     ObjectType{
         name: "QShortcut"
-        ModifyFunction{
-            signature: "QShortcut<Func1>(QKeySequence::StandardKey,QWidget*,Func1,Qt::ShortcutContext)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "QShortcut<Func1>(QKeySequence,QWidget*,Func1,Qt::ShortcutContext)"
-            remove: RemoveFlag.All
-            until: 5
-        }
         ModifyFunction{
             signature: "QShortcut<Func1>(QKeySequence::StandardKey,QObject*,Func1,Qt::ShortcutContext)"
             remove: RemoveFlag.All
@@ -13700,7 +12814,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 quoteBeforeLine: "}// class"
             }
         }
-        since: 6
     }
     
     ObjectType{
@@ -13721,7 +12834,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         EnumType{
             name: "Option"
         }
-        since: 6
     }
     
     ObjectType{
@@ -13732,7 +12844,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         EnumType{
             name: "Capability"
         }
-        since: 6
     }
     
     ObjectType{
@@ -13755,14 +12866,12 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             signature: "setMaximumTouchPoints(int)"
             remove: RemoveFlag.All
         }
-        since: 6
     }
     
     ValueType{
         name: "QEventPoint"
         EnumType{
             name: "State"
-            since: 6
         }
         ModifyFunction{
             signature: "operator=(QEventPoint)"
@@ -13927,7 +13036,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             write: true
             rename: "stationaryWithModifiedProperty"
         }
-        since: 6
     }
     
     ObjectType{
@@ -13952,7 +13060,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "point(qsizetype)"
@@ -14020,7 +13127,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 quoteBeforeLine: "}// class"
             }
         }
-        since: 6
     }
     
     ObjectType{
@@ -14096,7 +13202,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     ownership: Ownership.Cpp
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "setExclusivePointGrabber(QObject*)"
@@ -14108,7 +13213,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
             }
         }
-        since: 6
     }
 
     ObjectType{
@@ -14131,55 +13235,8 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
     }
     
     Rejection{
-        className: "QOpenGLFunctions_*Backend"
-        until: 5
-    }
-    
-    Rejection{
-        className: "PFNGL*"
-        until: 5
-    }
-    
-    Rejection{
-        className: "GLDEBUGPROCAMD"
-        until: 5
-    }
-    
-    Rejection{
-        className: "GLDEBUGPROCARB"
-        until: 5
-    }
-    
-    Rejection{
-        className: "GLVULKANPROCNV"
-        until: 5
-    }
-    
-    Rejection{
         className: "GLDEBUGPROCKHR"
         since: [6, 1]
-    }
-    
-    Rejection{
-        className: "QOpenGLVersionFunctionsStorage"
-        until: 5
-    }
-    
-    Rejection{
-        className: "QOpenGLVersionFunctionsBackend"
-        enumName: "Version"
-        until: 5
-    }
-    
-    Rejection{
-        className: "QOpenGLVersionFunctionsBackend"
-        fieldName: "refs"
-        until: 5
-    }
-    
-    Rejection{
-        className: "QOpenGLVersionFunctionsBackend"
-        until: 5
     }
     
     Rejection{
@@ -14188,242 +13245,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
     
     Rejection{
         className: "QOpenGLFunctionsPrivate"
-    }
-    
-    Rejection{
-        className: "QAbstractOpenGLFunctionsPrivate"
-        until: 5
-    }
-    
-    Rejection{
-        className: "QOpenGLTextureHelper"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLWindow::UpdateBehavior"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLBuffer::Access"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLBuffer::Type"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLBuffer::RangeAccessFlag"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLBuffer::UsagePattern"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLDebugLogger::LoggingMode"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLDebugMessage::Severity"
-        RejectEnumValue{
-            name: "LastSeverity"
-        }
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLDebugMessage::Source"
-        RejectEnumValue{
-            name: "LastSource"
-        }
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLDebugMessage::Type"
-        RejectEnumValue{
-            name: "LastType"
-        }
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLFramebufferObject::Attachment"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLFramebufferObject::FramebufferRestorePolicy"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLFunctions::OpenGLFeature"
-    }
-    
-    EnumType{
-        name: "QOpenGLShader::ShaderTypeBit"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::BindingTarget"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::DepthStencilMode"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::CoordinateDirection"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::Feature"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::CubeMapFace"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::Filter"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::MipMapGeneration"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::PixelFormat"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::PixelType"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::SwizzleComponent"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::SwizzleValue"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::Target"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::TextureFormat"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::TextureUnitReset"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::WrapMode"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::TextureFormatClass"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::ComparisonFunction"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::ComparisonMode"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLVersionStatus::OpenGLStatus"
-        until: 5
-    }
-    
-    ValueType{
-        name: "QOpenGLBuffer"
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-        }
-        ModifyFunction{
-            signature: "allocate(const void *, int)"
-            ModifyArgument{
-                index: 1
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "read(int, void *, int)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "write(int, const void *, int)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "map(QOpenGLBuffer::Access)"
-            ModifyArgument{
-                index: 0
-                AsBuffer{
-                    lengthExpression: "__qt_this->size()"
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Dependent
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "mapRange(int, int, QOpenGLBuffer::RangeAccessFlags)"
-            ModifyArgument{
-                index: 0
-                AsBuffer{
-                    lengthExpression: "qMin<qsizetype>(count1, __qt_this->size()-offset0)"
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Dependent
-                }
-            }
-        }
-        until: 5
     }
     
     ObjectType{
@@ -14448,11 +13269,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         ModifyFunction{
             signature: "makeCurrent(QSurface *)"
             threadAffinity: true
-        }
-        ModifyFunction{
-            signature: "openGLModuleHandle()"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "extraFunctions()const"
@@ -14503,54 +13319,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             signature: "makeCurrent(QSurface *)"
             threadAffinity: true
         }
-        InjectCode{
-            target: CodeClass.Native
-            position: Position.Beginning
-            until: 5
-            Text{content: "QAbstractOpenGLFunctions* qtjambi_QOpenGLContext_versionFunctions(JNIEnv *__jni_env, const QOpenGLContext *__qt_this, jclass type);"}
-        }
-        ModifyFunction{
-            signature: "versionFunctions(const QOpenGLVersionProfile &)const"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    codeClass: CodeClass.Shell
-                    ownership: Ownership.Cpp
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "versionFunctions<TYPE>()const"
-            Instantiation{
-                proxyCall: "qtjambi_QOpenGLContext_versionFunctions"
-                Argument{
-                    type: "QAbstractOpenGLFunctions"
-                }
-                ModifyArgument{
-                    index: 0
-                    ReplaceType{
-                        modifiedType: "T"
-                        modifiedJavaType: "io.qt.gui.QAbstractOpenGLFunctions"
-                        modifiedJniType: "jobject"
-                    }
-                }
-                AddTypeParameter{
-                    name: "T"
-                    extending: "io.qt.gui.@Nullable QAbstractOpenGLFunctions"
-                }
-                AddArgument{
-                    index: 1
-                    name: "type"
-                    type: "java.lang.Class<T>"
-                }
-            }
-            until: 5
-        }
         ModifyFunction{
             signature: "resolveInterface(const char *, int)const"
             rename: "nativeInterface"
@@ -14599,37 +13367,14 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
     
     ObjectType{
         name: "QAbstractFileIconProvider"
-        since: 6
     }
     
     EnumType{
         name: "QAbstractFileIconProvider::IconType"
-        since: 6
     }
     
     EnumType{
         name: "QAbstractFileIconProvider::Option"
-        since: 6
-    }
-    
-    ObjectType{
-        name: "QOpenGLDebugLogger"
-        until: 5
-    }
-    
-    ValueType{
-        name: "QOpenGLDebugMessage"
-        until: 5
-    }
-    
-    ValueType{
-        name: "QOpenGLFramebufferObjectFormat"
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFramebufferObject"
-        until: 5
     }
     
     ObjectType{
@@ -16392,1641 +15137,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             }
         }
     }
-    
-    ObjectType{
-        name: "QAbstractOpenGLFunctions"
-        ModifyFunction{
-            signature: "setOwningContext(const QOpenGLContext*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "QAbstractOpenGLFunctions()"
-            remove: RemoveFlag.All
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_1_0"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        Import{
-            template: "QOpenGLFunctions_1_0_template_full"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_1_1"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        Import{
-            template: "QOpenGLFunctions_1_0_template_full"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_full"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_1_2"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        Import{
-            template: "QOpenGLFunctions_1_0_template_full"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_full"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_1_3"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        Import{
-            template: "QOpenGLFunctions_1_0_template_full"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_full"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_1_4"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        Import{
-            template: "QOpenGLFunctions_1_4A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_full"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_full"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_1_5"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        Import{
-            template: "QOpenGLFunctions_1_4A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_5A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_5"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_full"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_full"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_2_0"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_full"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_full"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_2_1"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_full"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_full"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_3_0"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0A"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_0"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_full"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_full"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_3_1"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0A"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_1"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_until_4_5"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_until_4_5"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_3_2_Compatibility"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0A"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_1"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_2A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_full"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_full"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_3_2_Core"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0A"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_1"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_2A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_until_4_5"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_until_4_5"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_3_3_Compatibility"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0A"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_1"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_2A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_full"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_full"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_3_3_Core"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0A"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_1"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_2A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_until_4_5"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_until_4_5"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_4_0_Compatibility"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0A"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_1"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_2A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_full"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_full"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_4_0_Core"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0A"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_1"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_2A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_until_4_5"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_until_4_5"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_4_1_Compatibility"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0A"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_2A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_full"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_full"
-        }
-        Import{
-            template: "QOpenGLFunctions_4_1"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_4_1_Core"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0A"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_2A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_until_4_5"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_until_4_5"
-        }
-        Import{
-            template: "QOpenGLFunctions_4_1"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_4_2_Compatibility"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0A"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_2A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_full"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_full"
-        }
-        Import{
-            template: "QOpenGLFunctions_4_1"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_4_2_Core"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0A"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_2A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_until_4_5"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_until_4_5"
-        }
-        Import{
-            template: "QOpenGLFunctions_4_1"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_4_3_Compatibility"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0A"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_2A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_full"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_full"
-        }
-        Import{
-            template: "QOpenGLFunctions_4_3"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_4_3_Core"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0A"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_2A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_until_4_5"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_until_4_5"
-        }
-        Import{
-            template: "QOpenGLFunctions_4_3"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_4_4_Compatibility"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0B"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_2B"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_full2"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_full2"
-        }
-        Import{
-            template: "QOpenGLFunctions_4_4"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_4_4_Core"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0B"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_2B"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_until_4_5"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_until_4_5B"
-        }
-        Import{
-            template: "QOpenGLFunctions_4_4"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_4_5_Compatibility"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0B"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_2B"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_full2"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_full2"
-        }
-        Import{
-            template: "QOpenGLFunctions_4_5"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_4_5_Core"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        Import{
-            template: "QOpenGLFunctions_2_0B"
-        }
-        Import{
-            template: "QOpenGLFunctions_3_2B"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_until_4_5"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_template_until_4_5B"
-        }
-        Import{
-            template: "QOpenGLFunctions_4_5"
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLFunctions_ES2"
-        ppCondition: "defined(QT_OPENGL_ES_2)"
-        forceFinal: true
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QSharedPointer"
-                location: Include.Global
-            }
-        }
-        ModifyFunction{
-            signature: "glBindAttribLocation(GLuint,GLuint,const GLchar*)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetVertexAttribPointerv(GLuint, GLenum, GLvoid **)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                    pointer = nullptr;\n"+
-                                  "                                },\n"+
-                                  "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                }\n"+
-                                  "                            );"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetString(GLenum)"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "java.lang.@NonNull String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jstring>(%env, QLatin1String(reinterpret_cast<const char *>(%in)));"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glBufferData(GLenum,GLsizeiptr,const GLvoid*,GLenum)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glBufferSubData(GLenum,GLintptr,GLsizeiptr,const GLvoid*)"
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glCompressedTexImage2D(GLenum,GLint,GLenum,GLsizei,GLsizei,GLint,GLsizei,const GLvoid*)"
-            ModifyArgument{
-                index: 8
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glCompressedTexSubImage2D(GLenum,GLint,GLint,GLint,GLsizei,GLsizei,GLenum,GLsizei,const GLvoid*)"
-            ModifyArgument{
-                index: 9
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetActiveAttrib(GLuint, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLchar*)"
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-            ModifyArgument{
-                index: 5
-                AsBuffer{}
-            }
-            ModifyArgument{
-                index: 6
-                AsBuffer{}
-            }
-            ModifyArgument{
-                index: 7
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetActiveUniform(GLuint, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLchar*)"
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-            ModifyArgument{
-                index: 5
-                AsBuffer{}
-            }
-            ModifyArgument{
-                index: 6
-                AsBuffer{}
-            }
-            ModifyArgument{
-                index: 7
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetAttribLocation(GLuint, const GLchar*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetProgramInfoLog(GLuint, GLsizei, GLsizei*, GLchar*)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetShaderInfoLog(GLuint, GLsizei, GLsizei*, GLchar*)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glShaderBinary(GLsizei,const GLuint*,GLenum,const GLvoid*,GLsizei)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glShaderSource(GLuint, GLsizei, const GLchar**, const GLint*)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
-                                  "const char** %out = nullptr;\n"+
-                                  "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
-                                  "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
-                                  "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
-                                  "}"}
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out = %env->GetArrayLength(jarray(%3));"}
-                }
-            }
-            ModifyArgument{
-                index: 4
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "const GLint * %out = nullptr;"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glVertexAttribPointer(GLuint, GLint, GLenum, GLboolean, GLsizei, const GLvoid*)"
-            ModifyArgument{
-                index: 6
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetUniformLocation(GLuint, const GLchar*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetShaderSource(GLuint, GLsizei, GLsizei*, GLchar*)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-        Import{
-            template: "QOpenGLESFunctions"
-        }
-        InjectCode{
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
-                quoteAfterLine: "class QOpenGLFunctions_ES2___"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLPaintDevice"
-        ModifyFunction{
-            signature: "devType() const"
-            remove: RemoveFlag.All
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLShader"
-        ModifyFunction{
-            signature: "compileSourceCode ( const char *)"
-            remove: RemoveFlag.All
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLShaderProgram"
-        ModifyFunction{
-            signature: "addCacheableShaderFromSourceCode(QOpenGLShader::ShaderType, const char *)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "uniformLocation(const char *) const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setUniformValue(int, GLuint)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char*, GLuint)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setUniformValue(int, const GLfloat[2][2])"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setUniformValue(int, const GLfloat[3][3])"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setUniformValue(int, const GLfloat[4][4])"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char*, const GLfloat[2][2])"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char*, const GLfloat[3][3])"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setUniformValue(const char*, const GLfloat[4][4])"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(int, const GLuint *, int)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(const char*, const GLuint *, int)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "addShaderFromSourceCode(QOpenGLShader::ShaderType, const char *)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "attributeLocation(const char *)const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "bindAttributeLocation(const char *, int)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "addShader(QOpenGLShader*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcSharers"
-                    action: ReferenceCount.Add
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "removeShader(QOpenGLShader*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcSharers"
-                    action: ReferenceCount.Take
-                }
-            }
-        }
-        InjectCode{
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
-                quoteAfterLine: "class QOpenGLShaderProgram___"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeArray(int, const GLfloat *, int, int)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeArray(const char *, const GLfloat *, int, int)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeArray(int, const QVector2D *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeArray(int, const QVector3D *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeArray(int, const QVector4D *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeArray(const char *, const QVector2D *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeArray(const char *, const QVector3D *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeArray(const char *, const QVector4D *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeArray(int, GLenum, const void *, int, int)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeArray(const char *, GLenum, const void *, int, int)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue(int, const GLfloat *, int, int)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "setAttributeValue ( const char * , const GLfloat * , int , int )"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(int, const GLuint *, int)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(int, const GLint *, int)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(int, const GLfloat *, int, int)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(int, const QVector2D *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(int, const QVector3D *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(int, const QVector4D *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(int, const QMatrix4x4 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(int, const QMatrix2x2 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(int, const QMatrix3x2 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(int, const QMatrix4x2 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(int, const QMatrix2x3 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(int, const QMatrix3x3 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(int, const QMatrix4x3 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(int, const QMatrix2x4 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(int, const QMatrix3x4 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(const char*, const GLuint *, int)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(const char*, const GLint *, int)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(const char*, const GLfloat *, int, int)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(const char*, const QVector2D *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(const char*, const QVector3D *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(const char*, const QVector4D *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(const char*, const QMatrix4x4 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(const char*, const QMatrix2x2 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(const char*, const QMatrix3x2 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(const char*, const QMatrix4x2 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(const char*, const QMatrix2x3 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(const char*, const QMatrix3x3 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(const char*, const QMatrix4x3 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(const char*, const QMatrix2x4 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setUniformValueArray(const char*, const QMatrix3x4 *, int)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    lengthParameter: 3
-                    noOffset: true
-                }
-            }
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLTimeMonitor"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        until: 5
-    }
-    
-    ValueType{
-        name: "QOpenGLVersionProfile"
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLVertexArrayObject"
-        ObjectType{
-            name: "Binder"
-            implementing: "AutoCloseable"
-            InjectCode{
-                target: CodeClass.Java
-                Text{content: "@Override\n"+
-                              "@QtUninvokable\n"+
-                              "public final void close(){\n"+
-                              "    dispose();\n"+
-                              "}"}
-            }
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLTextureBlitter"
-        EnumType{
-            name: "Origin"
-        }
-        since: [5, 8]
-        until: 5
-    }
-    
-    ValueType{
-        name: "QOpenGLVersionStatus"
-        CustomConstructor{
-            Text{content: "return new(placement) QOpenGLVersionStatus(copy->version.first, copy->version.second, copy->status);"}
-        }
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLTexture"
-        ModifyFunction{
-            signature: "createTextureView(QOpenGLTexture::Target, QOpenGLTexture::TextureFormat, int, int, int, int) const"
-            ModifyArgument{
-                index: "return"
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "borderColor(int *) const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "borderColor(float *) const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "borderColor(unsigned int *) const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setBorderColor(uint, uint, uint, uint)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setCompressedData(int, void *, const QOpenGLPixelTransferOptions *const)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setCompressedData(int, int, void *, const QOpenGLPixelTransferOptions *const)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setCompressedData(int, int, QOpenGLTexture::CubeMapFace, int, void *, const QOpenGLPixelTransferOptions *const)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setCompressedData(int, int, int, void *, const QOpenGLPixelTransferOptions *const)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setData(QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, void *, const QOpenGLPixelTransferOptions *const)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setData(int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, void *, const QOpenGLPixelTransferOptions *const)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setData(int, int, QOpenGLTexture::CubeMapFace, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, void *, const QOpenGLPixelTransferOptions *const)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setData(int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, void *, const QOpenGLPixelTransferOptions *const)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setData(int, int, int, int, int, int, int, int, QOpenGLTexture::CubeMapFace, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)"
-            ModifyArgument{
-                index: 13
-                AsBuffer{}
-            }
-            since: [5, 14]
-        }
-        ModifyFunction{
-            signature: "setData(int, int, int, int, int, int, int, int, QOpenGLTexture::CubeMapFace, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)"
-            ModifyArgument{
-                index: 12
-                AsBuffer{}
-            }
-            since: [5, 14]
-        }
-        ModifyFunction{
-            signature: "setData(int, int, int, int, int, int, int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)"
-            ModifyArgument{
-                index: 11
-                AsBuffer{}
-            }
-            since: [5, 14]
-        }
-        ModifyFunction{
-            signature: "setData(int, int, int, int, int, int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)"
-            ModifyArgument{
-                index: 10
-                AsBuffer{}
-            }
-            since: [5, 14]
-        }
-        ModifyFunction{
-            signature: "setData(int, int, int, int, int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)"
-            ModifyArgument{
-                index: 9
-                AsBuffer{}
-            }
-            since: [5, 14]
-        }
-        ModifyFunction{
-            signature: "setData(int, int, QOpenGLTexture::CubeMapFace, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)"
-            ModifyArgument{
-                index: 6
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "setData(int, int, int, QOpenGLTexture::CubeMapFace, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)"
-            ModifyArgument{
-                index: 7
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "setData(int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)"
-            ModifyArgument{
-                index: 5
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "setData(int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)"
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "setData(QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "setCompressedData(int, int, int, QOpenGLTexture::CubeMapFace, int, const void *,const QOpenGLPixelTransferOptions * const)"
-            ModifyArgument{
-                index: 6
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "setCompressedData(int, int, QOpenGLTexture::CubeMapFace, int, const void *,const QOpenGLPixelTransferOptions * const)"
-            ModifyArgument{
-                index: 5
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "setCompressedData(int, int, int, const void *,const QOpenGLPixelTransferOptions * const)"
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "setCompressedData(int, int, const void *,const QOpenGLPixelTransferOptions * const)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "setCompressedData(int, const void *,const QOpenGLPixelTransferOptions * const)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-        until: 5
-    }
-    
-    ValueType{
-        name: "QOpenGLPixelTransferOptions"
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLTimerQuery"
-        ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLWindow"
-        ModifyFunction{
-            signature: "paintGL()"
-            isPaintMethod: true
-        }
-        until: 5
-    }
     ObjectType{
         name: "QUtiMimeConverter"
         ppCondition: "defined(Q_OS_MACOS)"
@@ -18034,6 +15144,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             name: "HandlerScopeFlag"
         }
         since: 6.5
+        until: [6,10]
     }
 
     ObjectType{
@@ -18707,6 +15818,11 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         since: 6.7
     }
 
+    NativePointerType{
+        name: "xkb_context"
+        since: [6, 11]
+    }
+
     InterfaceType{
         name: "QNativeInterface::QWaylandApplication"
         packageName: "io.qt.gui.nativeinterface"
@@ -18972,17 +16088,14 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
 
     NativePointerType{
         name: "MTLTexture"
-        since: 6
     }
 
     NativePointerType{
         name: "MTLDevice"
-        since: 6
     }
 
     NativePointerType{
         name: "MTLCommandQueue"
-        since: 6
     }
 
     NativePointerType{
@@ -18999,13 +16112,11 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         TemplateArguments{
             arguments: ["MTLTexture"]
         }
-        since: 6
     }
 
     ObjectType{
         name: "id<MTLTexture>"
         generate: false
-        since: 6
     }
     ObjectType{
         name: "QAccessibilityHints"

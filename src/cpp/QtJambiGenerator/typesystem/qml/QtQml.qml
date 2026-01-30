@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -205,16 +205,6 @@ TypeSystem{
             name: "PropertyPair"
         }
         ModifyFunction{
-            signature: "nameForObject(QObject*) const"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "nameForObject(const QObject*) const"
             ModifyArgument{
                 index: 1
@@ -222,7 +212,6 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "setContextObject(QObject*)"
@@ -236,23 +225,13 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setContextProperty(QString,QObject*)"
-            ModifyArgument{
-                index: 2
-                ReferenceCount{
-                    action: ReferenceCount.Put
-                    keyArgument: 1
-                    variableName: "__rcContextProperties"
-                }
-                until: 5
-            }
-            Remove{since: 6}
+            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "setContextProperty(QString,QVariant)"
             ModifyArgument{
                 index: 2
                 AddImplicitCall{type: "io.qt.core.@Nullable QObject"}
-                since: 6
             }
         }
         ModifyFunction{
@@ -542,6 +521,23 @@ TypeSystem{
             remove: RemoveFlag.All
             since: [6, 6]
         }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Equals
+            Text{content: String.raw`
+                if(other instanceof Boolean)
+                    return equals((boolean)other);
+                else if(other instanceof Double)
+                    return equals((double)other);
+                else if(other instanceof Integer)
+                    return equals((int)other);
+                else if(other instanceof String)
+                    return equals((String)other);
+                else if(other instanceof Double)
+                    return equals((double)other);
+                else
+                `}
+        }
         since: [6, 1]
     }
     
@@ -711,47 +707,6 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "call(const QList<QJSValue> &)"
-            threadAffinity: true
-            ModifyArgument{
-                index: 1
-                threadAffinity: true
-                ReplaceDefaultExpression{
-                    expression: "java.util.Collections.emptyList()"
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "callWithInstance(const QJSValue &, const QList<QJSValue> &)"
-            threadAffinity: true
-            ModifyArgument{
-                index: 1
-                noImplicitCalls: true
-                threadAffinity: true
-            }
-            ModifyArgument{
-                index: 2
-                threadAffinity: true
-                ReplaceDefaultExpression{
-                    expression: "java.util.Collections.emptyList()"
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
-            signature: "callAsConstructor(const QList<QJSValue> &)"
-            threadAffinity: true
-            ModifyArgument{
-                index: 1
-                threadAffinity: true
-                ReplaceDefaultExpression{
-                    expression: "java.util.Collections.emptyList()"
-                }
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "call(const QList<QJSValue> &)const"
             threadAffinity: true
             ModifyArgument{
@@ -761,7 +716,6 @@ TypeSystem{
                     expression: "java.util.Collections.emptyList()"
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "callWithInstance(const QJSValue &, const QList<QJSValue> &)const"
@@ -778,7 +732,6 @@ TypeSystem{
                     expression: "java.util.Collections.emptyList()"
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "callAsConstructor(const QList<QJSValue> &)const"
@@ -790,7 +743,27 @@ TypeSystem{
                     expression: "java.util.Collections.emptyList()"
                 }
             }
-            since: 6
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Equals
+            Text{content: String.raw`
+                if(other instanceof Boolean)
+                    return equals((boolean)other);
+                else if(other instanceof Double)
+                    return equals((double)other);
+                else if(other instanceof Integer)
+                    return equals((int)other);
+                else if(other instanceof QJSValue.SpecialValue)
+                    return equals((QJSValue.SpecialValue)other);
+                else if(other instanceof String)
+                    return equals((String)other);
+                else if(other instanceof QJSPrimitiveValue)
+                    return equals(new QJSValue((QJSPrimitiveValue)other));
+                else if(other instanceof QJSManagedValue)
+                    return equals(new QJSValue((QJSManagedValue)other));
+                else
+                `}
         }
     }
     
@@ -1122,11 +1095,6 @@ public final io.qt.core.@NonNull QPair<@NonNull String,@NonNull QJSValue> next()
             }
         }
         Rejection{functionName: "qmlInfo"}
-        ModifyFunction{
-            signature: "qmlAttachedPropertiesObject(int *, const QObject *, const QMetaObject *, bool)"
-            remove: RemoveFlag.All
-            until: 5
-        }
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiQml.java"
@@ -1192,10 +1160,6 @@ public final io.qt.core.@NonNull QPair<@NonNull String,@NonNull QJSValue> next()
                 content: String.raw`<p>Either the <code>QJSEngine</code> object or each associated <code>QJSValue</code> and <code>QJSManagedValue</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
                 since: 6.2
             }
-            Text{
-                content: String.raw`<p>Either the <code>QJSEngine</code> object or each associated <code>QJSValue</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
-                until: 5
-            }
         }
         ExtraIncludes{
             Include{
@@ -1228,8 +1192,6 @@ public static final ObjectOwnership CppOwnership = JavaOwnership;
  */
 public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
             }
-
-            since: 6
         }
         EnumType{
             name: "Extension"
@@ -1244,14 +1206,8 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
             threadAffinity: true
         }
         ModifyFunction{
-            signature: "evaluate(QString, QString, int)"
-            threadAffinity: true
-            until: 5
-        }
-        ModifyFunction{
             signature: "evaluate(QString, QString, int, QStringList*)"
             threadAffinity: true
-            since: 6
         }
         ModifyFunction{
             signature: "importModule(QString)"
@@ -1517,19 +1473,12 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
                               "    }\n"+
                               "}"}
             }
-            since: 6
         }
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiQml.java"
                 quoteAfterLine: "class QJSEngine__"
                 quoteBeforeLine: "}// class"
-            }
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiQml.java"
-                quoteAfterLine: "class QJSEngine_6_"
-                quoteBeforeLine: "}// class"
-                since: 6
             }
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiQml.java"
@@ -1556,10 +1505,6 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
                 content: String.raw`<p>Either the <code>QQmlEngine</code> object or each associated <code>QJSValue</code> and <code>QJSManagedValue</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
                 since: 6.2
             }
-            Text{
-                content: String.raw`<p>Either the <code>QQmlEngine</code> object or each associated <code>QJSValue</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
-                until: 5
-            }
         }
         ExtraIncludes{
             Include{
@@ -1570,28 +1515,6 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
                 fileName: "hashes.h"
                 location: Include.Local
             }
-        }
-        EnumType{
-            name: "ObjectOwnership"
-            RenameEnumValue{
-                name: "CppOwnership"
-                rename: "JavaOwnership"
-            }
-            InjectCode{
-                target: CodeClass.Java
-                position: Position.Beginning
-                Text{content: String.raw`/**
- * @deprecated The native name of this enum entry is misleading. Use {@link ObjectOwnership#JavaOwnership} instead.
- */
-@Deprecated(forRemoval=false)
-public static final ObjectOwnership CppOwnership = JavaOwnership;
-/**
- * Equivalent to {@link ObjectOwnership#JavaOwnership}.
- */
-public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
-            }
-
-            until: 5
         }
         ModifyFunction{
             signature: "clearComponentCache()"
@@ -1648,52 +1571,12 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
             }
         }
         ModifyFunction{
-            signature: "setObjectOwnership(QObject*,QQmlEngine::ObjectOwnership)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-            InjectCode{
-                target: CodeClass.Java
-                position: Position.End
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                ArgumentMap{
-                    index: 2
-                    metaName: "%2"
-                }
-                Text{content: "if (%1 != null && %2 != null){\n"+
-                              "switch(%2){\n"+
-                              "    case JavaOwnership:\n"+
-                              "        if(%1.parent()==null){\n"+
-                              "            QtJambi_LibraryUtilities.internal.setJavaOwnership(%1);\n"+
-                              "        }\n"+
-                              "        break;\n"+
-                              "    default:\n"+
-                              "        QtJambi_LibraryUtilities.internal.setCppOwnership(%1);\n"+
-                              "        break;\n"+
-                              "    }\n"+
-                              "}"}
-            }
-            until: 5
-        }
-        ModifyFunction{
             signature: "setUrlInterceptor(QQmlAbstractUrlInterceptor*)"
             ModifyArgument{
                 index: 1
                 ReferenceCount{
                     variableName: "__rcUrlInterceptor"
                     action: ReferenceCount.Add
-                    since: 6
-                }
-                ReferenceCount{
-                    variableName: "__rcUrlInterceptor"
-                    action: ReferenceCount.Set
-                    until: 5
                 }
             }
         }
@@ -1706,7 +1589,6 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
                     action: ReferenceCount.Add
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "removeUrlInterceptor(QQmlAbstractUrlInterceptor*)"
@@ -1717,7 +1599,6 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
                     action: ReferenceCount.Take
                 }
             }
-            since: 6
         }
         ModifyFunction{
             signature: "singletonInstance(int)"
@@ -1774,10 +1655,6 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
                 content: String.raw`<p>Either the <code>QQmlApplicationEngine</code> object or each associated <code>QJSValue</code> and <code>QJSManagedValue</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
                 since: 6.2
             }
-            Text{
-                content: String.raw`<p>Either the <code>QQmlApplicationEngine</code> object or each associated <code>QJSValue</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
-                until: 5
-            }
         }
         ExtraIncludes{
             Include{
@@ -1791,12 +1668,6 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
                 index: 1
                 noImplicitCalls: true
             }
-        }
-        ModifyFunction{
-            signature: "rootObjects()"
-            remove: RemoveFlag.All
-            since: [5, 9]
-            until: 5
         }
         ModifyFunction{
             signature: "loadData(const QByteArray &, const QUrl &)"
@@ -1825,7 +1696,6 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
     
     ObjectType{
         name: "QQmlEngineExtensionPlugin"
-        since: [5, 15]
     }
     
     ObjectType{
@@ -1897,7 +1767,6 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
                     ownership: Ownership.Java
                 }
             }
-            since: [5, 14]
         }
         ModifyFunction{
             signature: "createObject(QObject*,QMap<QString,QVariant>)"
@@ -1994,14 +1863,8 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         name: "QQmlImageProviderBase::ImageType"
     }
     
-    InterfaceType{
-        name: "QQmlImageProviderBase"
-        until: 5
-    }
-    
     ObjectType{
         name: "QQmlImageProviderBase"
-        since: 6
     }
     
     InterfaceType{
@@ -2019,34 +1882,6 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
                 quoteAfterLine: "class QQmlIncubationController__"
                 quoteBeforeLine: "}// class"
             }
-        }
-        ModifyFunction{
-            signature: "incubateWhile(bool *, int)"
-            blockExceptions: true
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.qml.QQmlIncubationController$WhileFlag"
-                }
-                NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jlong ptr = Java::QtQml::QQmlIncubationController$WhileFlag::flag(%env, %in);\n"+
-                                  "volatile bool* %out = reinterpret_cast<volatile bool* >(ptr);"}
-                }
-                ReferenceCount{
-                    variableName: "__rcWhileFlag"
-                    action: ReferenceCount.Set
-                }
-            }
-            until: [5, 14]
-        }
-        ModifyFunction{
-            signature: "incubateWhile(bool *, int)"
-            remove: RemoveFlag.All
-            since: [5, 15]
-            until: 5
         }
         ModifyFunction{
             signature: "incubateWhile(std::atomic<bool> *, int)"
@@ -2068,7 +1903,6 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
                     action: ReferenceCount.Set
                 }
             }
-            since: [5, 15]
         }
         ModifyFunction{
             signature: "incubateFor(int)"
@@ -2192,7 +2026,6 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
                 }
             }
         }
-        since: [5, 15]
     }
     
     ValueType{
@@ -2256,15 +2089,25 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
             signature: "QQmlPropertyMap<DerivedType>(DerivedType *, QObject *)"
             remove: RemoveFlag.All
         }
+        ModifyFunction{
+            signature: "create(QObject*)"
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+            }
+            since: [6,11]
+        }
     }
     
     ObjectType{
         name: "QQmlFileSelector"
-        ModifyFunction{
-            signature: "setExtraSelectors(QStringList &)"
-            remove: RemoveFlag.All
-            until: 5
-        }
         ModifyFunction{
             signature: "setSelector(QFileSelector*)"
             ModifyArgument{
@@ -2538,48 +2381,6 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
     }
     
     GlobalFunction{
-        signature: "qmlRegisterType<T>()"
-        targetType: "QtQml"
-        Instantiation{
-            proxyCall: "qtjambi_qmlRegisterType"
-            Argument{
-                type: "QObject"
-            }
-            AddArgument{
-                index: 1
-                name: "type"
-                type: "java.lang.Class<? extends io.qt.core.QObject>"
-            }
-        }
-        until: [5, 15]
-    }
-    
-    GlobalFunction{
-        signature: "qmlRegisterExtendedType<T,E>()"
-        targetType: "QtQml"
-        Instantiation{
-            proxyCall: "qtjambi_qmlRegisterExtendedType"
-            Argument{
-                type: "QObject"
-            }
-            Argument{
-                type: "QObject"
-            }
-            AddArgument{
-                index: 1
-                name: "type"
-                type: "java.lang.Class<? extends io.qt.core.QObject>"
-            }
-            AddArgument{
-                index: 2
-                name: "extendedType"
-                type: "java.lang.Class<? extends io.qt.core.QObject>"
-            }
-        }
-        until: [5, 15]
-    }
-    
-    GlobalFunction{
         signature: "qmlRegisterAnonymousTypesAndRevisions<T>(const char*, int)"
         targetType: "QtQml"
         Instantiation{
@@ -2609,23 +2410,6 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
                 type: "java.lang.Class<? extends QtObjectInterface>"
             }
         }
-    }
-    
-    GlobalFunction{
-        signature: "qmlRegisterInterface<T>(const char*)"
-        targetType: "QtQml"
-        Instantiation{
-            proxyCall: "qtjambi_qmlRegisterInterface"
-            Argument{
-                type: "QObject"
-            }
-            AddArgument{
-                index: 1
-                name: "type"
-                type: "java.lang.Class<? extends QtObjectInterface>"
-            }
-        }
-        until: [5, 15]
     }
     
     GlobalFunction{
@@ -2965,4 +2749,5 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping field 'QQmlListProperty::*' with unmatched type 'QQmlListProperty::*'"}
+    SuppressedWarning{text: "WARNING(Parser) :: scope not found for function definition: 'QQmlElement::QQmlElement' - definition *ignored*"}
 }

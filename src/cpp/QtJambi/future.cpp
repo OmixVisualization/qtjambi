@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2025 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -172,15 +172,10 @@ void FutureCallOut::initialize()
                 }
 #endif
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                if (currentState & QFutureInterfaceBase::Paused)
-                    postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Paused));
-#else
                 if (currentState & QFutureInterfaceBase::Suspended)
                     postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Suspended));
                 else if (currentState & QFutureInterfaceBase::Suspending)
                     postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Suspending));
-#endif
 
                 if (currentState & QFutureInterfaceBase::Canceled)
                     postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Canceled));
@@ -228,18 +223,14 @@ void FutureCallOut::postCallOutEvent(const QFutureCallOutEvent &callOutEvent){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
             if(m_sourceFuture->hasException()){
                 m_targetFuture->reportException(m_sourceFuture->exceptionStore().exception());
-#elif QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#else
             if(std::exception_ptr exn = m_sourceFuture->exceptionStore().exception()){
                 m_targetFuture->reportException(exn);
-#else
-            if(QException* exn = m_sourceFuture->exceptionStore().exception().exception()){
-                m_targetFuture->reportException(*exn);
 #endif
             }else{
                 m_targetFuture->cancel();
             }
             break;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         case QFutureCallOutEvent::Suspending:
             m_targetFuture->setSuspended(true);
             break;
@@ -249,14 +240,6 @@ void FutureCallOut::postCallOutEvent(const QFutureCallOutEvent &callOutEvent){
         case QFutureCallOutEvent::Resumed:
             m_targetFuture->setSuspended(false);
             break;
-#else
-        case QFutureCallOutEvent::Paused:
-            m_targetFuture->setPaused(true);
-            break;
-        case QFutureCallOutEvent::Resumed:
-            m_targetFuture->setPaused(false);
-            break;
-#endif
         case QFutureCallOutEvent::Progress:
             m_targetFuture->setProgressValueAndText(callOutEvent.index1, callOutEvent.text);
             break;
@@ -325,18 +308,14 @@ void ReverseFutureCallOut::postCallOutEvent(const QFutureCallOutEvent &callOutEv
 #if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
             if(m_futureCallOut->m_targetFuture->hasException()){
                 m_futureCallOut->m_sourceFuture->reportException(m_futureCallOut->m_targetFuture->exceptionStore().exception());
-#elif QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#else
             if(std::exception_ptr exn = m_futureCallOut->m_targetFuture->exceptionStore().exception()){
                 m_futureCallOut->m_sourceFuture->reportException(exn);
-#else
-            if(QException* exn = m_futureCallOut->m_targetFuture->exceptionStore().exception().exception()){
-                m_futureCallOut->m_sourceFuture->reportException(*exn);
 #endif
             }else{
                 m_futureCallOut->m_sourceFuture->cancel();
             }
            break;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         case QFutureCallOutEvent::Suspending:
             m_futureCallOut->m_sourceFuture->setSuspended(true);
             break;
@@ -346,14 +325,6 @@ void ReverseFutureCallOut::postCallOutEvent(const QFutureCallOutEvent &callOutEv
         case QFutureCallOutEvent::Resumed:
             m_futureCallOut->m_sourceFuture->setSuspended(false);
             break;
-#else
-        case QFutureCallOutEvent::Paused:
-            m_futureCallOut->m_sourceFuture->setPaused(true);
-            break;
-        case QFutureCallOutEvent::Resumed:
-            m_futureCallOut->m_sourceFuture->setPaused(false);
-            break;
-#endif
         case QFutureCallOutEvent::Progress:
             m_futureCallOut->m_sourceFuture->setProgressValueAndText(callOutEvent.index1, callOutEvent.text);
             break;
@@ -611,16 +582,12 @@ void CoreAPI::invokeAndCatch(JNIEnv *__jni_env, void* ptr, void(*expression)(voi
     }catch(const JavaException& exn){
         exn.raise();
     }catch(const QUnhandledException& exn){
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         if(exn.exception()){
             invokeAndCatch(__jni_env, const_cast<QUnhandledException*>(&exn), [](void* ptr){
                 QUnhandledException* exn = reinterpret_cast<QUnhandledException*>(ptr);
                 std::rethrow_exception(exn->exception());
             });
         }
-#else
-        Q_UNUSED(exn)
-#endif
         Java::QtCore::QUnhandledException::throwNew(__jni_env, "An exception has been thrown in native code." QTJAMBI_STACKTRACEINFO );
     }catch(const QException& exn){
         if(typeid_equals(typeid(exn), typeid(QException))){
