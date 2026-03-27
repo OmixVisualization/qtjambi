@@ -34,8 +34,11 @@
     <property name="qtjambi-module-name" value="qtjambi.designer"/>
     <property name="qtjambi.required.modules" value="qtjambi,qtjambi.xml,qtjambi.opengl,qtjambi.openglwidgets,qtjambi.designer"/>
     <target name="build">
-        <if>
-            <available file="${generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
+		<if>
+			<and>
+				<istrue value="qtjambi.designer.any.true"/>
+				<available file="${generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
+			</and>
             <then>
                 <path id="sourcedirs">
                     <pathelement location="${java.srcdir}/plugins/${module-name}"/>

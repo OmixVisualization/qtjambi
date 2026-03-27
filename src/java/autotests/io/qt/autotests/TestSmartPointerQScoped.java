@@ -38,7 +38,9 @@ import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.SmartPointerTest;
 import io.qt.core.QDynamicPropertyChangeEvent;
 import io.qt.core.QEvent;
+import io.qt.core.QMetaType;
 import io.qt.core.QObject;
+import io.qt.core.QScopedPointer;
 import io.qt.core.QTimer;
 import io.qt.gui.QStandardItemModel;
 import io.qt.gui.QStatusTipEvent;
@@ -236,5 +238,11 @@ public class TestSmartPointerQScoped extends ApplicationInitializer {
 		object.useScopedEvent();
 		assertTrue(createdObj[0]!=null);
 		assertTrue(createdObj[0].isDisposed());
+	}
+	
+	@Test
+	public void testMetaType() {
+		QMetaType smartType = QMetaType.fromType(QScopedPointer.class, QMetaType.fromType(SmartPointerTest.class));
+		assertFalse(smartType.isValid());
 	}
 }

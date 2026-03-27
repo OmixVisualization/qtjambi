@@ -35,7 +35,7 @@ QT_WARNING_DISABLE_GCC("-Winaccessible-base")
 QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
 
 QSharedPointer<class AutoPairAccess> getPairAccess(const QtPrivate::QMetaTypeInterface *iface){
-    return findContainerAccess(QMetaType(iface)).dynamicCast<AutoPairAccess>();
+    return findContainerAccess(QMetaType(iface)).staticCast<AutoPairAccess>();
 }
 void AutoPairAccess::defaultCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr){
     if(QSharedPointer<class AutoPairAccess> access = getPairAccess(iface)){
@@ -147,6 +147,8 @@ AutoPairAccess::AutoPairAccess(
     if(m_size%m_align>0)
         m_size += m_align-m_size%m_align;
 }
+
+AbstractNestedPairAccess* AutoPairAccess::asNested() { return this; }
 
 void AutoPairAccess::dispose() { delete this; }
 
@@ -399,7 +401,7 @@ bool AutoPairAccess::destructContainer(void* container) {
     return true;
 }
 
-QMetaType AutoPairAccess::registerContainer(const QByteArray& typeName) {
+QMetaType AutoPairAccess::registerContainer(QByteArrayView typeName) {
     QMetaType newMetaType = QMetaType::fromName(typeName);
     if(!newMetaType.isValid()){
         if(typeName.startsWith("QPair<")){
@@ -581,11 +583,14 @@ bool AutoPairAccess::hasFirstNestedContainerAccess() {
 }
 bool AutoPairAccess::hasFirstNestedPointers() {
     if(hasFirstNestedContainerAccess()){
-        if(auto daccess = dynamic_cast<AbstractSequentialAccess*>(m_keyNestedContainerAccess.data())){
+        if(m_keyNestedContainerAccess->isSequential()){
+            auto daccess = static_cast<AbstractSequentialAccess*>(m_keyNestedContainerAccess.data());
             return (daccess->elementType() & PointersMask) || daccess->hasNestedPointers();
-        }else if(auto daccess = dynamic_cast<AbstractAssociativeAccess*>(m_keyNestedContainerAccess.data())){
+        }else if(m_keyNestedContainerAccess->isAssociative()){
+            auto daccess = static_cast<AbstractAssociativeAccess*>(m_keyNestedContainerAccess.data());
             return (daccess->keyType() & PointersMask) || daccess->hasKeyNestedPointers() || (daccess->valueType() & PointersMask) || daccess->hasValueNestedPointers();
-        }else if(auto daccess = dynamic_cast<AbstractPairAccess*>(m_keyNestedContainerAccess.data())){
+        }else if(m_keyNestedContainerAccess->isPair()){
+            auto daccess = static_cast<AbstractPairAccess*>(m_keyNestedContainerAccess.data());
             return (daccess->firstType() & PointersMask) || daccess->hasFirstNestedPointers() || (daccess->secondType() & PointersMask) || daccess->hasSecondNestedPointers();
         }
     }
@@ -596,11 +601,14 @@ bool AutoPairAccess::hasSecondNestedContainerAccess() {
 }
 bool AutoPairAccess::hasSecondNestedPointers() {
     if(hasSecondNestedContainerAccess()){
-        if(auto daccess = dynamic_cast<AbstractSequentialAccess*>(m_valueNestedContainerAccess.data())){
+        if(m_valueNestedContainerAccess->isSequential()){
+            auto daccess = static_cast<AbstractSequentialAccess*>(m_valueNestedContainerAccess.data());
             return (daccess->elementType() & PointersMask) || daccess->hasNestedPointers();
-        }else if(auto daccess = dynamic_cast<AbstractAssociativeAccess*>(m_valueNestedContainerAccess.data())){
+        }else if(m_valueNestedContainerAccess->isAssociative()){
+            auto daccess = static_cast<AbstractAssociativeAccess*>(m_valueNestedContainerAccess.data());
             return (daccess->keyType() & PointersMask) || daccess->hasKeyNestedPointers() || (daccess->valueType() & PointersMask) || daccess->hasValueNestedPointers();
-        }else if(auto daccess = dynamic_cast<AbstractPairAccess*>(m_valueNestedContainerAccess.data())){
+        }else if(m_valueNestedContainerAccess->isPair()){
+            auto daccess = static_cast<AbstractPairAccess*>(m_valueNestedContainerAccess.data());
             return (daccess->firstType() & PointersMask) || daccess->hasFirstNestedPointers() || (daccess->secondType() & PointersMask) || daccess->hasSecondNestedPointers();
         }
     }
@@ -737,6 +745,54 @@ std::unique_ptr<AbstractSequentialAccess::ElementIterator> AutoPairAccess::eleme
         std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
             return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
         }
+        std::function<jobject(JNIEnv*,const void*)> elementConverter() const override {
+            switch(index){
+            case 0:
+                if(m_access->m_keyDataType & AbstractContainerAccess::PointersMask){
+                    return [internalToExternalConverter = m_access->m_keyInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                        jvalue _value;
+                        _value.l = nullptr;
+                        internalToExternalConverter(env, nullptr, &pointer, _value, true);
+                        return _value.l;
+                    };
+                }else if (JObjectValueWrapper::isValueType(m_access->m_keyMetaType)
+                           || isNativeWrapperMetaType(m_access->m_keyMetaType)
+                           || isJObjectWrappedMetaType(m_access->m_keyMetaType)) {
+                    return [](JNIEnv* env,const void* pointer) -> jobject{
+                        return reinterpret_cast<const JObjectWrapper*>(pointer)->object(env);
+                    };
+                }else{
+                    return [internalToExternalConverter = m_access->m_keyInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                        jvalue _value;
+                        _value.l = nullptr;
+                        internalToExternalConverter(env, nullptr, pointer, _value, true);
+                        return _value.l;
+                    };
+                }
+            default:
+                if(m_access->m_valueDataType & AbstractContainerAccess::PointersMask){
+                    return [internalToExternalConverter = m_access->m_valueInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                        jvalue _value;
+                        _value.l = nullptr;
+                        internalToExternalConverter(env, nullptr, &pointer, _value, true);
+                        return _value.l;
+                    };
+                }else if (JObjectValueWrapper::isValueType(m_access->m_valueMetaType)
+                           || isNativeWrapperMetaType(m_access->m_valueMetaType)
+                           || isJObjectWrappedMetaType(m_access->m_valueMetaType)) {
+                    return [](JNIEnv* env,const void* pointer) -> jobject{
+                        return reinterpret_cast<const JObjectWrapper*>(pointer)->object(env);
+                    };
+                }else{
+                    return [internalToExternalConverter = m_access->m_valueInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                        jvalue _value;
+                        _value.l = nullptr;
+                        internalToExternalConverter(env, nullptr, pointer, _value, true);
+                        return _value.l;
+                    };
+                }
+            }
+        }
     };
     return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(this, container));
 }
@@ -848,6 +904,54 @@ std::unique_ptr<AbstractSequentialAccess::ElementIterator> AutoPairAccess::eleme
         std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
             return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
         }
+        std::function<jobject(JNIEnv*,const void*)> elementConverter() const override {
+            switch(index){
+            case 0:
+                if(m_access->m_keyDataType & AbstractContainerAccess::PointersMask){
+                    return [internalToExternalConverter = m_access->m_keyInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                        jvalue _value;
+                        _value.l = nullptr;
+                        internalToExternalConverter(env, nullptr, &pointer, _value, true);
+                        return _value.l;
+                    };
+                }else if (JObjectValueWrapper::isValueType(m_access->m_keyMetaType)
+                           || isNativeWrapperMetaType(m_access->m_keyMetaType)
+                           || isJObjectWrappedMetaType(m_access->m_keyMetaType)) {
+                    return [](JNIEnv* env,const void* pointer) -> jobject{
+                        return reinterpret_cast<const JObjectWrapper*>(pointer)->object(env);
+                    };
+                }else{
+                    return [internalToExternalConverter = m_access->m_keyInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                        jvalue _value;
+                        _value.l = nullptr;
+                        internalToExternalConverter(env, nullptr, pointer, _value, true);
+                        return _value.l;
+                    };
+                }
+            default:
+                if(m_access->m_valueDataType & AbstractContainerAccess::PointersMask){
+                    return [internalToExternalConverter = m_access->m_valueInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                        jvalue _value;
+                        _value.l = nullptr;
+                        internalToExternalConverter(env, nullptr, &pointer, _value, true);
+                        return _value.l;
+                    };
+                }else if (JObjectValueWrapper::isValueType(m_access->m_valueMetaType)
+                           || isNativeWrapperMetaType(m_access->m_valueMetaType)
+                           || isJObjectWrappedMetaType(m_access->m_valueMetaType)) {
+                    return [](JNIEnv* env,const void* pointer) -> jobject{
+                        return reinterpret_cast<const JObjectWrapper*>(pointer)->object(env);
+                    };
+                }else{
+                    return [internalToExternalConverter = m_access->m_valueInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                        jvalue _value;
+                        _value.l = nullptr;
+                        internalToExternalConverter(env, nullptr, pointer, _value, true);
+                        return _value.l;
+                    };
+                }
+            }
+        }
     };
     return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(this, container));
 }
@@ -930,6 +1034,52 @@ std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoPairAccess::keyValueIt
             }
             return result;
         }
+        std::function<jobject(JNIEnv*,const void*)> keyConverter() const override {
+            if(m_access->m_keyDataType & AbstractContainerAccess::PointersMask){
+                return [internalToExternalConverter = m_access->m_keyInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, &pointer, _value, true);
+                    return _value.l;
+                };
+            }else if (JObjectValueWrapper::isValueType(m_access->m_keyMetaType)
+                       || isNativeWrapperMetaType(m_access->m_keyMetaType)
+                       || isJObjectWrappedMetaType(m_access->m_keyMetaType)) {
+                return [](JNIEnv* env,const void* pointer) -> jobject{
+                    return reinterpret_cast<const JObjectWrapper*>(pointer)->object(env);
+                };
+            }else{
+                return [internalToExternalConverter = m_access->m_keyInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, pointer, _value, true);
+                    return _value.l;
+                };
+            }
+        }
+        std::function<jobject(JNIEnv*,const void*)> valueConverter() const override {
+            if(m_access->m_valueDataType & AbstractContainerAccess::PointersMask){
+                return [internalToExternalConverter = m_access->m_valueInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, &pointer, _value, true);
+                    return _value.l;
+                };
+            }else if (JObjectValueWrapper::isValueType(m_access->m_valueMetaType)
+                       || isNativeWrapperMetaType(m_access->m_valueMetaType)
+                       || isJObjectWrappedMetaType(m_access->m_valueMetaType)) {
+                return [](JNIEnv* env,const void* pointer) -> jobject{
+                    return reinterpret_cast<const JObjectWrapper*>(pointer)->object(env);
+                };
+            }else{
+                return [internalToExternalConverter = m_access->m_valueInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, pointer, _value, true);
+                    return _value.l;
+                };
+            }
+        }
     };
     return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator(this, container));
 }
@@ -1004,6 +1154,52 @@ std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoPairAccess::keyValueIt
         }
         QPair<const void*,void*> mutableNext() override {
             return {nullptr, nullptr};
+        }
+        std::function<jobject(JNIEnv*,const void*)> keyConverter() const override {
+            if(m_access->m_keyDataType & AbstractContainerAccess::PointersMask){
+                return [internalToExternalConverter = m_access->m_keyInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, &pointer, _value, true);
+                    return _value.l;
+                };
+            }else if (JObjectValueWrapper::isValueType(m_access->m_keyMetaType)
+                       || isNativeWrapperMetaType(m_access->m_keyMetaType)
+                       || isJObjectWrappedMetaType(m_access->m_keyMetaType)) {
+                return [](JNIEnv* env,const void* pointer) -> jobject{
+                    return reinterpret_cast<const JObjectWrapper*>(pointer)->object(env);
+                };
+            }else{
+                return [internalToExternalConverter = m_access->m_keyInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, pointer, _value, true);
+                    return _value.l;
+                };
+            }
+        }
+        std::function<jobject(JNIEnv*,const void*)> valueConverter() const override {
+            if(m_access->m_valueDataType & AbstractContainerAccess::PointersMask){
+                return [internalToExternalConverter = m_access->m_valueInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, &pointer, _value, true);
+                    return _value.l;
+                };
+            }else if (JObjectValueWrapper::isValueType(m_access->m_valueMetaType)
+                       || isNativeWrapperMetaType(m_access->m_valueMetaType)
+                       || isJObjectWrappedMetaType(m_access->m_valueMetaType)) {
+                return [](JNIEnv* env,const void* pointer) -> jobject{
+                    return reinterpret_cast<const JObjectWrapper*>(pointer)->object(env);
+                };
+            }else{
+                return [internalToExternalConverter = m_access->m_valueInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, pointer, _value, true);
+                    return _value.l;
+                };
+            }
         }
     };
     return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator(this, container));

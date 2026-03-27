@@ -15196,10 +15196,10 @@ class QStringConverter___ extends QStringConverter {
      {
           private FinalizeResult(short invalidChars, byte error){
                this.invalidChars = invalidChars;
-               this.error = FinalizeResultBase.Error.resolve(error);
+               this.error = FinalizeResultError.resolve(error);
           }
           public final short invalidChars;
-          public final FinalizeResultBase.Error error;
+          public final FinalizeResultError error;
      }
 }// class
 
@@ -19108,7 +19108,7 @@ class strong_ordering___ {
 class QMetaObject___ {
     
     long metaObjectPointer() {
-        return __qt_persistentPointer;
+        return __qt_directLink;
     }
     
     /**
@@ -19158,10 +19158,10 @@ class QMetaObject___ {
      */
     @QtUninvokable
     public @NonNull QList<@NonNull QMetaProperty> properties() {
-        return properties(this.__qt_persistentPointer);
+        return properties(this.__qt_directLink);
     }
 
-    private static native QList<QMetaProperty> properties(long __qt_persistentPointer);
+    private static native QList<QMetaProperty> properties(long __qt_directLink);
 
     /**
      * Returns the meta-data for the property with the given name. If no such
@@ -19183,10 +19183,10 @@ class QMetaObject___ {
      */
     @QtUninvokable
     public @NonNull QList<io.qt.core.@NonNull QMetaEnum> enumerators() {
-        return enumerators(this.__qt_persistentPointer);
+        return enumerators(this.__qt_directLink);
     }
 
-    private static native QList<QMetaEnum> enumerators(long __qt_persistentPointer);
+    private static native QList<QMetaEnum> enumerators(long __qt_directLink);
 
     /**
      * Returns the meta-data for the enumerator with the given name. If no such
@@ -19218,10 +19218,10 @@ class QMetaObject___ {
             int spacePos = name.substring(0, idx).trim().lastIndexOf(' ');
             if (idx > spacePos && spacePos > 0)
                 throw new RuntimeException(String.format("Do not specify return type in slot signature: '%1$s'", name));
-            String cppNormalizedSignature = cppNormalizedSignature(name, type(__qt_persistentPointer));
-            method = method(__qt_persistentPointer, cppNormalizedSignature);
+            String cppNormalizedSignature = cppNormalizedSignature(name, type(__qt_directLink));
+            method = method(__qt_directLink, cppNormalizedSignature);
             if (!method.isValid())
-                method = method(__qt_persistentPointer, cppNormalizedSignature + "const");
+                method = method(__qt_directLink, cppNormalizedSignature + "const");
         } else {
             StringBuilder args = new StringBuilder();
             for (int i = 0; i < parameterTypes.length; ++i) {
@@ -19233,10 +19233,10 @@ class QMetaObject___ {
                 else
                     args.append(typeName);
             }
-            method = method(__qt_persistentPointer, String.format("%1$s(%2$s)", name, args));
+            method = method(__qt_directLink, String.format("%1$s(%2$s)", name, args));
         }
         if (!method.isValid()) {
-            for (QMetaMethod m : methods(__qt_persistentPointer)) {
+            for (QMetaMethod m : methods(__qt_directLink)) {
                 if (m.name().toString().equals(name)) {
                     if (m.parameterClassTypes().equals(Arrays.asList(parameterTypes))) {
                         method = m;
@@ -19260,7 +19260,7 @@ class QMetaObject___ {
         return method;
     }
 
-    private static native QMetaMethod method(long __qt_persistentPointer, String normalizedSignature);
+    private static native QMetaMethod method(long __qt_directLink, String normalizedSignature);
 
     /**
      * Returns the list of methods in this class, including the methods provided by
@@ -19270,10 +19270,10 @@ class QMetaObject___ {
      */
     @QtUninvokable
     public @NonNull QList<@NonNull QMetaMethod> methods() {
-        return methods(__qt_persistentPointer);
+        return methods(__qt_directLink);
     }
 
-    private static native QList<QMetaMethod> methods(long __qt_persistentPointer);
+    private static native QList<QMetaMethod> methods(long __qt_directLink);
 
     /**
      * Returns the meta-data for the constructor with the given parameter types. If
@@ -19296,7 +19296,7 @@ class QMetaObject___ {
         }
         QMetaMethod method = constructor(indexOfConstructor(String.format("%1$s(%2$s)", className(), args)));
         if (!method.isValid()) {
-            for (QMetaMethod m : constructors(__qt_persistentPointer)) {
+            for (QMetaMethod m : constructors(__qt_directLink)) {
                 if (m.parameterClassTypes().equals(Arrays.asList(parameterTypes))) {
                     method = m;
                     break;
@@ -19313,10 +19313,10 @@ class QMetaObject___ {
      */
     @QtUninvokable
     public final @NonNull QList<@NonNull QMetaMethod> constructors() {
-        return constructors(__qt_persistentPointer);
+        return constructors(__qt_directLink);
     }
 
-    private static native QList<QMetaMethod> constructors(long __qt_persistentPointer);
+    private static native QList<QMetaMethod> constructors(long __qt_directLink);
 
     /**
      * <p>
@@ -19336,7 +19336,7 @@ class QMetaObject___ {
             throw new UnsupportedOperationException("No constructors available.");
         }
         QMetaMethod constr = null;
-        QList<QMetaMethod> constructors = constructors(__qt_persistentPointer);
+        QList<QMetaMethod> constructors = constructors(__qt_directLink);
         for (QMetaMethod constructor : constructors.clone()) {
             List<Class<?>> parameterTypes = constructor.parameterClassTypes();
             if (parameterTypes.size() != args.length) {
@@ -19421,10 +19421,10 @@ class QMetaObject___ {
      */
     @QtUninvokable
     public @NonNull QList<QMetaClassInfo> classInfos() {
-        return classInfos(__qt_persistentPointer);
+        return classInfos(__qt_directLink);
     }
 
-    private static native QList<QMetaClassInfo> classInfos(long __qt_persistentPointer);
+    private static native QList<QMetaClassInfo> classInfos(long __qt_directLink);
 
     /**
      * Returns the class info for the class with the given name. If no such info
@@ -19465,10 +19465,10 @@ class QMetaObject___ {
      */
     @QtUninvokable
     public @Nullable Class<?> type() {
-        return type(__qt_persistentPointer);
+        return type(__qt_directLink);
     }
 
-    private static native Class<?> type(long __qt_persistentPointer);
+    private static native Class<?> type(long __qt_directLink);
     
     static String internalNameOfType(Class<? extends Object> cls) {
         return MetaTypeUtility.internalNameOfArgumentType(cls);
@@ -19725,7 +19725,7 @@ class QMetaObject___ {
                 Class<?> foundClass = null;
                 Class<?> enumeratorClass = null;
                 Class<?> flagsClass = null;
-                Class<?> exactDeclaringType = exactType(metaObject.__qt_persistentPointer);
+                Class<?> exactDeclaringType = exactType(metaObject.__qt_directLink);
                 if(exactDeclaringType!=null) {
                     for(Class<?> cls : exactDeclaringType.getDeclaredClasses()) {
                         if(QtAbstractEnumerator.class.isAssignableFrom(cls) 
@@ -19758,7 +19758,7 @@ class QMetaObject___ {
                 }
                 if(isFlag && flagsClass==null){
                     if(enumeratorClass==null) {
-                        QMetaEnum enmType = findEnumForFlags(metaObject.__qt_persistentPointer, enumeratorIndex);
+                        QMetaEnum enmType = findEnumForFlags(metaObject.__qt_directLink, enumeratorIndex);
                         if(enmType!=null) {
                             enumeratorClass = enmType.type();
                         }
@@ -19779,8 +19779,8 @@ class QMetaObject___ {
             return enumClasses[enumeratorIndex];
         }
     }
-    private static native Class<?> exactType(long __qt_persistentPointer);
-    private static native QMetaEnum findEnumForFlags(long __qt_persistentPointer, int enumeratorIndex);
+    private static native Class<?> exactType(long __qt_directLink);
+    private static native QMetaEnum findEnumForFlags(long __qt_directLink, int enumeratorIndex);
     
     private static Class<?> getFlagFromEnum(Class<?> exactDeclaringType, Class<?> type) {
         for(Class<?> flagsType : exactDeclaringType.getDeclaredClasses()) {
@@ -19812,7 +19812,7 @@ class QMetaObject___ {
     }
     
     private static void generateEnumEntries(QMetaObject metaObject, QMetaEnum enumerator) {
-        ClassLoader cl = type(metaObject.__qt_persistentPointer).getClassLoader();
+        ClassLoader cl = type(metaObject.__qt_directLink).getClassLoader();
         Class<?>[] ifc = new Class[] {QtEnumerator.class};
         QtEnumerator[] entries = new QtEnumerator[enumerator.keyCount()];
         for (int i = 0; i < entries.length; i++) {
@@ -43052,7 +43052,7 @@ class QMetaObject___ {
     }
     
     private static <R> R invokeMethod(QMetaObject metaObject, int methodIndex, QObject object, Qt.ConnectionType connection, Object... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
-        return invokeMethodByIndex(metaObject.__qt_persistentPointer, methodIndex, QtJambi_LibraryUtilities.internal.checkedNativeId(object), connection==null ? 0 : connection.value(), args);
+        return invokeMethodByIndex(metaObject.__qt_directLink, methodIndex, QtJambi_LibraryUtilities.internal.checkedNativeId(object), connection==null ? 0 : connection.value(), args);
     }
     
     private static <R> R invokeMethod(int methodIndex, QObject object, Qt.ConnectionType connection, Object... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
@@ -43060,7 +43060,7 @@ class QMetaObject___ {
     }
     
     @QtUninvokable
-    private native static <R> R invokeMethodByIndex(long __qt_persistentPointer, int methodIndex, long object__id, int connection, Object[] args);
+    private native static <R> R invokeMethodByIndex(long __qt_directLink, int methodIndex, long object__id, int connection, Object[] args);
     
     private static native void invokeMethod(long context, Runnable runnable, boolean blocking);
     
@@ -43087,7 +43087,7 @@ class QMetaObject___ {
     
     QMetaMethod methodFromMethod(java.lang.reflect.Method method) {
         Object[] ok = { method };
-        QMetaMethod qmethod = methodFromMethod(__qt_persistentPointer, ok);
+        QMetaMethod qmethod = methodFromMethod(__qt_directLink, ok);
         if (qmethod == null && ok[0] == null) {
             qmethod = method(method.getName(), method.getParameterTypes());
             if (qmethod != null && qmethod.methodType() == QMetaMethod.MethodType.Signal) {
@@ -43097,7 +43097,7 @@ class QMetaObject___ {
         return qmethod;
     }
     
-        private static native QMetaMethod methodFromMethod(long __qt_persistentPointer, Object[] method);
+        private static native QMetaMethod methodFromMethod(long __qt_directLink, Object[] method);
 
     private static class CoreUtility extends io.qt.internal.CoreUtility {
         static {
@@ -49764,59 +49764,59 @@ class QRangeModel__ {
 
     /**
      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QList, RowCategory, io.qt.core.QObject)}
-     *  with <code>rowCategory = Default</code>.</p>
+     *  with <code>rowCategory = taken from {@link #rowCategory(Class)} or {@link RowOptions} annotation if available or {@link RowCategory#Default}</code>.</p>
      */
     public <T> QRangeModel(io.qt.core.@StrictNonNull QList<T> range, io.qt.core.@Nullable QObject parent) {
-        this(range, RowCategory.Default, parent);
+        this(range, null, parent);
     }
 
     /**
      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QSpan, RowCategory, io.qt.core.QObject)}
-     *  with <code>rowCategory = Default</code>.</p>
+     *  with <code>rowCategory = taken from {@link #rowCategory(Class)} or {@link RowOptions} annotation if available or {@link RowCategory#Default}</code>.</p>
      */
     public <T> QRangeModel(io.qt.core.@StrictNonNull QSpan<T> range, io.qt.core.@Nullable QObject parent) {
-        this(range, RowCategory.Default, parent);
+        this(range, null, parent);
     }
 
     /**
      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, RowCategory, io.qt.core.QObject)}
-     *  with <code>rowCategory = Default</code>.</p>
+     *  with <code>rowCategory = taken from {@link #rowCategory(Class)} or {@link RowOptions} annotation if available or {@link RowCategory#Default}</code>.</p>
      */
     public <T> QRangeModel(io.qt.core.@StrictNonNull QConstSpan<T> range, io.qt.core.@Nullable QObject parent) {
-        this(range, RowCategory.Default, parent);
+        this(range, null, parent);
     }
 
     /**
      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QList, RowCategory, io.qt.core.QObject)}</p>
      * <p>with: </p><ul>
-     * <li><code>rowCategory = Default</code></li>
+     * <li><code>rowCategory = taken from {@link #rowCategory(Class)} or {@link RowOptions} annotation if available or {@link RowCategory#Default}</code></li>
      * <li><code>parent = null</code></li>
      * </ul>
      */
     public <T> QRangeModel(io.qt.core.@StrictNonNull QList<T> range) {
-        this(range, RowCategory.Default, (io.qt.core.QObject)null);
+        this(range, (io.qt.core.QObject)null);
     }
 
     /**
      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QSpan, RowCategory, io.qt.core.QObject)}</p>
      * <p>with: </p><ul>
-     * <li><code>rowCategory = Default</code></li>
+     * <li><code>rowCategory = taken from {@link #rowCategory(Class)} or {@link RowOptions} annotation if available or {@link RowCategory#Default}</code></li>
      * <li><code>parent = null</code></li>
      * </ul>
      */
     public <T> QRangeModel(io.qt.core.@StrictNonNull QSpan<T> range) {
-        this(range, RowCategory.Default, (io.qt.core.QObject)null);
+        this(range, (io.qt.core.QObject)null);
     }
 
     /**
      * <p>Overloaded constructor for {@link #QRangeModel(io.qt.core.QConstSpan, RowCategory, io.qt.core.QObject)}</p>
      * <p>with: </p><ul>
-     * <li><code>rowCategory = Default</code></li>
+     * <li><code>rowCategory = taken from {@link #rowCategory(Class)} or {@link RowOptions} annotation if available or {@link RowCategory#Default}</code></li>
      * <li><code>parent = null</code></li>
      * </ul>
      */
     public <T> QRangeModel(io.qt.core.@StrictNonNull QConstSpan<T> range) {
-        this(range, RowCategory.Default, (io.qt.core.QObject)null);
+        this(range, (io.qt.core.QObject)null);
     }
 
     private static QConstSpan<?> toRange(int[][] range) {
@@ -50107,16 +50107,16 @@ class QRangeModel__ {
         this(range, (io.qt.core.QObject)null);
     }
 
-    /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
-     * @param range String[][]
-     * @param parent
-     */
-    public QRangeModel(@NonNull String[] @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
+     /**
+      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * @param range String[][]
+      * @param parent
+      */
+     public QRangeModel(@NonNull String[] @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
         this(toRange(range), RowCategory.Default, parent);
-    }
+     }
 
-    private static <T> QConstSpan<QConstSpan<T>> toRange(T[][] range) {
+     private static <T> QConstSpan<QConstSpan<T>> toRange(T[][] range) {
         QList<QConstSpan<T>> result = null;
         if (range.length == 0)
             throw new IllegalArgumentException("Array length must not be null.");
@@ -50130,9 +50130,9 @@ class QRangeModel__ {
             }
         }
         return QConstSpan.ofList(result);
-    }
+     }
 
-    /**
+     /**
       * <p>Overloaded constructor for {@link #QRangeModel(Object[][], io.qt.core.QObject)}
       *  with <code>parent = null</code>.</p>
       */
@@ -50288,35 +50288,35 @@ class QRangeModel__ {
      /**
       * <p>Overloaded constructor for {@link #QRangeModel(Object[], RowCategory, io.qt.core.QObject)}</p>
       * <p>with: </p><ul>
-      * <li><code>rowCategory = Default</code></li>
+      * <li><code>rowCategory = taken from {@link #rowCategory(Class)} or {@link RowOptions} annotation if available or {@link RowCategory#Default}</code></li>
       * <li><code>parent = null</code></li>
       * </ul>
       */
      public <T> QRangeModel(T @StrictNonNull[] range) {
-         this(range, RowCategory.Default, (io.qt.core.QObject)null);
+         this(range, (io.qt.core.QObject)null);
      }
 
      /**
       * <p>Overloaded constructor for {@link #QRangeModel(Object[], RowCategory, io.qt.core.QObject)}
       *  with <code>parent = null</code>.</p>
       */
-     public <T> QRangeModel(T @StrictNonNull[] range, RowCategory rowCategory) {
+     public <T> QRangeModel(T @StrictNonNull[] range, @NonNull RowCategory rowCategory) {
          this(range, rowCategory, (io.qt.core.QObject)null);
      }
 
      /**
       * <p>Overloaded constructor for {@link #QRangeModel(Object[], RowCategory, io.qt.core.QObject)}
-      *  with <code>rowCategory = Default</code>.</p>
+      *  with <code>rowCategory = taken from {@link #rowCategory(Class)} or {@link RowOptions} annotation if available or {@link RowCategory#Default}</code>.</p>
       */
      public <T> QRangeModel(T @StrictNonNull[] range, io.qt.core.@Nullable QObject parent) {
-         this(range, RowCategory.Default, parent);
+         this(toRange(range), parent);
      }
 
-    private static <T> QConstSpan<T> toRange(T[] range) {
-        if (range.length == 0)
-            throw new IllegalArgumentException("Array length must not be null.");
-        return QConstSpan.ofTyped(QList.findElementMetaType(java.util.Arrays.asList(range)), range);
-    }
+     private static <T> QConstSpan<T> toRange(T[] range) {
+          if (range.length == 0)
+              throw new IllegalArgumentException("Array length must not be null.");
+          return QConstSpan.ofTyped(QList.findElementMetaType(java.util.Arrays.asList(range)), range);
+     }
 
     /**
       * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
@@ -50324,7 +50324,7 @@ class QRangeModel__ {
       * @param rowCategory
       * @param parent
       */
-     public <T> QRangeModel(T @StrictNonNull[] range, RowCategory rowCategory, io.qt.core.@Nullable QObject parent) {
+     public <T> QRangeModel(T @StrictNonNull[] range, @NonNull RowCategory rowCategory, io.qt.core.@Nullable QObject parent) {
          this(toRange(range), rowCategory, parent);
      }
 
@@ -50348,37 +50348,60 @@ class QRangeModel__ {
      /**
       * <p>Overloaded constructor for {@link #QRangeModel(java.util.Collection, RowCategory, io.qt.core.QObject)}</p>
       * <p>with: </p><ul>
-      * <li><code>rowCategory = Default</code></li>
+      * <li><code>rowCategory = taken from {@link #rowCategory(Class)} or {@link RowOptions} annotation if available or {@link RowCategory#Default}</code></li>
       * <li><code>parent = null</code></li>
       * </ul>
       */
      public <T> QRangeModel(java.util.@StrictNonNull Collection<T> range) {
-         this(range, RowCategory.Default, (io.qt.core.QObject)null);
+         this(toRange(range), (io.qt.core.QObject)null);
      }
 
      /**
       * <p>Overloaded constructor for {@link #QRangeModel(java.util.Collection, RowCategory, io.qt.core.QObject)}
       *  with <code>parent = null</code>.</p>
       */
-     public <T> QRangeModel(java.util.@StrictNonNull Collection<T> range, RowCategory rowCategory) {
+     public <T> QRangeModel(java.util.@StrictNonNull Collection<T> range, @NonNull RowCategory rowCategory) {
          this(range, rowCategory, (io.qt.core.QObject)null);
      }
 
      /**
       * <p>Overloaded constructor for {@link #QRangeModel(java.util.Collection, RowCategory, io.qt.core.QObject)}
-      *  with <code>rowCategory = Default</code>.</p>
+      *  with <code>rowCategory = taken from {@link #rowCategory(Class)} or {@link RowOptions} annotation if available or {@link RowCategory#Default}</code>.</p>
       */
      public <T> QRangeModel(java.util.@StrictNonNull Collection<T> range, io.qt.core.@Nullable QObject parent) {
-         this(range, RowCategory.Default, parent);
+         this(toRange(range), parent);
      }
 
-    private static <T> QConstSpan<T> toRange(java.util.Collection<T> range) {
-        if (range.size() == 0)
-            throw new IllegalArgumentException("Array length must not be null.");
-        return QConstSpan.ofList(range);
-    }
+     /**
+      * This annotation defines the RowCategory of a item type.
+      */
+     @java.lang.annotation.Documented
+     @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
+     @java.lang.annotation.Target(java.lang.annotation.ElementType.TYPE_USE)
+     public @interface RowOptions{
+         RowCategory value();
+     }
 
-    /**
+     /**
+      * Override this method to specify custom {@link RowCategory} for item type.
+      * @param itemType
+      * @return RowCategory
+      */
+     @NativeAccess
+     protected @NonNull RowCategory rowCategory(@NonNull Class<?> itemType) {
+          RowOptions rowOptions = itemType.getAnnotation(RowOptions.class);
+          if(rowOptions!=null)
+               return rowOptions.value();
+          return RowCategory.Default;
+     }
+
+     private static <T> QConstSpan<T> toRange(java.util.Collection<T> range) {
+          if (range.size() == 0)
+              throw new IllegalArgumentException("Array length must not be null.");
+          return QConstSpan.ofList(range);
+     }
+
+     /**
       * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
       * @param range
       * @param rowCategory
@@ -50389,16 +50412,69 @@ class QRangeModel__ {
      }
 }// class
 
+class QRangeModel_611__ {
+     /**
+      * <p>The ItemAccess template provides a customization point to control how QRangeModel accesses role data of individual items.</p>
+      * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qrangemodel-itemaccess.html">QRangeModel::ItemAccess</a></code></p>
+      * @since This class was introduced in Qt 6.11.
+      */
+     public interface ItemAccess<T>{
+         Object readRole(T item, int role);
+         default boolean writeRole(T item, int role, Object value) { return false; }
+     }
+
+     /**
+      * Override this method to specify custom {@link ItemAccess} for item type.
+      * @param itemType
+      * @return null by default
+      * @since This method was introduced in Qt 6.11.
+      */
+     @NativeAccess
+     protected @Nullable ItemAccess<?> itemAccess(@NonNull Class<?> itemType) {
+          return null;
+     }
+}// class
+
+class QRangeModel_h__ {
+public:
+    template <typename Range,
+             QRangeModelDetails::if_table_range<Range> = true>
+    explicit QRangeModel_shell(Range &&range, QObject *parent = nullptr);
+
+    template <typename Range,
+             QRangeModelDetails::if_tree_range<Range> = true>
+    explicit QRangeModel_shell(Range &&range, QObject *parent = nullptr);
+
+    template <typename Range, typename Protocol,
+             QRangeModelDetails::if_tree_range<Range, Protocol> = true>
+    explicit QRangeModel_shell(Range &&range, Protocol &&protocol, QObject *parent = nullptr);
+}// class
+
 class QRangeModel_cpp__ {
-template<typename T>
-void initializeModel(void*__qtjambi_ptr, JNIEnv*__jni_env, jobject __jni_object, T&& range, QtJambiAPI::ConstructorOptions __qtjambi_constructor_options, jobject range0, QObject*parent) {
-    if(__qtjambi_constructor_options & QtJambiAPI::HasOverrides)
-        new(__qtjambi_ptr)QRangeModel_oshell(std::move(range), parent);
-    else if(__qtjambi_constructor_options & QtJambiAPI::HasDerivedMetaObject)
-        new(__qtjambi_ptr)QRangeModel_mshell(std::move(range), parent);
-    else
-        new(__qtjambi_ptr)QRangeModel_shell(std::move(range), parent);
-    if(__qtjambi_constructor_options & QtJambiAPI::IsNativeConstruction)
-        Java::QtJambi::ReferenceUtility::setReferenceCount(__jni_env, __jni_object, nullptr, __jni_env->NewStringUTF("__rcRange"), false, false, range0);
+template <typename Range,
+         QRangeModelDetails::if_table_range<Range>>
+QRangeModel_shell::QRangeModel_shell(Range &&range, QObject *parent)
+    : QRangeModel(std::forward<Range>(range), parent)
+{
+    QTJAMBI_IN_CONSTRUCTOR_CALL("QRangeModel::QRangeModel_shell(Range&& range, QObject* parent)", this)
+    QRangeModel_shell::__shell()->constructed(typeid(QRangeModel));
+}
+
+template <typename Range,
+         QRangeModelDetails::if_tree_range<Range>>
+QRangeModel_shell::QRangeModel_shell(Range &&range, QObject *parent)
+    : QRangeModel(std::forward<Range>(range), parent)
+{
+    QTJAMBI_IN_CONSTRUCTOR_CALL("QRangeModel::QRangeModel_shell(Range&& range, QObject* parent)", this)
+    QRangeModel_shell::__shell()->constructed(typeid(QRangeModel));
+}
+
+template <typename Range, typename Protocol,
+         QRangeModelDetails::if_tree_range<Range, Protocol>>
+QRangeModel_shell::QRangeModel_shell(Range &&range, Protocol &&protocol, QObject *parent)
+    : QRangeModel(std::forward<Range>(range), std::forward<Protocol>(protocol), parent)
+{
+    QTJAMBI_IN_CONSTRUCTOR_CALL("QRangeModel::QRangeModel_shell(Range&& range, Protocol &&protocol, QObject* parent)", this)
+    QRangeModel_shell::__shell()->constructed(typeid(QRangeModel));
 }
 }// class

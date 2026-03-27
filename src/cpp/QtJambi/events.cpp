@@ -454,7 +454,7 @@ void UIInitialCheck::enabledQObjectThreadCheck(JNIEnv *env, PtrOwnerFunction own
                     if(QThreadData::get2(this_thread)->threadId.loadRelaxed() == currentThreadId)
                         return;
                 }
-                JavaException::raiseQThreadAffinityException(env, QStringLiteral("QObject used from outside its own thread when creating %1").arg(QtJambiAPI::getClassName(env, cls).replace('/', '.').replace('/', '$')) QTJAMBI_STACKTRACEINFO ,
+                JavaException::raiseQThreadAffinityException(env, QStringLiteral("QObject used from outside its own thread when creating %1").arg(QtJambiAPI::getClassNamePrintable(env, cls)) QTJAMBI_STACKTRACEINFO ,
                                                              QtJambiAPI::convertQObjectToJavaObject(env, object),
                                                              objectThreadData->thread.loadRelaxed(), QThread::currentThread());
             }

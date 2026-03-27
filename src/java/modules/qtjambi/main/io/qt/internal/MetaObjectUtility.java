@@ -56,24 +56,39 @@ final class MetaObjectUtility{
     
     private MetaObjectUtility() { throw new RuntimeException();}
     
-    private final static Supplier<List<String>> intDescriptionListFactory = 
+    private static class IntDataDescriptions{
+        public boolean add(String e) { return false; }
+        public String get(int index) {return null;}
+        public boolean isEmpty() {return true;}
+        public boolean add(String format, int index) { return false; }
+        public boolean add(String format, int index1, int index2) { return false; }
+    }
+    
+    private static class EnabledIntDataDescriptions extends IntDataDescriptions{
+    	private ArrayList<String> list = new ArrayList<>();
+    	@Override
+        public boolean add(String e) { return list.add(e); }
+    	@Override
+        public String get(int index) {return list.get(index);}
+    	@Override
+        public boolean isEmpty() {return list.isEmpty();}
+    	@Override
+		public boolean add(String format, int index) { return add(String.format(format, index)); }
+    	@Override
+		public boolean add(String format, int index1, int index2) { return add(String.format(format, index1, index2)); }
+    }
+    
+    private final static Supplier<IntDataDescriptions> intDescriptionFactory = 
     		Boolean.getBoolean("io.qt.enable-metaobject-logs") 
-	    		? ArrayList::new 
-	    		: ()-> new AbstractList<String>() {
-	                @Override
-	                public boolean add(String e) { return false; }
-	                @Override
-	                public String get(int index) {return null;}
-	                @Override
-	                public int size() {return 0; }
-	            };
+	    		? EnabledIntDataDescriptions::new 
+	    		: IntDataDescriptions::new;
 	
     /**
      * this method analyzes the given class for meta object data.
      * It is based upon code of the moc tool.
      */
     @NativeAccess
-    private static MetaObjectData analyze(Class<?> clazz) {
+    private static MetaObjectData analyze(final Class<?> clazz) {
     	int revision = resolveMetaDataRevision();
         try {
             if(clazz.isPrimitive()) {
@@ -84,16 +99,18 @@ final class MetaObjectUtility{
             }
             MetaObjectData metaObjectData = new MetaObjectData();
             metaObjectData.addStringDataAndReturnIndex("Reserving the first string for QDynamicMetaObject identification.");
-            List<String> intdataComments = intDescriptionListFactory.get();
+            IntDataDescriptions intdataDescriptions = intDescriptionFactory.get();
             final String classname = clazz.getName().replace(".", "::").replace("$", "::");
             
-            Hashtable<String,String> classInfos = new Hashtable<String, String>();
+            Hashtable<String,String> classInfos = new Hashtable<>();
             
             for(QtClassInfo info : clazz.getAnnotationsByType(QtClassInfo.class)) {
                 classInfos.put(info.key(), info.value());
             }
+            Map<String,String> qmlClassInfos = Collections.emptyMap();
             if(qmlClassInfoGeneratorFunction!=null) {
-            	classInfos.putAll(qmlClassInfoGeneratorFunction.apply(clazz));
+            	qmlClassInfos = qmlClassInfoGeneratorFunction.apply(clazz);
+            	classInfos.putAll(qmlClassInfos);
             }
             
             Map<Method, MethodFlags> methodFlags = new HashMap<>();
@@ -524,139 +541,178 @@ signalLoop:	    for (Field declaredField : declaredFields) {
             
             List<List<ParameterInfo>> allConstructorParameterInfos = new ArrayList<>();
             {
-            	TreeSet<Constructor<?>> declaredConstructors = new TreeSet<>((m1, m2)->{
+            	Comparator<Constructor<?>> cmp = (m1, m2)->{
                 	return m1.toGenericString().compareTo(m2.toGenericString());
-                });
-                declaredConstructors.addAll(Arrays.asList(clazz.getDeclaredConstructors()));
-cloop: 		    for(Constructor<?> constructor : declaredConstructors){
+                };
+                TreeSet<Constructor<?>> declaredConstructors = new TreeSet<>(cmp);
+                TreeSet<Constructor<?>> forcedInvokableConstructors = new TreeSet<>(cmp);
+                {
+	                declaredConstructors.addAll(Arrays.asList(clazz.getDeclaredConstructors()));
+	                TreeSet<Constructor<?>> removableConstructors = new TreeSet<>(cmp);
+	                boolean hasInvokableConstructors = false;
+	                boolean isConstructibleQmlValue = !qmlClassInfos.isEmpty() 
+	                		&& "true".equals(qmlClassInfos.get("QML.Creatable"))
+	                		&& "construct".equals(qmlClassInfos.get("QML.CreationMethod"));
+cloop:          	for(Constructor<?> constructor : declaredConstructors){
+	                	if(constructor.isSynthetic()) {
+	                		removableConstructors.add(constructor);
+	                	}else {
+	                		Class<?>[] parameterTypes = constructor.getParameterTypes();
+	                		if(parameterTypes.length==1) {
+								if(parameterTypes[0]==Classes.QPrivateConstructor()) {
+									metaObjectData.privateConstructor = constructor;
+									removableConstructors.add(constructor);
+									continue;
+								}else if(parameterTypes[0]==Classes.QtConstructInPlace()) {
+									metaObjectData.inPlaceConstructor = constructor;
+									removableConstructors.add(constructor);
+									continue;
+								}
+								if(isConstructibleQmlValue) {
+									forcedInvokableConstructors.add(constructor);
+									hasInvokableConstructors |= constructor.isAnnotationPresent(QtInvokable.class);
+								}
+							}else {
+		                		for (Class<?> parameterType : parameterTypes) {
+						            if(parameterType==Classes.QPrivateConstructor()
+						            		|| parameterType==Classes.QDeclarativeConstructor()) {
+						            	removableConstructors.add(constructor);
+						            	continue cloop;
+						            }
+						        }
+							}
+	                	}
+	                }
+					declaredConstructors.removeAll(removableConstructors);
+	                if(hasInvokableConstructors) {
+	                	forcedInvokableConstructors.clear();
+	                }
+                }
+                for(Constructor<?> constructor : declaredConstructors){
 					Class<?>[] parameterTypes = constructor.getParameterTypes();
-					if(parameterTypes!=null && parameterTypes.length==1) {
-						if(parameterTypes[0]==Classes.QPrivateConstructor()) {
-							metaObjectData.privateConstructor = constructor;
-							continue cloop;
-						}else if(parameterTypes[0]==Classes.QtConstructInPlace()) {
-							metaObjectData.inPlaceConstructor = constructor;
-							continue cloop;
-						}
-					}
-                    if(!constructor.isSynthetic() && constructor.isAnnotationPresent(QtInvokable.class)) {
-                        for (Class<?> parameterType : parameterTypes) {
-                            if(parameterType==Classes.QPrivateConstructor()
-                            		|| parameterType==Classes.QDeclarativeConstructor()) {
-                                continue cloop;
-                            }
-                        }
-                        
-                    	List<String> cppTypes = new ArrayList<>();
-                        List<ParameterInfo> constructorParameterInfos = new ArrayList<>();
-                        Type[] genericParameterTypes = constructor.getGenericParameterTypes();
-                        AnnotatedElement[] annotatedParameterTypes = null;
-                        if(ClassAnalyzerUtility.useAnnotatedType) {
-                        	annotatedParameterTypes = constructor.getAnnotatedParameterTypes();
-                        }
-                        for (int j = 0; j < parameterTypes.length; j++) {
-                            boolean isPointer = false;
-                            boolean isReference = false;
-                            if(annotatedParameterTypes!=null && annotatedParameterTypes[j]!=null) {
-	                            if(annotatedParameterTypes[j].isAnnotationPresent(QtPointerType.class)) {
-	                            	isPointer = true;
-	                            }
-	                            QtReferenceType referenceType = annotatedParameterTypes[j].getAnnotation(QtReferenceType.class);
-	                            if(referenceType!=null && !referenceType.isConst()) {
-	                            	isReference = true;
-	                            }
-                            }
-                            String typeName;
-                            QtMetaType metaTypeDecl = annotatedParameterTypes==null || annotatedParameterTypes[j]==null ? null : annotatedParameterTypes[j].getAnnotation(QtMetaType.class);
-                            int metaTypeId = 0;
-                            if(metaTypeDecl!=null) {
-                				if(metaTypeDecl.id()!=0) {
-                					metaTypeId = metaTypeDecl.id();
-            						metaTypeId = registerRefMetaType(metaTypeId, isPointer, isReference);
-                					typeName = new QMetaType(metaTypeId).name().toString();
-                				}else if(metaTypeDecl.type()!=QMetaType.Type.UnknownType){
-                					metaTypeId = metaTypeDecl.type().value();
-            						metaTypeId = registerRefMetaType(metaTypeId, isPointer, isReference);
-                					typeName = new QMetaType(metaTypeId).name().toString();
-                				}else {
-            						if(metaTypeDecl.name().isEmpty())
-            							throw new IllegalArgumentException("Incomplete @QtMetaType declaration. Either use type, id or name to specify meta type.");
-                					typeName = metaTypeDecl.name();
-                					if(isPointer && !typeName.endsWith("*")) {
-                                        typeName += "*";
-                                    }
-                                    if(isReference) {
-                                    	if(typeName.endsWith("*")) {
-                                            typeName = typeName.substring(0, typeName.length()-2);
-                                        }
-                                        if(!typeName.endsWith("&")) {
-                                            typeName += "&";
-                                        }
-                                    }
-                				}
-                			}else {
-                				typeName = internalTypeNameOfClass(parameterTypes[j], genericParameterTypes[j], annotatedParameterTypes==null ? null : annotatedParameterTypes[j]);
-                				if(isPointer) {
-                                    if(!typeName.isEmpty() && !typeName.endsWith("*")) {
-                                        typeName += "*";
-                                    }
-                                }
-                                if(isReference) {
-                                    if(typeName.endsWith("*")) {
-                                        typeName = typeName.substring(0, typeName.length()-2);
-                                    }
-                                    if(!typeName.isEmpty() && !typeName.endsWith("&")) {
-                                        typeName += "&";
-                                    }
-                                }
-                			}
-                        	QMetaType.Type type = metaType(typeName);
-                            if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
-                                if(metaTypeId==QMetaType.Type.UnknownType.value()) {
-    	                        	metaTypeId = findMetaType(typeName);
-    	                        	QMetaType metaType = new QMetaType(metaTypeId);
-    	                            if(metaTypeId==QMetaType.Type.UnknownType.value() 
-    	                            		|| !(genericParameterTypes[j] instanceof Class 
-    	                            				|| new QMetaType(metaTypeId).name().toString().equals(typeName))
-    	                            		|| metaType.javaType()!=parameterTypes[j]) {
-    	                                metaTypeId = registerMetaType(parameterTypes[j], 
-    	                                        genericParameterTypes[j],
-    	                                        annotatedParameterTypes!=null ? annotatedParameterTypes[j] : null,
-    	                                        isPointer,
-    	                                        isReference);
-    	                                metaType = new QMetaType(metaTypeId);
-    	                            }
-    	                            if(metaTypeId!=QMetaType.Type.UnknownType.value())
-    	                                typeName = metaType.name().toString();
-    	                            else continue cloop;
-                                }
-                                cppTypes.add(typeName);
-                                constructorParameterInfos.add(new ParameterInfo(metaTypeId, typeName));
-                            }else{
-                                cppTypes.add(new QMetaType(type).name().toString());
-                                constructorParameterInfos.add(new ParameterInfo(type));
-                            }
-                        }
-                        
-                        String name = constructor.getName();
-                        String methodSignature = String.format("%1$s(%2$s)", name, String.join(", ", cppTypes));
-                        if(!addedMethodSignatures.contains(methodSignature)) {
-                        	addedMethodSignatures.add(methodSignature);
-	                        allConstructorParameterInfos.add(constructorParameterInfos);
-	                        metaObjectData.constructors.add(constructor);
-	                        metaObjectData.constructorMetaTypes.add(new MetaObjectData.MetaTypeInfo[parameterTypes.length+1]);
-	                        metaObjectData.hasStaticMembers = true;
-                        }
-                    }
+				    if(constructor.isAnnotationPresent(QtInvokable.class) || forcedInvokableConstructors.contains(constructor)) {
+				    	List<String> cppTypes = new ArrayList<>();
+				        List<ParameterInfo> constructorParameterInfos = new ArrayList<>();
+				        Type[] genericParameterTypes = constructor.getGenericParameterTypes();
+				        AnnotatedElement[] annotatedParameterTypes = null;
+				        if(ClassAnalyzerUtility.useAnnotatedType) {
+				        	annotatedParameterTypes = constructor.getAnnotatedParameterTypes();
+				        }
+				        for (int j = 0; j < parameterTypes.length; j++) {
+				            boolean isPointer = false;
+				            boolean isReference = false;
+				            if(annotatedParameterTypes!=null && annotatedParameterTypes[j]!=null) {
+				                if(annotatedParameterTypes[j].isAnnotationPresent(QtPointerType.class)) {
+				                	isPointer = true;
+				                }
+				                QtReferenceType referenceType = annotatedParameterTypes[j].getAnnotation(QtReferenceType.class);
+				                if(referenceType!=null && !referenceType.isConst()) {
+				                	isReference = true;
+				                }
+				            }
+				            String typeName;
+				            QtMetaType metaTypeDecl = annotatedParameterTypes==null || annotatedParameterTypes[j]==null ? null : annotatedParameterTypes[j].getAnnotation(QtMetaType.class);
+				            int metaTypeId = 0;
+				            if(metaTypeDecl!=null) {
+								if(metaTypeDecl.id()!=0) {
+									metaTypeId = metaTypeDecl.id();
+									metaTypeId = registerRefMetaType(metaTypeId, isPointer, isReference);
+									typeName = new QMetaType(metaTypeId).name().toString();
+								}else if(metaTypeDecl.type()!=QMetaType.Type.UnknownType){
+									metaTypeId = metaTypeDecl.type().value();
+									metaTypeId = registerRefMetaType(metaTypeId, isPointer, isReference);
+									typeName = new QMetaType(metaTypeId).name().toString();
+								}else {
+									if(metaTypeDecl.name().isEmpty())
+										throw new IllegalArgumentException("Incomplete @QtMetaType declaration. Either use type, id or name to specify meta type.");
+									typeName = metaTypeDecl.name();
+									if(isPointer && !typeName.endsWith("*")) {
+				                        typeName += "*";
+				                    }
+				                    if(isReference) {
+				                    	if(typeName.endsWith("*")) {
+				                            typeName = typeName.substring(0, typeName.length()-2);
+				                        }
+				                        if(!typeName.endsWith("&")) {
+				                            typeName += "&";
+				                        }
+				                    }
+								}
+							}else {
+								typeName = internalTypeNameOfClass(parameterTypes[j], genericParameterTypes[j], annotatedParameterTypes==null ? null : annotatedParameterTypes[j]);
+								if(isPointer) {
+				                    if(!typeName.isEmpty() && !typeName.endsWith("*")) {
+				                        typeName += "*";
+				                    }
+				                }
+				                if(isReference) {
+				                    if(typeName.endsWith("*")) {
+				                        typeName = typeName.substring(0, typeName.length()-2);
+				                    }
+				                    if(!typeName.isEmpty() && !typeName.endsWith("&")) {
+				                        typeName += "&";
+				                    }
+				                }
+							}
+				        	QMetaType.Type type = metaType(typeName);
+				            if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
+				                if(metaTypeId==QMetaType.Type.UnknownType.value()) {
+				                	metaTypeId = findMetaType(typeName);
+				                	QMetaType metaType = new QMetaType(metaTypeId);
+				                    if(metaTypeId==QMetaType.Type.UnknownType.value() 
+				                    		|| !(genericParameterTypes[j] instanceof Class 
+				                    				|| new QMetaType(metaTypeId).name().toString().equals(typeName))
+				                    		|| metaType.javaType()!=parameterTypes[j]) {
+				                        metaTypeId = registerMetaType(parameterTypes[j], 
+				                                genericParameterTypes[j],
+				                                annotatedParameterTypes!=null ? annotatedParameterTypes[j] : null,
+				                                isPointer,
+				                                isReference);
+				                        metaType = new QMetaType(metaTypeId);
+				                    }
+				                    if(metaTypeId!=QMetaType.Type.UnknownType.value())
+				                        typeName = metaType.name().toString();
+				                    else continue;
+				                }
+				                cppTypes.add(typeName);
+				                constructorParameterInfos.add(new ParameterInfo(metaTypeId, typeName));
+				            }else{
+				                cppTypes.add(new QMetaType(type).name().toString());
+				                constructorParameterInfos.add(new ParameterInfo(type));
+				            }
+				        }
+				        
+				        String name = constructor.getName();
+				        String methodSignature = String.format("%1$s(%2$s)", name, String.join(", ", cppTypes));
+				        if(!addedMethodSignatures.contains(methodSignature)) {
+				        	addedMethodSignatures.add(methodSignature);
+				            allConstructorParameterInfos.add(constructorParameterInfos);
+				            metaObjectData.constructors.add(constructor);
+				            metaObjectData.constructorMetaTypes.add(new MetaObjectData.MetaTypeInfo[parameterTypes.length+1]);
+				            metaObjectData.hasStaticMembers = true;
+				        }
+				    }
                 }
             }
             
             List<List<ParameterInfo>> allMethodParameterInfos = new ArrayList<>();
             List<Method> possibleBindables = Collections.emptyList();
-            TreeSet<Method> declaredMethods = new TreeSet<>((m1, m2)->{
-            	return m1.toGenericString().compareTo(m2.toGenericString());
-            });
-            declaredMethods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
+            final Map<String,Map<Class<?>[],Method>> sortedMethods;
+            final Set<Method> declaredMethods;
+            {
+            	Map<String,Map<Class<?>[],Method>> map = new TreeMap<>();
+	            TreeSet<Method> set = new TreeSet<>((m1, m2)->{
+	            	return m1.toGenericString().compareTo(m2.toGenericString());
+	            });
+	            for (Method declaredMethod : clazz.getDeclaredMethods()) {
+	            	set.add(declaredMethod);
+	            	map.computeIfAbsent(declaredMethod.getName(), n->new TreeMap<>((m1, m2)->{
+		            	return Integer.compare(Arrays.hashCode(m1), Arrays.hashCode(m2));
+		            })).put(declaredMethod.getParameterTypes(), declaredMethod);
+	            }
+	            declaredMethods = Collections.unmodifiableSet(set);
+	            sortedMethods = Collections.unmodifiableMap(map);
+            }
             List<QPair<String,Method>> possibleReaders = Collections.emptyList();
             Set<Method> usedGetters = new HashSet<>();
             for (Method declaredMethod : declaredMethods) {
@@ -743,13 +799,13 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             // We need a reader as well, and the reader must not be annotated as disabled
                             // The reader can be called 'xxx', 'getXxx', 'isXxx' or 'hasXxx'
                             // (just booleans for the last two)
-                            Method readerMethod = findPropertyReader(getDeclaredMethod(clazz, propertyName), propertyName, paramType);
+                            Method readerMethod = findPropertyReader(getDeclaredMethod(sortedMethods, propertyName), propertyName, paramType);
                             if (readerMethod == null)
-                                readerMethod = findPropertyReader(getDeclaredMethod(clazz, "get" + capitalizeFirst(propertyName)), propertyName, paramType);
+                                readerMethod = findPropertyReader(getDeclaredMethod(sortedMethods, "get" + capitalizeFirst(propertyName)), propertyName, paramType);
                             if (readerMethod == null && isBoolean(paramType))
-                                readerMethod = findPropertyReader(getDeclaredMethod(clazz, "is" + capitalizeFirst(propertyName)), propertyName, paramType);
+                                readerMethod = findPropertyReader(getDeclaredMethod(sortedMethods, "is" + capitalizeFirst(propertyName)), propertyName, paramType);
                             if (readerMethod == null && isBoolean(paramType))
-                                readerMethod = findPropertyReader(getDeclaredMethod(clazz, "has" + capitalizeFirst(propertyName)), propertyName, paramType);
+                                readerMethod = findPropertyReader(getDeclaredMethod(sortedMethods, "has" + capitalizeFirst(propertyName)), propertyName, paramType);
 
                             if (readerMethod != null) { // yay
                                 reader = PropertyAnnotation.readerAnnotation(readerMethod);
@@ -829,13 +885,13 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
             			QPropertyTypeInfo typeInfo = getQPropertyTypeInfo(possibleBindable);
             			if(typeInfo!=null) {
 	            			Class<?> paramType = typeInfo.propertyType;
-	            			Method readerMethod = findPropertyReader(getDeclaredMethod(clazz, propertyName), propertyName, paramType);
+	            			Method readerMethod = findPropertyReader(getDeclaredMethod(sortedMethods, propertyName), propertyName, paramType);
 	                        if (readerMethod == null)
-	                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "get" + capitalizeFirst(propertyName)), propertyName, paramType);
+	                            readerMethod = findPropertyReader(getDeclaredMethod(sortedMethods, "get" + capitalizeFirst(propertyName)), propertyName, paramType);
 	                        if (readerMethod == null && isBoolean(paramType))
-	                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "is" + capitalizeFirst(propertyName)), propertyName, paramType);
+	                            readerMethod = findPropertyReader(getDeclaredMethod(sortedMethods, "is" + capitalizeFirst(propertyName)), propertyName, paramType);
 	                        if (readerMethod == null && isBoolean(paramType))
-	                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "has" + capitalizeFirst(propertyName)), propertyName, paramType);
+	                            readerMethod = findPropertyReader(getDeclaredMethod(sortedMethods, "has" + capitalizeFirst(propertyName)), propertyName, paramType);
 	
 	                        if (readerMethod != null) { // yay
 	                            propertyReaders.put(propertyName, readerMethod);
@@ -846,7 +902,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 	                            propertyUserResolvers.put(propertyName, isUser(readerMethod, clazz));
 	                            propertyRequiredResolvers.put(propertyName, isRequired(readerMethod));
 	                        }else {
-	                        	Method writerMethod = findPropertyWriter(getDeclaredMethod(clazz, "set"+propertyName.toUpperCase().charAt(0)+propertyName.substring(1), paramType), propertyName, paramType);
+	                        	Method writerMethod = findPropertyWriter(getDeclaredMethod(sortedMethods, "set"+propertyName.toUpperCase().charAt(0)+propertyName.substring(1), paramType), propertyName, paramType);
 	                        	if(writerMethod != null) {
 	                        		PropertyAnnotation writer = PropertyAnnotation.writerAnnotation(writerMethod);
 	                                if (writer == null) {
@@ -869,13 +925,13 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
             		propertyName = propertyName.substring(0, propertyName.length()-7);
             		if (!propertyReaders.containsKey(propertyName)) {
             			Class<?> paramType = signalInfo.signalTypes.size()==1 ? signalInfo.signalTypes.get(0).type : null;
-            			Method readerMethod = findPropertyReader(getDeclaredMethod(clazz, propertyName), propertyName, paramType);
+            			Method readerMethod = findPropertyReader(getDeclaredMethod(sortedMethods, propertyName), propertyName, paramType);
                         if (readerMethod == null)
-                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "get" + capitalizeFirst(propertyName)), propertyName, paramType);
+                            readerMethod = findPropertyReader(getDeclaredMethod(sortedMethods, "get" + capitalizeFirst(propertyName)), propertyName, paramType);
                         if (readerMethod == null && isBoolean(paramType))
-                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "is" + capitalizeFirst(propertyName)), propertyName, paramType);
+                            readerMethod = findPropertyReader(getDeclaredMethod(sortedMethods, "is" + capitalizeFirst(propertyName)), propertyName, paramType);
                         if (readerMethod == null && isBoolean(paramType))
-                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "has" + capitalizeFirst(propertyName)), propertyName, paramType);
+                            readerMethod = findPropertyReader(getDeclaredMethod(sortedMethods, "has" + capitalizeFirst(propertyName)), propertyName, paramType);
 
                         if (readerMethod != null) { // yay
                             propertyReaders.put(propertyName, readerMethod);
@@ -887,7 +943,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             propertyRequiredResolvers.put(propertyName, isRequired(readerMethod));
                         }else {
                         	Method writerMethod;
-                        	writerMethod = findPropertyWriter(getDeclaredMethod(clazz, "set"+propertyName.toUpperCase().charAt(0)+propertyName.substring(1), paramType), propertyName, paramType);
+                        	writerMethod = findPropertyWriter(getDeclaredMethod(sortedMethods, "set"+propertyName.toUpperCase().charAt(0)+propertyName.substring(1), paramType), propertyName, paramType);
                         	if(writerMethod != null) {
                         		PropertyAnnotation writer = PropertyAnnotation.writerAnnotation(writerMethod);
                                 if (writer == null) {
@@ -1210,48 +1266,48 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 
                 final int MO_HEADER_LEN = 14;  // header size        	
                 // revision
-                metaObjectData.intData.add(revision);		intdataComments.add("revision");
+                metaObjectData.intData.add(revision);		intdataDescriptions.add("revision");
                 // classname
-                metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(classname));		intdataComments.add("className");
+                metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(classname));		intdataDescriptions.add("className");
                 // classinfo
-                metaObjectData.intData.add(classInfos.size());		intdataComments.add("classInfoCount");
-                metaObjectData.intData.add(classInfos.isEmpty() ? 0 : MO_HEADER_LEN);		intdataComments.add("classInfoData");
+                metaObjectData.intData.add(classInfos.size());		intdataDescriptions.add("classInfoCount");
+                metaObjectData.intData.add(classInfos.isEmpty() ? 0 : MO_HEADER_LEN);		intdataDescriptions.add("classInfoData");
                 
                 // methods
                 int methodCount = metaObjectData.signalInfos.size() + metaObjectData.methods.size();
-                metaObjectData.intData.add(methodCount);		intdataComments.add("methodCount");
+                metaObjectData.intData.add(methodCount);		intdataDescriptions.add("methodCount");
                 final int METHOD_METADATA_INDEX = metaObjectData.intData.size();
-                metaObjectData.intData.add(0);		intdataComments.add("methodData");
+                metaObjectData.intData.add(0);		intdataDescriptions.add("methodData");
                 
                 // properties
-                metaObjectData.intData.add(propertyReaders.size());		intdataComments.add("propertyCount");
+                metaObjectData.intData.add(propertyReaders.size());		intdataDescriptions.add("propertyCount");
                 final int PROPERTY_METADATA_INDEX = metaObjectData.intData.size();
-                metaObjectData.intData.add(0);		intdataComments.add("propertyData");
+                metaObjectData.intData.add(0);		intdataDescriptions.add("propertyData");
                 
                 // enums/sets
-                metaObjectData.intData.add(enums.size());		intdataComments.add("enumeratorCount");
+                metaObjectData.intData.add(enums.size());		intdataDescriptions.add("enumeratorCount");
                 final int ENUM_METADATA_INDEX = metaObjectData.intData.size();
-                metaObjectData.intData.add(0);		intdataComments.add("enumeratorData");
+                metaObjectData.intData.add(0);		intdataDescriptions.add("enumeratorData");
                 
                 // constructors
-                metaObjectData.intData.add(!metaObjectData.constructors.isEmpty() ? metaObjectData.constructors.size() : 0);		intdataComments.add("constructorCount");
+                metaObjectData.intData.add(!metaObjectData.constructors.isEmpty() ? metaObjectData.constructors.size() : 0);		intdataDescriptions.add("constructorCount");
                 final int CONSTRUCTOR_METADATA_INDEX = metaObjectData.intData.size();
-                metaObjectData.intData.add(0);		intdataComments.add("constructorData");
+                metaObjectData.intData.add(0);		intdataDescriptions.add("constructorData");
                 
                 // flags
                 flagsIndex = metaObjectData.intData.size();
-                metaObjectData.intData.add(0);		intdataComments.add("flags");
+                metaObjectData.intData.add(0);		intdataDescriptions.add("flags");
                 
                 // signalCount
-                metaObjectData.intData.add(metaObjectData.signalInfos.size());		intdataComments.add("signalCount");
+                metaObjectData.intData.add(metaObjectData.signalInfos.size());		intdataDescriptions.add("signalCount");
                 
                 //
                 // Build classinfo array
                 //
                 for(Map.Entry<String,String> entry : classInfos.entrySet()){
                     // classinfo: key, value
-                    metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(entry.getKey()));		intdataComments.add("classinfo: key");
-                    metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(entry.getValue()));		intdataComments.add("classinfo: value");
+                    metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(entry.getKey()));		intdataDescriptions.add("classinfo: key");
+                    metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(entry.getValue()));		intdataDescriptions.add("classinfo: value");
                 }
                 
                 HashMap<Object,Integer> paramIndexOfMethods = new HashMap<Object,Integer>();
@@ -1283,13 +1339,13 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         int argc = signalInfo.signalTypes.size();
                         
                         // signals: name, argc, parameters, tag, flags, initial metatype offsets
-                        metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(signalInfo.field.getName()));		intdataComments.add("signal["+i+"]: name");
-                        metaObjectData.intData.add(argc);		intdataComments.add("signal["+i+"]: argc");
+                        metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(signalInfo.field.getName()));		intdataDescriptions.add("signal[%1%s]: name", i);
+                        metaObjectData.intData.add(argc);		intdataDescriptions.add("signal[%1%s]: argc", i);
                     	paramIndexOfMethods.put(new QPair<>(signalInfo.field, argc), metaObjectData.intData.size());
-                        metaObjectData.intData.add(0);		intdataComments.add("signal["+i+"]: parameters");
-                        metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(""));		intdataComments.add("signal["+i+"]: tag");
-                        metaObjectData.intData.add(flags);		intdataComments.add("signal["+i+"]: flags");
-                        metaObjectData.intData.add(0);		intdataComments.add("signal["+i+"]: initial metatype offsets");
+                        metaObjectData.intData.add(0);		intdataDescriptions.add("signal[%1%s]: parameters", i);
+                        metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(""));		intdataDescriptions.add("signal[%1%s]: tag", i);
+                        metaObjectData.intData.add(flags);		intdataDescriptions.add("signal[%1%s]: flags", i);
+                        metaObjectData.intData.add(0);		intdataDescriptions.add("signal[%1%s]: initial metatype offsets", i);
                     }
                     
                     //
@@ -1311,17 +1367,17 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         
                         // slots: name, argc, parameters, tag, flags, initial metatype offsets
                         metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(method.getName()));
-                        intdataComments.add("slot["+i+"]: name");
+                        intdataDescriptions.add("slot[%1%s]: name", i);
                         metaObjectData.intData.add(argc);
-                        intdataComments.add("slot["+i+"]: argc");
+                        intdataDescriptions.add("slot[%1%s]: argc", i);
                         paramIndexOfMethods.put(method, metaObjectData.intData.size());
                         metaObjectData.intData.add(0);
-                        intdataComments.add("slot["+i+"]: parameters");
+                        intdataDescriptions.add("slot[%1%s]: parameters", i);
                         metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(""));
-                        intdataComments.add("slot["+i+"]: tag");
+                        intdataDescriptions.add("slot[%1%s]: tag", i);
                         metaObjectData.intData.add(flags);
-                        intdataComments.add("slot["+i+"]: flags");
-                        metaObjectData.intData.add(0);		intdataComments.add("slot["+i+"]: initial metatype offsets");
+                        intdataDescriptions.add("slot[%1%s]: flags", i);
+                        metaObjectData.intData.add(0);		intdataDescriptions.add("slot[%1%s]: initial metatype offsets", i);
                     }
                 }
                 
@@ -1374,7 +1430,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     int METHOD_PARAMETER_INDEX = paramIndexOfMethods.get(new QPair<>(signalInfo.field, signalInfo.signalMetaTypes.length));
                     metaObjectData.intData.set(METHOD_PARAMETER_INDEX, metaObjectData.intData.size());
                     metaObjectData.intData.set(METHOD_PARAMETER_INDEX+3, metaObjectData.metaTypes.size());
-                    metaObjectData.intData.add(QMetaType.Type.Void.value());		intdataComments.add("signal["+i+"].returnType");
+                    metaObjectData.intData.add(QMetaType.Type.Void.value());		intdataDescriptions.add("signal[%1%s].returnType", i);
                     metaObjectData.metaTypes.add(QMetaType.Type.Void.value());
                     for (int j = 0; j < signalParameterInfos.size(); j++) {
                     	ParameterInfo info = signalParameterInfos.get(j);
@@ -1387,10 +1443,10 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         	metaObjectData.intData.add(info.type.value());
                             metaObjectData.metaTypes.add(info.type.value());
                         }
-                        intdataComments.add("signal["+i+"]: parameter["+j+"].arg");
+                        intdataDescriptions.add("signal[%1%s]: parameter[%2$s].arg", i, j);
                     }
                     for (int j = 0; j < signalParameterInfos.size(); j++) {
-                        metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex("arg__"+(j+1)));		intdataComments.add("signal["+i+"]: parameter["+j+"].argName");
+                        metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex("arg__"+(j+1)));		intdataDescriptions.add("signal[%1%s]: parameter[%2$s].argName", i, j);
                     }
                 }
                 
@@ -1422,13 +1478,13 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         if(className.contains("$")){
                             className = className.substring(className.lastIndexOf('$')+1);
                         }
-                        metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(className));		intdataComments.add("constructor["+i+"]: name");
-                        metaObjectData.intData.add(argc);		intdataComments.add("constructor["+i+"]: argc");
+                        metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(className));		intdataDescriptions.add("constructor[%1%s]: name", i);
+                        metaObjectData.intData.add(argc);		intdataDescriptions.add("constructor[%1%s]: argc", i);
                         paramIndexOfMethods.put(constructor, metaObjectData.intData.size());
-                        metaObjectData.intData.add(0);		intdataComments.add("constructor["+i+"]: parameters");
-                        metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(""));		intdataComments.add("constructor["+i+"]: tag");
-                        metaObjectData.intData.add(flags);		intdataComments.add("constructor["+i+"]: flags");
-                        metaObjectData.intData.add(0);		intdataComments.add("slot["+i+"]: initial metatype offsets");
+                        metaObjectData.intData.add(0);		intdataDescriptions.add("constructor[%1%s]: parameters", i);
+                        metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(""));		intdataDescriptions.add("constructor[%1%s]: tag", i);
+                        metaObjectData.intData.add(flags);		intdataDescriptions.add("constructor[%1%s]: flags", i);
+                        metaObjectData.intData.add(0);		intdataDescriptions.add("slot[%1%s]: initial metatype offsets", i);
                     }
                 }
                 
@@ -1450,7 +1506,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         metaObjectData.metaTypes.add(info.type.value());
                         metaTypes[0] = new MetaObjectData.MetaTypeInfo(info.type.value(), info.typeName);
                     }
-                    intdataComments.add("slot["+i+"].returnType");
+                    intdataDescriptions.add("slot[%1%s].returnType", i);
                     for (int j = 1; j < methodParameterInfos.size(); j++) {
                     	info = methodParameterInfos.get(j);
                         if(info.type==null){
@@ -1462,7 +1518,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             metaObjectData.metaTypes.add(info.type.value());
                             metaTypes[j] = new MetaObjectData.MetaTypeInfo(info.type.value(), info.typeName);
                         }
-                        intdataComments.add("slot["+i+"]: parameter["+(j-1)+"].arg");
+                        intdataDescriptions.add("slot[%1%s]: parameter[%2$s].arg", i, (j-1));
                     }
                     try {
 	                    Parameter[] parameters = method.getParameters();
@@ -1472,12 +1528,12 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 	                        }else {
 	                            metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex("arg__"+(j+1)));
 	                        }
-	                        intdataComments.add("slot["+i+"]: parameter["+j+"].argName");
+	                        intdataDescriptions.add("slot[%1%s]: parameter[%2$s].argName", i, j);
 	                    }
                     }catch(java.lang.reflect.MalformedParametersException e) {
                     	for (int j = 0; j < method.getParameterCount(); j++) {
                             metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex("arg__"+(j+1)));
-	                        intdataComments.add("slot["+i+"]: parameter["+(j)+"].argName");
+	                        intdataDescriptions.add("slot[%1%s]: parameter[%2$s].argName", i, j);
 	                    }
                     }
                 }
@@ -1492,7 +1548,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     metaObjectData.intData.set(METHOD_PARAMETER_INDEX, metaObjectData.intData.size());
                     metaObjectData.intData.set(METHOD_PARAMETER_INDEX+3, metaObjectData.metaTypes.size());
                     metaObjectData.intData.add(0x80000000 | metaObjectData.addStringDataAndReturnIndex(""));
-                    intdataComments.add("constructor["+i+"].returnType");
+                    intdataDescriptions.add("constructor[%1%s].returnType", i);
                     for (int j = 0; j < constructorParameterInfos.size(); j++) {
                     	ParameterInfo info = constructorParameterInfos.get(j);
                         if(info.type==null){
@@ -1504,7 +1560,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             metaObjectData.metaTypes.add(info.type.value());
                             metaTypes[j+1] = new MetaObjectData.MetaTypeInfo(info.type.value(), info.typeName);
                         }
-                        intdataComments.add("constructor["+i+"]: parameter["+(j)+"].arg");
+                        intdataDescriptions.add("constructor[%1%s]: parameter[%2$s].arg", i, j);
                     }
                     try {
 	                    Parameter[] parameters = constructor.getParameters();
@@ -1514,12 +1570,12 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 	                        }else {
 	                            metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex("arg__"+(j+1)));
 	                        }
-	                        intdataComments.add("constructor["+i+"]: parameter["+(j)+"].argName");
+	                        intdataDescriptions.add("constructor[%1%s]: parameter[%2$s].argName", i, j);
 	                    }
                     }catch(java.lang.reflect.MalformedParametersException e) {
                     	for (int j = 0; j < constructor.getParameterCount(); j++) {
                             metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex("arg__"+(j+1)));
-	                        intdataComments.add("constructor["+i+"]: parameter["+(j)+"].argName");
+	                        intdataDescriptions.add("constructor[%1%s]: parameter[%2$s].argName", i, j);
 	                    }
                     }
                 }
@@ -1829,7 +1885,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         
                      // properties: name, type, flags
                         metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(propertyName));
-                        intdataComments.add("property["+i+"].name");
+                        intdataDescriptions.add("property[%1%s].name", i);
                         QMetaType.Type type = metaType(typeName);
                         if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
                         	if(metaTypeId==QMetaType.Type.UnknownType.value()) {
@@ -1854,14 +1910,14 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             metaObjectData.propertyMetaTypes.add(new MetaObjectData.MetaTypeInfo[]{new MetaObjectData.MetaTypeInfo(type.value(), typeName),new MetaObjectData.MetaTypeInfo(type.value(), typeName)});
                         }
                         metaObjectData.propertyClassTypes.add(propertyType);
-                        intdataComments.add("property["+i+"].type");
+                        intdataDescriptions.add("property[%1%s].type", i);
                         metaObjectData.intData.add(flags);
-                        intdataComments.add("property["+i+"].flags");
+                        intdataDescriptions.add("property[%1%s].flags", i);
                         Integer signalIndex = signalIndexes.get(notify);
                         metaObjectData.intData.add(signalIndex!=null ? signalIndex : -1);
-                        intdataComments.add("property["+i+"].notifyId");
+                        intdataDescriptions.add("property[%1%s].notifyId", i);
                         metaObjectData.intData.add(0);
-                        intdataComments.add("property["+i+"].revision");
+                        intdataDescriptions.add("property[%1%s].revision", i);
                         
                         metaObjectData.propertyReaders.add(reader);
                         metaObjectData.propertyWriters.add(writer);
@@ -1885,10 +1941,10 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         		}
                         	}
                             metaObjectData.intData.add(idx);
-                            intdataComments.add("property["+i+"].notify_signal_id");
+                            intdataDescriptions.add("property[%1%s].notify_signal_id", i);
                         }else {
                             metaObjectData.intData.add(0);
-                            intdataComments.add("property["+i+"].notify_signal_id");
+                            intdataDescriptions.add("property[%1%s].notify_signal_id", i);
                         }
                         ++i;
                     }
@@ -1914,23 +1970,23 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             Class<?> _enumClass = getEnumForQFlags(enumClass);
                             alias = _enumClass.getSimpleName();
                         }
-                        metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(enumClass.getSimpleName()));	intdataComments.add("enum["+i+"].name");
-                        metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(alias));	intdataComments.add("enum["+i+"].alias");
+                        metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(enumClass.getSimpleName()));	intdataDescriptions.add("enum[%1%s].name", i);
+                        metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(alias));	intdataDescriptions.add("enum[%1%s].alias", i);
                                                                                                                                                
                                                                                                                             
-                        metaObjectData.intData.add(QFlags.class.isAssignableFrom(enumClass) ? 0x1 : 0x0);	intdataComments.add("enum["+i+"].flags");
+                        metaObjectData.intData.add(QFlags.class.isAssignableFrom(enumClass) ? 0x1 : 0x0);	intdataDescriptions.add("enum[%1%s].flags", i);
                         
                         // Get the enum class
                         Class<?> contentEnumClass = Enum.class.isAssignableFrom(enumClass) ? enumClass : getEnumForQFlags(enumClass);
                         
                         if(contentEnumClass==null) {
-                        	metaObjectData.intData.add(0);	intdataComments.add("enum["+i+"].count");
+                        	metaObjectData.intData.add(0);	intdataDescriptions.add("enum[%1%s].count", i);
                         }else {
                         	Object[] enumConstants = contentEnumClass.getEnumConstants();
-                        	metaObjectData.intData.add(enumConstants==null ? 0 : enumConstants.length);	intdataComments.add("enum["+i+"].count");
+                        	metaObjectData.intData.add(enumConstants==null ? 0 : enumConstants.length);	intdataDescriptions.add("enum[%1%s].count", i);
                         }
                         dataIndexOfEnums.put(enumClass, metaObjectData.intData.size());
-                        metaObjectData.intData.add(0);	intdataComments.add("enum["+i+"].data");
+                        metaObjectData.intData.add(0);	intdataDescriptions.add("enum[%1%s].data", i);
                     }
                     
                     for (int i = 0; i < enumList.size(); i++) {
@@ -1944,7 +2000,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         	Enum<?>[] enumConstants = contentEnumClass.getEnumConstants();
                         	if(enumConstants!=null) {
 		                        for(Enum<?> enumConstant : enumConstants){
-		                            metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(enumConstant.name()));	intdataComments.add("enum["+i+"].data: key");
+		                            metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(enumConstant.name()));	intdataDescriptions.add("enum[%1%s].data: key", i);
 		                            if(enumConstant instanceof QtEnumerator){
 		                                QtEnumerator enumerator = (QtEnumerator)enumConstant;
 		                                metaObjectData.intData.add(enumerator.value());
@@ -1960,7 +2016,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 		                            }else{
 		                                metaObjectData.intData.add(enumConstant.ordinal());
 		                            }
-		                            intdataComments.add("enum["+i+"].data: value");
+		                            intdataDescriptions.add("enum[%1%s].data: value", i);
 		                        }
                         	}
                         }
@@ -1971,17 +2027,17 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 	            	int metaTypeId = registerMetaType(clazz, null, null, false, false);
 	            	QMetaType metaType = new QMetaType(metaTypeId);
 	            	if(metaType.isValid() && !metaType.flags().testFlag(QMetaType.TypeFlag.IsPointer))
-	            		metaObjectData.metaTypes.add(metaTypeId);
+	            		metaObjectData.metaTypes.set(selfMetaTypeIndex, metaTypeId);
                 }
                 
                 //
                 // Terminate data array
                 //
                 metaObjectData.intData.add(0); // eod
-                intdataComments.add("end of data");
+                intdataDescriptions.add("end of data");
             }
 
-            if(!intdataComments.isEmpty()) {
+            if(!intdataDescriptions.isEmpty()) {
                 List<String> nms = Arrays.asList(
                         "revision",
                         "className",
@@ -2003,11 +2059,11 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     try {
                         String strg = null;
                         try {
-                            if(intdataComments.get(i).endsWith("]: name")) {
+                            if(intdataDescriptions.get(i).endsWith("]: name")) {
                                 strg = metaObjectData.getStringData(metaObjectData.intData.get(i));
-                            }else if(intdataComments.get(i).endsWith("].argName")) {
+                            }else if(intdataDescriptions.get(i).endsWith("].argName")) {
                                 strg = metaObjectData.getStringData(metaObjectData.intData.get(i));
-                            }else if(intdataComments.get(i).endsWith("].arg")) {
+                            }else if(intdataDescriptions.get(i).endsWith("].arg")) {
                                 int idx = metaObjectData.intData.get(i);
                                 if((idx & 0x80000000) == 0x80000000) {
                                     idx = idx & ~0x80000000;
@@ -2021,7 +2077,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                                         }
                                     }
                                 }
-                            }else if(intdataComments.get(i).endsWith("].returnType")) {
+                            }else if(intdataDescriptions.get(i).endsWith("].returnType")) {
                                 int idx = metaObjectData.intData.get(i);
                                 if((idx & 0x80000000) == 0x80000000) {
                                     idx = idx & ~0x80000000;
@@ -2041,12 +2097,12 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         }
                         if(strg!=null) {
                             if(i<nms.size()) {
-                                System.out.printf("\t%1$s: %3$s=%2$s (%4$s) --> %5$s\n", i, metaObjectData.intData.get(i), intdataComments.get(i), nms.get(i), strg);
+                                System.out.printf("\t%1$s: %3$s=%2$s (%4$s) --> %5$s\n", i, metaObjectData.intData.get(i), intdataDescriptions.get(i), nms.get(i), strg);
                             }else {
-                                System.out.printf("\t%1$s: %3$s=%2$s --> %4$s\n", i, metaObjectData.intData.get(i), intdataComments.get(i), strg);
+                                System.out.printf("\t%1$s: %3$s=%2$s --> %4$s\n", i, metaObjectData.intData.get(i), intdataDescriptions.get(i), strg);
                             }
                         }else {
-                            System.out.printf("\t%1$s: %3$s=%2$s\n", i, metaObjectData.intData.get(i), intdataComments.get(i));
+                            System.out.printf("\t%1$s: %3$s=%2$s\n", i, metaObjectData.intData.get(i), intdataDescriptions.get(i));
                         }
                     } catch (IndexOutOfBoundsException e) {
                         System.out.printf("\t%1$s: %2$s\n", i, metaObjectData.intData.get(i));
@@ -2066,16 +2122,17 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
         }
     }
 
-    private static abstract class Classes extends io.qt.core.QObject{
+    static abstract class Classes extends io.qt.core.QObject{
 		static Class<?> QPrivateConstructor(){
     		return QPrivateConstructor.class;
     	}
 		static Class<?> QtConstructInPlace(){
     		return QtConstructInPlace.class;
     	}
-		@SuppressWarnings({"removal", "deprecation"})
 		static Class<?> QDeclarativeConstructor(){
-    		return QDeclarativeConstructor.class;
+			@SuppressWarnings({"removal", "deprecation"})
+			Class<?> cls = QDeclarativeConstructor.class; 
+    		return cls;
     	}
     }
     
@@ -2373,12 +2430,8 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 && declaredMethod.getReturnType() == Void.TYPE);
     }
 
-    private static Method getDeclaredMethod(Class<?> clazz, String name, Class<?>... args) {
-        try {
-            return clazz.getDeclaredMethod(name, args);
-        } catch (NoSuchMethodException e) {
-            return null;
-        }
+    private static Method getDeclaredMethod(Map<String,Map<Class<?>[],Method>> sortedMethods, String name, Class<?>... args) {
+        return sortedMethods.getOrDefault(name, Collections.emptyMap()).get(args);
     }
 
     private static String capitalizeFirst(String str) {
@@ -2716,7 +2769,7 @@ class MetaObjectData {
     final @NativeAccess List<Field> switchTableFields = new ArrayList<>();
 
     @NativeAccess boolean hasStaticMembers;
-    final @NativeAccess List<Integer> metaTypes = new ArrayList<>();
+    final @NativeAccess IntArray metaTypes = new IntArray();
     @NativeAccess Constructor<?> privateConstructor;
     @NativeAccess Constructor<?> inPlaceConstructor;
 }

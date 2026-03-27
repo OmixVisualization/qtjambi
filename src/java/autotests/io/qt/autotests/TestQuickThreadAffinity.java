@@ -81,7 +81,7 @@ public class TestQuickThreadAffinity extends ApplicationInitializer{
 				fail("QThreadAffinityException expected to be thrown.");
 			}catch(QThreadAffinityException e) {}
 			try{
-			    component.setSource("qrc:io/qt/autotests/qml/RectangleMethodAndSignal.qml");
+			    component.setSource("qrc:/io/qt/autotests/qml/RectangleMethodAndSignal.qml");
 				fail("QThreadAffinityException expected to be thrown.");
 			}catch(QThreadAffinityException e) {}
 		});

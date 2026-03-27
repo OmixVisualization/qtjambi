@@ -37,7 +37,6 @@
 
 #include "objectdata.h"
 
-class J2CStringBuffer;
 class QIODevice;
 class QCoreApplication;
 class QFutureInterfaceBase;
@@ -49,7 +48,7 @@ namespace QtPrivate{
 struct QBindableInterface;
 }
 
-class QTJAMBI_EXPORT ApplicationData : public QtJambiObjectData
+class QTJAMBI_EXPORT ApplicationData final : public QtJambiObjectData
 {
 public:
     template<typename T>
@@ -249,6 +248,8 @@ QTJAMBI_EXPORT QMetaType unregisterMetaTypeOfPointer(const void* pointer);
 QTJAMBI_EXPORT const QtPrivate::QBindableInterface* registeredBindableInterface(size_t hash);
 
 QTJAMBI_EXPORT const QtPrivate::QBindableInterface* registerBindableInterface(size_t hash, const QtPrivate::QBindableInterface* iface);
+
+QTJAMBI_EXPORT jobject convertToJavaObject(JNIEnv *env, const QMetaType &metaType, const void* data);
 
 template<typename E>
 jobject convertEnumToJavaObject(JNIEnv *env, E qt_enum)

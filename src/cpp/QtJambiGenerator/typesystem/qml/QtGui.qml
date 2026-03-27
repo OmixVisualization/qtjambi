@@ -9978,10 +9978,6 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
     
     ValueType{
         name: "QQuaternion"
-        ModifyFunction{
-            signature: "getAxisAndAngle(float *, float *, float *, float *) const"
-            remove: RemoveFlag.All
-        }
         ExtraIncludes{
             Include{
                 fileName: "utils_p.h"
@@ -9990,13 +9986,23 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
         }
         ValueType{
             name: "Axes"
-            generate: false
+            since: [6,11]
+        }
+        ValueType{
+            name: "Axis"
+            since: [6,11]
+        }
+        ValueType{
+            name: "EulerAngles"
+            template: true
+            TemplateArguments{
+                arguments: ["float"]
+            }
             since: [6,11]
         }
         ObjectType{
-            name: "EulerAngles"
-            generate: false
-            template: true
+            name: "EulerAngles<float>"
+            isGeneric: false
             since: [6,11]
         }
         ModifyFunction{
@@ -10023,32 +10029,47 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
             signature: "getAxes(QVector3D *, QVector3D *, QVector3D *) const"
             ModifyArgument{
                 index: 1
+                NoNullPointer{
+                    since: [6,11]
+                }
                 RemoveArgument{
+                    until: [6,10]
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "QVector3D xAxis;\n"+
                                   "QVector3D* %out = &xAxis;"}
+                    until: [6,10]
                 }
             }
             ModifyArgument{
                 index: 2
+                NoNullPointer{
+                    since: [6,11]
+                }
                 RemoveArgument{
+                    until: [6,10]
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "QVector3D yAxis;\n"+
                                   "QVector3D* %out = &yAxis;"}
+                    until: [6,10]
                 }
             }
             ModifyArgument{
                 index: 3
+                NoNullPointer{
+                    since: [6,11]
+                }
                 RemoveArgument{
+                    until: [6,10]
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "QVector3D zAxis;\n"+
                                   "QVector3D* %out = &zAxis;"}
+                    until: [6,10]
                 }
             }
             ModifyArgument{
@@ -10061,27 +10082,45 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtGui::QQuaternion$Axes::newInstance(%env, qtjambi_cast<jobject>(%env, std::move(xAxis)), qtjambi_cast<jobject>(%env, std::move(yAxis)), qtjambi_cast<jobject>(%env, std::move(zAxis)));"}
                 }
-            }
-            Remove{
-                since: [6,11]
+                until: [6,10]
             }
         }
         ModifyFunction{
-            signature: "toAxes()const"
-            Delegate{
-                name: "getAxes"
+            signature: "getAxisAndAngle(float *, float *, float *, float *) const"
+            ModifyArgument{
+                index: 1
+                NoNullPointer{}
+                AsArray{
+                    minLength: 4
+                }
             }
             ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QQuaternion$@NonNull Axes"
+                index: 2
+                RemoveArgument{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = Java::QtGui::QQuaternion$Axes::newInstance(%env, qtjambi_cast<jobject>(%env, std::move(%in.x)), qtjambi_cast<jobject>(%env, std::move(%in.y)), qtjambi_cast<jobject>(%env, std::move(%in.z)));"}
+                    Text{content: "float* %out = __qt_%1+1;"}
                 }
             }
-            since: [6,11]
+            ModifyArgument{
+                index: 3
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "float* %out = __qt_%1+2;"}
+                }
+            }
+            ModifyArgument{
+                index: 4
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "float* %out = __qt_%1+3;"}
+                }
+            }
         }
         ModifyFunction{
             signature: "getAxisAndAngle(QVector3D *, float *) const"
@@ -10121,12 +10160,23 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
             signature: "getEulerAngles(float *, float *, float *) const"
             ModifyArgument{
                 index: 1
+                NoNullPointer{
+                    since: [6,11]
+                }
+                AsArray{
+                    minLength: 3
+                    since: [6,11]
+                }
                 RemoveArgument{
+                    until: [6,10]
                 }
                 ConversionRule{
+                    until: [6,10]
                     codeClass: CodeClass.Native
-                    Text{content: "float aValue = 0;\n"+
-                                  "float* %out = &aValue;"}
+                    Text{
+                        content: String.raw`
+                                    float aValue = 0;
+                                    float* %out = &aValue;`}
                 }
             }
             ModifyArgument{
@@ -10135,18 +10185,35 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "float bValue = 0;\n"+
-                                  "float* %out = &bValue;"}
+                    Text{
+                        content: String.raw`
+                                    float bValue = 0;
+                                    float* %out = &bValue;`
+                        until: [6,10]
+                    }
+                    Text{
+                        content: "float* %out = __qt_%1+1;"
+                        since: [6,11]
+                    }
                 }
             }
             ModifyArgument{
                 index: 3
                 RemoveArgument{
+                    until: [6,10]
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "float cValue = 0;\n"+
-                                  "float* %out = &cValue;"}
+                    Text{
+                        content: String.raw`
+                                    float cValue = 0;
+                                    float* %out = &cValue;`
+                        until: [6,10]
+                    }
+                    Text{
+                        content: "float* %out = __qt_%1+2;"
+                        since: [6,11]
+                    }
                 }
             }
             ModifyArgument{
@@ -10158,57 +10225,13 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtGui::QQuaternion$EulerAngles::newInstance(%env, aValue, bValue, cValue);"}
                 }
-            }
-            Remove{
-                since: [6,11]
+                until: [6,10]
             }
         }
         ModifyFunction{
             signature: "eulerAngles()const"
             Delegate{
                 name: "getEulerAngles"
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QQuaternion$@NonNull EulerAngles"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = Java::QtGui::QQuaternion$EulerAngles::newInstance(%env, %in.pitch, %in.yaw, %in.roll);"}
-                }
-            }
-            since: [6,11]
-        }
-        ModifyFunction{
-            signature: "fromEulerAngles(QQuaternion::EulerAngles<float>)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QQuaternion$@NonNull EulerAngles"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QQuaternion::EulerAngles<float> %out = QQuaternion::EulerAngles<float>{Java::QtGui::QQuaternion$EulerAngles::pitch(%env, %in), Java::QtGui::QQuaternion$EulerAngles::yaw(%env, %in), Java::QtGui::QQuaternion$EulerAngles::roll(%env, %in)};"}
-                }
-            }
-            since: [6,11]
-        }
-        ModifyFunction{
-            signature: "fromAxes(QQuaternion::Axes)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QQuaternion$@NonNull Axes"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: String.raw`
-                        QQuaternion::Axes %out = QQuaternion::Axes{
-                                                    qtjambi_cast<QVector3D>(%env, Java::QtGui::QQuaternion$Axes::xAxis(%env, %in)),
-                                                    qtjambi_cast<QVector3D>(%env, Java::QtGui::QQuaternion$Axes::yAxis(%env, %in)),
-                                                    qtjambi_cast<QVector3D>(%env, Java::QtGui::QQuaternion$Axes::zAxis(%env, %in))};`}
-                }
             }
             since: [6,11]
         }
@@ -10217,6 +10240,18 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
                 quoteAfterLine: "class QQuaternion___"
                 quoteBeforeLine: "}// class"
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
+                quoteAfterLine: "class QQuaternion_610__"
+                quoteBeforeLine: "}// class"
+                until: [6,10]
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
+                quoteAfterLine: "class QQuaternion_611__"
+                quoteBeforeLine: "}// class"
+                since: [6,11]
             }
         }
     }
@@ -15139,12 +15174,11 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
     }
     ObjectType{
         name: "QUtiMimeConverter"
-        ppCondition: "defined(Q_OS_MACOS)"
+        ppCondition: "defined(Q_OS_DARWIN)"
         EnumType{
             name: "HandlerScopeFlag"
         }
         since: 6.5
-        until: [6,10]
     }
 
     ObjectType{
@@ -15756,6 +15790,35 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         since: 6.7
     }
 
+    InterfaceType{
+        name: "QNativeInterface::QCocoaScreen"
+        packageName: "io.qt.gui.nativeinterface"
+        javaName: "QCocoaScreen"
+        ppCondition: "defined(Q_OS_MACOS)"
+        isNativeInterface: true
+        Rejection{
+            className: "TypeInfo"
+        }
+        ModifyFunction{
+            signature: "QCocoaScreen()"
+            remove: RemoveFlag.All
+        }
+        ExtraIncludes{
+            Include{
+                fileName: "QtGui/QScreen"
+                location: Include.Global
+            }
+        }
+        since: [6,11]
+    }
+
+    TypeAliasType{
+        name: "NSScreen"
+        ppCondition: "defined(Q_OS_MACOS)"
+        asNativePointer: true
+        since: [6,11]
+    }
+
     NativePointerType{
         name: "HMONITOR__"
         ppCondition: "defined(Q_OS_WIN)"
@@ -15827,7 +15890,8 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         name: "QNativeInterface::QWaylandApplication"
         packageName: "io.qt.gui.nativeinterface"
         javaName: "QWaylandApplication"
-        ppCondition: "defined(Q_OS_UNIX)"
+        PreProcessor{condition: "defined(Q_OS_UNIX)"; until: [6, 6]}
+        PreProcessor{condition: "QT_CONFIG(wayland)"; since: [6, 7]}
         isNativeInterface: true
         Rejection{
             className: "TypeInfo"
@@ -15844,30 +15908,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             }
         }
         since: [6, 5]
-        until: [6, 7]
-    }
-
-    InterfaceType{
-        name: "QNativeInterface::QWaylandApplication"
-        packageName: "io.qt.gui.nativeinterface"
-        javaName: "QWaylandApplication"
-        ppCondition: "QT_CONFIG(wayland)"
-        isNativeInterface: true
-        Rejection{
-            className: "TypeInfo"
-        }
-
-        ModifyFunction{
-            signature: "QWaylandApplication()"
-            remove: RemoveFlag.All
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "QtGui/QScreen"
-                location: Include.Global
-            }
-        }
-        since: [6, 8]
     }
 
     ObjectType{
@@ -16221,4 +16261,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'glGetPointerv(GLenum, GLvoid**)' for function modification in 'QOpenGLFunctions_4_*' not found. Possible candidates: "}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QRhi*'"; until: 6.6}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QAccessible(QAccessible)' for function modification in 'QAccessible' not found. Possible candidates: "}
+    SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QQuaternion::Axis."}
+    SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QQuaternion::Axes."}
 }

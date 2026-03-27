@@ -275,7 +275,16 @@ class ObjectLink : public QtJambiLinkImpl<is_qobject>{
     using Super = QtJambiLinkImpl<is_qobject>;
 protected:
     virtual void deleteNow(JNIEnv *env, void*){
-        env->Throw(Java::Runtime::RuntimeException::newInstanceWithMessage(env, "Unable to delete object due to missing deleter or meta type information."));
+#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
+        if(Super::qtTypeName()){
+            env->Throw(Java::Runtime::RuntimeException::newInstanceWithMessage(env, QStringLiteral("Unable to delete object of type %1 due to missing deleter or meta type information.").arg(Super::qtTypeName())));
+        }else
+#endif
+        if(jobject obj = Super::getJavaObjectLocalRef(env)){
+            env->Throw(Java::Runtime::RuntimeException::newInstanceWithMessage(env, QStringLiteral("Unable to delete object of type %1 due to missing deleter or meta type information.").arg(QtJambiAPI::getObjectClassNamePrintable(env, obj))));
+        }else{
+            env->Throw(Java::Runtime::RuntimeException::newInstanceWithMessage(env, "Unable to delete object due to missing deleter or meta type information."));
+        }
     }
     virtual void addDeleter(const QExplicitlySharedDataPointer<ValueOwnerObjectDataPrivate>&, void*){}
     virtual void postDeletion(const QPointer<const QObject>&, QThread*, QThreadObjectData*, void*){}
@@ -629,7 +638,7 @@ protected:
     void init(JNIEnv* env) override {
         if(!Super::isInitialized()){
             Super::init(env);
-            if(AbstractReferenceCountingContainer* rc = dynamic_cast<AbstractReferenceCountingContainer*>(m_containerAccess)){
+            if(AbstractReferenceCountingContainer* rc = m_containerAccess->asRC()){
                 jobject object = getJavaObjectLocalRef(env);
                 rc->updateRC(env, {object, plainPointer()});
                 env->DeleteLocalRef(object);
@@ -1191,7 +1200,7 @@ public:
             if(checkedGetTypeInfo(m_typeInfoSupplier, ptr)==nullptr){
                 if(JniEnvironment env{128}){
                     if(jobject obj = getJavaObjectLocalRef(env)){
-                        QString className = QtJambiAPI::getObjectClassName(env, obj).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+                        QString className = QtJambiAPI::getObjectClassNamePrintable(env, obj);
                         Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Object of type %s points to dangling pointer %p", qPrintable(className), ptr) QTJAMBI_STACKTRACEINFO );
                     }else{
                         Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Dangling pointer %p detected", ptr) QTJAMBI_STACKTRACEINFO );
@@ -3966,7 +3975,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(containerAccess);
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
-        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
         Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
@@ -4049,7 +4058,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(containerAccess);
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
-        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
         Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
@@ -4089,7 +4098,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(destructor_function);
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
-        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
         Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
@@ -4173,7 +4182,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(containerAccess);
     Q_ASSERT(destructor_function);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
-        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
         Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
@@ -4308,7 +4317,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(metaType.isValid());
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
-        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
         Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
     checkValueOwner(env, ownerFunction, ptr);
@@ -4399,7 +4408,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(metaType.isValid());
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
-        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
         Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
     checkValueOwner(env, ownerFunction, ptr);
@@ -4475,7 +4484,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(metaType.isValid());
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
-        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
         Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
@@ -4550,7 +4559,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(metaType.isValid());
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
-        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
         Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
@@ -4921,7 +4930,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(deleter_function);
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
-        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
         Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
     checkValueOwner(env, ownerFunction, ptr);
@@ -5033,7 +5042,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(deleter_function);
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
-        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
         Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
     checkValueOwner(env, ownerFunction, ptr);
@@ -5123,7 +5132,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(deleter_function);
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
-        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
         Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
@@ -5216,7 +5225,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(deleter_function);
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
-        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
         Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
@@ -5290,7 +5299,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(ptr);
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
-        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
         Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
@@ -5363,7 +5372,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(ptr);
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
-        QString className = QtJambiAPI::getObjectClassName(env, javaObject).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'));
+        QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
         Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
@@ -5965,7 +5974,7 @@ void* QtJambiLink::findPointerForJavaInterface(JNIEnv *env, jobject java, const 
         }
     }else if(env->IsSameObject(nullptr, java))
         return nullptr;
-    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, java).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java)) QTJAMBI_STACKTRACEINFO );
     return nullptr;
 }
 
@@ -5979,7 +5988,7 @@ void* QtJambiLink::findPointerForJavaObject(JNIEnv *env, jobject java)
         if(void* ptr = link->pointer())
             return ptr;
     }else if (!env->IsSameObject(nullptr, java))
-        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, java).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java)) QTJAMBI_STACKTRACEINFO );
     return nullptr;
 }
 

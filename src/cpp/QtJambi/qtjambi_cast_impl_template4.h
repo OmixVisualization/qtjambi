@@ -38,8 +38,7 @@ template<bool forward,
          typename JniType,
          template<typename K, typename T, typename A, typename B> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
          typename K, typename T, typename A, typename B, typename... Args>
-struct qtjambi_jobject_template4_cast{
-    Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
+struct qtjambi_jobject_template4_cast : decltype(qtjambi_jobject_template_plain_cast<forward, JniType, NativeType<K,T,A,B>, is_pointer, is_const, is_reference, is_rvalue, Args...>()){
 };
 
 template<bool forward, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,

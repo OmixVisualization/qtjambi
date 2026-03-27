@@ -44,8 +44,7 @@ namespace QtJambiPrivate {
              typename JniType,
              template<typename T> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
              typename T, typename... Args>
-    struct qtjambi_jobject_template1_cast{
-        Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
+    struct qtjambi_jobject_template1_cast : decltype(qtjambi_jobject_template_plain_cast<forward, JniType, NativeType<T>, is_pointer, is_const, is_reference, is_rvalue, Args...>()){
     };
 
     //template from any QFlags to jobject

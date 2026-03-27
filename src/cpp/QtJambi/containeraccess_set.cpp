@@ -70,6 +70,8 @@ AutoSetAccess::AutoSetAccess(
 {
 }
 
+AbstractNestedSequentialAccess* AutoSetAccess::asNested() { return this; }
+
 void* AutoSetAccess::constructContainer(JNIEnv*, void* result, const ConstContainerAndAccessInfo& container) {
     return m_hashAccess.constructContainer(result, container.container);
 }
@@ -110,7 +112,7 @@ bool AutoSetAccess::destructContainer(void* container){
     return m_hashAccess.destructContainer(container);
 }
 
-QMetaType AutoSetAccess::registerContainer(const QByteArray& typeName)
+QMetaType AutoSetAccess::registerContainer(QByteArrayView typeName)
 {
     QMetaType newMetaType = QMetaType::fromName(typeName);
     if(!newMetaType.isValid()){
@@ -662,6 +664,9 @@ std::unique_ptr<AbstractSetAccess::ElementIterator> AutoSetAccess::elementIterat
         std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
             return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
         }
+        std::function<jobject(JNIEnv*,const void*)> elementConverter() const override {
+            return iter->keyConverter();
+        }
     };
     return std::unique_ptr<AbstractSetAccess::ElementIterator>(new ElementIterator(m_hashAccess.keyValueIterator(container)));
 }
@@ -672,6 +677,8 @@ std::unique_ptr<AbstractSetAccess::ElementIterator> AutoSetAccess::elementIterat
 
 PointerRCAutoSetAccess::PointerRCAutoSetAccess(PointerRCAutoSetAccess& other)
     : AutoSetAccess(other), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* PointerRCAutoSetAccess::asRC() {return this;}
 
 PointerRCAutoSetAccess* PointerRCAutoSetAccess::clone(){
     return new PointerRCAutoSetAccess(*this);
@@ -769,6 +776,8 @@ void PointerRCAutoSetAccess::unite(JNIEnv * env, const ContainerInfo& container,
 
 NestedPointersRCAutoSetAccess::NestedPointersRCAutoSetAccess(NestedPointersRCAutoSetAccess& other)
     : AutoSetAccess(other), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* NestedPointersRCAutoSetAccess::asRC() {return this;}
 
 NestedPointersRCAutoSetAccess* NestedPointersRCAutoSetAccess::clone(){
     return new NestedPointersRCAutoSetAccess(*this);

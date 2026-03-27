@@ -874,14 +874,14 @@ void QtJambiPrivate::javaInstanceCheck(JNIEnv* env, jobject object, jclass class
     JavaException::check(env);
     if(env->IsSameObject(object, nullptr)){
         if(isMemberFunction)
-            JavaException::raiseNullPointerException(env, QLatin1String("Cannot invoke member function %1.%2(...) on null.").arg(QtJambiAPI::getClassName(env, class_ref), name) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseNullPointerException(env, QLatin1String("Cannot invoke member function %1.%2(...) on null.").arg(QtJambiAPI::getClassNamePrintable(env, class_ref), name) QTJAMBI_STACKTRACEINFO );
         else
-            JavaException::raiseNullPointerException(env, QLatin1String("Cannot access member field %1.%2 on null.").arg(QtJambiAPI::getClassName(env, class_ref), name) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseNullPointerException(env, QLatin1String("Cannot access member field %1.%2 on null.").arg(QtJambiAPI::getClassNamePrintable(env, class_ref), name) QTJAMBI_STACKTRACEINFO );
     }
     if(class_ref && !env->IsInstanceOf(object, class_ref)){
         if(isMemberFunction)
-            JavaException::raiseIllegalArgumentException(env, QLatin1String("Cannot invoke member function %1.%2(...) on object of type %3.").arg(QtJambiAPI::getClassName(env, class_ref), name, QtJambiAPI::getObjectClassName(env, object)) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QLatin1String("Cannot invoke member function %1.%2(...) on object of type %3.").arg(QtJambiAPI::getClassNamePrintable(env, class_ref), name, QtJambiAPI::getObjectClassNamePrintable(env, object)) QTJAMBI_STACKTRACEINFO );
         else
-            JavaException::raiseIllegalArgumentException(env, QLatin1String("Cannot access member field %1.%2 on object of type %3.").arg(QtJambiAPI::getClassName(env, class_ref), name, QtJambiAPI::getObjectClassName(env, object)) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QLatin1String("Cannot access member field %1.%2 on object of type %3.").arg(QtJambiAPI::getClassNamePrintable(env, class_ref), name, QtJambiAPI::getObjectClassNamePrintable(env, object)) QTJAMBI_STACKTRACEINFO );
     }
 }

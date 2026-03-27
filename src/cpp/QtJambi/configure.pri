@@ -216,6 +216,7 @@ linux-clang* | linux-g++* | freebsd-clang* | freebsd-g++* | netbsd-clang* | netb
 }
 
 linux-* {
+    INCLUDEPATH += $$clean_path($$GENERATED_SOURCES_BASE)
     INCLUDEPATH += $$clean_path($$GENERATED_SOURCES_BASE/$$QTJAMBI_PROJECT)
 }
 

@@ -103,4 +103,6 @@ TypeSystem{
     LoadTypeSystem{name: "QtGrpc";              generate: true; unless: "QTJAMBI_NO_GRPC";             since: [6, 5]}
     LoadTypeSystem{name: "QtProtobuf";          generate: true; unless: "QTJAMBI_NO_PROTOBUF";         since: [6, 5]}
     LoadTypeSystem{name: "QtInsightTracker";    generate: true; unless: "QTJAMBI_NO_INSIGHTTRACKER"}
+    LoadTypeSystem{name: "QtTaskTree";          generate: true; unless: "QTJAMBI_NO_TASKTREE";         since: [6, 11]}
+    LoadTypeSystem{name: "QtCanvasPainter";     generate: true; unless: "QTJAMBI_NO_CANVASPAINTER";         since: [6, 11]}
 }

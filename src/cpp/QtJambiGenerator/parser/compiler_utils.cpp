@@ -53,6 +53,7 @@ TypeInfo CompilerUtils::typeDescription(TypeSpecifierAST *type_specifier, Declar
 
     TypeInfo typeInfo;
     typeInfo.setQualifiedName(type_cc.qualifiedName());
+    typeInfo.setAnonymous(type_cc.isAnonymous());
     typeInfo.setVariadic(type_cc.isVariadic());
     typeInfo.setConstant(type_cc.isConstant());
     typeInfo.setVolatile(type_cc.isVolatile());

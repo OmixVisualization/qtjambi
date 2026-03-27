@@ -2,6 +2,7 @@ package io.qt.autotests;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -16,6 +17,7 @@ public class TestQmlDebugging extends ApplicationInitializer{
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
+		Assume.assumeFalse("Cannot run with Qt >= 6.11", QLibraryInfo.version().compareTo(new int[]{6,11,0})>=0);
 		System.setProperty("io.qt.enabled-qml-debugging", "true");
     	ApplicationInitializer.testInitializeWithGui();
     }

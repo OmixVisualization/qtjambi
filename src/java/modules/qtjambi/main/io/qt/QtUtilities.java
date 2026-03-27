@@ -30,10 +30,7 @@
 package io.qt;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.BiConsumer;
 
 import io.qt.InternalAccess.CallerContext;
@@ -47,9 +44,8 @@ import io.qt.core.QVersionNumber;
 */
 public final class QtUtilities {
 	
-	private static final Map<String, Object> initializedPackages = new HashMap<>(Collections.singletonMap("io.qt.internal", Boolean.TRUE));
 	static {
-		initializePackage("io.qt.internal");
+		Utility.initializePackage(QtUtilities.class.getClassLoader(), "io.qt.internal");
 	}
 	
 	private QtUtilities() {}
@@ -149,94 +145,21 @@ public final class QtUtilities {
     	Class<?> callerClass = Utility.callerClassProvider().get();
     	if(callerClass==null)
     		callerClass = QtUtilities.class;
-    	return initializePackage(callerClass.getClassLoader(), packagePath);
+    	return Utility.initializePackage(callerClass.getClassLoader(), packagePath);
     }
     
     public static boolean initializePackage(java.lang.@StrictNonNull Package pkg){
+    	if(pkg==null)
+    		return false;
     	Class<?> callerClass = Utility.callerClassProvider().get();
     	if(callerClass==null)
     		callerClass = QtUtilities.class;
-    	return initializePackage(callerClass.getClassLoader(), pkg);
+    	return Utility.initializePackage(callerClass.getClassLoader(), pkg.getName());
     }
     
-	private static boolean initializePackage(@Nullable ClassLoader classLoader, java.lang.@StrictNonNull Package pkg) {
-		return pkg != null && initializePackage(classLoader, pkg.getName());
-	}
-
 	@NativeAccess
 	public static boolean initializePackage(java.lang.@Nullable Class<?> cls) {
-		return cls != null && cls.getPackage() != null && initializePackage(cls.getClassLoader(), cls.getPackage().getName());
-	}
-	
-	private static boolean initializePackage(@Nullable ClassLoader classLoader, @NonNull String packagePath) {
-		synchronized (initializedPackages) {
-			Object obj = initializedPackages.get(packagePath);
-			if (obj instanceof Boolean) {
-				return (Boolean)obj;
-			}else if (obj instanceof Error) {
-				throw (Error)obj;
-			}else if (obj instanceof RuntimeException) {
-				throw (RuntimeException)obj;
-			}
-		}
-		Class<?> cls;
-		try {
-			try {
-				try {
-					cls = Class.forName(packagePath + ".QtJambi_LibraryUtilities");
-				} catch (ClassNotFoundException e) {
-					if(classLoader!=null && classLoader!=QtUtilities.class.getClassLoader()) {
-						cls = Class.forName(packagePath + ".QtJambi_LibraryUtilities", true, classLoader);
-					}else {
-						throw e;
-					}
-				}
-			} catch (NoClassDefFoundError t) {
-				if (t.getCause() instanceof Error && t.getCause() != t)
-					throw (Error) t.getCause();
-				else if (t.getCause() instanceof RuntimeException)
-					throw (RuntimeException) t.getCause();
-				throw t;
-			} catch (ExceptionInInitializerError t) {
-				if (t.getCause() instanceof Error && t.getCause() != t)
-					throw (Error) t.getCause();
-				else if (t.getCause() instanceof RuntimeException)
-					throw (RuntimeException) t.getCause();
-				throw t;
-			} catch (ClassNotFoundException e1) {
-				synchronized (initializedPackages) {
-					initializedPackages.put(packagePath, Boolean.FALSE);
-				}
-				return false;
-			}
-			try {
-				Method initialize = cls.getDeclaredMethod("initialize");
-				QtJambi_LibraryUtilities.internal.invokeMethod(initialize, null);
-				synchronized (initializedPackages) {
-					initializedPackages.put(packagePath, Boolean.TRUE);
-				}
-				return true;
-			} catch (NoSuchMethodException | NoSuchMethodError t) {
-				return true;
-			} catch (NoClassDefFoundError t) {
-				if (t.getCause() instanceof Error && t.getCause() != t)
-					throw (Error) t.getCause();
-				else if (t.getCause() instanceof RuntimeException)
-					throw (RuntimeException) t.getCause();
-				throw t;
-			} catch (RuntimeException | Error t) {
-				throw t;
-			} catch (Throwable t) {
-				java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.WARNING,
-						"initializePackage", t);
-				throw new RuntimeException(t);
-			}
-		} catch (RuntimeException | Error t) {
-			synchronized (initializedPackages) {
-				initializedPackages.put(packagePath, t);
-			}
-			throw t;
-		}
+		return cls != null && cls.getPackage() != null && Utility.initializePackage(cls.getClassLoader(), cls.getPackage().getName());
 	}
 	
     public static QMetaObject.@NonNull DisposedSignal getSignalOnDispose(@NonNull QtObjectInterface object) {

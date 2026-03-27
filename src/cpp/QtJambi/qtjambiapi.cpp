@@ -31,6 +31,18 @@
 
 // type name helpers...
 
+
+void splitClassName(QString& className, QString& package, const QString &qualifiedName, QChar separator = QLatin1Char('/')){
+    auto idx = qualifiedName.lastIndexOf(separator);
+    if (idx >= 0){
+        className = qualifiedName.mid(idx + 1);
+        package = qualifiedName.left(idx + 1);
+    }else{
+        className = qualifiedName;
+        package = QString();
+    }
+}
+
 QString QtJambiAPI::getClassName(JNIEnv *env, jclass java_class)
 {
     Q_ASSERT(java_class);
@@ -41,15 +53,60 @@ QString QtJambiAPI::getClassName(JNIEnv *env, jclass java_class)
         jobjectArray interfaces = Java::Runtime::Class::getInterfaces(env, java_class);
         QString strClassName;
         QString strPackage;
-        QtJambiTypeManager::splitClassName(strClassName, strPackage, fullJavaName, QLatin1Char('.'));
+        splitClassName(strClassName, strPackage, fullJavaName, QLatin1Char('.'));
         if(interfaces && env->GetArrayLength(interfaces)>0){
-            registerLambdaClass(env, java_class, qPrintable(fullJavaName.replace(".", "/")));
+            registerLambdaClass(env, java_class, qPrintable(fullJavaName.replace(QLatin1Char('.'), QLatin1Char('/'))));
             java_class = jclass( env->GetObjectArrayElement(interfaces, 0) );
             fullJavaName = QtJambiAPI::getClassName(env, java_class);
-            QtJambiTypeManager::splitClassName(strClassName, strPackage, fullJavaName, QLatin1Char('.'));
+            splitClassName(strClassName, strPackage, fullJavaName, QLatin1Char('.'));
         }
     }
     return fullJavaName;
+}
+
+QString QtJambiAPI::getClassNamePrintable(JNIEnv *env, jclass java_class){
+    return QtJambiAPI::getClassName(env, java_class).replace(QLatin1Char('$'), QLatin1Char('.'));
+}
+
+QString QtJambiAPI::getObjectClassNamePrintable(JNIEnv *env, jobject java_object){
+    return QtJambiAPI::getObjectClassName(env, java_object).replace(QLatin1Char('$'), QLatin1Char('.'));
+}
+
+void splitClassName(QByteArray& className, QByteArray& package, const QByteArray &qualifiedName, char separator = '/'){
+    auto idx = qualifiedName.lastIndexOf(separator);
+    if (idx >= 0){
+        className = qualifiedName.mid(idx + 1);
+        package = qualifiedName.left(idx + 1);
+    }else{
+        className = qualifiedName;
+        package = QByteArray();
+    }
+}
+
+QByteArray QtJambiAPI::getClassNameJNI(JNIEnv *env, jclass java_class)
+{
+    Q_ASSERT(java_class);
+    //Q_ASSERT(Java::Runtime::Class::isInstanceOf(env, java_class));  // check the java object is right type
+    J2CStringBuffer name(env, Java::Runtime::Class::getName(env,java_class));
+    QByteArray fullJavaName = name.toByteArray();
+    if(Java::Runtime::Class::isSynthetic(env,java_class)){
+        jobjectArray interfaces = Java::Runtime::Class::getInterfaces(env, java_class);
+        QByteArray strClassName;
+        QByteArray strPackage;
+        splitClassName(strClassName, strPackage, fullJavaName, '.');
+        if(interfaces && env->GetArrayLength(interfaces)>0){
+            registerLambdaClass(env, java_class, qPrintable(fullJavaName.replace('.', '/')));
+            java_class = jclass( env->GetObjectArrayElement(interfaces, 0) );
+            fullJavaName = QtJambiAPI::getClassNameJNI(env, java_class);
+            splitClassName(strClassName, strPackage, fullJavaName, '.');
+        }
+    }
+    return fullJavaName.replace('.', '/');
+}
+
+QByteArray QtJambiAPI::getObjectClassNameJNI(JNIEnv *env, jobject java_object)
+{
+    return java_object ? QtJambiAPI::getClassNameJNI(env, env->GetObjectClass(java_object)) : QByteArray{};
 }
 
 QString QtJambiAPI::getObjectClassName(JNIEnv *env, jobject java_object)
@@ -668,7 +725,6 @@ const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, cons
         sigjmp_buf jump_env;
     };
     static thread_local SigData sigData;
-    SigData& _sigData = sigData;
     struct sigaction sa;
     struct sigaction &sa_old = sigData.sa_old;
     memset(&sa, 0, sizeof(sa));
@@ -676,23 +732,21 @@ const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, cons
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_NODEFER | SA_SIGINFO;
     sa.sa_sigaction = [](int, siginfo_t *, void *){
-        SigData& _sigData = sigData;
-        _sigData.isSigSegv = true;
-        if(_sigData.isRegistered)
-            sigaction(SIGSEGV, &_sigData.sa_old, nullptr);
-        _sigData.isRegistered = false;
-        siglongjmp(_sigData.jump_env, 1);
+        sigData.isSigSegv = true;
+        if(sigData.isRegistered)
+            sigaction(SIGSEGV, &sigData.sa_old, nullptr);
+        sigData.isRegistered = false;
+        siglongjmp(sigData.jump_env, 1);
         //throw std::bad_typeid();
     };
-    _sigData.isSigSegv = false;
-    _sigData.isRegistered = sigaction(SIGSEGV, &sa, &sa_old)==0;
+    sigData.isSigSegv = false;
+    sigData.isRegistered = sigaction(SIGSEGV, &sa, &sa_old)==0;
     try{
         const std::type_info* typeId{nullptr};
         if(sigData.isRegistered){
             auto sc = qScopeGuard([](){
-                SigData& _sigData = sigData;
-                if(_sigData.isRegistered)
-                    sigaction(SIGSEGV, &_sigData.sa_old, nullptr);
+                if(sigData.isRegistered)
+                    sigaction(SIGSEGV, &sigData.sa_old, nullptr);
             });
             if (sigsetjmp(sigData.jump_env, 1) == 0) {
                 typeId = typeInfoSupplier(ptr);
@@ -737,7 +791,7 @@ const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, cons
                 }
             }
         }
-        if(_sigData.isSigSegv)
+        if(sigData.isSigSegv)
             return nullptr;
         return typeId;
     }catch(const std::bad_typeid&){
@@ -988,12 +1042,38 @@ jbooleanArray QtJambiAPI::toJBooleanArray(JNIEnv *__jni_env, const jboolean* in,
 }
 
 bool QtJambiAPI::isValidArray(JNIEnv *env, jobject object, const std::type_info& typeId){
-    const char* javaName = getJavaInterfaceName(typeId);
-    if(jclass contentType = JavaAPI::resolveClass(env, javaName)){
-        if(isValidArray(env, object, contentType)){
-            return true;
-        }else if(typeid_equals(typeId, typeid(QString))){
-            return isValidArray(env, object, Java::Runtime::CharSequence::getClass(env));
+    if(object){
+        jclass arrayClass = env->GetObjectClass(object);
+        if(Java::Runtime::Class::isArray(env, arrayClass)){
+            jclass componentType = Java::Runtime::Class::getComponentType(env, arrayClass);
+            const char* javaName = getJavaInterfaceName(typeId);
+            if(jclass contentType = JavaAPI::resolveClass(env, javaName)){
+                if(env->IsAssignableFrom(componentType, contentType)){
+                    return true;
+                }else if(Java::Runtime::List::isSameClass(env, contentType)
+                           || Java::Runtime::Queue::isSameClass(env, contentType)
+                           || Java::Runtime::Deque::isSameClass(env, contentType)
+                           || Java::Runtime::Set::isSameClass(env, contentType)){
+                    if(env->IsAssignableFrom(componentType, Java::Runtime::Collection::getClass(env)))
+                        return true;
+                    javaName = getJavaName(typeId);
+                    contentType = JavaAPI::resolveClass(env, javaName);
+                    return contentType && env->IsAssignableFrom(componentType, contentType);
+                }else if(Java::Runtime::NavigableMap::isSameClass(env, contentType)){
+                    if(env->IsAssignableFrom(componentType, Java::Runtime::Map::getClass(env)))
+                        return true;
+                    javaName = getJavaName(typeId);
+                    contentType = JavaAPI::resolveClass(env, javaName);
+                    return contentType && env->IsAssignableFrom(componentType, contentType);
+                }else if(Java::Runtime::Map::isSameClass(env, contentType)){
+                    javaName = getJavaName(typeId);
+                    contentType = JavaAPI::resolveClass(env, javaName);
+                    return contentType && env->IsAssignableFrom(componentType, contentType);
+                }else if(typeid_equals(typeId, typeid(QString))){
+                    return env->IsAssignableFrom(componentType, Java::Runtime::CharSequence::getClass(env))
+                        || env->IsAssignableFrom(componentType, Java::QtCore::QString::getClass(env));
+                }
+            }
         }
     }
     return false;
@@ -1459,7 +1539,9 @@ void QtJambiAPI::commitQSpanObject(JNIEnv *env, jobject obj){
 
 QPair<void*,jlong> QtJambiAPI::fromQSpanObject(JNIEnv *env, jobject obj, bool isConst, const QMetaType& metaType){
     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, obj)){
-        if(AbstractSpanAccess* access = dynamic_cast<AbstractSpanAccess*>(link->containerAccess())){
+        auto containerAccess = link->containerAccess();
+        if(containerAccess && containerAccess->isSpan()){
+            AbstractSpanAccess* access = static_cast<AbstractSpanAccess*>(containerAccess);
             bool constBreach = false;
             if(!isConst)
                 constBreach = access->isConst();

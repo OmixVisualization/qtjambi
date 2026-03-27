@@ -162,8 +162,12 @@ public class QList<T> extends AbstractList<T> implements Cloneable
      */
     public QList(@StrictNonNull Collection<? extends T> other) {
 		super(null);
-		QMetaType metaType = findElementMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
-		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
+		if(other instanceof QList) {
+			initialize(null, 0, other);
+		}else {
+			QMetaType metaType = findElementMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
+			initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
+		}
     }
     
     @NativeAccess
@@ -182,7 +186,7 @@ public class QList<T> extends AbstractList<T> implements Cloneable
 		QMetaType metaType;
 		if(iterable instanceof AbstractSpan) {
 			AbstractSpan<? extends T> span = (AbstractSpan<? extends T>)iterable;
-			metaType = span._elementType();
+			metaType = span.elementMetaType();
 		}else if(iterable instanceof Collection) {
 			metaType = findElementMetaType((Collection<?>)iterable);
 		}else {
@@ -196,6 +200,13 @@ public class QList<T> extends AbstractList<T> implements Cloneable
      */
     public static @NonNull QList<Object> createVariantList(){
     	return new QList<>(new QMetaType(QMetaType.Type.QVariant));
+    }
+    
+    /**
+     * Creating a container of type QVariant.
+     */
+    public static @NonNull QList<Object> createVariantList(Object @StrictNonNull... elements){
+    	return new QList<>(new QMetaType(QMetaType.Type.QVariant), elements);
     }
     
     /**

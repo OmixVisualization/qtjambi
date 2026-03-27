@@ -42,25 +42,28 @@
             <then>
                 <dirname property="antfile.dir" file="${ant.file}"/>
                 <basename property="module" file="${antfile.dir}"/>
-                <condition property="build.module" value="true">
+                <propertycopy name="module.available" from="${module}.any.true"/>
+                <if>
                     <or>
-                        <available file="${generator.outputdir}/java/${module}" type="dir"/>
+                        <and>
+                            <istrue value="${module.available}"/>
+                            <available file="${generator.outputdir}/java/${module}" type="dir"/>
+                        </and>
                         <istrue value="${qtjambi-deploy}"/>
                         <istrue value="${qtjambi-deploy-bundle}"/>
                     </or>
-                </condition>
-                <antcall inheritrefs="true" target="build.impl"/>
+                    <then>
+                        <path id="sourcedirs">
+                            <pathelement location="${generator.outputdir}/java/${module}"/>
+                            <pathelement location="${antfile.dir}"/>
+                        </path>
+                        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build-impl">
+                            <property name="jar.excludes" value=""/>
+                            <property name="module.excludes" value=""/>
+                        </ant>
+                    </then>
+                </if>
             </then>
         </if>
-    </target>
-    <target name="build.impl" if="build.module">
-        <path id="sourcedirs">
-            <pathelement location="${generator.outputdir}/java/${module}"/>
-            <pathelement location="${antfile.dir}"/>
-        </path>
-        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build-impl">
-            <property name="jar.excludes" value=""/>
-            <property name="module.excludes" value=""/>
-        </ant>
     </target>
 </project>

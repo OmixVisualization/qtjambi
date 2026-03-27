@@ -40,7 +40,6 @@ struct ResolvedConstructorInfo{
 
 struct SuperTypeInfo{
     SuperTypeInfo(  const char* _qtName,
-                    const QString& _className,
                     jclass _javaClass,
                     size_t _size,
                     size_t _alignment,
@@ -60,7 +59,6 @@ struct SuperTypeInfo{
     const std::type_info& typeId() const;
     const char* qtName() const;
     const char* interfaceID() const;
-    const QString& className() const;
     jclass javaClass() const;
     size_t size() const;
     size_t alignment() const;
@@ -71,7 +69,6 @@ struct SuperTypeInfo{
     PtrOwnerFunction ownerFunction() const;
 private:
     char const* m_qtName;
-    QString m_className;
     jclass m_javaClass;
     size_t m_size;
     size_t m_alignment;

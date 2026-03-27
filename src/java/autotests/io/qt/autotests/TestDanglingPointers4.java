@@ -28,18 +28,10 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import io.qt.QDanglingPointerException;
-import io.qt.QtUtilities;
-import io.qt.core.QList;
-import io.qt.core.QObject;
-import io.qt.core.QSysInfo;
-import io.qt.widgets.QFontDialog;
+import org.junit.*;
+import io.qt.*;
+import io.qt.core.*;
+import io.qt.widgets.*;
 
 public class TestDanglingPointers4 extends ApplicationInitializer{
 	

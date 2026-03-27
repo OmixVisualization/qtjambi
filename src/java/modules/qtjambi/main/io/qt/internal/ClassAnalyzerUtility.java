@@ -39,6 +39,7 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -54,6 +55,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 import io.qt.NativeAccess;
@@ -68,6 +70,7 @@ import io.qt.QtSignalEmitterInterface;
 import io.qt.QtUninvokable;
 import io.qt.QtUtilities;
 import io.qt.StrictNonNull;
+import io.qt.core.QDataStream;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaType;
@@ -130,12 +133,7 @@ final class ClassAnalyzerUtility {
 	private static Method findAccessibleMethod(Method virtualProtectedMethod, Class<?> implementationClass) {
 		if (implementationClass == null || isGeneratedClass(implementationClass))
 			return null;
-		Method method = null;
-		try {
-			method = implementationClass.getDeclaredMethod(virtualProtectedMethod.getName(),
-					virtualProtectedMethod.getParameterTypes());
-		} catch (NoSuchMethodException e) {
-		}
+		Method method = findDeclaredMethod(implementationClass, false, virtualProtectedMethod.getName(), null, virtualProtectedMethod.getParameterTypes());
 		if (method == null) {
 			return findAccessibleMethod(virtualProtectedMethod, implementationClass.getSuperclass());
 		} else {
@@ -537,6 +535,202 @@ final class ClassAnalyzerUtility {
 			return true;
 		}
 		return !isGeneratedClass(declaringClass);
+	}
+	
+	@NativeAccess
+	private static Constructor<?> findInternalPrivateConstructor(Class<?> cls){
+		for(Constructor<?> cnstr : cls.getDeclaredConstructors()) {
+			if(cnstr.getParameterCount()==1
+					&& cnstr.getParameterTypes()[0]==MetaObjectUtility.Classes.QPrivateConstructor()) {
+				return cnstr;
+			}
+		}
+		return null;
+	}
+	
+	@NativeAccess
+	private static Constructor<?> findInternalConstructInPlaceConstructor(Class<?> cls){
+		for(Constructor<?> cnstr : cls.getDeclaredConstructors()) {
+			if(cnstr.getParameterCount()==1
+					&& cnstr.getParameterTypes()[0]==MetaObjectUtility.Classes.QtConstructInPlace()) {
+				return cnstr;
+			}
+		}
+		return null;
+	}
+	
+	@NativeAccess
+	private static Constructor<?> findInternalDeclarativeConstructor(Class<?> cls){
+		for(Constructor<?> cnstr : cls.getDeclaredConstructors()) {
+			if(cnstr.getParameterCount()==1
+					&& cnstr.getParameterTypes()[0]==MetaObjectUtility.Classes.QDeclarativeConstructor()) {
+				return cnstr;
+			}
+		}
+		return null;
+	}
+	
+	@NativeAccess
+	private static Constructor<?> findDeclaredConstructor(Class<?> cls, Class<?>... args){
+		switch(args.length) {
+		case 0:
+			return findDeclaredConstructor(cls);
+		case 1:
+			return findDeclaredConstructor(cls, args[0]);
+		default:
+			for(Constructor<?> cnstr : cls.getDeclaredConstructors()) {
+				if(cnstr.getParameterCount()==args.length
+						&& Arrays.equals(cnstr.getParameterTypes(), args)) {
+					return cnstr;
+				}
+			}
+			return null;
+		}
+	}
+	
+	@NativeAccess
+	private static Constructor<?> findDeclaredConstructor(Class<?> cls){
+		for(Constructor<?> cnstr : cls.getDeclaredConstructors()) {
+			if(cnstr.getParameterCount()==0) {
+				return cnstr;
+			}
+		}
+		return null;
+	}
+	
+	@NativeAccess
+	private static Constructor<?> findDeclaredConstructor(Class<?> cls, Class<?> arg){
+		for(Constructor<?> cnstr : cls.getDeclaredConstructors()) {
+			if(cnstr.getParameterCount()==1 && 
+					Objects.equals(cnstr.getParameterTypes()[0], arg)) {
+				return cnstr;
+			}
+		}
+		return null;
+	}
+	
+	@NativeAccess
+	static Method findDeclaredMethod(Class<?> cls, boolean isStatic, String name, Class<?> type, Class<?>... args){
+		switch(args.length) {
+		case 0:
+			return findDeclaredMethod(cls, isStatic, name, type);
+		case 1:
+			return findDeclaredMethod(cls, isStatic, name, type, args[0]);
+		default:
+			for(Method mtd : cls.getDeclaredMethods()) {
+				if(mtd.getParameterCount()==args.length
+						&& Modifier.isStatic(mtd.getModifiers())==isStatic 
+						&& (type==null || Objects.equals(mtd.getReturnType(), type))
+						&& Arrays.equals(mtd.getParameterTypes(), args)
+						&& mtd.getName().equals(name)) {
+					return mtd;
+				}
+			}
+			return null;
+		}
+	}
+	
+	@NativeAccess
+	private static Method findDeclaredMethod(Class<?> cls, boolean isStatic, String name, Class<?> type){
+		for(Method mtd : cls.getDeclaredMethods()) {
+			if(mtd.getParameterCount()==0
+					&& Modifier.isStatic(mtd.getModifiers())==isStatic
+					&& (type==null || Objects.equals(mtd.getReturnType(), type))
+					&& mtd.getName().equals(name)) {
+				return mtd;
+			}
+		}
+		return null;
+	}
+	
+	@NativeAccess
+	private static Method findDeclaredMethod(Class<?> cls, boolean isStatic, String name, Class<?> type, Class<?> arg){
+		for(Method mtd : cls.getDeclaredMethods()) {
+			if(mtd.getParameterCount()==1
+					&& Modifier.isStatic(mtd.getModifiers())==isStatic
+					&& (type==null || Objects.equals(mtd.getReturnType(), type))
+					&& Objects.equals(mtd.getParameterTypes()[0], arg)
+					&& mtd.getName().equals(name)) {
+				return mtd;
+			}
+		}
+		return null;
+	}
+	
+	@NativeAccess
+	private static Field findDeclaredField(Class<?> cls, boolean isStatic, String name, Class<?> type){
+		for(Field f : cls.getDeclaredFields()) {
+			if(f.getName().equals(name) 
+					&& Modifier.isStatic(f.getModifiers())==isStatic
+					&& (type==null || Objects.equals(f.getType(), type))) {
+				return f;
+			}
+		}
+		return null;
+	}
+	
+	@NativeAccess
+	static Object[] analyzeValueType(Class<?> cls) {
+		Object[] result = new Object[4];
+		for(Constructor<?> cnstr : cls.getDeclaredConstructors()) {
+			if(cnstr.getParameterCount()==0) {
+				result[0] = cnstr;
+			}
+		}
+		if(result[0]!=null) {
+			for(Method mtd : cls.getDeclaredMethods()) {
+				if(!Modifier.isStatic(mtd.getModifiers())) {
+					boolean writeTo = false;
+					switch(mtd.getName()) {
+					case "clone":
+						if(mtd.getParameterCount()==0) {
+							if(Objects.equals(mtd.getReturnType(), cls)) {
+								result[1] = mtd;
+							}
+						}
+						break;
+					case "writeTo":
+						writeTo = true;
+					case "readFrom":
+						if(Objects.equals(mtd.getReturnType(), void.class)) {
+							if(mtd.getParameterCount()==1 && mtd.getParameterTypes()[0]==QDataStream.class) {
+								result[writeTo ? 2 : 3] = mtd;
+							}
+						}
+						break;
+					default:
+						break;
+					}
+					if(result[1]!=null && result[2]!=null && result[3]!=null) {
+						break;
+					}
+				}
+			}
+			if((result[2]==null || result[3]==null) && cls.getSuperclass()!=null) {
+				for(Method mtd : cls.getSuperclass().getMethods()) {
+					if(!Modifier.isStatic(mtd.getModifiers())) {
+						boolean writeTo = false;
+						switch(mtd.getName()) {
+						case "writeTo":
+							writeTo = true;
+						case "readFrom":
+							if(Objects.equals(mtd.getReturnType(), void.class)) {
+								if(mtd.getParameterCount()==1 && mtd.getParameterTypes()[0]==QDataStream.class) {
+									result[writeTo ? 2 : 3] = mtd;
+								}
+							}
+							break;
+						default:
+							break;
+						}
+						if(result[2]!=null && result[3]!=null) {
+							break;
+						}
+					}
+				}
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -957,7 +1151,7 @@ final class ClassAnalyzerUtility {
 			Function<Object,Object> writeReplaceHandle = lambdaWriteReplaceHandles.computeIfAbsent(slotClass, cls -> {
 				Method writeReplace = null;
 				try {
-					writeReplace = cls.getDeclaredMethod("writeReplace");
+					writeReplace = findDeclaredMethod(cls, false, "writeReplace", null);
 				} catch (Throwable e) {}
 				if(writeReplace == null) try {
 					writeReplace = cls.getMethod("writeReplace");

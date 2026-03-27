@@ -653,11 +653,11 @@ class QAccessibleInterface___ extends QAccessibleInterface {
 class QPaintDeviceWindow___ extends QPaintDeviceWindow {
 }// class
 
-class QQuaternion___ extends QQuaternion {
+class QQuaternion_610__ extends QQuaternion {
     /**
      * Result type for {@link QQuaternion#getAxes()}.
      */
-    public static class Axes implements java.lang.Cloneable{
+    public static final class Axes implements java.lang.Cloneable{
         public Axes(@NonNull QVector3D xAxis, @NonNull QVector3D yAxis, @NonNull QVector3D zAxis) {
             super();
             if(xAxis==null)
@@ -702,11 +702,58 @@ class QQuaternion___ extends QQuaternion {
         public final QVector3D yAxis;
         public final QVector3D zAxis;
     }
-    
+
+    /**
+    * Result type for {@link QQuaternion#getEulerAngles()}.
+    */
+    public static final class EulerAngles implements java.lang.Cloneable{
+       public EulerAngles(float pitch, float yaw, float roll) {
+           super();
+           this.pitch = pitch;
+           this.yaw = yaw;
+           this.roll = roll;
+       }
+       /**
+        * <p>Creates and returns a copy of this object.</p>
+        */
+       @QtUninvokable
+       @Override
+       public EulerAngles clone() {
+           return new EulerAngles(pitch, yaw, roll);
+       }
+       @Override
+       public int hashCode() {
+           return java.util.Objects.hash(pitch, roll, yaw);
+       }
+       @Override
+       public boolean equals(Object obj) {
+           if (this == obj)
+               return true;
+           if (obj == null)
+               return false;
+           if (getClass() != obj.getClass())
+               return false;
+           return equals((EulerAngles) obj);
+       }
+       public boolean equals(@NonNull EulerAngles other) {
+           return Float.floatToIntBits(pitch) == Float.floatToIntBits(other.pitch)
+                   && Float.floatToIntBits(roll) == Float.floatToIntBits(other.roll)
+                   && Float.floatToIntBits(yaw) == Float.floatToIntBits(other.yaw);
+       }
+       public final float pitch;
+       public final float yaw;
+       public final float roll;
+    }
+}// class
+
+class QQuaternion_611__ extends QQuaternion {
+}// class
+
+class QQuaternion___ extends QQuaternion {
     /**
      * Result type for {@link QQuaternion#getAxisAndAngle()}.
      */
-    public static class AxisAndAngle implements java.lang.Cloneable{
+    public static final class AxisAndAngle implements java.lang.Cloneable{
         public AxisAndAngle(@NonNull QVector3D axis, float angle) {
             super();
             if(axis==null)
@@ -743,48 +790,6 @@ class QQuaternion___ extends QQuaternion {
         }
         public final QVector3D axis;
         public final float angle;
-    }
-    
-    /**
-     * Result type for {@link QQuaternion#getEulerAngles()}.
-     */
-    public static class EulerAngles implements java.lang.Cloneable{
-        public EulerAngles(float pitch, float yaw, float roll) {
-            super();
-            this.pitch = pitch;
-            this.yaw = yaw;
-            this.roll = roll;
-        }
-        /**
-         * <p>Creates and returns a copy of this object.</p>
-         */
-        @QtUninvokable
-        @Override
-        public EulerAngles clone() {
-            return new EulerAngles(pitch, yaw, roll);
-        }
-        @Override
-        public int hashCode() {
-            return java.util.Objects.hash(pitch, roll, yaw);
-        }
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            return equals((EulerAngles) obj);
-        }
-        public boolean equals(@NonNull EulerAngles other) {
-            return Float.floatToIntBits(pitch) == Float.floatToIntBits(other.pitch)
-                    && Float.floatToIntBits(roll) == Float.floatToIntBits(other.roll)
-                    && Float.floatToIntBits(yaw) == Float.floatToIntBits(other.yaw);
-        }
-        public final float pitch;
-        public final float yaw;
-        public final float roll;
     }
 }// class
 

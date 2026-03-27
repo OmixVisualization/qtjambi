@@ -147,7 +147,10 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaObject,
                       QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
-                      QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(__qt_persistentPointer))
+                      QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(__qt_directLink))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMessageLogContext,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(__qt_directLink))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QPair,
             QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
@@ -160,6 +163,8 @@ namespace Java{
                                                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QVariant,
                                                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QDataStream,
                                          )
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QVariant$Null,
                                          QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(metaTypeID)
@@ -413,6 +418,15 @@ namespace Java{
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(isImplementedInJava)
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(isGeneratedClass)
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_STRING_METHOD(objectToString)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findDeclaredConstructor)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findDeclaredMethod)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findDeclaredConstructor0)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findDeclaredMethod0)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findDeclaredConstructor1)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findDeclaredMethod1)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findDeclaredField)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findInternalPrivateConstructor)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECTARRAY_METHOD(analyzeValueType)
                                         )
         QTJAMBI_REPOSITORY_DECLARE_CLASS(ThreadUtility,
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(setThreadInterruptible)
@@ -508,7 +522,7 @@ namespace Java{
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(propertyBindables)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(propertyMetaTypes)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(propertyClassTypes)
-                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD_QT6(metaTypes)
+                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(metaTypes)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(relatedMetaObjects)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(switchTableFields)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(privateConstructor)
@@ -777,6 +791,7 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QInstanceMemberSignals$Signal9Default9,
                                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QtObject$QPrivateConstructor,)
     }
 
     namespace JNA{

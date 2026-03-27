@@ -122,6 +122,7 @@ class TypeEntry {
             QCharType,
             ArrayType,
             TypeSystemType,
+            QMessageLogContextType,
             QMetaObjectType,
             QMetaObjectConnectionType,
             GlobalType,
@@ -168,6 +169,9 @@ class TypeEntry {
         }
         bool isGlobal() const {
             return m_type == GlobalType;
+        }
+        bool isQMessageLogContextType() const {
+            return m_type == QMessageLogContextType;
         }
         bool isQMetaObjectType() const {
             return m_type == QMetaObjectType;
@@ -1315,6 +1319,7 @@ class ComplexTypeEntry : public TypeEntry {
         void setForceFinal(bool isFinal);
 
         QString targetLangName() const override;
+        QString overrideTargetLangName() const;
         void setTargetLangName(const QString &name);
 
         bool isGenericClass() const;
@@ -1345,7 +1350,7 @@ class ComplexTypeEntry : public TypeEntry {
 
         void addInstantiation(const QStringList& instantiation, const ComplexTypeEntry* typeEntry = nullptr);
 
-        const QMap<QStringList,const ComplexTypeEntry*>& instantiations() const;
+        const QHash<QStringList,const ComplexTypeEntry*>& instantiations() const;
         void setExtendType(const QString& extendType);
         const QString& extendType() const;
 
@@ -1585,7 +1590,7 @@ private:
         ExpensePolicy m_expense_policy;
         TypeFlags m_type_flags;
         QMap<QString,QString> m_delegatedBaseClasses;
-        QMap<QStringList,const ComplexTypeEntry*> m_instantiations;
+        QHash<QStringList,const ComplexTypeEntry*> m_instantiations;
         QString m_extendType;
         QList<void*> m_declImplicitCasts;
         QStringList m_implicitCasts;
@@ -2030,6 +2035,13 @@ private:
 class GLsyncTypeEntry : public ObjectTypeEntry {
 public:
     GLsyncTypeEntry();
+};
+
+class QMessageLogContextTypeEntry : public ComplexTypeEntry {
+public:
+    QMessageLogContextTypeEntry();
+    QString javaPackage() const override;
+    bool isValue() const override;
 };
 
 class QMetaObjectTypeEntry : public ComplexTypeEntry {

@@ -129,7 +129,7 @@ class QmlTypeSystemReaderPrivate {
     void parseModifyArgument(ModifyArgument* element, AbstractFunctionModification& mod);
     void parseDelegate(Delegate* element, AbstractFunctionModification& mod);
     void parseModifyFunction(ModifyFunction* element, TypeEntry* entry);
-    TemplateInstantiation parseInstantiation(Instantiation* element);
+    TemplateInstantiation parseInstantiation(Instantiation* element, const QString& signature);
     void parseModifyField(ModifyField* element, ComplexTypeEntry* entry);
     void parseEnumType(const QString& nameSpace, EnumType* element);
     CustomFunction parseCustomStructor(AbstractStructor* element);
@@ -961,7 +961,8 @@ void QmlTypeSystemReaderPrivate::parseAttributesOfComplexType(ComplexType* eleme
         if(ctype->isThreadAffine())
             ctype->designatedInterface()->setThreadAffine();
         ctype->designatedInterface()->setThreadAffinity(ctype->threadAffinity());
-        ctype->designatedInterface()->setPPCondition(ctype->ppCondition());
+        if(!ctype->ppCondition().isEmpty())
+            ctype->designatedInterface()->setPPCondition(ctype->ppCondition());
         ctype->designatedInterface()->setNativeInterface(ctype->isNativeInterface());
         ctype->designatedInterface()->setCodeGeneration(ctype->codeGeneration());
     }
@@ -1010,10 +1011,29 @@ void QmlTypeSystemReaderPrivate::parseObjectType(const QString& nameSpace, Objec
                 ReportHandler::debugTypes("Adding to TypeDatabase(2): " + entry->name());
                 m_database->addType(entry.release());
                 m_database->addType(new TS::QMetaObjectConnectionTypeEntry());
-            }else{
-                std::unique_ptr<ObjectTypeEntry> entry(new ObjectTypeEntry(name));
+            }else if(name=="QMessageLogContext") {
+                std::unique_ptr<TS::QMessageLogContextTypeEntry> entry(new TS::QMessageLogContextTypeEntry());
                 if(!targetName.isEmpty())
                     entry->setTargetLangName(targetName.replace("::", "$"));
+                entry->setIsPolymorphicBase(element->getIsPolymorphicBase());
+                entry->setPolymorphicIdValue(element->getPolymorphicIdExpression());
+                parseAttributesOfComplexType(element, entry.get());
+                const QList<AbstractObject*> unhandledElements = parseChildrenOfComplexType(nameSpace, element, entry.get());
+                for(AbstractObject* unhandledElement : unhandledElements){
+                    TypesystemException::raise(QStringLiteral(u"Unexpected child element %1 in %2.").arg(unhandledElement->metaObject()->className(), element->metaObject()->className()));
+                }
+                ReportHandler::debugTypes("Adding to TypeDatabase(2): " + entry->name());
+                m_database->addType(entry.release());
+            }else{
+                std::unique_ptr<ObjectTypeEntry> entry(new ObjectTypeEntry(name));
+                if(!targetName.isEmpty()){
+                    if(targetName.endsWith(">")){
+                        auto idx = targetName.indexOf('<');
+                        entry->setTargetLangName(targetName.mid(0, idx).replace("::", "$"));
+                    }else{
+                        entry->setTargetLangName(targetName.replace("::", "$"));
+                    }
+                }
                 entry->setIsValueOwner(element->getIsValueOwner());
                 entry->setIsPolymorphicBase(element->getIsPolymorphicBase());
                 entry->setPolymorphicIdValue(element->getPolymorphicIdExpression());
@@ -1030,7 +1050,8 @@ void QmlTypeSystemReaderPrivate::parseObjectType(const QString& nameSpace, Objec
                     if(templateType){
                         if(templateType->isTemplate()){
                             if(templateType->instantiations().contains(templateArguments) && templateType->instantiations()[templateArguments]==nullptr){
-                                entry->setTargetLangName(templateType->targetLangName());
+                                if(entry->overrideTargetLangName().isEmpty())
+                                    entry->setTargetLangName(templateType->targetLangName());
                                 templateType->addInstantiation(templateArguments, entry.release());
                             }else{
                                 TypesystemException::raise(QStringLiteral(u"Template %1<%2> already defined").arg(templateName, templateArguments.join(",")));
@@ -1058,6 +1079,7 @@ QList<AbstractObject*> QmlTypeSystemReaderPrivate::parseChildrenOfComplexType(co
     QString tmpDefaultPackage = entry->javaPackage();
     m_defaultPackage.swap(tmpDefaultPackage);
     auto s = qScopeGuard([&](){m_defaultPackage.swap(tmpDefaultPackage);});
+    QList<Include*> includes;
     for(int i=0; i<childrenList.size(); ++i){
         AbstractObject* item = childrenList[i];
         if(NamespacePrefix* namespacePrefix = qobject_cast<NamespacePrefix*>(item)){
@@ -1099,14 +1121,13 @@ QList<AbstractObject*> QmlTypeSystemReaderPrivate::parseChildrenOfComplexType(co
             if (checkQtVersion(childElement)){
                 entry->setImplements(childElement->getInterface());
             }
+        }else if(PreProcessor* childElement = qobject_cast<PreProcessor*>(item)){
+            if (checkQtVersion(childElement)){
+                entry->setPPCondition(childElement->getCondition());
+            }
         }else if(Include* childElement = qobject_cast<Include*>(item)){
-            TS::Include incl = parseInclude(childElement);
-            if(incl.isValid()){
-                if(!entry->ppCondition().isEmpty())
-                    incl.ckeckAvailability = true;
-                entry->setInclude(incl);
-                if(entry->designatedInterface())
-                    entry->designatedInterface()->setInclude(incl);
+            if (checkQtVersion(childElement)){
+                includes << childElement;
             }
         }else if(ExtraIncludes* childElement = qobject_cast<ExtraIncludes*>(item)){
             parseExtraIncludes(childElement, entry);
@@ -1315,6 +1336,16 @@ QList<AbstractObject*> QmlTypeSystemReaderPrivate::parseChildrenOfComplexType(co
             unhandledElements << item;
         }
     }
+    for(Include* childElement : includes) {
+        TS::Include incl = parseInclude(childElement);
+        if(incl.isValid()){
+            if(!entry->ppCondition().isEmpty())
+                incl.ckeckAvailability = true;
+            entry->setInclude(incl);
+            if(entry->designatedInterface())
+                entry->designatedInterface()->setInclude(incl);
+        }
+    }
     return unhandledElements;
 }
 
@@ -1349,6 +1380,7 @@ void QmlTypeSystemReaderPrivate::parseTemplateType(const QString& nameSpace, Tem
         try{
             std::unique_ptr<TemplateTypeEntry> entry(new TemplateTypeEntry(name));
             const QList<AbstractObject*>& childrenList = element->childrenList();
+            QList<Include*> includes;
             for(int i=0; i<childrenList.size(); ++i){
                 AbstractObject* item = childrenList[i];
                 if(Template* childElement = qobject_cast<Template*>(item)){
@@ -1378,14 +1410,13 @@ void QmlTypeSystemReaderPrivate::parseTemplateType(const QString& nameSpace, Tem
                         }
                         entry->setImplements(childElement->getInterface());
                     }
+                }else if(PreProcessor* childElement = qobject_cast<PreProcessor*>(item)){
+                    if (checkQtVersion(childElement)){
+                        entry->setPPCondition(childElement->getCondition());
+                    }
                 }else if(Include* childElement = qobject_cast<Include*>(item)){
-                    TS::Include incl = parseInclude(childElement);
-                    if(incl.isValid()){
-                        if(!entry->ppCondition().isEmpty())
-                            incl.ckeckAvailability = true;
-                        entry->setInclude(incl);
-                        if(entry->designatedInterface())
-                            entry->designatedInterface()->setInclude(incl);
+                    if (checkQtVersion(childElement)){
+                        includes << childElement;
                     }
                 }else if(ExtraIncludes* childElement = qobject_cast<ExtraIncludes*>(item)){
                     parseExtraIncludes(childElement, entry.get());
@@ -1473,6 +1504,16 @@ void QmlTypeSystemReaderPrivate::parseTemplateType(const QString& nameSpace, Tem
                     }
                 }else{
                     TypesystemException::raise(QStringLiteral(u"Unexpected child element %1 in %2.").arg(item->metaObject()->className(), element->metaObject()->className()));
+                }
+            }
+            for(Include* childElement : includes) {
+                TS::Include incl = parseInclude(childElement);
+                if(incl.isValid()){
+                    if(!entry->ppCondition().isEmpty())
+                        incl.ckeckAvailability = true;
+                    entry->setInclude(incl);
+                    if(entry->designatedInterface())
+                        entry->designatedInterface()->setInclude(incl);
                 }
             }
             m_database->addTemplateType(entry.release());
@@ -1874,7 +1915,7 @@ void QmlTypeSystemReaderPrivate::parseConversionRule(const QHash<CodeClass::Entr
     }
 }
 
-TemplateInstantiation QmlTypeSystemReaderPrivate::parseInstantiation(Instantiation* element){
+TemplateInstantiation QmlTypeSystemReaderPrivate::parseInstantiation(Instantiation* element, const QString& signature){
     TemplateInstantiation mod;
     if (checkQtVersion(element)){
         AccessModifications accesses = element->getAccess();
@@ -1968,6 +2009,23 @@ TemplateInstantiation QmlTypeSystemReaderPrivate::parseInstantiation(Instantiati
                         mod.arguments << TS::Parameter{{},parameter,extends,implicit,value};
                     }else{
                         mod.arguments << TS::Parameter{type,{},{},implicit,{}};
+                    }
+                }
+            }else if(Remove* childElement = qobject_cast<Remove*>(item)){
+                if (checkQtVersion(childElement)){
+                    switch(childElement->getCodeClass()){
+                    case RemoveFlag::Shell:
+                        mod.removal = TS::ShellCode;
+                        break;
+                    case RemoveFlag::None:
+                        mod.removal = TS::NoLanguage;
+                        break;
+                    default:
+                        TypesystemException::raise(QStringLiteral(u"Unsupported codeClass attribute in Instantiation '%1'").arg(signature));
+                        break;
+                    }
+                    for(AbstractObject* item2 : item->childrenList()){
+                        TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2 in Instantiation '%3'").arg(item2->metaObject()->className(), item->metaObject()->className(), signature));
                     }
                 }
             }else if(ModifyArgument* childElement = qobject_cast<ModifyArgument*>(item)){
@@ -2146,6 +2204,9 @@ void QmlTypeSystemReaderPrivate::parseModifyFunction(ModifyFunction* element, Ty
             case RemoveFlag::All:
                 mod.removal = TS::All;
                 break;
+            case RemoveFlag::Shell:
+                mod.removal = TS::ShellCode;
+                break;
             case RemoveFlag::JavaAndNative:
                 mod.removal = TS::TargetLangAndNativeCode;
                 break;
@@ -2203,7 +2264,7 @@ void QmlTypeSystemReaderPrivate::parseModifyFunction(ModifyFunction* element, Ty
                 }else if(Delegate* childElement = qobject_cast<Delegate*>(item)){
                     parseDelegate(childElement, mod);
                 }else if(Instantiation* childElement = qobject_cast<Instantiation*>(item)){
-                    TemplateInstantiation templateInstantiation = parseInstantiation(childElement);
+                    TemplateInstantiation templateInstantiation = parseInstantiation(childElement, mod.originalSignature);
                     if(!templateInstantiation.arguments.isEmpty()){
                         for(const ArgumentModification& amod : qAsConst(mod.argument_mods)){
                             bool found = false;
@@ -2226,6 +2287,9 @@ void QmlTypeSystemReaderPrivate::parseModifyFunction(ModifyFunction* element, Ty
                         switch(childElement->getCodeClass()){
                         case RemoveFlag::All:
                             mod.removal = TS::All;
+                            break;
+                        case RemoveFlag::Shell:
+                            mod.removal = TS::ShellCode;
                             break;
                         case RemoveFlag::JavaAndNative:
                             mod.removal = TS::TargetLangAndNativeCode;

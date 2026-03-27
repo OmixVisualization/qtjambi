@@ -35,7 +35,10 @@
     <property name="qtjambi.required.modules" value="qtjambi, qtjambi.sql"/>
     <target name="build">
         <if>
-            <available file="${generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
+			<and>
+				<istrue value="qtjambi.sql.any.true"/>
+				<available file="${generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
+			</and>
             <then>
                 <path id="sourcedirs">
                     <pathelement location="${java.srcdir}/plugins/${module-name}"/>

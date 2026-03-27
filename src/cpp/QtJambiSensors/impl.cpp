@@ -44,6 +44,12 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaMethod,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(methodSignature,()Ljava/lang/String;)
 )
 }
+namespace QtJambi {
+QTJAMBI_REPOSITORY_DECLARE_CLASS(ClassAnalyzerUtility,
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findDeclaredConstructor1))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,ClassAnalyzerUtility,
+                                QTJAMBI_REPOSITORY_DEFINE_RENAMED_STATIC_METHOD(findDeclaredConstructor1,findDeclaredConstructor,(Ljava/lang/Class;Ljava/lang/Class;)Ljava/lang/reflect/Constructor;))
+}
 }
 
 jobject qtjambi_setReading(JNIEnv *env,
@@ -51,7 +57,9 @@ jobject qtjambi_setReading(JNIEnv *env,
                            jclass readingClass,
                            jobject readingObject){
 #ifndef QTJAMBI_NO_SENSORS_PRIVATE
-    jmethodID constructor = JavaAPI::resolveMethod(env, "<init>", "(Lio/qt/core/QObject;)V", readingClass, false);
+    jmethodID constructor{nullptr};
+    if(jobject declaredConstructor = Java::QtJambi::ClassAnalyzerUtility::findDeclaredConstructor1(env, readingClass, Java::QtCore::QObject::getClass(env)))
+        constructor = env->FromReflectedMethod(declaredConstructor);
     jobject backend = qtjambi_cast<jobject>(env, __qt_this);
     if(!readingObject)
         readingObject = env->NewObject(readingClass, constructor, backend);

@@ -39,9 +39,12 @@ SOURCES += \
     containeraccess_iterator.cpp \
     containeraccess_list.cpp \
     containeraccess_multihash.cpp \
+    containeraccess_optional.cpp \
     containeraccess_pair.cpp \
     containeraccess_set.cpp \
     containeraccess_span.cpp \
+    containeraccess_map.cpp \
+    containeraccess_multimap.cpp \
     containers.cpp \
     convert.cpp \
     coreapi.cpp \
@@ -94,14 +97,7 @@ SOURCES += \
 HEADERS += \
     androidapi.h \
     containeraccess.h \
-    containeraccess_hash.h \
-    containeraccess_list.h \
-    containeraccess_map.h \
-    containeraccess_multihash.h \
-    containeraccess_multimap.h \
     containeraccess_p.h \
-    containeraccess_pair.h \
-    containeraccess_set.h \
     containerapi.h \
     coreapi.h \
     debugapi.h \
@@ -161,18 +157,15 @@ HEADERS += \
     utils.h \
     utils_p.h
 
-lessThan(QT_MAJOR_VERSION, 6):{
-SOURCES += \
-    containeraccess_map.cpp \
-    containeraccess_multimap.cpp
-
-HEADERS +=
-}else{
-#win32-arm64-msvc* | win32-msvc*: {
-SOURCES += \
-    containeraccess_multimap.cpp \
-    containeraccess_map.cpp
-#}
+defined(QTJAMBI_GENERIC_ACCESS):{
+HEADERS += \
+    containeraccess_hash.h \
+    containeraccess_list.h \
+    containeraccess_map.h \
+    containeraccess_multihash.h \
+    containeraccess_multimap.h \
+    containeraccess_pair.h \
+    containeraccess_set.h
 }
 
 CONFIG(debug, debug|release) {

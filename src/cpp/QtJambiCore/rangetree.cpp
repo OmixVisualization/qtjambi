@@ -39,13 +39,16 @@ template <bool is_mutable_tree,
           bool is_mutable_row,
           bool is_list_range,
           bool is_list_row,
+          bool itemsAreQObjects,
+          bool has_itemAccess,
           RowType rowType, typename Protocol>
-class QtJambiGenericTreeItemModelImpl : public QtJambiRangeModelImpl<is_mutable_tree ? TreeType::MutableTree : TreeType::ConstTree, QtJambiGenericTreeItemModelImpl<is_mutable_tree,is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType, Protocol>, is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType, Protocol>
+class QtJambiGenericTreeItemModelImpl : public QtJambiRangeModelImpl<is_mutable_tree ? TreeType::MutableTree : TreeType::ConstTree, QtJambiGenericTreeItemModelImpl<is_mutable_tree,is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType,Protocol>, is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType,Protocol>
 {
     static constexpr TreeType treeType = is_mutable_tree ? TreeType::MutableTree : TreeType::ConstTree;
-    using Range = RangeWrapperType<is_mutable_tree ? TreeType::MutableTree : TreeType::ConstTree,is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType>;
-    using Base = QtJambiRangeModelImpl<treeType, QtJambiGenericTreeItemModelImpl<is_mutable_tree,is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType, Protocol>, is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType, Protocol>;
-    friend class QtJambiRangeModelImpl<treeType, QtJambiGenericTreeItemModelImpl<is_mutable_tree,is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType, Protocol>, is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType, Protocol>;
+    using Base = QtJambiRangeModelImpl<treeType, QtJambiGenericTreeItemModelImpl<is_mutable_tree,is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType,Protocol>, is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType,Protocol>;
+    using Range = typename Base::Range;
+    using RootRange = typename Base::RootRange;
+    friend class QtJambiRangeModelImpl<treeType, QtJambiGenericTreeItemModelImpl<is_mutable_tree,is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType,Protocol>, is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType,Protocol>;
 
     using range_type = typename Base::range_type;
     using range_features = typename Base::range_features;
@@ -58,8 +61,8 @@ class QtJambiGenericTreeItemModelImpl : public QtJambiRangeModelImpl<is_mutable_
     static_assert(!Base::dynamicColumns(), "A tree must have a static number of columns!");
 
 public:
-    QtJambiGenericTreeItemModelImpl(Range &&model, Protocol &&p, QRangeModel *itemModel, QGenericTableItemModelImpl<GenericTable>* owner)
-        : Base(std::forward<Range>(model), std::forward<Protocol>(p), itemModel, owner)
+    QtJambiGenericTreeItemModelImpl(RootRange &&model, Protocol &&p, QRangeModel *itemModel, QGenericTableItemModelImpl<GenericTable>* owner)
+        : Base(std::forward<RootRange>(model), std::forward<Protocol>(p), itemModel, owner)
     {};
 
 protected:
@@ -348,15 +351,43 @@ protected:
 
     const range_type &childrenOf(const_row_ptr row) const
     {
-        return row ? QRangeModelDetails::refTo(this->protocol().childRows(*row))
-                   : *this->m_data.model();
+        if(row)
+            return QRangeModelDetails::refTo(this->protocol().childRows(*row));
+        else
+            return *this->m_data.model();
+    }
+
+    bool autoConnectPropertiesRange(const range_type &range, const QModelIndex &parent) const
+    {
+        int rowIndex = 0;
+        for (const auto &row : range) {
+            if (!this->autoConnectPropertiesInRow(row, rowIndex, parent))
+                return false;
+            Q_ASSERT(QRangeModelDetails::isValid(row));
+            const auto &children = this->protocol().childRows(QRangeModelDetails::refTo(row));
+            if (QRangeModelDetails::isValid(children)) {
+                if (!autoConnectPropertiesRange(QRangeModelDetails::refTo(children),
+                                                this->itemModel().index(rowIndex, 0, parent))) {
+                    return false;
+                }
+            }
+            ++rowIndex;
+        }
+        return true;
+    }
+
+    bool autoConnectPropertiesImpl() const
+    {
+        return autoConnectPropertiesRange(*this->m_data.model(), {});
     }
 
 private:
     range_type &childrenOf(row_ptr row)
     {
-        return row ? QRangeModelDetails::refTo(this->protocol().childRows(*row))
-                   : *this->m_data.model();
+        if(row)
+            return QRangeModelDetails::refTo(this->protocol().childRows(*row));
+        else
+            return *this->m_data.model();
     }
 };
 
@@ -365,146 +396,561 @@ template<bool is_mutable_tree,
          bool is_mutable_row,
          bool is_list_range,
          bool is_list_row,
-         RowType rowType,
+         bool itemsAreQObjects,
+         bool has_itemAccess,
+         std::enable_if_t<!has_itemAccess,RowType> rowType,
          typename... Args>
 void QGenericTableItemModelImpl<GenericTable>::initializeTree(QRangeModel *itemModel, Args&&... args){
-    using Range = RangeWrapperType<is_mutable_tree ? TreeType::MutableTree : TreeType::ConstTree,is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType>;
-    using TreeType = QtJambiGenericTreeItemModelImpl<is_mutable_tree,is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType,QRangeModelDetails::DefaultTreeProtocol<Range>>;
+    using Range = RangeWrapperType<is_mutable_tree ? TreeType::MutableTree : TreeType::ConstTree,is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType,true>;
+    using TreeType = QtJambiGenericTreeItemModelImpl<is_mutable_tree,is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType,QRangeModelDetails::DefaultTreeProtocol<Range>>;
     impl = new TreeType(Range{std::move(args)...}, {}, itemModel, this);
 }
 
+template<bool is_mutable_tree,
+         bool is_mutable_range,
+         bool is_mutable_row,
+         bool is_list_range,
+         bool is_list_row,
+         bool itemsAreQObjects,
+         bool has_itemAccess,
+         std::enable_if_t<has_itemAccess,RowType> rowType,
+         typename... Args>
+void QGenericTableItemModelImpl<GenericTable>::initializeTree(QRangeModel *itemModel, JObjectWrapper&& itemAccess, Args&&... args){
+    using Range = RangeWrapperType<is_mutable_tree ? TreeType::MutableTree : TreeType::ConstTree,is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType,true>;
+    using TreeType = QtJambiGenericTreeItemModelImpl<is_mutable_tree,is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType,QRangeModelDetails::DefaultTreeProtocol<Range>>;
+    impl = new TreeType(Range{std::move(itemAccess), std::move(args)...}, {}, itemModel, this);
+}
+
 void QGenericTableItemModelImpl<GenericTable>::initializeTree(QRangeModel *itemModel, GenericTable&& model){
-    switch(model.treeType){
-    case TreeType::MutableTree:
-        if(model.is_mutable_range){
-            if(model.is_list_range){
-#if QT_VERSION < QT_VERSION_CHECK(6,11,0)
-                switch(model.rowType){
-                case RowType::Data:
-                    initializeTree<true,true,false,true,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
-                    break;
-                case RowType::MetaObject:
-                    initializeTree<true,true,false,true,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
-                    break;
-                case RowType::Range:
-                    initializeTree<true,true,false,true,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
-                    break;
-                default:
-                    break;
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+    if(model.itemAccess.isNull()){
+#endif
+        if(model.itemsAreQObjects){
+            switch(model.treeType){
+            case TreeType::MutableTree:
+                if(model.is_mutable_range){
+                    if(model.is_list_range){
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<true,true,false,true,false,true,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<true,true,false,true,false,true,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::Range:
+                            initializeTree<true,true,false,true,false,true,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        default:
+                            break;
+                        }
+                    }else{
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<true,true,false,false,false,true,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<true,true,false,false,false,true,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::Range:
+                            initializeTree<true,true,false,false,false,true,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        default:
+                            break;
+                        }
+                    }
+                }else{
+                    if(model.is_list_range){
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<true,false,false,true,false,true,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<true,false,false,true,false,true,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::Range:
+                            initializeTree<true,false,false,true,false,true,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        default:
+                            break;
+                        }
+                    }else{
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<true,false,false,false,false,true,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<true,false,false,false,false,true,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::Range:
+                            initializeTree<true,false,false,false,false,true,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        default:
+                            break;
+                        }
+                    }
                 }
-            }else{
-                switch(model.rowType){
-                case RowType::Data:
-                    initializeTree<true,true,false,false,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
-                    break;
-                case RowType::MetaObject:
-                    initializeTree<true,true,false,false,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
-                    break;
-                case RowType::Range:
-                    initializeTree<true,true,false,false,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
-                    break;
-                default:
-                    break;
+                break;
+            case TreeType::ConstTree:
+                if(model.is_mutable_range){
+                    if(model.is_list_range){
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<false,true,false,true,false,true,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<false,true,false,true,false,true,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::Range:
+                            initializeTree<false,true,false,true,false,true,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        default:
+                            break;
+                        }
+                    }else{
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<false,true,false,false,false,true,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<false,true,false,false,false,true,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::Range:
+                            initializeTree<false,true,false,false,false,true,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        default:
+                            break;
+                        }
+                    }
+                }else{
+                    if(model.is_list_range){
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<false,false,false,true,false,true,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<false,false,false,true,false,true,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::Range:
+                            initializeTree<false,false,false,true,false,true,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        default:
+                            break;
+                        }
+                    }else{
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<false,false,false,false,false,true,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<false,false,false,false,false,true,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::Range:
+                            initializeTree<false,false,false,false,false,true,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        default:
+                            break;
+                        }
+                    }
                 }
+                break;
+            default: break;
             }
-        }else{
-            if(model.is_list_range){
-                switch(model.rowType){
-                case RowType::Data:
-                    initializeTree<true,false,false,true,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
-                    break;
-                case RowType::MetaObject:
-                    initializeTree<true,false,false,true,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
-                    break;
-                case RowType::Range:
-                    initializeTree<true,false,false,true,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
-                    break;
-                default:
-                    break;
+        }else{// !model.itemsAreQObjects
+            switch(model.treeType){
+            case TreeType::MutableTree:
+                if(model.is_mutable_range){
+                    if(model.is_list_range){
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<true,true,false,true,false,false,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<true,true,false,true,false,false,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::Range:
+                            initializeTree<true,true,false,true,false,false,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        default:
+                            break;
+                        }
+                    }else{
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<true,true,false,false,false,false,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<true,true,false,false,false,false,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::Range:
+                            initializeTree<true,true,false,false,false,false,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        default:
+                            break;
+                        }
+                    }
+                }else{
+                    if(model.is_list_range){
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<true,false,false,true,false,false,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<true,false,false,true,false,false,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::Range:
+                            initializeTree<true,false,false,true,false,false,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        default:
+                            break;
+                        }
+                    }else{
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<true,false,false,false,false,false,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<true,false,false,false,false,false,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::Range:
+                            initializeTree<true,false,false,false,false,false,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        default:
+                            break;
+                        }
+                    }
                 }
-            }else{
-                switch(model.rowType){
-                case RowType::Data:
-                    initializeTree<true,false,false,false,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
-                    break;
-                case RowType::MetaObject:
-                    initializeTree<true,false,false,false,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
-                    break;
-                case RowType::Range:
-                    initializeTree<true,false,false,false,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
-                    break;
-                default:
-                    break;
+                break;
+            case TreeType::ConstTree:
+                if(model.is_mutable_range){
+                    if(model.is_list_range){
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<false,true,false,true,false,false,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<false,true,false,true,false,false,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::Range:
+                            initializeTree<false,true,false,true,false,false,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        default:
+                            break;
+                        }
+                    }else{
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<false,true,false,false,false,false,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<false,true,false,false,false,false,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::Range:
+                            initializeTree<false,true,false,false,false,false,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        default:
+                            break;
+                        }
+                    }
+                }else{
+                    if(model.is_list_range){
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<false,false,false,true,false,false,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<false,false,false,true,false,false,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::Range:
+                            initializeTree<false,false,false,true,false,false,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        default:
+                            break;
+                        }
+                    }else{
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<false,false,false,false,false,false,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<false,false,false,false,false,false,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::Range:
+                            initializeTree<false,false,false,false,false,false,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        default:
+                            break;
+                        }
+                    }
                 }
+                break;
+            default: break;
             }
         }
-        break;
-    case TreeType::ConstTree:
-        if(model.is_mutable_range){
-            if(model.is_list_range){
-                switch(model.rowType){
-                case RowType::Data:
-                    initializeTree<false,true,false,true,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
-                    break;
-                case RowType::MetaObject:
-                    initializeTree<false,true,false,true,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
-                    break;
-                case RowType::Range:
-                    initializeTree<false,true,false,true,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
-                    break;
-                default:
-                    break;
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+    }else{
+        if(model.itemsAreQObjects){
+            switch(model.treeType){
+            case TreeType::MutableTree:
+                if(model.is_mutable_range){
+                    if(model.is_list_range){
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<true,true,false,true,false,true,true,RowType::Data>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<true,true,false,true,false,true,true,RowType::MetaObject>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::Range:
+                            initializeTree<true,true,false,true,false,true,true,RowType::Range>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        default:
+                            break;
+                        }
+                    }else{
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<true,true,false,false,false,true,true,RowType::Data>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<true,true,false,false,false,true,true,RowType::MetaObject>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::Range:
+                            initializeTree<true,true,false,false,false,true,true,RowType::Range>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        default:
+                            break;
+                        }
+                    }
+                }else{
+                    if(model.is_list_range){
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<true,false,false,true,false,true,true,RowType::Data>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<true,false,false,true,false,true,true,RowType::MetaObject>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::Range:
+                            initializeTree<true,false,false,true,false,true,true,RowType::Range>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        default:
+                            break;
+                        }
+                    }else{
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<true,false,false,false,false,true,true,RowType::Data>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<true,false,false,false,false,true,true,RowType::MetaObject>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::Range:
+                            initializeTree<true,false,false,false,false,true,true,RowType::Range>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        default:
+                            break;
+                        }
+                    }
                 }
-            }else{
-                switch(model.rowType){
-                case RowType::Data:
-                    initializeTree<false,true,false,false,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
-                    break;
-                case RowType::MetaObject:
-                    initializeTree<false,true,false,false,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
-                    break;
-                case RowType::Range:
-                    initializeTree<false,true,false,false,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
-                    break;
-                default:
-                    break;
+                break;
+            case TreeType::ConstTree:
+                if(model.is_mutable_range){
+                    if(model.is_list_range){
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<false,true,false,true,false,true,true,RowType::Data>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<false,true,false,true,false,true,true,RowType::MetaObject>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::Range:
+                            initializeTree<false,true,false,true,false,true,true,RowType::Range>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        default:
+                            break;
+                        }
+                    }else{
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<false,true,false,false,false,true,true,RowType::Data>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<false,true,false,false,false,true,true,RowType::MetaObject>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::Range:
+                            initializeTree<false,true,false,false,false,true,true,RowType::Range>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        default:
+                            break;
+                        }
+                    }
+                }else{
+                    if(model.is_list_range){
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<false,false,false,true,false,true,true,RowType::Data>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<false,false,false,true,false,true,true,RowType::MetaObject>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::Range:
+                            initializeTree<false,false,false,true,false,true,true,RowType::Range>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        default:
+                            break;
+                        }
+                    }else{
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<false,false,false,false,false,true,true,RowType::Data>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<false,false,false,false,false,true,true,RowType::MetaObject>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::Range:
+                            initializeTree<false,false,false,false,false,true,true,RowType::Range>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        default:
+                            break;
+                        }
+                    }
                 }
+                break;
+            default: break;
             }
-        }else{
-            if(model.is_list_range){
-                switch(model.rowType){
-                case RowType::Data:
-                    initializeTree<false,false,false,true,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
-                    break;
-                case RowType::MetaObject:
-                    initializeTree<false,false,false,true,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
-                    break;
-                case RowType::Range:
-                    initializeTree<false,false,false,true,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
-                    break;
-                default:
-                    break;
+        }else{// !model.itemsAreQObjects
+            switch(model.treeType){
+            case TreeType::MutableTree:
+                if(model.is_mutable_range){
+                    if(model.is_list_range){
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<true,true,false,true,false,false,true,RowType::Data>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<true,true,false,true,false,false,true,RowType::MetaObject>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::Range:
+                            initializeTree<true,true,false,true,false,false,true,RowType::Range>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        default:
+                            break;
+                        }
+                    }else{
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<true,true,false,false,false,false,true,RowType::Data>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<true,true,false,false,false,false,true,RowType::MetaObject>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::Range:
+                            initializeTree<true,true,false,false,false,false,true,RowType::Range>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        default:
+                            break;
+                        }
+                    }
+                }else{
+                    if(model.is_list_range){
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<true,false,false,true,false,false,true,RowType::Data>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<true,false,false,true,false,false,true,RowType::MetaObject>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::Range:
+                            initializeTree<true,false,false,true,false,false,true,RowType::Range>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        default:
+                            break;
+                        }
+                    }else{
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<true,false,false,false,false,false,true,RowType::Data>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<true,false,false,false,false,false,true,RowType::MetaObject>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        case RowType::Range:
+                            initializeTree<true,false,false,false,false,false,true,RowType::Range>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount), std::move(model.classInfo));
+                            break;
+                        default:
+                            break;
+                        }
+                    }
                 }
-            }else{
-                switch(model.rowType){
-                case RowType::Data:
-                    initializeTree<false,false,false,false,false,RowType::Data>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
-                    break;
-                case RowType::MetaObject:
-                    initializeTree<false,false,false,false,false,RowType::MetaObject>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
-                    break;
-                case RowType::Range:
-                    initializeTree<false,false,false,false,false,RowType::Range>(itemModel, model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
-                    break;
-                default:
-                    break;
+                break;
+            case TreeType::ConstTree:
+                if(model.is_mutable_range){
+                    if(model.is_list_range){
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<false,true,false,true,false,false,true,RowType::Data>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<false,true,false,true,false,false,true,RowType::MetaObject>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::Range:
+                            initializeTree<false,true,false,true,false,false,true,RowType::Range>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        default:
+                            break;
+                        }
+                    }else{
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<false,true,false,false,false,false,true,RowType::Data>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<false,true,false,false,false,false,true,RowType::MetaObject>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::Range:
+                            initializeTree<false,true,false,false,false,false,true,RowType::Range>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        default:
+                            break;
+                        }
+                    }
+                }else{
+                    if(model.is_list_range){
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<false,false,false,true,false,false,true,RowType::Data>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<false,false,false,true,false,false,true,RowType::MetaObject>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::Range:
+                            initializeTree<false,false,false,true,false,false,true,RowType::Range>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        default:
+                            break;
+                        }
+                    }else{
+                        switch(model.rowType){
+                        case RowType::Data:
+                            initializeTree<false,false,false,false,false,false,true,RowType::Data>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::MetaObject:
+                            initializeTree<false,false,false,false,false,false,true,RowType::MetaObject>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        case RowType::Range:
+                            initializeTree<false,false,false,false,false,false,true,RowType::Range>(itemModel, std::move(model.itemAccess), model.env, model.container, std::move(model.sequentialAccess), std::move(model.treeColumnCount));
+                            break;
+                        default:
+                            break;
+                        }
+                    }
                 }
-#endif // QT_VERSION < QT_VERSION_CHECK(6,11,0)
+                break;
+            default: break;
             }
         }
-        break;
-    default: break;
     }
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,11,0)
 }
 
 #endif

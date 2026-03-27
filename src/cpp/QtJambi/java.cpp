@@ -671,8 +671,13 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QPair,
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMetaObject,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(J)
-    QTJAMBI_REPOSITORY_DEFINE_LONG_FIELD(__qt_persistentPointer)
+    QTJAMBI_REPOSITORY_DEFINE_LONG_FIELD(__qt_directLink)
 )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMessageLogContext,
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(J)
+                                QTJAMBI_REPOSITORY_DEFINE_LONG_FIELD(__qt_directLink)
+                                )
 
 QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt/core,QMetaObject$Connection)
 
@@ -832,6 +837,7 @@ QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt/core,QObject)
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVariant,
         QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
     )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QDataStream,)
 
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVariant$Null,
         QTJAMBI_REPOSITORY_DEFINE_METHOD(metaTypeID,()I)
@@ -1049,6 +1055,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Class,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(isInterface,()Z)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getModifiers,()I)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getComponentType,()Ljava/lang/Class;)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(getSuperclass,()Ljava/lang/Class;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getTypeParameters,()[Ljava/lang/reflect/TypeVariable;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(isArray,()Z)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(isPrimitive,()Z)
@@ -1270,6 +1277,15 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,ClassAnalyzerUtility,
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(isGeneratedClass,(Ljava/lang/Class;)Z)
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findGeneratedSuperclass,(Ljava/lang/Class;)Ljava/lang/Class;)
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(objectToString,(Ljava/lang/Object;)Ljava/lang/String;)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findDeclaredMethod,(Ljava/lang/Class;ZLjava/lang/String;Ljava/lang/Class;[Ljava/lang/Class;)Ljava/lang/reflect/Method;)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findDeclaredField,(Ljava/lang/Class;ZLjava/lang/String;Ljava/lang/Class;)Ljava/lang/reflect/Field;)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findDeclaredConstructor,(Ljava/lang/Class;[Ljava/lang/Class;)Ljava/lang/reflect/Constructor;)
+                                QTJAMBI_REPOSITORY_DEFINE_RENAMED_STATIC_METHOD(findDeclaredMethod1,findDeclaredMethod,(Ljava/lang/Class;ZLjava/lang/String;Ljava/lang/Class;Ljava/lang/Class;)Ljava/lang/reflect/Method;)
+                                QTJAMBI_REPOSITORY_DEFINE_RENAMED_STATIC_METHOD(findDeclaredConstructor1,findDeclaredConstructor,(Ljava/lang/Class;Ljava/lang/Class;)Ljava/lang/reflect/Constructor;)
+                                QTJAMBI_REPOSITORY_DEFINE_RENAMED_STATIC_METHOD(findDeclaredMethod0,findDeclaredMethod,(Ljava/lang/Class;ZLjava/lang/String;Ljava/lang/Class;)Ljava/lang/reflect/Method;)
+                                QTJAMBI_REPOSITORY_DEFINE_RENAMED_STATIC_METHOD(findDeclaredConstructor0,findDeclaredConstructor,(Ljava/lang/Class;)Ljava/lang/reflect/Constructor;)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findInternalPrivateConstructor,(Ljava/lang/Class;)Ljava/lang/reflect/Constructor;)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(analyzeValueType,(Ljava/lang/Class;)[Ljava/lang/Object;)
 )
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,ThreadUtility,
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(setThreadInterruptible,(Lio/qt/core/QThread;Ljava/lang/Thread;Z)V)
@@ -1358,7 +1374,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,MetaObjectData,
     QTJAMBI_REPOSITORY_DEFINE_FIELD(propertyBindables,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(propertyMetaTypes,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(propertyClassTypes,Ljava/util/List;)
-    QTJAMBI_REPOSITORY_DEFINE_FIELD(metaTypes,Ljava/util/List;)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(metaTypes,Lio/qt/internal/MetaObjectData$IntArray;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(relatedMetaObjects,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(switchTableFields,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(privateConstructor,Ljava/lang/reflect/Constructor;)
@@ -1712,6 +1728,9 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QInstanceMemberSignals$Signal9Default
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QInstanceMemberSignals$Signal9Default9,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/Object;)
+)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QtObject$QPrivateConstructor,
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QNoNativeResourcesException,

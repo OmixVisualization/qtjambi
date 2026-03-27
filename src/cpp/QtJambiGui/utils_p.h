@@ -39,19 +39,21 @@ namespace Java{
 namespace QtGui{
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QClipboard$Text,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+#if QT_VERSION < QT_VERSION_CHECK(6,11,0)
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QQuaternion$Axes,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
                                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(xAxis)
                                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(yAxis)
                                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(zAxis))
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QQuaternion$AxisAndAngle,
-                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QQuaternion$EulerAngles,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
                                      QTJAMBI_REPOSITORY_DECLARE_FLOAT_FIELD(pitch)
                                      QTJAMBI_REPOSITORY_DECLARE_FLOAT_FIELD(yaw)
                                      QTJAMBI_REPOSITORY_DECLARE_FLOAT_FIELD(roll)
                                      )
+#endif
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QQuaternion$AxisAndAngle,
+                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QTextCursor$SelectedTableCells,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 }

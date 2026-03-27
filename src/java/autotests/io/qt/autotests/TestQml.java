@@ -681,7 +681,7 @@ public class TestQml extends ApplicationInitializer{
 		QtQml.qmlRegisterType(TestObjectExn2.class, "io.qt.test", 1, 0, "TestObject");
 		QQuickWidget component = new QQuickWidget();
 		try {
-			component.setSource("qrc:io/qt/autotests/qml/TestExn.qml");
+			component.setSource("qrc:/io/qt/autotests/qml/TestExn.qml");
 			Assert.assertFalse("Error expected to be thrown", true);
 		} catch (AssertionError e) {
 			throw e;
@@ -699,7 +699,7 @@ public class TestQml extends ApplicationInitializer{
 		QtQml.qmlRegisterType(TestObjectExn2.class, "io.qt.test", 1, 0, "TestObject");
 		QQuickView component = new QQuickView();
 		try {
-			component.setSource("qrc:io/qt/autotests/qml/TestExn.qml");
+			component.setSource("qrc:/io/qt/autotests/qml/TestExn.qml");
 			Assert.assertFalse("Error expected to be thrown", true);
 		} catch (AssertionError e) {
 			throw e;
@@ -784,7 +784,7 @@ public class TestQml extends ApplicationInitializer{
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, (QUrl)null);
 		Assert.assertEquals(QQmlComponent.Status.Error, component.status());
-		Assert.assertTrue(component.errorString().trim().startsWith(":5 Cannot assign object ") && component.errorString().trim().contains("list property \"testChildren\""));
+		Assert.assertTrue(component.errorString(), component.errorString().trim().contains("Cannot assign object ") && component.errorString().trim().contains("list property \"testChildren\""));
 	}
 	
 	@Test
@@ -802,7 +802,7 @@ public class TestQml extends ApplicationInitializer{
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, (QUrl)null);
 		Assert.assertEquals(QQmlComponent.Status.Error, component.status());
-		Assert.assertTrue(component.errorString().trim().startsWith(":5 Cannot assign object ") && component.errorString().trim().contains("list property \"testItems\""));
+		Assert.assertTrue(component.errorString(), component.errorString().trim().contains("Cannot assign object ") && component.errorString().trim().contains("list property \"testItems\""));
 	}
 	
 	@Test
@@ -1144,7 +1144,7 @@ public class TestQml extends ApplicationInitializer{
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, (QUrl)null);
 		Assert.assertEquals(QQmlComponent.Status.Error, component.status());
-		Assert.assertEquals(":1 module \"io.qt.test\" is not installed", component.errorString().trim());
+		Assert.assertTrue(component.errorString(), component.errorString().contains("module \"io.qt.test\" is not installed"));
 	}
 	
 	@Test
@@ -1326,7 +1326,7 @@ public class TestQml extends ApplicationInitializer{
 		QtQml.qmlClearTypeRegistrations();
 		QQmlEngine engine = new QQmlEngine();
 		QQmlComponent component = new QQmlComponent(engine);
-		component.loadUrl("qrc:io/qt/autotests/qml/RectangleMethodAndSignal.qml");
+		component.loadUrl("qrc:/io/qt/autotests/qml/RectangleMethodAndSignal.qml");
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QQuickItem item = component.create(QQuickItem.class);

@@ -53,21 +53,21 @@ jfieldID findValueField(jthrowable& t, JNIEnv *env, jint hashCode, jclass enumCl
         valuesField = storage->enumClassValuesFields().value(hashCode, nullptr);
     }
     if(!valuesField){
-        QString signature = QString("[L%1;").arg(QtJambiAPI::getClassName(env, enumClass).replace(QLatin1Char('.'), QLatin1Char('/')));
-        valuesField = resolveField(env, "$VALUES", qPrintable(signature), enumClass, true);
+        QByteArray signature = "[L"+QtJambiAPI::getClassNameJNI(env, enumClass)+";";
+        valuesField = resolveField(env, "$VALUES", signature, enumClass, true);
         if(!valuesField){
             if(env->ExceptionCheck()){
                 t = env->ExceptionOccurred();
                 env->ExceptionClear();
             }
         }
-        if(jfieldID enumValuesField = resolveField(env, "ENUM$VALUES", qPrintable(signature), enumClass, true)){
+        if(jfieldID enumValuesField = resolveField(env, "ENUM$VALUES", signature, enumClass, true)){
             valuesField = enumValuesField;
         }else if(env->ExceptionCheck()){
             env->ExceptionClear();
         }
         for (int i=0; true; ++i) {
-            if(jfieldID enumValuesNField = resolveField(env, qPrintable(QString("ENUM$VALUES_%1").arg(i)), qPrintable(signature), enumClass, true)){
+            if(jfieldID enumValuesNField = resolveField(env, qPrintable(QString("ENUM$VALUES_%1").arg(i)), signature, enumClass, true)){
                 valuesField = enumValuesNField;
             }else{
                 if(env->ExceptionCheck())
@@ -89,50 +89,38 @@ jobjectArray extendEnumValues(JNIEnv *env, jclass enumClass, jobjectArray values
     static std::function<void(JNIEnv *, jclass, jobjectArray, jobject)> extendEnumFn = [](JNIEnv *env) -> std::function<void(JNIEnv *, jclass, jobjectArray, jobject)>{
 #if defined(Q_OS_ANDROID)
         // this is Android JDK
-        jfieldID sharedConstantsCache = resolveField(env, "sharedConstantsCache", "Llibcore/util/BasicLruCache;", Java::Runtime::Enum::getClass(env), true);
-        if(!sharedConstantsCache){
-            jobject sharedConstantsCacheField = Java::Runtime::Class::tryGetDeclaredField(env, Java::Runtime::Enum::getClass(env), env->NewStringUTF("sharedConstantsCache"));
-            if(env->ExceptionCheck()){
-                env->ExceptionClear();
-            }
-            if(sharedConstantsCacheField){
-                sharedConstantsCache = env->FromReflectedField(sharedConstantsCacheField);
-            }
+        jobject sharedConstantsCacheField = Java::QtJambi::ClassAnalyzerUtility::findDeclaredField(env, Java::Runtime::Enum::getClass(env), false, env->NewStringUTF("sharedConstantsCache"), nullptr);
+        jfieldID sharedConstantsCache{nullptr};
+        if(sharedConstantsCacheField){
+            sharedConstantsCache = env->FromReflectedField(sharedConstantsCacheField);
         }
         if(sharedConstantsCache){
             if(jobject cache = env->GetStaticObjectField(Java::Runtime::Enum::getClass(env), sharedConstantsCache)){
                 jclass cacheClass = env->GetObjectClass(cache);
-                jmethodID evictAll = JavaAPI::resolveMethod(env, "evictAll", "()V", cacheClass, false);
-                if(evictAll){
-                    JObjectWrapper cacheWrapper(env, cache);
-                    return [cacheWrapper, evictAll](JNIEnv *env, jclass, jobjectArray, jobject){
-                        env->CallVoidMethod(cacheWrapper, evictAll);
-                        JavaException::check(env QTJAMBI_STACKTRACEINFO );
-                    };
+                jobject evictAllMethod = Java::QtJambi::ClassAnalyzerUtility::findDeclaredMethod0(env, cacheClass, false, env->NewStringUTF("evictAll"), nullptr);
+                jmethodID evictAll{nullptr};
+                if(evictAllMethod){
+                    evictAll = env->FromReflectedMethod(evictAllMethod);
+                    if(evictAll){
+                        return [cacheWrapper = JObjectWrapper(env, cache), evictAll](JNIEnv *env, jclass, jobjectArray, jobject){
+                            env->CallVoidMethod(cacheWrapper.object(env), evictAll);
+                            JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                        };
+                    }
                 }
             }
         }
 #endif
         // this is OpenJDK
-        jfieldID enumConstants = resolveField(env, "enumConstants", "[Ljava/lang/Object;", Java::Runtime::Class::getClass(env));
-        if(env->ExceptionCheck())
-            env->ExceptionClear();
-        if(!enumConstants){
-            jobject enumConstantsField = Java::Runtime::Class::tryGetDeclaredField(env, Java::Runtime::Class::getClass(env), env->NewStringUTF("enumConstants"));
-            if(env->ExceptionCheck())
-                env->ExceptionClear();
-            if(enumConstantsField)
-                enumConstants = env->FromReflectedField(enumConstantsField);
+        jobject enumConstantsField = Java::QtJambi::ClassAnalyzerUtility::findDeclaredField(env, Java::Runtime::Class::getClass(env), false, env->NewStringUTF("enumConstants"), nullptr);
+        jfieldID enumConstants{nullptr};
+        if(enumConstantsField){
+            enumConstants = env->FromReflectedField(enumConstantsField);
         }
-        jfieldID enumConstantDirectory = resolveField(env, "enumConstantDirectory", "Ljava/util/Map;", Java::Runtime::Class::getClass(env));
-        if(env->ExceptionCheck())
-            env->ExceptionClear();
-        if(!enumConstantDirectory){
-            jobject enumConstantDirectoryField = Java::Runtime::Class::tryGetDeclaredField(env, Java::Runtime::Class::getClass(env), env->NewStringUTF("enumConstantDirectory"));
-            if(env->ExceptionCheck())
-                env->ExceptionClear();
-            if(enumConstantDirectoryField)
-                enumConstantDirectory = env->FromReflectedField(enumConstantDirectoryField);
+        jobject enumConstantDirectoryField = Java::QtJambi::ClassAnalyzerUtility::findDeclaredField(env, Java::Runtime::Class::getClass(env), false, env->NewStringUTF("enumConstantDirectory"), nullptr);
+        jfieldID enumConstantDirectory{nullptr};
+        if(enumConstantDirectoryField){
+            enumConstantDirectory = env->FromReflectedField(enumConstantDirectoryField);
         }
         if(enumConstants && enumConstantDirectory){
             return [enumConstants, enumConstantDirectory](JNIEnv *env, jclass enumClass, jobjectArray values, jobject newEntry){
@@ -152,26 +140,16 @@ jobjectArray extendEnumValues(JNIEnv *env, jclass enumClass, jobjectArray values
             };
         }
         // this is openj9 JDK
-        jmethodID getEnumVars = JavaAPI::resolveMethod(env, "getEnumVars", "()Ljava/lang/Class$EnumVars;", Java::Runtime::Class::getClass(env), false);
+        jmethodID getEnumVars{nullptr};
         jclass enumVarsClass{nullptr};
-        if(env->ExceptionCheck()){
-            env->ExceptionClear();
-        }
-        if(!getEnumVars){
-            jobject getEnumVarsMethod = Java::Runtime::Class::tryGetDeclaredMethod(env, Java::Runtime::Class::getClass(env), env->NewStringUTF("getEnumVars"), env->NewObjectArray(0, Java::Runtime::Class::getClass(env), nullptr));
-            if(env->ExceptionCheck()){
-                env->ExceptionClear();
-            }
-            if(getEnumVarsMethod){
-                getEnumVars = env->FromReflectedMethod(getEnumVarsMethod);
-                enumVarsClass = Java::Runtime::Method::getReturnType(env, getEnumVarsMethod);
-            }
-        }else{
-            enumVarsClass = JavaAPI::resolveClass(env, "java/lang/Class$EnumVars");
+        jobject getEnumVarsMethod = Java::QtJambi::ClassAnalyzerUtility::findDeclaredMethod0(env, Java::Runtime::Class::getClass(env), false, env->NewStringUTF("getEnumVars"), nullptr);
+        if(getEnumVarsMethod){
+            getEnumVars = env->FromReflectedMethod(getEnumVarsMethod);
+            enumVarsClass = Java::Runtime::Method::getReturnType(env, getEnumVarsMethod);
         }
         if(getEnumVars && enumVarsClass){
-            jobject cachedEnumConstantsField = Java::Runtime::Class::tryGetDeclaredField(env, enumVarsClass, env->NewStringUTF("cachedEnumConstants"));
-            jobject cachedEnumConstantDirectoryField = Java::Runtime::Class::tryGetDeclaredField(env, enumVarsClass, env->NewStringUTF("cachedEnumConstantDirectory"));
+            jobject cachedEnumConstantsField = Java::QtJambi::ClassAnalyzerUtility::findDeclaredField(env, enumVarsClass, false, env->NewStringUTF("cachedEnumConstants"), nullptr);
+            jobject cachedEnumConstantDirectoryField = Java::QtJambi::ClassAnalyzerUtility::findDeclaredField(env, enumVarsClass, false, env->NewStringUTF("cachedEnumConstantDirectory"), nullptr);
             if(cachedEnumConstantsField && cachedEnumConstantDirectoryField){
                 jfieldID cachedEnumConstants = env->FromReflectedField(cachedEnumConstantsField);
                 jfieldID cachedEnumConstantDirectory = env->FromReflectedField(cachedEnumConstantDirectoryField);

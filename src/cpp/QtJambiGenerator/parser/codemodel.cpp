@@ -826,6 +826,14 @@ void _TypeAliasModelItem::setType(const TypeInfo &type) {
     _M_type = type;
 }
 
+const TemplateParameterList& _TypeAliasModelItem::templateParameters() const {
+    return _M_templateParameters;
+}
+
+void _TypeAliasModelItem::setTemplateParameters(const TemplateParameterList &templateParameters) {
+    _M_templateParameters = templateParameters;
+}
+
 CodeModel::AccessPolicy _TypeAliasModelItem::accessPolicy() const {
     return _M_accessPolicy;
 }

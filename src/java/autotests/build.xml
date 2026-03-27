@@ -190,6 +190,10 @@
             <exclude name="io/qt/**/Test*UiTools.java" unless="${qtjambi.uitools.any.true}"/>
             <exclude name="io/qt/**/Test*Xml.java" unless="${qtjambi.xml.any.true}"/>
             <exclude name="io/qt/**/Test*Help.java" unless="${qtjambi.help.any.true}"/>
+            <exclude name="io/qt/**/Test*TaskTree.java" unless="${qtjambi.tasktree.any.true}"/>
+            <exclude name="io/qt/**/TestTaskTree*.java" unless="${qtjambi.tasktree.any.true}"/>
+            <exclude name="io/qt/**/Test*CanvasPainter.java" unless="${qtjambi.canvaspainter.any.true}"/>
+            <exclude name="io/qt/**/TestCanvasPainter*.java" unless="${qtjambi.canvaspainter.any.true}"/>
             <exclude name="io/qt/**/Test*Multimedia.java" unless="${qtjambi.multimedia.any.true}"/>
             <exclude name="io/qt/**/Test*MultimediaWidgets.java" unless="${qtjambi.multimediawidgets.any.true}"/>
             <exclude name="io/qt/**/Test*MacExtras.java" unless="${qtjambi.macextras.any.true}"/>
@@ -1332,9 +1336,14 @@
 									<isset property="termination.mode"/>
 								</condition>
 								<mkdir dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}"/>
+								<mkdir dir="${outputDir}/${qtjambi.osname}/tests/${kind}"/>
 								<trycatch>
 									<try>
-										<junit fork="yes" jvm="${test.jvm}" printsummary="true" dir="${outputDir}/${qtjambi.osname}/tests/${kind}/" haltonfailure="no" timeout="${qtjambi.junit.timeout}" showoutput="yes" logfailedtests="yes" threads="${qtjambi.junit.threads}">
+										<junit fork="yes" jvm="${test.jvm}" printsummary="true" 
+												dir="${outputDir}/${qtjambi.osname}/tests/${kind}/" 
+												tempdir="${outputDir}/${qtjambi.osname}/tests/${kind}/" 
+												haltonfailure="no" timeout="${qtjambi.junit.timeout}" 
+												showoutput="yes" logfailedtests="yes" threads="${qtjambi.junit.threads}">
 											<classpath>
 												<fileset dir="${deploymentdir}">
 													<include name="qtjambi*-${qtjambi.jar.version}.jar"/>

@@ -45,9 +45,13 @@ import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.SmartPointerTest;
 import io.qt.core.QEvent;
 import io.qt.core.QIODevice;
+import io.qt.core.QMetaType;
 import io.qt.core.QMetaObject.Connection;
 import io.qt.core.QObject;
+import io.qt.core.QSharedPointer;
 import io.qt.core.QTemporaryFile;
+import io.qt.core.QVariant;
+import io.qt.core.QWeakPointer;
 import io.qt.internal.TestUtility;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QGraphicsItem;
@@ -381,5 +385,25 @@ public class TestSmartPointerQShared extends ApplicationInitializer {
 		assertTrue(TestUtility.isSharedPointer(sharedObject));
 		assertEquals(newObject, sharedObject);
 		assertTrue(TestUtility.isSharedPointer(newObject));
+	}
+	
+	@Test
+	public void testMetaType_QSharedPointer() {
+		QMetaType smartType = QMetaType.fromType(QSharedPointer.class, QMetaType.fromType(SmartPointerTest.class));
+		assertTrue(smartType.isValid());
+		SmartPointerTest object = new SmartPointerTest();
+		QVariant variant = new QVariant(smartType, object);
+		assertEquals(object, variant.value());
+		assertTrue(TestUtility.isSharedPointer(object));
+	}
+	
+	@Test
+	public void testMetaType_QWeakPointer() {
+		QMetaType smartType = QMetaType.fromType(QWeakPointer.class, QMetaType.fromType(SmartPointerTest.class));
+		assertTrue(smartType.isValid());
+		SmartPointerTest object = new SmartPointerTest();
+		QVariant variant = new QVariant(smartType, object);
+		assertEquals(object, variant.value());
+		assertTrue(TestUtility.isSharedPointer(object));
 	}
 }

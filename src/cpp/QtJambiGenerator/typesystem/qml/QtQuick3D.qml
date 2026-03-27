@@ -145,6 +145,12 @@ TypeSystem{
         }
     }
 
+    ObjectType{
+        name: "QQuick3DTextureProviderExtension"
+        EnumType{name: "SamplerHint"}
+        since: [6, 11]
+    }
+
     Rejection{className: "QSSGRenderGraphObject"}
     
     ObjectType{

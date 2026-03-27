@@ -187,7 +187,7 @@ public class TestWebChannelOnEngine extends ApplicationInitializer {
         	
         	}
         });
-    	webEngineView.setProperty("url", new QUrl("qrc:io/qt/autotests/webchanneltest.html"));
+    	webEngineView.setProperty("url", new QUrl("qrc:/io/qt/autotests/webchanneltest.html"));
         window.show();
         QTimer.singleShot(20000, QApplication::quit);
         QApplication.exec();

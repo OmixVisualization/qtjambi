@@ -13,10 +13,6 @@ public class CustomWidget extends QWidget {
 		super();
 	}
 
-	public CustomWidget(QDeclarativeConstructor constructor) {
-		super(constructor);
-	}
-
 	public CustomWidget(QPrivateConstructor p) {
 		super(p);
 	}

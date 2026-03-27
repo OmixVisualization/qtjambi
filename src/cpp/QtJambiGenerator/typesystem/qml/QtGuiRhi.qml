@@ -1410,4 +1410,5 @@ public final void setLuminanceInNits(float minLuminance, float maxLuminance) {
         name: "QRhiAdapter"
         since: [6,10]
     }
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: horribly broken type in QRhiSwapChainHdrInfo::limits field type"}
 }

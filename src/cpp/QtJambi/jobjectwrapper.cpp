@@ -208,10 +208,18 @@ public:
                     *ok = strg;
                     return qtjambi_cast<QString>(env, strg);
                 }else{
-                    return qtjambi_cast<QString>(env, Java::Runtime::Object::toString(env, _object));
+                    jstring strg = Java::Runtime::Object::toString(env, _object);
+                    *ok = strg;
+                    return qtjambi_cast<QString>(env, strg);
                 }
             }else{
-                return qtjambi_cast<QString>(env, Java::Runtime::Object::toString(env, _object));
+                if (Java::QtCore::QMetaType$GenericTypeInterface::isInstanceOf(env, _object)) {
+                    return QtJambiAPI::convertJavaObjectToQVariant(env, _object).toString();
+                }else if (Java::QtJambi::QtObjectInterface::isInstanceOf(env, _object)) {
+                    return qtjambi_cast<QString>(env, Java::QtJambi::ClassAnalyzerUtility::objectToString(env, _object));
+                }else{
+                    return qtjambi_cast<QString>(env, Java::Runtime::Object::toString(env, _object));
+                }
             }
         }
         if(ok)
@@ -1364,12 +1372,17 @@ JObjectWrapper::~JObjectWrapper(){
 }
 
 QString JObjectWrapper::toString(JNIEnv *env, bool * ok) const {
-    return m_data->toString(env, ok);
+    if(QExplicitlySharedDataPointer<JObjectWrapperData> data{m_data}){
+        return data->toString(env, ok);
+    }
+    return {};
 }
 
 QString JObjectWrapper::toString(bool * ok) const {
     if(JniEnvironment env{200}){
-        return toString(env, ok);
+        if(QExplicitlySharedDataPointer<JObjectWrapperData> data{m_data}){
+            return data->toString(env, ok);
+        }
     }
     return {};
 }

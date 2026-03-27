@@ -533,16 +533,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
     }
     
     Rejection{
-        className: "QStyleOptionMenuItem"
-        enumName: "StyleOptionType"
-    }
-    
-    Rejection{
-        className: "QStyleOptionMenuItem"
-        enumName: "StyleOptionVersion"
-    }
-    
-    Rejection{
         className: "QStyleOptionProgressBar"
         enumName: "StyleOptionType"
     }
@@ -1127,14 +1117,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
     }
     
     EnumType{
-        name: "QStyleOptionMenuItem::CheckType"
-    }
-    
-    EnumType{
-        name: "QStyleOptionMenuItem::MenuItemType"
-    }
-    
-    EnumType{
         name: "QStyleOptionTab::CornerWidget"
     }
     
@@ -1612,7 +1594,15 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
     
     ValueType{
         name: "QStyleOptionMenuItem"
-        polymorphicIdExpression: "%1->type == QStyleOptionMenuItem::Type"
+        Rejection{enumName: "StyleOptionType"}
+        Rejection{enumName: "StyleOptionVersion"}
+        EnumType{
+            name: "CheckType"
+        }
+        EnumType{
+            name: "MenuItemType"
+        }
+        polymorphicIdExpression: "%1->type == QStyleOptionMenuItem::Type && %1->version == QStyleOptionMenuItem::Version"
         ModifyFunction{
             signature: "QStyleOptionMenuItem(int)"
             remove: RemoveFlag.All
@@ -1624,6 +1614,12 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                 deprecated: true
             }
         }
+    }
+    ValueType{
+        name: "QStyleOptionMenuItemV2"
+        polymorphicIdExpression: "%1->type == QStyleOptionMenuItem::Type && %1->version == QStyleOptionMenuItemV2::Version"
+        Rejection{enumName: "StyleOptionVersion"}
+        since: [6,11]
     }
     
     ValueType{

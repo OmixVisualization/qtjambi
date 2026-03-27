@@ -134,6 +134,8 @@ class TypeInfo {
         void setFunctionPointer(bool is) { m_flags.setFlag(IsFunctionPointer, is); }
         bool isArray() const { return m_flags.testFlag(IsArray) || (m_qualifiedName.isEmpty() && !m_arrayType.isEmpty()); }
         void setArray(bool is) { m_flags.setFlag(IsArray, is); }
+        bool isAnonymous() const { return m_flags.testFlag(IsAnonymous); }
+        void setAnonymous(bool is) { m_flags.setFlag(IsAnonymous, is); }
         bool isExpression() const { return m_flags.testFlag(IsExpression) || (m_qualifiedName.isEmpty() && !m_expression.isEmpty()); }
         const QString& expression() const { return m_expression; }
         void setExpression(const QString expression) { m_flags.setFlag(IsExpression, !m_expression.isEmpty()); m_expression = expression; }
@@ -187,6 +189,7 @@ class TypeInfo {
             IsFunctionDecl = 0x08,
             IsVariadic = 0x10,
             IsExpression = 0x40,
+            IsAnonymous = 0x80,
         };
         QFlags<Flag> m_flags;
 
@@ -759,6 +762,8 @@ class _TypeAliasModelItem: public _CodeModelItem {
     public:
         const TypeInfo& type() const;
         void setType(const TypeInfo &type);
+        const TemplateParameterList& templateParameters() const;
+        void setTemplateParameters(const TemplateParameterList &type);
         CodeModel::AccessPolicy accessPolicy() const;
         void setAccessPolicy(CodeModel::AccessPolicy accessPolicy);
 
@@ -770,6 +775,7 @@ class _TypeAliasModelItem: public _CodeModelItem {
     private:
         TypeInfo _M_type;
         CodeModel::AccessPolicy _M_accessPolicy;
+        TemplateParameterList _M_templateParameters;
 
     private:
         _TypeAliasModelItem(const _TypeAliasModelItem &other);

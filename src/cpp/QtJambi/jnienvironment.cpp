@@ -911,8 +911,8 @@ JniEnvironment::JniEnvironment(int capacity)
 }
 
 JniEnvironment::~JniEnvironment(){
-    if(m_flags & HasLocalFrames)
-        m_env->PopLocalFrame(nullptr);
+    if((m_flags & HasLocalFrames) && m_env)
+        (void)m_env->PopLocalFrame(nullptr);
     if(m_flags & RequiresDetach)
         EventDispatcherCheck::detach(m_env);
 }

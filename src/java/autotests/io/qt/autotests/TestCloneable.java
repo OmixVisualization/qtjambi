@@ -205,6 +205,7 @@ public class TestCloneable extends ApplicationInitializer {
     }
 
     @Test
+    @Deprecated
     public void run_clone_QColormap() {
         QColormap org = QColormap.instance(0);
         assertNotNull(org);

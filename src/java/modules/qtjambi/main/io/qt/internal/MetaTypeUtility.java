@@ -149,26 +149,13 @@ public final class MetaTypeUtility {
 
 	private static ReadWriteHandles getReadWriteHandles(Class<?> _cls) {
 		return readWriteHandles.computeIfAbsent(_cls, cls ->{
-			try {
-				Constructor<?> constructor = cls.getDeclaredConstructor();
-				Method writeTo;
-				try {
-					writeTo = cls.getMethod("writeTo", QDataStream.class);
-				} catch (Throwable e) {
-					writeTo = cls.getDeclaredMethod("writeTo", QDataStream.class);
-				}
-				Method readFrom;
-				try {
-					readFrom = cls.getMethod("readFrom", QDataStream.class);
-				} catch (Throwable e) {
-					readFrom = cls.getDeclaredMethod("readFrom", QDataStream.class);
-				}
-				if(!Modifier.isStatic(writeTo.getModifiers()) && !Modifier.isStatic(readFrom.getModifiers())) {
-					return new ReadWriteHandles(ReflectionUtility.methodInvocationHandler.streamIO(writeTo), 
-							ReflectionUtility.methodInvocationHandler.streamIO(readFrom), 
-							ReflectionUtility.methodInvocationHandler.getFactory0(constructor));
-				}
-			} catch (Throwable e) {
+			Object[] typeInfo = ClassAnalyzerUtility.analyzeValueType(cls);
+			if(typeInfo[0] instanceof Constructor && typeInfo[2] instanceof Method && typeInfo[3] instanceof Method) {
+				return new ReadWriteHandles(
+							ReflectionUtility.methodInvocationHandler.streamIO((Method)typeInfo[2]), 
+							ReflectionUtility.methodInvocationHandler.streamIO((Method)typeInfo[3]), 
+							ReflectionUtility.methodInvocationHandler.getFactory0((Constructor<?>)typeInfo[0])
+						);
 			}
 			return null;
 		});
@@ -617,7 +604,8 @@ public final class MetaTypeUtility {
 						|| Collection.class==parameterizedType.getRawType()
 						|| Deque.class==parameterizedType.getRawType()
 						|| Queue.class==parameterizedType.getRawType()
-						|| Set.class==parameterizedType.getRawType())
+						|| Set.class==parameterizedType.getRawType()
+						|| Optional.class==parameterizedType.getRawType())
 							&& actualTypeArguments.length == 1) {
 					if(List.class==parameterizedType.getRawType()) {
 						if (actualTypeArguments[0] == String.class) {
@@ -651,6 +639,8 @@ public final class MetaTypeUtility {
 							cotainerMetaType = QMetaType.qRegisterMetaType(QStack.class, new QMetaType(elementType));
 						}else if(Queue.class==parameterizedType.getRawType()) {
 							cotainerMetaType = QMetaType.qRegisterMetaType(QQueue.class, new QMetaType(elementType));
+						}else if(Optional.class==parameterizedType.getRawType()) {
+							cotainerMetaType = QMetaType.qRegisterMetaType(Optional.class, new QMetaType(elementType));
 						}else if(Set.class==parameterizedType.getRawType()) {
 							cotainerMetaType = QMetaType.qRegisterMetaType(QSet.class, new QMetaType(elementType));
 						}else {
@@ -907,6 +897,36 @@ public final class MetaTypeUtility {
 						}
 					}
 				}
+			}else if (cls==Optional.class && genericType instanceof ParameterizedType) {
+				ParameterizedType ptype = (ParameterizedType) genericType;
+				Type actualTypes[] = ptype.getActualTypeArguments();
+				AnnotatedElement actualAnnotatedTypes[] = null;
+				if(ClassAnalyzerUtility.useAnnotatedType) {
+					if(annotatedType instanceof AnnotatedParameterizedType) {
+						AnnotatedParameterizedType aptype = (AnnotatedParameterizedType)annotatedType;
+						actualAnnotatedTypes = aptype.getAnnotatedActualTypeArguments();
+					}
+				}
+				if (actualTypes.length == 1) {
+					Type elementType = actualTypes[0];
+					if(actualTypes[0] instanceof ParameterizedType)
+						elementType = ((ParameterizedType) actualTypes[0]).getRawType();
+					else if(actualTypes[0] instanceof TypeVariable) {
+						Type[] bounds = ((TypeVariable<?>) actualTypes[0]).getBounds();
+						if(bounds.length>0) {
+							if(bounds[0] instanceof ParameterizedType)
+								elementType = ((ParameterizedType) bounds[0]).getRawType();
+							else
+								elementType = bounds[0];
+						}
+					}
+					if(elementType instanceof Class) {
+						String elementName = internalTypeNameOfClass((Class<?>) elementType, actualTypes[0], actualAnnotatedTypes==null ? null : actualAnnotatedTypes[0]);
+						if(elementType==actualTypes[0])
+							QMetaType.qRegisterMetaType((Class<?>) elementType);
+						return String.format("std::optional<%1$s>", elementName);
+					}
+				}
 			}
 			String result = internalTypeNameByClass(cls);
 			boolean isEnumOrFlags = Enum.class.isAssignableFrom(cls) || QFlags.class.isAssignableFrom(cls);
@@ -993,6 +1013,8 @@ public final class MetaTypeUtility {
         				return String.format("QSet<%1$s>", instantiations[0].name());
         			}else if(clazz==java.util.Queue.class) {
         				return String.format("QQueue<%1$s>", instantiations[0].name());
+        			}else if(clazz==java.util.Optional.class) {
+        				return String.format("std::optional<%1$s>", instantiations[0].name());
         			}else if(clazz==java.util.Deque.class) {
         				return String.format("QStack<%1$s>", instantiations[0].name());
         			}else if(clazz.isInterface() && java.util.List.class.isAssignableFrom(clazz)) {
@@ -1042,6 +1064,13 @@ public final class MetaTypeUtility {
         }else {
         	if(instantiations!=null && instantiations.length>0) {
         		throw new IllegalArgumentException("Type "+clazz.getName()+" does not accept instantiations.");
+        	}
+        	if(clazz==java.util.OptionalInt.class) {
+        		return "std::optional<int>";
+        	}else if(clazz==java.util.OptionalLong.class) {
+        		return "std::optional<long long>";
+        	}else if(clazz==java.util.OptionalDouble.class) {
+        		return "std::optional<double>";
         	}
         }
         return null;

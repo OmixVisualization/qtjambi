@@ -331,7 +331,7 @@ public:
             return false;
         }
         else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, input))
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, input).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral(u"Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, input)) QTJAMBI_STACKTRACEINFO );
         return true;
     }
 private:
@@ -2680,15 +2680,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
     return getTypeEntry(env, typeId, true, qtName);
 }
 
-QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntryByJavaName(JNIEnv* env, const char* java_name)
-{
-    const std::type_info* typeId = getTypeByJavaName(java_name);
-    if(typeId)
-        return getTypeEntry(env, *typeId);
-    else return QtJambiTypeEntryPtr();
-}
-
-QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntryByJavaName(JNIEnv* env, const QString& java_name)
+QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntryByJavaName(JNIEnv* env, QByteArrayView java_name)
 {
     const std::type_info* typeId = getTypeByJavaName(java_name);
     if(typeId)
@@ -2737,11 +2729,11 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
             QTJAMBI_JNI_LOCAL_FRAME(env, 512);
             if(!typeInfo.javaName){
                 if(qtName)
-                    JavaException::raiseError(env, QLatin1String("Java class for native type %1 cannot be found").arg(qtName) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseError(env, QStringLiteral(u"Java class for native type %1 cannot be found").arg(qtName) QTJAMBI_STACKTRACEINFO );
                 else if(typeInfo.qtName)
-                    JavaException::raiseError(env, QLatin1String("Java class for native type %1 cannot be found").arg(typeInfo.qtName) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseError(env, QStringLiteral(u"Java class for native type %1 cannot be found").arg(typeInfo.qtName) QTJAMBI_STACKTRACEINFO );
                 else
-                    JavaException::raiseError(env, QLatin1String("Java class for native type %1 cannot be found").arg(QtJambiAPI::typeName(typeId)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseError(env, QStringLiteral(u"Java class for native type %1 cannot be found").arg(QtJambiAPI::typeName(typeId)) QTJAMBI_STACKTRACEINFO );
             }else if(jclass java_class = JavaAPI::resolveClass(env, typeInfo.javaName)){
                 switch(typeInfo.entryType){
                 case EntryTypes::EnumTypeInfo:
@@ -2756,10 +2748,10 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                     }
                     QString sig;
                     switch ( typeInfo.valueSizeAndAlignment.first ) {
-                    case 1:  sig = QLatin1String("(B)L%1;"); break;
-                    case 2:  sig = QLatin1String("(S)L%1;"); break;
-                    case 8:  sig = QLatin1String("(J)L%1;"); break;
-                    default: sig = QLatin1String("(I)L%1;"); break;
+                    case 1:  sig = QStringLiteral(u"(B)L%1;"); break;
+                    case 2:  sig = QStringLiteral(u"(S)L%1;"); break;
+                    case 8:  sig = QStringLiteral(u"(J)L%1;"); break;
+                    default: sig = QStringLiteral(u"(I)L%1;"); break;
                     }
                     jthrowable exceptionOccurred = nullptr;
                     jmethodID creator_method = JavaAPI::resolveMethod(env, "resolve", qPrintable(sig.arg(typeInfo.javaName)), java_class, true, &exceptionOccurred);
@@ -2789,7 +2781,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                     if(Java::Runtime::Class::isInterface(env, java_class)){
                         java_impl_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl").arg(typeInfo.javaName)));
                         if(!java_impl_class){
-                            JavaException::raiseError(env, QLatin1String("class %1.Impl cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseError(env, QStringLiteral(u"class %1.Impl cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                             return QtJambiTypeEntryPtr();
                         }
                         int modifiers = Java::Runtime::Class::getModifiers(env,java_impl_class);
@@ -2809,7 +2801,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                     }
                     creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
                     if(!creator_method){
-                        JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.Impl").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseError(env, QStringLiteral(u"internal private constructor cannot be found in class %1.Impl").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                         return QtJambiTypeEntryPtr();
                     }
                     Q_ASSERT(typeInfo.metaType.isValid());
@@ -2825,7 +2817,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                     if(Java::Runtime::Class::isInterface(env, java_class)){
                         java_impl_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl").arg(typeInfo.javaName)));
                         if(!java_impl_class){
-                            JavaException::raiseError(env, QLatin1String("class %1.Impl cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseError(env, QStringLiteral(u"class %1.Impl cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                             return QtJambiTypeEntryPtr();
                         }
                         int modifiers = Java::Runtime::Class::getModifiers(env,java_impl_class);
@@ -2845,7 +2837,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                     }
                     creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
                     if(!creator_method){
-                        JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.Impl").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseError(env, QStringLiteral(u"internal private constructor cannot be found in class %1.Impl").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                         return QtJambiTypeEntryPtr();
                     }
                     Q_ASSERT(typeInfo.metaType.isValid());
@@ -2867,7 +2859,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                         if(java_wrapper_class){
                             creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
                             if(!creator_method){
-                                JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raiseError(env, QStringLiteral(u"internal private constructor cannot be found in class %1.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                                 return QtJambiTypeEntryPtr();
                             }
                         }
@@ -3003,7 +2995,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                     }else{
                         jmethodID creator_method = findInternalPrivateConstructor(env, java_class);
                         if(!creator_method){
-                            JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseError(env, QStringLiteral(u"internal private constructor cannot be found in class %1").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                             return QtJambiTypeEntryPtr();
                         }
                         if(typeInfo.typeInfoSupplier){
@@ -3070,7 +3062,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                         }else{ // !typeInfo.typeInfoSupplier
                             if(polymorphicIdHandlers.isEmpty()){
                                 if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
-                                    if(typeid_equals(typeId, typeid(QMessageLogContext))){
+                                    if(typeid_equals(typeId, typeid(QMessageLogContext)) || typeid_equals(typeId, typeid(QDebug))){
                                         Q_ASSERT(!typeInfo.ownerFunction);
                                         result = ObjectTypeEntryFactory::create(NoDebugMessaging, env, typeId, typeInfo.qtName, typeInfo.javaName,
                                                                                          java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second,
@@ -3089,7 +3081,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                                                                  );
                                     }
                                 }else{
-                                    if(typeid_equals(typeId, typeid(QMessageLogContext))){
+                                    if(typeid_equals(typeId, typeid(QMessageLogContext)) || typeid_equals(typeId, typeid(QDebug))){
                                         Q_ASSERT(!typeInfo.ownerFunction);
                                         result = ObjectTypeEntryFactory::create(NoDebugMessaging, typeInfo.interfaceOffsetInfo,
                                                                                              env, typeId, typeInfo.qtName, typeInfo.javaName,
@@ -3112,7 +3104,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                                 }
                             }else{
                                 if(typeInfo.interfaceOffsetInfo.offsets.isEmpty()){
-                                    if(typeid_equals(typeId, typeid(QMessageLogContext))){
+                                    if(typeid_equals(typeId, typeid(QMessageLogContext)) || typeid_equals(typeId, typeid(QDebug))){
                                         Q_ASSERT(!typeInfo.ownerFunction);
                                         result = ObjectTypeEntryFactory::create(NoDebugMessaging, polymorphicIdHandlers,
                                                                                            env, typeId, typeInfo.qtName, typeInfo.javaName, java_class,
@@ -3133,7 +3125,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                                                                          typeInfo.destructor);
                                     }
                                 }else{
-                                    if(typeid_equals(typeId, typeid(QMessageLogContext))){
+                                    if(typeid_equals(typeId, typeid(QMessageLogContext)) || typeid_equals(typeId, typeid(QDebug))){
                                         Q_ASSERT(!typeInfo.ownerFunction);
                                         result = ObjectTypeEntryFactory::create(NoDebugMessaging, polymorphicIdHandlers, typeInfo.interfaceOffsetInfo,
                                                                                              env, typeId, typeInfo.qtName, typeInfo.javaName,
@@ -3185,7 +3177,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                             if(java_wrapper_class){
                                 creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
                                 if(!creator_method){
-                                    JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raiseError(env, QStringLiteral(u"internal private constructor cannot be found in class %1.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                                     return QtJambiTypeEntryPtr();
                                 }
                             }
@@ -3889,7 +3881,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                 {
                     jclass java_impl_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl").arg(typeInfo.javaName)));
                     if(!java_impl_class){
-                        JavaException::raiseError(env, QLatin1String("class %1.Impl cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseError(env, QStringLiteral(u"class %1.Impl cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                         return QtJambiTypeEntryPtr();
                     }
                     jclass java_wrapper_class = nullptr;
@@ -3897,7 +3889,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                     if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
                         java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl$ConcreteWrapper").arg(typeInfo.javaName)));
                         if(!java_wrapper_class){
-                            JavaException::raiseError(env, QLatin1String("class %1.Impl.ConcreteWrapper cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseError(env, QStringLiteral(u"class %1.Impl.ConcreteWrapper cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                             return QtJambiTypeEntryPtr();
                         }
                     }else{
@@ -3906,9 +3898,9 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                     jmethodID creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
                     if(!creator_method){
                         if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
-                            JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.Impl.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseError(env, QStringLiteral(u"internal private constructor cannot be found in class %1.Impl.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                         }else{
-                            JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.Impl").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseError(env, QStringLiteral(u"internal private constructor cannot be found in class %1.Impl").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                         }
                         return QtJambiTypeEntryPtr();
                     }
@@ -4062,7 +4054,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                 {
                     jclass java_impl_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl").arg(typeInfo.javaName)));
                     if(!java_impl_class){
-                        JavaException::raiseError(env, QLatin1String("class %1.Impl cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseError(env, QStringLiteral(u"class %1.Impl cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                         return QtJambiTypeEntryPtr();
                     }
                     jclass java_wrapper_class = nullptr;
@@ -4070,7 +4062,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                     if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
                         java_wrapper_class = JavaAPI::resolveClass(env, qPrintable(QString("%1$Impl$ConcreteWrapper").arg(typeInfo.javaName)));
                         if(!java_wrapper_class){
-                            JavaException::raiseError(env, QLatin1String("class %1.Impl.ConcreteWrapper cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseError(env, QStringLiteral(u"class %1.Impl.ConcreteWrapper cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                             return QtJambiTypeEntryPtr();
                         }
                     }else{
@@ -4079,9 +4071,9 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                     jmethodID creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
                     if(!creator_method){
                         if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
-                            JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.Impl.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseError(env, QStringLiteral(u"internal private constructor cannot be found in class %1.Impl.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                         }else{
-                            JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.Impl").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseError(env, QStringLiteral(u"internal private constructor cannot be found in class %1.Impl").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                         }
                         return QtJambiTypeEntryPtr();
                     }
@@ -4264,7 +4256,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                             if(java_wrapper_class){
                                 creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
                                 if(!creator_method){
-                                    JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raiseError(env, QStringLiteral(u"internal private constructor cannot be found in class %1.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                                     return QtJambiTypeEntryPtr();
                                 }
                             }
@@ -4300,7 +4292,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                         }else{ // !isAbstract
                             jmethodID creator_method = findInternalPrivateConstructor(env, java_class);
                             if(!creator_method){
-                                JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raiseError(env, QStringLiteral(u"internal private constructor cannot be found in class %1").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                                 return QtJambiTypeEntryPtr();
                             }
                             if(polymorphicIdHandlers.isEmpty()){
@@ -4342,7 +4334,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                             if(java_wrapper_class){
                                 creator_method = findInternalPrivateConstructor(env, java_wrapper_class);
                                 if(!creator_method){
-                                    JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raiseError(env, QStringLiteral(u"internal private constructor cannot be found in class %1.ConcreteWrapper").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                                     return QtJambiTypeEntryPtr();
                                 }
                             }
@@ -4376,7 +4368,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                         }else{ // !isAbstract
                             jmethodID creator_method = findInternalPrivateConstructor(env, java_class);
                             if(!creator_method){
-                                JavaException::raiseError(env, QLatin1String("internal private constructor cannot be found in class %1").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raiseError(env, QStringLiteral(u"internal private constructor cannot be found in class %1").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                                 return QtJambiTypeEntryPtr();
                             }
                             if(polymorphicIdHandlers.isEmpty()){
@@ -4469,6 +4461,8 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                         result = new MetaObjectConnectionTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
                     }else if(typeid_equals(typeId, typeid(QMetaObject))){
                         result = new MetaUtilTypeEntry<QMetaObject>(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(QMessageLogContext))){
+                        result = new MetaUtilTypeEntry<QMessageLogContext>(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
                     }else if(typeid_equals(typeId, typeid(JCollectionWrapper))
                              || typeid_equals(typeId, typeid(JMapWrapper))
                              || typeid_equals(typeId, typeid(JObjectWrapper))
@@ -4496,7 +4490,7 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                     return QtJambiTypeEntryPtr();
                 }
             }else{
-                JavaException::raiseError(env, QLatin1String("Java class %1 cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseError(env, QStringLiteral(u"Java class %1 cannot be found").arg(QString(typeInfo.javaName).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
             }
         }
 
@@ -5523,7 +5517,7 @@ bool QObjectTypeAbstractEntry::convertToNative(JNIEnv *env, jobject input, void 
             *reinterpret_cast<QObject**>(output) = link->qobject();
         }
         else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, input))
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, input).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral(u"Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, input)) QTJAMBI_STACKTRACEINFO );
         return true;
     }else return false;
 }
@@ -5597,7 +5591,7 @@ bool StdFunctionalTypeEntry::convertToNative(JNIEnv *env, jobject input, void * 
             m_qt_meta_type.destruct(output);
             m_qt_meta_type.construct(output, link->pointer());
         }else if(input){
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QString(QLatin1String(this->javaName())).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral(u"Incomplete object of type: %1").arg(QByteArray(this->javaName()).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
         }
     }else{
         if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, input)){
@@ -5611,7 +5605,7 @@ bool StdFunctionalTypeEntry::convertToNative(JNIEnv *env, jobject input, void * 
                 }
             }
         }else if(input){
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QString(QLatin1String(this->javaName())).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral(u"Incomplete object of type: %1").arg(QByteArray(this->javaName()).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
         }
     }
     return true;
@@ -5651,7 +5645,7 @@ bool FunctionPointerTypeEntry::convertToNative(JNIEnv *env, jobject input, void 
         if(link){
             *reinterpret_cast<void**>(output) = *reinterpret_cast<void**>(link->pointer());
         }else if(input){
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QString(QLatin1String(this->javaName())).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral(u"Incomplete object of type: %1").arg(QByteArray(this->javaName()).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
         }
     }else{
         if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, input)){
@@ -5665,12 +5659,12 @@ bool FunctionPointerTypeEntry::convertToNative(JNIEnv *env, jobject input, void 
                 }
             }
         }else if(input){
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QString(QLatin1String(this->javaName())).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral(u"Incomplete object of type: %1").arg(QByteArray(this->javaName()).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
         }
     }
     if(!*reinterpret_cast<void**>(output) && input){
         QString funTypeName = QtJambiAPI::typeName(type());
-        Java::Runtime::ClassCastException::throwNew(env, QStringLiteral("Unable to convert java object of type '%1' to function pointer '%2'.").arg(QString(QLatin1String(this->javaName())).replace('/', '.').replace('$', '.'), funTypeName) QTJAMBI_STACKTRACEINFO );
+        Java::Runtime::ClassCastException::throwNew(env, QStringLiteral(u"Unable to convert java object of type '%1' to function pointer '%2'.").arg(QByteArray(this->javaName()).replace('/', '.').replace('$', '.'), funTypeName) QTJAMBI_STACKTRACEINFO );
     }
     return true;
 }
@@ -6195,6 +6189,9 @@ QtJambiTypeEntry::NativeToJavaResult MetaUtilTypeEntry<TargetType>::convertToJav
                     false,
                     mode==NativeToJavaConversionMode::None ? QtJambiLink::Ownership::None : QtJambiLink::Ownership::Java
                 );
+        }else if constexpr(std::is_base_of<QMessageLogContext,TargetType>::value){
+            Q_UNUSED(mode)
+            output = Java::QtCore::QMessageLogContext::newInstance(env, jlong(qt_object));
         }else if constexpr(std::is_base_of<QMetaObject,TargetType>::value){
             Q_UNUSED(mode)
             output = QtJambiMetaObject::convertToJavaObject(env, reinterpret_cast<const QMetaObject*>(qt_object));
@@ -6254,18 +6251,27 @@ bool MetaUtilTypeEntry<TargetType>::convertToNative(JNIEnv *env, jobject input, 
                 }
             }
             else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, input))
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, input).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral(u"Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, input)) QTJAMBI_STACKTRACEINFO );
         }else{
             QMetaObject::Connection*& pointer = *reinterpret_cast<QMetaObject::Connection**>(output);
             if(pointer){
                 *pointer = QMetaObject::Connection();
             }
         }
+    }else if constexpr(std::is_same<TargetType,QMessageLogContext>::value){
+        if(!env->IsSameObject(input, nullptr)){
+            if(!Java::QtCore::QMessageLogContext::isInstanceOf(env, input))
+                return false;
+            jlong ptr = Java::QtCore::QMessageLogContext::__qt_directLink(env, input);
+            *reinterpret_cast<const QMessageLogContext**>(output) = reinterpret_cast<const QMessageLogContext *>(ptr);
+        }else{
+            *reinterpret_cast<const QMessageLogContext**>(output) = nullptr;
+        }
     }else if constexpr(std::is_same<TargetType,QMetaObject>::value){
         if(!env->IsSameObject(input, nullptr)){
             if(!Java::QtCore::QMetaObject::isInstanceOf(env, input))
                 return false;
-            jlong ptr = Java::QtCore::QMetaObject::__qt_persistentPointer(env, input);
+            jlong ptr = Java::QtCore::QMetaObject::__qt_directLink(env, input);
             *reinterpret_cast<const QMetaObject**>(output) = reinterpret_cast<const QMetaObject *>(ptr);
         }else{
             *reinterpret_cast<const QMetaObject**>(output) = nullptr;

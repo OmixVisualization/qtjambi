@@ -45,6 +45,7 @@
 #include <QtCore/QStringList>
 #include <QtCore/QSet>
 #include <QtCore/QByteArray>
+#include <QtCore/QObject>
 
 #include <QtJambi/global.h>
 #include <QtJambi/typetests.h>
@@ -52,6 +53,9 @@
 class QHash_int : public QHash<int, int> { };
 class QList_int : public QList<int> { };
 class QList_String : public QList<QString> { };
+class QList_QObject : public QList<QObject*> { };
+class QList_QList_QObject : public QList<QList<QObject*>> { };
+class QList_QHash_QObject_QObject : public QList<QHash<QObject*,QObject*>> { };
 class QMap_int : public QMap<int, int> { };
 class QMap_int_String : public QMap<int, QString> { };
 class QMap_String_int : public QMap<QString, int> { };
@@ -116,6 +120,9 @@ namespace ContainerTest{
     QVariant associativeInsertKey(QVariant variant, const QVariant& key);
     QVariant associativeSetValue(QVariant variant, const QVariant& key, const QVariant& value);
     QPair<QVariant,QVariant> associativeFindAndReplace(QVariant variant, const QVariant& key, const QVariant& value);
+    QList_QObject asListOfObjects(QObject* parent, std::initializer_list<QObject*> entries);
+    QList_QList_QObject asListOfLists(QObject* parent, std::initializer_list<QList<QObject*>> entries);
+    QList_QHash_QObject_QObject asListOfHashs(QObject* parent, std::initializer_list<QHash<QObject*,QObject*>> entries);
 }
 
 #endif // CONTAINERS_H

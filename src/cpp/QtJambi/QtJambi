@@ -31,12 +31,12 @@
 
 #if !defined(QTJAMBI_MODULE_H) && !defined(QTJAMBI_GENERATOR_RUNNING)
 #define QTJAMBI_MODULE_H
-#include "QtJambiDepends"
 #include "qtjambiapi.h"
 #include "jobjectwrapper.h"
 #include "functionpointer.h"
 #include "functionalbase.h"
 #include "registryapi.h"
 #include "qtjambi_cast.h"
-#include "QtJambiVersion"
+#include <QtJambi/QtJambiVersion>
+#include <QtJambi/QtJambiDepends>
 #endif // QTJAMBI_MODULE_H

@@ -40,12 +40,7 @@ template<bool forward,
          typename JniType,
          template<typename K, typename T> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
          typename K, typename T, typename... Args>
-struct qtjambi_jobject_template2_cast{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType<K,T>>::type, NativeType<K,T>>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::conditional<is_rvalue, typename std::add_rvalue_reference<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
+struct qtjambi_jobject_template2_cast : decltype(qtjambi_jobject_template_plain_cast<forward, JniType, NativeType<K,T>, is_pointer, is_const, is_reference, is_rvalue, Args...>()){
 };
 
 template<bool forward, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,

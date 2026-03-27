@@ -45,23 +45,24 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QClipboard$Text,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;Ljava/lang/String;)
 )
 
+#if QT_VERSION < QT_VERSION_CHECK(6,11,0)
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QQuaternion$Axes,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/gui/QVector3D;Lio/qt/gui/QVector3D;Lio/qt/gui/QVector3D;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(xAxis, Lio/qt/gui/QVector3D;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(yAxis, Lio/qt/gui/QVector3D;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(zAxis, Lio/qt/gui/QVector3D;)
 )
-
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QQuaternion$AxisAndAngle,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/gui/QVector3D;F)
-)
-
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QQuaternion$EulerAngles,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(FFF)
-    QTJAMBI_REPOSITORY_DEFINE_FIELD(pitch, F)
-    QTJAMBI_REPOSITORY_DEFINE_FIELD(roll, F)
-    QTJAMBI_REPOSITORY_DEFINE_FIELD(yaw, F)
-)
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(FFF)
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(pitch, F)
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(roll, F)
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(yaw, F)
+                                )
+#else
+#endif
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QQuaternion$AxisAndAngle,
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/gui/QVector3D;F)
+                                )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QTextCursor$SelectedTableCells,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(IIII)

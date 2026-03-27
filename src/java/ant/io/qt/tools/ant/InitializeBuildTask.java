@@ -204,6 +204,10 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			if((qtMajorVersion==6 && qtMinorVersion>=7) || qtMajorVersion>=7) {
 				_moduleInfos.put("qmlbuiltins", new ModuleInfo("QTJAMBI_NO_QMLBUILTINS", "QtQmlBuiltins", ModuleInfo.Headers.Public, true));
 			}
+			if((qtMajorVersion==6 && qtMinorVersion>=11) || qtMajorVersion>=7) {
+				_moduleInfos.put("tasktree", new ModuleInfo("QTJAMBI_NO_TASKTREE", "QtTaskTree"));
+				_moduleInfos.put("canvaspainter", new ModuleInfo("QTJAMBI_NO_CANVASPAINTER", "QtCanvasPainter"));
+			}
 			moduleInfos = Collections.unmodifiableMap(_moduleInfos);
 		}
 		return moduleInfos;
@@ -260,7 +264,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 				if("core".equals(s)
 						|| "gui".equals(s)
 						|| "widgets".equals(s))
-					throw new BuildException("It's not possible to exclude module "+s+" from bying generated.");
+					throw new BuildException("It's not possible to exclude module "+s+" from being generated.");
 				skippedModules.add(s.trim());
 			}
 		}
@@ -1298,6 +1302,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		File buildDir = new File(new File(qtjambiFullVersion), "build");
 		mySetProperty(-1, "outputDir", null, buildDir.getAbsolutePath(), true);
 		mySetProperty(-1, "deploymentdir", null, new File(new File(qtjambiFullVersion), "deployment").getAbsolutePath(), true);
+		mySetProperty(-1, "testdir", null, new File(new File(qtjambiFullVersion), "test").getAbsolutePath(), true);
 		mySetProperty(-1, "java.outdir", null, new File(buildDir, "java").getAbsolutePath(), true);
 		mySetProperty(-1, "java.outsrcdir", null, new File(buildDir, "java-src").getAbsolutePath(), true);
 		File platformBuildDir = new File(buildDir, osname);

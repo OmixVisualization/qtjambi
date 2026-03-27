@@ -78,6 +78,8 @@ AutoSpanAccess::AutoSpanAccess(const AutoSpanAccess& other)
 {
 }
 
+AbstractNestedSequentialAccess* AutoSpanAccess::asNested() { return this; }
+
 void AutoSpanAccess::dispose(){
     delete this;
 }
@@ -122,7 +124,7 @@ std::unique_ptr<AbstractSpanAccess::ElementIterator> AutoSpanAccess::elementIter
             }
         }
         bool isConst() override{
-            return false;
+            return true;
         }
         const void* constNext() override {
             const void* data = current;
@@ -137,6 +139,29 @@ std::unique_ptr<AbstractSpanAccess::ElementIterator> AutoSpanAccess::elementIter
         }
         std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
             return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
+        std::function<jobject(JNIEnv*,const void*)> elementConverter() const override {
+            if(m_access->m_elementDataType & AbstractContainerAccess::PointersMask){
+                return [internalToExternalConverter = m_access->m_internalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, &pointer, _value, true);
+                    return _value.l;
+                };
+            }else if (JObjectValueWrapper::isValueType(m_access->m_elementMetaType)
+                       || isNativeWrapperMetaType(m_access->m_elementMetaType)
+                       || isJObjectWrappedMetaType(m_access->m_elementMetaType)) {
+                return [](JNIEnv* env,const void* pointer) -> jobject{
+                    return reinterpret_cast<const JObjectWrapper*>(pointer)->object(env);
+                };
+            }else{
+                return [internalToExternalConverter = m_access->m_internalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, pointer, _value, true);
+                    return _value.l;
+                };
+            }
         }
     };
     return std::unique_ptr<AbstractSpanAccess::ElementIterator>(new ElementIterator(this, reinterpret_cast<const QtJambiSpan*>(container)));
@@ -201,6 +226,29 @@ std::unique_ptr<AbstractSpanAccess::ElementIterator> AutoSpanAccess::elementIter
         }
         std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
             return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
+        std::function<jobject(JNIEnv*,const void*)> elementConverter() const override {
+            if(m_access->m_elementDataType & AbstractContainerAccess::PointersMask){
+                return [internalToExternalConverter = m_access->m_internalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, &pointer, _value, true);
+                    return _value.l;
+                };
+            }else if (JObjectValueWrapper::isValueType(m_access->m_elementMetaType)
+                           || isNativeWrapperMetaType(m_access->m_elementMetaType)
+                           || isJObjectWrappedMetaType(m_access->m_elementMetaType)) {
+                return [](JNIEnv* env,const void* pointer) -> jobject{
+                    return reinterpret_cast<const JObjectWrapper*>(pointer)->object(env);
+                };
+            }else{
+                return [internalToExternalConverter = m_access->m_internalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, pointer, _value, true);
+                    return _value.l;
+                };
+            }
         }
     };
     return std::unique_ptr<AbstractSpanAccess::ElementIterator>(new ElementIterator(this, reinterpret_cast<QtJambiSpan*>(container)));
@@ -339,7 +387,7 @@ AutoSpanAccess::iterator AutoSpanAccess::iterator::operator--(int){
 typedef QMap<const QtPrivate::QMetaTypeInterface *, QtMetaContainerPrivate::QMetaSequenceInterface> MetaSequenceHash;
 
 QSharedPointer<class AutoSpanAccess> getSpanAccess(const QtPrivate::QMetaTypeInterface *iface){
-    return findContainerAccess(QMetaType(iface)).dynamicCast<AutoSpanAccess>();
+    return findContainerAccess(QMetaType(iface)).staticCast<AutoSpanAccess>();
 }
 void AutoSpanAccess::defaultCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr){
     if(QSharedPointer<class AutoSpanAccess> access = getSpanAccess(iface)){
@@ -489,7 +537,7 @@ QtMetaContainerPrivate::QMetaSequenceInterface* AutoSpanAccess::createMetaSequen
     return metaSequenceInterface;
 }
 
-QMetaType AutoSpanAccess::registerContainer(const QByteArray& typeName)
+QMetaType AutoSpanAccess::registerContainer(QByteArrayView typeName)
 {
     QMetaType newMetaType = QMetaType::fromName(typeName);
     if(!newMetaType.isValid()){
@@ -583,11 +631,14 @@ bool AutoSpanAccess::hasNestedContainerAccess(){
 }
 bool AutoSpanAccess::hasNestedPointers(){
     if(hasNestedContainerAccess()){
-        if(auto daccess = dynamic_cast<AbstractSequentialAccess*>(m_elementNestedContainerAccess.data())){
+        if(m_elementNestedContainerAccess->isSequential()){
+            auto daccess = static_cast<AbstractSequentialAccess*>(m_elementNestedContainerAccess.data());
             return (daccess->elementType() & PointersMask) || daccess->hasNestedPointers();
-        }else if(auto daccess = dynamic_cast<AbstractAssociativeAccess*>(m_elementNestedContainerAccess.data())){
+        }else if(m_elementNestedContainerAccess->isAssociative()){
+            auto daccess = static_cast<AbstractAssociativeAccess*>(m_elementNestedContainerAccess.data());
             return (daccess->keyType() & PointersMask) || daccess->hasKeyNestedPointers() || (daccess->valueType() & PointersMask) || daccess->hasValueNestedPointers();
-        }else if(auto daccess = dynamic_cast<AbstractPairAccess*>(m_elementNestedContainerAccess.data())){
+        }else if(m_elementNestedContainerAccess->isPair()){
+            auto daccess = static_cast<AbstractPairAccess*>(m_elementNestedContainerAccess.data());
             return (daccess->firstType() & PointersMask) || daccess->hasFirstNestedPointers() || (daccess->secondType() & PointersMask) || daccess->hasSecondNestedPointers();
         }
     }
@@ -656,22 +707,22 @@ jobject AutoSpanAccess::createIterator(JNIEnv * env, QtJambiNativeID ownerId, vo
 
 jobject AutoSpanAccess::createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr)
 {
-    AutoSequentialConstIteratorAccess* containerAccess = new AutoSequentialConstIteratorAccess(m_internalToExternalConverter,
-            [](AutoSequentialConstIteratorAccess* containerAccess, void*ptr){
+    AutoSequentialConstIteratorAccess<AbstractSequentialConstIteratorAccess>* containerAccess = createAutoSequentialConstIteratorAccess(m_internalToExternalConverter,
+            [](auto* containerAccess, void*ptr){
                 char* cursor = *reinterpret_cast<char**>(ptr);
                 *reinterpret_cast<char**>(ptr) = cursor+containerAccess->offset();
             },
-            [](AutoSequentialConstIteratorAccess* containerAccess, void*ptr){
+            [](auto* containerAccess, void*ptr){
                 char* cursor = *reinterpret_cast<char**>(ptr);
                 *reinterpret_cast<char**>(ptr) = cursor-containerAccess->offset();
             },
-            [](AutoSequentialConstIteratorAccess*,const void*ptr)->const void*{
+            [](auto*,const void*ptr)->const void*{
                 return *reinterpret_cast<char*const*>(ptr);
             },
-            [](AutoSequentialConstIteratorAccess*,const void*ptr1, const void*ptr2)->bool{
+            [](auto*,const void*ptr1, const void*ptr2)->bool{
                 return *reinterpret_cast<char*const*>(ptr1)<*reinterpret_cast<char*const*>(ptr2);
             },
-            [](AutoSequentialConstIteratorAccess*,const void*ptr1, const void*ptr2)->bool{
+            [](auto*,const void*ptr1, const void*ptr2)->bool{
                 return *reinterpret_cast<char*const*>(ptr1)==*reinterpret_cast<char*const*>(ptr2);
             },
             m_elementMetaType,
@@ -772,6 +823,8 @@ bool AutoSpanAccess::set(void* container, qsizetype index, const void* value)
 PointerRCAutoSpanAccess::PointerRCAutoSpanAccess(PointerRCAutoSpanAccess& other)
     : AutoSpanAccess(other), ReferenceCountingSetContainer() {}
 
+AbstractReferenceCountingContainer* PointerRCAutoSpanAccess::asRC() {return this;}
+
 PointerRCAutoSpanAccess* PointerRCAutoSpanAccess::clone(){
     return new PointerRCAutoSpanAccess(*this);
 }
@@ -836,6 +889,8 @@ bool PointerRCAutoSpanAccess::set(JNIEnv * env, const ContainerInfo& container, 
 
 NestedPointersRCAutoSpanAccess::NestedPointersRCAutoSpanAccess(NestedPointersRCAutoSpanAccess& other)
     : AutoSpanAccess(other), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* NestedPointersRCAutoSpanAccess::asRC() {return this;}
 
 NestedPointersRCAutoSpanAccess* NestedPointersRCAutoSpanAccess::clone(){
     return new NestedPointersRCAutoSpanAccess(*this);

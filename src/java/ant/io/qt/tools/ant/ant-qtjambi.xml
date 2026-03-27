@@ -72,6 +72,8 @@
          classname="io.qt.tools.ant.ThreadedSubantTask"/>
     <taskdef name="register-finished-module"
          classname="io.qt.tools.ant.RegisterFinishedModuleTask"/>
+    <taskdef name="propertycopy"
+         classname="io.qt.tools.ant.PropertyCopyTask"/>
 
     <typedef name="directory"
          classname="io.qt.tools.ant.Directory"/>

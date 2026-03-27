@@ -98,7 +98,7 @@ void* AutoMultiMapAccess::constructContainer(void* result, const void* container
 void AutoMultiMapAccess::assign(void* container, const void* other){AutoMapAccess::assign(container, other);}
 void AutoMultiMapAccess::assign(JNIEnv *env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other){AutoMapAccess::assign(env, container, other);}
 bool AutoMultiMapAccess::destructContainer(void* container) {return AutoMapAccess::destructContainer(container);}
-QMetaType AutoMultiMapAccess::registerContainer(const QByteArray& containerTypeName) {return AutoMapAccess::registerContainer(containerTypeName);}
+QMetaType AutoMultiMapAccess::registerContainer(QByteArrayView containerTypeName) {return AutoMapAccess::registerContainer(containerTypeName);}
 void AutoMultiMapAccess::dispose() {delete this;}
 const QMetaType& AutoMultiMapAccess::keyMetaType() {return AutoMapAccess::keyMetaType();}
 const QMetaType& AutoMultiMapAccess::valueMetaType() {return AutoMapAccess::valueMetaType();}
@@ -175,8 +175,11 @@ AbstractMultiMapAccess* AutoMultiMapAccess::clone() {return new AutoMultiMapAcce
 
 ContainerAndAccessInfo AutoMultiMapAccess::uniqueKeys(JNIEnv *env, const ConstContainerInfo& container)
 {
+#if defined(QTJAMBI_GENERIC_ACCESS)
+    using namespace ContainerAccessAPI;
+#endif
     ContainerAndAccessInfo result;
-    AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(ContainerAccessAPI::createContainerAccess(
+    auto containerAccess = createContainerAccess(
         env,
         SequentialContainerType::QList,
         m_keyMetaType,
@@ -188,8 +191,9 @@ ContainerAndAccessInfo AutoMultiMapAccess::uniqueKeys(JNIEnv *env, const ConstCo
         m_keyExternalToInternalConverter,
         m_keyNestedContainerAccess,
         m_keyOwnerFunction
-        ));
-    if(listAccess){
+        );
+    if(containerAccess && containerAccess->isList()){
+        AbstractListAccess* listAccess = static_cast<AbstractListAccess*>(containerAccess);
         CHECK_CONTAINER_ACCESS(env, listAccess)
         result.container = listAccess->createContainer();
         result.object = ContainerAPI::objectFromQList(env, result.container, listAccess);
@@ -253,13 +257,16 @@ void AutoMultiMapAccess::unite(JNIEnv *env, const ContainerInfo& container, Cont
 
 ContainerAndAccessInfo AutoMultiMapAccess::values(JNIEnv *env, const ConstContainerInfo& container, jobject key)
 {
+#if defined(QTJAMBI_GENERIC_ACCESS)
+    using namespace ContainerAccessAPI;
+#endif
     ContainerAndAccessInfo result;
     jvalue jv;
     jv.l = key;
     QtJambiScope scope;
     void* akey = nullptr;
     if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
-        AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(ContainerAccessAPI::createContainerAccess(
+        auto containerAccess = createContainerAccess(
             env,
             SequentialContainerType::QList,
             m_valueMetaType,
@@ -271,8 +278,9 @@ ContainerAndAccessInfo AutoMultiMapAccess::values(JNIEnv *env, const ConstContai
             m_valueExternalToInternalConverter,
             m_valueNestedContainerAccess,
             m_valueOwnerFunction
-            ));
-        if(listAccess){
+            );
+        if(containerAccess && containerAccess->isList()){
+            AbstractListAccess* listAccess = static_cast<AbstractListAccess*>(containerAccess);
             CHECK_CONTAINER_ACCESS(env, listAccess)
             result.container = listAccess->createContainer();
             result.object = ContainerAPI::objectFromQList(env, result.container, listAccess);
@@ -474,6 +482,8 @@ size_t AutoMultiMapAccess::alignOf() const{
 KeyPointerRCAutoMultiMapAccess::KeyPointerRCAutoMultiMapAccess(KeyPointerRCAutoMultiMapAccess& other)
     : AutoMultiMapAccess(other), ReferenceCountingSetContainer() {}
 
+AbstractReferenceCountingContainer* KeyPointerRCAutoMultiMapAccess::asRC() {return this;}
+
 AbstractMultiMapAccess* KeyPointerRCAutoMultiMapAccess::clone(){
     return new KeyPointerRCAutoMultiMapAccess(*this);
 }
@@ -576,6 +586,8 @@ void KeyPointerRCAutoMultiMapAccess::unite(JNIEnv * env, const ContainerInfo& co
 
 ValuePointerRCAutoMultiMapAccess::ValuePointerRCAutoMultiMapAccess(ValuePointerRCAutoMultiMapAccess& other)
     : AutoMultiMapAccess(other), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* ValuePointerRCAutoMultiMapAccess::asRC() {return this;}
 
 AbstractMultiMapAccess* ValuePointerRCAutoMultiMapAccess::clone(){
     return new ValuePointerRCAutoMultiMapAccess(*this);
@@ -692,6 +704,8 @@ jint ValuePointerRCAutoMultiMapAccess::remove(JNIEnv * env, const ContainerInfo&
 
 PointersRCAutoMultiMapAccess::PointersRCAutoMultiMapAccess(PointersRCAutoMultiMapAccess& other)
     : AutoMultiMapAccess(other), ReferenceCountingMultiMapContainer(other) {}
+
+AbstractReferenceCountingContainer* PointersRCAutoMultiMapAccess::asRC() {return this;}
 
 AbstractMultiMapAccess* PointersRCAutoMultiMapAccess::clone(){
     return new PointersRCAutoMultiMapAccess(*this);
@@ -820,6 +834,8 @@ jobject PointersRCAutoMultiMapAccess::take(JNIEnv *env, const ContainerInfo& con
 
 NestedPointersRCAutoMultiMapAccess::NestedPointersRCAutoMultiMapAccess(NestedPointersRCAutoMultiMapAccess& other)
     : AutoMultiMapAccess(other), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* NestedPointersRCAutoMultiMapAccess::asRC() {return this;}
 
 AbstractMultiMapAccess* NestedPointersRCAutoMultiMapAccess::clone(){
     return new NestedPointersRCAutoMultiMapAccess(*this);

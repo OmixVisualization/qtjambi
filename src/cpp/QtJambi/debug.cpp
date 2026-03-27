@@ -348,30 +348,6 @@ public:
         }
         return nullptr;
     }
-    static MethodPrintPrivate* create(MethodPrint::Type callType, const char* file, int line, const char *function, const char* message,...){
-        if(Q_UNLIKELY(enabledMethodTracePrints())){
-            switch(callType){
-            case MethodPrint::Disabled:
-                return nullptr;
-            default: break;
-            }
-            const QLoggingCategory& category = MethodPrintPrivate::category(callType);
-            if(category.isDebugEnabled())
-                return new MethodPrintPrivate(category, file, line, function, [data = QString::asprintf(message)](QDebug& dbg) -> QDebug& {
-                    return dbg << data;
-                });
-        }
-        return nullptr;
-    }
-    static MethodPrintPrivate* create(const QLoggingCategory& category, const char* file, int line, const char *function, const char* message,...){
-        if(Q_UNLIKELY(enabledMethodTracePrints())){
-            if(category.isDebugEnabled())
-                return new MethodPrintPrivate(category, file, line, function, [data = QString::asprintf(message)](QDebug& dbg) -> QDebug& {
-                    return dbg << data;
-                });
-        }
-        return nullptr;
-    }
     static MethodPrintPrivate* create(MethodPrint::Type callType, const char* file, int line, const char *function, Printer&& printer){
         if(Q_UNLIKELY(enabledMethodTracePrints())){
             switch(callType){
@@ -515,32 +491,6 @@ public:
             }
         }
     }
-    static void printCleanupArgs(const char *file, int line, const char *function, const char *format,...)
-    {
-        if (enabledMethodTracePrints()){
-            const QLoggingCategory& category = debugAPICleanupCallsCategory();
-            if (category.isDebugEnabled()) {
-                va_list args;
-                va_start(args, format);
-                QString string = QString::vasprintf(format, args);
-                va_end(args);
-                printImpl(string, file, line, function, category);
-            }
-        }
-    }
-    static void printArgs(const char *file, int line, const char *function, const char *format,...)
-    {
-        if (enabledMethodTracePrints()){
-            const QLoggingCategory& category = internalCategory();
-            if (category.isDebugEnabled()) {
-                va_list args;
-                va_start(args, format);
-                QString string = QString::vasprintf(format, args);
-                va_end(args);
-                printImpl(string, file, line, function, category);
-            }
-        }
-    }
 
 #if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME)
     static void printWithType(bool isEnter, const QLoggingCategory& category, MethodPrint::Type callType, const void* pointer, const char *method, const char * typeName, const char *file, int line, const char *function)
@@ -580,11 +530,29 @@ void print(const char *message, const char *file, int line, const char *function
 }
 
 void printCleanupArgs(const char *file, int line, const char *function, const char *format,...){
-    MethodPrintPrivate::printCleanupArgs(file, line, function, format);
+    if (enabledMethodTracePrints()){
+        const QLoggingCategory& category = debugAPICleanupCallsCategory();
+        if (category.isDebugEnabled()) {
+            va_list args;
+            va_start(args, format);
+            QString string = QString::vasprintf(format, args);
+            va_end(args);
+            MethodPrintPrivate::printImpl(string, file, line, function, category);
+        }
+    }
 }
 
 void printArgs(const char *file, int line, const char *function, const char *format,...){
-    MethodPrintPrivate::printArgs(file, line, function, format);
+    if (enabledMethodTracePrints()){
+        const QLoggingCategory& category = internalCategory();
+        if (category.isDebugEnabled()) {
+            va_list args;
+            va_start(args, format);
+            QString string = QString::vasprintf(format, args);
+            va_end(args);
+            MethodPrintPrivate::printImpl(string, file, line, function, category);
+        }
+    }
 }
 
 void print(const char *file, int line, const char *function, Printer&& printer){
@@ -633,16 +601,6 @@ MethodPrintFromLink::MethodPrintFromLink(const QWeakPointer<QtJambiLink>& link, 
 
 MethodPrintFromLink::MethodPrintFromLink(const QtJambiLink* link, const char* method, const char* file, int line, const char *function)
     : MethodPrint(MethodPrintPrivate::create(link, method, file, line, function))
-{
-}
-
-MethodPrintFromArgs::MethodPrintFromArgs(MethodPrint::Type callType, const char* file, int line, const char *function, const char* message, ...)
-    : MethodPrint(MethodPrintPrivate::create(callType, file, line, function, message))
-{
-}
-
-MethodPrintFromArgs::MethodPrintFromArgs(const QLoggingCategory& category, const char* file, int line, const char *function, const char* message, ...)
-    : MethodPrint(MethodPrintPrivate::create(category, file, line, function, message))
 {
 }
 

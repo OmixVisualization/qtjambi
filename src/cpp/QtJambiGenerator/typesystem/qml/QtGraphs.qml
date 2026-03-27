@@ -701,14 +701,6 @@ TypeSystem{
             since: [6,11]
         }
         ModifyFunction{
-            signature: "releaseColumnAxis()"
-            InjectCode{
-                position: Position.End
-                Text{content: String.raw`__rcColumnAxis = null;`}
-            }
-            since: [6,11]
-        }
-        ModifyFunction{
             signature: "setRowAxis(QCategory3DAxis*)"
             threadAffinity: true
             ModifyArgument{
@@ -721,14 +713,6 @@ TypeSystem{
             since: [6,11]
         }
         ModifyFunction{
-            signature: "releaseRowAxis()"
-            InjectCode{
-                position: Position.End
-                Text{content: String.raw`__rcRowAxis = null;`}
-            }
-            since: [6,11]
-        }
-        ModifyFunction{
             signature: "setValueAxis(QValue3DAxis*)"
             threadAffinity: true
             ModifyArgument{
@@ -737,14 +721,6 @@ TypeSystem{
                     variableName: "__rcValueAxis"
                     action: ReferenceCount.Set
                 }
-            }
-            since: [6,11]
-        }
-        ModifyFunction{
-            signature: "releaseValueAxis()"
-            InjectCode{
-                position: Position.End
-                Text{content: String.raw`__rcValueAxis = null;`}
             }
             since: [6,11]
         }
@@ -1069,14 +1045,6 @@ TypeSystem{
             since: [6,11]
         }
         ModifyFunction{
-            signature: "releaseAxisX()"
-            InjectCode{
-                position: Position.End
-                Text{content: String.raw`__rcAxisX = null;`}
-            }
-            since: [6,11]
-        }
-        ModifyFunction{
             signature: "setAxisY(QValue3DAxis*)"
             threadAffinity: true
             ModifyArgument{
@@ -1089,14 +1057,6 @@ TypeSystem{
             since: [6,11]
         }
         ModifyFunction{
-            signature: "releaseAxisY()"
-            InjectCode{
-                position: Position.End
-                Text{content: String.raw`__rcAxisY = null;`}
-            }
-            since: [6,11]
-        }
-        ModifyFunction{
             signature: "setAxisZ(QValue3DAxis*)"
             threadAffinity: true
             ModifyArgument{
@@ -1105,14 +1065,6 @@ TypeSystem{
                     variableName: "__rcAxisZ"
                     action: ReferenceCount.Set
                 }
-            }
-            since: [6,11]
-        }
-        ModifyFunction{
-            signature: "releaseAxisZ()"
-            InjectCode{
-                position: Position.End
-                Text{content: String.raw`__rcAxisZ = null;`}
             }
             since: [6,11]
         }
@@ -1225,14 +1177,6 @@ TypeSystem{
             since: [6,11]
         }
         ModifyFunction{
-            signature: "releaseAxisX()"
-            InjectCode{
-                position: Position.End
-                Text{content: String.raw`__rcAxisX = null;`}
-            }
-            since: [6,11]
-        }
-        ModifyFunction{
             signature: "setAxisY(QValue3DAxis*)"
             threadAffinity: true
             ModifyArgument{
@@ -1245,14 +1189,6 @@ TypeSystem{
             since: [6,11]
         }
         ModifyFunction{
-            signature: "releaseAxisY()"
-            InjectCode{
-                position: Position.End
-                Text{content: String.raw`__rcAxisY = null;`}
-            }
-            since: [6,11]
-        }
-        ModifyFunction{
             signature: "setAxisZ(QValue3DAxis*)"
             threadAffinity: true
             ModifyArgument{
@@ -1261,14 +1197,6 @@ TypeSystem{
                     variableName: "__rcAxisZ"
                     action: ReferenceCount.Set
                 }
-            }
-            since: [6,11]
-        }
-        ModifyFunction{
-            signature: "releaseAxisZ()"
-            InjectCode{
-                position: Position.End
-                Text{content: String.raw`__rcAxisZ = null;`}
             }
             since: [6,11]
         }
@@ -2145,8 +2073,25 @@ template<> QExplicitlySharedDataPointer<QGraphsLinePrivate>::~QExplicitlySharedD
         }
         since: 6.8
     }
+
+    ObjectType{
+        name: "QCustomSeries"
+        Rejection{functionName: "dataItems"}
+        ModifyFunction{
+            signature: "setDelegate(QQmlComponent*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+                ReferenceCount{
+                    variableName: "__rcDelegate"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        since: [6,11]
+    }
     
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: horribly broken type ''"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QAbstractDataProxy' set to non-final, as it is extended by other classes"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QAbstract3DSeries' set to non-final, as it is extended by other classes"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QAbstract3DAxis' set to non-final, as it is extended by other classes"}
@@ -2154,4 +2099,5 @@ template<> QExplicitlySharedDataPointer<QGraphsLinePrivate>::~QExplicitlySharedD
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type *Q*DataArray."}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'from*' for function modification in 'QQuick*' not found. Possible candidates: "}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping *, unmatched * type 'QQuickShapeGradient*'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'operator<<(QPieSlice*)' for function modification in 'QPieSlice' not found. Possible candidates: "}
 }

@@ -50,7 +50,6 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.NonNull;
 import io.qt.QMisfittingSignatureException;
 import io.qt.QNoSuchSlotException;
 import io.qt.QtInvokable;

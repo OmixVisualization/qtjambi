@@ -730,6 +730,23 @@ private:
     Q_PROPERTY(QString value READ getValue WRITE setValue NOTIFY valueChanged FINAL)
 };
 
+class PreProcessor: public AbstractObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+public:
+    explicit PreProcessor(QObject *parent = nullptr):AbstractObject{parent}{}
+    QString getCondition() const;
+    void setCondition(const QString &newCondition);
+
+signals:
+    void conditionChanged();
+
+private:
+    QString condition;
+    Q_PROPERTY(QString condition READ getCondition WRITE setCondition NOTIFY conditionChanged FINAL)
+};
+
 class Rename : public AbstractObject
 {
     Q_OBJECT

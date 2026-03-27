@@ -1264,7 +1264,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                             }
                         }
                         if(!foundConstructorFunction){
-                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QtJambiAPI::getClassNamePrintable(env, info.javaClass())) QTJAMBI_STACKTRACEINFO );
                         }
                         constructorFunctions << foundConstructorFunction;
                     }
@@ -1331,7 +1331,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     (void)ptr.release();
                 }
             }else{
-                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassName(env, callingClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassNamePrintable(env, callingClass)) QTJAMBI_STACKTRACEINFO );
             }
             break;
         }
@@ -1495,7 +1495,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                             }
                         }
                         if(!foundConstructorFunction){
-                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QtJambiAPI::getClassNamePrintable(env, info.javaClass())) QTJAMBI_STACKTRACEINFO );
                         }
                         constructorFunctions << foundConstructorFunction;
                     }
@@ -1562,7 +1562,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     (void)ptr.release();
                 }
             }else{
-                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassName(env, callingClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassNamePrintable(env, callingClass)) QTJAMBI_STACKTRACEINFO );
             }
             break;
         }
@@ -1579,18 +1579,19 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
     jclass objectClass = env->GetObjectClass(object);
     jobject nativeLink = QtJambiLink::getNativeLink(env, object);
 #if defined(QTJAMBI_GENERIC_ACCESS)
-    if(AbstractListAccess* _containerAccess = dynamic_cast<AbstractListAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
-    }else if(AbstractSetAccess* _containerAccess = dynamic_cast<AbstractSetAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
-    }else if(AbstractHashAccess* _containerAccess = dynamic_cast<AbstractHashAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
-    }else if(AbstractMapAccess* _containerAccess = dynamic_cast<AbstractMapAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
-    }else if(AbstractMultiHashAccess* _containerAccess = dynamic_cast<AbstractMultiHashAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
-    }else if(AbstractMultiMapAccess* _containerAccess = dynamic_cast<AbstractMultiMapAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
+    if(!containerAccess){
+    }else if(containerAccess->isList()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractListAccess*>(containerAccess));
+    }else if(containerAccess->isSet()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractSetAccess*>(containerAccess));
+    }else if(containerAccess->isHash()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractHashAccess*>(containerAccess));
+    }else if(containerAccess->isMap()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractMapAccess*>(containerAccess));
+    }else if(containerAccess->isMultiHash()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractMultiHashAccess*>(containerAccess));
+    }else if(containerAccess->isMultiMap()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractMultiMapAccess*>(containerAccess));
     }
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
     Q_ASSERT(containerAccess);
@@ -1757,7 +1758,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                             }
                         }
                         if(!foundConstructorFunction){
-                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QtJambiAPI::getClassNamePrintable(env, info.javaClass())) QTJAMBI_STACKTRACEINFO );
                         }
                         constructorFunctions << foundConstructorFunction;
                     }
@@ -1829,7 +1830,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     (void)ptr.release();
                 }
             }else{
-                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassName(env, callingClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassNamePrintable(env, callingClass)) QTJAMBI_STACKTRACEINFO );
             }
             break;
         }
@@ -1846,18 +1847,19 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
     jclass objectClass = env->GetObjectClass(object);
     jobject nativeLink = QtJambiLink::getNativeLink(env, object);
 #if defined(QTJAMBI_GENERIC_ACCESS)
-    if(AbstractListAccess* _containerAccess = dynamic_cast<AbstractListAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
-    }else if(AbstractSetAccess* _containerAccess = dynamic_cast<AbstractSetAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
-    }else if(AbstractHashAccess* _containerAccess = dynamic_cast<AbstractHashAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
-    }else if(AbstractMapAccess* _containerAccess = dynamic_cast<AbstractMapAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
-    }else if(AbstractMultiHashAccess* _containerAccess = dynamic_cast<AbstractMultiHashAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
-    }else if(AbstractMultiMapAccess* _containerAccess = dynamic_cast<AbstractMultiMapAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
+    if(!containerAccess){
+    }else if(containerAccess->isList()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractListAccess*>(containerAccess));
+    }else if(containerAccess->isSet()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractSetAccess*>(containerAccess));
+    }else if(containerAccess->isHash()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractHashAccess*>(containerAccess));
+    }else if(containerAccess->isMap()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractMapAccess*>(containerAccess));
+    }else if(containerAccess->isMultiHash()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractMultiHashAccess*>(containerAccess));
+    }else if(containerAccess->isMultiMap()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractMultiMapAccess*>(containerAccess));
     }
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
     Q_ASSERT(containerAccess);
@@ -2015,7 +2017,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                             }
                         }
                         if(!foundConstructorFunction){
-                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QtJambiAPI::getClassNamePrintable(env, info.javaClass())) QTJAMBI_STACKTRACEINFO );
                         }
                         constructorFunctions << foundConstructorFunction;
                     }
@@ -2085,7 +2087,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     (void)ptr.release();
                 }
             }else{
-                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassName(env, callingClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassNamePrintable(env, callingClass)) QTJAMBI_STACKTRACEINFO );
             }
             break;
         }
@@ -2102,18 +2104,19 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
     jclass objectClass = env->GetObjectClass(object);
     jobject nativeLink = QtJambiLink::getNativeLink(env, object);
 #if defined(QTJAMBI_GENERIC_ACCESS)
-    if(AbstractListAccess* _containerAccess = dynamic_cast<AbstractListAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
-    }else if(AbstractSetAccess* _containerAccess = dynamic_cast<AbstractSetAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
-    }else if(AbstractHashAccess* _containerAccess = dynamic_cast<AbstractHashAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
-    }else if(AbstractMapAccess* _containerAccess = dynamic_cast<AbstractMapAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
-    }else if(AbstractMultiHashAccess* _containerAccess = dynamic_cast<AbstractMultiHashAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
-    }else if(AbstractMultiMapAccess* _containerAccess = dynamic_cast<AbstractMultiMapAccess*>(containerAccess)){
-        containerAccess = checkContainerAccess(env, _containerAccess);
+    if(!containerAccess){
+    }else if(containerAccess->isList()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractListAccess*>(containerAccess));
+    }else if(containerAccess->isSet()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractSetAccess*>(containerAccess));
+    }else if(containerAccess->isHash()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractHashAccess*>(containerAccess));
+    }else if(containerAccess->isMap()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractMapAccess*>(containerAccess));
+    }else if(containerAccess->isMultiHash()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractMultiHashAccess*>(containerAccess));
+    }else if(containerAccess->isMultiMap()){
+        containerAccess = checkContainerAccess(env, static_cast<AbstractMultiMapAccess*>(containerAccess));
     }
 #endif //defined(QTJAMBI_GENERIC_ACCESS)
     Q_ASSERT(containerAccess);
@@ -2276,7 +2279,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                             }
                         }
                         if(!foundConstructorFunction){
-                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QtJambiAPI::getClassNamePrintable(env, info.javaClass())) QTJAMBI_STACKTRACEINFO );
                         }
                         constructorFunctions << foundConstructorFunction;
                     }
@@ -2346,7 +2349,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     (void)ptr.release();
                 }
             }else{
-                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassName(env, callingClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassNamePrintable(env, callingClass)) QTJAMBI_STACKTRACEINFO );
             }
             break;
         }
@@ -2507,7 +2510,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                             }
                         }
                         if(!foundConstructorFunction){
-                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QtJambiAPI::getClassNamePrintable(env, info.javaClass())) QTJAMBI_STACKTRACEINFO );
                         }
                         constructorFunctions << foundConstructorFunction;
                     }
@@ -2574,7 +2577,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     (void)ptr.release();
                 }
             }else{
-                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassName(env, callingClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassNamePrintable(env, callingClass)) QTJAMBI_STACKTRACEINFO );
             }
             break;
         }
@@ -2735,7 +2738,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                             }
                         }
                         if(!foundConstructorFunction){
-                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QtJambiAPI::getClassNamePrintable(env, info.javaClass())) QTJAMBI_STACKTRACEINFO );
                         }
                         constructorFunctions << foundConstructorFunction;
                     }
@@ -2802,7 +2805,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     (void)ptr.release();
                 }
             }else{
-                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassName(env, callingClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassNamePrintable(env, callingClass)) QTJAMBI_STACKTRACEINFO );
             }
             break;
         }
@@ -2880,7 +2883,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object, 
         if(!isShell){
             if(const QtJambiMetaObject* mo = QtJambiMetaObject::cast(CoreAPI::metaObjectForClass(env, objectClass, &originalMetaObject, false))){
                 if(mo->hasSignals()){
-                    QString class_name = QtJambiAPI::getClassName(env, objectClass).replace("$", ".");
+                    QString class_name = QtJambiAPI::getClassNamePrintable(env, objectClass);
                     Java::Runtime::UnsupportedOperationException::throwNew(env, QStringLiteral("Cannot define signals in class %1 because it's meta object is final.").arg(class_name) QTJAMBI_STACKTRACEINFO );
                 }
             }
@@ -2985,7 +2988,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object, 
                             }
                         }
                         if(!foundConstructorFunction){
-                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QtJambiAPI::getClassNamePrintable(env, info.javaClass())) QTJAMBI_STACKTRACEINFO );
                             return;
                         }
                         constructorFunctions << foundConstructorFunction;
@@ -3058,7 +3061,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object, 
                     (void)ptr.release();
                 }
             }else{
-                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassName(env, callingClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassNamePrintable(env, callingClass)) QTJAMBI_STACKTRACEINFO );
             }
             break;
         }
@@ -3136,7 +3139,7 @@ void QtJambiThreadShell::initialize(JNIEnv *env, jclass callingClass, jobject ob
         if(!isShell){
             if(const QtJambiMetaObject* mo = QtJambiMetaObject::cast(CoreAPI::metaObjectForClass(env, objectClass, &originalMetaObject, false))){
                 if(mo->hasSignals()){
-                    QString class_name = QtJambiAPI::getClassName(env, objectClass).replace("$", ".");
+                    QString class_name = QtJambiAPI::getClassNamePrintable(env, objectClass);
                     Java::Runtime::UnsupportedOperationException::throwNew(env, QStringLiteral("Cannot define signals in class %1 because it's meta object is final.").arg(class_name) QTJAMBI_STACKTRACEINFO );
                 }
             }
@@ -3239,7 +3242,7 @@ void QtJambiThreadShell::initialize(JNIEnv *env, jclass callingClass, jobject ob
                             }
                         }
                         if(!foundConstructorFunction){
-                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QtJambiAPI::getClassNamePrintable(env, info.javaClass())) QTJAMBI_STACKTRACEINFO );
                             return;
                         }
                         constructorFunctions << foundConstructorFunction;
@@ -3312,7 +3315,7 @@ void QtJambiThreadShell::initialize(JNIEnv *env, jclass callingClass, jobject ob
                     (void)ptr.release();
                 }
             }else{
-                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassName(env, callingClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassNamePrintable(env, callingClass)) QTJAMBI_STACKTRACEINFO );
             }
             break;
         }
@@ -3396,7 +3399,7 @@ void QtJambiModelShell::initialize(JNIEnv *env, jclass callingClass, jobject obj
         if(!isShell){
             if(const QtJambiMetaObject* mo = QtJambiMetaObject::cast(CoreAPI::metaObjectForClass(env, objectClass, &originalMetaObject, false))){
                 if(mo->hasSignals()){
-                    QString class_name = QtJambiAPI::getClassName(env, objectClass).replace("$", ".");
+                    QString class_name = QtJambiAPI::getClassNamePrintable(env, objectClass);
                     Java::Runtime::UnsupportedOperationException::throwNew(env, QStringLiteral("Cannot define signals in class %1 because it's meta object is final.").arg(class_name) QTJAMBI_STACKTRACEINFO );
                 }
             }
@@ -3500,7 +3503,7 @@ void QtJambiModelShell::initialize(JNIEnv *env, jclass callingClass, jobject obj
                             }
                         }
                         if(!foundConstructorFunction){
-                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                            Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QtJambiAPI::getClassNamePrintable(env, info.javaClass())) QTJAMBI_STACKTRACEINFO );
                             return;
                         }
                         constructorFunctions << foundConstructorFunction;
@@ -3573,7 +3576,7 @@ void QtJambiModelShell::initialize(JNIEnv *env, jclass callingClass, jobject obj
                     (void)ptr.release();
                 }
             }else{
-                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassName(env, callingClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassNamePrintable(env, callingClass)) QTJAMBI_STACKTRACEINFO );
             }
             break;
         }
@@ -3602,7 +3605,7 @@ QPair<size_t,size_t> sizeAndAlignOf(JNIEnv * env, const QMetaObject* metaObject)
         if(superTypeInfos.isEmpty())
             JavaException::raiseError(env, QStringLiteral("Cannot determine type information about class %1.").arg(metaObject->className()) QTJAMBI_STACKTRACEINFO );
         if(superTypeInfos.size()>1 && !(isInterface(superTypeInfos.at(0).typeId()) || superTypeInfos.at(0).hasShell())){
-            Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QString(superTypeInfos.at(0).className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassNamePrintable(env, superTypeInfos[0].javaClass())) QTJAMBI_STACKTRACEINFO );
         }
         size_t totalSize = 0;
         size_t totalAlignment = 1;
@@ -3630,7 +3633,7 @@ void QtJambiShellImpl::initializeNativeInterface(JNIEnv *env, jclass callingClas
         if(superTypeInfos.isEmpty())
             JavaException::raiseError(env, "Cannot determine type information about object's class." QTJAMBI_STACKTRACEINFO );
         if(superTypeInfos.size()>1 && !(isInterface(superTypeInfos.at(0).typeId()) || superTypeInfos.at(0).hasShell())){
-            Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QString(superTypeInfos.at(0).className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassNamePrintable(env, superTypeInfos[0].javaClass())) QTJAMBI_STACKTRACEINFO );
         }
         size_t totalSize = 0;
         size_t totalAlignment = 1;
@@ -3703,7 +3706,7 @@ void QtJambiShellImpl::initializeNativeInterface(JNIEnv *env, jclass callingClas
                 for(jclass cls : qAsConst(givenArgumentTypes)){
                     if(!argumentStrg.isEmpty())
                         argumentStrg += ", ";
-                    QString className = QtJambiAPI::getClassName(env, cls).replace("$", ".");
+                    QString className = QtJambiAPI::getClassNamePrintable(env, cls);
                     if(className.endsWith(";"))
                         className.chop(1);
                     while(className.startsWith("[")){
@@ -3712,7 +3715,7 @@ void QtJambiShellImpl::initializeNativeInterface(JNIEnv *env, jclass callingClas
                     }
                     argumentStrg += className;
                 }
-                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot find constructor %1(%2).").arg(QString(info.className()).replace("/", ".").replace("$", "."), qPrintable(argumentStrg)) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot find constructor %1(%2).").arg(QtJambiAPI::getClassNamePrintable(env, info.javaClass()), qPrintable(argumentStrg)) QTJAMBI_STACKTRACEINFO );
             }else{
                 constructorFunctions << foundConstructorFunction;
                 constructorArguments << givenArguments;
@@ -3913,7 +3916,7 @@ void QtJambiShellImpl::initializeNativeInterface(JNIEnv *env, jobject object, In
         if(superTypeInfos.isEmpty())
             JavaException::raiseError(env, "Cannot determine type information about object's class." QTJAMBI_STACKTRACEINFO );
         if(superTypeInfos.size()>1 && !(isInterface(superTypeInfos.at(0).typeId()) || superTypeInfos.at(0).hasShell())){
-            Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QString(superTypeInfos.at(0).className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg(QtJambiAPI::getClassNamePrintable(env, superTypeInfos[0].javaClass())) QTJAMBI_STACKTRACEINFO );
         }
         const std::type_info& typeId = superTypeInfos[0].typeId();
         std::unique_ptr<QtJambiShellImpl> shell;
@@ -4008,7 +4011,7 @@ void QtJambiShellImpl::initializeNativeInterface(JNIEnv *env, jobject object, In
                     for(jclass cls : std::as_const(givenArgumentTypes)){
                         if(!argumentStrg.isEmpty())
                             argumentStrg += ", ";
-                        QString className = QtJambiAPI::getClassName(env, cls).replace("$", ".");
+                        QString className = QtJambiAPI::getClassNamePrintable(env, cls);
                         if(className.endsWith(";"))
                             className.chop(1);
                         while(className.startsWith("[")){
@@ -4023,14 +4026,14 @@ void QtJambiShellImpl::initializeNativeInterface(JNIEnv *env, jobject object, In
                             JavaException(env, t).raise();
                             return;
                         }
-                        Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QtJambiAPI::getClassNamePrintable(env, info.javaClass())) QTJAMBI_STACKTRACEINFO );
                     }else{
                         if(info.constructorInfos().isEmpty()){
                             jthrowable t = Java::QtJambi::QClassCannotBeSubclassedException::newInstance(env, info.javaClass());
                             JavaException(env, t).raise();
                             return;
                         }
-                        Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot find constructor %1(%2).").arg(QString(info.className()).replace("/", ".").replace("$", "."), qPrintable(argumentStrg)) QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot find constructor %1(%2).").arg(QtJambiAPI::getClassNamePrintable(env, info.javaClass()), qPrintable(argumentStrg)) QTJAMBI_STACKTRACEINFO );
                     }
                 }else{
                     constructorFunctions << foundConstructorFunction;
@@ -4077,7 +4080,7 @@ void QtJambiShellImpl::initializeNativeInterface(JNIEnv *env, jobject object, In
                 for(jclass cls : qAsConst(givenArgumentTypes)){
                     if(!argumentStrg.isEmpty())
                         argumentStrg += ", ";
-                    QString className = QtJambiAPI::getClassName(env, cls).replace("$", ".");
+                    QString className = QtJambiAPI::getClassNamePrintable(env, cls);
                     if(className.endsWith(";"))
                         className.chop(1);
                     while(className.startsWith("[")){
@@ -4092,14 +4095,14 @@ void QtJambiShellImpl::initializeNativeInterface(JNIEnv *env, jobject object, In
                         JavaException(env, t).raise();
                         return;
                     }
-                    Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QtJambiAPI::getClassNamePrintable(env, info.javaClass())) QTJAMBI_STACKTRACEINFO );
                 }else{
                     if(info.constructorInfos().isEmpty()){
                         jthrowable t = Java::QtJambi::QClassCannotBeSubclassedException::newInstance(env, info.javaClass());
                         JavaException(env, t).raise();
                         return;
                     }
-                    Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot find constructor %1(%2).").arg(QString(info.className()).replace("/", ".").replace("$", "."), qPrintable(argumentStrg)) QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot find constructor %1(%2).").arg(QtJambiAPI::getClassNamePrintable(env, info.javaClass()), qPrintable(argumentStrg)) QTJAMBI_STACKTRACEINFO );
                 }
             }else{
                 constructorFunctions << foundConstructorFunction;
@@ -4156,7 +4159,7 @@ void QtJambiShellImpl::initializeNativeInterface(JNIEnv *env, jobject object, In
                     for(jclass cls : qAsConst(givenArgumentTypes)){
                         if(!argumentStrg.isEmpty())
                             argumentStrg += ", ";
-                        QString className = QtJambiAPI::getClassName(env, cls).replace("$", ".");
+                        QString className = QtJambiAPI::getClassNamePrintable(env, cls);
                         if(className.endsWith(";"))
                             className.chop(1);
                         while(className.startsWith("[")){
@@ -4171,14 +4174,14 @@ void QtJambiShellImpl::initializeNativeInterface(JNIEnv *env, jobject object, In
                             JavaException(env, t).raise();
                             return;
                         }
-                        Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QString(info.className()).replace("/", ".").replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot initialize interface %1 without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.").arg(QtJambiAPI::getClassNamePrintable(env, info.javaClass())) QTJAMBI_STACKTRACEINFO );
                     }else{
                         if(info.constructorInfos().isEmpty()){
                             jthrowable t = Java::QtJambi::QClassCannotBeSubclassedException::newInstance(env, info.javaClass());
                             JavaException(env, t).raise();
                             return;
                         }
-                        Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot find constructor %1(%2).").arg(QString(info.className()).replace("/", ".").replace("$", "."), qPrintable(argumentStrg)) QTJAMBI_STACKTRACEINFO );
+                        Java::Runtime::Error::throwNew(env, QStringLiteral("Cannot find constructor %1(%2).").arg(QtJambiAPI::getClassNamePrintable(env, info.javaClass()), qPrintable(argumentStrg)) QTJAMBI_STACKTRACEINFO );
                     }
                 }else{
                     constructorFunctions << foundConstructorFunction;
@@ -4653,7 +4656,7 @@ QList<jmethodID> getMethodIDs(JNIEnv *env, jclass object_class, const std::type_
                         if(info.flags & RegistryAPI::FunctionInfo::Private){
                             bool isPrivateOverride = Java::Runtime::AccessibleObject::isAnnotationPresent(env, method_object, Java::QtJambi::QtPrivateOverride::getClass(env));
                             if(!isPrivateOverride){
-                                QString message(QLatin1String("Method '%1' in class %2 misses @QtPrivateOverride annotation."));
+                                QString message(QStringLiteral(u"Method '%1' in class %2 misses @QtPrivateOverride annotation."));
                                 message = message.arg(jniSignatureToJava(QLatin1String(info.signature), QLatin1String(info.name)));
                                 message = message.arg(getClassDisplayName(env, object_class));
                                 Java::QtJambi::QMissingVirtualOverridingException::throwNew(env, message QTJAMBI_STACKTRACEINFO );
@@ -4661,7 +4664,7 @@ QList<jmethodID> getMethodIDs(JNIEnv *env, jclass object_class, const std::type_
                         }
                         methods << method_id;
                     }else if(info.flags & RegistryAPI::FunctionInfo::Abstract){
-                        QString message(QLatin1String("Class %1 does not implement pure virtual function '%2' from Qt declared in %3."));
+                        QString message(QStringLiteral(u"Class %1 does not implement pure virtual function '%2' from Qt declared in %3."));
                         message = message.arg(getClassDisplayName(env, object_class));
                         message = message.arg(jniSignatureToJava(QLatin1String(info.signature), QLatin1String(info.name)));
                         message = message.arg(QLatin1String(typeEntry->qtName()));
@@ -4691,9 +4694,9 @@ QList<jmethodID> getMethodIDs(JNIEnv *env, jclass object_class, const std::type_
                     if(info.flags & RegistryAPI::FunctionInfo::Abstract){
                         QString message;
                         if(isFunctional(typeId)){
-                            message = QLatin1String("Class %1 does not implement functional interface method '%2' from Qt declared in %3.");
+                            message = QStringLiteral(u"Class %1 does not implement functional interface method '%2' from Qt declared in %3.");
                         }else {
-                            message = QLatin1String("Class %1 does not implement pure virtual function '%2' from Qt declared in %3.");
+                            message = QStringLiteral(u"Class %1 does not implement pure virtual function '%2' from Qt declared in %3.");
                         }
                         message = message.arg(getClassDisplayName(env, object_class));
                         message = message.arg(jniSignatureToJava(QLatin1String(info.signature), QLatin1String(info.name)));
@@ -4704,7 +4707,7 @@ QList<jmethodID> getMethodIDs(JNIEnv *env, jclass object_class, const std::type_
                     if(env->ExceptionCheck()){
                         env->ExceptionClear();
                     }
-                    QString message(QLatin1String("Class %1 does not implement private pure virtual function '%2' from Qt declared in %3."));
+                    QString message(QStringLiteral(u"Class %1 does not implement private pure virtual function '%2' from Qt declared in %3."));
                     message = message.arg(getClassDisplayName(env, object_class));
                     message = message.arg(jniSignatureToJava(QLatin1String(info.signature), QLatin1String(info.name)));
                     message = message.arg(QLatin1String(typeEntry->qtName()));

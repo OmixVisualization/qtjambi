@@ -83,16 +83,20 @@ public class QHash<Key,T> extends AbstractAssociativeContainer<Key,T> implements
      */
     public QHash(@StrictNonNull Map<? extends Key,? extends T> other) {
 		super(null);
-		QPair<QMetaType, QMetaType> metaTypes = QMap.findMapMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
-		if(metaTypes.first==null || metaTypes.first.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMap.");
-		if(metaTypes.first.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be key type of QMap.");
-		if(metaTypes.second==null || metaTypes.second.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMap.");
-		if(metaTypes.second.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be value type of QMap.");
-		initialize(metaTypes.first.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.first), metaTypes.second.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.second), other);
+		if(other instanceof QHash) {
+			initialize(null, 0, null, 0, other);
+		}else {
+			QPair<QMetaType, QMetaType> metaTypes = QMap.findMapMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
+			if(metaTypes.first==null || metaTypes.first.id()==0)
+				throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMap.");
+			if(metaTypes.first.id()==QMetaType.Type.Void.value())
+				throw new IllegalArgumentException("void cannot be key type of QMap.");
+			if(metaTypes.second==null || metaTypes.second.id()==0)
+				throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMap.");
+			if(metaTypes.second.id()==QMetaType.Type.Void.value())
+				throw new IllegalArgumentException("void cannot be value type of QMap.");
+			initialize(metaTypes.first.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.first), metaTypes.second.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.second), other);
+		}
 	}
     
     /**

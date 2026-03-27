@@ -1706,3 +1706,16 @@ void AsSlot::setTargetType(const QString &newTargetType)
     targetType = newTargetType;
     emit targetTypeChanged();
 }
+
+QString PreProcessor::getCondition() const
+{
+    return condition;
+}
+
+void PreProcessor::setCondition(const QString &newCondition)
+{
+    if (condition == newCondition)
+        return;
+    condition = newCondition;
+    emit conditionChanged();
+}

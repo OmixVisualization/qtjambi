@@ -33,43 +33,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-
-import org.junit.AfterClass;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import io.qt.QFlags;
-import io.qt.QNoSuchEnumValueException;
-import io.qt.QtFlagEnumerator;
-import io.qt.QtPointerType;
-import io.qt.QtPropertyMember;
-import io.qt.QtPropertyNotify;
-import io.qt.QtPropertyReader;
-import io.qt.QtPropertyWriter;
-import io.qt.QtUninvokable;
-import io.qt.autotests.generated.General;
-import io.qt.autotests.generated.PropertyAndMethodCallTest;
-import io.qt.core.QDataStream;
-import io.qt.core.QLibraryInfo;
-import io.qt.core.QMetaMethod;
-import io.qt.core.QMetaType;
-import io.qt.core.QObject;
-import io.qt.core.QRectF;
-import io.qt.core.QStringListModel;
-import io.qt.core.Qt;
-import io.qt.gui.QColor;
-import io.qt.gui.QDrag;
-import io.qt.gui.QPainter;
-import io.qt.gui.QRgba64;
-import io.qt.widgets.QGraphicsItem;
-import io.qt.widgets.QStyleOptionGraphicsItem;
-import io.qt.widgets.QWidget;
+import java.math.*;
+import java.util.*;
+import org.junit.*;
+import io.qt.*;
+import io.qt.autotests.generated.*;
+import io.qt.core.*;
+import io.qt.gui.*;
+import io.qt.widgets.*;
 
 public class TestPropertyAndMethodCall extends ApplicationInitializer {
 

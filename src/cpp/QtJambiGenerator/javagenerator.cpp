@@ -352,8 +352,23 @@ void JavaGenerator::registerPackage(QString pkgName, bool inclExported){
 QString JavaGenerator::qualifiedJavaType(const MetaType *java_type, const MetaClass *context, Option option) {
     QString s;
 
-    if (context && java_type && context->typeEntry()->isGenericClass() && java_type->originalTemplateType())
-        java_type = java_type->originalTemplateType();
+    if (context && java_type && context->typeEntry()->isGenericClass() && java_type->originalTemplateType()){
+        if(context->templateBaseClass()){
+            QList<TypeEntry *> templateArguments = context->templateBaseClass()->templateArguments();
+            for (int i = 0; i < templateArguments.size(); ++i) {
+                TypeEntry *templateArgument = templateArguments.at(i);
+                if(templateArgument==java_type->originalTemplateType()->typeEntry()){
+                    java_type = java_type->originalTemplateType();
+                    break;
+                }else if(templateArgument->name()==java_type->originalTemplateType()->typeEntry()->name()){
+                    java_type = java_type->originalTemplateType();
+                    break;
+                }
+            }
+        }else{
+            java_type = java_type->originalTemplateType();
+        }
+    }
 
     if (!java_type) {
         s = QStringLiteral(u"void");
@@ -935,22 +950,7 @@ QString JavaGenerator::qualifiedJavaType(const MetaType *java_type, const MetaCl
             if (type->designatedInterface())
                 type = type->designatedInterface();
             s = type->qualifiedTargetLangName();
-            if(!java_type->instantiations().isEmpty()){
-                s += '<';
-                const QList<const MetaType *>& args = java_type->instantiations();
-                Option loopOption = Option(option & (NoNullness | IsReturnType));
-                for (int i=0; i<args.size(); ++i) {
-                    if (i != 0)
-                        s += ", ";
-                    if((option & IsReturnType) != IsReturnType
-                            && !args.at(i)->isPrimitive()
-                            && !args.at(i)->isJavaString()
-                            && !args.at(i)->isPrimitiveChar())
-                        s += "? extends ";
-                    s += qualifiedJavaType(args.at(i), context, Option(loopOption | BoxedPrimitive | NoQCollectionContainers | VarArgsAsArray));
-                }
-                s += '>';
-            }else if(type->type()==TypeEntry::JMapWrapperType){
+            if(type->type()==TypeEntry::JMapWrapperType){
                 s += "<?,?>";
             }else if(type->type()==TypeEntry::JCollectionWrapperType){
                 s += "<?>";
@@ -960,10 +960,42 @@ QString JavaGenerator::qualifiedJavaType(const MetaType *java_type, const MetaCl
                     if(java_type->hasInstantiations()){
                         s += '<';
                         const QList<const MetaType *>& args = java_type->instantiations();
+                        Option loopOption = Option(option & (NoNullness | IsReturnType));
                         for (int i=0; i<args.size(); ++i) {
                             if (i != 0)
                                 s += ", ";
-                            s += qualifiedJavaType(args[i], context, option);
+                            const MetaType * targ = args.at(i);
+                            if(context && context->templateBaseClass()){
+                                const QList<TypeEntry *>& templateArguments = context->templateBaseClass()->templateArguments();
+                                bool found = false;
+                                if(targ->typeEntry()->isTemplateArgument()){
+                                    for (int i = 0; i < templateArguments.size(); ++i) {
+                                        TypeEntry *templateArgument = templateArguments.at(i);
+                                        if(templateArgument->name()==targ->typeEntry()->name()){
+                                            s += QString(templateArgument->name()).replace(u'$', u'.');
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+                                }else if(targ->originalTemplateType()){
+                                    for (int i = 0; i < templateArguments.size(); ++i) {
+                                        TypeEntry *templateArgument = templateArguments.at(i);
+                                        if(templateArgument->name()==targ->originalTemplateType()->typeEntry()->name()){
+                                            s += QString(templateArgument->name()).replace(u'$', u'.');
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if(found)
+                                    continue;
+                            }
+                            if((option & IsReturnType) != IsReturnType
+                                    && !targ->isPrimitive()
+                                    && !targ->isJavaString()
+                                    && !targ->isPrimitiveChar())
+                                s += "? extends ";
+                            s += qualifiedJavaType(targ, context, Option(loopOption | BoxedPrimitive | NoQCollectionContainers | VarArgsAsArray));
                         }
                         s += '>';
                     }else if(context && !context->templateArguments().isEmpty()){
@@ -2698,8 +2730,9 @@ void JavaGenerator::writePrivateNativeFunction(QTextStream &s, const MetaFunctio
             s << "long __this__nativeId";
             needsComma = true;
         }
-        else if(java_function->implementingClass()->typeEntry()->isQMetaObjectType()){
-            s << "long __this__persistentPointer";
+        else if(java_function->implementingClass()->typeEntry()->isQMetaObjectType()
+                || java_function->implementingClass()->typeEntry()->isQMessageLogContextType()){
+            s << "long __this__directLink";
             needsComma = true;
         }
         else if(java_function->implementingClass()->typeEntry()->designatedInterface()){
@@ -3171,8 +3204,9 @@ void JavaGenerator::writeJavaCallThroughContents(QTextStream &s, const MetaFunct
             if(java_function->implementingClass()->typeEntry()->isNativeIdBased()){
                 s << "QtJambi_LibraryUtilities.internal.nativeId(this)";
                 needsComma = true;
-            }else if(java_function->implementingClass()->typeEntry()->isQMetaObjectType()){
-                s << "__qt_persistentPointer";
+            }else if(java_function->implementingClass()->typeEntry()->isQMetaObjectType()
+                     || java_function->implementingClass()->typeEntry()->isQMessageLogContextType()){
+                s << "__qt_directLink";
                 needsComma = true;
             }else if(java_function->implementingClass()->typeEntry()->designatedInterface()){
                 s << "this";
@@ -4833,6 +4867,8 @@ void JavaGenerator::writeFunction(QTextStream &s, const MetaFunction *java_funct
                 s << INDENT << "@QtPropertyRequired" << Qt::endl;
             if (spec->constant())
                 s << INDENT << "@QtPropertyConstant" << Qt::endl;
+            //if (spec->isVirtual())
+            //    s << INDENT << "@QtPropertyVirtual" << Qt::endl;
         } else if (java_function->isPropertyWriter()) {
             s << INDENT << "@QtPropertyWriter(name=\"" << spec->name() << "\")" << Qt::endl;
         } else if (java_function->isPropertyResetter()) {
@@ -4977,8 +5013,9 @@ void JavaGenerator::writeFunction(QTextStream &s, const MetaFunction *java_funct
             if(!java_function->isStatic()){
                 if(java_function->implementingClass()->typeEntry()->isNativeIdBased()){
                     s << "QtJambi_LibraryUtilities.internal.nativeId(this)";
-                }else if(java_function->implementingClass()->typeEntry()->isQMetaObjectType()){
-                    s << "__qt_persistentPointer";
+                }else if(java_function->implementingClass()->typeEntry()->isQMetaObjectType()
+                         || java_function->implementingClass()->typeEntry()->isQMessageLogContextType()){
+                    s << "__qt_directLink";
                 }else
                     s << "this";
                 needsComma = true;
@@ -5766,7 +5803,8 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
         }
         s << INDENT << "}" << Qt::endl << Qt::endl;
         writeHashEquals = false;
-    }else if(cls->typeEntry()->isQMetaObjectType()){
+    }else if(cls->typeEntry()->isQMetaObjectType()
+             || cls->typeEntry()->isQMessageLogContextType()){
         QString nullable = m_nullness ? QStringLiteral(u"@Nullable ") : QString{};
         s << Qt::endl
           << INDENT << "/**" << Qt::endl
@@ -5774,7 +5812,7 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
           << INDENT << " */" << Qt::endl
           << INDENT << "@QtUninvokable" << Qt::endl
           << INDENT << "public boolean equals(" << nullable << cls->typeEntry()->targetLangName() << " other) {" << Qt::endl
-          << INDENT << "    return other!=null && other.__qt_persistentPointer==__qt_persistentPointer;" << Qt::endl
+          << INDENT << "    return other!=null && other.__qt_directLink==__qt_directLink;" << Qt::endl
           << INDENT << "}" << Qt::endl;
         s << Qt::endl
           << INDENT << "/**" << Qt::endl
@@ -6103,7 +6141,9 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
         s << comparableFunctionCode << Qt::endl;
     }
 
-    if (!cls->isNamespace() && (cls->hasHashFunction() || eq_functions.size()+neq_functions.size() > 0 || cls->typeEntry()->isQMetaObjectType())) {
+    if (!cls->isNamespace() && (cls->hasHashFunction() || eq_functions.size()+neq_functions.size() > 0
+                                || cls->typeEntry()->isQMetaObjectType()
+                                || cls->typeEntry()->isQMessageLogContextType())) {
         const MetaFunctionList hashcode_functions = cls->queryFunctionsByName("hashCode");
         bool found = false;
         for(const MetaFunction* function : hashcode_functions) {
@@ -6175,7 +6215,9 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
                     }
                     s << INDENT << "}" << Qt::endl;
                 }
-            }else if(cls->typeEntry()->isQMetaObjectType()){
+            }else if(cls->typeEntry()->isQMetaObjectType()
+                     //|| cls->typeEntry()->isQMessageLogContextType()
+                     ){
                 s << Qt::endl
                   << INDENT << "/**" << Qt::endl
                   << INDENT << " * Returns the objects's hash code." << Qt::endl
@@ -6188,7 +6230,7 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
                     printExtraCode(lines, s);
                 }
                 if(lines.isEmpty() || !lines.last().contains("return ")){
-                    s << INDENT << "    return Long.hashCode(__qt_persistentPointer);" << Qt::endl;
+                    s << INDENT << "    return Long.hashCode(__qt_directLink);" << Qt::endl;
                 }
                 s << INDENT << "}" << Qt::endl;
             }
@@ -6275,7 +6317,9 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
             }
             s << INDENT << "}" << Qt::endl;
         }
-    }else if(cls->typeEntry()->isQMetaObjectType() || !lines.isEmpty()){
+    }else if(cls->typeEntry()->isQMetaObjectType()
+             //|| cls->typeEntry()->isQMessageLogContextType()
+             || !lines.isEmpty()){
         s << Qt::endl
           << INDENT << "/**" << Qt::endl
           << INDENT << " * {@inheritDoc}" << Qt::endl
@@ -6288,7 +6332,7 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
             printExtraCode(lines, s);
             if(lines.isEmpty() || !lines.last().contains("return ")){
                 if(lines.isEmpty()){
-                    s << INDENT << "if(__qt_persistentPointer!=0)" << Qt::endl
+                    s << INDENT << "if(__qt_directLink!=0)" << Qt::endl
                       << INDENT << "    return \"QMetaObject(\" + className() + \")\";" << Qt::endl;
                 }
                 s << INDENT << "return super.toString();" << Qt::endl;
@@ -8077,12 +8121,17 @@ void JavaGenerator::write(QTextStream &s, const MetaClass *java_class, int nesti
         if (type->isGenericClass()) {
             s << "<";
             if(java_class->templateBaseClass()){
+                const QList<const MetaType *>& templateBaseClassInstantiations = java_class->templateBaseClassInstantiations();
                 QList<TypeEntry *> templateArguments = java_class->templateBaseClass()->templateArguments();
                 for (int i = 0; i < templateArguments.size(); ++i) {
                     TypeEntry *templateArgument = templateArguments.at(i);
                     if (i > 0)
                         s << ", ";
                     s << QString(templateArgument->name()).replace(u'$', u'.');
+                    if(i < templateBaseClassInstantiations.size()){
+                        s << " extends ";
+                        s << qualifiedJavaType(templateBaseClassInstantiations[i], java_class, Option(BoxedPrimitive | NoQCollectionContainers | VarArgsAsArray));
+                    }
                 }
             }else{
                 s << "T";
@@ -8137,7 +8186,8 @@ void JavaGenerator::write(QTextStream &s, const MetaClass *java_class, int nesti
                     }else{
                         s << " extends " << java_class->baseClass()->fullName().replace("$",".");
                     }
-                } else if(!java_class->typeEntry()->isQMetaObjectType()){
+                } else if(!java_class->typeEntry()->isQMetaObjectType()
+                          && !java_class->typeEntry()->isQMessageLogContextType()){
                     QString sc = QString(type->defaultSuperclass()).replace("$",".");
                     if (!sc.isEmpty())
                         s << " extends " << sc;
@@ -8218,6 +8268,57 @@ void JavaGenerator::write(QTextStream &s, const MetaClass *java_class, int nesti
             }
             s << java_class->typeEntry()->implements();
         }
+        if(java_class->javaFunctional()){
+            if (!implements) {
+                implements = true;
+                s << Qt::endl << INDENT << "    implements ";
+            } else {
+                s << "," << Qt::endl << INDENT << "            ";
+            }
+            s << QString(java_class->javaFunctionalInterface()).replace("$", ".");
+            if(!java_class->javaFunctionalInterfaceParameterTypes().isEmpty()){
+                s << "<";
+                int counter = 0;
+                int returnArrayLengthIndex = java_class->javaFunctional()->utilArgumentIndex(0);
+                QString replacedReturnType = java_class->javaFunctional()->typeReplaced(0);
+                if(replacedReturnType.isEmpty() && java_class->javaFunctional()->isSelfReturningFunction()){
+                    replacedReturnType = java_class->typeEntry()->targetLangName();
+                }
+                for(uint index : java_class->javaFunctionalInterfaceParameterTypes()){
+                    if(counter!=0)
+                        s << ", ";
+                    if(index==0){
+                        Q_ASSERT(java_class->javaFunctional()->type());
+                        if(returnArrayLengthIndex>=0){
+                            s << qualifiedJavaType(java_class->javaFunctional()->type(), nullptr, Option(BoxedPrimitive | VarArgsAsArray | NoQCollectionContainers)) << "[]";
+                        }else{
+                            if(!replacedReturnType.isEmpty()){
+                                registerPackage(replacedReturnType);
+                                s << replacedReturnType.replace(u'$', u'.');
+                            }else
+                                s << qualifiedJavaType(java_class->javaFunctional()->type(), nullptr, Option(BoxedPrimitive | VarArgsAsArray | NoQCollectionContainers));
+                        }
+                    }else{
+                        Q_ASSERT(index<=uint(java_class->javaFunctional()->arguments().size()));
+                        MetaArgument * arg = java_class->javaFunctional()->arguments()[index-1];
+                        int arrayLengthIndex = java_class->javaFunctional()->utilArgumentIndex(arg->argumentIndex() + 1);
+                        if(arrayLengthIndex>=0){
+                            s << qualifiedJavaType(arg->type(), nullptr, Option(CollectionAsCollection)) << "[]";
+                        }else{
+                            QString replacedArgType = java_class->javaFunctional()->typeReplaced(arg->argumentIndex() + 1);
+                            if(!replacedArgType.isEmpty()){
+                                registerPackage(replacedArgType);
+                                s << replacedArgType.replace(u'$', u'.');
+                            }else
+                                s << qualifiedJavaType(arg->type(), nullptr, Option(CollectionAsCollection));
+                        }
+                    }
+                    ++counter;
+                }
+                s << ">";
+            }
+        }
+        Q_UNUSED(implements)
 
         s << Qt::endl << INDENT << "{" << Qt::endl;
 
@@ -8236,8 +8337,9 @@ void JavaGenerator::write(QTextStream &s, const MetaClass *java_class, int nesti
                     s << INDENT << "}" << Qt::endl
                       << INDENT << Qt::endl;
                 }
-                if(java_class->typeEntry()->isQMetaObjectType()){
-                    s << INDENT << "private final long __qt_persistentPointer;" << Qt::endl;
+                if(java_class->typeEntry()->isQMetaObjectType()
+                        || java_class->typeEntry()->isQMessageLogContextType()){
+                    s << INDENT << "private final long __qt_directLink;" << Qt::endl;
                 }
                 if (java_class->typeEntry()->expensePolicy().isValid()) {
                     s << INDENT << "private static long __qt_expenseCounter = 0;" << Qt::endl;
@@ -8381,7 +8483,7 @@ void JavaGenerator::write(QTextStream &s, const MetaClass *java_class, int nesti
                 }
             }
 
-            if (!java_class->isInterface() && (java_class->isAbstract() || force_abstract)) {
+            if (!java_class->isInterface() && (java_class->isAbstract() || force_abstract) && !isFinal) {
                 s << INDENT << "@NativeAccess" << Qt::endl
                   << INDENT << "private static final class ConcreteWrapper extends " << java_class->name().replace(u'$', u'.') << " {" << Qt::endl;
 
@@ -8579,17 +8681,19 @@ void JavaGenerator::write(QTextStream &s, const MetaClass *java_class, int nesti
             if (!isInterface && !java_class->isNamespace() && !fakeClass) {
                 s << INDENT << "/**" << Qt::endl
                   << INDENT << " * Constructor for internal use only." << Qt::endl;
-                if(java_class->typeEntry()->isQMetaObjectType()){
-                    s << INDENT << " * @param p expected to be <code>null</code>." << Qt::endl;
+                if(java_class->typeEntry()->isQMetaObjectType()
+                        || java_class->typeEntry()->isQMessageLogContextType()){
+                    s << INDENT << " * @param directLink" << Qt::endl;
                 }else{
-                    s << INDENT << " * @param persistentPointer" << Qt::endl;
+                    s << INDENT << " * @param p expected to be <code>null</code>." << Qt::endl;
                 }
                 s << INDENT << " * @hidden" << Qt::endl
                   << INDENT << " */" << Qt::endl
                   << INDENT << "@NativeAccess" << Qt::endl
                   << INDENT << (isFinal ? "private " : "protected ") << java_class->simpleName();
-                if(java_class->typeEntry()->isQMetaObjectType()){
-                    s << "(long persistentPointer) { this.__qt_persistentPointer = persistentPointer; } " << Qt::endl;
+                if(java_class->typeEntry()->isQMetaObjectType()
+                        || java_class->typeEntry()->isQMessageLogContextType()){
+                    s << "(long directLink) { this.__qt_directLink = directLink; } " << Qt::endl;
                 }else{
                     s << "(QPrivateConstructor p) { super(p); } " << Qt::endl;
                 }
@@ -8782,8 +8886,9 @@ void JavaGenerator::write(QTextStream &s, const MetaClass *java_class, int nesti
                                       << "." << java_function->marshalledName() << "(";
                                     if(java_class->typeEntry()->isNativeIdBased()){
                                         s << "QtJambi_LibraryUtilities.internal.nativeId(instance)";
-                                    }else if(java_class->typeEntry()->isQMetaObjectType()){
-                                        s << "instance.__qt_persistentPointer";
+                                    }else if(java_class->typeEntry()->isQMetaObjectType()
+                                             || java_class->typeEntry()->isQMessageLogContextType()){
+                                        s << "instance.__qt_directLink";
                                     }else{
                                         s << "instance";
                                     }
@@ -9215,6 +9320,7 @@ void JavaGenerator::writeFunctionAttributes(QTextStream &s, const MetaFunction *
                 && !java_function->hasConversionRule(TS::NativeCode, 0)
                 && !m_factory_functions.contains(java_function)
                 && !java_function->type()->typeEntry()->isQMetaObjectType()
+                && !java_function->type()->typeEntry()->isQMessageLogContextType()
                 && (
                        (java_function->type()->isObject()
                          && java_function->type()->getReferenceType()==MetaType::Reference

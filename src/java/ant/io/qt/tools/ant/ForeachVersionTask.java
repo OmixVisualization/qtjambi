@@ -59,6 +59,13 @@ public class ForeachVersionTask extends Task {
 				skippedCross.addAll(Arrays.asList(skippedConfs.split("[\\,\\:\\;\\ \\+]")));
 			}
 		}
+		Set<String> crossConfs = new HashSet<>();
+		{
+			String c = AntUtil.getPropertyAsString(propertyHelper, "confs");
+			if(c!=null && !c.isEmpty()) {
+				crossConfs.addAll(Arrays.asList(c.split("[\\,\\:\\;\\ \\+]")));
+			}
+		}
 		if(qmakePath!=null && !qmakePath.isEmpty()) {
 			for(String target : targets) {
 				CallTarget ct = (CallTarget) getProject().createTask("antcall");
@@ -826,6 +833,8 @@ public class ForeachVersionTask extends Task {
 										OSInfo.Architecture crossArch = null;
 										if(crossSpec!=null) {
 											if(skippedCross.contains(crossSpec))
+												continue;
+											if(!crossConfs.isEmpty() && !crossConfs.contains(crossSpec))
 												continue;
 											if(toolsBin!=null && !toolsBin.isEmpty()) {
 												specProperties.setProperty(Constants.TOOLS_BINDIR, toolsBin);

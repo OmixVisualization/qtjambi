@@ -107,6 +107,7 @@ public:
         None = CodeClass::NoLanguage,
         JavaAndNative = CodeClass::Java | CodeClass::Native,
         JavaOnly = CodeClass::Java,
+        Shell = CodeClass::Shell,
         All
     };
     Q_ENUM(Entries)

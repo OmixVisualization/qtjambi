@@ -368,7 +368,7 @@ abstract class AbstractSpan<T> extends AbstractContainer<T> implements java.lang
 	}
 	final QSequentialIterator<T> begin(){
 		if(isConstSpan())
-			throw new RuntimeException(String.format("Cannot get non-const iterator for QSpan<const %1%s>", _elementType().name()));
+			throw new RuntimeException(String.format("Cannot get non-const iterator for QSpan<const %1%s>", elementMetaType().name()));
 		return begin(QtJambi_LibraryUtilities.internal.nativeId(this));
 	}
 	
@@ -381,7 +381,7 @@ abstract class AbstractSpan<T> extends AbstractContainer<T> implements java.lang
 	}
 	final QSequentialIterator<T> end(){
 		if(isConstSpan())
-			throw new RuntimeException(String.format("Cannot get non-const iterator for QSpan<const %1%s>", _elementType().name()));
+			throw new RuntimeException(String.format("Cannot get non-const iterator for QSpan<const %1%s>", elementMetaType().name()));
 		return end(QtJambi_LibraryUtilities.internal.nativeId(this));
 	}
     
@@ -400,7 +400,7 @@ abstract class AbstractSpan<T> extends AbstractContainer<T> implements java.lang
     abstract boolean isConstSpan();
     
     @QtUninvokable
-	final QMetaType _elementType() {
+	final QMetaType elementMetaType() {
     	return elementType(QtJambi_LibraryUtilities.internal.nativeId(this));
 	}
     

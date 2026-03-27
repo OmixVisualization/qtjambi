@@ -1280,6 +1280,7 @@ void Binder::visitUsingAs(UsingAsAST *node) {
         typeAlias->setType(qualifyType(typeInfo, currentScope()->qualifiedName()));
         typeAlias->setScope(typedefScope->qualifiedName());
         typeAlias->setAccessPolicy(_M_current_access);
+        typeAlias->setTemplateParameters(_M_current_template_parameters);
         _M_qualified_types[typeAlias->qualifiedName().join(".")] = QString();
         if(m_database.findPrimitiveType(alias_name))
             return;

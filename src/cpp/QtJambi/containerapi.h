@@ -332,7 +332,7 @@ public:
     void* createContainer(void* moved);
     void* createContainer(JNIEnv *env, const ContainerAndAccessInfo& moved);
     virtual bool destructContainer(void* container) = 0;
-    virtual QMetaType registerContainer(const QByteArray& containerTypeName) = 0;
+    virtual QMetaType registerContainer(QByteArrayView containerTypeName) = 0;
     virtual const QObject* getOwner(const void* container);
     virtual bool hasOwnerFunction();
     void* createContainer();
@@ -345,22 +345,84 @@ protected:
     static DataType dataType(const QMetaType& metaType, const QSharedPointer<AbstractContainerAccess>& access);
     AbstractContainerAccess();
     virtual ~AbstractContainerAccess();
+private:
+    enum ContainerType{
+        SequentialConstIterator = 0x000001,
+        AssociativeConstIterator = 0x000002 | SequentialConstIterator,
+        MutableIterable = 0x0000004,
+        SequentialIterator = SequentialConstIterator | MutableIterable,
+        AssociativeIterator = AssociativeConstIterator | MutableIterable,
+        Sequential = 0x000010,
+        Span = 0x000020 | Sequential,
+        List = 0x000040 | Sequential,
+        Set = 0x000080 | Sequential,
+        Associative = 0x000100,
+        Hash = 0x000200 | Associative,
+        Map = 0x000400 | Associative,
+        MultiAssociative = 0x000800,
+        MultiHash = Hash | MultiAssociative,
+        MultiMap = Map | MultiAssociative,
+        Pair = 0x001000
+    };
+    virtual ContainerType containerType() const = 0;
+public:
+    virtual class AbstractReferenceCountingContainer* asRC();
+#if defined(QTJAMBI_GENERIC_ACCESS)
+    virtual class AbstractWrapperContainerAccess* asWrapper();
+#endif
+#define DECL_ACCESS_TYPE_TEST(Type) inline bool is##Type() const { return (containerType() & Type)==Type; }
+    DECL_ACCESS_TYPE_TEST(SequentialConstIterator)
+    DECL_ACCESS_TYPE_TEST(AssociativeConstIterator)
+    DECL_ACCESS_TYPE_TEST(MutableIterable);
+    DECL_ACCESS_TYPE_TEST(SequentialIterator)
+    DECL_ACCESS_TYPE_TEST(AssociativeIterator)
+    DECL_ACCESS_TYPE_TEST(Sequential)
+    DECL_ACCESS_TYPE_TEST(Span)
+    DECL_ACCESS_TYPE_TEST(List)
+    DECL_ACCESS_TYPE_TEST(Set)
+    DECL_ACCESS_TYPE_TEST(Associative)
+    DECL_ACCESS_TYPE_TEST(Hash)
+    DECL_ACCESS_TYPE_TEST(Map)
+    DECL_ACCESS_TYPE_TEST(MultiAssociative)
+    DECL_ACCESS_TYPE_TEST(MultiHash)
+    DECL_ACCESS_TYPE_TEST(MultiMap)
+    DECL_ACCESS_TYPE_TEST(Pair)
+    friend class AbstractSequentialConstIteratorAccess;
+    friend class AbstractAssociativeConstIteratorAccess;
+    friend class AbstractSequentialIteratorAccess;
+    friend class AbstractAssociativeIteratorAccess;
+    friend class AbstractSequentialAccess;
+    friend class AbstractAssociativeAccess;
+    friend class AbstractSpanAccess;
+    friend class AbstractListAccess;
+    friend class AbstractSetAccess;
+    friend class AbstractHashAccess;
+    friend class AbstractMapAccess;
+    friend class AbstractMultiHashAccess;
+    friend class AbstractMultiMapAccess;
+    friend class AbstractPairAccess;
 };
 
 class QTJAMBI_EXPORT AbstractReferenceCountingContainer{
 protected:
     AbstractReferenceCountingContainer() = default;
     virtual ~AbstractReferenceCountingContainer();
-public:
     virtual void updateRC(JNIEnv * env, const ContainerInfo& container) = 0;
     void swapRC(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2);
     jobject findContainer(JNIEnv * env, jobject container);
     static void unfoldAndAddContainer(JNIEnv * env, jobject set, const void* data, AbstractContainerAccess::DataType dataType, const QMetaType& metaType, AbstractContainerAccess* access);
     static void unfoldAndAddContainer(JNIEnv * env, jobject set, jobject value);
+public:
+    virtual class ReferenceCountingSetContainer* asRCSet();
+    virtual class ReferenceCountingMapContainer* asRCMap();
+    virtual class ReferenceCountingMultiMapContainer* asRCMultiMap();
+
+    template<typename>
+    friend class ContainerLink;
 };
 
 class QTJAMBI_EXPORT ReferenceCountingSetContainer : public AbstractReferenceCountingContainer{
-public:
+protected:
     ReferenceCountingSetContainer() = default;
     jobject rcContainer(JNIEnv * env, jobject container);
     void assignRC(JNIEnv * env, jobject container, jobject container2);
@@ -373,10 +435,12 @@ public:
     void addAllRC(JNIEnv * env, jobject container, jobject container2);
     void addAllUniqueRC(JNIEnv * env, jobject container, jobject container2);
     void addNestedValueRC(JNIEnv * env, jobject container, AbstractContainerAccess::DataType dataType, bool isContainer, jobject value);
+public:
+    ReferenceCountingSetContainer* asRCSet() override final;
 };
 
 class QTJAMBI_EXPORT ReferenceCountingMapContainer : public AbstractReferenceCountingContainer{
-public:
+protected:
     ReferenceCountingMapContainer() = default;
     jobject rcContainer(JNIEnv * env, jobject container);
     void clearRC(JNIEnv * env, jobject container);
@@ -384,10 +448,12 @@ public:
     void putAllRC(JNIEnv * env, jobject container, jobject container2);
     void putRC(JNIEnv * env, jobject container, jobject key, jobject value);
     void removeRC(JNIEnv * env, jobject container, jobject key, int n = 1);
+public:
+    ReferenceCountingMapContainer* asRCMap() override final;
 };
 
 class QTJAMBI_EXPORT ReferenceCountingMultiMapContainer : public AbstractReferenceCountingContainer{
-public:
+protected:
     ReferenceCountingMultiMapContainer() = default;
     jobject rcContainer(JNIEnv * env, jobject container);
     void clearRC(JNIEnv * env, jobject container);
@@ -397,6 +463,8 @@ public:
     void removeRC(JNIEnv * env, jobject container, jobject key, int n = 1);
     void removeRC(JNIEnv * env, jobject container, jobject key, jobject value, int n = 1);
     static jobject newRCMultiMap(JNIEnv * env);
+public:
+    ReferenceCountingMultiMapContainer* asRCMultiMap() override final;
 };
 
 class QTJAMBI_EXPORT AbstractSequentialConstIteratorAccess : public AbstractContainerAccess{
@@ -423,8 +491,9 @@ private:
     bool destructContainer(void* container) final override;
     void assign(void*, const void* ) final override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) final override;
-    QMetaType registerContainer(const QByteArray&) final override;
+    QMetaType registerContainer(QByteArrayView) final override;
     Q_DISABLE_COPY_MOVE(AbstractSequentialConstIteratorAccess)
+    ContainerType containerType() const override;
 };
 
 class QTJAMBI_EXPORT AbstractSequentialIteratorAccess : public AbstractSequentialConstIteratorAccess{
@@ -435,6 +504,7 @@ public:
     virtual void setValue(JNIEnv * env, void* iterator, jobject newValue) = 0;
 private:
     Q_DISABLE_COPY_MOVE(AbstractSequentialIteratorAccess)
+    ContainerType containerType() const override;
 };
 
 class QTJAMBI_EXPORT AbstractAssociativeConstIteratorAccess : public AbstractSequentialConstIteratorAccess{
@@ -446,6 +516,7 @@ public:
     virtual const QMetaType& keyMetaType() = 0;
 private:
     Q_DISABLE_COPY_MOVE(AbstractAssociativeConstIteratorAccess)
+    ContainerType containerType() const override;
 };
 
 class QTJAMBI_EXPORT AbstractAssociativeIteratorAccess : public AbstractAssociativeConstIteratorAccess{
@@ -456,6 +527,7 @@ public:
     virtual void setValue(JNIEnv * env, void* iterator, jobject newValue) = 0;
 private:
     Q_DISABLE_COPY_MOVE(AbstractAssociativeIteratorAccess)
+    ContainerType containerType() const override;
 };
 
 typedef bool (*ElementAnalyzer)(const void* element, void* data);
@@ -501,13 +573,18 @@ public:
         virtual void* mutableNext() = 0;
         virtual bool operator==(const ElementIterator& other) const = 0;
         virtual std::unique_ptr<ElementIterator> clone() const = 0;
+        virtual std::function<jobject(JNIEnv*,const void*)> elementConverter() const = 0;
     };
     virtual std::unique_ptr<ElementIterator> elementIterator(const void*) = 0;
     virtual std::unique_ptr<ElementIterator> elementIterator(void*) = 0;
     inline std::unique_ptr<ElementIterator> constElementIterator(const void* container){
         return elementIterator(container);
     }
+private:
+    virtual class AbstractNestedSequentialAccess* asNested();
+    ContainerType containerType() const override;
     Q_DISABLE_COPY_MOVE(AbstractSequentialAccess)
+    friend void registerNestedAccess(struct QtJambiStorage* storage, class QWriteLocker &locker, AbstractContainerAccess* access);
 };
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
@@ -527,6 +604,8 @@ public:
     virtual jobject end(JNIEnv * env, const ExtendedContainerInfo& container) = 0;
     Q_DISABLE_COPY_MOVE(AbstractSpanAccess)
 private:
+    ContainerType containerType() const override final;
+    friend class WrapperSpanAccess;
     bool isDetached(const void* container) final override;
     void detach(const ContainerInfo& container) final override;
     bool isSharedWith(const void* container, const void* container2) final override;
@@ -577,6 +656,8 @@ public:
     virtual void resize(JNIEnv * env, const ContainerInfo& container, jint newSize) = 0;
     virtual void squeeze(JNIEnv * env, const ContainerInfo& container) = 0;
     Q_DISABLE_COPY_MOVE(AbstractListAccess)
+private:
+    ContainerType containerType() const override final;
 };
 
 class QTJAMBI_EXPORT AbstractSetAccess : public AbstractSequentialAccess{
@@ -597,6 +678,8 @@ public:
     virtual void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) = 0;
     virtual ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) = 0;
     Q_DISABLE_COPY_MOVE(AbstractSetAccess)
+private:
+    ContainerType containerType() const override final;
 };
 
 class QTJAMBI_EXPORT AbstractAssociativeAccess : public AbstractContainerAccess{
@@ -668,6 +751,8 @@ public:
         virtual bool operator==(const KeyValueIterator& other) const = 0;
         virtual std::unique_ptr<KeyValueIterator> clone() const = 0;
         std::unique_ptr<AbstractSequentialAccess::ElementIterator> nextAsIterator();
+        virtual std::function<jobject(JNIEnv*,const void*)> keyConverter() const = 0;
+        virtual std::function<jobject(JNIEnv*,const void*)> valueConverter() const = 0;
     };
     virtual std::unique_ptr<KeyValueIterator> keyValueIterator(const void*) = 0;
     virtual std::unique_ptr<KeyValueIterator> keyValueIterator(void*) = 0;
@@ -676,16 +761,22 @@ public:
     }
     static std::unique_ptr<AbstractSequentialAccess::ElementIterator> asKeyIterator(std::unique_ptr<KeyValueIterator>&& iter);
     static std::unique_ptr<AbstractSequentialAccess::ElementIterator> asValueIterator(std::unique_ptr<KeyValueIterator>&& iter);
+private:
+    ContainerType containerType() const override;
+    virtual class AbstractNestedAssociativeAccess* asNested();
+    friend void registerNestedAccess(struct QtJambiStorage* storage, class QWriteLocker &locker, AbstractContainerAccess* access);
 };
 
 class QTJAMBI_EXPORT AbstractHashAccess : public AbstractAssociativeAccess{
 protected:
     ~AbstractHashAccess() override;;
-    AbstractHashAccess();;
+    AbstractHashAccess();
 public:
     AbstractHashAccess* clone() override = 0;
     virtual jint capacity(JNIEnv *,const void*) = 0;
     virtual void reserve(JNIEnv *, const ContainerInfo& container,jint) = 0;
+private:
+    ContainerType containerType() const override;
 };
 
 class QTJAMBI_EXPORT AbstractMapAccess : public AbstractAssociativeAccess{
@@ -701,6 +792,8 @@ public:
     virtual jobject constLowerBound(JNIEnv *,const ConstExtendedContainerInfo&,jobject) = 0;
     virtual jobject constUpperBound(JNIEnv *,const ConstExtendedContainerInfo&,jobject) = 0;
     virtual bool keyLessThan(JNIEnv *,jobject,jobject) = 0;
+private:
+    ContainerType containerType() const override;
 };
 
 class QTJAMBI_EXPORT AbstractMultiMapAccess : public AbstractMapAccess{
@@ -724,6 +817,8 @@ public:
     virtual jobject constFind(JNIEnv *,const ConstExtendedContainerInfo&,jobject,jobject) = 0;
     virtual jint remove(JNIEnv *, const ContainerInfo& container, jobject,jobject) = 0;
     virtual void replace(JNIEnv *, const ContainerInfo& container, jobject,jobject) = 0;
+private:
+    ContainerType containerType() const override final;
 };
 
 class QTJAMBI_EXPORT AbstractMultiHashAccess : public AbstractHashAccess{
@@ -747,6 +842,8 @@ public:
     virtual jobject constFind(JNIEnv *,const ConstExtendedContainerInfo&,jobject,jobject) = 0;
     virtual jint remove(JNIEnv *, const ContainerInfo& container, jobject,jobject) = 0;
     virtual void replace(JNIEnv *, const ContainerInfo& container, jobject,jobject) = 0;
+private:
+    ContainerType containerType() const override final;
 };
 
 class QTJAMBI_EXPORT AbstractPairAccess : public AbstractContainerAccess{
@@ -781,6 +878,10 @@ public:
     inline std::unique_ptr<AbstractSequentialAccess::ElementIterator> constElementIterator(const void* container){
         return elementIterator(container);
     }
+private:
+    ContainerType containerType() const override final;
+    virtual class AbstractNestedPairAccess* asNested();
+    friend void registerNestedAccess(struct QtJambiStorage* storage, class QWriteLocker &locker, AbstractContainerAccess* access);
 };
 
 namespace ContainerAPI{

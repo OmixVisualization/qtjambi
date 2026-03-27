@@ -78,4 +78,64 @@ TypeSystem{
             since: 6.8
         }
     }
+    ObjectType{
+        name: "QWebView"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/JObjectWrapper"
+                location: Include.Global
+            }
+        }
+        ModifyFunction{
+            signature: "title()const"
+            rename: "webViewTitle"
+        }
+        ModifyFunction{
+            signature: "settings()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "runJavaScript(QString, const std::function<void(const QVariant &)> &)"
+            ModifyArgument{
+                index: 2
+                ReplaceType{
+                    modifiedType: "java.util.function.@Nullable Consumer<@Nullable Object>"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    InsertTemplate{
+                        name: "webc.comsumer.function"
+                        Replace{
+                            from: "%TYPE"
+                            to: "const QVariant &"
+                        }
+                    }
+                }
+            }
+        }
+        since: [6,11]
+    }
+    ValueType{
+        name: "QWebViewLoadingInfo"
+        EnumType{name: "LoadStatus"}
+        since: [6,11]
+    }
+    ObjectType{
+        name: "QWebViewSettings"
+        forceFinal: true
+        generate: "no-shell"
+        EnumType{name: "WebAttribute"}
+        since: [6,11]
+    }
+    SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QWebViewLoadingInfo."}
 }

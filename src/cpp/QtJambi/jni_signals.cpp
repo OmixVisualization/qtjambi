@@ -317,7 +317,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_signalInf
         }
         if(result.methodIndex==-1 && !result.signalTypes && Java::QtCore::QObject::isInstanceOf(env, containingObject)){
             jclass declaringClass = Java::Runtime::Field::getDeclaringClass(env, field);
-            if(const std::type_info* typeId = getTypeByJavaName(QtJambiAPI::getClassName(env, declaringClass).replace('.', '/'))){
+            if(const std::type_info* typeId = getTypeByJavaName(QtJambiAPI::getClassNameJNI(env, declaringClass))){
                 if(hasCustomMetaObject(*typeId)){
                     if(QObject* object = qtjambi_cast<QObject*>(env, containingObject)){
                         QByteArray signalName = qtjambi_cast<QString>(env, Java::Runtime::Field::getName(env, field)).toUtf8();
@@ -349,7 +349,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_signalInf
 extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_SignalUtility_isDynamic
     (JNIEnv *env, jclass, jobject mo){
     try{
-        jlong metaObjectId = mo ? Java::QtCore::QMetaObject::__qt_persistentPointer(env, mo) : 0;
+        jlong metaObjectId = mo ? Java::QtCore::QMetaObject::__qt_directLink(env, mo) : 0;
         return QtJambiMetaObject::isInstance(reinterpret_cast<const QMetaObject*>(metaObjectId));
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
@@ -454,7 +454,6 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_SignalUtility_emitNativeSi
             if(method.isValid()){
                 const QVector<ParameterTypeInfo> parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, method);
                 QVector<void *> convertedArguments;
-                bool failed = false;
                 int size = args ? env->GetArrayLength(args) : 0;
                 convertedArguments.fill(nullptr, size+1);
                 for (int i = 0; i < size; ++i) {
@@ -462,39 +461,41 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_SignalUtility_emitNativeSi
                     jvalue jv;
                     jv.l = env->GetObjectArrayElement(args, i);
                     if(!parameterTypeInfo.convertExternalToInternal(env, &scope, jv, convertedArguments[i+1], jValueType::l)){
-                        failed = true;
-                        break;
+                        qCWarning(internalSignalCategory).noquote().nospace() << "Emitting signal "
+                                                                              << metaObject->className() << "::" << method.methodSignature()
+                                                                              << " on object " << o << " failed. Unable to convert object of type "
+                                                                              << (jv.l ? QtJambiAPI::getObjectClassNamePrintable(env, jv.l) : QStringLiteral("null"))
+                                                                              << " to " << parameterTypeInfo.metaType().name();
+                        return;
                     }
                 }
-                if (!failed) {
-                    if(!checkThreadOnSignalEmit(o)){
-                        jobject signalEmitThreadCheckHandler{nullptr};
-                        QtJambiStorage* storage = getQtJambiStorage();
-                        {
-                            QReadLocker locker(storage->lock());
-                            signalEmitThreadCheckHandler = storage->signalEmitThreadCheckHandler().object(env);
-                        }
-                        if(signalEmitThreadCheckHandler){
-                            jobject qobject = link->getJavaObjectLocalRef(env);
-                            if(!signalObject)
-                                signalObject = Java::QtCore::QMetaMethod::toSignal(env, qtjambi_cast<jobject>(env, QMetaMethod(method)), qobject);
-                            Java::Runtime::BiConsumer::accept(env, signalEmitThreadCheckHandler, qobject, signalObject);
-                        }else{
-                            qCWarning(internalSignalCategory).noquote().nospace() << "Emitting signal "
-                                                                                  << metaObject->className() << "::" << method.methodSignature() << " in thread " << QThread::currentThread()
-                                                                                  << " on object " << o << " with different thread affinity " << o->thread();
-                        }
+                if(!checkThreadOnSignalEmit(o)){
+                    jobject signalEmitThreadCheckHandler{nullptr};
+                    QtJambiStorage* storage = getQtJambiStorage();
+                    {
+                        QReadLocker locker(storage->lock());
+                        signalEmitThreadCheckHandler = storage->signalEmitThreadCheckHandler().object(env);
                     }
-                    if(defaults==0){
-                        int signalIndex = QMetaObjectPrivate::signalIndex(method);
-                        Q_ASSERT(signalIndex>=0);
-                        if(signalIndex>=0){
-                            QMetaObject::activate(o, 0, signalIndex, convertedArguments.data());
-                            return;
-                        }
+                    if(signalEmitThreadCheckHandler){
+                        jobject qobject = link->getJavaObjectLocalRef(env);
+                        if(!signalObject)
+                            signalObject = Java::QtCore::QMetaMethod::toSignal(env, qtjambi_cast<jobject>(env, QMetaMethod(method)), qobject);
+                        Java::Runtime::BiConsumer::accept(env, signalEmitThreadCheckHandler, qobject, signalObject);
+                    }else{
+                        qCWarning(internalSignalCategory).noquote().nospace() << "Emitting signal "
+                                                                              << metaObject->className() << "::" << method.methodSignature() << " in thread " << QThread::currentThread()
+                                                                              << " on object " << o << " with different thread affinity " << o->thread();
                     }
-                    metaObject->metacall(o, QMetaObject::InvokeMetaMethod, method.methodIndex(), convertedArguments.data());
                 }
+                if(defaults==0){
+                    int signalIndex = QMetaObjectPrivate::signalIndex(method);
+                    Q_ASSERT(signalIndex>=0);
+                    if(signalIndex>=0){
+                        QMetaObject::activate(o, 0, signalIndex, convertedArguments.data());
+                        return;
+                    }
+                }
+                metaObject->metacall(o, QMetaObject::InvokeMetaMethod, method.methodIndex(), convertedArguments.data());
             }
         }
     }catch(const JavaException& exn){

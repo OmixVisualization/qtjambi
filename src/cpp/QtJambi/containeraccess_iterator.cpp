@@ -34,8 +34,24 @@
 QT_WARNING_DISABLE_GCC("-Winaccessible-base")
 QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
 
-AutoSequentialConstIteratorAccess::~AutoSequentialConstIteratorAccess() = default;
-AutoSequentialConstIteratorAccess::AutoSequentialConstIteratorAccess(
+template<typename Super>
+AutoSequentialConstIteratorAccess<Super>::~AutoSequentialConstIteratorAccess() = default;
+
+AutoSequentialConstIteratorAccess<AbstractSequentialConstIteratorAccess>* createAutoSequentialConstIteratorAccess(
+        const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+        AutoSequentialConstIteratorAccess<AbstractSequentialConstIteratorAccess>::IncrementFn increment,
+        AutoSequentialConstIteratorAccess<AbstractSequentialConstIteratorAccess>::DecrementFn decrement,
+        AutoSequentialConstIteratorAccess<AbstractSequentialConstIteratorAccess>::ValueFn value,
+        AutoSequentialConstIteratorAccess<AbstractSequentialConstIteratorAccess>::LessThanFn lessThan,
+        AutoSequentialConstIteratorAccess<AbstractSequentialConstIteratorAccess>::EqualsFn equals,
+        const QMetaType& valueMetaType,
+        size_t offset
+    ){
+    return new AutoSequentialConstIteratorAccess<AbstractSequentialConstIteratorAccess>(internalToExternalConverter, increment, decrement, value, lessThan, equals, valueMetaType, offset);
+}
+
+template<typename Super>
+AutoSequentialConstIteratorAccess<Super>::AutoSequentialConstIteratorAccess(
         const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
         IncrementFn increment,
         DecrementFn decrement,
@@ -45,7 +61,7 @@ AutoSequentialConstIteratorAccess::AutoSequentialConstIteratorAccess(
         const QMetaType& valueMetaType,
         size_t offset
     )
-    : AbstractSequentialConstIteratorAccess(),
+    : Super(),
       m_internalToExternalConverter(internalToExternalConverter),
       m_increment(increment),
       m_decrement(decrement),
@@ -58,22 +74,27 @@ AutoSequentialConstIteratorAccess::AutoSequentialConstIteratorAccess(
     Q_ASSERT(m_value);
 }
 
-void AutoSequentialConstIteratorAccess::dispose() {delete this;}
+template<typename Super>
+void AutoSequentialConstIteratorAccess<Super>::dispose() {delete this;}
 
-AbstractSequentialConstIteratorAccess* AutoSequentialConstIteratorAccess::clone()
+template<typename Super>
+AutoSequentialConstIteratorAccess<Super>* AutoSequentialConstIteratorAccess<Super>::clone()
 {
-    return new AutoSequentialConstIteratorAccess(
-                m_internalToExternalConverter,
-                m_increment,
-                m_decrement,
-                m_value,
-                m_lessThan,
-                m_equals,
-                m_valueMetaType,
-                m_offset);
+    if constexpr(std::is_same_v<Super,AbstractSequentialConstIteratorAccess>){
+        return new AutoSequentialConstIteratorAccess<Super>(
+                    m_internalToExternalConverter,
+                    m_increment,
+                    m_decrement,
+                    m_value,
+                    m_lessThan,
+                    m_equals,
+                    m_valueMetaType,
+                    m_offset);
+    }else return nullptr;
 }
 
-jobject AutoSequentialConstIteratorAccess::value(JNIEnv * env, const void* iterator)
+template<typename Super>
+jobject AutoSequentialConstIteratorAccess<Super>::value(JNIEnv * env, const void* iterator)
 {
     const void* v = m_value(this, iterator);
     jvalue jval;
@@ -83,43 +104,48 @@ jobject AutoSequentialConstIteratorAccess::value(JNIEnv * env, const void* itera
     return nullptr;
 }
 
-void AutoSequentialConstIteratorAccess::increment(JNIEnv *, void* iterator)
+template<typename Super>
+void AutoSequentialConstIteratorAccess<Super>::increment(JNIEnv *, void* iterator)
 {
     m_increment(this, iterator);
 }
 
-void AutoSequentialConstIteratorAccess::decrement(JNIEnv *, void* iterator)
+template<typename Super>
+void AutoSequentialConstIteratorAccess<Super>::decrement(JNIEnv *, void* iterator)
 {
     m_decrement(this, iterator);
 }
 
-jboolean AutoSequentialConstIteratorAccess::lessThan(JNIEnv *, const void* iterator, const void* other)
+template<typename Super>
+jboolean AutoSequentialConstIteratorAccess<Super>::lessThan(JNIEnv *, const void* iterator, const void* other)
 {
     return m_lessThan(this, iterator, other);
 }
 
-bool AutoSequentialConstIteratorAccess::canLess()
+template<typename Super>
+bool AutoSequentialConstIteratorAccess<Super>::canLess()
 {
     if(m_lessThan)
         return true;
     else return false;
 }
 
-jboolean AutoSequentialConstIteratorAccess::equals(JNIEnv *, const void* iterator, const void* other)
+template<typename Super>
+jboolean AutoSequentialConstIteratorAccess<Super>::equals(JNIEnv *, const void* iterator, const void* other)
 {
     return m_equals(this, iterator, other);
 }
 
-size_t AutoSequentialConstIteratorAccess::offset(){
-    return m_offset;
-}
-
-const QMetaType& AutoSequentialConstIteratorAccess::valueMetaType() {
+template<typename Super>
+const QMetaType& AutoSequentialConstIteratorAccess<Super>::valueMetaType() {
     return m_valueMetaType;
 }
 
-AutoAssociativeConstIteratorAccess::~AutoAssociativeConstIteratorAccess(){}
-AutoAssociativeConstIteratorAccess::AutoAssociativeConstIteratorAccess(
+template<typename Super>
+AutoAssociativeConstIteratorAccess<Super>::~AutoAssociativeConstIteratorAccess(){}
+
+template<typename Super>
+AutoAssociativeConstIteratorAccess<Super>::AutoAssociativeConstIteratorAccess(
         const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
         IncrementFn increment,
         DecrementFn decrement,
@@ -133,13 +159,12 @@ AutoAssociativeConstIteratorAccess::AutoAssociativeConstIteratorAccess(
         size_t keyOffset,
         size_t valueOffset
         )
-    : AbstractAssociativeConstIteratorAccess(),
-      AutoSequentialConstIteratorAccess(internalToExternalConverter,
-                                        AutoSequentialConstIteratorAccess::IncrementFn(increment),
-                                        AutoSequentialConstIteratorAccess::DecrementFn(decrement),
-                                        AutoSequentialConstIteratorAccess::ValueFn(value),
-                                        AutoSequentialConstIteratorAccess::LessThanFn(lessThan),
-                                        AutoSequentialConstIteratorAccess::EqualsFn(equals),
+    : AutoSequentialConstIteratorAccess<Super>(internalToExternalConverter,
+                                        typename AutoSequentialConstIteratorAccess<Super>::IncrementFn(increment),
+                                        typename AutoSequentialConstIteratorAccess<Super>::DecrementFn(decrement),
+                                        typename AutoSequentialConstIteratorAccess<Super>::ValueFn(value),
+                                        typename AutoSequentialConstIteratorAccess<Super>::LessThanFn(lessThan),
+                                        typename AutoSequentialConstIteratorAccess<Super>::EqualsFn(equals),
                         valueMetaType, valueOffset),
       m_keyInternalToExternalConverter(keyInternalToExternalConverter),
       m_key(std::move(key)),
@@ -149,24 +174,56 @@ AutoAssociativeConstIteratorAccess::AutoAssociativeConstIteratorAccess(
     Q_ASSERT(m_key);
 }
 
-AbstractSequentialConstIteratorAccess* AutoAssociativeConstIteratorAccess::clone(){
-    AbstractAssociativeConstIteratorAccess* access = new AutoAssociativeConstIteratorAccess(
-                m_internalToExternalConverter,
-                IncrementFn(m_increment),
-                DecrementFn(m_decrement),
-                ValueFn(m_value),
-                LessThanFn(m_lessThan),
-                EqualsFn(m_equals),
-                m_keyInternalToExternalConverter,
-                m_key,
-                m_keyMetaType,
-                m_valueMetaType,
-                m_keyOffset,
-                m_offset);
-    return access;
+template<typename Super>
+AutoAssociativeConstIteratorAccess<Super>* AutoAssociativeConstIteratorAccess<Super>::clone(){
+    if constexpr(std::is_same_v<Super,AbstractAssociativeConstIteratorAccess>){
+        return new AutoAssociativeConstIteratorAccess<Super>(
+                    this->m_internalToExternalConverter,
+                    IncrementFn(this->m_increment),
+                    DecrementFn(this->m_decrement),
+                    ValueFn(this->m_value),
+                    LessThanFn(this->m_lessThan),
+                    EqualsFn(this->m_equals),
+                    m_keyInternalToExternalConverter,
+                    m_key,
+                    m_keyMetaType,
+                    this->m_valueMetaType,
+                    m_keyOffset,
+                    this->m_offset);
+    }else return nullptr;
 }
 
-jobject AutoAssociativeConstIteratorAccess::key(JNIEnv * env, const void* iterator){
+AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>* createAutoAssociativeConstIteratorAccess(
+    const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+    AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>::IncrementFn increment,
+    AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>::DecrementFn decrement,
+    AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>::ValueFn value,
+    AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>::LessThanFn lessThan,
+    AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>::EqualsFn equals,
+    const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
+    AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>::KeyFn key,
+    const QMetaType& keyMetaType,
+    const QMetaType& valueMetaType,
+    size_t keyOffset,
+    size_t valueOffset
+    ){
+    return new AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>(
+        internalToExternalConverter,
+        increment,
+        decrement,
+        value,
+        lessThan,
+        equals,
+        keyInternalToExternalConverter,
+        key,
+        keyMetaType,
+        valueMetaType,
+        keyOffset,
+        valueOffset);
+}
+
+template<typename Super>
+jobject AutoAssociativeConstIteratorAccess<Super>::key(JNIEnv * env, const void* iterator){
     const void* v = m_key(this, iterator);
     jvalue jval;
     jval.l = nullptr;
@@ -175,24 +232,10 @@ jobject AutoAssociativeConstIteratorAccess::key(JNIEnv * env, const void* iterat
     return nullptr;
 }
 
-const QMetaType& AutoAssociativeConstIteratorAccess::keyMetaType() {
+template<typename Super>
+const QMetaType& AutoAssociativeConstIteratorAccess<Super>::keyMetaType() {
     return m_keyMetaType;
 }
-
-size_t AutoAssociativeConstIteratorAccess::keyOffset(){
-    return m_keyOffset;
-}
-size_t AutoAssociativeConstIteratorAccess::valueOffset(){
-    return m_offset;
-}
-
-jobject AutoAssociativeConstIteratorAccess::value(JNIEnv * env, const void* iterator){return AutoSequentialConstIteratorAccess::value(env, iterator);}
-const QMetaType& AutoAssociativeConstIteratorAccess::valueMetaType(){return AutoSequentialConstIteratorAccess::valueMetaType();}
-void AutoAssociativeConstIteratorAccess::increment(JNIEnv * env, void* iterator){AutoSequentialConstIteratorAccess::increment(env, iterator);}
-void AutoAssociativeConstIteratorAccess::decrement(JNIEnv * env, void* iterator){AutoSequentialConstIteratorAccess::decrement(env, iterator);}
-jboolean AutoAssociativeConstIteratorAccess::lessThan(JNIEnv * env, const void* iterator, const void* other){return AutoSequentialConstIteratorAccess::lessThan(env, iterator, other);}
-bool AutoAssociativeConstIteratorAccess::canLess(){return AutoSequentialConstIteratorAccess::canLess();}
-jboolean AutoAssociativeConstIteratorAccess::equals(JNIEnv * env, const void* iterator, const void* other){return AutoSequentialConstIteratorAccess::equals(env, iterator, other);}
 
 AutoSequentialIteratorAccess::~AutoSequentialIteratorAccess() = default;
 AutoSequentialIteratorAccess::AutoSequentialIteratorAccess(
@@ -207,13 +250,12 @@ AutoSequentialIteratorAccess::AutoSequentialIteratorAccess(
         const QMetaType& valueMetaType,
         size_t offset
     )
-    : AbstractSequentialIteratorAccess(),
-      AutoSequentialConstIteratorAccess(internalToExternalConverter,
-                                        AutoSequentialConstIteratorAccess::IncrementFn(increment),
-                                        AutoSequentialConstIteratorAccess::DecrementFn(decrement),
-                                        AutoSequentialConstIteratorAccess::ValueFn(value),
-                                        AutoSequentialConstIteratorAccess::LessThanFn(lessThan),
-                                        AutoSequentialConstIteratorAccess::EqualsFn(equals),
+    : AutoSequentialConstIteratorAccess<AbstractSequentialIteratorAccess>(internalToExternalConverter,
+                                        AutoSequentialConstIteratorAccess<AbstractSequentialIteratorAccess>::IncrementFn(increment),
+                                        AutoSequentialConstIteratorAccess<AbstractSequentialIteratorAccess>::DecrementFn(decrement),
+                                        AutoSequentialConstIteratorAccess<AbstractSequentialIteratorAccess>::ValueFn(value),
+                                        AutoSequentialConstIteratorAccess<AbstractSequentialIteratorAccess>::LessThanFn(lessThan),
+                                        AutoSequentialConstIteratorAccess<AbstractSequentialIteratorAccess>::EqualsFn(equals),
                                         valueMetaType,
                                         offset),
       m_externalToInternalConverter(externalToInternalConverter),
@@ -223,9 +265,9 @@ AutoSequentialIteratorAccess::AutoSequentialIteratorAccess(
     Q_ASSERT(m_setValue);
 }
 
-AbstractSequentialConstIteratorAccess* AutoSequentialIteratorAccess::clone()
+AutoSequentialIteratorAccess* AutoSequentialIteratorAccess::clone()
 {
-    AbstractSequentialIteratorAccess* access = new AutoSequentialIteratorAccess(
+    return new AutoSequentialIteratorAccess(
                 m_internalToExternalConverter,
                 IncrementFn(m_increment),
                 DecrementFn(m_decrement),
@@ -235,7 +277,6 @@ AbstractSequentialConstIteratorAccess* AutoSequentialIteratorAccess::clone()
                 m_externalToInternalConverter,
                 m_setValue,
                 m_valueMetaType, m_offset);
-    return access;
 }
 
 void AutoSequentialIteratorAccess::setValue(JNIEnv * env, void* iterator, jobject newValue){
@@ -273,15 +314,14 @@ AutoAssociativeIteratorAccess::AutoAssociativeIteratorAccess(
         size_t keyOffset,
         size_t valueOffset
         )
-    : AbstractAssociativeIteratorAccess(),
-      AutoAssociativeConstIteratorAccess(valueInternalToExternalConverter,
-                         AutoAssociativeConstIteratorAccess::IncrementFn(increment),
-                         AutoAssociativeConstIteratorAccess::DecrementFn(decrement),
-                         AutoAssociativeConstIteratorAccess::ValueFn(value),
-                         AutoAssociativeConstIteratorAccess::LessThanFn(lessThan),
-                         AutoAssociativeConstIteratorAccess::EqualsFn(equals),
+    : AutoAssociativeConstIteratorAccess<AbstractAssociativeIteratorAccess>(valueInternalToExternalConverter,
+                         AutoAssociativeConstIteratorAccess<AbstractAssociativeIteratorAccess>::IncrementFn(increment),
+                         AutoAssociativeConstIteratorAccess<AbstractAssociativeIteratorAccess>::DecrementFn(decrement),
+                         AutoAssociativeConstIteratorAccess<AbstractAssociativeIteratorAccess>::ValueFn(value),
+                         AutoAssociativeConstIteratorAccess<AbstractAssociativeIteratorAccess>::LessThanFn(lessThan),
+                         AutoAssociativeConstIteratorAccess<AbstractAssociativeIteratorAccess>::EqualsFn(equals),
                         keyInternalToExternalConverter,
-                        AutoAssociativeConstIteratorAccess::KeyFn(key),
+                        AutoAssociativeConstIteratorAccess<AbstractAssociativeIteratorAccess>::KeyFn(key),
                         keyMetaType,
                         valueMetaType,
                         keyOffset,
@@ -292,8 +332,8 @@ AutoAssociativeIteratorAccess::AutoAssociativeIteratorAccess(
     Q_ASSERT(setValue);
 }
 
-AbstractSequentialConstIteratorAccess* AutoAssociativeIteratorAccess::clone(){
-    AbstractAssociativeIteratorAccess* access = new AutoAssociativeIteratorAccess(
+AutoAssociativeIteratorAccess* AutoAssociativeIteratorAccess::clone(){
+    return new AutoAssociativeIteratorAccess(
                 m_internalToExternalConverter,
                 IncrementFn(m_increment),
                 DecrementFn(m_decrement),
@@ -308,7 +348,6 @@ AbstractSequentialConstIteratorAccess* AutoAssociativeIteratorAccess::clone(){
                 m_valueMetaType,
                 m_keyOffset,
                 m_offset);
-    return access;
 }
 
 void AutoAssociativeIteratorAccess::setValue(JNIEnv * env, void* iterator, jobject newValue){

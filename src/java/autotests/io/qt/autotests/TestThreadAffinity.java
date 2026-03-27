@@ -171,6 +171,7 @@ public class TestThreadAffinity extends ApplicationInitializer{
 	}
 	
 	@Test
+	@Deprecated
     public void testQColormap() throws InterruptedException {
 		AtomicInteger counter = new AtomicInteger();
 		QEventLoop loop = new QEventLoop();

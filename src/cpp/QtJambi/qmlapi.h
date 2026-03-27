@@ -58,7 +58,7 @@ QTJAMBI_EXPORT QObject* createQmlErrorDummyObject(const QMetaObject* metaObject,
 
 QTJAMBI_EXPORT size_t extendedSizeForClass(JNIEnv *env, jclass object_class);
 
-QTJAMBI_EXPORT QMetaType registerMetaType(JNIEnv *env, jclass clazz, const QString& javaClassName);
+QTJAMBI_EXPORT QMetaType registerMetaType(JNIEnv *env, jclass clazz);
 
 QTJAMBI_EXPORT QMetaType registerMetaType(JNIEnv *env, SequentialContainerType containerType, const QMetaType& elementType);
 QTJAMBI_EXPORT QMetaType registerQmlMetaType(JNIEnv *env, jclass clazz,
@@ -79,10 +79,12 @@ QTJAMBI_EXPORT QMetaType registerQmlMetaType(JNIEnv *env, jclass clazz,
                                              QMetaType::TypeFlags flags,
                                              const QMetaObject *metaObject,
                                              QtPrivate::QMetaTypeInterface::MetaObjectFn metaObjectFn);
-QTJAMBI_EXPORT bool registerMetaTypeConverter(JNIEnv *env, const QMetaType& metaType1, jclass jsvalueClass, const QMetaType& metaType2, jclass targetClass, jmethodID constructor);
+QTJAMBI_EXPORT bool registerMetaTypeConverter(JNIEnv *env, const QMetaType& metaType1, jclass jsvalueClass, const QMetaType& metaType2, jclass targetClass, jmethodID constructor, jmethodID factory);
 QTJAMBI_EXPORT bool registerQmlExtension(JNIEnv *env, const QMetaObject *extended_meta_object, jclass javaClass);
-
+QTJAMBI_EXPORT bool isJObjectWrapper(const QMetaType& metaType);
 QTJAMBI_EXPORT int getInterfaceOffset(JNIEnv *env, jclass cls, const std::type_info& interfacetype);
+
+
 
 struct InPlaceConstructorInfo{
     jmethodID constructor = nullptr;

@@ -216,8 +216,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QPluginLoader_qRegisterPluginI
 extern "C" JNIEXPORT jclass JNICALL Java_io_qt_core_internal_QFactoryLoader_registeredPluginInterface(JNIEnv *__jni_env, jclass, jstring iid){
     QTJAMBI_NATIVE_METHOD_CALL("registeredPluginInterface(String)")
     try{
-        QtJambiScope scope;
-        return CoreAPI::getInterfaceByIID(__jni_env, qtjambi_cast<const char*>(__jni_env, scope, iid));
+        J2CStringBuffer buffer(__jni_env, iid);
+        return CoreAPI::getInterfaceByIID(__jni_env, buffer.constData());
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }

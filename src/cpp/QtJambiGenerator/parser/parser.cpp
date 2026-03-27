@@ -2563,8 +2563,19 @@ bool Parser::parseMemberSpecification(DeclarationAST *&node) {
 
     token_stream.rewind(start);
 
+    ExpressionAST *annotationExpression(nullptr);
+    if(!annotationExpression && !parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
+    }
+
     const ListNode<std::size_t> *cv = nullptr;
     parseCvQualify(cv);
+
+    if(!annotationExpression && !parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
+    }
 
     const ListNode<std::size_t> *storageSpec = nullptr;
     StringLiteralAST *deprecationComment = nullptr;
@@ -2586,17 +2597,29 @@ bool Parser::parseMemberSpecification(DeclarationAST *&node) {
         ADVANCE(')', ")")
     }
     bool hasDeprecated = parseDeprecatedSpecifier(storageSpec, deprecationComment);
+    if(!annotationExpression && !parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
+    }
     parseStorageClassSpecifier(storageSpec);
     if (token_stream.lookAhead() == Token_inline)
         token_stream.nextToken();
 
     if(!hasDeprecated)
         hasDeprecated = parseDeprecatedSpecifier(storageSpec, deprecationComment);
+    if(!annotationExpression && !parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
+    }
 
     parseCvQualify(cv);
 
     if(!hasDeprecated)
         hasDeprecated = parseDeprecatedSpecifier(storageSpec, deprecationComment);
+    if(!annotationExpression && !parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
+    }
 
     TypeSpecifierAST *spec = nullptr;
     if (parseEnumSpecifier(spec) || parseEnumClassSpecifier(spec) || parseClassSpecifier(spec)) {
@@ -2611,6 +2634,7 @@ bool Parser::parseMemberSpecification(DeclarationAST *&node) {
         ast->type_specifier = spec;
         ast->init_declarators = declarators;
         ast->deprecationComment = deprecationComment;
+        ast->annotationExpression = annotationExpression;
         UPDATE_POS(ast, start, token_stream.cursor());
         node = ast;
 
@@ -3939,6 +3963,7 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node) {
                     ast->arrowDecl = arrowDecl;
                     ast->storage_specifiers = storageSpec;
                     ast->deprecationComment = deprecationComment;
+                    ast->annotationExpression = annotationExpression;
                     ast->function_specifiers = funSpec;
                     ast->init_declarators = snoc(ast->init_declarators,
                                                  declarator, _M_pool);
@@ -4005,6 +4030,11 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node) {
 start_decl:
     token_stream.rewind(index);
 
+    if(!annotationExpression && !parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
+    }
+
     if (token_stream.lookAhead() == Token_const
             && token_stream.lookAhead(1) == Token_identifier
             && token_stream.lookAhead(2) == '=') {
@@ -4022,6 +4052,7 @@ start_decl:
         SimpleDeclarationAST *ast = CreateNode<SimpleDeclarationAST>(_M_pool);
         ast->init_declarators = declarators;
         ast->deprecationComment = deprecationComment;
+        ast->annotationExpression = annotationExpression;
 
         UPDATE_POS(ast, start, token_stream.cursor());
         node = ast;
@@ -4035,12 +4066,24 @@ start_decl:
 
         if(!hasDeprecated)
             hasDeprecated = parseDeprecatedSpecifier(storageSpec, deprecationComment);
+
+        if(!annotationExpression && !parseAnnotation(annotationExpression)){
+            token_stream.rewind(start);
+            return false;
+        }
+
         if (!hasFunSpec)
             parseFunctionSpecifier(funSpec);         // e.g. "void inline"
         if (token_stream.lookAhead() == Token_static) // e.g. "enable_if_t static"
             token_stream.nextToken();
         if(!hasDeprecated)
             hasDeprecated = parseDeprecatedSpecifier(storageSpec, deprecationComment);
+
+        if(!annotationExpression && !parseAnnotation(annotationExpression)){
+            token_stream.rewind(start);
+            return false;
+        }
+
         if(!spec->cv){
             spec->cv = cv;
         }else if(cv){ // this change was necessary to parse types like 'T * const * const' correctly.
@@ -4100,6 +4143,7 @@ start_decl:
 
                 ast->storage_specifiers = storageSpec;
                 ast->deprecationComment = deprecationComment;
+                ast->annotationExpression = annotationExpression;
                 ast->function_specifiers = funSpec;
                 ast->type_specifier = spec;
                 ast->win_decl_specifiers = winDeclSpec;

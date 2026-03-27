@@ -900,11 +900,6 @@ QTJAMBI_MATRIX(4,3)
 
 size_t qHash(const QColorTransform &value, size_t seed = 0);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 11, 0)
-bool operator==(const QQuaternion::Axes &v1, const QQuaternion::Axes &v2);
-size_t qHash(const QQuaternion::Axes& value, size_t seed = 0);
-#endif
-
 #endif
 
 #endif // HASHES_H

@@ -36,10 +36,13 @@
 
 namespace Java{
 namespace QtCore{
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QVariant,
+                                 )
 QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QDeclarativeConstructor,
                                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 }
 namespace QtJambi {
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QtObject$QPrivateConstructor,)
 QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConstructInPlace,
                                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
                                  QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(native_id))
@@ -49,7 +52,13 @@ QTJAMBI_REPOSITORY_DECLARE_CLASS(QtMetaType,
                                  QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(name)
                                  QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(id))
 QTJAMBI_REPOSITORY_DECLARE_CLASS(ClassAnalyzerUtility,
-                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_CLASS_METHOD(findGeneratedSuperclass))
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_CLASS_METHOD(findGeneratedSuperclass)
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findDeclaredConstructor0)
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findDeclaredMethod0)
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findDeclaredConstructor1)
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findDeclaredMethod1)
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findInternalDeclarativeConstructor)
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findInternalPrivateConstructor))
 }
 
 namespace QtQml {
@@ -105,9 +114,9 @@ int qtjambi_qmlRegisterExtendedType(JNIEnv *env, jclass clazz, jclass extendedCl
 
 int qtjambi_qmlRegisterExtendedType(JNIEnv *env, jclass clazz, jclass extendedClazz, const char* uri, int versionMajor, int versionMinor, const char* qmlName);
 
-int qtjambi_qmlRegisterExtendedUncreatableType(JNIEnv *env, jclass clazz, jclass extendedClazz, const char* uri, int versionMajor, int versionMinor, const char* qmlName, QString reason);
+int qtjambi_qmlRegisterExtendedUncreatableType(JNIEnv *env, jclass clazz, jclass extendedClazz, const char* uri, int versionMajor, int versionMinor, const char* qmlName, const QString& noCreationReason);
 
-int qtjambi_qmlRegisterExtendedUncreatableType(JNIEnv *env, jclass clazz, jclass extendedClazz, int metaObjectRevision, const char* uri, int versionMajor, int versionMinor, const char* qmlName, QString reason);
+int qtjambi_qmlRegisterExtendedUncreatableType(JNIEnv *env, jclass clazz, jclass extendedClazz, int metaObjectRevision, const char* uri, int versionMajor, int versionMinor, const char* qmlName, const QString& reason);
 
 int qtjambi_qmlRegisterInterface(JNIEnv *env, jclass clazz, const char* uri);
 

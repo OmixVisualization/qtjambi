@@ -39,22 +39,6 @@
 
 namespace QtJambiPrivate {
 
-template<bool forward, typename JniType, typename NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
-struct qtjambi_jobject_arithmetic_cast{
-    Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
-    static void cast(...){}
-};
-
-template<bool forward,
-         typename JniType, typename NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
-struct qtjambi_jobject_function_cast{
-    Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
-    static void cast(...){}
-};
-
-template<bool forward, class JniType, typename NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
-struct qtjambi_string_cast;
-
 template<bool forward, typename JniType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename Args, template<typename... Ts> class NativeType, typename... Ts>
 static constexpr auto qtjambi_jobject_template_cast_impl(const NativeType<Ts...>&);
 

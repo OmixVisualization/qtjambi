@@ -101,6 +101,8 @@ class GenericHashAccess : public AbstractHashAccess, public AbstractNestedAssoci
     {
     }
 
+    AbstractNestedAssociativeAccess* asNested() override { return this; }
+
 public:
     static AbstractHashAccess* newInstance(const QMetaType& keyMetaType,
                                           const QtJambiUtils::QHashFunction& keyHashFunction,
@@ -171,7 +173,7 @@ public:
         reinterpret_cast<QHash<K,T>*>(container)->~QHash<K,T>();
         return true;
     }
-    QMetaType registerContainer(const QByteArray& containerTypeName) override {
+    QMetaType registerContainer(QByteArrayView containerTypeName) override {
         return QtJambiPrivate::registerAssociativeContainerType<QHash<K,T>, size1, size2>(containerTypeName, m_keyMetaTypeInfo.metaType(), m_valueMetaTypeInfo.metaType(), this);
     }
     const QMetaType& keyMetaType() override {
@@ -209,11 +211,14 @@ public:
     }
     bool hasKeyNestedPointers() override {
         if(hasKeyNestedContainerAccess()){
-            if(auto daccess = dynamic_cast<AbstractSequentialAccess*>(m_keyNestedContainerAccess.data())){
+            if(m_keyNestedContainerAccess->isSequential()){
+                auto daccess = static_cast<AbstractSequentialAccess*>(m_keyNestedContainerAccess.data());
                 return (daccess->elementType() & PointersMask) || daccess->hasNestedPointers();
-            }else if(auto daccess = dynamic_cast<AbstractAssociativeAccess*>(m_keyNestedContainerAccess.data())){
+            }else if(m_keyNestedContainerAccess->isAssociative()){
+                auto daccess = static_cast<AbstractAssociativeAccess*>(m_keyNestedContainerAccess.data());
                 return (daccess->keyType() & PointersMask) || daccess->hasKeyNestedPointers() || (daccess->valueType() & PointersMask) || daccess->hasValueNestedPointers();
-            }else if(auto daccess = dynamic_cast<AbstractPairAccess*>(m_keyNestedContainerAccess.data())){
+            }else if(m_keyNestedContainerAccess->isPair()){
+                auto daccess = static_cast<AbstractPairAccess*>(m_keyNestedContainerAccess.data());
                 return (daccess->firstType() & PointersMask) || daccess->hasFirstNestedPointers() || (daccess->secondType() & PointersMask) || daccess->hasSecondNestedPointers();
             }
         }
@@ -224,11 +229,14 @@ public:
     }
     bool hasValueNestedPointers() override {
         if(hasValueNestedContainerAccess()){
-            if(auto daccess = dynamic_cast<AbstractSequentialAccess*>(m_valueNestedContainerAccess.data())){
+            if(m_valueNestedContainerAccess->isSequential()){
+                auto daccess = static_cast<AbstractSequentialAccess*>(m_valueNestedContainerAccess.data());
                 return (daccess->elementType() & PointersMask) || daccess->hasNestedPointers();
-            }else if(auto daccess = dynamic_cast<AbstractAssociativeAccess*>(m_valueNestedContainerAccess.data())){
+            }else if(m_valueNestedContainerAccess->isAssociative()){
+                auto daccess = static_cast<AbstractAssociativeAccess*>(m_valueNestedContainerAccess.data());
                 return (daccess->keyType() & PointersMask) || daccess->hasKeyNestedPointers() || (daccess->valueType() & PointersMask) || daccess->hasValueNestedPointers();
-            }else if(auto daccess = dynamic_cast<AbstractPairAccess*>(m_valueNestedContainerAccess.data())){
+            }else if(m_valueNestedContainerAccess->isPair()){
+                auto daccess = static_cast<AbstractPairAccess*>(m_valueNestedContainerAccess.data());
                 return (daccess->firstType() & PointersMask) || daccess->hasFirstNestedPointers() || (daccess->secondType() & PointersMask) || daccess->hasSecondNestedPointers();
             }
         }

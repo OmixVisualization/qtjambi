@@ -320,24 +320,24 @@ extern "C" JNIEXPORT jobject JNICALL\
     Java_io_qt_internal_NativeUtility_mutableData##TYPE\
     (JNIEnv *env, jclass, jobject iter, QtJambiNativeID nid)\
 {\
-        Q_UNUSED(iter)\
-        jobject __java_return_value{0};\
-        QTJAMBI_TRY {\
-            QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(nid);\
-            if(dynamic_cast<Abstract##CONTAINER##Access*>(container.second)){\
-                Q##CONTAINER<type> *__qt_this = reinterpret_cast<Q##CONTAINER<type>*>(container.first);\
-                QtJambiAPI::checkNullPointer(env, __qt_this);\
-                type* __qt_return_value = __qt_this->data();\
-                DataJBuffer d(env, __qt_return_value, jlong(__qt_this->capacity()));\
-                if(__qt_this->size()<__qt_this->capacity())\
+    Q_UNUSED(iter)\
+    jobject __java_return_value{0};\
+    QTJAMBI_TRY {\
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(nid);\
+        Q##CONTAINER<type> *__qt_this = reinterpret_cast<Q##CONTAINER<type>*>(container.first);\
+        QtJambiAPI::checkNullPointer(env, __qt_this);\
+        if(container.second && container.second->is##CONTAINER()){\
+            type* __qt_return_value = __qt_this->data();\
+            DataJBuffer d(env, __qt_return_value, jlong(__qt_this->capacity()));\
+            if(__qt_this->size()<__qt_this->capacity())\
                 d.setLimit(jsize(__qt_this->size()));\
-                __java_return_value = d.take();\
-                QtJambiAPI::registerDependency(env, __java_return_value, nid);\
+            __java_return_value = d.take();\
+            QtJambiAPI::registerDependency(env, __java_return_value, nid);\
         }\
     }QTJAMBI_CATCH(const JavaException& exn){\
-            exn.raiseInJava(env);\
+        exn.raiseInJava(env);\
     }QTJAMBI_TRY_END\
-        return __java_return_value;\
+    return __java_return_value;\
 }
 
 #define MUTABLE_LIST(TYPE,type) MUTABLE_LIST_IMPL(TYPE,type,List)

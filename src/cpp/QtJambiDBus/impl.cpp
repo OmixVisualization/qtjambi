@@ -360,7 +360,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_dbus_QDBusMetaType_registerDBusMeta
                      || metaTypeId==qMetaTypeId<JBooleanArrayWrapper>()
                      || metaTypeId==qMetaTypeId<JCharArrayWrapper>()
                      || metaTypeId==qMetaTypeId<JShortArrayWrapper>()){
-                Java::Runtime::IllegalArgumentException::throwNew(__jni_env, QStringLiteral("Unable to marhall/unmarshall type %1.").arg(QtJambiAPI::getClassName(__jni_env, classType)) QTJAMBI_STACKTRACEINFO );
+                Java::Runtime::IllegalArgumentException::throwNew(__jni_env, QStringLiteral("Unable to marhall/unmarshall type %1.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, classType)) QTJAMBI_STACKTRACEINFO );
             }else{
                 if(!QMetaType(metaType).iface()->defaultCtr
                         || !QMetaType(metaType).iface()->copyCtr){

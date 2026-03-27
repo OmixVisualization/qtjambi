@@ -223,7 +223,7 @@ public class TestWebSockets extends ApplicationInitializer {
         	}
         });
         window.show();
-        QTimer.singleShot(500, ()->webEngineView.setProperty("url", new QUrl("qrc:io/qt/autotests/websocketstest.html")));
+        QTimer.singleShot(500, ()->webEngineView.setProperty("url", new QUrl("qrc:/io/qt/autotests/websocketstest.html")));
         QCoreApplication.exec();
     	thread.quit();
     	thread.join();

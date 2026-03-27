@@ -9,7 +9,7 @@ Therefore, download [QtJambi source code from Github](https://github.com/OmixVis
 
 ## Requirements
 * [Apache Ant](https://ant.apache.org/) (min. 1.10.x)
-* Java Development Kit (e.g. [OpenJDK](https://adoptopenjdk.net/), tested with Java 11 and 21)
+* Java Development Kit (e.g. [OpenJDK](https://adoptopenjdk.net/), tested with Java 24)
 * Qt 6.x (using the Qt Online Installer)
 * Minimum required Qt modules: QtCore, QtQml, QtNetwork, QtConcurrent and QtXml
 * C++ compiler and make (Gcc, Clang, MSVC2022)
@@ -64,7 +64,7 @@ Finally, find all Java libraries in directory `<qtjambiversion>/deployment` and 
 
 You can call ant with additional properties as listed below. Therefore use the `-D` command line argument: `ant -Dkey=value all`.
 
-* `qt` - specify comma-separated Qt versions to be used, e.g. `-Dqt="6.8,6.9,6.10"`.
+* `qt` - specify comma-separated Qt versions to be used, e.g. `-Dqt="6.8,6.10,6.11"`.
 * `qtbase` - specify Qt installer's base directory, e.g. `-Dqtbase=/var/Qt`. Can be combined with `qt`.
 * `qtdir` - specify Qt version and platform directory, e.g. `-Dqtdir=/var/Qt/6.8.3/macos`. This option allows multiple directories separated by path separator. (If this option is specified `qt` and `qtbase` have no effect.)
 * `qmake` - specify a path to a `qmake` program to be used for building QtJambi. (If this option is specified `qt`, `qtbase` and `qtdir` have no effect.)

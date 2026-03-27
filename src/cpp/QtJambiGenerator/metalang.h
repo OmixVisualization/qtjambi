@@ -463,8 +463,16 @@ public:
 
     const QString& instantiation() const { return m_instantiation; }
     const MetaType * instantiationType() const { return m_instantiationType; }
-    void setInstantiation(bool implicit, const QString &expr, const MetaType *instantiationType) { m_implicit = implicit; m_instantiation = expr; m_instantiationType = instantiationType; }
+    void setVaradic(bool isVaradic){
+        m_isVaradic = isVaradic;
+    }
+    void setInstantiation(bool implicit, const QString &expr, const MetaType *instantiationType) {
+        m_implicit = implicit;
+        m_instantiation = expr;
+        m_instantiationType = instantiationType;
+    }
     bool isImplicit() const{return m_implicit;}
+    bool isVaradic() const{return m_isVaradic;}
     QString parameterType() const { return m_parameterType; }
     void setParameterType(const QString &expr) { m_parameterType = expr; }
     MetaTemplateParameter *copy() const;
@@ -473,6 +481,7 @@ private:
     const MetaType *m_instantiationType;
     QString m_parameterType;
     bool m_implicit;
+    bool m_isVaradic;
 };
 
 class MetaArgument : public MetaVariable {
@@ -588,7 +597,7 @@ class MetaFunction : public MetaAttributes {
     QString marshalledName() const;
     QString marshalledArguments(int count = -1) const;
 
-    static QString marshalledArguments(const QList<MetaArgument *>& arguments, bool isConst, int count = -1);
+    static QString marshalledArguments(const QList<MetaArgument *>& arguments, const QPair<QMap<int,ArgumentModification>,QList<ArgumentModification>>& addedArguments, bool isConst, int count = -1);
     static QString marshalledArguments(const QList<const MetaType *>& arguments);
 
     // true if one or more of the arguments are of QtObject subclasses
@@ -1282,6 +1291,12 @@ class MetaClass : public MetaAttributes {
         const QStringList& protectedUsingStatements() const{ return m_protectedUsingStatements; }
         void setPublicUsingStatements(const QStringList& usingStatements) { m_publicUsingStatements = usingStatements; }
         const QStringList& publicUsingStatements() const{ return m_publicUsingStatements; }
+        const QString& javaFunctionalInterface() const { return m_javaFunctionalInterface; }
+        void setJavaFunctionalInterface(const QString &names) { m_javaFunctionalInterface = names; }
+        const QList<uint>& javaFunctionalInterfaceParameterTypes() const { return m_javaFunctionalInterfaceParameterTypes; }
+        void setJavaFunctionalInterfaceParameterTypes(const QList<uint> &javaFunctionalInterfaceParameterTypes) { m_javaFunctionalInterfaceParameterTypes = javaFunctionalInterfaceParameterTypes; }
+        const MetaFunction* javaFunctional() const { return m_javaFunctional; }
+        void setJavaFunctional(const MetaFunction* javaFunctional) { m_javaFunctional = javaFunctional; }
 
     private:
         QSet<QString> getAllUnimplmentablePureVirtualFunctions() const;
@@ -1359,6 +1374,9 @@ class MetaClass : public MetaAttributes {
         uint m_returnScopeRequired = 0;
         QStringList m_protectedUsingStatements;
         QStringList m_publicUsingStatements;
+        QString m_javaFunctionalInterface;
+        QList<uint> m_javaFunctionalInterfaceParameterTypes;
+        const MetaFunction* m_javaFunctional = nullptr;
 };
 
 class QPropertySpec {
@@ -1420,6 +1438,9 @@ class QPropertySpec {
         bool constant() const { return m_constant; }
         void setConstant(bool constant) { m_constant = constant; }
 
+        bool isVirtual() const { return m_virtual; }
+        void setVirtual(bool _virtual) { m_virtual = _virtual; }
+
         bool final() const { return m_final; }
         void setFinal(bool final) { m_final = final; }
 
@@ -1444,6 +1465,7 @@ class QPropertySpec {
         QString m_member;
         bool m_required;
         bool m_constant;
+        bool m_virtual;
         bool m_final;
         int m_index;
 };

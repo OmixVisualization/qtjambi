@@ -477,6 +477,16 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #   include <QtJambiPdf/hashes.h>
 #endif
 
+#ifndef QTJAMBI_NO_TASKTREE
+#   include <QtTaskTree/QtTaskTree>
+#   include <QtJambiTaskTree/hashes.h>
+#endif
+
+#ifndef QTJAMBI_NO_CANVASPAINTER
+#   include <QtCanvasPainter/QtCanvasPainter>
+#   include <QtJambiCanvasPainter/hashes.h>
+#endif
+
 #ifndef QTJAMBI_NO_PDFWIDGETS
 #   include <QtPdfWidgets/QtPdfWidgets>
 #endif

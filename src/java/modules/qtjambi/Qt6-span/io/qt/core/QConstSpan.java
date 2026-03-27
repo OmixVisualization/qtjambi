@@ -388,7 +388,7 @@ public class QConstSpan<T> extends AbstractSpan<T>{
 	 */
     @QtUninvokable
 	public final QMetaType elementType() {
-    	return _elementType();
+    	return elementMetaType();
 	}
     
     /**
@@ -427,7 +427,7 @@ public class QConstSpan<T> extends AbstractSpan<T>{
      */
     @QtUninvokable
 	public final int size_bytes() {
-		return size() * (int)_elementType().sizeOf();
+		return size() * (int)elementMetaType().sizeOf();
 	}
     
     /**
@@ -437,7 +437,7 @@ public class QConstSpan<T> extends AbstractSpan<T>{
     @SuppressWarnings("unchecked")
 	@QtUninvokable
 	public final T[] toArray() {
-    	Class<?> elementType = _elementType().javaType();
+    	Class<?> elementType = elementMetaType().javaType();
     	if(elementType==null || elementType.isPrimitive()) {
 	    	if(elementType==null || elementType==void.class) {
 	    		return (T[])new Void[0];

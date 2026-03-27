@@ -61,9 +61,8 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_AbstractSpan_constBegin
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
-        AbstractSpanAccess* containerAccess = dynamic_cast<AbstractSpanAccess*>(container.second);
-        if(containerAccess){
-            result = containerAccess->constBegin(env, {_this, container.first, __this_nativeId});
+        if(container.second->isSpan()){
+            result = static_cast<AbstractSpanAccess*>(container.second)->constBegin(env, {_this, container.first, __this_nativeId});
         }
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
@@ -80,9 +79,8 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_AbstractSpan_constEnd
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
-        AbstractSpanAccess* containerAccess = dynamic_cast<AbstractSpanAccess*>(container.second);
-        if(containerAccess){
-            result = containerAccess->constEnd(env, {_this, container.first, __this_nativeId});
+        if(container.second->isSpan()){
+            result = static_cast<AbstractSpanAccess*>(container.second)->constEnd(env, {_this, container.first, __this_nativeId});
         }
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
@@ -99,9 +97,8 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_AbstractSpan_begin
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
-        AbstractSpanAccess* containerAccess = dynamic_cast<AbstractSpanAccess*>(container.second);
-        if(containerAccess){
-            result = containerAccess->begin(env, {_this, container.first, __this_nativeId});
+        if(container.second->isSpan()){
+            result = static_cast<AbstractSpanAccess*>(container.second)->begin(env, {_this, container.first, __this_nativeId});
         }
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
@@ -118,9 +115,8 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_AbstractSpan_end
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
-        AbstractSpanAccess* containerAccess = dynamic_cast<AbstractSpanAccess*>(container.second);
-        if(containerAccess){
-            result = containerAccess->end(env, {_this, container.first, __this_nativeId});
+        if(container.second->isSpan()){
+            result = static_cast<AbstractSpanAccess*>(container.second)->end(env, {_this, container.first, __this_nativeId});
         }
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
@@ -137,8 +133,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_AbstractSpan_elementType
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
-        AbstractSpanAccess* containerAccess = dynamic_cast<AbstractSpanAccess*>(container.second);
-        Q_ASSERT(containerAccess);
+        QTJAMBI_CONTAINER_CAST(Span, containerAccess, container.second);
         result = qtjambi_cast<jobject>(__jni_env, containerAccess->elementMetaType());
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -157,8 +152,8 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_AbstractSpan_asBuffer
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
-        AbstractSpanAccess* containerAccess = dynamic_cast<AbstractSpanAccess*>(container.second);
-        if(containerAccess && containerAccess->elementMetaType().isValid()){
+        if(container.second->isSpan() && static_cast<AbstractSpanAccess*>(container.second)->elementMetaType().isValid()){
+            AbstractSpanAccess* containerAccess = static_cast<AbstractSpanAccess*>(container.second);
             QtJambiSpan* span = static_cast<QtJambiSpan*>(container.first);
             jint elementSize = containerAccess->elementMetaType().sizeOf() + (containerAccess->elementMetaType().alignOf() > 0 ? containerAccess->elementMetaType().sizeOf() % containerAccess->elementMetaType().alignOf() : 0);
             jint size_bytes = span->size * elementSize;
@@ -261,8 +256,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_AbstractSpan_size
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
-        AbstractSpanAccess* containerAccess = dynamic_cast<AbstractSpanAccess*>(container.second);
-        if(containerAccess){
+        if(container.second->isSpan()){
             result = jint(static_cast<QtJambiSpan*>(container.first)->size);
         }
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -281,9 +275,8 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_AbstractSpan_get
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
-        AbstractSpanAccess* containerAccess = dynamic_cast<AbstractSpanAccess*>(container.second);
-        if(containerAccess && containerAccess->elementMetaType().isValid()){
-            result = containerAccess->get(env, container.first, index);
+        if(container.second->isSpan() && static_cast<AbstractSpanAccess*>(container.second)->elementMetaType().isValid()){
+            result = static_cast<AbstractSpanAccess*>(container.second)->get(env, container.first, index);
         }
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
@@ -302,9 +295,8 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_set
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
-        AbstractSpanAccess* containerAccess = dynamic_cast<AbstractSpanAccess*>(container.second);
-        if(containerAccess && containerAccess->elementMetaType().isValid()){
-            result = containerAccess->set(env, {_this, container.first}, index, value);
+        if(container.second->isSpan() && static_cast<AbstractSpanAccess*>(container.second)->elementMetaType().isValid()){
+            result = static_cast<AbstractSpanAccess*>(container.second)->set(env, {_this, container.first}, index, value);
         }
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
@@ -321,8 +313,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_isConst
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
-        AbstractSpanAccess* containerAccess = dynamic_cast<AbstractSpanAccess*>(container.second);
-        result = containerAccess && containerAccess->isConst();
+        result = container.second->isSpan() && static_cast<AbstractSpanAccess*>(container.second)->isConst();
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
     }QTJAMBI_TRY_END
@@ -352,13 +343,13 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_AbstractSpan_initializeFromBeg
             arguments[1].j = 0;
             QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object), __jni_object, &__qt_construct_QSpan_cref_Iterator, sizeof(QtJambiSpan), alignof(QtJambiSpan), typeid(QSpan<QVariant>), 0, false, &QtJambiSpan::deleter, arguments);
         }else{
-            AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(ContainerAPI::fromNativeId(QtJambiNativeID(list)).second);
-            Q_ASSERT(listAccess);
+            QPair<void*,AbstractContainerAccess*> listPair = ContainerAPI::fromNativeId(QtJambiNativeID(list));
+            QTJAMBI_CONTAINER_CAST(List, listAccess, listPair.second);
             QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(QtJambiNativeID(begin));
             jvalue arguments[2];
             arguments[0].j = jlong(*reinterpret_cast<void**>(container.first));
             arguments[1].j = size;
-            bool isConst = dynamic_cast<AbstractSequentialIteratorAccess*>(container.second)==nullptr;
+            bool isConst = !container.second->isSequentialIterator();
             QtJambiAPI::checkNullPointer(__jni_env, container.second, typeid(QList<QVariant>::const_iterator));
             QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object), __jni_object, &__qt_construct_QSpan_cref_Iterator, sizeof(QtJambiSpan), alignof(QtJambiSpan), typeid(QSpan<QVariant>), 0, false, listAccess->createSpanAccess(isConst), &QtJambiSpan::deleter, arguments, owner);
         }
@@ -727,8 +718,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_AbstractSpan_initializeFromClo
         Q_ASSERT(container.first);
         jlong byte_offset = 0;
         if(offset>0){
-            AbstractSpanAccess* containerAccess = dynamic_cast<AbstractSpanAccess*>(container.second);
-            if(containerAccess && containerAccess->elementMetaType().isValid()){
+            if(container.second->isSpan() && static_cast<AbstractSpanAccess*>(container.second)->elementMetaType().isValid()){
+                AbstractSpanAccess* containerAccess = static_cast<AbstractSpanAccess*>(container.second);
                 auto sz = containerAccess->elementMetaType().sizeOf() + (containerAccess->elementMetaType().alignOf() > 0 ? containerAccess->elementMetaType().sizeOf() % containerAccess->elementMetaType().alignOf() : 0);
                 byte_offset = offset * sz;
             }else{
@@ -780,8 +771,8 @@ extern "C" JNIEXPORT jstring JNICALL Java_io_qt_core_AbstractSpan_toString
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
-        AbstractSpanAccess* containerAccess = dynamic_cast<AbstractSpanAccess*>(container.second);
-        if(containerAccess){
+        if(container.second->isSpan()){
+            AbstractSpanAccess* containerAccess = static_cast<AbstractSpanAccess*>(container.second);
             bool isConst = containerAccess->isConst();
             QtJambiSpan* span = reinterpret_cast<QtJambiSpan*>(container.first);
             if(span->size && span->begin)
@@ -804,8 +795,8 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_AbstractSpan_hashCode
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
-        AbstractSpanAccess* containerAccess = dynamic_cast<AbstractSpanAccess*>(container.second);
-        if(containerAccess){
+        if(container.second->isSpan()){
+            AbstractSpanAccess* containerAccess = static_cast<AbstractSpanAccess*>(container.second);
             bool isConst = containerAccess->isConst();
             QtJambiSpan* span = reinterpret_cast<QtJambiSpan*>(container.first);
             size_t hashValue;
@@ -829,13 +820,12 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_AbstractSpan_toList
 {
     QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
     Q_ASSERT(container.first);
-    AbstractSpanAccess* containerAccess = dynamic_cast<AbstractSpanAccess*>(container.second);
 
     QPair<void*,AbstractContainerAccess*> list = ContainerAPI::fromNativeId(list_nativeId);
     Q_ASSERT(list.first);
-    AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(list.second);
 
-    if(containerAccess && listAccess){
+    if(container.second->isSpan() && list.second->isList()){
+        AbstractSpanAccess* containerAccess = static_cast<AbstractSpanAccess*>(container.second);
         const QMetaType& valueType = containerAccess->elementMetaType();
         QtJambiSpan* span = reinterpret_cast<QtJambiSpan*>(container.first);
         char* target = &*reinterpret_cast<QList<char>*>(list.first)->begin();

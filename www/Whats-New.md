@@ -1,4 +1,12 @@
-# What's new in QtJambi 6.10.2
+# What's new in QtJambi 6.11.0
+
+Solved issue:
+* [Issue 238](../../../issues/238): QUrl.fromLocalFile("classpath:...") causes huge memory leak and crash with Qt 6.11.0
+* [Issue 236](../../../issues/236): Cross-compilation from x64 host to ARM32 target produces corrupted QMetaObject at runtime (blindfix)
+
+# History
+
+## What's new in QtJambi 6.10.2
 
 Solved issue:
 * [Issue 234](../../../issues/234): [BUG] getOpenFileName returns null
@@ -7,8 +15,6 @@ Solved issue:
 * improved performance
 * improved internal cache access
 * Ready for Qt 6.11
-
-# History
 
 ## What's new in QtJambi 6.10.1
 

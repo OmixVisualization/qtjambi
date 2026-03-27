@@ -49,7 +49,7 @@ size_t qHash(const std::type_index& idx, size_t seed = 0) Q_DECL_NOEXCEPT;
 size_t qHash(const char *p, size_t seed = 0) Q_DECL_NOEXCEPT;
 const QMetaObject* registeredOriginalMetaObject(const std::type_info& typeId);
 PtrDeleterFunction deleter(const std::type_info& typeId);
-const char* getInterface(const char*qt_name);
+const char* getInterface(QByteArrayView qt_name);
 const char * getQtName(const std::type_info& typeId);
 const char * getJavaName(const std::type_info& typeId);
 bool isFunctional(const std::type_info& typeId);
@@ -57,15 +57,24 @@ bool isStdFunction(const std::type_info& typeId);
 bool isFunctionPointer(const std::type_info& typeId);
 bool isInterface(const std::type_info& typeId);
 const std::type_info* getInterfaceTypeForIID(const char*interface_iid);
-const std::type_info* getTypeByJavaName(const char * java_name);
-const std::type_info* getTypeByJavaName(const QString& java_name);
-bool isJavaNameNamespace(const QString& java_name);
+const std::type_info* getTypeByJavaName(QByteArrayView javaName);
+inline const std::type_info* getTypeByJavaName(const QByteArray& java_name){
+    return getTypeByJavaName(QByteArrayView(java_name));
+}
+inline const std::type_info* getTypeByJavaName(const char * java_name){
+    return getTypeByJavaName(QByteArrayView(java_name));
+}
+inline const std::type_info* getTypeByJavaName(const QString& java_name){
+    return getTypeByJavaName(java_name.toLatin1());
+}
 bool isJavaNameNamespace(const QByteArray& java_name);
 bool isQtNameNamespace(const QByteArray& qt_name);
-const QMetaObject* registeredNamespaceMetaObject(const QString& java_name);
-const std::type_info* getTypeByQtName(const char * qt_name);
-const std::type_info* getTypeByQtName(const QString& qt_name);
+const QMetaObject* registeredNamespaceMetaObject(const QByteArray& java_name);
 const std::type_info* getTypeByQtName(const QByteArray& qt_name);
+const std::type_info* getTypeByQtName(QByteArrayView qt_name);
+inline const std::type_info* getTypeByQtName(const char * qt_name){
+    return getTypeByQtName(QByteArrayView(qt_name));
+}
 const std::type_info* getTypeByMetaObject(const QMetaObject* metaObject);
 QMetaType registeredMetaType(const std::type_info& typeId);
 int registeredInterfaceOffset(const std::type_info& qt_base, const std::type_info& qt_interface);
@@ -98,7 +107,7 @@ enum class EntryTypes
 };
 EntryTypes getEntryType(const std::type_info& typeId);
 
-bool isInterface(const char*qt_interface);
+bool isInterface(QByteArrayView qt_interface);
 bool hasCustomMetaObject(const std::type_info& typeId, const QMetaObject** superTypeMetaObject = nullptr);
 const QMetaObject* customMetaObject(const std::type_info& typeId);
 RegistryAPI::DestructorFn registeredDestructor(const std::type_info& typeId);
@@ -112,23 +121,24 @@ const InterfaceOffsetInfo* getInterfaceOffsets(JNIEnv *env, jclass clazz);
 
 RegistryAPI::qHashFn registeredHashFunction(const std::type_info& typeId);
 jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature, jclass clazz, bool isStatic = false, jthrowable* exceptionOccurred = nullptr);
-//jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature, const char *className, bool isStatic = false, jthrowable* exceptionOccurred = nullptr);
 void registerJavaClassForCustomMetaType(JNIEnv *env, const QMetaType& metaType, jclass javaClass, bool isJObjectWrapped = false);
 bool isJObjectWrappedMetaType(const QMetaType& metaType);
 QMetaType getNativeWrapperType(const QMetaType& metaType);
 bool isNativeWrapperMetaType(const QMetaType& metaType);
 
-QMetaType registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference, const QMetaType& superMetaType = {});
+QMetaType registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer = false, jboolean isReference = false, const QMetaType& superMetaType = {});
 const QVector<const RegistryAPI::ConstructorInfo>* registeredConstructorInfos(const std::type_info& typeId);
 uint returnScopes(const std::type_info& typeId);
 jclass getArrayClass(JNIEnv *env, jclass cls, int arrayDepth);
 
-void registerConverterVariant(JNIEnv *env, const QMetaType& metaType, QString qtName, const QString& fullJavaName, jclass clazz, const QMetaType& nativeWrapperType = {});
+void registerConverterVariant(JNIEnv *env, const QMetaType& metaType, QByteArrayView qtName, QByteArrayView fullJavaName, jclass clazz, const QMetaType& nativeWrapperType = {});
 
 void registerLambdaClass(JNIEnv *env, jclass lambdaClass, const char *className);
+jclass resolveClass(JNIEnv *env, QByteArrayView className, jobject classLoader = nullptr);
+jclass resolveClass(JNIEnv *env, const QByteArray& className, jobject classLoader = nullptr);
+jclass resolveClass(JNIEnv *env, const char *className, jobject classLoader = nullptr);
 
 const char * getJavaInterfaceName(const std::type_info& typeId);
-const std::type_info* getTypeByJavaName(QByteArray javaName);
 QMap<QString,QPair<size_t,size_t>> getRegisteredTypeSizesAndAlignments();
 void registerTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, EntryTypes entryTypes);
 void registerTypeAlias(const std::type_info& typeId, const char *qt_name, const char *java_name);
@@ -151,7 +161,7 @@ struct PolymorphicIdHandler : QSharedData{
 };
 QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>> getPolymorphicIdHandlers(const std::type_info& polymorphicBaseTypeId);
 const char * registeredInterfaceID(const std::type_info& typeId);
-const char * registeredInterfaceIDForClassName(const QString& className);
+const char * registeredInterfaceIDForClassName(QByteArrayView className);
 bool isQObject(const std::type_info& typeId);
 QList<jclass> getFlatClassHirarchy(JNIEnv *env, jclass clazz);
 
@@ -201,7 +211,8 @@ QMetaType createMetaType(QByteArrayView typeName,
 
 QSharedPointer<AbstractContainerAccess> findContainerAccess(const QMetaType& metaType);
 
-const char* registerMetaTypeName(const QByteArray& typeName);
+const char* getPersistentByteArray(QByteArray&& typeName);
+const char* getPersistentByteArray(QByteArrayView typeName);
 const QMetaObject* metaobjectByMetaTypeInterface(const QtPrivate::QMetaTypeInterface* iface);
 bool isQmlJavaScriptOwnership(QObject * obj);
 

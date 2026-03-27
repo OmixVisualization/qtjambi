@@ -211,6 +211,15 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QDebug,
     QTJAMBI_REPOSITORY_DEFINE_FIELD(disabled,Z)
 )
 
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMessageLogContext,
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(J)
+                                QTJAMBI_REPOSITORY_DEFINE_LONG_FIELD(__qt_directLink)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtMsgType,
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(resolve,(I)Lio/qt/core/QtMsgType;)
+                                )
+
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QRunnable,)
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFuture$Supplier,
@@ -236,12 +245,25 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFutureInterfaceBase$State,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFutureInterfaceBase,
                                 )
 #if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+#define QTJAMBI_REPOSITORY_DEFINE_METHOD_611(method_name, signature) QTJAMBI_REPOSITORY_DEFINE_METHOD(method_name, signature)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QRangeModel$ItemAccess,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(readRole,(Ljava/lang/Object;I)Ljava/lang/Object;)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(writeRole,(Ljava/lang/Object;ILjava/lang/Object;)Z)
+                                )
+#else
+#define QTJAMBI_REPOSITORY_DEFINE_METHOD_611(method_name, signature)
+#endif
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QRangeModel$ConstTreeRowInterface,
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(parentRow,()Lio/qt/core/QRangeModel$ConstTreeRowInterface;)
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(childRows,()Ljava/util/List;)
                                 )
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QRangeModel$TreeRowInterface,
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(setParentRow,(Lio/qt/core/QRangeModel$TreeRowInterface;)V)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QRangeModel,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(rowCategory,(Ljava/lang/Class;)Lio/qt/core/QRangeModel$RowCategory;)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD_611(itemAccess,(Ljava/lang/Class;)Lio/qt/core/QRangeModel$ItemAccess;)
                                 )
 #endif
 #if QT_VERSION >= QT_VERSION_CHECK(6,11,0)

@@ -293,7 +293,7 @@ public class TestQmlTypesQt6 extends ApplicationInitializer{
 	@Test
     public void testJavaNull() {
 		QtQml.qmlClearTypeRegistrations();
-		QtQml.qmlRegisterType(LightweightObject.class, "Test", 1, 0, "lightweightObject");
+		QtQml.qmlRegisterUncreatableType(LightweightObject.class, "Test", 1, 0, "lightweightObject", "");
 		LightweightUser lu = new LightweightUser();
 		QtQml.qmlRegisterSingletonInstance("Test", 1, 0, "Lightweight", lu);
 		

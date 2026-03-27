@@ -49,7 +49,7 @@
 #include <QtCore/QString>
 
 TypeCompiler::TypeCompiler(Binder *binder)
-        : _M_binder(binder), _M_token_stream(binder->tokenStream()), _m_isVariadic(false) {
+    : _M_binder(binder), _M_token_stream(binder->tokenStream()), _m_isVariadic(false), _m_isAnonymous(true) {
 }
 
 void TypeCompiler::run(TypeSpecifierAST *node) {
@@ -120,6 +120,7 @@ void TypeCompiler::visitName(NameAST *node) {
         _M_type << "";
     }
     _M_type << name_cc.qualifiedName();
+    _m_isAnonymous = false;
     _M_functionalReturnType = name_cc.functionalReturnType();
     _M_templateArgumentTypes = name_cc.templateArgumentTypes();
     _M_functionalArgumentTypes = name_cc.functionalArgumentTypes();
@@ -149,6 +150,10 @@ bool TypeCompiler::isVolatile() const {
 
 bool TypeCompiler::isVariadic() const {
     return _m_isVariadic;
+}
+
+bool TypeCompiler::isAnonymous() const {
+    return _m_isAnonymous;
 }
 
 // kate: space-indent on; indent-width 2; replace-tabs on;

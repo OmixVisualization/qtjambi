@@ -1,7 +1,5 @@
 package io.qt.core;
 
-import java.util.Objects;
-
 import io.qt.NonNull;
 import io.qt.Nullable;
 

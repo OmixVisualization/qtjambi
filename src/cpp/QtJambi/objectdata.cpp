@@ -249,9 +249,11 @@ QtJambiObjectData* QtJambiObjectData::userData(const QObject* object, const std:
     const QObjectPrivate* p = object ? QObjectPrivate::get(object) : nullptr;
     if(p && p->extraData && (!p->wasDeleted || typeid_not_equals(id, typeid(ValueOwnerObjectData)))){
         if(useHiddenObjectData()){
-            const auto i = p->extraData->propertyNames.size();
-            if(i>=0 && i<p->extraData->propertyValues.size()){
-                const QVariant& variant = p->extraData->propertyValues.at(i);
+            const auto e = p->extraData;
+            auto propertyNames = &e->propertyNames;
+            const auto i = propertyNames->size();
+            if(i>=0 && i<e->propertyValues.size()){
+                const QVariant& variant = e->propertyValues.at(i);
                 if(variant.metaType()==QMetaType::fromType<ObjectDataContainer>()){
                     if(const ObjectDataContainer* container = reinterpret_cast<const ObjectDataContainer*>(variant.data()))
                         return container->userData(id);

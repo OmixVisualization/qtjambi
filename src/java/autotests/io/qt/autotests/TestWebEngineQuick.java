@@ -37,7 +37,6 @@ import io.qt.autotests.generated.General;
 import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.qml.*;
-import io.qt.quick.*;
 import io.qt.webengine.core.*;
 import io.qt.webengine.quick.*;
 import io.qt.widgets.*;

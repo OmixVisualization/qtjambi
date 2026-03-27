@@ -29,8 +29,7 @@
 package io.qt.autotests;
 
 //import static io.qt.core.QMetaType.*;
-import static io.qt.qml.QtQml.qmlClearTypeRegistrations;
-import static io.qt.qml.QtQml.qmlRegisterType;
+import static io.qt.qml.QtQml.*;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -45,6 +44,7 @@ import org.junit.Test;
 import io.qt.Nullable;
 import io.qt.QtAsGadget;
 import io.qt.QtEnumerator;
+import io.qt.QtInvokable;
 import io.qt.QtPropertyConstant;
 import io.qt.QtPropertyReader;
 import io.qt.QtPropertyStored;
@@ -69,10 +69,12 @@ import io.qt.qml.QQmlComponent;
 import io.qt.qml.QQmlEngine;
 import io.qt.qml.QQmlError;
 import io.qt.qml.QtQml;
+import io.qt.qml.util.QmlElement;
 import io.qt.qml.util.QmlNamedElement;
 import io.qt.qml.util.QmlSingleton;
 import io.qt.qml.util.QmlTypeRegistrationException;
 import io.qt.qml.util.QmlTypes;
+import io.qt.qml.util.QmlValueType;
 
 public class TestQml4 extends ApplicationInitializer{
 	
@@ -155,8 +157,9 @@ public class TestQml4 extends ApplicationInitializer{
 	@Test
     public void run_testSingletonType() {
 		QtQml.qmlClearTypeRegistrations();
-		int id = QmlTypes.registerType(Singleton.class, "io.qt.test", 1);
-		Assert.assertTrue(id!=-1);
+		QList<Integer> ids = new QList<>(int.class);
+		qmlRegisterTypesAndRevisions("io.qt.test", 1, ids, Singleton.class);
+		Assert.assertTrue(ids.value(0)!=-1);
 		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
 				"import QtQuick 2.0\n" +
 				"Item{\n" + 
@@ -170,7 +173,7 @@ public class TestQml4 extends ApplicationInitializer{
 			Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 			Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 			QObject root = component.create();
-			Singleton s = engine.singletonInstance(Singleton.class, id);
+			Singleton s = engine.singletonInstance(Singleton.class, ids.value(0));
 			Assert.assertEquals("Hello, world!", root.property("text"));
 			s.text.setValue("Hello, world?");
 			Assert.assertEquals("Hello, world?", root.property("text"));
@@ -188,9 +191,14 @@ public class TestQml4 extends ApplicationInitializer{
 	
 	@Test
     public void run_testSingletonTypeNonQObject() {
-		QtQml.qmlClearTypeRegistrations();
+		qmlClearTypeRegistrations();
 		try{
 			QmlTypes.registerType(Singleton3.class, "io.qt.test", 1);
+			Assert.fail("QmlTypeRegistrationException expected");
+		} catch (QmlTypeRegistrationException e) {
+		}
+		try{
+			qmlRegisterTypesAndRevisions("io.qt.test", 1, Singleton3.class);
 			Assert.fail("QmlTypeRegistrationException expected");
 		} catch (QmlTypeRegistrationException e) {
 		}
@@ -200,8 +208,8 @@ public class TestQml4 extends ApplicationInitializer{
 	@Test
     public void run_testValueType() {
 		Assume.assumeTrue("Qt version >= 6.4", QLibraryInfo.version().compareTo(new QVersionNumber(6,4))>=0);
-		QtQml.qmlClearTypeRegistrations();
-		int id = QtQml.qmlRegisterType((Class)CloneableMetaValue.class, "io.qt.test", 1, 0, "mval");
+		qmlClearTypeRegistrations();
+		int id = qmlRegisterType(CloneableMetaValue.class, "io.qt.test", 1, 0, "mval");
 		Assert.assertTrue(id!=-1);
 		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
 				"import QtQuick 2.0\n" +
@@ -262,24 +270,47 @@ public class TestQml4 extends ApplicationInitializer{
 		}
 	}
 	
+	@QmlValueType(name="damagedValueType")
+	static class NotAValueType implements Cloneable
+	{
+		private int number;
+		
+		private NotAValueType(int number) {
+			super();
+			this.number = number;
+		}
+		@Override
+		public NotAValueType clone(){
+			return new NotAValueType(number);
+		}
+		public static NotAValueType create(QJSValue value) {
+			return new NotAValueType(value);
+		}
+		public NotAValueType(QJSValue value) {
+			this(value.toInt());
+		}
+	}
+	
+	@QmlValueType(name="customValueType")
 	static class CustomValueType implements Cloneable
 	{
 		public static final List<WeakReference<CustomValueType>> instances = Collections.synchronizedList(new ArrayList<>());
 		
-		public CustomValueType(QJSValue arguments) {
-			instances.add(new WeakReference<>(this));
+		public static CustomValueType create(QJSValue arguments) {
+			CustomValueType c = new CustomValueType();
 			if(arguments.isArray()) {
 				int length = arguments.property("length").toInt();
 				if(length==3) {
-					i = arguments.property(0).toInt();
-					d = arguments.property(1).toNumber();
-					s = arguments.property(2).toString();
+					c.i = arguments.property(0).toInt();
+					c.d = arguments.property(1).toNumber();
+					c.s = arguments.property(2).toString();
 				}
 			}else if(arguments.isObject()) {
-				i = arguments.property("i").toInt();
-				d = arguments.property("d").toNumber();
-				s = arguments.property("s").toString();
+				c.i = arguments.property("i").toInt();
+				c.d = arguments.property("d").toNumber();
+				c.s = arguments.property("s").toString();
 			}
+			return c;
 		}
 		
 		public CustomValueType() {
@@ -374,7 +405,206 @@ public class TestQml4 extends ApplicationInitializer{
 		}
 	};
 	
+	@QmlValueType(creationMethod="construct")
+	static class ConstructValueType implements Cloneable
+	{
+		public static final List<WeakReference<ConstructValueType>> instances = Collections.synchronizedList(new ArrayList<>());
+		
+		@QtInvokable
+		public ConstructValueType() {
+			instances.add(new WeakReference<>(this));
+		}
+		
+		@QtInvokable
+		public ConstructValueType(QJSValue arguments) {
+			instances.add(new WeakReference<>(this));
+			if(arguments.isArray()) {
+				int length = arguments.property("length").toInt();
+				if(length==3) {
+					i = arguments.property(0).toInt();
+					d = arguments.property(1).toNumber();
+					s = arguments.property(2).toString();
+				}
+			}else if(arguments.isObject()) {
+				i = arguments.property("i").toInt();
+				d = arguments.property("d").toNumber();
+				s = arguments.property("s").toString();
+			}
+		}
+		
+		ConstructValueType(ConstructValueType other) {
+			instances.add(new WeakReference<>(this));
+			this.i = other.i;
+			this.d = other.d;
+			this.s = other.s;
+		}
+		int i;
+		double d;
+		String s = "";
+		
+		@QtPropertyReader(name="self")
+		public ConstructValueType self() {
+			return this;
+		}
+		
+		@QtPropertyReader(name="i")
+		public int getI() {
+			return i;
+		}
+		@QtPropertyWriter(name="i")
+		public void setI(int i) {
+			this.i = i;
+		}
+		@QtPropertyReader(name="d")
+		public double getD() {
+			return d;
+		}
+		@QtPropertyWriter(name="d")
+		public void setD(double d) {
+			this.d = d;
+		}
+		@QtPropertyReader(name="s")
+		public String getS() {
+			return s;
+		}
+		@QtPropertyWriter(name="s")
+		public void setS(String s) {
+			this.s = s;
+		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			long temp;
+			temp = Double.doubleToLongBits(d);
+			result = prime * result + (int) (temp ^ (temp >>> 32));
+			result = prime * result + i;
+			result = prime * result + ((s == null) ? 0 : s.hashCode());
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ConstructValueType other = (ConstructValueType) obj;
+			if (Double.doubleToLongBits(d) != Double.doubleToLongBits(other.d))
+				return false;
+			if (i != other.i)
+				return false;
+			if (s == null) {
+				if (other.s != null)
+					return false;
+			} else if (!s.equals(other.s))
+				return false;
+			return true;
+		}
+		@Override
+		public String toString() {
+			return "ConstructValueType [i=" + i + ", d=" + d + ", s=" + s + "]";
+		}
+		
+		@Override
+		public ConstructValueType clone(){
+			return new ConstructValueType(this);
+		}
+	};
+	
+	@QmlValueType(creationMethod="structured")
+	static class StructuredValueType implements Cloneable
+	{
+		public static final List<WeakReference<StructuredValueType>> instances = Collections.synchronizedList(new ArrayList<>());
+		
+		public StructuredValueType() {
+			instances.add(new WeakReference<>(this));
+		}
+		
+		StructuredValueType(StructuredValueType other) {
+			instances.add(new WeakReference<>(this));
+			this.i = other.i;
+			this.d = other.d;
+			this.s = other.s;
+		}
+		int i;
+		double d;
+		String s = "";
+		
+		@QtPropertyReader(name="self")
+		public StructuredValueType self() {
+			return this;
+		}
+		
+		@QtPropertyReader(name="i")
+		public int getI() {
+			return i;
+		}
+		@QtPropertyWriter(name="i")
+		public void setI(int i) {
+			this.i = i;
+		}
+		@QtPropertyReader(name="d")
+		public double getD() {
+			return d;
+		}
+		@QtPropertyWriter(name="d")
+		public void setD(double d) {
+			this.d = d;
+		}
+		@QtPropertyReader(name="s")
+		public String getS() {
+			return s;
+		}
+		@QtPropertyWriter(name="s")
+		public void setS(String s) {
+			this.s = s;
+		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			long temp;
+			temp = Double.doubleToLongBits(d);
+			result = prime * result + (int) (temp ^ (temp >>> 32));
+			result = prime * result + i;
+			result = prime * result + ((s == null) ? 0 : s.hashCode());
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			StructuredValueType other = (StructuredValueType) obj;
+			if (Double.doubleToLongBits(d) != Double.doubleToLongBits(other.d))
+				return false;
+			if (i != other.i)
+				return false;
+			if (s == null) {
+				if (other.s != null)
+					return false;
+			} else if (!s.equals(other.s))
+				return false;
+			return true;
+		}
+		@Override
+		public String toString() {
+			return "StructuredValueType [i=" + i + ", d=" + d + ", s=" + s + "]";
+		}
+		
+		@Override
+		public StructuredValueType clone(){
+			return new StructuredValueType(this);
+		}
+	};
+	
 	@QtAsGadget
+	@QmlValueType(name="autoGadgetValueType")
 	static class AutoGadgetValueType implements Cloneable
 	{
 		public AutoGadgetValueType(QJSValue arguments) {
@@ -468,6 +698,7 @@ public class TestQml4 extends ApplicationInitializer{
 		}
 	};
 	
+	@QmlElement
 	static class ObjectType extends QObject{
 		public ObjectType() {
 			super();
@@ -562,13 +793,11 @@ public class TestQml4 extends ApplicationInitializer{
 		}
 	}
 	
-	@SuppressWarnings("rawtypes")
 	@Test
     public void testCustomTypes() {
 		qmlClearTypeRegistrations();
 //		QLogging.qInstallMessageHandler((t,c,m)->{System.out.println(m);});
-	    qmlRegisterType(ObjectType.class, "io.qt.test", 1, 0, "ObjectType");
-	    qmlRegisterType((Class)CustomValueType.class, "io.qt.test", 1, 0, "customValueType");
+		qmlRegisterTypesAndRevisions("io.qt.test", 1, ObjectType.class, CustomValueType.class);
 		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
 				"import QtQuick 2.0\n" +
 				"Item{\n" + 
@@ -652,13 +881,11 @@ public class TestQml4 extends ApplicationInitializer{
 		}
 	}
 	
-	@SuppressWarnings("rawtypes")
 	@Test
     public void testAutoGadgetTypes() {
 		qmlClearTypeRegistrations();
 		//this type needs to be available until engine is deleted otherwise crash:
-	    qmlRegisterType(ObjectType.class, "io.qt.test", 1, 0, "ObjectType");
-	    qmlRegisterType((Class)AutoGadgetValueType.class, "io.qt.test", 1, 0, "autoGadgetValueType");
+		qmlRegisterTypesAndRevisions("io.qt.test", 1, ObjectType.class, AutoGadgetValueType.class);
 		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
 				"import QtQuick 2.0\n" +
 				"Item{\n" + 
@@ -742,13 +969,11 @@ public class TestQml4 extends ApplicationInitializer{
 		}
 	}
 	
-	@SuppressWarnings("rawtypes")
 	@Test
     public void testCustomValueType() {
 		Assume.assumeTrue("Qt version >= 6.4", QLibraryInfo.version().compareTo(new QVersionNumber(6,4))>=0);
 		qmlClearTypeRegistrations();
-	    qmlRegisterType(ObjectType.class, "io.qt.test", 1, 0, "ObjectType");
-	    qmlRegisterType((Class)CustomValueType.class, "io.qt.test", 1, 0, "customValueType");
+		qmlRegisterTypesAndRevisions("io.qt.test", 1, CustomValueType.class);
 	    CustomValueType.instances.clear();
 	    
 		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
@@ -827,15 +1052,179 @@ public class TestQml4 extends ApplicationInitializer{
 		}
 	}
 	
-	@SuppressWarnings("rawtypes")
+	@Test
+    public void testConstructValueType() {
+		Assume.assumeTrue("Qt version >= 6.5", QLibraryInfo.version().compareTo(new QVersionNumber(6,5))>=0);
+		qmlClearTypeRegistrations();
+	    qmlRegisterType(ConstructValueType.class, "io.qt.test", 1, 0, "constructValueType");
+	    ConstructValueType.instances.clear();
+	    
+		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
+				"import QtQuick 2.0\n" +
+				"Item{\n" + 
+				"    property constructValueType someValueType: [8, 2.1, 'TEST4']\n" + 
+				"}");
+		QQmlEngine engine = new QQmlEngine();
+		try {
+			engine.setOutputWarningsToStandardError(true);
+			engine.warnings.connect(warnings->{
+				for(QQmlError warning : warnings) {
+					System.out.println(warning);//.messageType()+" "+warning.line()+" "+warning.description());
+				}
+			});
+			
+			QQmlComponent component = new QQmlComponent(engine);
+			component.setData(data, (QUrl)null);
+	//		Assert.assertEquals(0, ConstructValueType.instances.size());
+			Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+			Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+			QObject root = component.create();
+	//		Assert.assertEquals(4, ConstructValueType.instances.size());
+			
+			Object someValueTypeVar = root.property("someValueType");
+	//		Assert.assertEquals(7, ConstructValueType.instances.size());
+			ConstructValueType someValueType = QVariant.convert(someValueTypeVar, ConstructValueType.class);
+			Assert.assertEquals(8, someValueType.i);
+			Assert.assertEquals(2.1, someValueType.d, 0.0001);
+			Assert.assertEquals("TEST4", someValueType.s);
+			someValueType = null;
+			someValueTypeVar = null;
+			for(int i=0; i<10; ++i) {
+				engine.collectGarbage();
+				ApplicationInitializer.runGC();
+				Thread.yield();
+				QCoreApplication.processEvents();
+			}
+			int counter=1, alife = 0;
+			for(WeakReference<ConstructValueType> weak : ConstructValueType.instances) {
+				ConstructValueType value = weak.get();
+				if(value!=null) {
+					System.out.println(counter+": "+value);
+					++alife;
+				}
+				++counter;
+			}
+			Assert.assertEquals(null, root.parent());
+			Assert.assertTrue(alife<=2);
+			engine.dispose();
+			Assert.assertEquals(null, component.engine());
+			Assert.assertFalse(component.isDisposed());
+			component.dispose();
+			Assert.assertEquals(null, root.parent());
+			Assert.assertFalse(root.isDisposed());
+			root.dispose();
+			
+			for(int i=0; i<10; ++i) {
+				ApplicationInitializer.runGC();
+				Thread.yield();
+				QCoreApplication.processEvents();
+			}
+			counter=1;
+			alife = 0;
+			for(WeakReference<ConstructValueType> weak : ConstructValueType.instances) {
+				ConstructValueType value = weak.get();
+				if(value!=null) {
+					System.out.println(counter+": "+value);
+					++alife;
+				}
+				++counter;
+			}
+			Assert.assertEquals("number of ConstructValueType alife after GC", 0, alife);
+		}finally {
+			engine.dispose();
+		}
+	}
+	
+	@Test
+    public void testStructuredValueType() {
+		Assume.assumeTrue("Qt version >= 6.5", QLibraryInfo.version().compareTo(new QVersionNumber(6,5))>=0);
+		qmlClearTypeRegistrations();
+	    qmlRegisterType(StructuredValueType.class, "io.qt.test", 1, 0, "structuredValueType");
+	    StructuredValueType.instances.clear();
+	    
+		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
+				"import QtQuick 2.0\n" +
+				"Item{\n" + 
+				"    property structuredValueType someValueType: {'i':8, 'd':2.1, 's':'TEST5'}\n" + 
+				"}");
+		QQmlEngine engine = new QQmlEngine();
+		try {
+			engine.setOutputWarningsToStandardError(true);
+			engine.warnings.connect(warnings->{
+				for(QQmlError warning : warnings) {
+					System.out.println(warning);//.messageType()+" "+warning.line()+" "+warning.description());
+				}
+			});
+			
+			QQmlComponent component = new QQmlComponent(engine);
+			component.setData(data, (QUrl)null);
+	//		Assert.assertEquals(0, StructuredValueType.instances.size());
+			Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+			Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+			QObject root = component.create();
+	//		Assert.assertEquals(4, StructuredValueType.instances.size());
+			
+			Object someValueTypeVar = root.property("someValueType");
+	//		Assert.assertEquals(7, StructuredValueType.instances.size());
+			StructuredValueType someValueType = QVariant.convert(someValueTypeVar, StructuredValueType.class);
+			Assert.assertEquals(8, someValueType.i);
+			Assert.assertEquals(2.1, someValueType.d, 0.0001);
+			Assert.assertEquals("TEST5", someValueType.s);
+			someValueType = null;
+			someValueTypeVar = null;
+			for(int i=0; i<10; ++i) {
+				engine.collectGarbage();
+				ApplicationInitializer.runGC();
+				Thread.yield();
+				QCoreApplication.processEvents();
+			}
+			int counter=1, alife = 0;
+			for(WeakReference<StructuredValueType> weak : StructuredValueType.instances) {
+				StructuredValueType value = weak.get();
+				if(value!=null) {
+					System.out.println(counter+": "+value);
+					++alife;
+				}
+				++counter;
+			}
+			Assert.assertEquals(null, root.parent());
+			Assert.assertTrue(alife<=2);
+			engine.dispose();
+			Assert.assertEquals(null, component.engine());
+			Assert.assertFalse(component.isDisposed());
+			component.dispose();
+			Assert.assertEquals(null, root.parent());
+			Assert.assertFalse(root.isDisposed());
+			root.dispose();
+			
+			for(int i=0; i<10; ++i) {
+				ApplicationInitializer.runGC();
+				Thread.yield();
+				QCoreApplication.processEvents();
+			}
+			counter=1;
+			alife = 0;
+			for(WeakReference<StructuredValueType> weak : StructuredValueType.instances) {
+				StructuredValueType value = weak.get();
+				if(value!=null) {
+					System.out.println(counter+": "+value);
+					++alife;
+				}
+				++counter;
+			}
+			Assert.assertEquals("number of StructuredValueType alife after GC", 0, alife);
+		}finally {
+			engine.dispose();
+		}
+	}
+	
 	@Test
     public void testAutoGadgetValueType() {
 //		QMetaObject.forType(Singleton.class).properties().forEach(p->System.out.println(p.typeName()+" "+p.name()));
 //		QMetaObject.forType(AutoGadgetValueType.class).properties().forEach(p->System.out.println(p.typeName()+" "+p.name()));
 		Assume.assumeTrue("Qt version >= 6.4", QLibraryInfo.version().compareTo(new QVersionNumber(6,4))>=0);
 		qmlClearTypeRegistrations();
-	    qmlRegisterType(ObjectType.class, "io.qt.test", 1, 0, "ObjectType");
-	    qmlRegisterType((Class)AutoGadgetValueType.class, "io.qt.test", 1, 0, "autoGadgetValueType");
+	    qmlRegisterType(AutoGadgetValueType.class, "io.qt.test", 1, 0, "autoGadgetValueType");
 		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
 				"import QtQuick 2.0\n" +
 				"Item{\n" + 
@@ -909,6 +1298,49 @@ public class TestQml4 extends ApplicationInitializer{
 			QObject root = component.create();
 			Assert.assertTrue(root!=null);
 			Assert.assertTrue(root.property("model") instanceof CustomObject);
+		}finally {
+			engine.dispose();
+		}
+	}
+	
+	@Test
+    public void testUncreatableValueType() {
+		Assume.assumeTrue("Qt version >= 6.4", QLibraryInfo.version().compareTo(new QVersionNumber(6,4))>=0);
+		qmlClearTypeRegistrations();
+//		try {
+//			qmlRegisterTypesAndRevisions("io.qt.test", 1, DamagedValueType.class);
+//			Assert.fail("QmlTypeRegistrationException expected to be thrown");
+//		} catch (QmlTypeRegistrationException e) {
+//		}
+		try {
+			qmlRegisterType(NotAValueType.class, "io.qt.test", 1, 0, "damagedValueType");
+//			Assert.fail("QmlTypeRegistrationException expected to be thrown");
+		} catch (QmlTypeRegistrationException e) {
+			return;
+		}
+	    QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
+				"import QtQuick 2.0\n" +
+				"QtObject{\n" + 
+				"    property damagedValueType dv\n" +
+				"    property var v: dv\n" +
+				"}");
+		QQmlEngine engine = new QQmlEngine();
+		try {
+			engine.setOutputWarningsToStandardError(true);
+			engine.warnings.connect(warnings->{
+				for(QQmlError warning : warnings) {
+					System.out.println(warning);//.messageType()+" "+warning.line()+" "+warning.description());
+				}
+			});
+			
+			QQmlComponent component = new QQmlComponent(engine);
+			component.setData(data, (QUrl)null);
+			Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+			Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+			QObject root = component.create();
+			System.out.println(root.property("v"));
+			NotAValueType someValueType = QVariant.convert(root.property("dv"), NotAValueType.class);
+			Assert.assertEquals(null, someValueType);
 		}finally {
 			engine.dispose();
 		}

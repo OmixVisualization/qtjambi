@@ -35,6 +35,7 @@
 **
 ****************************************************************************/
 
+#include "abstractgenerator.h"
 #include "metalang.h"
 #include "metabuilder.h"
 #include "reporthandler.h"
@@ -111,6 +112,7 @@ MetaTemplateParameter *MetaTemplateParameter::copy() const {
     cpy->setInstantiation(isImplicit(), instantiation(), instantiationType());
     cpy->setType(type() ? type()->copy() : nullptr);
     cpy->setDefaultType(defaultType());
+    cpy->setVaradic(isVaradic());
     return cpy;
 }
 
@@ -334,7 +336,8 @@ bool MetaFunction::needsCallThrough() const {
             || isConstructor()
             || (((ownerClass()->typeEntry()->designatedInterface() && !this->isAbstract())
              || implementingClass()->typeEntry()->isNativeIdBased()
-             || implementingClass()->typeEntry()->isQMetaObjectType()) && !isStatic()))
+             || implementingClass()->typeEntry()->isQMetaObjectType()
+             || implementingClass()->typeEntry()->isQMessageLogContextType()) && !isStatic()))
         return true;
     if(this->isSelfReturningFunction() && implementingClass()->typeEntry()->isNativeIdBased())
         return true;
@@ -438,7 +441,7 @@ QString MetaFunction::marshalledName() const {
 }
 
 QString MetaFunction::marshalledArguments(int count) const {
-    return MetaFunction::marshalledArguments(m_arguments, isConstant(), count);
+    return MetaFunction::marshalledArguments(m_arguments, {}, isConstant(), count);
 }
 
 QString MetaFunction::marshalledArguments(const QList<const MetaType *>& arguments){
@@ -492,63 +495,99 @@ QString MetaFunction::marshalledArguments(const QList<const MetaType *>& argumen
     return returned;
 }
 
-QString MetaFunction::marshalledArguments(const QList<MetaArgument *>& arguments, bool isConst, int count){
+QString MetaFunction::marshalledArguments(const QList<MetaArgument *>& arguments, const QPair<QMap<int,ArgumentModification>,QList<ArgumentModification>>& addedArguments, bool isConst, int count){
     QString returned;
-    if(count<0)
-        count = arguments.size();
-    for(const MetaArgument *arg : arguments) {
-        if(!arg)
-            continue;
-        if(--count<0)
-            break;
-        if(arg->type()->getReferenceType()==MetaType::Reference){
-            if(arg->type()->isConstant()){
-                returned += "_cref";
+    {
+        QTextStream s(&returned);
+        if(count<0)
+            count = arguments.size();
+        int argumentCounter = 1;
+        while(addedArguments.first.contains(argumentCounter)){
+            const ArgumentModification& argumentMod = addedArguments.first[argumentCounter];
+            s << "_" << AbstractGenerator::annotationFreeTypeName(argumentMod.modified_type).replace(".", "_")
+                                                     .replace("$", "_")
+                                                     .replace(" ", "_")
+                                                     .replace("@", "_")
+                                                     .replace("<", "_")
+                                                     .replace(">", "_");
+            ++argumentCounter;
+        }
+        for(const MetaArgument *arg : arguments) {
+            if(!arg)
+                continue;
+            if(--count<0)
+                break;
+            if(arg->type()->getReferenceType()==MetaType::Reference){
+                if(arg->type()->isConstant()){
+                    s << "_cref";
+                }else{
+                    s << "_ref";
+                }
+            }else if(arg->type()->getReferenceType()==MetaType::RReference){
+                if(arg->type()->isConstant()){
+                    s << "_crval";
+                }else{
+                    s << "_rval";
+                }
             }else{
-                returned += "_ref";
+                if(arg->type()->isConstant()){
+                    s << "_const";
+                }
             }
-        }else if(arg->type()->getReferenceType()==MetaType::RReference){
-            if(arg->type()->isConstant()){
-                returned += "_crval";
+            QString qualifiedCppName;
+            if(arg->type()->typeEntry()->isFunctional()){
+                qualifiedCppName = arg->type()->typeEntry()->name();
             }else{
-                returned += "_rval";
+                qualifiedCppName = arg->type()->typeEntry()->qualifiedCppName();
             }
-        }else{
-            if(arg->type()->isConstant()){
-                returned += "_const";
+            if(qualifiedCppName=="qtjamireal")
+                qualifiedCppName = "double";
+            s << "_" << qualifiedCppName
+                                  .replace("::", "_")
+                                  .replace("(*)", "_fptr")
+                                  .replace("<", "_")
+                                  .replace(">", "_")
+                                  .replace("[", "_")
+                                  .replace("]", "_")
+                                  .replace("(", "_")
+                                  .replace(")", "_")
+                                  .replace(",", "_")
+                                  .replace(".", "_")
+                                  .replace("*", "_ptr")
+                                  .replace("&", "_ref")
+                                  .replace(" ", "_");
+            if (!arg->type()->instantiations().isEmpty()) {
+                s << marshalledArguments(arg->type()->instantiations());
+            }
+            for(bool ind : arg->type()->indirections()){
+                if(ind)
+                    s << "_cptr";
+                else
+                    s << "_ptr";
+            }
+            ++argumentCounter;
+            while(addedArguments.first.contains(argumentCounter)){
+                const ArgumentModification& argumentMod = addedArguments.first[argumentCounter];
+                s << "_" << AbstractGenerator::annotationFreeTypeName(argumentMod.modified_type).replace(".", "_")
+                         .replace("$", "_")
+                         .replace(" ", "_")
+                         .replace("@", "_")
+                         .replace("<", "_")
+                         .replace(">", "_");
+                ++argumentCounter;
             }
         }
-        QString qualifiedCppName;
-        if(arg->type()->typeEntry()->isFunctional()){
-            qualifiedCppName = arg->type()->typeEntry()->name();
-        }else{
-            qualifiedCppName = arg->type()->typeEntry()->qualifiedCppName();
+        for(const ArgumentModification& mod : addedArguments.second){
+            s << "_" << AbstractGenerator::annotationFreeTypeName(mod.modified_type).replace(".", "_")
+                     .replace("$", "_")
+                     .replace(" ", "_")
+                     .replace("@", "_")
+                     .replace("<", "_")
+                     .replace(">", "_");
         }
-        if(qualifiedCppName=="qtjamireal")
-            qualifiedCppName = "double";
-        returned += "_" + qualifiedCppName
-                              .replace("::", "_")
-                              .replace("(*)", "_fptr")
-                              .replace("<", "_")
-                              .replace(">", "_")
-                              .replace("[", "_")
-                              .replace("]", "_")
-                              .replace("(", "_")
-                              .replace(")", "_")
-                              .replace(",", "_")
-                              .replace(".", "_")
-                              .replace("*", "_ptr")
-                              .replace("&", "_ref")
-                              .replace(" ", "_");
-        if (!arg->type()->instantiations().isEmpty()) {
-            returned += marshalledArguments(arg->type()->instantiations());
+        if(isConst){
+            s << "_constfct";
         }
-        for(bool ind : arg->type()->indirections()){
-            returned += ind ? "_cptr" : "_ptr";
-        }
-    }
-    if(isConst){
-        returned += "_constfct";
     }
     return returned;
 }
@@ -880,17 +919,20 @@ void MetaFunction::setArguments(const MetaArgumentList &arguments) {
     m_arguments = arguments;
     m_actualMinimumArgumentCount = -1;
     m_cached_minimal_signature.clear();
+    m_cached_minimal_signature_no_template.clear();
 }
 void MetaFunction::addArgument(MetaArgument *argument) {
     m_arguments << argument;
     m_actualMinimumArgumentCount = -1;
     m_cached_minimal_signature.clear();
+    m_cached_minimal_signature_no_template.clear();
 }
 
 
 void MetaFunction::setName(const QString &name) {
     m_name = name;
     m_cached_minimal_signature.clear();
+    m_cached_minimal_signature_no_template.clear();
 }
 
 
@@ -1059,7 +1101,7 @@ bool MetaFunctional::needsCallThrough() const{
             if(argumentRemoved(arg->argumentIndex() + 1))
                 continue;
             if(typeReplaced(arg->argumentIndex()+1).isEmpty()
-                    && arg->type()->hasNativeId()) {
+                    && arg->type() && arg->type()->hasNativeId()) {
                 needsCallThrough = true;
                 break;
             }

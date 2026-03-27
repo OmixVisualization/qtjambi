@@ -81,7 +81,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_MetaTypeUtility_registerRe
                                                     QMetaType(metaType).iface()->metaObjectFn);
                 _metaType.id();
                 if(jclass clazz = CoreAPI::getClassForMetaType(env, metaType)){
-                    registerConverterVariant(env, _metaType, typeName, QtJambiAPI::getClassName(env, clazz).replace('.', '/'), clazz);
+                    registerConverterVariant(env, _metaType, typeName, QtJambiAPI::getClassNameJNI(env, clazz), clazz);
                 }
                 return _metaType.id();
             }
@@ -114,7 +114,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_MetaTypeUtility_registerRe
                                                      QMetaType(metaType).iface()->metaObjectFn);
                 _metaType.id();
                 if(jclass clazz = CoreAPI::getClassForMetaType(env, metaType)){
-                    registerConverterVariant(env, _metaType, typeName, QtJambiAPI::getClassName(env, clazz).replace('.', '/'), clazz);
+                    registerConverterVariant(env, _metaType, typeName, QtJambiAPI::getClassNameJNI(env, clazz), clazz);
                 }
                 return _metaType.id();
             }
@@ -148,7 +148,7 @@ extern "C" JNIEXPORT jstring JNICALL Java_io_qt_internal_MetaTypeUtility_interna
         for (int i=0; i<allArgs.size(); ++i) {
             if (!allArgs.at(i).isEmpty()) {
                 // may it allow enum and flags?
-                allArgs[i] = QtJambiTypeManager::getInternalTypeName(env, QString(allArgs.at(i)).replace('.', '/'), classLoader);
+                allArgs[i] = QString::fromUtf8(QtJambiTypeManager::getInternalTypeName(env, allArgs.at(i).toUtf8().replace('.', '/'), classLoader));
                 if (allArgs[i].isEmpty()){ // Can't convert type name, in which case we just return emptiness
                     return qtjambi_cast<jstring>(env, "");
                 }
@@ -164,7 +164,7 @@ extern "C" JNIEXPORT jstring JNICALL Java_io_qt_internal_MetaTypeUtility_interna
 
 extern "C" JNIEXPORT jstring JNICALL Java_io_qt_internal_MetaTypeUtility_internalTypeNameByClass(JNIEnv *env, jclass, jclass cls){
     try{
-        QString result = QtJambiTypeManager::getInternalTypeName(env, cls);
+        QString result = QString::fromUtf8(QtJambiTypeManager::getInternalTypeName(env, cls));
         return qtjambi_cast<jstring>(env, result);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
@@ -238,10 +238,9 @@ extern "C" JNIEXPORT bool JNICALL Java_io_qt_internal_MetaTypeUtility_registerCo
         QtJambiUtils::InternalToExternalConverter converter2 = QtJambiTypeManager::getInternalToExternalConverter(env, metaType2.name(), metaType2, class2);
         QtJambiUtils::ExternalToInternalConverter reconverter2 = QtJambiTypeManager::getExternalToInternalConverter(env, class2, metaType2.name(), metaType2);
         if(converter1 && reconverter1 && converter2 && reconverter2){
-            ParameterTypeInfo parameter1{metaType1, class1, std::move(converter1), std::move(reconverter1)};
-            ParameterTypeInfo parameter2{metaType2, class2, std::move(converter2), std::move(reconverter2)};
-            JObjectWrapper converter(env, converterFn);
-            return QMetaType::registerConverterFunction([converter, parameter1, parameter2](const void *src, void *target)->bool{
+            return QMetaType::registerConverterFunction([converter = JObjectWrapper(env, converterFn),
+                                                         parameter1 = ParameterTypeInfo{QMetaType(metaType1), class1, std::move(converter1), std::move(reconverter1)},
+                                                         parameter2 = ParameterTypeInfo{QMetaType(metaType2), class2, std::move(converter2), std::move(reconverter2)}](const void *src, void *target)->bool{
                 if(JniEnvironment env{500}){
                     QtJambiScope scope;
                     jvalue jv;
@@ -268,10 +267,9 @@ extern "C" JNIEXPORT bool JNICALL Java_io_qt_internal_MetaTypeUtility_registerCo
 
 extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_MetaTypeUtility_registerQmlListProperty(JNIEnv *env, jclass, jstring type){
     try{
-        QByteArray _type = qtjambi_cast<QByteArray>(env, type);
         QMetaType t = QMetaType::fromName("QQmlListProperty<QObject>");
         if(const QtPrivate::QMetaTypeInterface * copy = t.iface()){
-            t = createMetaType(QMetaObject::normalizedType(_type),
+            t = createMetaType(QMetaObject::normalizedType(qtjambi_cast<QByteArray>(env, type)),
                                 true,
                                 /*.defaultCtr=*/ copy->defaultCtr,
                                 /*.copyCtr=*/ copy->copyCtr,

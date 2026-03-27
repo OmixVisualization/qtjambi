@@ -78,8 +78,16 @@ public:
     virtual bool convertToNative(JNIEnv *env, jobject input, void * output, QtJambiScope& scope) const;
 
     static QtJambiTypeEntryPtr getTypeEntry(JNIEnv* env, const std::type_info& typeId, const char* qtName = nullptr);
-    static QtJambiTypeEntryPtr getTypeEntryByJavaName(JNIEnv* env, const char* java_name);
-    static QtJambiTypeEntryPtr getTypeEntryByJavaName(JNIEnv* env, const QString& java_name);
+    static QtJambiTypeEntryPtr getTypeEntryByJavaName(JNIEnv* env, QByteArrayView java_name);
+    static inline QtJambiTypeEntryPtr getTypeEntryByJavaName(JNIEnv* env, const char* java_name){
+        return getTypeEntryByJavaName(env, QByteArrayView(java_name));
+    }
+    static inline QtJambiTypeEntryPtr getTypeEntryByJavaName(JNIEnv* env, const QString& java_name){
+        return getTypeEntryByJavaName(env, QByteArrayView(java_name.toUtf8()));
+    }
+    static inline QtJambiTypeEntryPtr getTypeEntryByJavaName(JNIEnv* env, const QByteArray& java_name){
+        return getTypeEntryByJavaName(env, QByteArrayView(java_name));
+    }
     static QtJambiTypeEntryPtr getTypeEntryByQtName(JNIEnv* env, const char* qt_name);
     static QtJambiTypeEntryPtr getTypeEntryByIID(JNIEnv* env, const char* iid);
     static NativeToJavaResult convertModelIndexNativeToJava(JNIEnv *env, QModelIndex &&qt_object, jobject& output);

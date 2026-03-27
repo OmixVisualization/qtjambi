@@ -385,8 +385,10 @@ bool disposeFunction(QFunctionPointer fn){
 }
 
 void noFunctionAvailable(const std::type_info& functionTypeId){
-    if(DefaultJniEnvironment env{100}){
-        Java::Runtime::NullPointerException::throwNew(env, QStringLiteral("Function pointer %1 is null.").arg(QLatin1String(QtJambiAPI::typeName(functionTypeId))) QTJAMBI_STACKTRACEINFO );
+    if(typeid_not_equals(functionTypeId, typeid(QtMessageHandler))){
+        if(DefaultJniEnvironment env{100}){
+            Java::Runtime::NullPointerException::throwNew(env, QStringLiteral("Function pointer %1 is null.").arg(QLatin1String(QtJambiAPI::typeName(functionTypeId))) QTJAMBI_STACKTRACEINFO );
+        }
     }
 }
 

@@ -48,9 +48,13 @@ SOURCES += \
     impl.cpp
 
 HEADERS += \
-    classes_p.h \
     hashes.h \
     utils_p.h
+
+macx:{
+HEADERS += \
+    classes_p.h
+}
 
 OBJECTIVE_SOURCES += utils.mm
 

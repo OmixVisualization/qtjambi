@@ -28,18 +28,9 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import io.qt.QDanglingPointerException;
-import io.qt.QtUtilities;
-import io.qt.core.QSysInfo;
-import io.qt.widgets.QHBoxLayout;
-import io.qt.widgets.QLayoutItem;
-import io.qt.widgets.QWidget;
+import org.junit.*;
+import io.qt.*;
+import io.qt.widgets.*;
 
 public class TestDanglingPointers3 extends ApplicationInitializer{
 	
@@ -50,7 +41,7 @@ public class TestDanglingPointers3 extends ApplicationInitializer{
 	@BeforeClass
 	public static void testInitialize() throws Exception {
 		Assume.assumeTrue("Use -Dio.qt.enable-dangling-pointer-check=true or env ENABLE_DANGLING_POINTER_CHECK=true", Boolean.getBoolean("io.qt.enable-dangling-pointer-check") || "true".equalsIgnoreCase(System.getenv("ENABLE_DANGLING_POINTER_CHECK")) || "1".equalsIgnoreCase(System.getenv("ENABLE_DANGLING_POINTER_CHECK")));
-//		Assume.assumeTrue("Can only run successfully on x86_64", "x86_64".equals(QSysInfo.currentCpuArchitecture()));
+//		Assume.assumeTrue("Can only run successfully on x86_64", "x86_64".equals(io.qt.core.QSysInfo.currentCpuArchitecture()));
 		ApplicationInitializer.testInitializeWithWidgets();
 		QtUtilities.setDanglingPointerCheckEnabled(true);
     }

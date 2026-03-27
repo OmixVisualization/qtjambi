@@ -37,7 +37,9 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/private/qfactoryloader_p.h>
 
 #include "containeraccess_p.h"
+
 #if defined(QTJAMBI_GENERIC_ACCESS)
+
 #include "containeraccess_pair.h"
 #include "containeraccess_list.h"
 #include "containeraccess_hash.h"
@@ -45,9 +47,6 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "containeraccess_multimap.h"
 #include "containeraccess_multihash.h"
 #include "containeraccess_set.h"
-#endif //defined(QTJAMBI_GENERIC_ACCESS)
-
-#if defined(QTJAMBI_GENERIC_ACCESS)
 
 inline size_t qHash(SequentialContainerType containerType, size_t align, size_t size
 ) {
@@ -248,191 +247,224 @@ void ContainerAccessAPI::registerAccessFactory(AssociativeContainerType containe
     }
 }
 
-#endif //defined(QTJAMBI_GENERIC_ACCESS)
-
-QPair<void*,AbstractContainerAccess*> ContainerAPI::fromNativeId(QtJambiNativeID nativeId){
-    if(!!nativeId){
-        QtJambiLink *lnk = reinterpret_cast<QtJambiLink *>(nativeId);
-        return {lnk->pointer(), lnk->containerAccess()};
-    }else{
-        return {nullptr,nullptr};
-    }
-}
-
-QPair<void*,AbstractContainerAccess*> ContainerAPI::fromJavaOwner(JNIEnv *env, jobject object){
-    if(QSharedPointer<QtJambiLink> lnk = QtJambiLink::findLinkForJavaObject(env, object)){
-        if(lnk->containerAccess()){
-            return {lnk->pointer(), lnk->containerAccess()};
+AbstractListAccess* checkContainerAccess(JNIEnv * env, AbstractListAccess* containerAccess){
+    QtJambiAPI::checkNullPointer(env, containerAccess);
+    if(!containerAccess->asRC()){
+        switch(containerAccess->elementType()){
+        case AbstractContainerAccess::Pointer:
+        case AbstractContainerAccess::FunctionPointer:
+        case AbstractContainerAccess::PointerToQObject:
+            containerAccess = new PointerRCListAccess(containerAccess);
+            break;
+        default:
+            if(containerAccess->hasNestedPointers())
+                containerAccess = new NestedPointersRCListAccess(containerAccess);
+            break;
         }
     }
-    return {nullptr,nullptr};
+    return containerAccess;
 }
 
-AbstractContainerAccess::DataType dataType(const QMetaType& metaType, const QSharedPointer<AbstractContainerAccess>& access){
-    if(access){
-#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
-        if(dynamic_cast<AbstractSpanAccess*>(access.data()))
-            return AbstractContainerAccess::Pointer;
-#endif
-        if(metaType.flags().testFlag(QMetaType::IsPointer))
-            return AbstractContainerAccess::Pointer;
-        return AbstractContainerAccess::Value;
-    }else if(metaType.flags().testFlag(QMetaType::PointerToQObject)){
-        return AbstractContainerAccess::PointerToQObject;
-    }else{
-        if(metaType.flags().testFlag(QMetaType::IsPointer)){
-            if(const std::type_info* typeId = getTypeByMetaType(metaType)){
-                if(registeredFunctionalResolver(*typeId)){
-                    return AbstractContainerAccess::FunctionPointer;
+AbstractSetAccess* checkContainerAccess(JNIEnv * env, AbstractSetAccess* containerAccess){
+    QtJambiAPI::checkNullPointer(env, containerAccess);
+    if(!containerAccess->asRC()){
+        switch(containerAccess->elementType()){
+        case AbstractContainerAccess::Pointer:
+        case AbstractContainerAccess::FunctionPointer:
+        case AbstractContainerAccess::PointerToQObject:
+            containerAccess = new PointerRCSetAccess(containerAccess);
+            break;
+        default:
+            if(containerAccess->hasNestedPointers())
+                containerAccess = new NestedPointersRCSetAccess(containerAccess);
+            break;
+        }
+    }
+    return containerAccess;
+}
+
+AbstractHashAccess* checkContainerAccess(JNIEnv * env, AbstractHashAccess* containerAccess){
+    QtJambiAPI::checkNullPointer(env, containerAccess);
+    if(!containerAccess->asRC()){
+        switch(containerAccess->keyType()){
+        case AbstractContainerAccess::Pointer:
+        case AbstractContainerAccess::FunctionPointer:
+        case AbstractContainerAccess::PointerToQObject:
+            switch(containerAccess->valueType()){
+            case AbstractContainerAccess::Pointer:
+            case AbstractContainerAccess::FunctionPointer:
+            case AbstractContainerAccess::PointerToQObject:
+                containerAccess = new PointersRCHashAccess(containerAccess);
+                break;
+            default:
+                if(containerAccess->hasValueNestedPointers()){
+                    containerAccess = new NestedPointersRCHashAccess(containerAccess);
+                }else{
+                    containerAccess = new KeyPointerRCHashAccess(containerAccess);
                 }
-            }else if(QByteArrayView(metaType.name()).contains("(*)")){
-                return AbstractContainerAccess::FunctionPointer;
+                break;
             }
-            return AbstractContainerAccess::Pointer;
-        }else{
-            return AbstractContainerAccess::Value;
+            break;
+        default:{
+                if(containerAccess->hasKeyNestedPointers()){
+                    containerAccess = new NestedPointersRCHashAccess(containerAccess);
+                }else{
+                    switch(containerAccess->valueType()){
+                    case AbstractContainerAccess::Pointer:
+                    case AbstractContainerAccess::FunctionPointer:
+                    case AbstractContainerAccess::PointerToQObject:
+                        containerAccess = new ValuePointerRCHashAccess(containerAccess);
+                        break;
+                    default:
+                        if(containerAccess->hasValueNestedPointers()){
+                            containerAccess = new NestedPointersRCHashAccess(containerAccess);
+                        }
+                        break;
+                    }
+                }
+            }
+            break;
         }
     }
+    return containerAccess;
 }
 
-AbstractContainerAccess::DataType AbstractContainerAccess::dataType(const QMetaType& metaType, const QSharedPointer<AbstractContainerAccess>& access){
-    return ::dataType(metaType, access);
+AbstractMapAccess* checkContainerAccess(JNIEnv * env, AbstractMapAccess* containerAccess){
+    QtJambiAPI::checkNullPointer(env, containerAccess);
+    if(!containerAccess->asRC()){
+        switch(containerAccess->keyType()){
+        case AbstractContainerAccess::Pointer:
+        case AbstractContainerAccess::FunctionPointer:
+        case AbstractContainerAccess::PointerToQObject:
+            switch(containerAccess->valueType()){
+            case AbstractContainerAccess::Pointer:
+            case AbstractContainerAccess::FunctionPointer:
+            case AbstractContainerAccess::PointerToQObject:
+                containerAccess = new PointersRCMapAccess(containerAccess);
+                break;
+            default:
+                if(containerAccess->hasValueNestedPointers()){
+                    containerAccess = new NestedPointersRCMapAccess(containerAccess);
+                }else{
+                    containerAccess = new KeyPointerRCMapAccess(containerAccess);
+                }
+                break;
+            }
+            break;
+        default:
+            if(containerAccess->hasKeyNestedPointers()){
+                containerAccess = new NestedPointersRCMapAccess(containerAccess);
+            }else{
+                switch(containerAccess->valueType()){
+                case AbstractContainerAccess::Pointer:
+                case AbstractContainerAccess::FunctionPointer:
+                case AbstractContainerAccess::PointerToQObject:
+                    containerAccess = new ValuePointerRCMapAccess(containerAccess);
+                    break;
+                default:
+                    if(containerAccess->hasValueNestedPointers()){
+                        containerAccess = new NestedPointersRCMapAccess(containerAccess);
+                    }
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    return containerAccess;
 }
 
-class OwnerFunctionalPrivate : public QSharedData{
-protected:
-    OwnerFunctionalPrivate() noexcept;
-public:
-    virtual ~OwnerFunctionalPrivate();
-    virtual const QObject* invoke(const void *) const = 0;
-    friend class OwnerFunctional;
-};
-
-class OwnerFunctional{
-public:
-    typedef const QObject*(*FunctionPointer)(const void *);
-
-private:
-    explicit OwnerFunctional(OwnerFunctionalPrivate* _d) noexcept;
-    template<typename Functor, bool = std::is_assignable<FunctionPointer&, Functor>::value, bool = std::is_same<Functor, OwnerFunctional>::value>
-    class Data : public OwnerFunctionalPrivate{
-    public:
-        inline static OwnerFunctionalPrivate* from(Functor&& functor){
-            return new Data(std::forward<Functor>(functor));
+AbstractMultiHashAccess* checkContainerAccess(JNIEnv * env, AbstractMultiHashAccess* containerAccess){
+    QtJambiAPI::checkNullPointer(env, containerAccess);
+    if(!containerAccess->asRC()){
+        switch(containerAccess->keyType()){
+        case AbstractContainerAccess::Pointer:
+        case AbstractContainerAccess::FunctionPointer:
+        case AbstractContainerAccess::PointerToQObject:
+            switch(containerAccess->valueType()){
+            case AbstractContainerAccess::Pointer:
+            case AbstractContainerAccess::FunctionPointer:
+            case AbstractContainerAccess::PointerToQObject:
+                containerAccess = new PointersRCMultiHashAccess(containerAccess);
+                break;
+            default:
+                if(containerAccess->hasValueNestedPointers()){
+                    containerAccess = new NestedPointersRCMultiHashAccess(containerAccess);
+                }else{
+                    containerAccess = new KeyPointerRCMultiHashAccess(containerAccess);
+                }
+                break;
+            }
+            break;
+        default:
+            if(containerAccess->hasKeyNestedPointers()){
+                containerAccess = new NestedPointersRCMultiHashAccess(containerAccess);
+            }else{
+                switch(containerAccess->valueType()){
+                case AbstractContainerAccess::Pointer:
+                case AbstractContainerAccess::FunctionPointer:
+                case AbstractContainerAccess::PointerToQObject:
+                    containerAccess = new ValuePointerRCMultiHashAccess(containerAccess);
+                    break;
+                default:
+                    if(containerAccess->hasValueNestedPointers()){
+                        containerAccess = new NestedPointersRCMultiHashAccess(containerAccess);
+                    }
+                    break;
+                }
+            }
+            break;
         }
-        inline const QObject* invoke(const void *container) const override {
-            return m_functor(container);
-        }
-    private:
-        inline Data(Functor&& functor) noexcept : m_functor(std::forward<Functor>(functor)){}
-        Functor m_functor;
-    };
-    template<typename Functor>
-    struct Data<Functor,false,true>{
-        inline static const OwnerFunctional& from(const OwnerFunctional& function){
-            return function;
-        }
-        inline static OwnerFunctional&& from(OwnerFunctional&& function){
-            return std::move(function);
-        }
-    };
-    template<typename Functor>
-    struct Data<Functor,true,false>{
-        inline static FunctionPointer from(Functor&& functor){
-            return FunctionPointer(functor);
-        }
-    };
-public:
-    OwnerFunctional() noexcept;
-    OwnerFunctional(const OwnerFunctional& other) noexcept;
-    OwnerFunctional(OwnerFunctional&& other) noexcept;
-    OwnerFunctional(FunctionPointer functor) noexcept;
-
-    OwnerFunctional& operator=(const OwnerFunctional& other) noexcept;
-    OwnerFunctional& operator=(OwnerFunctional& other) noexcept;
-    OwnerFunctional& operator=(OwnerFunctional&& other) noexcept;
-
-    template<typename Functor, typename = std::enable_if_t<std::is_invocable_r_v<const QObject*, Functor, const void *>>>
-    OwnerFunctional(Functor&& functor) noexcept
-        : OwnerFunctional(Data<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::from(std::forward<Functor>(functor))){}
-
-    bool operator==(const OwnerFunctional& other) const noexcept;
-    const QObject* operator()(const void *container) const;
-    operator bool() const noexcept;
-    bool operator !() const noexcept;
-private:
-    template<typename, bool, bool> friend class Data;
-    QExplicitlySharedDataPointer<OwnerFunctionalPrivate> d;
-};
-
-class OwnerFunctionalPointerData : public OwnerFunctionalPrivate{
-public:
-    inline OwnerFunctionalPointerData(OwnerFunctional::FunctionPointer functionPointer) noexcept
-     : m_functionPointer(functionPointer){Q_ASSERT(functionPointer);}
-    inline const QObject* invoke(const void *container) const override
-     { return m_functionPointer(container); }
-private:
-    OwnerFunctional::FunctionPointer m_functionPointer;
-};
-OwnerFunctional::OwnerFunctional(FunctionPointer functor) noexcept
-    : d(!functor ? nullptr : new OwnerFunctionalPointerData(functor)){}
-
-OwnerFunctionalPrivate::OwnerFunctionalPrivate() noexcept {}
-OwnerFunctionalPrivate::~OwnerFunctionalPrivate() {}
-OwnerFunctional::OwnerFunctional() noexcept : d(){}
-OwnerFunctional::OwnerFunctional(const OwnerFunctional& other) noexcept : d(other.d) {}
-OwnerFunctional::OwnerFunctional(OwnerFunctional&& other) noexcept : d(std::move(other.d)) {}
-OwnerFunctional::OwnerFunctional(OwnerFunctionalPrivate* _d) noexcept : d(_d) {}
-OwnerFunctional& OwnerFunctional::operator=(OwnerFunctional& other) noexcept { d = other.d; return *this; }
-OwnerFunctional& OwnerFunctional::operator=(const OwnerFunctional& other) noexcept { d = other.d; return *this; }
-OwnerFunctional& OwnerFunctional::operator=(OwnerFunctional&& other) noexcept { d = std::move(other.d); return *this; }
-bool OwnerFunctional::operator==(const OwnerFunctional& other) const noexcept { return d == other.d; }
-
-OwnerFunctional::operator bool() const noexcept{
-    return d;
+    }
+    return containerAccess;
 }
 
-bool OwnerFunctional::operator !() const noexcept{
-    return !d;
+AbstractMultiMapAccess* checkContainerAccess(JNIEnv * env, AbstractMultiMapAccess* containerAccess){
+    QtJambiAPI::checkNullPointer(env, containerAccess);
+    if(!containerAccess->asRC()){
+        switch(containerAccess->keyType()){
+        case AbstractContainerAccess::Pointer:
+        case AbstractContainerAccess::FunctionPointer:
+        case AbstractContainerAccess::PointerToQObject:
+            switch(containerAccess->valueType()){
+            case AbstractContainerAccess::Pointer:
+            case AbstractContainerAccess::FunctionPointer:
+            case AbstractContainerAccess::PointerToQObject:
+                containerAccess = new PointersRCMultiMapAccess(containerAccess);
+                break;
+            default:
+                if(containerAccess->hasValueNestedPointers()){
+                    containerAccess = new NestedPointersRCMultiMapAccess(containerAccess);
+                }else{
+                    containerAccess = new KeyPointerRCMultiMapAccess(containerAccess);
+                }
+                break;
+            }
+            break;
+        default:
+            if(containerAccess->hasKeyNestedPointers()){
+                containerAccess = new NestedPointersRCMultiMapAccess(containerAccess);
+            }else{
+                switch(containerAccess->valueType()){
+                case AbstractContainerAccess::Pointer:
+                case AbstractContainerAccess::FunctionPointer:
+                case AbstractContainerAccess::PointerToQObject:
+                    containerAccess = new ValuePointerRCMultiMapAccess(containerAccess);
+                    break;
+                default:
+                    if(containerAccess->hasValueNestedPointers()){
+                        containerAccess = new NestedPointersRCMultiMapAccess(containerAccess);
+                    }
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    return containerAccess;
 }
 
-const QObject* OwnerFunctional::operator()(const void *container) const{
-    return d->invoke(container);
-}
-
-template<typename AccessType>
-struct ContainerAccessWrapper{
-};
-
-template<>
-struct ContainerAccessWrapper<AbstractListAccess>{
-    typedef WrapperListAccess type;
-};
-
-template<>
-struct ContainerAccessWrapper<AbstractSetAccess>{
-    typedef WrapperSetAccess type;
-};
-
-template<>
-struct ContainerAccessWrapper<AbstractHashAccess>{
-    typedef WrapperHashAccess type;
-};
-
-template<>
-struct ContainerAccessWrapper<AbstractMapAccess>{
-    typedef WrapperMapAccess type;
-};
-
-template<>
-struct ContainerAccessWrapper<AbstractMultiHashAccess>{
-    typedef WrapperMultiHashAccess type;
-};
-
-template<>
-struct ContainerAccessWrapper<AbstractMultiMapAccess>{
-    typedef WrapperMultiMapAccess type;
-};
+AbstractWrapperContainerAccess::~AbstractWrapperContainerAccess(){}
 
 WrapperListAccess::WrapperListAccess(AbstractListAccess* containerAccess)
     : AbstractListAccess(), m_containerAccess(containerAccess) {}
@@ -463,6 +495,10 @@ bool WrapperListAccess::hasOwnerFunction(){
 
 AbstractListAccess* WrapperListAccess::wrappedAccess(){
     return m_containerAccess;
+}
+
+AbstractWrapperContainerAccess* WrapperListAccess::asWrapper() {
+    return this;
 }
 
 bool WrapperListAccess::isDetached(const void* container) {
@@ -535,7 +571,7 @@ bool WrapperListAccess::destructContainer(void* container) {
     return m_containerAccess->destructContainer(container);
 }
 
-QMetaType WrapperListAccess::registerContainer(const QByteArray& containerTypeName) {
+QMetaType WrapperListAccess::registerContainer(QByteArrayView containerTypeName) {
     return m_containerAccess->registerContainer(containerTypeName);
 }
 
@@ -727,6 +763,10 @@ AbstractSetAccess* WrapperSetAccess::wrappedAccess(){
     return m_containerAccess;
 }
 
+AbstractWrapperContainerAccess* WrapperSetAccess::asWrapper() {
+    return this;
+}
+
 bool WrapperSetAccess::isDetached(const void* container) {
     return m_containerAccess->isDetached(container);
 }
@@ -785,7 +825,7 @@ bool WrapperSetAccess::destructContainer(void* container) {
     return m_containerAccess->destructContainer(container);
 }
 
-QMetaType WrapperSetAccess::registerContainer(const QByteArray& containerTypeName) {
+QMetaType WrapperSetAccess::registerContainer(QByteArrayView containerTypeName) {
     return m_containerAccess->registerContainer(containerTypeName);
 }
 
@@ -905,6 +945,10 @@ AbstractMapAccess* WrapperMapAccess::wrappedAccess(){
     return m_containerAccess;
 }
 
+AbstractWrapperContainerAccess* WrapperMapAccess::asWrapper() {
+    return this;
+}
+
 std::unique_ptr<AbstractMapAccess::KeyValueIterator> WrapperMapAccess::keyValueIterator(const void* container) {
     return m_containerAccess->keyValueIterator(container);
 }
@@ -970,7 +1014,7 @@ bool WrapperMapAccess::destructContainer(void* container) {
     return m_containerAccess->destructContainer(container);
 }
 
-QMetaType WrapperMapAccess::registerContainer(const QByteArray& containerTypeName) {
+QMetaType WrapperMapAccess::registerContainer(QByteArrayView containerTypeName) {
     return m_containerAccess->registerContainer(containerTypeName);
 }
 
@@ -1158,6 +1202,10 @@ AbstractMultiMapAccess* WrapperMultiMapAccess::wrappedAccess(){
     return m_containerAccess;
 }
 
+AbstractWrapperContainerAccess* WrapperMultiMapAccess::asWrapper() {
+    return this;
+}
+
 bool WrapperMultiMapAccess::isDetached(const void* container) {
     return m_containerAccess->isDetached(container);
 }
@@ -1216,7 +1264,7 @@ bool WrapperMultiMapAccess::destructContainer(void* container) {
     return m_containerAccess->destructContainer(container);
 }
 
-QMetaType WrapperMultiMapAccess::registerContainer(const QByteArray& containerTypeName) {
+QMetaType WrapperMultiMapAccess::registerContainer(QByteArrayView containerTypeName) {
     return m_containerAccess->registerContainer(containerTypeName);
 }
 
@@ -1437,6 +1485,10 @@ AbstractHashAccess* WrapperHashAccess::wrappedAccess(){
     return m_containerAccess;
 }
 
+AbstractWrapperContainerAccess* WrapperHashAccess::asWrapper() {
+    return this;
+}
+
 bool WrapperHashAccess::isDetached(const void* container) {
     return m_containerAccess->isDetached(container);
 }
@@ -1503,7 +1555,7 @@ bool WrapperHashAccess::destructContainer(void* container) {
     return m_containerAccess->destructContainer(container);
 }
 
-QMetaType WrapperHashAccess::registerContainer(const QByteArray& containerTypeName) {
+QMetaType WrapperHashAccess::registerContainer(QByteArrayView containerTypeName) {
     return m_containerAccess->registerContainer(containerTypeName);
 }
 
@@ -1668,6 +1720,10 @@ AbstractMultiHashAccess* WrapperMultiHashAccess::wrappedAccess(){
     return m_containerAccess;
 }
 
+AbstractWrapperContainerAccess* WrapperMultiHashAccess::asWrapper() {
+    return this;
+}
+
 bool WrapperMultiHashAccess::isDetached(const void* container) {
     return m_containerAccess->isDetached(container);
 }
@@ -1726,7 +1782,7 @@ bool WrapperMultiHashAccess::destructContainer(void* container) {
     return m_containerAccess->destructContainer(container);
 }
 
-QMetaType WrapperMultiHashAccess::registerContainer(const QByteArray& containerTypeName) {
+QMetaType WrapperMultiHashAccess::registerContainer(QByteArrayView containerTypeName) {
     return m_containerAccess->registerContainer(containerTypeName);
 }
 
@@ -1906,6 +1962,2137 @@ const void* WrapperMultiHashAccess::value(const void* container, const void* key
     return m_containerAccess->value(container, key, defaultValue);
 }
 
+PointerRCListAccess::~PointerRCListAccess(){}
+
+AbstractReferenceCountingContainer* PointerRCListAccess::asRC() {return this;}
+
+PointerRCListAccess::PointerRCListAccess(AbstractListAccess* containerAccess)
+    : WrapperListAccess(containerAccess), ReferenceCountingSetContainer() {
+    Q_ASSERT(containerAccess!=this);
+}
+
+PointerRCListAccess::PointerRCListAccess(PointerRCListAccess& other)
+    : WrapperListAccess(other.WrapperListAccess::clone()), ReferenceCountingSetContainer() {}
+
+PointerRCListAccess* PointerRCListAccess::clone(){
+    return new PointerRCListAccess(*this);
+}
+
+void PointerRCListAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject set = Java::Runtime::ArrayList::newInstance(env);
+    auto iterator = elementIterator(container.container);
+    while(iterator->hasNext()){
+        const void* content = iterator->next();
+        jobject obj{nullptr};
+        switch(elementType()){
+        case PointerToQObject:
+            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(elementMetaType())){
+                obj = QtJambiAPI::findFunctionPointerObject(env, content, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            obj = QtJambiAPI::findObject(env, content);
+            break;
+        default:
+            break;
+        }
+        if(obj)
+            Java::Runtime::Collection::add(env, set, obj);
+    }
+    clearRC(env, container.object);
+    addAllRC(env, container.object, set);
+}
+
+void PointerRCListAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperListAccess::swap(env, container, container2);
+    if(PointerRCListAccess* access = dynamic_cast<PointerRCListAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointerRCListAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperListAccess::assign(env, container, container2);
+    if(PointerRCListAccess* access = dynamic_cast<PointerRCListAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointerRCListAccess::appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) {
+    WrapperListAccess::appendList(env, container, containerInfo);
+    addAllRC(env, container.object, findContainer(env, containerInfo.object));
+}
+
+void PointerRCListAccess::replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) {
+    jobject oldValue = WrapperListAccess::at(env, container.container, index);
+    WrapperListAccess::replace(env, container, index, value);
+    if(oldValue && !WrapperListAccess::contains(env, container.container, oldValue))
+        removeRC(env, container.object, oldValue);
+    if(value)
+        addRC(env, container.object, value);
+}
+
+jint PointerRCListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
+    jint result = WrapperListAccess::removeAll(env, container, value);
+    removeRC(env, container.object, value, result);
+    return result;
+}
+
+void PointerRCListAccess::insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) {
+    WrapperListAccess::insert(env, container, index, n, value);
+    if(value)
+        addRC(env, container.object, value);
+}
+
+void PointerRCListAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperListAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void PointerRCListAccess::remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) {
+    if(n==1){
+        jobject oldValue = WrapperListAccess::at(env, container.container, index);
+        WrapperListAccess::remove(env, container, index, n);
+        removeRC(env, container.object, oldValue);
+    }else{
+        jint size = WrapperListAccess::size(env, container.container);
+        jobject removedValues = Java::Runtime::ArrayList::newInstance(env);
+        for(jint i = index; i<=index+n && i<size; ++i){
+            Java::Runtime::Collection::add(env, removedValues, WrapperListAccess::at(env, container.container, i));
+        }
+        WrapperListAccess::remove(env, container, index, n);
+        jobject iter = Java::Runtime::Collection::iterator(env, removedValues);
+        while(Java::Runtime::Iterator::hasNext(env, iter)){
+            jobject value = Java::Runtime::Iterator::next(env, iter);
+            removeRC(env, container.object, value);
+        }
+    }
+}
+
+void PointerRCListAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size){
+    jint oldSize = WrapperListAccess::size(env, container.container);
+    WrapperListAccess::fill(env, container, value, size);
+    for(;oldSize<size;++oldSize){
+        addRC(env, container.object, value);
+    }
+}
+
+PointerRCSetAccess::~PointerRCSetAccess(){}
+
+PointerRCSetAccess::PointerRCSetAccess(AbstractSetAccess* containerAccess)
+    : WrapperSetAccess(containerAccess), ReferenceCountingSetContainer() {}
+
+PointerRCSetAccess::PointerRCSetAccess(PointerRCSetAccess& other)
+    : WrapperSetAccess(other.WrapperSetAccess::clone()), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* PointerRCSetAccess::asRC() {return this;}
+
+PointerRCSetAccess* PointerRCSetAccess::clone(){
+    return new PointerRCSetAccess(*this);
+}
+
+void PointerRCSetAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject set = Java::Runtime::HashSet::newInstance(env);
+    auto iterator = elementIterator(container.container);
+    while(iterator->hasNext()){
+        const void* content = iterator->next();
+        jobject obj{nullptr};
+        switch(elementType()){
+        case PointerToQObject:
+            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(elementMetaType())){
+                obj = QtJambiAPI::findFunctionPointerObject(env, content, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            obj = QtJambiAPI::findObject(env, content);
+            break;
+        default:
+            break;
+        }
+        if(obj)
+            Java::Runtime::Collection::add(env, set, obj);
+    }
+    clearRC(env, container.object);
+    addAllRC(env, container.object, set);
+}
+
+void PointerRCSetAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperSetAccess::swap(env, container, container2);
+    if(PointerRCSetAccess* access = dynamic_cast<PointerRCSetAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointerRCSetAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperSetAccess::assign(env, container, container2);
+    if(PointerRCSetAccess* access = dynamic_cast<PointerRCSetAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointerRCSetAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperSetAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void PointerRCSetAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject value){
+    WrapperSetAccess::insert(env, container, value);
+    addUniqueRC(env, container.object, value);
+}
+
+jboolean PointerRCSetAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject value){
+    jboolean result = WrapperSetAccess::remove(env, container, value);
+    if(value)
+        removeRC(env, container.object, value);
+    return result;
+}
+
+void PointerRCSetAccess::intersect(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
+    WrapperSetAccess::intersect(env, container, other);
+    updateRC(env, container);
+}
+
+void PointerRCSetAccess::subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
+    WrapperSetAccess::subtract(env, container, other);
+    updateRC(env, container);
+}
+
+void PointerRCSetAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
+    WrapperSetAccess::unite(env, container, other);
+    updateRC(env, container);
+}
+
+KeyPointerRCMapAccess::~KeyPointerRCMapAccess(){}
+
+KeyPointerRCMapAccess::KeyPointerRCMapAccess(AbstractMapAccess* containerAccess)
+    : WrapperMapAccess(containerAccess), ReferenceCountingSetContainer() {}
+
+KeyPointerRCMapAccess::KeyPointerRCMapAccess(KeyPointerRCMapAccess& other)
+    : WrapperMapAccess(other.WrapperMapAccess::clone()), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* KeyPointerRCMapAccess::asRC() {return this;}
+
+KeyPointerRCMapAccess* KeyPointerRCMapAccess::clone(){
+    return new KeyPointerRCMapAccess(*this);
+}
+
+void KeyPointerRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject set = Java::Runtime::HashSet::newInstance(env);
+    auto iterator = constKeyValueIterator(container.container);
+    while(iterator->hasNext()){
+        const void* content = iterator->next().first;
+        jobject obj{nullptr};
+        switch(keyType()){
+        case PointerToQObject:
+            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
+                obj = QtJambiAPI::findFunctionPointerObject(env, content, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            obj = QtJambiAPI::findObject(env, content);
+            break;
+        default:
+            break;
+        }
+        if(obj)
+            Java::Runtime::Collection::add(env, set, obj);
+    }
+    clearRC(env, container.object);
+    addAllRC(env, container.object, set);
+}
+
+void KeyPointerRCMapAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperMapAccess::swap(env, container, container2);
+    if(KeyPointerRCMapAccess* access = dynamic_cast<KeyPointerRCMapAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void KeyPointerRCMapAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperMapAccess::assign(env, container, container2);
+    if(KeyPointerRCMapAccess* access = dynamic_cast<KeyPointerRCMapAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void KeyPointerRCMapAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperMapAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void KeyPointerRCMapAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperMapAccess::insert(env, container, key, value);
+    addUniqueRC(env, container.object, key);
+}
+
+jint KeyPointerRCMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    jint result = WrapperMapAccess::remove(env, container, key);
+    if(result>0){
+        removeRC(env, container.object, key);
+    }
+    return result;
+}
+
+jobject KeyPointerRCMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
+    jobject result = WrapperMapAccess::take(env, container, key);
+    removeRC(env, container.object, key);
+    return result;
+}
+
+ValuePointerRCMapAccess::~ValuePointerRCMapAccess(){}
+
+ValuePointerRCMapAccess::ValuePointerRCMapAccess(AbstractMapAccess* containerAccess)
+    : WrapperMapAccess(containerAccess), ReferenceCountingSetContainer() {}
+
+ValuePointerRCMapAccess::ValuePointerRCMapAccess(ValuePointerRCMapAccess& other)
+    : WrapperMapAccess(other.WrapperMapAccess::clone()), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* ValuePointerRCMapAccess::asRC() {return this;}
+
+ValuePointerRCMapAccess* ValuePointerRCMapAccess::clone(){
+    return new ValuePointerRCMapAccess(*this);
+}
+
+void ValuePointerRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject set = Java::Runtime::HashSet::newInstance(env);
+    auto iterator = constKeyValueIterator(container.container);
+    while(iterator->hasNext()){
+        const void* content = iterator->next().second;
+        jobject obj{nullptr};
+        switch(valueType()){
+        case PointerToQObject:
+            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
+                obj = QtJambiAPI::findFunctionPointerObject(env, content, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            obj = QtJambiAPI::findObject(env, content);
+            break;
+        default:
+            break;
+        }
+        if(obj)
+            Java::Runtime::Collection::add(env, set, obj);
+    }
+    clearRC(env, container.object);
+    addAllRC(env, container.object, set);
+}
+
+void ValuePointerRCMapAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperMapAccess::swap(env, container, container2);
+    if(ValuePointerRCMapAccess* access = dynamic_cast<ValuePointerRCMapAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void ValuePointerRCMapAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperMapAccess::assign(env, container, container2);
+    if(ValuePointerRCMapAccess* access = dynamic_cast<ValuePointerRCMapAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void ValuePointerRCMapAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperMapAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void ValuePointerRCMapAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    jobject oldValue = WrapperMapAccess::value(env, container.container, key, nullptr);
+    WrapperMapAccess::insert(env, container, key, value);
+    removeRC(env, container.object, oldValue);
+    addRC(env, container.object, value);
+}
+
+jint ValuePointerRCMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    jobject oldValue = WrapperMapAccess::value(env, container.container, key, nullptr);
+    jint result = WrapperMapAccess::remove(env, container, key);
+    if(result>0){
+        removeRC(env, container.object, oldValue);
+    }
+    return result;
+}
+
+jobject ValuePointerRCMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
+    jobject result = WrapperMapAccess::take(env, container, key);
+    removeRC(env, container.object, result);
+    return result;
+}
+
+PointersRCMapAccess::PointersRCMapAccess(AbstractMapAccess* containerAccess)
+    : WrapperMapAccess(containerAccess), ReferenceCountingMapContainer() {}
+
+PointersRCMapAccess::PointersRCMapAccess(PointersRCMapAccess& other)
+    : WrapperMapAccess(other.WrapperMapAccess::clone()), ReferenceCountingMapContainer(other) {}
+
+AbstractReferenceCountingContainer* PointersRCMapAccess::asRC() {return this;}
+
+PointersRCMapAccess* PointersRCMapAccess::clone(){
+    return new PointersRCMapAccess(*this);
+}
+
+void PointersRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject map = Java::Runtime::HashMap::newInstance(env, 0);
+    auto iterator = constKeyValueIterator(container.container);
+    while(iterator->hasNext()){
+        auto content = iterator->next();
+        jobject key{nullptr};
+        switch(keyType()){
+        case PointerToQObject:
+            key = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.first));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
+                key = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            key = QtJambiAPI::findObject(env, content.first);
+            break;
+        default:
+            break;
+        }
+        jobject value{nullptr};
+        switch(valueType()){
+        case PointerToQObject:
+            value = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.second));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
+                value = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            value = QtJambiAPI::findObject(env, content.second);
+            break;
+        default:
+            break;
+        }
+        Java::Runtime::Map::put(env, map, key, value);
+    }
+    clearRC(env, container.object);
+    putAllRC(env, container.object, map);
+}
+
+void PointersRCMapAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperMapAccess::swap(env, container, container2);
+    if(PointersRCMapAccess* access = dynamic_cast<PointersRCMapAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointersRCMapAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperMapAccess::assign(env, container, container2);
+    if(PointersRCMapAccess* access = dynamic_cast<PointersRCMapAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointersRCMapAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperMapAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void PointersRCMapAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperMapAccess::insert(env, container, key, value);
+    putRC(env, container.object, key, value);
+}
+
+jint PointersRCMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    jint result = WrapperMapAccess::remove(env, container, key);
+    removeRC(env, container.object, key, result);
+    return result;
+}
+
+jobject PointersRCMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
+    jobject result = WrapperMapAccess::take(env, container, key);
+    removeRC(env, container.object, key);
+    return result;
+}
+
+KeyPointerRCMultiMapAccess::~KeyPointerRCMultiMapAccess(){}
+
+KeyPointerRCMultiMapAccess::KeyPointerRCMultiMapAccess(AbstractMultiMapAccess* containerAccess)
+    : WrapperMultiMapAccess(containerAccess), ReferenceCountingSetContainer() {}
+
+KeyPointerRCMultiMapAccess::KeyPointerRCMultiMapAccess(KeyPointerRCMultiMapAccess& other)
+    : WrapperMultiMapAccess(other.WrapperMultiMapAccess::clone()), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* KeyPointerRCMultiMapAccess::asRC() {return this;}
+
+KeyPointerRCMultiMapAccess* KeyPointerRCMultiMapAccess::clone(){
+    return new KeyPointerRCMultiMapAccess(*this);
+}
+
+void KeyPointerRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject set = Java::Runtime::HashSet::newInstance(env);
+    auto iterator = constKeyValueIterator(container.container);
+    while(iterator->hasNext()){
+        auto content = iterator->next();
+        jobject obj{nullptr};
+        switch(keyType()){
+        case PointerToQObject:
+            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.first));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
+                obj = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            obj = QtJambiAPI::findObject(env, content.first);
+            break;
+        default:
+            break;
+        }
+        if(obj)
+            Java::Runtime::Collection::add(env, set, obj);
+    }
+    clearRC(env, container.object);
+    addAllRC(env, container.object, set);
+}
+
+void KeyPointerRCMultiMapAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperMultiMapAccess::swap(env, container, container2);
+    if(KeyPointerRCMultiMapAccess* access = dynamic_cast<KeyPointerRCMultiMapAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void KeyPointerRCMultiMapAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperMultiMapAccess::assign(env, container, container2);
+    if(KeyPointerRCMultiMapAccess* access = dynamic_cast<KeyPointerRCMultiMapAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void KeyPointerRCMultiMapAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperMultiMapAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void KeyPointerRCMultiMapAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperMultiMapAccess::insert(env, container, key, value);
+    addRC(env, container.object, key);
+}
+
+jint KeyPointerRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    jint result = WrapperMultiMapAccess::remove(env, container, key);
+    removeRC(env, container.object, key, result);
+    return result;
+}
+
+jint KeyPointerRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    jint result = WrapperMultiMapAccess::remove(env, container, key, value);
+    removeRC(env, container.object, key, result);
+    return result;
+}
+
+jobject KeyPointerRCMultiMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
+    jobject result = WrapperMultiMapAccess::take(env, container, key);
+    removeRC(env, container.object, key);
+    return result;
+}
+
+void KeyPointerRCMultiMapAccess::replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperMultiMapAccess::replace(env, container, key, value);
+    addRC(env, container.object, key);
+}
+
+void KeyPointerRCMultiMapAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) {
+    WrapperMultiMapAccess::unite(env, container, other);
+    updateRC(env, container);
+}
+
+void KeyPointerRCMultiHashAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) {
+    WrapperMultiHashAccess::unite(env, container, other);
+    updateRC(env, container);
+}
+
+ValuePointerRCMultiMapAccess::ValuePointerRCMultiMapAccess(AbstractMultiMapAccess* containerAccess)
+    : WrapperMultiMapAccess(containerAccess), ReferenceCountingSetContainer() {}
+
+ValuePointerRCMultiMapAccess::ValuePointerRCMultiMapAccess(ValuePointerRCMultiMapAccess& other)
+    : WrapperMultiMapAccess(other.WrapperMultiMapAccess::clone()), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* ValuePointerRCMultiMapAccess::asRC() {return this;}
+
+ValuePointerRCMultiMapAccess* ValuePointerRCMultiMapAccess::clone(){
+    return new ValuePointerRCMultiMapAccess(*this);
+}
+
+void ValuePointerRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject set = Java::Runtime::HashSet::newInstance(env);
+    auto iterator = constKeyValueIterator(container.container);
+    while(iterator->hasNext()){
+        auto content = iterator->next();
+        jobject obj{nullptr};
+        switch(valueType()){
+        case PointerToQObject:
+            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.second));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
+                obj = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            obj = QtJambiAPI::findObject(env, content.second);
+            break;
+        default:
+            break;
+        }
+        if(obj)
+            Java::Runtime::Collection::add(env, set, obj);
+    }
+    clearRC(env, container.object);
+    addAllRC(env, container.object, set);
+}
+
+void ValuePointerRCMultiMapAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperMultiMapAccess::swap(env, container, container2);
+    if(ValuePointerRCMultiMapAccess* access = dynamic_cast<ValuePointerRCMultiMapAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void ValuePointerRCMultiMapAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperMultiMapAccess::assign(env, container, container2);
+    if(ValuePointerRCMultiMapAccess* access = dynamic_cast<ValuePointerRCMultiMapAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void ValuePointerRCMultiMapAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperMultiMapAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void ValuePointerRCMultiMapAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperMultiMapAccess::insert(env, container, key, value);
+    addRC(env, container.object, value);
+}
+
+jint ValuePointerRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    ContainerAndAccessInfo oldValues = WrapperMultiMapAccess::values(env, container, key);
+    jint result = WrapperMultiMapAccess::remove(env, container, key);
+    if(result>0){
+        jobject iter = Java::Runtime::Collection::iterator(env, oldValues.object);
+        while(Java::Runtime::Iterator::hasNext(env, iter)){
+            jobject value = Java::Runtime::Iterator::next(env, iter);
+            if(Java::Runtime::Collection::size(env, WrapperMultiMapAccess::keys(env, container, value).object)==0){
+                removeRC(env, container.object, value);
+            }
+        }
+    }
+    return result;
+}
+
+jobject ValuePointerRCMultiMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
+    jobject result = WrapperMultiMapAccess::take(env, container, key);
+    if(Java::Runtime::Collection::size(env, WrapperMultiMapAccess::keys(env, container, result).object)==0){
+        removeRC(env, container.object, result);
+    }
+    return result;
+}
+
+void ValuePointerRCMultiMapAccess::replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    jobject oldValue = WrapperMultiMapAccess::value(env, container.container, key, nullptr);
+    WrapperMultiMapAccess::replace(env, container, key, value);
+    removeRC(env, container.object, oldValue);
+    addRC(env, container.object, value);
+}
+
+void ValuePointerRCMultiMapAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) {
+    WrapperMultiMapAccess::unite(env, container, other);
+    updateRC(env, container);
+}
+
+void ValuePointerRCMultiHashAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) {
+    WrapperMultiHashAccess::unite(env, container, other);
+    updateRC(env, container);
+}
+
+jint ValuePointerRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value){
+    jint result = WrapperMultiMapAccess::remove(env, container, key, value);
+    removeRC(env, container.object, value, result);
+    return result;
+}
+
+PointersRCMultiMapAccess::PointersRCMultiMapAccess(AbstractMultiMapAccess* containerAccess)
+    : WrapperMultiMapAccess(containerAccess), ReferenceCountingMultiMapContainer() {}
+
+PointersRCMultiMapAccess::PointersRCMultiMapAccess(PointersRCMultiMapAccess& other)
+    : WrapperMultiMapAccess(other.WrapperMultiMapAccess::clone()), ReferenceCountingMultiMapContainer(other) {}
+
+AbstractReferenceCountingContainer* PointersRCMultiMapAccess::asRC() {return this;}
+
+PointersRCMultiMapAccess* PointersRCMultiMapAccess::clone(){
+    return new PointersRCMultiMapAccess(*this);
+}
+
+void PointersRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject map = Java::QtJambi::ReferenceUtility$RCMap::newInstance(env);
+    auto iterator = constKeyValueIterator(container.container);
+    while(iterator->hasNext()){
+        auto content = iterator->next();
+        jobject key{nullptr};
+        switch(keyType()){
+        case PointerToQObject:
+            key = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.first));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
+                key = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            key = QtJambiAPI::findObject(env, content.first);
+            break;
+        default:
+            break;
+        }
+        jobject value{nullptr};
+        switch(valueType()){
+        case PointerToQObject:
+            value = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.second));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
+                value = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            value = QtJambiAPI::findObject(env, content.second);
+            break;
+        default:
+            break;
+        }
+        Java::Runtime::Map::put(env, map, key, value);
+    }
+    clearRC(env, container.object);
+    putAllRC(env, container.object, map);
+}
+
+void PointersRCMultiMapAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperMultiMapAccess::swap(env, container, container2);
+    if(PointersRCMultiMapAccess* access = dynamic_cast<PointersRCMultiMapAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointersRCMultiMapAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperMultiMapAccess::assign(env, container, container2);
+    if(PointersRCMultiMapAccess* access = dynamic_cast<PointersRCMultiMapAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointersRCMultiMapAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperMultiMapAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void PointersRCMultiMapAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperMultiMapAccess::insert(env, container, key, value);
+    putRC(env, container.object, key, value);
+}
+
+void PointersRCMultiMapAccess::replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperMultiMapAccess::replace(env, container, key, value);
+    removeRC(env, container.object, key);
+    putRC(env, container.object, key, value);
+}
+
+void PointersRCMultiMapAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) {
+    WrapperMultiMapAccess::unite(env, container, other);
+    updateRC(env, container);
+}
+
+jint PointersRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    jint result = WrapperMultiMapAccess::remove(env, container, key);
+    removeRC(env, container.object, key, 1);
+    return result;
+}
+
+jint PointersRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    jint result = WrapperMultiMapAccess::remove(env, container, key, value);
+    removeRC(env, container.object, key, value, result);
+    return result;
+}
+
+jobject PointersRCMultiMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
+    jobject result = WrapperMultiMapAccess::take(env, container, key);
+    removeRC(env, key, result);
+    return result;
+}
+
+KeyPointerRCHashAccess::~KeyPointerRCHashAccess(){}
+
+KeyPointerRCHashAccess::KeyPointerRCHashAccess(AbstractHashAccess* containerAccess)
+    : WrapperHashAccess(containerAccess), ReferenceCountingSetContainer() {}
+
+KeyPointerRCHashAccess::KeyPointerRCHashAccess(KeyPointerRCHashAccess& other)
+    : WrapperHashAccess(other.WrapperHashAccess::clone()), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* KeyPointerRCHashAccess::asRC() {return this;}
+
+KeyPointerRCHashAccess* KeyPointerRCHashAccess::clone(){
+    return new KeyPointerRCHashAccess(*this);
+}
+
+void KeyPointerRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject set = Java::Runtime::HashSet::newInstance(env);
+    auto iterator = constKeyValueIterator(container.container);
+    while(iterator->hasNext()){
+        auto content = iterator->next();
+        jobject obj{nullptr};
+        switch(keyType()){
+        case PointerToQObject:
+            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.first));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
+                obj = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            obj = QtJambiAPI::findObject(env, content.first);
+            break;
+        default:
+            break;
+        }
+        if(obj)
+            Java::Runtime::Collection::add(env, set, obj);
+    }
+    clearRC(env, container.object);
+    addAllRC(env, container.object, set);
+}
+
+void KeyPointerRCHashAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperHashAccess::swap(env, container, container2);
+    if(KeyPointerRCHashAccess* access = dynamic_cast<KeyPointerRCHashAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void KeyPointerRCHashAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperHashAccess::assign(env, container, container2);
+    if(KeyPointerRCHashAccess* access = dynamic_cast<KeyPointerRCHashAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void KeyPointerRCHashAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperHashAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void KeyPointerRCHashAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperHashAccess::insert(env, container, key, value);
+    addUniqueRC(env, container.object, key);
+}
+
+jint KeyPointerRCHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    jint result = WrapperHashAccess::remove(env, container, key);
+    removeRC(env, container.object, key, result);
+    return result;
+}
+
+jobject KeyPointerRCHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
+    jobject result = WrapperHashAccess::take(env, container, key);
+    removeRC(env, container.object, key);
+    return result;
+}
+
+ValuePointerRCHashAccess::ValuePointerRCHashAccess(AbstractHashAccess* containerAccess)
+    : WrapperHashAccess(containerAccess), ReferenceCountingSetContainer() {}
+
+ValuePointerRCHashAccess::ValuePointerRCHashAccess(ValuePointerRCHashAccess& other)
+    : WrapperHashAccess(other.WrapperHashAccess::clone()), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* ValuePointerRCHashAccess::asRC() {return this;}
+
+ValuePointerRCHashAccess* ValuePointerRCHashAccess::clone(){
+    return new ValuePointerRCHashAccess(*this);
+}
+
+void ValuePointerRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject set = Java::Runtime::HashSet::newInstance(env);
+    auto iterator = constKeyValueIterator(container.container);
+    while(iterator->hasNext()){
+        auto content = iterator->next();
+        jobject obj{nullptr};
+        switch(valueType()){
+        case PointerToQObject:
+            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.second));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
+                obj = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            obj = QtJambiAPI::findObject(env, content.second);
+            break;
+        default:
+            break;
+        }
+        if(obj)
+            Java::Runtime::Collection::add(env, set, obj);
+    }
+    clearRC(env, container.object);
+    addAllRC(env, container.object, set);
+}
+
+void ValuePointerRCHashAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperHashAccess::swap(env, container, container2);
+    if(ValuePointerRCHashAccess* access = dynamic_cast<ValuePointerRCHashAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void ValuePointerRCHashAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperHashAccess::assign(env, container, container2);
+    if(ValuePointerRCHashAccess* access = dynamic_cast<ValuePointerRCHashAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void ValuePointerRCHashAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperHashAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void ValuePointerRCHashAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    jobject oldValue = WrapperHashAccess::value(env, container.container, key, nullptr);
+    WrapperHashAccess::insert(env, container, key, value);
+    removeRC(env, container.object, oldValue);
+    addRC(env, container.object, value);
+}
+
+jint ValuePointerRCHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    jobject oldValue = WrapperHashAccess::value(env, container.container, key, nullptr);
+    jint result = WrapperHashAccess::remove(env, container, key);
+    if(result>0){
+        removeRC(env, container.object, oldValue);
+    }
+    return result;
+}
+
+jobject ValuePointerRCHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
+    jobject result = WrapperHashAccess::take(env, container, key);
+    removeRC(env, container.object, result);
+    return result;
+}
+
+PointersRCHashAccess::PointersRCHashAccess(AbstractHashAccess* containerAccess)
+    : WrapperHashAccess(containerAccess), ReferenceCountingMapContainer() {}
+
+PointersRCHashAccess::PointersRCHashAccess(PointersRCHashAccess& other)
+    : WrapperHashAccess(other.WrapperHashAccess::clone()), ReferenceCountingMapContainer(other) {}
+
+AbstractReferenceCountingContainer* PointersRCHashAccess::asRC() {return this;}
+
+PointersRCHashAccess* PointersRCHashAccess::clone(){
+    return new PointersRCHashAccess(*this);
+}
+
+void PointersRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject map = Java::QtJambi::ReferenceUtility$RCMap::newInstance(env);
+    auto iterator = constKeyValueIterator(container.container);
+    while(iterator->hasNext()){
+        auto content = iterator->next();
+        jobject key{nullptr};
+        switch(keyType()){
+        case PointerToQObject:
+            key = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.first));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
+                key = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            key = QtJambiAPI::findObject(env, content.first);
+            break;
+        default:
+            break;
+        }
+        jobject value{nullptr};
+        switch(valueType()){
+        case PointerToQObject:
+            value = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.second));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
+                value = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            value = QtJambiAPI::findObject(env, content.second);
+            break;
+        default:
+            break;
+        }
+        Java::Runtime::Map::put(env, map, key, value);
+    }
+    clearRC(env, container.object);
+    putAllRC(env, container.object, map);
+}
+
+void PointersRCHashAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperHashAccess::swap(env, container, container2);
+    if(PointersRCHashAccess* access = dynamic_cast<PointersRCHashAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointersRCHashAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperHashAccess::assign(env, container, container2);
+    if(PointersRCHashAccess* access = dynamic_cast<PointersRCHashAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointersRCHashAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperHashAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void PointersRCHashAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperHashAccess::insert(env, container, key, value);
+    putRC(env, container.object, key, value);
+}
+
+jint PointersRCHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    jint result = WrapperHashAccess::remove(env, container, key);
+    if(result>0){
+        removeRC(env, container.object, key);
+    }
+    return result;
+}
+
+jobject PointersRCHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
+    jobject result = WrapperHashAccess::take(env, container, key);
+    removeRC(env, container.object, key);
+    return result;
+}
+
+KeyPointerRCMultiHashAccess::~KeyPointerRCMultiHashAccess(){}
+
+KeyPointerRCMultiHashAccess::KeyPointerRCMultiHashAccess(AbstractMultiHashAccess* containerAccess)
+    : WrapperMultiHashAccess(containerAccess), ReferenceCountingSetContainer() {}
+
+KeyPointerRCMultiHashAccess::KeyPointerRCMultiHashAccess(KeyPointerRCMultiHashAccess& other)
+    : WrapperMultiHashAccess(other.WrapperMultiHashAccess::clone()), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* KeyPointerRCMultiHashAccess::asRC() {return this;}
+
+KeyPointerRCMultiHashAccess* KeyPointerRCMultiHashAccess::clone(){
+    return new KeyPointerRCMultiHashAccess(*this);
+}
+
+void KeyPointerRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject set = Java::Runtime::HashSet::newInstance(env);
+    auto iterator = constKeyValueIterator(container.container);
+    while(iterator->hasNext()){
+        auto content = iterator->next();
+        jobject obj{nullptr};
+        switch(keyType()){
+        case PointerToQObject:
+            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.first));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
+                obj = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            obj = QtJambiAPI::findObject(env, content.first);
+            break;
+        default:
+            break;
+        }
+        if(obj)
+            Java::Runtime::Collection::add(env, set, obj);
+    }
+    clearRC(env, container.object);
+    addAllRC(env, container.object, set);
+}
+
+void KeyPointerRCMultiHashAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperMultiHashAccess::swap(env, container, container2);
+    if(KeyPointerRCMultiHashAccess* access = dynamic_cast<KeyPointerRCMultiHashAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void KeyPointerRCMultiHashAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperMultiHashAccess::assign(env, container, container2);
+    if(KeyPointerRCMultiHashAccess* access = dynamic_cast<KeyPointerRCMultiHashAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void KeyPointerRCMultiHashAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperMultiHashAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void KeyPointerRCMultiHashAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperMultiHashAccess::insert(env, container, key, value);
+    addRC(env, container.object, key);
+}
+
+jint KeyPointerRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    jint result = WrapperMultiHashAccess::remove(env, container, key);
+    if(result>0){
+        removeRC(env, container.object, key);
+    }
+    return result;
+}
+
+jint KeyPointerRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    jint result = WrapperMultiHashAccess::remove(env, container, key, value);
+    if(result>0){
+        removeRC(env, container.object, key);
+    }
+    return result;
+}
+
+jobject KeyPointerRCMultiHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
+    jobject result = WrapperMultiHashAccess::take(env, container, key);
+    removeRC(env, container.object, key);
+    return result;
+}
+
+void KeyPointerRCMultiHashAccess::replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperMultiHashAccess::replace(env, container, key, value);
+}
+
+ValuePointerRCMultiHashAccess::ValuePointerRCMultiHashAccess(AbstractMultiHashAccess* containerAccess)
+    : WrapperMultiHashAccess(containerAccess), ReferenceCountingSetContainer() {}
+
+ValuePointerRCMultiHashAccess::ValuePointerRCMultiHashAccess(ValuePointerRCMultiHashAccess& other)
+    : WrapperMultiHashAccess(other.WrapperMultiHashAccess::clone()), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* ValuePointerRCMultiHashAccess::asRC() {return this;}
+
+ValuePointerRCMultiHashAccess* ValuePointerRCMultiHashAccess::clone(){
+    return new ValuePointerRCMultiHashAccess(*this);
+}
+
+void ValuePointerRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject set = Java::Runtime::HashSet::newInstance(env);
+    auto iterator = constKeyValueIterator(container.container);
+    while(iterator->hasNext()){
+        auto content = iterator->next();
+        jobject obj{nullptr};
+        switch(valueType()){
+        case PointerToQObject:
+            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.second));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
+                obj = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            obj = QtJambiAPI::findObject(env, content.second);
+            break;
+        default:
+            break;
+        }
+        if(obj)
+            Java::Runtime::Collection::add(env, set, obj);
+    }
+    clearRC(env, container.object);
+    addAllRC(env, container.object, set);
+}
+
+void ValuePointerRCMultiHashAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperMultiHashAccess::swap(env, container, container2);
+    if(ValuePointerRCMultiHashAccess* access = dynamic_cast<ValuePointerRCMultiHashAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void ValuePointerRCMultiHashAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperMultiHashAccess::assign(env, container, container2);
+    if(ValuePointerRCMultiHashAccess* access = dynamic_cast<ValuePointerRCMultiHashAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void ValuePointerRCMultiHashAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperMultiHashAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void ValuePointerRCMultiHashAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperMultiHashAccess::insert(env, container, key, value);
+    addRC(env, container.object, value);
+}
+
+jint ValuePointerRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    ContainerAndAccessInfo oldValues = WrapperMultiHashAccess::values(env, container, key);
+    jint result = WrapperMultiHashAccess::remove(env, container, key);
+    if(result>0){
+        jobject iter = Java::Runtime::Collection::iterator(env, oldValues.object);
+        while(Java::Runtime::Iterator::hasNext(env, iter)){
+            jobject value = Java::Runtime::Iterator::next(env, iter);
+            if(Java::Runtime::Collection::size(env, WrapperMultiHashAccess::keys(env, container, value).object)==0){
+                removeRC(env, container.object, value);
+            }
+        }
+    }
+    return result;
+}
+
+jobject ValuePointerRCMultiHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
+    jobject result = WrapperMultiHashAccess::take(env, container, key);
+    if(Java::Runtime::Collection::size(env, WrapperMultiHashAccess::keys(env, container, result).object)==0){
+        removeRC(env, container.object, result);
+    }
+    return result;
+}
+
+void ValuePointerRCMultiHashAccess::replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    jobject oldValue = WrapperMultiHashAccess::value(env, container.container, key, nullptr);
+    WrapperMultiHashAccess::replace(env, container, key, value);
+    removeRC(env, container.object, oldValue);
+    addRC(env, container.object, value);
+}
+
+jint ValuePointerRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value){
+    jint result = WrapperMultiHashAccess::remove(env, container, key, value);
+    if(result>0)
+        removeRC(env, container.object, value, result);
+    return result;
+}
+
+PointersRCMultiHashAccess::PointersRCMultiHashAccess(AbstractMultiHashAccess* containerAccess)
+    : WrapperMultiHashAccess(containerAccess), ReferenceCountingMultiMapContainer() {}
+
+PointersRCMultiHashAccess::PointersRCMultiHashAccess(PointersRCMultiHashAccess& other)
+    : WrapperMultiHashAccess(other.WrapperMultiHashAccess::clone()), ReferenceCountingMultiMapContainer(other) {}
+
+AbstractReferenceCountingContainer* PointersRCMultiHashAccess::asRC() {return this;}
+
+PointersRCMultiHashAccess* PointersRCMultiHashAccess::clone(){
+    return new PointersRCMultiHashAccess(*this);
+}
+
+void PointersRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    JniLocalFrame frame(env, 200);
+    jobject map = Java::QtJambi::ReferenceUtility$RCMap::newInstance(env);
+    auto iterator = constKeyValueIterator(container.container);
+    while(iterator->hasNext()){
+        auto content = iterator->next();
+        jobject key{nullptr};
+        switch(keyType()){
+        case PointerToQObject:
+            key = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.first));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
+                key = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            key = QtJambiAPI::findObject(env, content.first);
+            break;
+        default:
+            break;
+        }
+        jobject value{nullptr};
+        switch(valueType()){
+        case PointerToQObject:
+            value = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.second));
+            break;
+        case FunctionPointer:
+            if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
+                value = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
+                break;
+            }
+            Q_FALLTHROUGH();
+        case Pointer:
+            value = QtJambiAPI::findObject(env, content.second);
+            break;
+        default:
+            break;
+        }
+        Java::Runtime::Map::put(env, map, key, value);
+    }
+    clearRC(env, container.object);
+    putAllRC(env, container.object, map);
+}
+
+void PointersRCMultiHashAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperMultiHashAccess::swap(env, container, container2);
+    if(PointersRCMultiHashAccess* access = dynamic_cast<PointersRCMultiHashAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void PointersRCMultiHashAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperMultiHashAccess::assign(env, container, container2);
+    updateRC(env, container);
+}
+
+void PointersRCMultiHashAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperMultiHashAccess::clear(env, container);
+    updateRC(env, container);
+}
+
+void PointersRCMultiHashAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperMultiHashAccess::insert(env, container, key, value);
+    updateRC(env, container);
+}
+
+void PointersRCMultiHashAccess::replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperMultiHashAccess::replace(env, container, key, value);
+    updateRC(env, container);
+}
+
+void PointersRCMultiHashAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) {
+    WrapperMultiHashAccess::unite(env, container, other);
+    updateRC(env, container);
+}
+
+jint PointersRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    jint result = WrapperMultiHashAccess::remove(env, container, key);
+    updateRC(env, container);
+    return result;
+}
+
+jint PointersRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    jint result = WrapperMultiHashAccess::remove(env, container, key, value);
+    updateRC(env, container);
+    return result;
+}
+
+jobject PointersRCMultiHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
+    jobject result = WrapperMultiHashAccess::take(env, container, key);
+    removeRC(env, key, result);
+    return result;
+}
+
+NestedPointersRCListAccess::NestedPointersRCListAccess(AbstractListAccess* containerAccess)
+    : WrapperListAccess(containerAccess), ReferenceCountingSetContainer() {
+    Q_ASSERT(containerAccess!=this);
+}
+
+NestedPointersRCListAccess::NestedPointersRCListAccess(NestedPointersRCListAccess& other)
+    : WrapperListAccess(other.WrapperListAccess::clone()), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* NestedPointersRCListAccess::asRC() {return this;}
+
+NestedPointersRCListAccess* NestedPointersRCListAccess::clone(){
+    return new NestedPointersRCListAccess(*this);
+}
+
+void NestedPointersRCListAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperListAccess::swap(env, container, container2);
+    if(NestedPointersRCListAccess* access = dynamic_cast<NestedPointersRCListAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void NestedPointersRCListAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperListAccess::assign(env, container, container2);
+    updateRC(env, container);
+}
+
+void NestedPointersRCListAccess::appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) {
+    WrapperListAccess::appendList(env, container, containerInfo);
+    updateRC(env, container);
+}
+
+void NestedPointersRCListAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    if(size(env, container.container)==0){
+        clearRC(env, container.object);
+    }else{
+        JniLocalFrame frame(env, 200);
+        jobject set = Java::Runtime::HashSet::newInstance(env);
+        auto access = elementNestedContainerAccess();
+        auto iterator = elementIterator(container.container);
+        while(iterator->hasNext()){
+            unfoldAndAddContainer(env, set, iterator->next(), elementType(), elementMetaType(), access);
+        }
+        if(access)
+            access->dispose();
+        addAllRC(env, container.object, set);
+    }
+}
+
+void NestedPointersRCListAccess::replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) {
+    WrapperListAccess::replace(env, container, index, value);
+    updateRC(env, container);
+}
+
+jint NestedPointersRCListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
+    jint result = WrapperListAccess::removeAll(env, container, value);
+    if(result>0){
+        updateRC(env, container);
+    }
+    return result;
+}
+
+ContainerAndAccessInfo NestedPointersRCListAccess::mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint index1, jint index2) {
+    ContainerAndAccessInfo result = WrapperListAccess::mid(env, container, index1, index2);
+    return result;
+}
+
+void NestedPointersRCListAccess::insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) {
+    WrapperListAccess::insert(env, container, index, n, value);
+    addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
+}
+
+void NestedPointersRCListAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperListAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void NestedPointersRCListAccess::remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) {
+    WrapperListAccess::remove(env, container, index, n);
+    updateRC(env, container);
+}
+
+void NestedPointersRCListAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size){
+    WrapperListAccess::fill(env, container, value, size);
+    addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
+}
+
+NestedPointersRCSetAccess::NestedPointersRCSetAccess(AbstractSetAccess* containerAccess)
+    : WrapperSetAccess(containerAccess), ReferenceCountingSetContainer() {}
+
+NestedPointersRCSetAccess::NestedPointersRCSetAccess(NestedPointersRCSetAccess& other)
+    : WrapperSetAccess(other.WrapperSetAccess::clone()), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* NestedPointersRCSetAccess::asRC() {return this;}
+
+NestedPointersRCSetAccess* NestedPointersRCSetAccess::clone(){
+    return new NestedPointersRCSetAccess(*this);
+}
+
+void NestedPointersRCSetAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    if(size(env, container.container)==0){
+        clearRC(env, container.object);
+    }else{
+        JniLocalFrame frame(env, 200);
+        jobject set = Java::Runtime::HashSet::newInstance(env);
+        auto access = elementNestedContainerAccess();
+        auto iterator = elementIterator(container.container);
+        while(iterator->hasNext()){
+            unfoldAndAddContainer(env, set, iterator->next(), elementType(), elementMetaType(), access);
+        }
+        if(access)
+            access->dispose();
+        addAllRC(env, container.object, set);
+    }
+}
+
+void NestedPointersRCSetAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperSetAccess::swap(env, container, container2);
+    if(NestedPointersRCSetAccess* access = dynamic_cast<NestedPointersRCSetAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void NestedPointersRCSetAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperSetAccess::assign(env, container, container2);
+    updateRC(env, container);
+}
+
+void NestedPointersRCSetAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperSetAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void NestedPointersRCSetAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject value){
+    WrapperSetAccess::insert(env, container, value);
+    addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
+}
+
+jboolean NestedPointersRCSetAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject value){
+    jboolean result = WrapperSetAccess::remove(env, container, value);
+    updateRC(env, container);
+    return result;
+}
+
+void NestedPointersRCSetAccess::intersect(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
+    WrapperSetAccess::intersect(env, container, other);
+    updateRC(env, container);
+}
+
+void NestedPointersRCSetAccess::subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
+    WrapperSetAccess::subtract(env, container, other);
+    updateRC(env, container);
+}
+
+void NestedPointersRCSetAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
+    WrapperSetAccess::unite(env, container, other);
+    updateRC(env, container);
+}
+
+NestedPointersRCMapAccess::NestedPointersRCMapAccess(AbstractMapAccess* containerAccess)
+    : WrapperMapAccess(containerAccess), ReferenceCountingSetContainer() {}
+
+NestedPointersRCMapAccess::NestedPointersRCMapAccess(NestedPointersRCMapAccess& other)
+    : WrapperMapAccess(other.WrapperMapAccess::clone()), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* NestedPointersRCMapAccess::asRC() {return this;}
+
+NestedPointersRCMapAccess* NestedPointersRCMapAccess::clone(){
+    return new NestedPointersRCMapAccess(*this);
+}
+
+void NestedPointersRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    if(size(env, container.container)==0){
+        clearRC(env, container.object);
+    }else{
+        JniLocalFrame frame(env, 200);
+        jobject set = Java::Runtime::HashSet::newInstance(env);
+        auto access1 = keyNestedContainerAccess();
+        auto access2 = valueNestedContainerAccess();
+        auto iterator = constKeyValueIterator(container.container);
+        while(iterator->hasNext()){
+            auto current = iterator->next();
+            unfoldAndAddContainer(env, set, current.first, keyType(), keyMetaType(), access1);
+            unfoldAndAddContainer(env, set, current.second, valueType(), valueMetaType(), access2);
+        }
+        if(access1)
+            access1->dispose();
+        if(access2)
+            access2->dispose();
+        addAllRC(env, container.object, set);
+    }
+}
+
+void NestedPointersRCMapAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperMapAccess::swap(env, container, container2);
+    if(NestedPointersRCMapAccess* access = dynamic_cast<NestedPointersRCMapAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void NestedPointersRCMapAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperMapAccess::assign(env, container, container2);
+    if(NestedPointersRCMapAccess* access = dynamic_cast<NestedPointersRCMapAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void NestedPointersRCMapAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperMapAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void NestedPointersRCMapAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperMapAccess::insert(env, container, key, value);
+    addNestedValueRC(env, container.object, keyType(), hasKeyNestedPointers(), key);
+    addNestedValueRC(env, container.object, valueType(), hasValueNestedPointers(), value);
+}
+
+jint NestedPointersRCMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    jint result = WrapperMapAccess::remove(env, container, key);
+    if(result>0){
+        updateRC(env, container);
+    }
+    return result;
+}
+
+jobject NestedPointersRCMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
+    jobject result = WrapperMapAccess::take(env, container, key);
+    updateRC(env, container);
+    return result;
+}
+
+NestedPointersRCMultiMapAccess::NestedPointersRCMultiMapAccess(AbstractMultiMapAccess* containerAccess)
+    : WrapperMultiMapAccess(containerAccess), ReferenceCountingSetContainer() {}
+
+NestedPointersRCMultiMapAccess::NestedPointersRCMultiMapAccess(NestedPointersRCMultiMapAccess& other)
+    : WrapperMultiMapAccess(other.WrapperMultiMapAccess::clone()), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* NestedPointersRCMultiMapAccess::asRC() {return this;}
+
+NestedPointersRCMultiMapAccess* NestedPointersRCMultiMapAccess::clone(){
+    return new NestedPointersRCMultiMapAccess(*this);
+}
+
+void NestedPointersRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    if(size(env, container.container)==0){
+        clearRC(env, container.object);
+    }else{
+        JniLocalFrame frame(env, 200);
+        jobject set = Java::Runtime::HashSet::newInstance(env);
+        auto access1 = keyNestedContainerAccess();
+        auto access2 = valueNestedContainerAccess();
+        auto iterator = constKeyValueIterator(container.container);
+        while(iterator->hasNext()){
+            auto current = iterator->next();
+            unfoldAndAddContainer(env, set, current.first, keyType(), keyMetaType(), access1);
+            unfoldAndAddContainer(env, set, current.second, valueType(), valueMetaType(), access2);
+        }
+        if(access1)
+            access1->dispose();
+        if(access2)
+            access2->dispose();
+        addAllRC(env, container.object, set);
+    }
+}
+
+void NestedPointersRCMultiMapAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperMultiMapAccess::swap(env, container, container2);
+    if(NestedPointersRCMultiMapAccess* access = dynamic_cast<NestedPointersRCMultiMapAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void NestedPointersRCMultiMapAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperMultiMapAccess::assign(env, container, container2);
+    if(NestedPointersRCMultiMapAccess* access = dynamic_cast<NestedPointersRCMultiMapAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void NestedPointersRCMultiMapAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperMultiMapAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void NestedPointersRCMultiMapAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperMultiMapAccess::insert(env, container, key, value);
+    addNestedValueRC(env, container.object, keyType(), hasKeyNestedPointers(), key);
+    addNestedValueRC(env, container.object, valueType(), hasValueNestedPointers(), value);
+}
+
+void NestedPointersRCMultiMapAccess::replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperMultiMapAccess::replace(env, container, key, value);
+    updateRC(env, container);
+}
+
+
+void NestedPointersRCMultiMapAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) {
+    WrapperMultiMapAccess::unite(env, container, other);
+    updateRC(env, container);
+}
+
+jint NestedPointersRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    jint result = WrapperMultiMapAccess::remove(env, container, key);
+    if(result>0){
+        updateRC(env, container);
+    }
+    return result;
+}
+
+jint NestedPointersRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    jint result = WrapperMultiMapAccess::remove(env, container, key, value);
+    if(result>0){
+        updateRC(env, container);
+    }
+    return result;
+}
+
+jobject NestedPointersRCMultiMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
+    jobject result = WrapperMultiMapAccess::take(env, container, key);
+    updateRC(env, container);
+    return result;
+}
+
+NestedPointersRCHashAccess::NestedPointersRCHashAccess(AbstractHashAccess* containerAccess)
+    : WrapperHashAccess(containerAccess), ReferenceCountingSetContainer() {}
+
+NestedPointersRCHashAccess::NestedPointersRCHashAccess(NestedPointersRCHashAccess& other)
+    : WrapperHashAccess(other.WrapperHashAccess::clone()), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* NestedPointersRCHashAccess::asRC() {return this;}
+
+NestedPointersRCHashAccess* NestedPointersRCHashAccess::clone(){
+    return new NestedPointersRCHashAccess(*this);
+}
+
+void NestedPointersRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    if(size(env, container.container)==0){
+        clearRC(env, container.object);
+    }else{
+        JniLocalFrame frame(env, 200);
+        jobject set = Java::Runtime::HashSet::newInstance(env);
+        auto access1 = keyNestedContainerAccess();
+        auto access2 = valueNestedContainerAccess();
+        auto iterator = constKeyValueIterator(container.container);
+        while(iterator->hasNext()){
+            auto current = iterator->next();
+            unfoldAndAddContainer(env, set, current.first, keyType(), keyMetaType(), access1);
+            unfoldAndAddContainer(env, set, current.second, valueType(), valueMetaType(), access2);
+        }
+        if(access1)
+            access1->dispose();
+        if(access2)
+            access2->dispose();
+        addAllRC(env, container.object, set);
+    }
+}
+
+void NestedPointersRCHashAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperHashAccess::swap(env, container, container2);
+    if(NestedPointersRCHashAccess* access = dynamic_cast<NestedPointersRCHashAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void NestedPointersRCHashAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperHashAccess::assign(env, container, container2);
+    if(NestedPointersRCHashAccess* access = dynamic_cast<NestedPointersRCHashAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void NestedPointersRCHashAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperHashAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void NestedPointersRCHashAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperHashAccess::insert(env, container, key, value);
+    addNestedValueRC(env, container.object, keyType(), hasKeyNestedPointers(), key);
+    addNestedValueRC(env, container.object, valueType(), hasValueNestedPointers(), value);
+}
+
+jint NestedPointersRCHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    jint result = WrapperHashAccess::remove(env, container, key);
+    if(result>0){
+        removeRC(env, container.object, key);
+    }
+    return result;
+}
+
+jobject NestedPointersRCHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
+    jobject result = WrapperHashAccess::take(env, container, key);
+    removeRC(env, container.object, key);
+    return result;
+}
+
+NestedPointersRCMultiHashAccess::NestedPointersRCMultiHashAccess(AbstractMultiHashAccess* containerAccess)
+    : WrapperMultiHashAccess(containerAccess), ReferenceCountingSetContainer() {}
+
+NestedPointersRCMultiHashAccess::NestedPointersRCMultiHashAccess(NestedPointersRCMultiHashAccess& other)
+    : WrapperMultiHashAccess(other.WrapperMultiHashAccess::clone()), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* NestedPointersRCMultiHashAccess::asRC() {return this;}
+
+NestedPointersRCMultiHashAccess* NestedPointersRCMultiHashAccess::clone(){
+    return new NestedPointersRCMultiHashAccess(*this);
+}
+
+void NestedPointersRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
+    if(size(env, container.container)==0){
+        clearRC(env, container.object);
+    }else{
+        JniLocalFrame frame(env, 200);
+        jobject set = Java::Runtime::HashSet::newInstance(env);
+        auto access1 = keyNestedContainerAccess();
+        auto access2 = valueNestedContainerAccess();
+        auto iterator = constKeyValueIterator(container.container);
+        while(iterator->hasNext()){
+            auto current = iterator->next();
+            unfoldAndAddContainer(env, set, current.first, keyType(), keyMetaType(), access1);
+            unfoldAndAddContainer(env, set, current.second, valueType(), valueMetaType(), access2);
+        }
+        if(access1)
+            access1->dispose();
+        if(access2)
+            access2->dispose();
+        addAllRC(env, container.object, set);
+    }
+}
+
+void NestedPointersRCMultiHashAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
+    WrapperMultiHashAccess::swap(env, container, container2);
+    if(NestedPointersRCMultiHashAccess* access = dynamic_cast<NestedPointersRCMultiHashAccess*>(container2.access)){
+        if(access!=this)
+            swapRC(env, container, container2);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void NestedPointersRCMultiHashAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
+    WrapperMultiHashAccess::assign(env, container, container2);
+    if(NestedPointersRCMultiHashAccess* access = dynamic_cast<NestedPointersRCMultiHashAccess*>(container2.access)){
+        if(access!=this)
+            assignRC(env, container.object, container2.object);
+    }else{
+        updateRC(env, container);
+    }
+}
+
+void NestedPointersRCMultiHashAccess::clear(JNIEnv * env, const ContainerInfo& container) {
+    WrapperMultiHashAccess::clear(env, container);
+    clearRC(env, container.object);
+}
+
+void NestedPointersRCMultiHashAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperMultiHashAccess::insert(env, container, key, value);
+    addNestedValueRC(env, container.object, keyType(), hasKeyNestedPointers(), key);
+    addNestedValueRC(env, container.object, valueType(), hasValueNestedPointers(), value);
+}
+
+void NestedPointersRCMultiHashAccess::replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    WrapperMultiHashAccess::replace(env, container, key, value);
+    updateRC(env, container);
+}
+
+void NestedPointersRCMultiHashAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) {
+    WrapperMultiHashAccess::unite(env, container, other);
+    updateRC(env, container);
+}
+
+jint NestedPointersRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    jint result = WrapperMultiHashAccess::remove(env, container, key);
+    if(result>0){
+        removeRC(env, container.object, key);
+    }
+    return result;
+}
+
+jint NestedPointersRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    jint result = WrapperMultiHashAccess::remove(env, container, key, value);
+    if(result>0){
+        updateRC(env, container);
+    }
+    return result;
+}
+
+jobject NestedPointersRCMultiHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
+    jobject result = WrapperMultiHashAccess::take(env, container, key);
+    updateRC(env, container);
+    return result;
+}
+
+void registerPointerContainerAccess(){
+    using namespace ContainerAccessAPI;
+    SequentialContainerAccessFactoryHelper<QList, 0, 0, false>::registerContainerAccessFactory();
+    SequentialContainerAccessFactoryHelper<QSet, 0, 0, false>::registerContainerAccessFactory();
+    AssociativeContainerAccessFactoryHelper<QHash,0, 0, 0, 0>::registerContainerAccessFactory();
+    AssociativeContainerAccessFactoryHelper<QMap,0, 0, 0, 0>::registerContainerAccessFactory();
+    AssociativeContainerAccessFactoryHelper<QMultiMap,0, 0, 0, 0>::registerContainerAccessFactory();
+    AssociativeContainerAccessFactoryHelper<QMultiHash,0, 0, 0, 0>::registerContainerAccessFactory();
+    AssociativeContainerAccessFactoryHelper<QPair,0, 0, 0, 0>::registerContainerAccessFactory();
+    AssociativeContainerAccessFactoryHelper<QHash, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
+    AssociativeContainerAccessFactoryHelper<QMap, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
+    AssociativeContainerAccessFactoryHelper<QMultiMap, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
+    AssociativeContainerAccessFactoryHelper<QMultiHash, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
+    AssociativeContainerAccessFactoryHelper<QPair, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
+    AssociativeContainerAccessFactoryHelper<QHash, alignof(int), sizeof(int), 0, 0>::registerContainerAccessFactory();
+    AssociativeContainerAccessFactoryHelper<QMap, alignof(int), sizeof(int), 0, 0>::registerContainerAccessFactory();
+    AssociativeContainerAccessFactoryHelper<QMultiMap, alignof(int), sizeof(int), 0, 0>::registerContainerAccessFactory();
+    AssociativeContainerAccessFactoryHelper<QMultiHash, alignof(int), sizeof(int), 0, 0>::registerContainerAccessFactory();
+    AssociativeContainerAccessFactoryHelper<QPair, alignof(int), sizeof(int), 0, 0>::registerContainerAccessFactory();
+}
+
+AbstractWrapperContainerAccess* AbstractContainerAccess::asWrapper() {return nullptr;}
+
+#endif //defined(QTJAMBI_GENERIC_ACCESS)
+
+QPair<void*,AbstractContainerAccess*> ContainerAPI::fromNativeId(QtJambiNativeID nativeId){
+    if(!!nativeId){
+        QtJambiLink *lnk = reinterpret_cast<QtJambiLink *>(nativeId);
+        return {lnk->pointer(), lnk->containerAccess()};
+    }else{
+        return {nullptr,nullptr};
+    }
+}
+
+QPair<void*,AbstractContainerAccess*> ContainerAPI::fromJavaOwner(JNIEnv *env, jobject object){
+    if(QSharedPointer<QtJambiLink> lnk = QtJambiLink::findLinkForJavaObject(env, object)){
+        if(lnk->containerAccess()){
+            return {lnk->pointer(), lnk->containerAccess()};
+        }
+    }
+    return {nullptr,nullptr};
+}
+
+AbstractContainerAccess::DataType dataType(const QMetaType& metaType, const QSharedPointer<AbstractContainerAccess>& access){
+    if(access){
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+        if(access->isSpan())
+            return AbstractContainerAccess::Pointer;
+#endif
+        if(metaType.flags().testFlag(QMetaType::IsPointer))
+            return AbstractContainerAccess::Pointer;
+        return AbstractContainerAccess::Value;
+    }else if(metaType.flags().testFlag(QMetaType::PointerToQObject)){
+        return AbstractContainerAccess::PointerToQObject;
+    }else{
+        if(metaType.flags().testFlag(QMetaType::IsPointer)){
+            if(const std::type_info* typeId = getTypeByMetaType(metaType)){
+                if(registeredFunctionalResolver(*typeId)){
+                    return AbstractContainerAccess::FunctionPointer;
+                }
+            }else if(QByteArrayView(metaType.name()).contains("(*)")){
+                return AbstractContainerAccess::FunctionPointer;
+            }
+            return AbstractContainerAccess::Pointer;
+        }else{
+            return AbstractContainerAccess::Value;
+        }
+    }
+}
+
+AbstractContainerAccess::DataType AbstractContainerAccess::dataType(const QMetaType& metaType, const QSharedPointer<AbstractContainerAccess>& access){
+    return ::dataType(metaType, access);
+}
+
+class OwnerFunctionalPrivate : public QSharedData{
+protected:
+    OwnerFunctionalPrivate() noexcept;
+public:
+    virtual ~OwnerFunctionalPrivate();
+    virtual const QObject* invoke(const void *) const = 0;
+    friend class OwnerFunctional;
+};
+
+class OwnerFunctional{
+public:
+    typedef const QObject*(*FunctionPointer)(const void *);
+
+private:
+    explicit OwnerFunctional(OwnerFunctionalPrivate* _d) noexcept;
+    template<typename Functor, bool = std::is_assignable<FunctionPointer&, Functor>::value, bool = std::is_same<Functor, OwnerFunctional>::value>
+    class Data : public OwnerFunctionalPrivate{
+    public:
+        inline static OwnerFunctionalPrivate* from(Functor&& functor){
+            return new Data(std::forward<Functor>(functor));
+        }
+        inline const QObject* invoke(const void *container) const override {
+            return m_functor(container);
+        }
+    private:
+        inline Data(Functor&& functor) noexcept : m_functor(std::forward<Functor>(functor)){}
+        Functor m_functor;
+    };
+    template<typename Functor>
+    struct Data<Functor,false,true>{
+        inline static const OwnerFunctional& from(const OwnerFunctional& function){
+            return function;
+        }
+        inline static OwnerFunctional&& from(OwnerFunctional&& function){
+            return std::move(function);
+        }
+    };
+    template<typename Functor>
+    struct Data<Functor,true,false>{
+        inline static FunctionPointer from(Functor&& functor){
+            return FunctionPointer(functor);
+        }
+    };
+public:
+    OwnerFunctional() noexcept;
+    OwnerFunctional(const OwnerFunctional& other) noexcept;
+    OwnerFunctional(OwnerFunctional&& other) noexcept;
+    OwnerFunctional(FunctionPointer functor) noexcept;
+
+    OwnerFunctional& operator=(const OwnerFunctional& other) noexcept;
+    OwnerFunctional& operator=(OwnerFunctional& other) noexcept;
+    OwnerFunctional& operator=(OwnerFunctional&& other) noexcept;
+
+    template<typename Functor, typename = std::enable_if_t<std::is_invocable_r_v<const QObject*, Functor, const void *>>>
+    OwnerFunctional(Functor&& functor) noexcept
+        : OwnerFunctional(Data<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::from(std::forward<Functor>(functor))){}
+
+    bool operator==(const OwnerFunctional& other) const noexcept;
+    const QObject* operator()(const void *container) const;
+    operator bool() const noexcept;
+    bool operator !() const noexcept;
+private:
+    template<typename, bool, bool> friend class Data;
+    QExplicitlySharedDataPointer<OwnerFunctionalPrivate> d;
+};
+
+class OwnerFunctionalPointerData : public OwnerFunctionalPrivate{
+public:
+    inline OwnerFunctionalPointerData(OwnerFunctional::FunctionPointer functionPointer) noexcept
+     : m_functionPointer(functionPointer){Q_ASSERT(functionPointer);}
+    inline const QObject* invoke(const void *container) const override
+     { return m_functionPointer(container); }
+private:
+    OwnerFunctional::FunctionPointer m_functionPointer;
+};
+OwnerFunctional::OwnerFunctional(FunctionPointer functor) noexcept
+    : d(!functor ? nullptr : new OwnerFunctionalPointerData(functor)){}
+
+OwnerFunctionalPrivate::OwnerFunctionalPrivate() noexcept {}
+OwnerFunctionalPrivate::~OwnerFunctionalPrivate() {}
+OwnerFunctional::OwnerFunctional() noexcept : d(){}
+OwnerFunctional::OwnerFunctional(const OwnerFunctional& other) noexcept : d(other.d) {}
+OwnerFunctional::OwnerFunctional(OwnerFunctional&& other) noexcept : d(std::move(other.d)) {}
+OwnerFunctional::OwnerFunctional(OwnerFunctionalPrivate* _d) noexcept : d(_d) {}
+OwnerFunctional& OwnerFunctional::operator=(OwnerFunctional& other) noexcept { d = other.d; return *this; }
+OwnerFunctional& OwnerFunctional::operator=(const OwnerFunctional& other) noexcept { d = other.d; return *this; }
+OwnerFunctional& OwnerFunctional::operator=(OwnerFunctional&& other) noexcept { d = std::move(other.d); return *this; }
+bool OwnerFunctional::operator==(const OwnerFunctional& other) const noexcept { return d == other.d; }
+
+OwnerFunctional::operator bool() const noexcept{
+    return d;
+}
+
+bool OwnerFunctional::operator !() const noexcept{
+    return !d;
+}
+
+const QObject* OwnerFunctional::operator()(const void *container) const{
+    return d->invoke(container);
+}
+
 bool AbstractContainerAccess::isPointerType(const QMetaType& metaType){
     return metaType.flags().testFlag(QMetaType::IsPointer);
 }
@@ -1915,7 +4102,9 @@ std::function<AbstractContainerAccess*()> getContainerAccessFactory(AssociativeC
 void registerContainerAccessFactory(SequentialContainerType containerType, const QMetaType& elementType, std::function<AbstractContainerAccess*()>&& factory);
 void registerContainerAccessFactory(AssociativeContainerType containerType, const QMetaType& keyType, const QMetaType& valueType, std::function<AbstractContainerAccess*()>&& factory);
 
-namespace ContainerAccessAPI {
+#if defined(QTJAMBI_GENERIC_ACCESS)
+namespace ContainerAccessAPI{
+#endif
 
 size_t pointerHashFunction(const void* ptr, size_t seed){ return !ptr ? 0 : ::qHash(*reinterpret_cast<QHashDummyValue*const*>(ptr), seed);}
 
@@ -2231,11 +4420,14 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, SequentialContainerT
     AbstractContainerAccess::DataType elementType = dataType(metaType, memberNestedContainerAccess);
     bool hasNestedPointers = false;
     if(memberNestedContainerAccess && (elementType & AbstractContainerAccess::PointersMask)==0){
-        if(auto daccess = dynamic_cast<AbstractSequentialAccess*>(memberNestedContainerAccess.data())){
+        if(memberNestedContainerAccess->isSequential()){
+            auto daccess = static_cast<AbstractSequentialAccess*>(memberNestedContainerAccess.data());
             hasNestedPointers = (daccess->elementType() & AbstractContainerAccess::PointersMask) || daccess->hasNestedPointers();
-        }else if(auto daccess = dynamic_cast<AbstractAssociativeAccess*>(memberNestedContainerAccess.data())){
+        }else if(memberNestedContainerAccess->isAssociative()){
+            auto daccess = static_cast<AbstractAssociativeAccess*>(memberNestedContainerAccess.data());
             hasNestedPointers = (daccess->keyType() & AbstractContainerAccess::PointersMask) || daccess->hasKeyNestedPointers() || (daccess->valueType() & AbstractContainerAccess::PointersMask) || daccess->hasValueNestedPointers();
-        }else if(auto daccess = dynamic_cast<AbstractPairAccess*>(memberNestedContainerAccess.data())){
+        }else if(memberNestedContainerAccess->isPair()){
+            auto daccess = static_cast<AbstractPairAccess*>(memberNestedContainerAccess.data());
             hasNestedPointers = (daccess->firstType() & AbstractContainerAccess::PointersMask) || daccess->hasFirstNestedPointers() || (daccess->secondType() & AbstractContainerAccess::PointersMask) || daccess->hasSecondNestedPointers();
         }
     }
@@ -2433,20 +4625,26 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
     bool hasNestedPointers1 = false;
     bool hasNestedPointers2 = false;
     if(memberNestedContainerAccess1 && (memberType1 & AbstractContainerAccess::PointersMask)==0){
-        if(auto daccess = dynamic_cast<AbstractSequentialAccess*>(memberNestedContainerAccess1.data())){
+        if(memberNestedContainerAccess1->isSequential()){
+            auto daccess = static_cast<AbstractSequentialAccess*>(memberNestedContainerAccess1.data());
             hasNestedPointers1 = (daccess->elementType() & AbstractContainerAccess::PointersMask) || daccess->hasNestedPointers();
-        }else if(auto daccess = dynamic_cast<AbstractAssociativeAccess*>(memberNestedContainerAccess1.data())){
+        }else if(memberNestedContainerAccess1->isAssociative()){
+            auto daccess = static_cast<AbstractAssociativeAccess*>(memberNestedContainerAccess1.data());
             hasNestedPointers1 = (daccess->keyType() & AbstractContainerAccess::PointersMask) || daccess->hasKeyNestedPointers() || (daccess->valueType() & AbstractContainerAccess::PointersMask) || daccess->hasValueNestedPointers();
-        }else if(auto daccess = dynamic_cast<AbstractPairAccess*>(memberNestedContainerAccess1.data())){
+        }else if(memberNestedContainerAccess1->isPair()){
+            auto daccess = static_cast<AbstractPairAccess*>(memberNestedContainerAccess1.data());
             hasNestedPointers1 = (daccess->firstType() & AbstractContainerAccess::PointersMask) || daccess->hasFirstNestedPointers() || (daccess->secondType() & AbstractContainerAccess::PointersMask) || daccess->hasSecondNestedPointers();
         }
     }
     if(memberNestedContainerAccess2 && (memberType2 & AbstractContainerAccess::PointersMask)==0){
-        if(auto daccess = dynamic_cast<AbstractSequentialAccess*>(memberNestedContainerAccess2.data())){
+        if(memberNestedContainerAccess2->isSequential()){
+            auto daccess = static_cast<AbstractSequentialAccess*>(memberNestedContainerAccess2.data());
             hasNestedPointers2 = (daccess->elementType() & AbstractContainerAccess::PointersMask) || daccess->hasNestedPointers();
-        }else if(auto daccess = dynamic_cast<AbstractAssociativeAccess*>(memberNestedContainerAccess2.data())){
+        }else if(memberNestedContainerAccess2->isAssociative()){
+            auto daccess = static_cast<AbstractAssociativeAccess*>(memberNestedContainerAccess2.data());
             hasNestedPointers2 = (daccess->keyType() & AbstractContainerAccess::PointersMask) || daccess->hasKeyNestedPointers() || (daccess->valueType() & AbstractContainerAccess::PointersMask) || daccess->hasValueNestedPointers();
-        }else if(auto daccess = dynamic_cast<AbstractPairAccess*>(memberNestedContainerAccess2.data())){
+        }else if(memberNestedContainerAccess2->isPair()){
+            auto daccess = static_cast<AbstractPairAccess*>(memberNestedContainerAccess2.data());
             hasNestedPointers2 = (daccess->firstType() & AbstractContainerAccess::PointersMask) || daccess->hasFirstNestedPointers() || (daccess->secondType() & AbstractContainerAccess::PointersMask) || daccess->hasSecondNestedPointers();
         }
     }
@@ -3075,237 +5273,22 @@ AbstractContainerAccess* createContainerAccess(JNIEnv* env, AssociativeContainer
     return containerAccess;
 }
 
-}//namespace ContainerAccessAPI
-
-void containerDisposer(AbstractContainerAccess* _access){_access->dispose();}
-
 #if defined(QTJAMBI_GENERIC_ACCESS)
+}//namespace ContainerAccessAPI
+#endif
 
-AbstractListAccess* checkContainerAccess(JNIEnv * env, AbstractListAccess* containerAccess){
-    QtJambiAPI::checkNullPointer(env, containerAccess);
-    if(!dynamic_cast<AbstractReferenceCountingContainer*>(containerAccess)){
-        switch(containerAccess->elementType()){
-        case AbstractContainerAccess::Pointer:
-        case AbstractContainerAccess::FunctionPointer:
-        case AbstractContainerAccess::PointerToQObject:
-            containerAccess = new PointerRCListAccess(containerAccess);
-            break;
-        default:
-            if(containerAccess->hasNestedPointers())
-                containerAccess = new NestedPointersRCListAccess(containerAccess);
-            break;
-        }
-    }
-    return containerAccess;
+void containerDisposer(AbstractContainerAccess* _access){
+    if(_access)
+        _access->dispose();
 }
-
-AbstractSetAccess* checkContainerAccess(JNIEnv * env, AbstractSetAccess* containerAccess){
-    QtJambiAPI::checkNullPointer(env, containerAccess);
-    if(!dynamic_cast<AbstractReferenceCountingContainer*>(containerAccess)){
-        switch(containerAccess->elementType()){
-        case AbstractContainerAccess::Pointer:
-        case AbstractContainerAccess::FunctionPointer:
-        case AbstractContainerAccess::PointerToQObject:
-            containerAccess = new PointerRCSetAccess(containerAccess);
-            break;
-        default:
-            if(containerAccess->hasNestedPointers())
-                containerAccess = new NestedPointersRCSetAccess(containerAccess);
-            break;
-        }
-    }
-    return containerAccess;
-}
-
-AbstractHashAccess* checkContainerAccess(JNIEnv * env, AbstractHashAccess* containerAccess){
-    QtJambiAPI::checkNullPointer(env, containerAccess);
-    if(!dynamic_cast<AbstractReferenceCountingContainer*>(containerAccess)){
-        switch(containerAccess->keyType()){
-        case AbstractContainerAccess::Pointer:
-        case AbstractContainerAccess::FunctionPointer:
-        case AbstractContainerAccess::PointerToQObject:
-            switch(containerAccess->valueType()){
-            case AbstractContainerAccess::Pointer:
-            case AbstractContainerAccess::FunctionPointer:
-            case AbstractContainerAccess::PointerToQObject:
-                containerAccess = new PointersRCHashAccess(containerAccess);
-                break;
-            default:
-                if(containerAccess->hasValueNestedPointers()){
-                    containerAccess = new NestedPointersRCHashAccess(containerAccess);
-                }else{
-                    containerAccess = new KeyPointerRCHashAccess(containerAccess);
-                }
-                break;
-            }
-            break;
-        default:{
-                if(containerAccess->hasKeyNestedPointers()){
-                    containerAccess = new NestedPointersRCHashAccess(containerAccess);
-                }else{
-                    switch(containerAccess->valueType()){
-                    case AbstractContainerAccess::Pointer:
-                    case AbstractContainerAccess::FunctionPointer:
-                    case AbstractContainerAccess::PointerToQObject:
-                        containerAccess = new ValuePointerRCHashAccess(containerAccess);
-                        break;
-                    default:
-                        if(containerAccess->hasValueNestedPointers()){
-                            containerAccess = new NestedPointersRCHashAccess(containerAccess);
-                        }
-                        break;
-                    }
-                }
-            }
-            break;
-        }
-    }
-    return containerAccess;
-}
-
-AbstractMapAccess* checkContainerAccess(JNIEnv * env, AbstractMapAccess* containerAccess){
-    QtJambiAPI::checkNullPointer(env, containerAccess);
-    if(!dynamic_cast<AbstractReferenceCountingContainer*>(containerAccess)){
-        switch(containerAccess->keyType()){
-        case AbstractContainerAccess::Pointer:
-        case AbstractContainerAccess::FunctionPointer:
-        case AbstractContainerAccess::PointerToQObject:
-            switch(containerAccess->valueType()){
-            case AbstractContainerAccess::Pointer:
-            case AbstractContainerAccess::FunctionPointer:
-            case AbstractContainerAccess::PointerToQObject:
-                containerAccess = new PointersRCMapAccess(containerAccess);
-                break;
-            default:
-                if(containerAccess->hasValueNestedPointers()){
-                    containerAccess = new NestedPointersRCMapAccess(containerAccess);
-                }else{
-                    containerAccess = new KeyPointerRCMapAccess(containerAccess);
-                }
-                break;
-            }
-            break;
-        default:
-            if(containerAccess->hasKeyNestedPointers()){
-                containerAccess = new NestedPointersRCMapAccess(containerAccess);
-            }else{
-                switch(containerAccess->valueType()){
-                case AbstractContainerAccess::Pointer:
-                case AbstractContainerAccess::FunctionPointer:
-                case AbstractContainerAccess::PointerToQObject:
-                    containerAccess = new ValuePointerRCMapAccess(containerAccess);
-                    break;
-                default:
-                    if(containerAccess->hasValueNestedPointers()){
-                        containerAccess = new NestedPointersRCMapAccess(containerAccess);
-                    }
-                    break;
-                }
-            }
-            break;
-        }
-    }
-    return containerAccess;
-}
-
-AbstractMultiHashAccess* checkContainerAccess(JNIEnv * env, AbstractMultiHashAccess* containerAccess){
-    QtJambiAPI::checkNullPointer(env, containerAccess);
-    if(!dynamic_cast<AbstractReferenceCountingContainer*>(containerAccess)){
-        switch(containerAccess->keyType()){
-        case AbstractContainerAccess::Pointer:
-        case AbstractContainerAccess::FunctionPointer:
-        case AbstractContainerAccess::PointerToQObject:
-            switch(containerAccess->valueType()){
-            case AbstractContainerAccess::Pointer:
-            case AbstractContainerAccess::FunctionPointer:
-            case AbstractContainerAccess::PointerToQObject:
-                containerAccess = new PointersRCMultiHashAccess(containerAccess);
-                break;
-            default:
-                if(containerAccess->hasValueNestedPointers()){
-                    containerAccess = new NestedPointersRCMultiHashAccess(containerAccess);
-                }else{
-                    containerAccess = new KeyPointerRCMultiHashAccess(containerAccess);
-                }
-                break;
-            }
-            break;
-        default:
-            if(containerAccess->hasKeyNestedPointers()){
-                containerAccess = new NestedPointersRCMultiHashAccess(containerAccess);
-            }else{
-                switch(containerAccess->valueType()){
-                case AbstractContainerAccess::Pointer:
-                case AbstractContainerAccess::FunctionPointer:
-                case AbstractContainerAccess::PointerToQObject:
-                    containerAccess = new ValuePointerRCMultiHashAccess(containerAccess);
-                    break;
-                default:
-                    if(containerAccess->hasValueNestedPointers()){
-                        containerAccess = new NestedPointersRCMultiHashAccess(containerAccess);
-                    }
-                    break;
-                }
-            }
-            break;
-        }
-    }
-    return containerAccess;
-}
-
-AbstractMultiMapAccess* checkContainerAccess(JNIEnv * env, AbstractMultiMapAccess* containerAccess){
-    QtJambiAPI::checkNullPointer(env, containerAccess);
-    if(!dynamic_cast<AbstractReferenceCountingContainer*>(containerAccess)){
-        switch(containerAccess->keyType()){
-        case AbstractContainerAccess::Pointer:
-        case AbstractContainerAccess::FunctionPointer:
-        case AbstractContainerAccess::PointerToQObject:
-            switch(containerAccess->valueType()){
-            case AbstractContainerAccess::Pointer:
-            case AbstractContainerAccess::FunctionPointer:
-            case AbstractContainerAccess::PointerToQObject:
-                containerAccess = new PointersRCMultiMapAccess(containerAccess);
-                break;
-            default:
-                if(containerAccess->hasValueNestedPointers()){
-                    containerAccess = new NestedPointersRCMultiMapAccess(containerAccess);
-                }else{
-                    containerAccess = new KeyPointerRCMultiMapAccess(containerAccess);
-                }
-                break;
-            }
-            break;
-        default:
-            if(containerAccess->hasKeyNestedPointers()){
-                containerAccess = new NestedPointersRCMultiMapAccess(containerAccess);
-            }else{
-                switch(containerAccess->valueType()){
-                case AbstractContainerAccess::Pointer:
-                case AbstractContainerAccess::FunctionPointer:
-                case AbstractContainerAccess::PointerToQObject:
-                    containerAccess = new ValuePointerRCMultiMapAccess(containerAccess);
-                    break;
-                default:
-                    if(containerAccess->hasValueNestedPointers()){
-                        containerAccess = new NestedPointersRCMultiMapAccess(containerAccess);
-                    }
-                    break;
-                }
-            }
-            break;
-        }
-    }
-    return containerAccess;
-}
-#endif //defined(QTJAMBI_GENERIC_ACCESS)
 
 AbstractNestedSequentialAccess::~AbstractNestedSequentialAccess(){}
 AbstractNestedAssociativeAccess::~AbstractNestedAssociativeAccess(){}
 AbstractNestedPairAccess::~AbstractNestedPairAccess(){}
-AbstractWrapperContainerAccess::~AbstractWrapperContainerAccess(){}
 
 AbstractContainerAccess::AbstractContainerAccess(){}
 AbstractContainerAccess::~AbstractContainerAccess(){}
+AbstractReferenceCountingContainer* AbstractContainerAccess::asRC() {return nullptr;}
 void AbstractContainerAccess::dispose(){}
 void* AbstractContainerAccess::createContainer(void* moved){
     size_t sz = sizeOf();
@@ -3390,6 +5373,7 @@ void AbstractContainerAccess::deleteContainer(void* container){
 }
 AbstractSequentialConstIteratorAccess::~AbstractSequentialConstIteratorAccess(){}
 AbstractSequentialConstIteratorAccess::AbstractSequentialConstIteratorAccess(){}
+AbstractContainerAccess::ContainerType AbstractSequentialConstIteratorAccess::containerType() const { return ContainerType::SequentialConstIterator; }
 const QObject* AbstractContainerAccess::getOwner(const void*){ return nullptr; }
 bool AbstractContainerAccess::hasOwnerFunction(){ return false; }
 void AbstractSequentialConstIteratorAccess::assign(void*, const void*) {}
@@ -3402,18 +5386,23 @@ void* AbstractSequentialConstIteratorAccess::constructContainer(JNIEnv *,void*,c
 void* AbstractSequentialConstIteratorAccess::constructContainer(void*,void*) {return nullptr;}
 void* AbstractSequentialConstIteratorAccess::constructContainer(JNIEnv *,void*,const ContainerAndAccessInfo&) {return nullptr;}
 bool AbstractSequentialConstIteratorAccess::destructContainer(void*) {return false;}
-QMetaType AbstractSequentialConstIteratorAccess::registerContainer(const QByteArray&) {return QMetaType(QMetaType::UnknownType);}
+QMetaType AbstractSequentialConstIteratorAccess::registerContainer(QByteArrayView) {return QMetaType(QMetaType::UnknownType);}
 
 AbstractAssociativeConstIteratorAccess::~AbstractAssociativeConstIteratorAccess(){}
 AbstractAssociativeConstIteratorAccess::AbstractAssociativeConstIteratorAccess(){}
+AbstractContainerAccess::ContainerType AbstractAssociativeConstIteratorAccess::containerType() const { return ContainerType::AssociativeConstIterator; }
 
 AbstractSequentialIteratorAccess::~AbstractSequentialIteratorAccess(){}
 AbstractSequentialIteratorAccess::AbstractSequentialIteratorAccess(){}
+AbstractContainerAccess::ContainerType AbstractSequentialIteratorAccess::containerType() const { return ContainerType::SequentialIterator; }
 AbstractAssociativeIteratorAccess::~AbstractAssociativeIteratorAccess(){}
 AbstractAssociativeIteratorAccess::AbstractAssociativeIteratorAccess(){}
+AbstractContainerAccess::ContainerType AbstractAssociativeIteratorAccess::containerType() const { return ContainerType::AssociativeIterator; }
 
 AbstractSequentialAccess::~AbstractSequentialAccess(){}
 AbstractSequentialAccess::AbstractSequentialAccess(){}
+AbstractNestedSequentialAccess* AbstractSequentialAccess::asNested() { return nullptr; }
+AbstractContainerAccess::ContainerType AbstractSequentialAccess::containerType() const { return ContainerType::Sequential; }
 AbstractSequentialAccess::ElementIterator::~ElementIterator(){}
 
 const QMetaType& AbstractSequentialAccess::ElementIterator::elementMetaType() { return access()->elementMetaType(); }
@@ -3429,6 +5418,7 @@ AbstractSpanAccess::AbstractSpanAccess(){}
 bool AbstractSpanAccess::isDetached(const void*){
     return false;
 }
+AbstractContainerAccess::ContainerType AbstractSpanAccess::containerType() const { return ContainerType::Span; }
 void AbstractSpanAccess::detach(const ContainerInfo&){}
 bool AbstractSpanAccess::isSharedWith(const void*, const void*){return false;}
 void AbstractSpanAccess::swap(JNIEnv * env, const ContainerInfo&, const ContainerAndAccessInfo&){
@@ -3441,12 +5431,16 @@ void AbstractSpanAccess::clear(JNIEnv * env, const ContainerInfo&){
 
 AbstractListAccess::~AbstractListAccess(){}
 AbstractListAccess::AbstractListAccess(){}
+AbstractContainerAccess::ContainerType AbstractListAccess::containerType() const { return ContainerType::List; }
 
 AbstractSetAccess::~AbstractSetAccess(){}
 AbstractSetAccess::AbstractSetAccess(){}
+AbstractContainerAccess::ContainerType AbstractSetAccess::containerType() const { return ContainerType::Set; }
 
 AbstractAssociativeAccess::~AbstractAssociativeAccess(){}
 AbstractAssociativeAccess::AbstractAssociativeAccess(){}
+AbstractNestedAssociativeAccess* AbstractAssociativeAccess::asNested() { return nullptr; }
+AbstractContainerAccess::ContainerType AbstractAssociativeAccess::containerType() const { return ContainerType::Associative; }
 AbstractAssociativeAccess::KeyValueIterator::~KeyValueIterator(){}
 const QMetaType& AbstractAssociativeAccess::KeyValueIterator::keyMetaType() { return access()->keyMetaType(); }
 const QMetaType& AbstractAssociativeAccess::KeyValueIterator::valueMetaType() { return access()->valueMetaType(); }
@@ -3472,6 +5466,8 @@ std::unique_ptr<AbstractSequentialAccess::ElementIterator> AbstractAssociativeAc
             bool m_hasValueNestedPointers;
             QPair<const void*,const void*> pair;
             uint index = 0;
+            std::function<jobject(JNIEnv*,const void*)> m_keyConverter;
+            std::function<jobject(JNIEnv*,const void*)> m_valueConverter;
             ElementIterator(const ElementIterator& other) :
                 m_keyMetaType(other.m_keyMetaType),
                 m_valueMetaType(other.m_valueMetaType),
@@ -3481,7 +5477,9 @@ std::unique_ptr<AbstractSequentialAccess::ElementIterator> AbstractAssociativeAc
                 m_valueNestedContainerAccess(other.m_valueNestedContainerAccess),
                 m_hasKeyNestedPointers(other.m_hasKeyNestedPointers),
                 m_hasValueNestedPointers(other.m_hasValueNestedPointers),
-                pair(other.pair), index(other.index) {}
+                pair(other.pair), index(other.index),
+                m_keyConverter(other.m_keyConverter),
+                m_valueConverter(other.m_valueConverter) {}
         public:
             ElementIterator(AbstractAssociativeAccess::KeyValueIterator* _iter) :
                 m_keyMetaType(_iter->keyMetaType()),
@@ -3492,7 +5490,9 @@ std::unique_ptr<AbstractSequentialAccess::ElementIterator> AbstractAssociativeAc
                 m_valueNestedContainerAccess(_iter->valueNestedContainerAccess()),
                 m_hasKeyNestedPointers(_iter->hasKeyNestedPointers()),
                 m_hasValueNestedPointers(_iter->hasValueNestedPointers()),
-                pair(_iter->constNext()) {}
+                pair(_iter->constNext()),
+                m_keyConverter(_iter->valueConverter()),
+                m_valueConverter(_iter->keyConverter()) {}
         protected:
             AbstractSequentialAccess* access() override { return nullptr; }
         public:
@@ -3586,6 +5586,14 @@ std::unique_ptr<AbstractSequentialAccess::ElementIterator> AbstractAssociativeAc
             std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
                 return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
             }
+            std::function<jobject(JNIEnv*,const void*)> elementConverter() const override {
+                switch(index){
+                case 0:
+                    return m_keyConverter;
+                default:
+                    return m_valueConverter;
+                }
+            }
         };
         return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(this));
     }
@@ -3631,6 +5639,9 @@ std::unique_ptr<AbstractSequentialAccess::ElementIterator> AbstractAssociativeAc
         std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
             return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
         }
+        std::function<jobject(JNIEnv*,const void*)> elementConverter() const override {
+            return iter->keyConverter();
+        }
     };
     return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(std::move(iter)));
 }
@@ -3674,26 +5685,40 @@ std::unique_ptr<AbstractSequentialAccess::ElementIterator> AbstractAssociativeAc
         std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
             return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
         }
+        std::function<jobject(JNIEnv*,const void*)> elementConverter() const override {
+            return iter->valueConverter();
+        }
     };
     return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(std::move(iter)));
 }
 
 AbstractMapAccess::~AbstractMapAccess(){}
 AbstractMapAccess::AbstractMapAccess(){}
+AbstractContainerAccess::ContainerType AbstractMapAccess::containerType() const { return ContainerType::Map; }
 
 AbstractMultiMapAccess::~AbstractMultiMapAccess(){}
 AbstractMultiMapAccess::AbstractMultiMapAccess(){}
+AbstractContainerAccess::ContainerType AbstractMultiMapAccess::containerType() const { return ContainerType::MultiMap; }
 
 AbstractHashAccess::~AbstractHashAccess(){}
 AbstractHashAccess::AbstractHashAccess(){}
+AbstractContainerAccess::ContainerType AbstractHashAccess::containerType() const { return ContainerType::Hash; }
 
 AbstractMultiHashAccess::~AbstractMultiHashAccess(){}
 AbstractMultiHashAccess::AbstractMultiHashAccess(){}
+AbstractContainerAccess::ContainerType AbstractMultiHashAccess::containerType() const { return ContainerType::MultiHash; }
 
 AbstractPairAccess::~AbstractPairAccess(){}
 AbstractPairAccess::AbstractPairAccess(){}
+AbstractNestedPairAccess* AbstractPairAccess::asNested() { return nullptr; }
+AbstractContainerAccess::ContainerType AbstractPairAccess::containerType() const { return ContainerType::Pair; }
 
 AbstractReferenceCountingContainer::~AbstractReferenceCountingContainer(){}
+
+ReferenceCountingSetContainer* AbstractReferenceCountingContainer::asRCSet() { return nullptr; }
+ReferenceCountingMapContainer* AbstractReferenceCountingContainer::asRCMap() { return nullptr; }
+ReferenceCountingMultiMapContainer* AbstractReferenceCountingContainer::asRCMultiMap() { return nullptr; }
+
 
 bool hasReferenceCounts(JNIEnv * env, jobject container){
     if(Java::QtCore::AbstractContainer::isInstanceOf(env, container)){
@@ -3730,38 +5755,43 @@ void AbstractReferenceCountingContainer::unfoldAndAddContainer(JNIEnv * env, job
             Java::Runtime::Collection::add(env, set, obj);
         break;
     default:
-        if(auto _access = dynamic_cast<AbstractPairAccess*>(access)){
-            auto elements = _access->elements(data);
-            auto firstAccess = _access->firstNestedContainerAccess();
-            auto secondAccess = _access->secondNestedContainerAccess();
-            unfoldAndAddContainer(env, set, elements.first, _access->firstType(), _access->firstMetaType(), firstAccess);
-            unfoldAndAddContainer(env, set, elements.second, _access->secondType(), _access->secondMetaType(), secondAccess);
-            if(firstAccess)
-                firstAccess->dispose();
-            if(secondAccess)
-                secondAccess->dispose();
-        }else if(auto _access = dynamic_cast<AbstractSequentialAccess*>(access)){
-            auto elementAccess = _access->elementNestedContainerAccess();
-            auto iterator = _access->constElementIterator(data);
-            while(iterator->hasNext()){
-                auto content = iterator->next();
-                unfoldAndAddContainer(env, set, content, _access->elementType(), _access->elementMetaType(), elementAccess);
+        if(access){
+            if(access->isPair()){
+                auto _access = static_cast<AbstractPairAccess*>(access);
+                auto elements = _access->elements(data);
+                auto firstAccess = _access->firstNestedContainerAccess();
+                auto secondAccess = _access->secondNestedContainerAccess();
+                unfoldAndAddContainer(env, set, elements.first, _access->firstType(), _access->firstMetaType(), firstAccess);
+                unfoldAndAddContainer(env, set, elements.second, _access->secondType(), _access->secondMetaType(), secondAccess);
+                if(firstAccess)
+                    firstAccess->dispose();
+                if(secondAccess)
+                    secondAccess->dispose();
+            }else if(access->isSequential()){
+                auto _access = static_cast<AbstractSequentialAccess*>(access);
+                auto elementAccess = _access->elementNestedContainerAccess();
+                auto iterator = _access->constElementIterator(data);
+                while(iterator->hasNext()){
+                    auto content = iterator->next();
+                    unfoldAndAddContainer(env, set, content, _access->elementType(), _access->elementMetaType(), elementAccess);
+                }
+                if(elementAccess)
+                    elementAccess->dispose();
+            }else if(access->isAssociative()){
+                auto _access = static_cast<AbstractAssociativeAccess*>(access);
+                auto keyAccess = _access->keyNestedContainerAccess();
+                auto valueAccess = _access->valueNestedContainerAccess();
+                auto iterator = _access->constKeyValueIterator(data);
+                while(iterator->hasNext()){
+                    auto content = iterator->next();
+                    unfoldAndAddContainer(env, set, content.first, _access->keyType(), _access->keyMetaType(), keyAccess);
+                    unfoldAndAddContainer(env, set, content.second, _access->valueType(), _access->valueMetaType(), valueAccess);
+                }
+                if(keyAccess)
+                    keyAccess->dispose();
+                if(valueAccess)
+                    valueAccess->dispose();
             }
-            if(elementAccess)
-                elementAccess->dispose();
-        }else if(auto _access = dynamic_cast<AbstractAssociativeAccess*>(access)){
-            auto keyAccess = _access->keyNestedContainerAccess();
-            auto valueAccess = _access->valueNestedContainerAccess();
-            auto iterator = _access->constKeyValueIterator(data);
-            while(iterator->hasNext()){
-                auto content = iterator->next();
-                unfoldAndAddContainer(env, set, content.first, _access->keyType(), _access->keyMetaType(), keyAccess);
-                unfoldAndAddContainer(env, set, content.second, _access->valueType(), _access->valueMetaType(), valueAccess);
-            }
-            if(keyAccess)
-                keyAccess->dispose();
-            if(valueAccess)
-                valueAccess->dispose();
         }
         break;
     }
@@ -4150,1944 +6180,9 @@ void ReferenceCountingMultiMapContainer::removeRC(JNIEnv * env, jobject containe
     }
 }
 
-PointerRCListAccess::~PointerRCListAccess(){}
-
-PointerRCListAccess::PointerRCListAccess(AbstractListAccess* containerAccess)
-    : WrapperListAccess(containerAccess), ReferenceCountingSetContainer() {
-    Q_ASSERT(containerAccess!=this);
-}
-
-PointerRCListAccess::PointerRCListAccess(PointerRCListAccess& other)
-    : WrapperListAccess(other.WrapperListAccess::clone()), ReferenceCountingSetContainer() {}
-
-PointerRCListAccess* PointerRCListAccess::clone(){
-    return new PointerRCListAccess(*this);
-}
-
-void PointerRCListAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    JniLocalFrame frame(env, 200);
-    jobject set = Java::Runtime::ArrayList::newInstance(env);
-    auto iterator = elementIterator(container.container);
-    while(iterator->hasNext()){
-        const void* content = iterator->next();
-        jobject obj{nullptr};
-        switch(elementType()){
-        case PointerToQObject:
-            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(elementMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            obj = QtJambiAPI::findObject(env, content);
-            break;
-        default:
-            break;
-        }
-        if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
-    }
-    clearRC(env, container.object);
-    addAllRC(env, container.object, set);
-}
-
-void PointerRCListAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperListAccess::swap(env, container, container2);
-    if(PointerRCListAccess* access = dynamic_cast<PointerRCListAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void PointerRCListAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperListAccess::assign(env, container, container2);
-    if(PointerRCListAccess* access = dynamic_cast<PointerRCListAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void PointerRCListAccess::appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) {
-    WrapperListAccess::appendList(env, container, containerInfo);
-    addAllRC(env, container.object, findContainer(env, containerInfo.object));
-}
-
-void PointerRCListAccess::replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) {
-    jobject oldValue = WrapperListAccess::at(env, container.container, index);
-    WrapperListAccess::replace(env, container, index, value);
-    if(oldValue && !WrapperListAccess::contains(env, container.container, oldValue))
-        removeRC(env, container.object, oldValue);
-    if(value)
-        addRC(env, container.object, value);
-}
-
-jint PointerRCListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    jint result = WrapperListAccess::removeAll(env, container, value);
-    removeRC(env, container.object, value, result);
-    return result;
-}
-
-void PointerRCListAccess::insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) {
-    WrapperListAccess::insert(env, container, index, n, value);
-    if(value)
-        addRC(env, container.object, value);
-}
-
-void PointerRCListAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperListAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void PointerRCListAccess::remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) {
-    if(n==1){
-        jobject oldValue = WrapperListAccess::at(env, container.container, index);
-        WrapperListAccess::remove(env, container, index, n);
-        removeRC(env, container.object, oldValue);
-    }else{
-        jint size = WrapperListAccess::size(env, container.container);
-        jobject removedValues = Java::Runtime::ArrayList::newInstance(env);
-        for(jint i = index; i<=index+n && i<size; ++i){
-            Java::Runtime::Collection::add(env, removedValues, WrapperListAccess::at(env, container.container, i));
-        }
-        WrapperListAccess::remove(env, container, index, n);
-        jobject iter = Java::Runtime::Collection::iterator(env, removedValues);
-        while(Java::Runtime::Iterator::hasNext(env, iter)){
-            jobject value = Java::Runtime::Iterator::next(env, iter);
-            removeRC(env, container.object, value);
-        }
-    }
-}
-
-void PointerRCListAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size){
-    jint oldSize = WrapperListAccess::size(env, container.container);
-    WrapperListAccess::fill(env, container, value, size);
-    for(;oldSize<size;++oldSize){
-        addRC(env, container.object, value);
-    }
-}
-
-PointerRCSetAccess::~PointerRCSetAccess(){}
-
-PointerRCSetAccess::PointerRCSetAccess(AbstractSetAccess* containerAccess)
-    : WrapperSetAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-PointerRCSetAccess::PointerRCSetAccess(PointerRCSetAccess& other)
-    : WrapperSetAccess(other.WrapperSetAccess::clone()), ReferenceCountingSetContainer() {}
-
-PointerRCSetAccess* PointerRCSetAccess::clone(){
-    return new PointerRCSetAccess(*this);
-}
-
-void PointerRCSetAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    JniLocalFrame frame(env, 200);
-    jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = elementIterator(container.container);
-    while(iterator->hasNext()){
-        const void* content = iterator->next();
-        jobject obj{nullptr};
-        switch(elementType()){
-        case PointerToQObject:
-            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(elementMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            obj = QtJambiAPI::findObject(env, content);
-            break;
-        default:
-            break;
-        }
-        if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
-    }
-    clearRC(env, container.object);
-    addAllRC(env, container.object, set);
-}
-
-void PointerRCSetAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperSetAccess::swap(env, container, container2);
-    if(PointerRCSetAccess* access = dynamic_cast<PointerRCSetAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void PointerRCSetAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperSetAccess::assign(env, container, container2);
-    if(PointerRCSetAccess* access = dynamic_cast<PointerRCSetAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void PointerRCSetAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperSetAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void PointerRCSetAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject value){
-    WrapperSetAccess::insert(env, container, value);
-    addUniqueRC(env, container.object, value);
-}
-
-jboolean PointerRCSetAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject value){
-    jboolean result = WrapperSetAccess::remove(env, container, value);
-    if(value)
-        removeRC(env, container.object, value);
-    return result;
-}
-
-void PointerRCSetAccess::intersect(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
-    WrapperSetAccess::intersect(env, container, other);
-    updateRC(env, container);
-}
-
-void PointerRCSetAccess::subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
-    WrapperSetAccess::subtract(env, container, other);
-    updateRC(env, container);
-}
-
-void PointerRCSetAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
-    WrapperSetAccess::unite(env, container, other);
-    updateRC(env, container);
-}
-
-KeyPointerRCMapAccess::~KeyPointerRCMapAccess(){}
-
-KeyPointerRCMapAccess::KeyPointerRCMapAccess(AbstractMapAccess* containerAccess)
-    : WrapperMapAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-KeyPointerRCMapAccess::KeyPointerRCMapAccess(KeyPointerRCMapAccess& other)
-    : WrapperMapAccess(other.WrapperMapAccess::clone()), ReferenceCountingSetContainer() {}
-
-KeyPointerRCMapAccess* KeyPointerRCMapAccess::clone(){
-    return new KeyPointerRCMapAccess(*this);
-}
-
-void KeyPointerRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    JniLocalFrame frame(env, 200);
-    jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = constKeyValueIterator(container.container);
-    while(iterator->hasNext()){
-        const void* content = iterator->next().first;
-        jobject obj{nullptr};
-        switch(keyType()){
-        case PointerToQObject:
-            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            obj = QtJambiAPI::findObject(env, content);
-            break;
-        default:
-            break;
-        }
-        if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
-    }
-    clearRC(env, container.object);
-    addAllRC(env, container.object, set);
-}
-
-void KeyPointerRCMapAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperMapAccess::swap(env, container, container2);
-    if(KeyPointerRCMapAccess* access = dynamic_cast<KeyPointerRCMapAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void KeyPointerRCMapAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperMapAccess::assign(env, container, container2);
-    if(KeyPointerRCMapAccess* access = dynamic_cast<KeyPointerRCMapAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void KeyPointerRCMapAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperMapAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void KeyPointerRCMapAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperMapAccess::insert(env, container, key, value);
-    addUniqueRC(env, container.object, key);
-}
-
-jint KeyPointerRCMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = WrapperMapAccess::remove(env, container, key);
-    if(result>0){
-        removeRC(env, container.object, key);
-    }
-    return result;
-}
-
-jobject KeyPointerRCMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
-    jobject result = WrapperMapAccess::take(env, container, key);
-    removeRC(env, container.object, key);
-    return result;
-}
-
-ValuePointerRCMapAccess::~ValuePointerRCMapAccess(){}
-
-ValuePointerRCMapAccess::ValuePointerRCMapAccess(AbstractMapAccess* containerAccess)
-    : WrapperMapAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-ValuePointerRCMapAccess::ValuePointerRCMapAccess(ValuePointerRCMapAccess& other)
-    : WrapperMapAccess(other.WrapperMapAccess::clone()), ReferenceCountingSetContainer() {}
-
-ValuePointerRCMapAccess* ValuePointerRCMapAccess::clone(){
-    return new ValuePointerRCMapAccess(*this);
-}
-
-void ValuePointerRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    JniLocalFrame frame(env, 200);
-    jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = constKeyValueIterator(container.container);
-    while(iterator->hasNext()){
-        const void* content = iterator->next().second;
-        jobject obj{nullptr};
-        switch(valueType()){
-        case PointerToQObject:
-            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            obj = QtJambiAPI::findObject(env, content);
-            break;
-        default:
-            break;
-        }
-        if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
-    }
-    clearRC(env, container.object);
-    addAllRC(env, container.object, set);
-}
-
-void ValuePointerRCMapAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperMapAccess::swap(env, container, container2);
-    if(ValuePointerRCMapAccess* access = dynamic_cast<ValuePointerRCMapAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void ValuePointerRCMapAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperMapAccess::assign(env, container, container2);
-    if(ValuePointerRCMapAccess* access = dynamic_cast<ValuePointerRCMapAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void ValuePointerRCMapAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperMapAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void ValuePointerRCMapAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    jobject oldValue = WrapperMapAccess::value(env, container.container, key, nullptr);
-    WrapperMapAccess::insert(env, container, key, value);
-    removeRC(env, container.object, oldValue);
-    addRC(env, container.object, value);
-}
-
-jint ValuePointerRCMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jobject oldValue = WrapperMapAccess::value(env, container.container, key, nullptr);
-    jint result = WrapperMapAccess::remove(env, container, key);
-    if(result>0){
-        removeRC(env, container.object, oldValue);
-    }
-    return result;
-}
-
-jobject ValuePointerRCMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
-    jobject result = WrapperMapAccess::take(env, container, key);
-    removeRC(env, container.object, result);
-    return result;
-}
-
-PointersRCMapAccess::PointersRCMapAccess(AbstractMapAccess* containerAccess)
-    : WrapperMapAccess(containerAccess), ReferenceCountingMapContainer() {}
-
-PointersRCMapAccess::PointersRCMapAccess(PointersRCMapAccess& other)
-    : WrapperMapAccess(other.WrapperMapAccess::clone()), ReferenceCountingMapContainer(other) {}
-
-PointersRCMapAccess* PointersRCMapAccess::clone(){
-    return new PointersRCMapAccess(*this);
-}
-
-void PointersRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    JniLocalFrame frame(env, 200);
-    jobject map = Java::Runtime::HashMap::newInstance(env, 0);
-    auto iterator = constKeyValueIterator(container.container);
-    while(iterator->hasNext()){
-        auto content = iterator->next();
-        jobject key{nullptr};
-        switch(keyType()){
-        case PointerToQObject:
-            key = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.first));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
-                key = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            key = QtJambiAPI::findObject(env, content.first);
-            break;
-        default:
-            break;
-        }
-        jobject value{nullptr};
-        switch(valueType()){
-        case PointerToQObject:
-            value = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.second));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
-                value = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            value = QtJambiAPI::findObject(env, content.second);
-            break;
-        default:
-            break;
-        }
-        Java::Runtime::Map::put(env, map, key, value);
-    }
-    clearRC(env, container.object);
-    putAllRC(env, container.object, map);
-}
-
-void PointersRCMapAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperMapAccess::swap(env, container, container2);
-    if(PointersRCMapAccess* access = dynamic_cast<PointersRCMapAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void PointersRCMapAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperMapAccess::assign(env, container, container2);
-    if(PointersRCMapAccess* access = dynamic_cast<PointersRCMapAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void PointersRCMapAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperMapAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void PointersRCMapAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperMapAccess::insert(env, container, key, value);
-    putRC(env, container.object, key, value);
-}
-
-jint PointersRCMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = WrapperMapAccess::remove(env, container, key);
-    removeRC(env, container.object, key, result);
-    return result;
-}
-
-jobject PointersRCMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
-    jobject result = WrapperMapAccess::take(env, container, key);
-    removeRC(env, container.object, key);
-    return result;
-}
-
-KeyPointerRCMultiMapAccess::~KeyPointerRCMultiMapAccess(){}
-
-KeyPointerRCMultiMapAccess::KeyPointerRCMultiMapAccess(AbstractMultiMapAccess* containerAccess)
-    : WrapperMultiMapAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-KeyPointerRCMultiMapAccess::KeyPointerRCMultiMapAccess(KeyPointerRCMultiMapAccess& other)
-    : WrapperMultiMapAccess(other.WrapperMultiMapAccess::clone()), ReferenceCountingSetContainer() {}
-
-KeyPointerRCMultiMapAccess* KeyPointerRCMultiMapAccess::clone(){
-    return new KeyPointerRCMultiMapAccess(*this);
-}
-
-void KeyPointerRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    JniLocalFrame frame(env, 200);
-    jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = constKeyValueIterator(container.container);
-    while(iterator->hasNext()){
-        auto content = iterator->next();
-        jobject obj{nullptr};
-        switch(keyType()){
-        case PointerToQObject:
-            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.first));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            obj = QtJambiAPI::findObject(env, content.first);
-            break;
-        default:
-            break;
-        }
-        if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
-    }
-    clearRC(env, container.object);
-    addAllRC(env, container.object, set);
-}
-
-void KeyPointerRCMultiMapAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperMultiMapAccess::swap(env, container, container2);
-    if(KeyPointerRCMultiMapAccess* access = dynamic_cast<KeyPointerRCMultiMapAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void KeyPointerRCMultiMapAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperMultiMapAccess::assign(env, container, container2);
-    if(KeyPointerRCMultiMapAccess* access = dynamic_cast<KeyPointerRCMultiMapAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void KeyPointerRCMultiMapAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperMultiMapAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void KeyPointerRCMultiMapAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperMultiMapAccess::insert(env, container, key, value);
-    addRC(env, container.object, key);
-}
-
-jint KeyPointerRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = WrapperMultiMapAccess::remove(env, container, key);
-    removeRC(env, container.object, key, result);
-    return result;
-}
-
-jint KeyPointerRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    jint result = WrapperMultiMapAccess::remove(env, container, key, value);
-    removeRC(env, container.object, key, result);
-    return result;
-}
-
-jobject KeyPointerRCMultiMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
-    jobject result = WrapperMultiMapAccess::take(env, container, key);
-    removeRC(env, container.object, key);
-    return result;
-}
-
-void KeyPointerRCMultiMapAccess::replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperMultiMapAccess::replace(env, container, key, value);
-    addRC(env, container.object, key);
-}
-
-void KeyPointerRCMultiMapAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) {
-    WrapperMultiMapAccess::unite(env, container, other);
-    updateRC(env, container);
-}
-
-void KeyPointerRCMultiHashAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) {
-    WrapperMultiHashAccess::unite(env, container, other);
-    updateRC(env, container);
-}
-
-ValuePointerRCMultiMapAccess::ValuePointerRCMultiMapAccess(AbstractMultiMapAccess* containerAccess)
-    : WrapperMultiMapAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-ValuePointerRCMultiMapAccess::ValuePointerRCMultiMapAccess(ValuePointerRCMultiMapAccess& other)
-    : WrapperMultiMapAccess(other.WrapperMultiMapAccess::clone()), ReferenceCountingSetContainer() {}
-
-ValuePointerRCMultiMapAccess* ValuePointerRCMultiMapAccess::clone(){
-    return new ValuePointerRCMultiMapAccess(*this);
-}
-
-void ValuePointerRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    JniLocalFrame frame(env, 200);
-    jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = constKeyValueIterator(container.container);
-    while(iterator->hasNext()){
-        auto content = iterator->next();
-        jobject obj{nullptr};
-        switch(valueType()){
-        case PointerToQObject:
-            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.second));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            obj = QtJambiAPI::findObject(env, content.second);
-            break;
-        default:
-            break;
-        }
-        if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
-    }
-    clearRC(env, container.object);
-    addAllRC(env, container.object, set);
-}
-
-void ValuePointerRCMultiMapAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperMultiMapAccess::swap(env, container, container2);
-    if(ValuePointerRCMultiMapAccess* access = dynamic_cast<ValuePointerRCMultiMapAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void ValuePointerRCMultiMapAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperMultiMapAccess::assign(env, container, container2);
-    if(ValuePointerRCMultiMapAccess* access = dynamic_cast<ValuePointerRCMultiMapAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void ValuePointerRCMultiMapAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperMultiMapAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void ValuePointerRCMultiMapAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperMultiMapAccess::insert(env, container, key, value);
-    addRC(env, container.object, value);
-}
-
-jint ValuePointerRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    ContainerAndAccessInfo oldValues = WrapperMultiMapAccess::values(env, container, key);
-    jint result = WrapperMultiMapAccess::remove(env, container, key);
-    if(result>0){
-        jobject iter = Java::Runtime::Collection::iterator(env, oldValues.object);
-        while(Java::Runtime::Iterator::hasNext(env, iter)){
-            jobject value = Java::Runtime::Iterator::next(env, iter);
-            if(Java::Runtime::Collection::size(env, WrapperMultiMapAccess::keys(env, container, value).object)==0){
-                removeRC(env, container.object, value);
-            }
-        }
-    }
-    return result;
-}
-
-jobject ValuePointerRCMultiMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
-    jobject result = WrapperMultiMapAccess::take(env, container, key);
-    if(Java::Runtime::Collection::size(env, WrapperMultiMapAccess::keys(env, container, result).object)==0){
-        removeRC(env, container.object, result);
-    }
-    return result;
-}
-
-void ValuePointerRCMultiMapAccess::replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    jobject oldValue = WrapperMultiMapAccess::value(env, container.container, key, nullptr);
-    WrapperMultiMapAccess::replace(env, container, key, value);
-    removeRC(env, container.object, oldValue);
-    addRC(env, container.object, value);
-}
-
-void ValuePointerRCMultiMapAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) {
-    WrapperMultiMapAccess::unite(env, container, other);
-    updateRC(env, container);
-}
-
-void ValuePointerRCMultiHashAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) {
-    WrapperMultiHashAccess::unite(env, container, other);
-    updateRC(env, container);
-}
-
-jint ValuePointerRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value){
-    jint result = WrapperMultiMapAccess::remove(env, container, key, value);
-    removeRC(env, container.object, value, result);
-    return result;
-}
-
-PointersRCMultiMapAccess::PointersRCMultiMapAccess(AbstractMultiMapAccess* containerAccess)
-    : WrapperMultiMapAccess(containerAccess), ReferenceCountingMultiMapContainer() {}
-
-PointersRCMultiMapAccess::PointersRCMultiMapAccess(PointersRCMultiMapAccess& other)
-    : WrapperMultiMapAccess(other.WrapperMultiMapAccess::clone()), ReferenceCountingMultiMapContainer(other) {}
-
-PointersRCMultiMapAccess* PointersRCMultiMapAccess::clone(){
-    return new PointersRCMultiMapAccess(*this);
-}
-
-void PointersRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    JniLocalFrame frame(env, 200);
-    jobject map = Java::QtJambi::ReferenceUtility$RCMap::newInstance(env);
-    auto iterator = constKeyValueIterator(container.container);
-    while(iterator->hasNext()){
-        auto content = iterator->next();
-        jobject key{nullptr};
-        switch(keyType()){
-        case PointerToQObject:
-            key = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.first));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
-                key = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            key = QtJambiAPI::findObject(env, content.first);
-            break;
-        default:
-            break;
-        }
-        jobject value{nullptr};
-        switch(valueType()){
-        case PointerToQObject:
-            value = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.second));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
-                value = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            value = QtJambiAPI::findObject(env, content.second);
-            break;
-        default:
-            break;
-        }
-        Java::Runtime::Map::put(env, map, key, value);
-    }
-    clearRC(env, container.object);
-    putAllRC(env, container.object, map);
-}
-
-void PointersRCMultiMapAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperMultiMapAccess::swap(env, container, container2);
-    if(PointersRCMultiMapAccess* access = dynamic_cast<PointersRCMultiMapAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void PointersRCMultiMapAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperMultiMapAccess::assign(env, container, container2);
-    if(PointersRCMultiMapAccess* access = dynamic_cast<PointersRCMultiMapAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void PointersRCMultiMapAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperMultiMapAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void PointersRCMultiMapAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperMultiMapAccess::insert(env, container, key, value);
-    putRC(env, container.object, key, value);
-}
-
-void PointersRCMultiMapAccess::replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperMultiMapAccess::replace(env, container, key, value);
-    removeRC(env, container.object, key);
-    putRC(env, container.object, key, value);
-}
-
-void PointersRCMultiMapAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) {
-    WrapperMultiMapAccess::unite(env, container, other);
-    updateRC(env, container);
-}
-
-jint PointersRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = WrapperMultiMapAccess::remove(env, container, key);
-    removeRC(env, container.object, key, 1);
-    return result;
-}
-
-jint PointersRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    jint result = WrapperMultiMapAccess::remove(env, container, key, value);
-    removeRC(env, container.object, key, value, result);
-    return result;
-}
-
-jobject PointersRCMultiMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
-    jobject result = WrapperMultiMapAccess::take(env, container, key);
-    removeRC(env, key, result);
-    return result;
-}
-
-KeyPointerRCHashAccess::~KeyPointerRCHashAccess(){}
-
-KeyPointerRCHashAccess::KeyPointerRCHashAccess(AbstractHashAccess* containerAccess)
-    : WrapperHashAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-KeyPointerRCHashAccess::KeyPointerRCHashAccess(KeyPointerRCHashAccess& other)
-    : WrapperHashAccess(other.WrapperHashAccess::clone()), ReferenceCountingSetContainer() {}
-
-KeyPointerRCHashAccess* KeyPointerRCHashAccess::clone(){
-    return new KeyPointerRCHashAccess(*this);
-}
-
-void KeyPointerRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    JniLocalFrame frame(env, 200);
-    jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = constKeyValueIterator(container.container);
-    while(iterator->hasNext()){
-        auto content = iterator->next();
-        jobject obj{nullptr};
-        switch(keyType()){
-        case PointerToQObject:
-            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.first));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            obj = QtJambiAPI::findObject(env, content.first);
-            break;
-        default:
-            break;
-        }
-        if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
-    }
-    clearRC(env, container.object);
-    addAllRC(env, container.object, set);
-}
-
-void KeyPointerRCHashAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperHashAccess::swap(env, container, container2);
-    if(KeyPointerRCHashAccess* access = dynamic_cast<KeyPointerRCHashAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void KeyPointerRCHashAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperHashAccess::assign(env, container, container2);
-    if(KeyPointerRCHashAccess* access = dynamic_cast<KeyPointerRCHashAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void KeyPointerRCHashAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperHashAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void KeyPointerRCHashAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperHashAccess::insert(env, container, key, value);
-    addUniqueRC(env, container.object, key);
-}
-
-jint KeyPointerRCHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = WrapperHashAccess::remove(env, container, key);
-    removeRC(env, container.object, key, result);
-    return result;
-}
-
-jobject KeyPointerRCHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
-    jobject result = WrapperHashAccess::take(env, container, key);
-    removeRC(env, container.object, key);
-    return result;
-}
-
-ValuePointerRCHashAccess::ValuePointerRCHashAccess(AbstractHashAccess* containerAccess)
-    : WrapperHashAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-ValuePointerRCHashAccess::ValuePointerRCHashAccess(ValuePointerRCHashAccess& other)
-    : WrapperHashAccess(other.WrapperHashAccess::clone()), ReferenceCountingSetContainer() {}
-
-ValuePointerRCHashAccess* ValuePointerRCHashAccess::clone(){
-    return new ValuePointerRCHashAccess(*this);
-}
-
-void ValuePointerRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    JniLocalFrame frame(env, 200);
-    jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = constKeyValueIterator(container.container);
-    while(iterator->hasNext()){
-        auto content = iterator->next();
-        jobject obj{nullptr};
-        switch(valueType()){
-        case PointerToQObject:
-            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.second));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            obj = QtJambiAPI::findObject(env, content.second);
-            break;
-        default:
-            break;
-        }
-        if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
-    }
-    clearRC(env, container.object);
-    addAllRC(env, container.object, set);
-}
-
-void ValuePointerRCHashAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperHashAccess::swap(env, container, container2);
-    if(ValuePointerRCHashAccess* access = dynamic_cast<ValuePointerRCHashAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void ValuePointerRCHashAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperHashAccess::assign(env, container, container2);
-    if(ValuePointerRCHashAccess* access = dynamic_cast<ValuePointerRCHashAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void ValuePointerRCHashAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperHashAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void ValuePointerRCHashAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    jobject oldValue = WrapperHashAccess::value(env, container.container, key, nullptr);
-    WrapperHashAccess::insert(env, container, key, value);
-    removeRC(env, container.object, oldValue);
-    addRC(env, container.object, value);
-}
-
-jint ValuePointerRCHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jobject oldValue = WrapperHashAccess::value(env, container.container, key, nullptr);
-    jint result = WrapperHashAccess::remove(env, container, key);
-    if(result>0){
-        removeRC(env, container.object, oldValue);
-    }
-    return result;
-}
-
-jobject ValuePointerRCHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
-    jobject result = WrapperHashAccess::take(env, container, key);
-    removeRC(env, container.object, result);
-    return result;
-}
-
-PointersRCHashAccess::PointersRCHashAccess(AbstractHashAccess* containerAccess)
-    : WrapperHashAccess(containerAccess), ReferenceCountingMapContainer() {}
-
-PointersRCHashAccess::PointersRCHashAccess(PointersRCHashAccess& other)
-    : WrapperHashAccess(other.WrapperHashAccess::clone()), ReferenceCountingMapContainer(other) {}
-
-PointersRCHashAccess* PointersRCHashAccess::clone(){
-    return new PointersRCHashAccess(*this);
-}
-
-void PointersRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    JniLocalFrame frame(env, 200);
-    jobject map = Java::QtJambi::ReferenceUtility$RCMap::newInstance(env);
-    auto iterator = constKeyValueIterator(container.container);
-    while(iterator->hasNext()){
-        auto content = iterator->next();
-        jobject key{nullptr};
-        switch(keyType()){
-        case PointerToQObject:
-            key = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.first));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
-                key = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            key = QtJambiAPI::findObject(env, content.first);
-            break;
-        default:
-            break;
-        }
-        jobject value{nullptr};
-        switch(valueType()){
-        case PointerToQObject:
-            value = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.second));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
-                value = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            value = QtJambiAPI::findObject(env, content.second);
-            break;
-        default:
-            break;
-        }
-        Java::Runtime::Map::put(env, map, key, value);
-    }
-    clearRC(env, container.object);
-    putAllRC(env, container.object, map);
-}
-
-void PointersRCHashAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperHashAccess::swap(env, container, container2);
-    if(PointersRCHashAccess* access = dynamic_cast<PointersRCHashAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void PointersRCHashAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperHashAccess::assign(env, container, container2);
-    if(PointersRCHashAccess* access = dynamic_cast<PointersRCHashAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void PointersRCHashAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperHashAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void PointersRCHashAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperHashAccess::insert(env, container, key, value);
-    putRC(env, container.object, key, value);
-}
-
-jint PointersRCHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = WrapperHashAccess::remove(env, container, key);
-    if(result>0){
-        removeRC(env, container.object, key);
-    }
-    return result;
-}
-
-jobject PointersRCHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
-    jobject result = WrapperHashAccess::take(env, container, key);
-    removeRC(env, container.object, key);
-    return result;
-}
-
-KeyPointerRCMultiHashAccess::~KeyPointerRCMultiHashAccess(){}
-
-KeyPointerRCMultiHashAccess::KeyPointerRCMultiHashAccess(AbstractMultiHashAccess* containerAccess)
-    : WrapperMultiHashAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-KeyPointerRCMultiHashAccess::KeyPointerRCMultiHashAccess(KeyPointerRCMultiHashAccess& other)
-    : WrapperMultiHashAccess(other.WrapperMultiHashAccess::clone()), ReferenceCountingSetContainer() {}
-
-KeyPointerRCMultiHashAccess* KeyPointerRCMultiHashAccess::clone(){
-    return new KeyPointerRCMultiHashAccess(*this);
-}
-
-void KeyPointerRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    JniLocalFrame frame(env, 200);
-    jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = constKeyValueIterator(container.container);
-    while(iterator->hasNext()){
-        auto content = iterator->next();
-        jobject obj{nullptr};
-        switch(keyType()){
-        case PointerToQObject:
-            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.first));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            obj = QtJambiAPI::findObject(env, content.first);
-            break;
-        default:
-            break;
-        }
-        if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
-    }
-    clearRC(env, container.object);
-    addAllRC(env, container.object, set);
-}
-
-void KeyPointerRCMultiHashAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperMultiHashAccess::swap(env, container, container2);
-    if(KeyPointerRCMultiHashAccess* access = dynamic_cast<KeyPointerRCMultiHashAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void KeyPointerRCMultiHashAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperMultiHashAccess::assign(env, container, container2);
-    if(KeyPointerRCMultiHashAccess* access = dynamic_cast<KeyPointerRCMultiHashAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void KeyPointerRCMultiHashAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperMultiHashAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void KeyPointerRCMultiHashAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperMultiHashAccess::insert(env, container, key, value);
-    addRC(env, container.object, key);
-}
-
-jint KeyPointerRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = WrapperMultiHashAccess::remove(env, container, key);
-    if(result>0){
-        removeRC(env, container.object, key);
-    }
-    return result;
-}
-
-jint KeyPointerRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    jint result = WrapperMultiHashAccess::remove(env, container, key, value);
-    if(result>0){
-        removeRC(env, container.object, key);
-    }
-    return result;
-}
-
-jobject KeyPointerRCMultiHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
-    jobject result = WrapperMultiHashAccess::take(env, container, key);
-    removeRC(env, container.object, key);
-    return result;
-}
-
-void KeyPointerRCMultiHashAccess::replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperMultiHashAccess::replace(env, container, key, value);
-}
-
-ValuePointerRCMultiHashAccess::ValuePointerRCMultiHashAccess(AbstractMultiHashAccess* containerAccess)
-    : WrapperMultiHashAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-ValuePointerRCMultiHashAccess::ValuePointerRCMultiHashAccess(ValuePointerRCMultiHashAccess& other)
-    : WrapperMultiHashAccess(other.WrapperMultiHashAccess::clone()), ReferenceCountingSetContainer() {}
-
-ValuePointerRCMultiHashAccess* ValuePointerRCMultiHashAccess::clone(){
-    return new ValuePointerRCMultiHashAccess(*this);
-}
-
-void ValuePointerRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    JniLocalFrame frame(env, 200);
-    jobject set = Java::Runtime::HashSet::newInstance(env);
-    auto iterator = constKeyValueIterator(container.container);
-    while(iterator->hasNext()){
-        auto content = iterator->next();
-        jobject obj{nullptr};
-        switch(valueType()){
-        case PointerToQObject:
-            obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.second));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            obj = QtJambiAPI::findObject(env, content.second);
-            break;
-        default:
-            break;
-        }
-        if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
-    }
-    clearRC(env, container.object);
-    addAllRC(env, container.object, set);
-}
-
-void ValuePointerRCMultiHashAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperMultiHashAccess::swap(env, container, container2);
-    if(ValuePointerRCMultiHashAccess* access = dynamic_cast<ValuePointerRCMultiHashAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void ValuePointerRCMultiHashAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperMultiHashAccess::assign(env, container, container2);
-    if(ValuePointerRCMultiHashAccess* access = dynamic_cast<ValuePointerRCMultiHashAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void ValuePointerRCMultiHashAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperMultiHashAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void ValuePointerRCMultiHashAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperMultiHashAccess::insert(env, container, key, value);
-    addRC(env, container.object, value);
-}
-
-jint ValuePointerRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    ContainerAndAccessInfo oldValues = WrapperMultiHashAccess::values(env, container, key);
-    jint result = WrapperMultiHashAccess::remove(env, container, key);
-    if(result>0){
-        jobject iter = Java::Runtime::Collection::iterator(env, oldValues.object);
-        while(Java::Runtime::Iterator::hasNext(env, iter)){
-            jobject value = Java::Runtime::Iterator::next(env, iter);
-            if(Java::Runtime::Collection::size(env, WrapperMultiHashAccess::keys(env, container, value).object)==0){
-                removeRC(env, container.object, value);
-            }
-        }
-    }
-    return result;
-}
-
-jobject ValuePointerRCMultiHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
-    jobject result = WrapperMultiHashAccess::take(env, container, key);
-    if(Java::Runtime::Collection::size(env, WrapperMultiHashAccess::keys(env, container, result).object)==0){
-        removeRC(env, container.object, result);
-    }
-    return result;
-}
-
-void ValuePointerRCMultiHashAccess::replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    jobject oldValue = WrapperMultiHashAccess::value(env, container.container, key, nullptr);
-    WrapperMultiHashAccess::replace(env, container, key, value);
-    removeRC(env, container.object, oldValue);
-    addRC(env, container.object, value);
-}
-
-jint ValuePointerRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value){
-    jint result = WrapperMultiHashAccess::remove(env, container, key, value);
-    if(result>0)
-        removeRC(env, container.object, value, result);
-    return result;
-}
-
-PointersRCMultiHashAccess::PointersRCMultiHashAccess(AbstractMultiHashAccess* containerAccess)
-    : WrapperMultiHashAccess(containerAccess), ReferenceCountingMultiMapContainer() {}
-
-PointersRCMultiHashAccess::PointersRCMultiHashAccess(PointersRCMultiHashAccess& other)
-    : WrapperMultiHashAccess(other.WrapperMultiHashAccess::clone()), ReferenceCountingMultiMapContainer(other) {}
-
-PointersRCMultiHashAccess* PointersRCMultiHashAccess::clone(){
-    return new PointersRCMultiHashAccess(*this);
-}
-
-void PointersRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    JniLocalFrame frame(env, 200);
-    jobject map = Java::QtJambi::ReferenceUtility$RCMap::newInstance(env);
-    auto iterator = constKeyValueIterator(container.container);
-    while(iterator->hasNext()){
-        auto content = iterator->next();
-        jobject key{nullptr};
-        switch(keyType()){
-        case PointerToQObject:
-            key = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.first));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
-                key = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            key = QtJambiAPI::findObject(env, content.first);
-            break;
-        default:
-            break;
-        }
-        jobject value{nullptr};
-        switch(valueType()){
-        case PointerToQObject:
-            value = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(content.second));
-            break;
-        case FunctionPointer:
-            if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
-                value = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
-                break;
-            }
-            Q_FALLTHROUGH();
-        case Pointer:
-            value = QtJambiAPI::findObject(env, content.second);
-            break;
-        default:
-            break;
-        }
-        Java::Runtime::Map::put(env, map, key, value);
-    }
-    clearRC(env, container.object);
-    putAllRC(env, container.object, map);
-}
-
-void PointersRCMultiHashAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperMultiHashAccess::swap(env, container, container2);
-    if(PointersRCMultiHashAccess* access = dynamic_cast<PointersRCMultiHashAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void PointersRCMultiHashAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperMultiHashAccess::assign(env, container, container2);
-    updateRC(env, container);
-}
-
-void PointersRCMultiHashAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperMultiHashAccess::clear(env, container);
-    updateRC(env, container);
-}
-
-void PointersRCMultiHashAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperMultiHashAccess::insert(env, container, key, value);
-    updateRC(env, container);
-}
-
-void PointersRCMultiHashAccess::replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperMultiHashAccess::replace(env, container, key, value);
-    updateRC(env, container);
-}
-
-void PointersRCMultiHashAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) {
-    WrapperMultiHashAccess::unite(env, container, other);
-    updateRC(env, container);
-}
-
-jint PointersRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = WrapperMultiHashAccess::remove(env, container, key);
-    updateRC(env, container);
-    return result;
-}
-
-jint PointersRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    jint result = WrapperMultiHashAccess::remove(env, container, key, value);
-    updateRC(env, container);
-    return result;
-}
-
-jobject PointersRCMultiHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
-    jobject result = WrapperMultiHashAccess::take(env, container, key);
-    removeRC(env, key, result);
-    return result;
-}
-
-NestedPointersRCListAccess::NestedPointersRCListAccess(AbstractListAccess* containerAccess)
-    : WrapperListAccess(containerAccess), ReferenceCountingSetContainer() {
-    Q_ASSERT(containerAccess!=this);
-}
-
-NestedPointersRCListAccess::NestedPointersRCListAccess(NestedPointersRCListAccess& other)
-    : WrapperListAccess(other.WrapperListAccess::clone()), ReferenceCountingSetContainer() {}
-
-NestedPointersRCListAccess* NestedPointersRCListAccess::clone(){
-    return new NestedPointersRCListAccess(*this);
-}
-
-void NestedPointersRCListAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperListAccess::swap(env, container, container2);
-    if(NestedPointersRCListAccess* access = dynamic_cast<NestedPointersRCListAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void NestedPointersRCListAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperListAccess::assign(env, container, container2);
-    updateRC(env, container);
-}
-
-void NestedPointersRCListAccess::appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) {
-    WrapperListAccess::appendList(env, container, containerInfo);
-    updateRC(env, container);
-}
-
-void NestedPointersRCListAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    if(size(env, container.container)==0){
-        clearRC(env, container.object);
-    }else{
-        JniLocalFrame frame(env, 200);
-        jobject set = Java::Runtime::HashSet::newInstance(env);
-        auto access = elementNestedContainerAccess();
-        auto iterator = elementIterator(container.container);
-        while(iterator->hasNext()){
-            unfoldAndAddContainer(env, set, iterator->next(), elementType(), elementMetaType(), access);
-        }
-        if(access)
-            access->dispose();
-        addAllRC(env, container.object, set);
-    }
-}
-
-void NestedPointersRCListAccess::replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) {
-    WrapperListAccess::replace(env, container, index, value);
-    updateRC(env, container);
-}
-
-jint NestedPointersRCListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    jint result = WrapperListAccess::removeAll(env, container, value);
-    if(result>0){
-        updateRC(env, container);
-    }
-    return result;
-}
-
-ContainerAndAccessInfo NestedPointersRCListAccess::mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint index1, jint index2) {
-    ContainerAndAccessInfo result = WrapperListAccess::mid(env, container, index1, index2);
-    return result;
-}
-
-void NestedPointersRCListAccess::insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) {
-    WrapperListAccess::insert(env, container, index, n, value);
-    addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
-}
-
-void NestedPointersRCListAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperListAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void NestedPointersRCListAccess::remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) {
-    WrapperListAccess::remove(env, container, index, n);
-    updateRC(env, container);
-}
-
-void NestedPointersRCListAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size){
-    WrapperListAccess::fill(env, container, value, size);
-    addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
-}
-
-NestedPointersRCSetAccess::NestedPointersRCSetAccess(AbstractSetAccess* containerAccess)
-    : WrapperSetAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-NestedPointersRCSetAccess::NestedPointersRCSetAccess(NestedPointersRCSetAccess& other)
-    : WrapperSetAccess(other.WrapperSetAccess::clone()), ReferenceCountingSetContainer() {}
-
-NestedPointersRCSetAccess* NestedPointersRCSetAccess::clone(){
-    return new NestedPointersRCSetAccess(*this);
-}
-
-void NestedPointersRCSetAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    if(size(env, container.container)==0){
-        clearRC(env, container.object);
-    }else{
-        JniLocalFrame frame(env, 200);
-        jobject set = Java::Runtime::HashSet::newInstance(env);
-        auto access = elementNestedContainerAccess();
-        auto iterator = elementIterator(container.container);
-        while(iterator->hasNext()){
-            unfoldAndAddContainer(env, set, iterator->next(), elementType(), elementMetaType(), access);
-        }
-        if(access)
-            access->dispose();
-        addAllRC(env, container.object, set);
-    }
-}
-
-void NestedPointersRCSetAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperSetAccess::swap(env, container, container2);
-    if(NestedPointersRCSetAccess* access = dynamic_cast<NestedPointersRCSetAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void NestedPointersRCSetAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperSetAccess::assign(env, container, container2);
-    updateRC(env, container);
-}
-
-void NestedPointersRCSetAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperSetAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void NestedPointersRCSetAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject value){
-    WrapperSetAccess::insert(env, container, value);
-    addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
-}
-
-jboolean NestedPointersRCSetAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject value){
-    jboolean result = WrapperSetAccess::remove(env, container, value);
-    updateRC(env, container);
-    return result;
-}
-
-void NestedPointersRCSetAccess::intersect(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
-    WrapperSetAccess::intersect(env, container, other);
-    updateRC(env, container);
-}
-
-void NestedPointersRCSetAccess::subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
-    WrapperSetAccess::subtract(env, container, other);
-    updateRC(env, container);
-}
-
-void NestedPointersRCSetAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other){
-    WrapperSetAccess::unite(env, container, other);
-    updateRC(env, container);
-}
-
-NestedPointersRCMapAccess::NestedPointersRCMapAccess(AbstractMapAccess* containerAccess)
-    : WrapperMapAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-NestedPointersRCMapAccess::NestedPointersRCMapAccess(NestedPointersRCMapAccess& other)
-    : WrapperMapAccess(other.WrapperMapAccess::clone()), ReferenceCountingSetContainer() {}
-
-NestedPointersRCMapAccess* NestedPointersRCMapAccess::clone(){
-    return new NestedPointersRCMapAccess(*this);
-}
-
-void NestedPointersRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    if(size(env, container.container)==0){
-        clearRC(env, container.object);
-    }else{
-        JniLocalFrame frame(env, 200);
-        jobject set = Java::Runtime::HashSet::newInstance(env);
-        auto access1 = keyNestedContainerAccess();
-        auto access2 = valueNestedContainerAccess();
-        auto iterator = constKeyValueIterator(container.container);
-        while(iterator->hasNext()){
-            auto current = iterator->next();
-            unfoldAndAddContainer(env, set, current.first, keyType(), keyMetaType(), access1);
-            unfoldAndAddContainer(env, set, current.second, valueType(), valueMetaType(), access2);
-        }
-        if(access1)
-            access1->dispose();
-        if(access2)
-            access2->dispose();
-        addAllRC(env, container.object, set);
-    }
-}
-
-void NestedPointersRCMapAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperMapAccess::swap(env, container, container2);
-    if(NestedPointersRCMapAccess* access = dynamic_cast<NestedPointersRCMapAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void NestedPointersRCMapAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperMapAccess::assign(env, container, container2);
-    if(NestedPointersRCMapAccess* access = dynamic_cast<NestedPointersRCMapAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void NestedPointersRCMapAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperMapAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void NestedPointersRCMapAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperMapAccess::insert(env, container, key, value);
-    addNestedValueRC(env, container.object, keyType(), hasKeyNestedPointers(), key);
-    addNestedValueRC(env, container.object, valueType(), hasValueNestedPointers(), value);
-}
-
-jint NestedPointersRCMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = WrapperMapAccess::remove(env, container, key);
-    if(result>0){
-        updateRC(env, container);
-    }
-    return result;
-}
-
-jobject NestedPointersRCMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
-    jobject result = WrapperMapAccess::take(env, container, key);
-    updateRC(env, container);
-    return result;
-}
-
-NestedPointersRCMultiMapAccess::NestedPointersRCMultiMapAccess(AbstractMultiMapAccess* containerAccess)
-    : WrapperMultiMapAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-NestedPointersRCMultiMapAccess::NestedPointersRCMultiMapAccess(NestedPointersRCMultiMapAccess& other)
-    : WrapperMultiMapAccess(other.WrapperMultiMapAccess::clone()), ReferenceCountingSetContainer() {}
-
-NestedPointersRCMultiMapAccess* NestedPointersRCMultiMapAccess::clone(){
-    return new NestedPointersRCMultiMapAccess(*this);
-}
-
-void NestedPointersRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    if(size(env, container.container)==0){
-        clearRC(env, container.object);
-    }else{
-        JniLocalFrame frame(env, 200);
-        jobject set = Java::Runtime::HashSet::newInstance(env);
-        auto access1 = keyNestedContainerAccess();
-        auto access2 = valueNestedContainerAccess();
-        auto iterator = constKeyValueIterator(container.container);
-        while(iterator->hasNext()){
-            auto current = iterator->next();
-            unfoldAndAddContainer(env, set, current.first, keyType(), keyMetaType(), access1);
-            unfoldAndAddContainer(env, set, current.second, valueType(), valueMetaType(), access2);
-        }
-        if(access1)
-            access1->dispose();
-        if(access2)
-            access2->dispose();
-        addAllRC(env, container.object, set);
-    }
-}
-
-void NestedPointersRCMultiMapAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperMultiMapAccess::swap(env, container, container2);
-    if(NestedPointersRCMultiMapAccess* access = dynamic_cast<NestedPointersRCMultiMapAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void NestedPointersRCMultiMapAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperMultiMapAccess::assign(env, container, container2);
-    if(NestedPointersRCMultiMapAccess* access = dynamic_cast<NestedPointersRCMultiMapAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void NestedPointersRCMultiMapAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperMultiMapAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void NestedPointersRCMultiMapAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperMultiMapAccess::insert(env, container, key, value);
-    addNestedValueRC(env, container.object, keyType(), hasKeyNestedPointers(), key);
-    addNestedValueRC(env, container.object, valueType(), hasValueNestedPointers(), value);
-}
-
-void NestedPointersRCMultiMapAccess::replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperMultiMapAccess::replace(env, container, key, value);
-    updateRC(env, container);
-}
-
-
-void NestedPointersRCMultiMapAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) {
-    WrapperMultiMapAccess::unite(env, container, other);
-    updateRC(env, container);
-}
-
-jint NestedPointersRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = WrapperMultiMapAccess::remove(env, container, key);
-    if(result>0){
-        updateRC(env, container);
-    }
-    return result;
-}
-
-jint NestedPointersRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    jint result = WrapperMultiMapAccess::remove(env, container, key, value);
-    if(result>0){
-        updateRC(env, container);
-    }
-    return result;
-}
-
-jobject NestedPointersRCMultiMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
-    jobject result = WrapperMultiMapAccess::take(env, container, key);
-    updateRC(env, container);
-    return result;
-}
-
-NestedPointersRCHashAccess::NestedPointersRCHashAccess(AbstractHashAccess* containerAccess)
-    : WrapperHashAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-NestedPointersRCHashAccess::NestedPointersRCHashAccess(NestedPointersRCHashAccess& other)
-    : WrapperHashAccess(other.WrapperHashAccess::clone()), ReferenceCountingSetContainer() {}
-
-NestedPointersRCHashAccess* NestedPointersRCHashAccess::clone(){
-    return new NestedPointersRCHashAccess(*this);
-}
-
-void NestedPointersRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    if(size(env, container.container)==0){
-        clearRC(env, container.object);
-    }else{
-        JniLocalFrame frame(env, 200);
-        jobject set = Java::Runtime::HashSet::newInstance(env);
-        auto access1 = keyNestedContainerAccess();
-        auto access2 = valueNestedContainerAccess();
-        auto iterator = constKeyValueIterator(container.container);
-        while(iterator->hasNext()){
-            auto current = iterator->next();
-            unfoldAndAddContainer(env, set, current.first, keyType(), keyMetaType(), access1);
-            unfoldAndAddContainer(env, set, current.second, valueType(), valueMetaType(), access2);
-        }
-        if(access1)
-            access1->dispose();
-        if(access2)
-            access2->dispose();
-        addAllRC(env, container.object, set);
-    }
-}
-
-void NestedPointersRCHashAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperHashAccess::swap(env, container, container2);
-    if(NestedPointersRCHashAccess* access = dynamic_cast<NestedPointersRCHashAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void NestedPointersRCHashAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperHashAccess::assign(env, container, container2);
-    if(NestedPointersRCHashAccess* access = dynamic_cast<NestedPointersRCHashAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void NestedPointersRCHashAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperHashAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void NestedPointersRCHashAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperHashAccess::insert(env, container, key, value);
-    addNestedValueRC(env, container.object, keyType(), hasKeyNestedPointers(), key);
-    addNestedValueRC(env, container.object, valueType(), hasValueNestedPointers(), value);
-}
-
-jint NestedPointersRCHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = WrapperHashAccess::remove(env, container, key);
-    if(result>0){
-        removeRC(env, container.object, key);
-    }
-    return result;
-}
-
-jobject NestedPointersRCHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
-    jobject result = WrapperHashAccess::take(env, container, key);
-    removeRC(env, container.object, key);
-    return result;
-}
-
-NestedPointersRCMultiHashAccess::NestedPointersRCMultiHashAccess(AbstractMultiHashAccess* containerAccess)
-    : WrapperMultiHashAccess(containerAccess), ReferenceCountingSetContainer() {}
-
-NestedPointersRCMultiHashAccess::NestedPointersRCMultiHashAccess(NestedPointersRCMultiHashAccess& other)
-    : WrapperMultiHashAccess(other.WrapperMultiHashAccess::clone()), ReferenceCountingSetContainer() {}
-
-NestedPointersRCMultiHashAccess* NestedPointersRCMultiHashAccess::clone(){
-    return new NestedPointersRCMultiHashAccess(*this);
-}
-
-void NestedPointersRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
-    if(size(env, container.container)==0){
-        clearRC(env, container.object);
-    }else{
-        JniLocalFrame frame(env, 200);
-        jobject set = Java::Runtime::HashSet::newInstance(env);
-        auto access1 = keyNestedContainerAccess();
-        auto access2 = valueNestedContainerAccess();
-        auto iterator = constKeyValueIterator(container.container);
-        while(iterator->hasNext()){
-            auto current = iterator->next();
-            unfoldAndAddContainer(env, set, current.first, keyType(), keyMetaType(), access1);
-            unfoldAndAddContainer(env, set, current.second, valueType(), valueMetaType(), access2);
-        }
-        if(access1)
-            access1->dispose();
-        if(access2)
-            access2->dispose();
-        addAllRC(env, container.object, set);
-    }
-}
-
-void NestedPointersRCMultiHashAccess::swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){
-    WrapperMultiHashAccess::swap(env, container, container2);
-    if(NestedPointersRCMultiHashAccess* access = dynamic_cast<NestedPointersRCMultiHashAccess*>(container2.access)){
-        if(access!=this)
-            swapRC(env, container, container2);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void NestedPointersRCMultiHashAccess::assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& container2){
-    WrapperMultiHashAccess::assign(env, container, container2);
-    if(NestedPointersRCMultiHashAccess* access = dynamic_cast<NestedPointersRCMultiHashAccess*>(container2.access)){
-        if(access!=this)
-            assignRC(env, container.object, container2.object);
-    }else{
-        updateRC(env, container);
-    }
-}
-
-void NestedPointersRCMultiHashAccess::clear(JNIEnv * env, const ContainerInfo& container) {
-    WrapperMultiHashAccess::clear(env, container);
-    clearRC(env, container.object);
-}
-
-void NestedPointersRCMultiHashAccess::insert(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperMultiHashAccess::insert(env, container, key, value);
-    addNestedValueRC(env, container.object, keyType(), hasKeyNestedPointers(), key);
-    addNestedValueRC(env, container.object, valueType(), hasValueNestedPointers(), value);
-}
-
-void NestedPointersRCMultiHashAccess::replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    WrapperMultiHashAccess::replace(env, container, key, value);
-    updateRC(env, container);
-}
-
-void NestedPointersRCMultiHashAccess::unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) {
-    WrapperMultiHashAccess::unite(env, container, other);
-    updateRC(env, container);
-}
-
-jint NestedPointersRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = WrapperMultiHashAccess::remove(env, container, key);
-    if(result>0){
-        removeRC(env, container.object, key);
-    }
-    return result;
-}
-
-jint NestedPointersRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    jint result = WrapperMultiHashAccess::remove(env, container, key, value);
-    if(result>0){
-        updateRC(env, container);
-    }
-    return result;
-}
-
-jobject NestedPointersRCMultiHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
-    jobject result = WrapperMultiHashAccess::take(env, container, key);
-    updateRC(env, container);
-    return result;
-}
-
-#if defined(QTJAMBI_GENERIC_ACCESS)
-void registerPointerContainerAccess(){
-    using namespace ContainerAccessAPI;
-    SequentialContainerAccessFactoryHelper<QList, 0, 0, false>::registerContainerAccessFactory();
-    SequentialContainerAccessFactoryHelper<QSet, 0, 0, false>::registerContainerAccessFactory();
-    AssociativeContainerAccessFactoryHelper<QHash,0, 0, 0, 0>::registerContainerAccessFactory();
-    AssociativeContainerAccessFactoryHelper<QMap,0, 0, 0, 0>::registerContainerAccessFactory();
-    AssociativeContainerAccessFactoryHelper<QMultiMap,0, 0, 0, 0>::registerContainerAccessFactory();
-    AssociativeContainerAccessFactoryHelper<QMultiHash,0, 0, 0, 0>::registerContainerAccessFactory();
-    AssociativeContainerAccessFactoryHelper<QPair,0, 0, 0, 0>::registerContainerAccessFactory();
-    AssociativeContainerAccessFactoryHelper<QHash, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
-    AssociativeContainerAccessFactoryHelper<QMap, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
-    AssociativeContainerAccessFactoryHelper<QMultiMap, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
-    AssociativeContainerAccessFactoryHelper<QMultiHash, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
-    AssociativeContainerAccessFactoryHelper<QPair, alignof(QString), sizeof(QString), 0, 0>::registerContainerAccessFactory();
-    AssociativeContainerAccessFactoryHelper<QHash, alignof(int), sizeof(int), 0, 0>::registerContainerAccessFactory();
-    AssociativeContainerAccessFactoryHelper<QMap, alignof(int), sizeof(int), 0, 0>::registerContainerAccessFactory();
-    AssociativeContainerAccessFactoryHelper<QMultiMap, alignof(int), sizeof(int), 0, 0>::registerContainerAccessFactory();
-    AssociativeContainerAccessFactoryHelper<QMultiHash, alignof(int), sizeof(int), 0, 0>::registerContainerAccessFactory();
-    AssociativeContainerAccessFactoryHelper<QPair, alignof(int), sizeof(int), 0, 0>::registerContainerAccessFactory();
-}
-#endif //defined(QTJAMBI_GENERIC_ACCESS)
+ReferenceCountingSetContainer* ReferenceCountingSetContainer::asRCSet() { return this; }
+ReferenceCountingMapContainer* ReferenceCountingMapContainer::asRCMap() { return this; }
+ReferenceCountingMultiMapContainer* ReferenceCountingMultiMapContainer::asRCMultiMap() { return this; }
 
 void registerContainerConverter(SequentialContainerType collectionType, const QMetaType& containerMetaType, const QMetaType& _elementMetaType){
     QMetaType jCollectionWrapperType = QMetaType::fromType<JCollectionWrapper>();
@@ -6107,7 +6202,8 @@ void registerContainerConverter(SequentialContainerType collectionType, const QM
                                 case SequentialContainerType::QStack:
                                 case SequentialContainerType::QQueue:
                                 case SequentialContainerType::QList:
-                                    if(AbstractListAccess* containerAccess = dynamic_cast<AbstractListAccess*>(_containerAccess)){
+                                    if(_containerAccess->isList()){
+                                        AbstractListAccess* containerAccess = static_cast<AbstractListAccess*>(_containerAccess);
                                         if(elementMetaType==containerAccess->elementMetaType()){
                                             containerAccess->assign(target, link->pointer());
                                             return true;
@@ -6115,7 +6211,8 @@ void registerContainerConverter(SequentialContainerType collectionType, const QM
                                     }
                                     break;
                                 case SequentialContainerType::QSet:
-                                    if(AbstractSetAccess* containerAccess = dynamic_cast<AbstractSetAccess*>(_containerAccess)){
+                                    if(_containerAccess->isSet()){
+                                        AbstractSetAccess* containerAccess = static_cast<AbstractSetAccess*>(_containerAccess);
                                         if(elementMetaType==containerAccess->elementMetaType()){
                                             containerAccess->assign(target, link->pointer());
                                             return true;
@@ -6125,7 +6222,8 @@ void registerContainerConverter(SequentialContainerType collectionType, const QM
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
                                 case SequentialContainerType::QConstSpan:
                                 case SequentialContainerType::QSpan:
-                                    if(AbstractSpanAccess* containerAccess = dynamic_cast<AbstractSpanAccess*>(_containerAccess)){
+                                    if(_containerAccess->isSpan()){
+                                        AbstractSpanAccess* containerAccess = static_cast<AbstractSpanAccess*>(_containerAccess);
                                         if(elementMetaType==containerAccess->elementMetaType()){
                                             containerAccess->assign(target, link->pointer());
                                             return true;
@@ -6170,7 +6268,8 @@ void registerContainerConverter(AssociativeContainerType mapType, const QMetaTyp
                             if(AbstractContainerAccess* _containerAccess = link->containerAccess()){
                                 switch(mapType){
                                 case AssociativeContainerType::QMap:
-                                    if(AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(_containerAccess)){
+                                    if(_containerAccess->isMap()){
+                                        AbstractMapAccess* containerAccess = static_cast<AbstractMapAccess*>(_containerAccess);
                                         if(keyMetaType==containerAccess->keyMetaType() && valueMetaType==containerAccess->valueMetaType()){
                                             containerAccess->assign(target, link->pointer());
                                             return true;
@@ -6178,7 +6277,8 @@ void registerContainerConverter(AssociativeContainerType mapType, const QMetaTyp
                                     }
                                     break;
                                 case AssociativeContainerType::QHash:
-                                    if(AbstractHashAccess* containerAccess = dynamic_cast<AbstractHashAccess*>(_containerAccess)){
+                                    if(_containerAccess->isHash()){
+                                        AbstractHashAccess* containerAccess = static_cast<AbstractHashAccess*>(_containerAccess);
                                         if(keyMetaType==containerAccess->keyMetaType() && valueMetaType==containerAccess->valueMetaType()){
                                             containerAccess->assign(target, link->pointer());
                                             return true;
@@ -6186,7 +6286,8 @@ void registerContainerConverter(AssociativeContainerType mapType, const QMetaTyp
                                     }
                                     break;
                                 case AssociativeContainerType::QMultiMap:
-                                    if(AbstractMultiMapAccess* containerAccess = dynamic_cast<AbstractMultiMapAccess*>(_containerAccess)){
+                                    if(_containerAccess->isMultiMap()){
+                                        AbstractMultiMapAccess* containerAccess = static_cast<AbstractMultiMapAccess*>(_containerAccess);
                                         if(keyMetaType==containerAccess->keyMetaType() && valueMetaType==containerAccess->valueMetaType()){
                                             containerAccess->assign(target, link->pointer());
                                             return true;
@@ -6194,7 +6295,8 @@ void registerContainerConverter(AssociativeContainerType mapType, const QMetaTyp
                                     }
                                     break;
                                 case AssociativeContainerType::QMultiHash:
-                                    if(AbstractMultiHashAccess* containerAccess = dynamic_cast<AbstractMultiHashAccess*>(_containerAccess)){
+                                    if(_containerAccess->isMultiHash()){
+                                        AbstractMultiHashAccess* containerAccess = static_cast<AbstractMultiHashAccess*>(_containerAccess);
                                         if(keyMetaType==containerAccess->keyMetaType() && valueMetaType==containerAccess->valueMetaType()){
                                             containerAccess->assign(target, link->pointer());
                                             return true;

@@ -42,4 +42,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface QmlValueType {
 	String name() default "";
+	String creationMethod() default "";
 }

@@ -36,6 +36,7 @@ TypeSystem{
     module: "qtjambi.qml"
     precompiledHeader: "pch_p.h"
     description: "Classes for QML and JavaScript languages."
+    LoadTypeSystem{name: "QtCore"}
     InjectCode{
         target: CodeClass.MetaInfo
         position: Position.Position1
@@ -317,6 +318,7 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 threadAffinity: true
+                NoNullPointer{}
             }
         }
         ModifyFunction{
@@ -325,6 +327,7 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 threadAffinity: true
+                NoNullPointer{}
             }
         }
         ModifyFunction{
@@ -333,6 +336,7 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 threadAffinity: true
+                NoNullPointer{}
             }
         }
         ModifyFunction{
@@ -341,6 +345,7 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 threadAffinity: true
+                NoNullPointer{}
             }
         }
         ModifyFunction{
@@ -774,6 +779,17 @@ TypeSystem{
             delegate: "base"
         }
         implementing: "java.lang.AutoCloseable, java.lang.Appendable"
+        InjectCode{
+            target: CodeClass.Native
+            Text{content: String.raw`
+                #undef QTJAMBI_NATIVE_METHOD_CALL
+                #define QTJAMBI_NATIVE_METHOD_CALL(...)
+                #undef QTJAMBI_IN_CONSTRUCTOR_CALL
+                #define QTJAMBI_IN_CONSTRUCTOR_CALL(...)
+                #undef QTJAMBI_IN_DESTRUCTOR_CALL
+                #define QTJAMBI_IN_DESTRUCTOR_CALL(...)
+                `}
+        }
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
@@ -2326,7 +2342,7 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             AddArgument{
                 index: 1
                 name: "type"
-                type: "java.lang.Class<? extends io.qt.core.QObject>"
+                type: "java.lang.@StrictNonNull Class<? extends io.qt.core.QObject>"
             }
         }
     }
@@ -2342,7 +2358,7 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             AddArgument{
                 index: 1
                 name: "containerType"
-                type: "io.qt.core.QMetaType"
+                type: "io.qt.core.@NonNull QMetaType"
             }
         }
     }
@@ -2358,7 +2374,7 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             AddArgument{
                 index: 1
                 name: "type"
-                type: "java.lang.Class<?>"
+                type: "java.lang.@StrictNonNull Class<?>"
             }
         }
         Instantiation{
@@ -2370,7 +2386,7 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             AddArgument{
                 index: 1
                 name: "type"
-                type: "java.lang.Class<?>"
+                type: "java.lang.@StrictNonNull Class<?>"
             }
             AddArgument{
                 index: 2
@@ -2391,7 +2407,7 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             AddArgument{
                 index: 1
                 name: "type"
-                type: "java.lang.Class<?>"
+                type: "java.lang.@StrictNonNull Class<?>"
             }
         }
     }
@@ -2407,7 +2423,7 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             AddArgument{
                 index: 1
                 name: "type"
-                type: "java.lang.Class<? extends QtObjectInterface>"
+                type: "java.lang.@StrictNonNull Class<? extends QtObjectInterface>"
             }
         }
     }
@@ -2426,7 +2442,7 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             AddArgument{
                 index: 1
                 name: "type"
-                type: "java.lang.Class<?>"
+                type: "java.lang.@StrictNonNull Class<?>"
             }
             AddArgument{
                 index: 2
@@ -2450,12 +2466,12 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             AddArgument{
                 index: 1
                 name: "type"
-                type: "java.lang.Class<?>"
+                type: "java.lang.@StrictNonNull Class<?>"
             }
             AddArgument{
                 index: 2
                 name: "extendedType"
-                type: "java.lang.Class<?>"
+                type: "java.lang.@StrictNonNull Class<?>"
             }
         }
     }
@@ -2474,12 +2490,12 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             AddArgument{
                 index: 1
                 name: "type"
-                type: "java.lang.Class<?>"
+                type: "java.lang.@StrictNonNull Class<?>"
             }
             AddArgument{
                 index: 2
                 name: "extendedType"
-                type: "java.lang.Class<?>"
+                type: "java.lang.@StrictNonNull Class<?>"
             }
         }
     }
@@ -2498,12 +2514,12 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             AddArgument{
                 index: 1
                 name: "type"
-                type: "java.lang.Class<?>"
+                type: "java.lang.@StrictNonNull Class<?>"
             }
             AddArgument{
                 index: 2
                 name: "extendedType"
-                type: "java.lang.Class<?>"
+                type: "java.lang.@StrictNonNull Class<?>"
             }
         }
         Instantiation{
@@ -2517,12 +2533,12 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             AddArgument{
                 index: 1
                 name: "type"
-                type: "java.lang.Class<?>"
+                type: "java.lang.@StrictNonNull Class<?>"
             }
             AddArgument{
                 index: 2
                 name: "extendedType"
-                type: "java.lang.Class<?>"
+                type: "java.lang.@StrictNonNull Class<?>"
             }
             AddArgument{
                 index: 3
@@ -2553,7 +2569,7 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             AddArgument{
                 index: 1
                 name: "type"
-                type: "java.lang.Class<? extends io.qt.core.QObject>"
+                type: "java.lang.@StrictNonNull Class<? extends io.qt.core.QObject>"
             }
         }
     }
@@ -2593,7 +2609,7 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             AddArgument{
                 index: 1
                 name: "type"
-                type: "java.lang.Class<?>"
+                type: "java.lang.@StrictNonNull Class<?>"
             }
         }
         Instantiation{
@@ -2607,7 +2623,7 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             AddArgument{
                 index: 1
                 name: "type"
-                type: "java.lang.Class<?>"
+                type: "java.lang.@StrictNonNull Class<?>"
             }
             AddArgument{
                 index: 2
@@ -2631,7 +2647,7 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             AddArgument{
                 index: 1
                 name: "type"
-                type: "java.lang.Class<?>"
+                type: "java.lang.@StrictNonNull Class<?>"
             }
         }
         Instantiation{
@@ -2645,7 +2661,7 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             AddArgument{
                 index: 1
                 name: "type"
-                type: "java.lang.Class<?>"
+                type: "java.lang.@StrictNonNull Class<?>"
             }
             AddArgument{
                 index: 2
@@ -2654,7 +2670,7 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qmlRegisterTypesAndRevisions<T,Args...>(const char*, int)"
         targetType: "QtQml"
@@ -2666,12 +2682,9 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             Argument{
                 type: "QObject"
             }
-            Argument{
-                type: "QObject"
-            }
             AddArgument{
                 name: "types"
-                type: "java.lang.Class<?>..."
+                type: "java.lang.@StrictNonNull Class<?> @NonNull..."
             }
         }
     }
@@ -2680,7 +2693,7 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
         signature: "qmlRegisterTypesAndRevisions<>(const char *, int, QList<int> *)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qmlRegisterTypesAndRevisions<T,Args...>(const char*, int, QList<int> *)"
         targetType: "QtQml"
@@ -2692,12 +2705,9 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             Argument{
                 type: "QObject"
             }
-            Argument{
-                type: "QObject"
-            }
             AddArgument{
                 name: "types"
-                type: "java.lang.Class<?>..."
+                type: "java.lang.@StrictNonNull Class<?> @NonNull..."
             }
         }
     }
@@ -2710,12 +2720,9 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             Argument{
                 type: "QObject"
             }
-            Argument{
-                type: "QObject"
-            }
             AddArgument{
                 name: "types"
-                type: "java.lang.Class<?>..."
+                type: "java.lang.@StrictNonNull Class<?> @NonNull..."
             }
         }
     }

@@ -11,7 +11,6 @@ import io.qt.core.QFuture;
 import io.qt.core.QStringList;
 import io.qt.core.QtFuture;
 
-@SuppressWarnings("removal")
 public class TestConcurrentQt61 extends ApplicationInitializer {
 	@Test
 	@Deprecated

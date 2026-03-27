@@ -46,12 +46,11 @@ import io.qt.qml.QQmlEngine;
 import io.qt.qml.QQmlError;
 
 public class TestQmlQt61 extends ApplicationInitializer{
-	@SuppressWarnings("rawtypes")
 	@Test
     public void testQJSManagedValue() {
 		qmlClearTypeRegistrations();
-		qmlRegisterType((Class)AutoGadgetValueType.class, "io.qt.test", 1, 0, "autoGadgetValueType");
-		qmlRegisterType((Class)CustomValueType.class, "io.qt.test", 1, 0, "customValueType");
+		qmlRegisterType(AutoGadgetValueType.class, "io.qt.test", 1, 0, "autoGadgetValueType");
+		qmlRegisterType(CustomValueType.class, "io.qt.test", 1, 0, "customValueType");
 		QQmlEngine engine = new QQmlEngine();
 		engine.setOutputWarningsToStandardError(true);
 		engine.warnings.connect(warnings->{

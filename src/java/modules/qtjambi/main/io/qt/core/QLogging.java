@@ -37,7 +37,11 @@ import java.util.IllegalFormatException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.logging.ErrorManager;
+import java.util.logging.Filter;
+import java.util.logging.Formatter;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 
 import io.qt.NativeAccess;
@@ -351,11 +355,11 @@ public final class QLogging {
      */
     @QtUninvokable
     public static String qFormatLogMessage(@NonNull QtMsgType type, @StrictNonNull QMessageLogContext context, @NonNull String str) {
-    	return qFormatLogMessage(type==null ? 0 : type.value(), QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(context)), str);
+    	return qFormatLogMessage(type==null ? 0 : type.value(), context, str);
     }
     
     @QtUninvokable
-    private static native String qFormatLogMessage(int type, long context, String str);
+    private static native String qFormatLogMessage(int type, QMessageLogContext context, String str);
     
     @QtUninvokable
     public static void qErrnoWarning(@NonNull String message, @Nullable Object @NonNull...args) {
@@ -735,4 +739,111 @@ public final class QLogging {
     private native static void showCMessage(int messageType, long categoryId, String message);
     @QtUninvokable
     private native static void showCMessageFromSupplier(int messageType, long categoryId, Supplier<? extends CharSequence> message);
+    
+    public static class Handler extends java.util.logging.Handler {
+    	private static class MessageFormatter extends Formatter{
+			@Override
+			public String format(LogRecord record) {
+				return formatMessage(record);
+			}
+    	}
+    	private final String category;
+    	private QLoggingCategory loggingCategory;
+    	public Handler() {
+    		this(new MessageFormatter());
+    	}
+    	@SuppressWarnings("exports")
+		public Handler(Formatter defaultFormatter) {
+    		LogManager manager = LogManager.getLogManager();
+    		String cname = getClass().getName();
+            final Level level = getLevelProperty(manager, cname + ".level", Level.ALL);
+            final Filter filter = getFilterProperty(manager, cname + ".filter", null);
+            final Formatter formatter = getFormatterProperty(manager, cname + ".formatter", defaultFormatter);
+            final String encoding = manager.getProperty(cname + ".encoding");
+            category = manager.getProperty(cname + ".category");
+
+            setLevel(level);
+            setFilter(filter);
+            setFormatter(formatter);
+            try {
+                setEncoding(encoding);
+            } catch (Throwable ex) {
+                try {
+                    setEncoding(null);
+                } catch (Throwable ex2) {
+                }
+            }
+    	}
+    	private static Level getLevelProperty(LogManager manager, String name, Level defaultValue) {
+            String val = manager.getProperty(name);
+            if (val == null) {
+                return defaultValue;
+            }
+            try {
+	            Level l = Level.parse(val.trim());
+	            return l != null ? l : defaultValue;
+            }catch(Throwable t) {
+            	return defaultValue;
+            }
+        }
+    	private static Filter getFilterProperty(LogManager manager, String name, Filter defaultValue) {
+            String val = manager.getProperty(name);
+            if (val != null) {
+            	try {
+                    Object o = ClassLoader.getSystemClassLoader().loadClass(val).getConstructor().newInstance();
+                    return (Filter) o;
+	            } catch (Throwable ex) {
+	            }
+            }
+            return defaultValue;
+        }
+    	private static Formatter getFormatterProperty(LogManager manager, String name, Formatter defaultValue) {
+            String val = manager.getProperty(name);
+            if (val != null) {
+            	try {
+                    Object o = ClassLoader.getSystemClassLoader().loadClass(val).getConstructor().newInstance();
+                    return (Formatter) o;
+	            } catch (Throwable ex) {
+	            }
+            }
+            return defaultValue==null ? new MessageFormatter() : defaultValue;
+        }
+		@SuppressWarnings("exports")
+		@Override
+		public void publish(LogRecord record) {
+			if (!isLoggable(record)) {
+	            return;
+	        }
+			QtMsgType msgType;
+			if(record.getLevel().intValue()<=Level.CONFIG.intValue()) {
+				msgType = QtMsgType.QtDebugMsg;
+			}else if(record.getLevel().intValue()<=Level.INFO.intValue()) {
+				msgType = QtMsgType.QtInfoMsg;
+			}else if(record.getLevel().intValue()<=Level.WARNING.intValue()) {
+				msgType = QtMsgType.QtWarningMsg;
+			}else{
+				msgType = QtMsgType.QtCriticalMsg;
+			}
+			try {
+				if(category!=null && !category.isEmpty()) {
+					if(loggingCategory==null) {
+						loggingCategory = new QLoggingCategory(category);
+					}
+					log(msgType.value(), QtJambi_LibraryUtilities.internal.nativeId(loggingCategory), getFormatter(), record);
+				}else {
+					log(msgType.value(), 0, getFormatter(), record);
+				}
+			} catch (Exception ex) {
+				reportError(null, ex, ErrorManager.FORMAT_FAILURE);
+			}
+		}
+		@Override
+		public void flush() {
+		}
+		@Override
+		public void close() {
+		}
+		@QtUninvokable
+	    private native static void log(int msgType, long loggingCategory, Formatter formatter, LogRecord record);
+    }
 }

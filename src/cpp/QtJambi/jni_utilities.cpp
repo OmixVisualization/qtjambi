@@ -192,7 +192,7 @@ extern "C" JNIEXPORT jclass JNICALL Java_io_qt_internal_AccessUtility_getClass(J
 
 extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_ClassAnalyzerUtility_isGeneratedClass(JNIEnv *env, jclass, jstring className){
     try{
-        QString cn = qtjambi_cast<QString>(env, className).replace(".", "/");
+        QByteArray cn = qtjambi_cast<QString>(env, className).toUtf8().replace('.', '/');
         return getTypeByJavaName(cn)!=nullptr || isJavaNameNamespace(cn);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);

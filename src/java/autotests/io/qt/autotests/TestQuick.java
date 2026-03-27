@@ -117,7 +117,7 @@ public class TestQuick extends ApplicationInitializer {
 		    QSurfaceFormat format = component.format();
 		    format.setSamples(8);
 		    component.setFormat(format);
-			component.setSource("qrc:io/qt/autotests/qml/TestItem.qml");
+			component.setSource("qrc:/io/qt/autotests/qml/TestItem.qml");
 			String error = "";
 			for(QQmlError err : component.errors()) {
 				error += err.description() + "\n";

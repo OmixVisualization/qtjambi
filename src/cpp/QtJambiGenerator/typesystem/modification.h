@@ -243,9 +243,9 @@ struct Modification {
 
 struct Delegate{
     QString name;
-    bool isDeprecated;
-    bool isSelfReturning;
-    uint modifiers;
+    bool isDeprecated = false;
+    bool isSelfReturning = false;
+    uint modifiers = 0;
     CodeSnipList snips;
 
     Modification::Modifiers accessModifier() const { return Modification::Modifiers(modifiers & Modification::AccessModifierMask); }
@@ -261,6 +261,7 @@ struct AbstractFunctionModification: public Modification {
     AbstractFunctionModification() = default;
     //AbstractFunctionModification(const AbstractFunctionModification&) = default;
     bool isCodeInjection() const { return modifiers & CodeInjection; }
+    bool isRemoveModifier() const { return removal != TS::NoLanguage; }
     QString ppCondition;
     QString throws;
     QString association;
@@ -269,6 +270,7 @@ struct AbstractFunctionModification: public Modification {
     QString proxyCall;
     QList<ArgumentModification> argument_mods;
     QList<Delegate> delegates;
+    TS::Language removal = TS::NoLanguage;
 };
 
 struct Parameter{
@@ -288,11 +290,8 @@ struct TemplateInstantiation: public AbstractFunctionModification {
 typedef QList<TemplateInstantiation> TemplateInstantiationList;
 
 struct FunctionModification: public AbstractFunctionModification {
-    FunctionModification() : AbstractFunctionModification(), removal(TS::NoLanguage) { }
-    //FunctionModification(const FunctionModification&) = default;
-    bool isRemoveModifier() const { return removal != TS::NoLanguage; }
+    FunctionModification() = default;
     QString toString() const;
-    TS::Language removal;
     QString signature;
     QString originalSignature;
     QList<TemplateInstantiation> template_instantiations;

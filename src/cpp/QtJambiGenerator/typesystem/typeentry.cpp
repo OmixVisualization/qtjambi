@@ -376,6 +376,9 @@ QString ComplexTypeEntry::targetLangName() const {
         return m_java_name;
     }
 }
+QString ComplexTypeEntry::overrideTargetLangName() const{
+    return m_java_name;
+}
 void ComplexTypeEntry::setTargetLangName(const QString &name) {
     m_java_name = name;
 }
@@ -442,7 +445,7 @@ void ComplexTypeEntry::addInstantiation(const QStringList& instantiation, const 
     m_instantiations[instantiation] = typeEntry;
 }
 
-const QMap<QStringList,const ComplexTypeEntry*>& ComplexTypeEntry::instantiations() const {
+const QHash<QStringList,const ComplexTypeEntry*>& ComplexTypeEntry::instantiations() const {
     return m_instantiations;
 }
 void ComplexTypeEntry::setExtendType(const QString& extendType){ m_extendType = extendType; }
@@ -1256,6 +1259,18 @@ GLsyncTypeEntry::GLsyncTypeEntry() : ObjectTypeEntry("__GLsync") {
     setCodeGeneration(TypeEntry::GenerateNothing);
     m_attributes.setFlag(ComplexTypeEntry::IsGLsync);
 }
+
+QMessageLogContextTypeEntry::QMessageLogContextTypeEntry() : ComplexTypeEntry("QMessageLogContext", QMessageLogContextType) {
+    disableNativeIdUsage();
+    setDestructorPrivate();
+    setHasPrivateCopyConstructor();
+    setHasPrivateMoveConstructor();
+    setHasPrivateDefaultConstructor();
+}
+
+QString QMessageLogContextTypeEntry::javaPackage() const { return "io.qt.core"; }
+
+bool QMessageLogContextTypeEntry::isValue() const { return false; }
 
 QMetaObjectTypeEntry::QMetaObjectTypeEntry() : ComplexTypeEntry("QMetaObject", QMetaObjectType) {
     disableNativeIdUsage();

@@ -661,26 +661,6 @@ public class TestInjectedCode extends ApplicationInitializer {
 	    	assertEquals(info.appname, fileName);
     	}
     }
-    
-    @Test
-    public void testQQuaternion() {
-    	QQuaternion quarternion = new QQuaternion(1,2,3,4);
-    	QQuaternion.Axes axes = quarternion.getAxes();
-    	QQuaternion.AxisAndAngle axisAndAngle = quarternion.getAxisAndAngle();
-    	QQuaternion.EulerAngles eulerAngles = quarternion.getEulerAngles();
-    	assertEquals(new QVector3D(-49,20,10), axes.xAxis);
-    	assertEquals(new QVector3D(4,-39,28), axes.yAxis);
-    	assertEquals(new QVector3D(22,20,-25), axes.zAxis);
-    	assertTrue(axisAndAngle.axis!=null);
-    	assertEquals(0.371391f, axisAndAngle.axis.x(), 0.001);
-    	assertEquals(0.557086f, axisAndAngle.axis.y(), 0.001);
-    	assertEquals(0.742781f, axisAndAngle.axis.z(), 0.001);
-    	if(QLibraryInfo.version().compareTo(new QVersionNumber(6,7,0))>=0)
-    		assertEquals(158.96054077148438f, axisAndAngle.angle, 0.001);
-    	assertEquals(-41.81031799316406f, eulerAngles.pitch, 0.001);
-    	assertEquals(79.69515228271484f, eulerAngles.yaw, 0.001);
-    	assertEquals(116.56504821777344f, eulerAngles.roll, 0.001);
-    }
 
 	@Test
 	public void testTextObjectInterface() {

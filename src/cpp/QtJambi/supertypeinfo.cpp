@@ -29,7 +29,7 @@
 
 #include "pch_p.h"
 
-void resolveClasses(JNIEnv *env, QString signature, QList<jclass> &argumentTypes){
+void resolveClasses(JNIEnv *env, QByteArrayView signature, QList<jclass> &argumentTypes){
     int arrayDepth = 0;
     while(!signature.isEmpty()){
         QChar c = signature.front();
@@ -40,10 +40,10 @@ void resolveClasses(JNIEnv *env, QString signature, QList<jclass> &argumentTypes
             jclass cls;
             if(c==QLatin1Char('L')){
                 signature = signature.mid(1);
-                auto idx = signature.indexOf(QLatin1Char(';'));
+                auto idx = signature.indexOf(';');
                 Q_ASSERT(idx>0);
-                QString className = signature.mid(0, idx);
-                cls = JavaAPI::resolveClass(env, qPrintable(className));
+                QByteArrayView className = signature.mid(0, idx);
+                cls = resolveClass(env, className);
                 signature = signature.mid(idx+1);
             }else{
                 signature = signature.mid(1);
@@ -78,7 +78,6 @@ void resolveClasses(JNIEnv *env, QString signature, QList<jclass> &argumentTypes
 }
 
 SuperTypeInfo::SuperTypeInfo(  const char* _qtName,
-                const QString& _className,
                 jclass _javaClass,
                 size_t _size,
                 size_t _alignment,
@@ -90,7 +89,6 @@ SuperTypeInfo::SuperTypeInfo(  const char* _qtName,
                 const std::type_info& typeId,
                 char const* _iid)
     : m_qtName(_qtName),
-      m_className(_className),
       m_javaClass(_javaClass),
       m_size(_size),
       m_alignment(_alignment),
@@ -105,7 +103,6 @@ SuperTypeInfo::SuperTypeInfo(  const char* _qtName,
 
 SuperTypeInfo::SuperTypeInfo()
     : m_qtName(nullptr),
-      m_className(),
       m_javaClass(nullptr),
       m_size(0),
       m_alignment(0),
@@ -120,7 +117,6 @@ SuperTypeInfo::SuperTypeInfo()
 
 SuperTypeInfo::SuperTypeInfo(  const SuperTypeInfo& other )
     : m_qtName(other.m_qtName),
-      m_className(other.m_className),
       m_javaClass(other.m_javaClass),
       m_size(other.m_size),
       m_alignment(other.m_alignment),
@@ -136,7 +132,6 @@ SuperTypeInfo::SuperTypeInfo(  const SuperTypeInfo& other )
 SuperTypeInfo& SuperTypeInfo::operator=(  const SuperTypeInfo& other )
 {
       m_qtName = other.m_qtName;
-      m_className = other.m_className;
       m_javaClass = other.m_javaClass;
       m_size = other.m_size;
       m_alignment = other.m_alignment;
@@ -153,7 +148,6 @@ SuperTypeInfo& SuperTypeInfo::operator=(  const SuperTypeInfo& other )
 SuperTypeInfo& SuperTypeInfo::operator=(  SuperTypeInfo&& other )
 {
       m_qtName = std::move(other.m_qtName);
-      m_className = std::move(other.m_className);
       m_javaClass = std::move(other.m_javaClass);
       m_size = std::move(other.m_size);
       m_alignment = std::move(other.m_alignment);
@@ -169,7 +163,6 @@ SuperTypeInfo& SuperTypeInfo::operator=(  SuperTypeInfo&& other )
 
 SuperTypeInfo::SuperTypeInfo(  SuperTypeInfo&& other )
     : m_qtName(std::move(other.m_qtName)),
-      m_className(std::move(other.m_className)),
       m_javaClass(std::move(other.m_javaClass)),
       m_size(std::move(other.m_size)),
       m_alignment(std::move(other.m_alignment)),
@@ -184,7 +177,6 @@ SuperTypeInfo::SuperTypeInfo(  SuperTypeInfo&& other )
 
 void SuperTypeInfo::swap(SuperTypeInfo& other){
     qSwap(m_qtName, other.m_qtName);
-    m_className.swap(other.m_className);
     qSwap(m_javaClass, other.m_javaClass);
     qSwap(m_size, other.m_size);
     qSwap(m_alignment, other.m_alignment);
@@ -211,10 +203,6 @@ const char* SuperTypeInfo::qtName() const {
 
 const char* SuperTypeInfo::interfaceID() const {
     return m_iid;
-}
-
-const QString& SuperTypeInfo::className() const {
-    return m_className;
 }
 
 jclass SuperTypeInfo::javaClass() const {
@@ -319,7 +307,7 @@ SuperTypeInfos SuperTypeInfos::fromClass(JNIEnv *env, jclass clazz)
             size_t offset = 0;
             if(jclass closestQtClass = JavaAPI::resolveClosestQtSuperclass(env, clazz, nullptr)){
                 Q_ASSERT(env->GetObjectRefType(closestQtClass)==JNIGlobalRefType);
-                QString className = QtJambiAPI::getClassName(env, closestQtClass).replace('.', '/');
+                QByteArray className = QtJambiAPI::getClassNameJNI(env, closestQtClass);
                 if(const std::type_info* typeId = getTypeByJavaName(className)){
                     const char* qtName = getQtName(*typeId);
                     const char* iid = registeredInterfaceIDForClassName(className);
@@ -339,15 +327,15 @@ SuperTypeInfos SuperTypeInfos::fromClass(JNIEnv *env, jclass clazz)
                             const RegistryAPI::ConstructorInfo& info = constructorInfos->at(i);
                             resolvedConstructorInfos[i].constructorFunction = info.constructorFunction;
                             if(info.signature){
-                                resolveClasses(env, QLatin1String(info.signature), resolvedConstructorInfos[i].argumentTypes);
+                                resolveClasses(env, info.signature, resolvedConstructorInfos[i].argumentTypes);
                             }
                         }
                     }
                     Java::QtJambi::ClassAnalyzerUtility::checkImplementation(env, closestQtClass, clazz);
                     if(Java::QtCore::QObject::isAssignableFrom(env, closestQtClass)){
-                        superTypeInfos << SuperTypeInfo(qtName, className, closestQtClass, sizeAlign.first, sizeAlign.second, hasShell, offset, resolvedConstructorInfos, destructor, [](const void* ptr) -> const QObject* { return reinterpret_cast<const QObject*>(ptr); }, *typeId, iid);
+                        superTypeInfos << SuperTypeInfo(qtName, closestQtClass, sizeAlign.first, sizeAlign.second, hasShell, offset, resolvedConstructorInfos, destructor, [](const void* ptr) -> const QObject* { return reinterpret_cast<const QObject*>(ptr); }, *typeId, iid);
                     }else{
-                        superTypeInfos << SuperTypeInfo(qtName, className, closestQtClass, sizeAlign.first, sizeAlign.second, hasShell, offset, resolvedConstructorInfos, destructor, registeredOwnerFunction(*typeId), *typeId, iid);
+                        superTypeInfos << SuperTypeInfo(qtName, closestQtClass, sizeAlign.first, sizeAlign.second, hasShell, offset, resolvedConstructorInfos, destructor, registeredOwnerFunction(*typeId), *typeId, iid);
                     }
                     offset += sizeAlign.first + sizeof(void*);
                 }
@@ -358,7 +346,7 @@ SuperTypeInfos SuperTypeInfos::fromClass(JNIEnv *env, jclass clazz)
                 jobject iterator = Java::Runtime::Collection::iterator(env, keySet);
                 while(Java::Runtime::Iterator::hasNext(env, iterator)) {
                     jclass interfaceClass = jclass(Java::Runtime::Iterator::next(env, iterator));
-                    QString className = QtJambiAPI::getClassName(env, interfaceClass).replace('.', '/');
+                    QByteArray className = QtJambiAPI::getClassNameJNI(env, interfaceClass);
                     if(const std::type_info* typeId = getTypeByJavaName(className)){
                         const char* qtName = getQtName(*typeId);
                         const char* iid = registeredInterfaceIDForClassName(className);
@@ -377,10 +365,10 @@ SuperTypeInfos SuperTypeInfos::fromClass(JNIEnv *env, jclass clazz)
                                 const RegistryAPI::ConstructorInfo& info = constructorInfos->at(i);
                                 resolvedConstructorInfos[i].constructorFunction = info.constructorFunction;
                                 if(info.signature){
-                                    resolveClasses(env, QLatin1String(info.signature), resolvedConstructorInfos[i].argumentTypes);
+                                    resolveClasses(env, info.signature, resolvedConstructorInfos[i].argumentTypes);
                                 }
                             }
-                            superTypeInfos << SuperTypeInfo(qtName, className, getGlobalClassRef(env, interfaceClass, qPrintable(className)), sizeAlign.first, sizeAlign.second, hasShell, offset, resolvedConstructorInfos, destructor, registeredOwnerFunction(*typeId), *typeId, iid);
+                            superTypeInfos << SuperTypeInfo(qtName, getGlobalClassRef(env, interfaceClass, className), sizeAlign.first, sizeAlign.second, hasShell, offset, resolvedConstructorInfos, destructor, registeredOwnerFunction(*typeId), *typeId, iid);
                             offset += sizeAlign.first + sizeof(void*);
                         }else{
                             jthrowable t = Java::QtJambi::QInterfaceCannotBeSubclassedException::newInstance(env, interfaceClass);

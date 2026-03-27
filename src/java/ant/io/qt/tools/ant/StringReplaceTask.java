@@ -9,7 +9,8 @@ public class StringReplaceTask extends Task{
 	public void execute() throws BuildException {
 		PropertyHelper props = PropertyHelper.getPropertyHelper(getProject());
 		String value = AntUtil.getPropertyAsString(props, property);
-		value = value.replace(target, replacement);
+		if(replacement!=null)
+			value = value.replace(target, replacement);
 		props.setProperty(property, value, true);
 	}
 	

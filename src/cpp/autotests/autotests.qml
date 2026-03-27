@@ -1000,11 +1000,19 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
     }
     
     ValueType{
-        name: "QLinkedList_int"
+        name: "QList_QList_QObject"
+    }
+
+    ValueType{
+        name: "QList_QHash_QObject_QObject"
     }
     
     ValueType{
         name: "QList_int"
+    }
+
+    ValueType{
+        name: "QList_QObject"
     }
     
     ValueType{
@@ -1049,10 +1057,6 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
     
     ValueType{
         name: "QStack_String"
-    }
-    
-    ValueType{
-        name: "QVector_int"
     }
     
     ValueType{

@@ -511,7 +511,6 @@ TypeSystem{
         className: "QPatternist::NamePool"
     }
     
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: horribly broken type ''"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: template baseclass 'QExplicitlySharedDataPointer<QXmlSerializer>' of 'QXmlSerializerPointer' is not known"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QXmlItem::QXmlItem', unmatched parameter type 'const QPatternist::Item&'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QXmlNodeModelIndex::sequencedTypedValue', unmatched return type 'QExplicitlySharedDataPointer<QAbstractXmlForwardIterator<QPatternist::Item>>"}

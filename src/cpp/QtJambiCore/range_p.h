@@ -98,11 +98,15 @@ struct ClassInfo{
 };
 
 struct GenericTable{
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+    JObjectWrapper itemAccess;
+#endif
     TreeType treeType;
     bool is_mutable_range;
     bool is_mutable_row;
     bool is_list_range;
     bool is_list_row;
+    bool itemsAreQObjects;
     RowType rowType;
     PointerType row_pointertype;
     PointerType subrow_pointertype;
@@ -134,13 +138,27 @@ private:
              bool is_mutable_row,
              bool is_list_range,
              bool is_list_row,
-             RowType rowType,
+             bool itemsAreQObjects,
+             bool has_itemAccess,
+             std::enable_if_t<!has_itemAccess,RowType> rowType,
              typename... Args>
     void initializeTree(QRangeModel *itemModel, Args&&... args);
+    template<bool is_mutable_tree,
+             bool is_mutable_range,
+             bool is_mutable_row,
+             bool is_list_range,
+             bool is_list_row,
+             bool itemsAreQObjects,
+             bool has_itemAccess,
+             std::enable_if_t<has_itemAccess,RowType> rowType,
+             typename... Args>
+    void initializeTree(QRangeModel *itemModel, JObjectWrapper&& itemAccess, Args&&... args);
     template<bool is_mutable_range,
              bool is_mutable_row,
              bool is_list_range,
              bool is_list_row,
+             bool itemsAreQObjects,
+             bool has_itemAccess,
              RowType rowType,
              typename... Args>
     void initializeTable(QRangeModel *itemModel, Args&&... args);
@@ -149,27 +167,40 @@ private:
 
 void containerDisposer(AbstractContainerAccess* _access);
 
-template<typename T>
-void initializeModel(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, T&& range, QtJambiAPI::ConstructorOptions __qtjambi_constructor_options, jobject range0, QObject* parent);
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+namespace QSpanPrivate{
+template <typename T, size_t E> auto adl_begin(QSpan<T,E> &c) { return QRangeModelDetails::adl_begin(c); }
+}
+#endif
 
-inline bool initializeModel(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, QtJambiAPI::ConstructorOptions __qtjambi_constructor_options, jobject range0,
-                     void* container,
-                     AbstractSequentialAccess* containerAccess, QRangeModel::RowCategory rowCategory, QObject* parent, bool isConst = false){
+template<typename Factory, typename Access>
+void initializeGenericModel(JNIEnv* __jni_env,
+                            jobject __jni_object,
+                            void* container,
+                            Access* containerAccess,
+                            jobject rowCategoryJ,
+                            Factory&& factory,
+                            bool is_mutable_range = true){
     std::shared_ptr<int> treeColumnCount{new int{1}};
     TreeType treeType = TreeType::None;
     ClassInfo classInfo;
     const QMetaType& elementMetaType = containerAccess->elementMetaType();
-    if(elementMetaType==QMetaType::fromType<JObjectWrapper>()){
+    classInfo.javaClass = CoreAPI::getClassForMetaType(__jni_env, elementMetaType);
+    if(!classInfo.javaClass){
         auto iter = containerAccess->constElementIterator(container);
         while(iter->hasNext()){
             jobject entry = iter->next(__jni_env);
             if(entry){
-                classInfo.javaClass = __jni_env->GetObjectClass(entry);
-                break;
+                jclass type2 = __jni_env->GetObjectClass(entry);
+                if(!classInfo.javaClass)
+                    classInfo.javaClass = type2;
+                else if(!__jni_env->IsAssignableFrom(classInfo.javaClass, type2)){
+                    do{
+                        classInfo.javaClass = Java::Runtime::Class::getSuperclass(__jni_env, classInfo.javaClass);
+                    }while(!__jni_env->IsAssignableFrom(classInfo.javaClass, type2));
+                }
             }
         }
-    }else{
-        classInfo.javaClass = CoreAPI::getClassForMetaType(__jni_env, elementMetaType);
     }
     if(classInfo.javaClass){
         if(Java::QtCore::QRangeModel$ConstTreeRowInterface::isAssignableFrom(__jni_env, classInfo.javaClass)){
@@ -183,16 +214,20 @@ inline bool initializeModel(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jn
                 }
             }
         }
-    }
-
-    bool is_mutable_range = !isConst;
-    if(AbstractSpanAccess* spanAccess = dynamic_cast<AbstractSpanAccess*>(containerAccess)){
-        is_mutable_range &= !spanAccess->isConst();
+        if(!rowCategoryJ)
+            rowCategoryJ = Java::QtCore::QRangeModel::rowCategory(__jni_env, __jni_object, classInfo.javaClass);
     }
     bool is_mutable_row = is_mutable_range;
-    bool is_list_range = dynamic_cast<AbstractListAccess*>(containerAccess);
+    bool is_list_range;
+    if constexpr(!std::is_same_v<Access,AbstractSpanAccess>){
+        is_list_range = containerAccess->isList();
+    }else{
+        is_list_range = false;
+    }
     bool is_list_row = false;
-    RowType rowType = elementMetaType.metaObject() ? RowType::MetaObject : RowType::Data;
+    bool itemsAreQObjects = Java::QtCore::QObject::isAssignableFrom(__jni_env, classInfo.javaClass);
+    RowType rowType = ( elementMetaType.metaObject() && elementMetaType.metaObject()->propertyCount() - elementMetaType.metaObject()->propertyOffset() > 0)
+                              || itemsAreQObjects ? RowType::MetaObject : RowType::Data;
     PointerType row_pointertype = PointerType::None;
     PointerType subrow_pointertype = PointerType::None;
     if(elementMetaType.flags() & QMetaType::IsPointer){
@@ -206,43 +241,112 @@ inline bool initializeModel(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jn
             row_pointertype = PointerType::SmartPointer;
         }
     }
-    if(rowCategory==QRangeModel::RowCategory::MultiRoleItem)
+    QRangeModel::RowCategory rowCategory = rowCategoryJ ? qtjambi_cast<QRangeModel::RowCategory>(__jni_env, rowCategoryJ) : QRangeModel::RowCategory::Default;
+    jclass itemClass = classInfo.javaClass;
+    if(rowCategory==QRangeModel::RowCategory::MultiRoleItem){
         rowType = RowType::Data;
-    else if(auto nestedContainerAccess = containerAccess->elementNestedContainerAccess()){
+    }else if(auto nestedContainerAccess = containerAccess->elementNestedContainerAccess()){
         rowType = rowCategory==QRangeModel::RowCategory::MultiRoleItem ? RowType::Data : RowType::Range;
         MultiRole::Type multiRoleType = MultiRole::isMultiRole(elementMetaType, nestedContainerAccess);
-        is_list_row = dynamic_cast<AbstractListAccess*>(nestedContainerAccess);
-        if(AbstractSpanAccess* spanElementAccess = dynamic_cast<AbstractSpanAccess*>(nestedContainerAccess)){
-            is_mutable_row = !spanElementAccess->isConst();
+        is_list_row = nestedContainerAccess->isList();
+        if(nestedContainerAccess->isSpan()){
+            is_mutable_row = !static_cast<AbstractSpanAccess*>(nestedContainerAccess)->isConst();
         }
-        if(AbstractSequentialAccess* sequentialElementAccess = dynamic_cast<AbstractSequentialAccess*>(nestedContainerAccess)){
-            if(sequentialElementAccess->elementMetaType().flags() & QMetaType::IsPointer){
-                subrow_pointertype = PointerType::Pointer;
-            }else{
-                QByteArrayView metaTypeName(sequentialElementAccess->elementMetaType().name());
-                if(metaTypeName.startsWith("QSharedPointer<")
-                    || metaTypeName.startsWith("QScopedPointer<")
-                    || metaTypeName.startsWith("std::shared_ptr<")
-                    || metaTypeName.startsWith("std::unique_ptr<")){
-                    subrow_pointertype = PointerType::SmartPointer;
+        QMetaType nestedElementMetaType;
+        if(nestedContainerAccess->isSequential()){
+            AbstractSequentialAccess* sequentialElementAccess = static_cast<AbstractSequentialAccess*>(nestedContainerAccess);
+            nestedElementMetaType = sequentialElementAccess->elementMetaType();
+        }
+        else if(nestedContainerAccess->isAssociative()){
+            AbstractAssociativeAccess* associativeElementAccess = static_cast<AbstractAssociativeAccess*>(nestedContainerAccess);
+            nestedElementMetaType = associativeElementAccess->valueMetaType();
+        }
+        else if(nestedContainerAccess->isPair()){
+            AbstractPairAccess* pairElementAccess = static_cast<AbstractPairAccess*>(nestedContainerAccess);
+            nestedElementMetaType = pairElementAccess->secondMetaType();
+        }
+        if(multiRoleType!=MultiRole::None){
+            rowType = RowType::Data;
+        }else if(nestedElementMetaType.flags() & QMetaType::IsPointer){
+            subrow_pointertype = PointerType::Pointer;
+        }else{
+            QByteArrayView metaTypeName(nestedElementMetaType.name());
+            if(metaTypeName.startsWith("QSharedPointer<")
+                || metaTypeName.startsWith("QScopedPointer<")
+                || metaTypeName.startsWith("std::shared_ptr<")
+                || metaTypeName.startsWith("std::unique_ptr<")){
+                subrow_pointertype = PointerType::SmartPointer;
+            }
+        }
+        itemClass = CoreAPI::getClassForMetaType(__jni_env, nestedElementMetaType);
+
+        if(!itemClass){
+            auto iter = containerAccess->constElementIterator(container);
+            if(nestedContainerAccess->isSequential()){
+                AbstractSequentialAccess* sequentialElementAccess = static_cast<AbstractSequentialAccess*>(nestedContainerAccess);
+                while(iter->hasNext()){
+                    const void* nestedContainer = iter->constNext();
+                    auto nestedIter = sequentialElementAccess->elementIterator(nestedContainer);
+                    while(nestedIter->hasNext()){
+                        jobject entry = nestedIter->next(__jni_env);
+                        if(entry){
+                            jclass type2 = __jni_env->GetObjectClass(entry);
+                            if(!itemClass)
+                                itemClass = type2;
+                            else if(!__jni_env->IsAssignableFrom(itemClass, type2)){
+                                do{
+                                    itemClass = Java::Runtime::Class::getSuperclass(__jni_env, itemClass);
+                                }while(!__jni_env->IsAssignableFrom(itemClass, type2));
+                            }
+                        }
+                    }
+                }
+            }else if(nestedContainerAccess->isAssociative()){
+                AbstractAssociativeAccess* associativeElementAccess = static_cast<AbstractAssociativeAccess*>(nestedContainerAccess);
+                while(iter->hasNext()){
+                    const void* nestedContainer = iter->constNext();
+                    auto nestedIter = associativeElementAccess->keyValueIterator(nestedContainer);
+                    while(nestedIter->hasNext()){
+                        QPair<jobject,jobject> entry = nestedIter->next(__jni_env);
+                        if(entry.second){
+                            jclass type2 = __jni_env->GetObjectClass(entry.second);
+                            if(!itemClass)
+                                itemClass = type2;
+                            else if(!__jni_env->IsAssignableFrom(itemClass, type2)){
+                                do{
+                                    itemClass = Java::Runtime::Class::getSuperclass(__jni_env, itemClass);
+                                }while(!__jni_env->IsAssignableFrom(itemClass, type2));
+                            }
+                        }
+                    }
+                }
+            }
+            else if(nestedContainerAccess->isPair()){
+                AbstractPairAccess* pairElementAccess = static_cast<AbstractPairAccess*>(nestedContainerAccess);
+                while(iter->hasNext()){
+                    const void* nestedContainer = iter->constNext();
+                    auto nestedIter = pairElementAccess->keyValueIterator(nestedContainer);
+                    while(nestedIter->hasNext()){
+                        QPair<jobject,jobject> entry = nestedIter->next(__jni_env);
+                        if(entry.second){
+                            jclass type2 = __jni_env->GetObjectClass(entry.second);
+                            if(!itemClass)
+                                itemClass = type2;
+                            else if(!__jni_env->IsAssignableFrom(itemClass, type2)){
+                                do{
+                                    itemClass = Java::Runtime::Class::getSuperclass(__jni_env, itemClass);
+                                }while(!__jni_env->IsAssignableFrom(itemClass, type2));
+                            }
+                        }
+                    }
                 }
             }
         }
-        if(AbstractAssociativeAccess* associativeElementAccess = dynamic_cast<AbstractAssociativeAccess*>(nestedContainerAccess)){
-            if(multiRoleType!=MultiRole::None){
-                rowType = RowType::Data;
-            }else if(associativeElementAccess->valueMetaType().flags() & QMetaType::IsPointer){
-                subrow_pointertype = PointerType::Pointer;
-            }else{
-                QByteArrayView metaTypeName(associativeElementAccess->valueMetaType().name());
-                if(metaTypeName.startsWith("QSharedPointer<")
-                    || metaTypeName.startsWith("QScopedPointer<")
-                    || metaTypeName.startsWith("std::shared_ptr<")
-                    || metaTypeName.startsWith("std::unique_ptr<")){
-                    subrow_pointertype = PointerType::SmartPointer;
-                }
-            }
-        }
+        itemsAreQObjects = nestedElementMetaType.flags() & (QMetaType::PointerToQObject
+                                                            | QMetaType::SharedPointerToQObject
+                                                            | QMetaType::WeakPointerToQObject
+                                                            | QMetaType::TrackingPointerToQObject)
+                           || (itemClass && Java::QtCore::QObject::isAssignableFrom(__jni_env, itemClass));
         nestedContainerAccess->dispose();
     }else if(rowType==RowType::MetaObject){
         auto mo = elementMetaType.metaObject();
@@ -256,243 +360,238 @@ inline bool initializeModel(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jn
                 break;
             }
         }
-        if(treeType != TreeType::None){
-            if(AbstractSpanAccess* spanAccess = dynamic_cast<AbstractSpanAccess*>(containerAccess)){
-                is_mutable_row &= !spanAccess->isConst();
+        if constexpr(std::is_same_v<Access,AbstractSpanAccess>){
+            if(treeType != TreeType::None){
+                is_mutable_row &= !containerAccess->isConst();
             }
         }
     }
     QSharedPointer<AbstractSequentialAccess> sequentialAccess(containerAccess->clone(), &containerDisposer);
-
-    initializeModel(__qtjambi_ptr, __jni_env, __jni_object, GenericTable{treeType, is_mutable_range, is_mutable_row,
-                                                                         is_list_range, is_list_row, rowType, row_pointertype,
-                                                                         subrow_pointertype, __jni_env, container,
-                                                                         std::move(elementMetaType), std::move(sequentialAccess),
-                                                                         std::move(classInfo), std::move(treeColumnCount)}, __qtjambi_constructor_options, range0, parent);
-    return true;
-}
-
-template<typename T>
-void initializeModelBySpanPointer(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, void* container, QtJambiAPI::ConstructorOptions __qtjambi_constructor_options, jobject range0, QObject* parent){
-    initializeModel(__qtjambi_ptr, __jni_env, __jni_object, reinterpret_cast<QSpan<T>*>(container), __qtjambi_constructor_options, range0, parent);
-}
-
-inline bool initializeModelBySpanPointer(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, QtJambiAPI::ConstructorOptions __qtjambi_constructor_options, jobject range0, bool isConst, QRangeModel::RowCategory rowCategory, QObject* parent){
-    QPair<void*,AbstractContainerAccess*> containerInfo = ContainerAPI::fromJavaOwner(__jni_env, range0);
-    Q_ASSERT(containerInfo.first);
-    AbstractSpanAccess* containerAccess = dynamic_cast<AbstractSpanAccess*>(containerInfo.second);
-    Q_ASSERT(containerAccess);
-    const QMetaType& elementMetaType = containerAccess->elementMetaType();
-    if(containerAccess->isConst() || isConst){
-        switch(elementMetaType.id()){
-        case QMetaType::SChar:
-            initializeModelBySpanPointer<const signed char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Char:
-            initializeModelBySpanPointer<const uchar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::UChar:
-            initializeModelBySpanPointer<const char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Char16:
-            initializeModelBySpanPointer<const char16_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::QChar:
-            initializeModelBySpanPointer<const QChar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::UShort:
-            initializeModelBySpanPointer<const ushort>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Short:
-            initializeModelBySpanPointer<const short>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::UInt:
-            initializeModelBySpanPointer<const uint>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Int:
-            initializeModelBySpanPointer<const int>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Char32:
-            initializeModelBySpanPointer<const char32_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::ULong:
-            initializeModelBySpanPointer<const ulong>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Long:
-            initializeModelBySpanPointer<const long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::ULongLong:
-            initializeModelBySpanPointer<const unsigned long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::LongLong:
-            initializeModelBySpanPointer<const long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Bool:
-            initializeModelBySpanPointer<const bool>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Float:
-            initializeModelBySpanPointer<const float>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Double:
-            initializeModelBySpanPointer<const double>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::QString:
-            initializeModelBySpanPointer<const QString>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        default:
-            break;
-        }
-    }else{
-        switch(elementMetaType.id()){
-        case QMetaType::SChar:
-            initializeModelBySpanPointer<signed char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Char:
-            initializeModelBySpanPointer<uchar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::UChar:
-            initializeModelBySpanPointer<char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Char16:
-            initializeModelBySpanPointer<char16_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::QChar:
-            initializeModelBySpanPointer<QChar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::UShort:
-            initializeModelBySpanPointer<ushort>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Short:
-            initializeModelBySpanPointer<short>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::UInt:
-            initializeModelBySpanPointer<uint>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Int:
-            initializeModelBySpanPointer<int>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Char32:
-            initializeModelBySpanPointer<char32_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::ULong:
-            initializeModelBySpanPointer<ulong>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Long:
-            initializeModelBySpanPointer<long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::ULongLong:
-            initializeModelBySpanPointer<unsigned long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::LongLong:
-            initializeModelBySpanPointer<long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Bool:
-            initializeModelBySpanPointer<bool>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Float:
-            initializeModelBySpanPointer<float>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::Double:
-            initializeModelBySpanPointer<double>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        case QMetaType::QString:
-            initializeModelBySpanPointer<QString>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-            return true;
-        default:
-            break;
-        }
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+    JObjectWrapper itemAccess{__jni_env, Java::QtCore::QRangeModel::itemAccess(__jni_env, __jni_object, itemClass ? itemClass : Java::Runtime::Object::getClass(__jni_env))};
+    if(!itemAccess.isNull() && rowType==RowType::MetaObject){
+        rowType = RowType::Data;
+        *treeColumnCount = 1;
     }
-    return initializeModel(__qtjambi_ptr,
-                           __jni_env,
-                           __jni_object,
-                           __qtjambi_constructor_options,
-                           range0,
-                           containerInfo.first,
-                           containerAccess,
-                           rowCategory,
-                           parent,
-                           isConst);
+#endif
+    factory(GenericTable{
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+                         std::move(itemAccess),
+#endif
+                         treeType, is_mutable_range, is_mutable_row,
+                         is_list_range, is_list_row, itemsAreQObjects, rowType, row_pointertype,
+                         subrow_pointertype, __jni_env, container,
+                         std::move(elementMetaType), std::move(sequentialAccess),
+                         std::move(classInfo), std::move(treeColumnCount) });
 }
 
-template<template<typename> class Container, typename T>
-void initializeModelBySequentialPointer(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, void* list, QtJambiAPI::ConstructorOptions __qtjambi_constructor_options, jobject range0, QObject* parent){
-    initializeModel(__qtjambi_ptr, __jni_env, __jni_object, reinterpret_cast<Container<T>*>(list), __qtjambi_constructor_options, range0, parent);
-}
-
-inline bool initializeModelByListPointer(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, QtJambiAPI::ConstructorOptions __qtjambi_constructor_options, jobject range0, QRangeModel::RowCategory rowCategory, QObject* parent){
+template<typename Factory>
+void initializeModelBySpanPointer(JNIEnv* __jni_env, jobject __jni_object, jobject range0, bool isConst, jobject rowCategory, Factory&& factory){
     QPair<void*,AbstractContainerAccess*> containerInfo = ContainerAPI::fromJavaOwner(__jni_env, range0);
     Q_ASSERT(containerInfo.first);
-    AbstractSequentialAccess* containerAccess = dynamic_cast<AbstractSequentialAccess*>(containerInfo.second);
-    Q_ASSERT(containerAccess);
-    switch(containerAccess->elementMetaType().id()){
+    QTJAMBI_CONTAINER_CAST(Span, containerAccess, containerInfo.second);
+    isConst |= containerAccess->isConst();
+    const QMetaType& elementMetaType = containerAccess->elementMetaType();
+    switch(elementMetaType.id()){
     case QMetaType::SChar:
-        initializeModelBySequentialPointer<QList, signed char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const signed char>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<signed char>*>(containerInfo.first));
+        break;
     case QMetaType::Char:
-        initializeModelBySequentialPointer<QList, uchar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const uchar>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<uchar>*>(containerInfo.first));
+        break;
     case QMetaType::UChar:
-        initializeModelBySequentialPointer<QList, char>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const char>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<char>*>(containerInfo.first));
+        break;
     case QMetaType::Char16:
-        initializeModelBySequentialPointer<QList, char16_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const char16_t>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<char16_t>*>(containerInfo.first));
+        break;
     case QMetaType::QChar:
-        initializeModelBySequentialPointer<QList, QChar>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const QChar>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<QChar>*>(containerInfo.first));
+        break;
     case QMetaType::UShort:
-        initializeModelBySequentialPointer<QList, ushort>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const ushort>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<ushort>*>(containerInfo.first));
+        break;
     case QMetaType::Short:
-        initializeModelBySequentialPointer<QList, short>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const short>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<short>*>(containerInfo.first));
+        break;
     case QMetaType::UInt:
-        initializeModelBySequentialPointer<QList, uint>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const uint>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<uint>*>(containerInfo.first));
+        break;
     case QMetaType::Int:
-        initializeModelBySequentialPointer<QList, int>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const int>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<int>*>(containerInfo.first));
+        break;
     case QMetaType::Char32:
-        initializeModelBySequentialPointer<QList, char32_t>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const char32_t>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<char32_t>*>(containerInfo.first));
+        break;
     case QMetaType::ULong:
-        initializeModelBySequentialPointer<QList, ulong>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const ulong>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<ulong>*>(containerInfo.first));
+        break;
     case QMetaType::Long:
-        initializeModelBySequentialPointer<QList, long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const long>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<long>*>(containerInfo.first));
+        break;
     case QMetaType::ULongLong:
-        initializeModelBySequentialPointer<QList, unsigned long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const unsigned long long>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<unsigned long long>*>(containerInfo.first));
+        break;
     case QMetaType::LongLong:
-        initializeModelBySequentialPointer<QList, long long>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const long long>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<long long>*>(containerInfo.first));
+        break;
     case QMetaType::Bool:
-        initializeModelBySequentialPointer<QList, bool>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const bool>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<bool>*>(containerInfo.first));
+        break;
     case QMetaType::Float:
-        initializeModelBySequentialPointer<QList, float>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const float>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<float>*>(containerInfo.first));
+        break;
     case QMetaType::Double:
-        initializeModelBySequentialPointer<QList, double>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const double>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<double>*>(containerInfo.first));
+        break;
     case QMetaType::QString:
-        initializeModelBySequentialPointer<QList, QString>(__qtjambi_ptr, __jni_env, __jni_object, containerInfo.first, __qtjambi_constructor_options, range0, parent);
-        return true;
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const QString>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<QString>*>(containerInfo.first));
+        break;
+    case QMetaType::QVariant:
+        if(isConst)
+            factory(reinterpret_cast<QSpan<const QVariant>*>(containerInfo.first));
+        else
+            factory(reinterpret_cast<QSpan<QVariant>*>(containerInfo.first));
+        break;
     default:
+        initializeGenericModel<Factory,AbstractSpanAccess>(__jni_env,
+                                                           __jni_object,
+                                                            containerInfo.first,
+                                                           containerAccess,
+                                                           rowCategory,
+                                                           std::move(factory),
+                                                           !isConst);
         break;
     }
-    return initializeModel(__qtjambi_ptr,
-                           __jni_env,
-                           __jni_object,
-                           __qtjambi_constructor_options,
-                           range0,
-                           containerInfo.first,
-                           containerAccess,
-                           rowCategory,
-                           parent);
 }
 
+template<typename Factory>
+void initializeModelByListPointer(JNIEnv* __jni_env, jobject __jni_object, jobject range0, jobject rowCategory, Factory&& factory){
+    QPair<void*,AbstractContainerAccess*> containerInfo = ContainerAPI::fromJavaOwner(__jni_env, range0);
+    Q_ASSERT(containerInfo.first);
+    QTJAMBI_CONTAINER_CAST(Sequential, containerAccess, containerInfo.second);
+    switch(containerAccess->elementMetaType().id()){
+    case QMetaType::SChar:
+        factory(reinterpret_cast<QList<signed char>*>(containerInfo.first));
+        break;
+    case QMetaType::Char:
+        factory(reinterpret_cast<QList<uchar>*>(containerInfo.first));
+        break;
+    case QMetaType::UChar:
+        factory(reinterpret_cast<QList<char>*>(containerInfo.first));
+        break;
+    case QMetaType::Char16:
+        factory(reinterpret_cast<QList<char16_t>*>(containerInfo.first));
+        break;
+    case QMetaType::QChar:
+        factory(reinterpret_cast<QList<QChar>*>(containerInfo.first));
+        break;
+    case QMetaType::UShort:
+        factory(reinterpret_cast<QList<ushort>*>(containerInfo.first));
+        break;
+    case QMetaType::Short:
+        factory(reinterpret_cast<QList<short>*>(containerInfo.first));
+        break;
+    case QMetaType::UInt:
+        factory(reinterpret_cast<QList<uint>*>(containerInfo.first));
+        break;
+    case QMetaType::Int:
+        factory(reinterpret_cast<QList<int>*>(containerInfo.first));
+        break;
+    case QMetaType::Char32:
+        factory(reinterpret_cast<QList<char32_t>*>(containerInfo.first));
+        break;
+    case QMetaType::ULong:
+        factory(reinterpret_cast<QList<ulong>*>(containerInfo.first));
+        break;
+    case QMetaType::Long:
+        factory(reinterpret_cast<QList<long>*>(containerInfo.first));
+        break;
+    case QMetaType::ULongLong:
+        factory(reinterpret_cast<QList<unsigned long long>*>(containerInfo.first));
+        break;
+    case QMetaType::LongLong:
+        factory(reinterpret_cast<QList<long long>*>(containerInfo.first));
+        break;
+    case QMetaType::Bool:
+        factory(reinterpret_cast<QList<bool>*>(containerInfo.first));
+        break;
+    case QMetaType::Float:
+        factory(reinterpret_cast<QList<float>*>(containerInfo.first));
+        break;
+    case QMetaType::Double:
+        factory(reinterpret_cast<QList<double>*>(containerInfo.first));
+        break;
+    case QMetaType::QString:
+        factory(reinterpret_cast<QList<QString>*>(containerInfo.first));
+        break;
+    case QMetaType::QVariant:
+        factory(reinterpret_cast<QList<QVariant>*>(containerInfo.first));
+        break;
+    default:
+        initializeGenericModel<Factory,AbstractSequentialAccess>(__jni_env,
+                                                                 __jni_object,
+                                                                 containerInfo.first,
+                                                                 containerAccess,
+                                                                 rowCategory,
+                                                                 std::move(factory));
+        break;
+    }
+}
 
 #endif
 

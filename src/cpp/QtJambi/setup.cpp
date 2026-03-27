@@ -108,8 +108,8 @@ namespace DebugAPI{
 void initialize();
 }
 
-template<typename T>
-const std::type_info& registerSpecialTypeInfo(const char *qt_name, const char *java_name)
+template<typename T, size_t N1, size_t N2>
+const std::type_info& registerSpecialTypeInfo(const char (&qt_name)[N1], const char (&java_name)[N2])
 {
     using namespace RegistryAPI;
     const std::type_info& id = typeid(T);
@@ -119,8 +119,8 @@ const std::type_info& registerSpecialTypeInfo(const char *qt_name, const char *j
     return id;
 }
 
-template<typename T>
-const std::type_info& registerStringTypeInfo(const char *qt_name, const char *java_name)
+template<typename T, size_t N1, size_t N2>
+const std::type_info& registerStringTypeInfo(const char (&qt_name)[N1], const char (&java_name)[N2])
 {
     using namespace RegistryAPI;
     const std::type_info& id = typeid(T);
@@ -130,8 +130,8 @@ const std::type_info& registerStringTypeInfo(const char *qt_name, const char *ja
     return id;
 }
 
-template<typename T>
-const std::type_info& registerPrimitiveMetaTypeInfo(const char *qt_name, const char *java_name)
+template<typename T, size_t N1, size_t N2>
+const std::type_info& registerPrimitiveMetaTypeInfo(const char (&qt_name)[N1], const char (&java_name)[N2])
 {
     using namespace RegistryAPI;
     const std::type_info& id = registerPrimitiveTypeInfo<T>(qt_name, java_name);
@@ -143,8 +143,8 @@ const std::type_info& registerPrimitiveMetaTypeInfo(const char *qt_name, const c
     return id;
 }
 
-template<typename T>
-const std::type_info& registerContainerTypeInfo(const char *qt_name, const char *java_name, const char *java_interface)
+template<typename T, size_t N1, size_t N2, size_t N3>
+const std::type_info& registerContainerTypeInfo(const char (&qt_name)[N1], const char (&java_name)[N2], const char (&java_interface)[N3])
 {
     using namespace RegistryAPI;
     const std::type_info& id = typeid(T);
@@ -587,6 +587,7 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
         registerStringTypeInfo<QStringView>("QStringView", "java/lang/String");
         registerMetaType<QStringView>("QStringView");
 
+        registerSpecialTypeInfo<QMessageLogContext>("QMessageLogContext", "io/qt/core/QMessageLogContext");
         registerSpecialTypeInfo<QMetaObject>("QMetaObject", "io/qt/core/QMetaObject");
         registerEnumTypeInfo<QMetaObject::Call>("QMetaObject::Call", "io/qt/core/QMetaObject$Call");
         registerSpecialTypeInfo<QMetaEnum>("QMetaEnum", "io/qt/core/QMetaEnum");
@@ -851,6 +852,7 @@ void shutdown(JNIEnv * env, bool regular)
 
         QInternal::unregisterCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
         QInternal::unregisterCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);
+        qInstallMessageHandler(nullptr);
         clearFunctionPointersAtShutdown();
         try{
             clearFileEngineResourcesAtShutdown(env);

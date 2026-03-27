@@ -600,6 +600,8 @@ void CppGenerator::writeFunctionSignature(QTextStream &s,
 
     if (java_function->isStatic() && (option & ShowStatic))
         s << "static ";
+    if (java_function->isConstructor() && (option & ShowStatic))
+        s << "explicit ";
 
     if ((option & SkipReturnType) == 0) {
         if((option & JNIProxyFunction)){
@@ -743,7 +745,7 @@ void CppGenerator::writeFunctionSignature(QTextStream &s,
 }
 
 QString CppGenerator::marshalledArguments(const MetaFunction *java_function){
-    return MetaFunction::marshalledArguments(java_function->arguments(), java_function->isConstant(), -1);
+    return MetaFunction::marshalledArguments(java_function->arguments(), {}, java_function->isConstant(), -1);
 }
 
 QString CppGenerator::jni_signature(const MetaFunctional *function, JNISignatureFormat format) {
@@ -1028,8 +1030,8 @@ QString CppGenerator::jni_signature(const QString &_full_name, JNISignatureForma
     }
 
     decltype(QString().length()) start = 0, end = -1;
-    while ((start = full_name.indexOf(u'<')) >= 0 && (end = full_name.indexOf(u'>')) >= 0) {
-        full_name.remove(start, end - start + 1);
+    if((start = full_name.indexOf(u'<')) >= 0 && (end = full_name.indexOf(u'>')) >= 0) {
+        full_name = full_name.mid(0, start);
     }
 
     static QMap<QString, QString> table{        {QStringLiteral(u"boolean"), QStringLiteral(u"Z")},

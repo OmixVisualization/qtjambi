@@ -30,6 +30,9 @@
 
 package io.qt.qml;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 import io.qt.QtMetaType;
@@ -75,16 +78,53 @@ final class QmlClassInfoProvider {
     	if(cls.isAnnotationPresent(QmlValueType.class)) {
     		if(map.isEmpty())
     			map = new java.util.Hashtable<>();
-    		map.put("QML.Element", cls.getAnnotation(QmlValueType.class).name());
-    		map.put("QML.Creatable", "false");
-    		map.put("QML.UncreatableReason", "Value types cannot be created.");
+    		QmlValueType qmlValueType = cls.getAnnotation(QmlValueType.class);
+    		map.put("QML.Element", qmlValueType.name());
+    		switch(qmlValueType.creationMethod().toLowerCase()) {
+			case "construct":
+	    		map.put("QML.Creatable", "true");
+	    		map.put("QML.CreationMethod", "construct");
+				break;
+			case "structured":
+	    		map.put("QML.Creatable", "true");
+	    		map.put("QML.CreationMethod", "structured");
+				break;
+			case "":
+				boolean creatable = false;
+				for(Method method : cls.getDeclaredMethods()) {
+					if(Modifier.isStatic(method.getModifiers()) 
+							&& method.getName().equals("create")
+							&& method.getReturnType()==cls
+							&& method.getParameterCount()==1
+							&& method.getParameterTypes()[0]==QJSValue.class) {
+						creatable = true;
+					}
+				}
+				if(!creatable) {
+					for(Constructor<?> c : cls.getDeclaredConstructors()) {
+						if(c.getParameterCount()==1
+							&& c.getParameterTypes()[0]==QJSValue.class) {
+							creatable = true;
+						}
+					}
+				}
+				if(creatable) {
+					map.put("QML.Creatable", "true");
+				}else {
+		    		map.put("QML.Creatable", "false");
+		    		map.put("QML.UncreatableReason", "Value types cannot be created.");					
+				}
+				break;
+			default:
+				throw new QmlTypeRegistrationException(String.format("'%1$s' not allowed as creationMethod of @QmlValueType. Expected: 'construct', 'structured' or default", qmlValueType.creationMethod()));
+    		}
     	}
     	if(cls.isAnnotationPresent(QmlAnonymous.class)) {
     		if(map.isEmpty())
     			map = new java.util.Hashtable<>();
     		map.put("QML.Element", "anonymous");
     	}
-    	if(cls.isAnnotationPresent(QmlInterface.class)) {
+    	if(cls.isAnnotationPresent(QmlInterface.class) && cls.isInterface()) {
     		if(map.isEmpty())
     			map = new java.util.Hashtable<>();
     		map.put("QML.Element", "anonymous");

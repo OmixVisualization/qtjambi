@@ -139,10 +139,10 @@ class AbstractGenerator : public QObject {
             m_qtjambiVersionPatch = qtjambiVersionPatch;
         }
 
+        static QString annotationFreeTypeName(QString typeName);
     protected:
         void writeInclude(QTextStream &s, const TS::Include &inc, QSet<QString> &dedupe);
         void verifyDirectoryFor(const QFile &file);
-        static QString annotationFreeTypeName(QString typeName);
         static bool isCharSequenceSubstitute(const MetaType* type);
 
         MetaClassList m_classes;

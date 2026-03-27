@@ -38,13 +38,15 @@ template <bool is_mutable_range,
          bool is_mutable_row,
          bool is_list_range,
          bool is_list_row,
+         bool itemsAreQObjects,
+         bool has_itemAccess,
          RowType rowType>
 class QtJambiGenericTableItemModelImpl
-    : public QtJambiRangeModelImpl<TreeType::None, QtJambiGenericTableItemModelImpl<is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType>, is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType>
+    : public QtJambiRangeModelImpl<TreeType::None, QtJambiGenericTableItemModelImpl<is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType>, is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType>
 {
-    using Range = RangeWrapperType<TreeType::None,is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType>;
-    using Base = QtJambiRangeModelImpl<TreeType::None, QtJambiGenericTableItemModelImpl<is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType>, is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType>;
-    friend class QtJambiRangeModelImpl<TreeType::None, QtJambiGenericTableItemModelImpl<is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType>, is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType>;
+    using Range = RangeWrapperType<TreeType::None,is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType>;
+    using Base = QtJambiRangeModelImpl<TreeType::None, QtJambiGenericTableItemModelImpl<is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType>, is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType>;
+    friend class QtJambiRangeModelImpl<TreeType::None, QtJambiGenericTableItemModelImpl<is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType>, is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType>;
     using range_type = typename Base::range_type;
     using range_features = typename Base::range_features;
     using row_type = typename Base::row_type;
@@ -194,244 +196,931 @@ protected:
     void resetParentInChildren(range_type *)
     {
     }
+
+    bool autoConnectPropertiesImpl() const
+    {
+        bool result = true;
+        int rowIndex = 0;
+        for (const auto &row : *this->m_data.model()) {
+            result &= this->autoConnectPropertiesInRow(row, rowIndex, {});
+            ++rowIndex;
+        }
+        return result;
+    }
 };
 
 template<bool is_mutable_range,
          bool is_mutable_row,
          bool is_list_range,
          bool is_list_row,
+         bool itemsAreQObjects,
+         bool has_itemAccess,
          RowType rowType,
          typename... Args>
 void QGenericTableItemModelImpl<GenericTable>::initializeTable(QRangeModel *itemModel, Args&&... args){
-    using Range = RangeWrapperType<TreeType::None,is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType>;
-    using TableType = QtJambiGenericTableItemModelImpl<is_mutable_range,is_mutable_row,is_list_range,is_list_row,rowType>;
+    using Range = RangeWrapperType<TreeType::None,is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType,true>;
+    using TableType = QtJambiGenericTableItemModelImpl<is_mutable_range,is_mutable_row,is_list_range,is_list_row,itemsAreQObjects,has_itemAccess,rowType>;
     impl = new TableType(Range{std::move(args)...}, itemModel, this);
 }
 
 void QGenericTableItemModelImpl<GenericTable>::initializeTable(QRangeModel *itemModel, GenericTable&& model){
-    if(model.is_mutable_range){
-        if(model.is_mutable_row){
-            if(model.is_list_range){
-                if(model.is_list_row){
-#if QT_VERSION < QT_VERSION_CHECK(6,11,0)
-                    switch(model.rowType){
-                    case RowType::Data:
-                        initializeTable<true,true,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::MetaObject:
-                        initializeTable<true,true,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::Range:
-                        initializeTable<true,true,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+    if(model.itemAccess.isNull()){
+#endif
+        if(model.itemsAreQObjects){
+            if(model.is_mutable_range){
+                if(model.is_mutable_row){
+                    if(model.is_list_range){
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,true,true,true,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,true,true,true,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,true,true,true,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,true,true,false,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,true,true,false,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,true,true,false,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }
+                    }else{
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,true,false,true,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,true,false,true,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,true,false,true,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,true,false,false,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,true,false,false,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,true,false,false,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }
                     }
-                }else{
-                    switch(model.rowType){
-                    case RowType::Data:
-                        initializeTable<true,true,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::MetaObject:
-                        initializeTable<true,true,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::Range:
-                        initializeTable<true,true,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
+                }else{ // !is_mutable_row
+                    if(model.is_list_range){
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,false,true,true,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,false,true,true,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,false,true,true,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,false,true,false,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,false,true,false,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,false,true,false,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }
+                    }else{
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,false,false,true,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,false,false,true,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,false,false,true,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,false,false,false,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,false,false,false,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,false,false,false,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }
                     }
                 }
-            }else{
-                if(model.is_list_row){
-                    switch(model.rowType){
-                    case RowType::Data:
-                        initializeTable<true,true,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::MetaObject:
-                        initializeTable<true,true,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::Range:
-                        initializeTable<true,true,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
+            }else{// !is_mutable_range
+                if(model.is_mutable_row){
+                    if(model.is_list_range){
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,true,true,true,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,true,true,true,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,true,true,true,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,true,true,false,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,true,true,false,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,true,true,false,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }
+                    }else{
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,true,false,true,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,true,false,true,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,true,false,true,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,true,false,false,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,true,false,false,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,true,false,false,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }
                     }
-                }else{
-                    switch(model.rowType){
-                    case RowType::Data:
-                        initializeTable<true,true,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::MetaObject:
-                        initializeTable<true,true,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::Range:
-                        initializeTable<true,true,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
+                }else{ // !is_mutable_row
+                    if(model.is_list_range){
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,false,true,true,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,false,true,true,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,false,true,true,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,false,true,false,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,false,true,false,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,false,true,false,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }
+                    }else{
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,false,false,true,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,false,false,true,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,false,false,true,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,false,false,false,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,false,false,false,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,false,false,false,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }
                     }
                 }
             }
-        }else{ // !is_mutable_row
-            if(model.is_list_range){
-                if(model.is_list_row){
-                    switch(model.rowType){
-                    case RowType::Data:
-                        initializeTable<true,false,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::MetaObject:
-                        initializeTable<true,false,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::Range:
-                        initializeTable<true,false,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
+        }else{// !model.itemsAreQObjects
+            if(model.is_mutable_range){
+                if(model.is_mutable_row){
+                    if(model.is_list_range){
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,true,true,true,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,true,true,true,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,true,true,true,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,true,true,false,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,true,true,false,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,true,true,false,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }
+                    }else{
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,true,false,true,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,true,false,true,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,true,false,true,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,true,false,false,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,true,false,false,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,true,false,false,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }
                     }
-                }else{
-                    switch(model.rowType){
-                    case RowType::Data:
-                        initializeTable<true,false,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::MetaObject:
-                        initializeTable<true,false,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::Range:
-                        initializeTable<true,false,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
+                }else{ // !is_mutable_row
+                    if(model.is_list_range){
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,false,true,true,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,false,true,true,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,false,true,true,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,false,true,false,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,false,true,false,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,false,true,false,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }
+                    }else{
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,false,false,true,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,false,false,true,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,false,false,true,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,false,false,false,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,false,false,false,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,false,false,false,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }
                     }
                 }
-            }else{
-                if(model.is_list_row){
-                    switch(model.rowType){
-                    case RowType::Data:
-                        initializeTable<true,false,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::MetaObject:
-                        initializeTable<true,false,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::Range:
-                        initializeTable<true,false,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
+            }else{// !is_mutable_range
+                if(model.is_mutable_row){
+                    if(model.is_list_range){
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,true,true,true,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,true,true,true,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,true,true,true,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,true,true,false,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,true,true,false,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,true,true,false,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }
+                    }else{
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,true,false,true,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,true,false,true,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,true,false,true,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,true,false,false,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,true,false,false,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,true,false,false,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }
                     }
-                }else{
-                    switch(model.rowType){
-                    case RowType::Data:
-                        initializeTable<true,false,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::MetaObject:
-                        initializeTable<true,false,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::Range:
-                        initializeTable<true,false,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
+                }else{ // !is_mutable_row
+                    if(model.is_list_range){
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,false,true,true,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,false,true,true,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,false,true,true,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,false,true,false,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,false,true,false,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,false,true,false,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }
+                    }else{
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,false,false,true,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,false,false,true,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,false,false,true,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,false,false,false,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,false,false,false,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,false,false,false,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
+                                break;
+                            }
+                        }
                     }
                 }
             }
         }
-    }else{// !is_mutable_range
-        if(model.is_mutable_row){
-            if(model.is_list_range){
-                if(model.is_list_row){
-                    switch(model.rowType){
-                    case RowType::Data:
-                        initializeTable<false,true,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::MetaObject:
-                        initializeTable<false,true,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::Range:
-                        initializeTable<false,true,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+    }else{
+        if(model.itemsAreQObjects){
+            if(model.is_mutable_range){
+                if(model.is_mutable_row){
+                    if(model.is_list_range){
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,true,true,true,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,true,true,true,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,true,true,true,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,true,true,false,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,true,true,false,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,true,true,false,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }
+                    }else{
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,true,false,true,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,true,false,true,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,true,false,true,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,true,false,false,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,true,false,false,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,true,false,false,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }
                     }
-                }else{
-                    switch(model.rowType){
-                    case RowType::Data:
-                        initializeTable<false,true,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::MetaObject:
-                        initializeTable<false,true,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::Range:
-                        initializeTable<false,true,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
+                }else{ // !is_mutable_row
+                    if(model.is_list_range){
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,false,true,true,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,false,true,true,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,false,true,true,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,false,true,false,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,false,true,false,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,false,true,false,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }
+                    }else{
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,false,false,true,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,false,false,true,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,false,false,true,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,false,false,false,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,false,false,false,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,false,false,false,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }
                     }
                 }
-            }else{
-                if(model.is_list_row){
-                    switch(model.rowType){
-                    case RowType::Data:
-                        initializeTable<false,true,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::MetaObject:
-                        initializeTable<false,true,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::Range:
-                        initializeTable<false,true,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
+            }else{// !is_mutable_range
+                if(model.is_mutable_row){
+                    if(model.is_list_range){
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,true,true,true,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,true,true,true,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,true,true,true,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,true,true,false,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,true,true,false,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,true,true,false,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }
+                    }else{
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,true,false,true,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,true,false,true,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,true,false,true,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,true,false,false,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,true,false,false,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,true,false,false,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }
                     }
-                }else{
-                    switch(model.rowType){
-                    case RowType::Data:
-                        initializeTable<false,true,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::MetaObject:
-                        initializeTable<false,true,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::Range:
-                        initializeTable<false,true,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
+                }else{ // !is_mutable_row
+                    if(model.is_list_range){
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,false,true,true,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,false,true,true,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,false,true,true,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,false,true,false,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,false,true,false,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,false,true,false,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }
+                    }else{
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,false,false,true,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,false,false,true,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,false,false,true,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,false,false,false,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,false,false,false,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,false,false,false,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }
                     }
                 }
             }
-        }else{ // !is_mutable_row
-            if(model.is_list_range){
-                if(model.is_list_row){
-                    switch(model.rowType){
-                    case RowType::Data:
-                        initializeTable<false,false,true,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::MetaObject:
-                        initializeTable<false,false,true,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::Range:
-                        initializeTable<false,false,true,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
+        }else{// !model.itemsAreQObjects
+            if(model.is_mutable_range){
+                if(model.is_mutable_row){
+                    if(model.is_list_range){
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,true,true,true,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,true,true,true,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,true,true,true,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,true,true,false,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,true,true,false,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,true,true,false,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }
+                    }else{
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,true,false,true,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,true,false,true,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,true,false,true,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,true,false,false,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,true,false,false,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,true,false,false,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }
                     }
-                }else{
-                    switch(model.rowType){
-                    case RowType::Data:
-                        initializeTable<false,false,true,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::MetaObject:
-                        initializeTable<false,false,true,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::Range:
-                        initializeTable<false,false,true,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
+                }else{ // !is_mutable_row
+                    if(model.is_list_range){
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,false,true,true,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,false,true,true,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,false,true,true,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,false,true,false,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,false,true,false,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,false,true,false,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }
+                    }else{
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,false,false,true,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,false,false,true,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,false,false,true,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<true,false,false,false,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<true,false,false,false,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<true,false,false,false,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }
                     }
                 }
-            }else{
-                if(model.is_list_row){
-                    switch(model.rowType){
-                    case RowType::Data:
-                        initializeTable<false,false,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::MetaObject:
-                        initializeTable<false,false,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::Range:
-                        initializeTable<false,false,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
+            }else{// !is_mutable_range
+                if(model.is_mutable_row){
+                    if(model.is_list_range){
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,true,true,true,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,true,true,true,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,true,true,true,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,true,true,false,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,true,true,false,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,true,true,false,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }
+                    }else{
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,true,false,true,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,true,false,true,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,true,false,true,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,true,false,false,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,true,false,false,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,true,false,false,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }
                     }
-                }else{
-                    switch(model.rowType){
-                    case RowType::Data:
-                        initializeTable<false,false,false,false,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::MetaObject:
-                        initializeTable<false,false,false,false,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
-                    case RowType::Range:
-                        initializeTable<false,false,false,false,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess));
-                        break;
+                }else{ // !is_mutable_row
+                    if(model.is_list_range){
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,false,true,true,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,false,true,true,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,false,true,true,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,false,true,false,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,false,true,false,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,false,true,false,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }
+                    }else{
+                        if(model.is_list_row){
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,false,false,true,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,false,false,true,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,false,false,true,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }else{
+                            switch(model.rowType){
+                            case RowType::Data:
+                                initializeTable<false,false,false,false,false,true,RowType::Data>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::MetaObject:
+                                initializeTable<false,false,false,false,false,true,RowType::MetaObject>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            case RowType::Range:
+                                initializeTable<false,false,false,false,false,true,RowType::Range>(itemModel, model.container, std::move(model.elementMetaType), std::move(model.sequentialAccess), std::move(model.itemAccess));
+                                break;
+                            }
+                        }
                     }
-#endif //QT_VERSION < QT_VERSION_CHECK(6,11,0)
                 }
             }
         }
     }
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,11,0)
 }
 
 #endif

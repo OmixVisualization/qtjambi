@@ -372,10 +372,10 @@ inline size_t qHash(const QRectF &rect, size_t seed = 0)
 #else
     QtPrivate::QHashCombine hash(seed);
 #endif
-    seed = hash(seed, rect.left());
-    seed = hash(seed, rect.top());
-    seed = hash(seed, rect.right());
-    seed = hash(seed, rect.bottom());
+    seed = hash(seed, rect.x());
+    seed = hash(seed, rect.y());
+    seed = hash(seed, rect.width());
+    seed = hash(seed, rect.height());
     return seed;
 }
 

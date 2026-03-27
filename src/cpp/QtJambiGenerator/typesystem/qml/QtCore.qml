@@ -192,14 +192,31 @@ exports io.qt;`
 
     Template{
         name: "core.comsumer.function"
-        Text{content: String.raw
-`std::function<void(%TYPE)> %out;
+        Text{content: String.raw`
+std::function<void(%TYPE)> %out;
 if(%in){
     %out = [wrapper = JObjectWrapper(%env, %in)](%TYPE value){
             if(JniEnvironment env{200}){
                 QTJAMBI_TRY{
-                    jobject _value = qtjambi_cast<jobject>(env, std::move(value));
-                    Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);
+                    Java::Runtime::Consumer::accept(env, wrapper.object(env), qtjambi_cast<jobject>(env, std::move(value)));
+                }QTJAMBI_CATCH(const JavaException& exn){
+                    exn.report(env);
+                }QTJAMBI_TRY_END
+            }
+        };
+}`
+            }
+    }
+
+    Template{
+        name: "core.bicomsumer.function"
+        Text{content: String.raw`
+std::function<void(%TYPE1,%TYPE2)> %out;
+if(%in){
+    %out = [wrapper = JObjectWrapper(%env, %in)](%TYPE1 value1, %TYPE2 value2){
+            if(JniEnvironment env{200}){
+                QTJAMBI_TRY{
+                    Java::Runtime::BiConsumer::accept(env, wrapper.object(env), qtjambi_cast<jobject>(env, std::move(value1)), qtjambi_cast<jobject>(env, std::move(value2)));
                 }QTJAMBI_CATCH(const JavaException& exn){
                     exn.report(env);
                 }QTJAMBI_TRY_END
@@ -211,8 +228,8 @@ if(%in){
 
     Template{
         name: "core.runnable.function"
-        Text{content: String.raw
-`std::function<void()> %out;
+        Text{content: String.raw`
+std::function<void()> %out;
 if(%in){
     %out = [wrapper = JObjectWrapper(%env, %in)](){
             if(JniEnvironment env{200}){
@@ -222,6 +239,46 @@ if(%in){
                     exn.report(env);
                 }QTJAMBI_TRY_END
             }
+        };
+}`
+        }
+    }
+
+    Template{
+        name: "core.monofunction.function"
+        Text{content: String.raw`
+std::function<%RTYPE(%ATYPE)> %out;
+if(%in){
+    %out = [wrapper = JObjectWrapper(%env, %in)](%ATYPE value) -> %RTYPE {
+            %TYPE result{};
+            if(JniEnvironment env{200}){
+                QTJAMBI_TRY{
+                    result = qtjambi_cast<%RTYPE>(env, Java::Runtime::Function::apply(env, wrapper.object(env), qtjambi_cast<jobject>(env, value)));
+                }QTJAMBI_CATCH(const JavaException& exn){
+                    exn.report(env);
+                }QTJAMBI_TRY_END
+            }
+            return result;
+        };
+}`
+        }
+    }
+
+    Template{
+        name: "core.bifunction.function"
+        Text{content: String.raw`
+std::function<%RTYPE(%ATYPE1,%ATYPE2)> %out;
+if(%in){
+    %out = [wrapper = JObjectWrapper(%env, %in)](%ATYPE1 value1, %ATYPE2 value2) -> %RTYPE {
+            %TYPE result{};
+            if(JniEnvironment env{200}){
+                QTJAMBI_TRY{
+                    result = qtjambi_cast<%RTYPE>(env, Java::Runtime::BiFunction::apply(env, wrapper.object(env), qtjambi_cast<jobject>(env, value1), qtjambi_cast<jobject>(env, value2)));
+                }QTJAMBI_CATCH(const JavaException& exn){
+                    exn.report(env);
+                }QTJAMBI_TRY_END
+            }
+            return result;
         };
 }`
         }
@@ -238,6 +295,26 @@ if(%in){
                 QTJAMBI_TRY{
                     jobject value = Java::Runtime::Supplier::get(env, wrapper.object(env));
                     result = qtjambi_cast<%TYPE>(env, value);
+                }QTJAMBI_CATCH(const JavaException& exn){
+                    exn.report(env);
+                }QTJAMBI_TRY_END
+            }
+            return result;
+        };
+}`
+        }
+    }
+
+    Template{
+        name: "core.boolsupplier.function"
+        Text{content: String.raw
+`std::function<bool()> %out;
+if(%in){
+    %out = [wrapper = JObjectWrapper(%env, %in)]() -> bool {
+            bool result{false};
+            if(JniEnvironment env{200}){
+                QTJAMBI_TRY{
+                    result = Java::Runtime::BooleanSupplier::getAsBoolean(env, wrapper.object(env));
                 }QTJAMBI_CATCH(const JavaException& exn){
                     exn.report(env);
                 }QTJAMBI_TRY_END
@@ -624,6 +701,20 @@ public final %ITERATOR_TYPE iterator() {
         name: "char32_t"
         javaName: "int"
         jniName: "jint"
+        preferredConversion: false
+    }
+
+    PrimitiveType{
+        name: "jclass"
+        javaName: "java.lang.Class"
+        jniName: "jobject"
+        preferredConversion: false
+    }
+
+    PrimitiveType{
+        name: "jthrowable"
+        javaName: "java.lang.Throwable"
+        jniName: "jthrowable"
         preferredConversion: false
     }
 
@@ -6964,7 +7055,16 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             isGeneric: true
             ModifyFunction{
                 signature: "StringResult(QCborStreamReader::StringResult<QVariant>)"
-                remove: RemoveFlag.All
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QCborStreamReader$@NonNull StringResult<Container>"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "const QCborStreamReader::StringResult<QVariant>& %out = qtjambi_cast<const QCborStreamReader::StringResult<QVariant>&>(%env, %in);"}
+                    }
+                }
             }
         }
 
@@ -11054,17 +11154,21 @@ if(destinationChildV<0)
         Rejection{
             className: "Interface"
         }
+        Rejection{
+            className: "Interface"
+        }
         EnumType{
             name: "Encoding"
             RejectEnumValue{
                 name: "LastEncoding"
             }
         }
-        ObjectType{
-            name: "FinalizeResultBase"
-            EnumType{
-                name: "Error"
-            }
+        EnumType{
+            name: "FinalizeResultError"
+            since: [6,11]
+        }
+        Rejection{
+            className: "FinalizeResultChar"
             since: [6,11]
         }
         ModifyFunction{
@@ -17467,19 +17571,24 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
             signature: "QFuture<U,V,QtPrivate::EnableForVoid<V>>(QFuture<U>)"
             ModifyArgument{
                 index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QFuture<T>"
+                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: String.raw`
                         QFuture<QVariant>* _%in = QtJambiAPI::convertJavaObjectToNative<QFuture<QVariant>>(%env, %in);
                         if(!_%in){
                             new(__qtjambi_ptr) QFuture<QVariant>();
-                        }
-                        const QFuture<QVariant>& %out = *%_in;
-                        const QFutureInterfaceBase* base = CoreAPI::futureInterface(%_in);
-                        if(!QtJambiAPI::isVariantFutureInterface(base)){
-                            new(__qtjambi_ptr) QFuture<void>(base);
                             return;
+                        }else{
+                            QFutureInterfaceBase* base = CoreAPI::futureInterface(_%in);
+                            if(!QtJambiAPI::isVariantFutureInterface(base)){
+                                new(__qtjambi_ptr) QFuture<void>(base);
+                                return;
+                            }
                         }
+                        const QFuture<QVariant>& %out = *_%in;
                         `}
                 }
             }
@@ -22338,9 +22447,9 @@ Enum entries for string comparison.
                 NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "const char* %out = CoreAPI::getInterfaceIID(%env, jclass(%in));\n"+
+                    Text{content: "const char* %out = CoreAPI::getInterfaceIID(%env, %in);\n"+
                                   "if(!%out){\n"+
-                                  "    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(\"Class %\"\"1 is not registered as plugin interface.\").arg(QtJambiAPI::getClassName(%env, jclass(%in))) QTJAMBI_STACKTRACEINFO);\n"+
+                                  "    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(\"Class %\"\"1 is not registered as plugin interface.\").arg(QtJambiAPI::getClassNamePrintable(%env, %in)) QTJAMBI_STACKTRACEINFO);\n"+
                                   "}"}
                 }
             }
@@ -24468,6 +24577,7 @@ this.__rcSemaphore = %1.__rcSemaphore;
         Rejection{functionName: "contendedTryLockForRead"}
         Rejection{functionName: "contendedTryLockForWrite"}
         Rejection{functionName: "contendedUnlock"}
+        Rejection{functionName: "isContendedLockForRead"}
         Rejection{functionName: "lock"}
         Rejection{functionName: "lock_shared"}
         Rejection{functionName: "try_lock"}
@@ -24867,6 +24977,16 @@ static FilterResetter resetter(%0);
 
     ObjectType{
         name: "QMessageLogContext"
+        forceFinal: true
+        noMetaType: true
+        notCloneable: true
+        notAssignable: true
+        disableNativeIdUsage: true
+        defaultSuperClass: "java.lang.Object"
+        ModifyFunction{
+            signature: "QMessageLogContext()"
+            remove: RemoveFlag.All
+        }
         ModifyFunction{
             signature: "QMessageLogContext(const char *, int, const char *, const char *)"
             remove: RemoveFlag.All
@@ -24887,10 +25007,17 @@ static FilterResetter resetter(%0);
             name: "line"
             write: false
         }
-        ModifyField{
-            name: "version"
-            read: false
-            write: false
+        Rejection{fieldName: "CurrentVersion"}
+        Rejection{fieldName: "version"}
+        InjectCode{
+            target: CodeClass.MetaInfo
+            position: Position.Beginning
+            Text{content: "#if 0"}
+        }
+        InjectCode{
+            target: CodeClass.MetaInfo
+            position: Position.End
+            Text{content: "#endif"}
         }
     }
 
@@ -24909,6 +25036,17 @@ static FilterResetter resetter(%0);
     ObjectType{
         name: "QDebug"
         addTextStreamFunctions: true
+        InjectCode{
+            target: CodeClass.Native
+            Text{content: String.raw`
+                #undef QTJAMBI_NATIVE_METHOD_CALL
+                #define QTJAMBI_NATIVE_METHOD_CALL(...)
+                #undef QTJAMBI_IN_CONSTRUCTOR_CALL
+                #define QTJAMBI_IN_CONSTRUCTOR_CALL(...)
+                #undef QTJAMBI_IN_DESTRUCTOR_CALL
+                #define QTJAMBI_IN_DESTRUCTOR_CALL(...)
+                `}
+        }
         ModifyFunction{
             signature: "QTextStreamFunction"
             InjectCode{ Text{content: "if(disabled) return this;"} }
@@ -25321,9 +25459,61 @@ static FilterResetter resetter(%0);
 
     FunctionalType{
         name: "QtMessageHandler"
+        InjectCode{
+            target: CodeClass.Native
+            Text{content: String.raw`
+                #undef QTJAMBI_NATIVE_METHOD_CALL
+                #define QTJAMBI_NATIVE_METHOD_CALL(...)
+                #undef QTJAMBI_IN_CONSTRUCTOR_CALL
+                #define QTJAMBI_IN_CONSTRUCTOR_CALL(...)
+                #undef QTJAMBI_IN_DESTRUCTOR_CALL
+                #define QTJAMBI_IN_DESTRUCTOR_CALL(...)
+                `}
+        }
+        ExtraIncludes{
+            Include{
+                fileName: "utils_p.h"
+                location: Include.Local
+            }
+        }
+        ModifyArgument{
+            index: 1
+            ConversionRule{
+                codeClass: CodeClass.Shell
+                Text{content: String.raw`jobject %out = Java::QtCore::QtMsgType::resolve(%env, int(%in));`}
+            }
+        }
         ModifyArgument{
             index: 2
-            invalidateAfterUse: true
+            ConversionRule{
+                codeClass: CodeClass.Shell
+                Text{content: String.raw`
+                    jobject %out = Java::QtCore::QMessageLogContext::newInstance(%env, &%in);`}
+            }
+            ConversionRule{
+                codeClass: CodeClass.Native
+                Text{content: String.raw`const QMessageLogContext& %out = reinterpret_value_cast<QMessageLogContext>(reinterpret_cast<const void*>(%in ? Java::QtCore::QMessageLogContext::__qt_directLink(%env, %in) : 0));`}
+            }
+        }
+        ModifyArgument{
+            index: 3
+            ConversionRule{
+                codeClass: CodeClass.Shell
+                Text{content: String.raw`
+                    jstring %out = %env->NewString(reinterpret_cast<const jchar *>(%in.data()), jsize(%in.length()));
+                    JavaException::check(%env QTJAMBI_STACKTRACEINFO );
+                    auto guard = qScopeGuard([&](){
+                        QTJAMBI_TRY {
+                            Java::QtCore::QMessageLogContext::set___qt_directLink(%env, __java_%2, 0);
+                        } QTJAMBI_CATCH(const JavaException& exn) {
+                            throwable.addSuppressed(%env, exn);
+                        } QTJAMBI_TRY_END
+                    });`}
+            }
+            ConversionRule{
+                codeClass: CodeClass.Native
+                Text{content: String.raw`QString %out = qtjambi_cast<QString>(%env, %in);`}
+            }
         }
     }
 
@@ -27371,6 +27561,7 @@ static FilterResetter resetter(%0);
     }
 
     Rejection{className: "QRangeModelDetails::QRangeModelRowOptions"}
+    Rejection{className: "QRangeModelAdapter"}
     ObjectType{
         name: "QRangeModel"
         ExtraIncludes{
@@ -27381,10 +27572,13 @@ static FilterResetter resetter(%0);
         }
         EnumType{name: "RowCategory"}
         Rejection{className: "RowOptions"}
+        Rejection{className: "ItemAccess"}
         InjectCode{
             target: CodeClass.ShellDeclaration
-            Text{
-                content: "public:\n    using QRangeModel::QRangeModel;"
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QRangeModel_h__"
+                quoteBeforeLine: "}// class"
             }
         }
         InjectCode{
@@ -27402,10 +27596,17 @@ static FilterResetter resetter(%0);
                 quoteAfterLine: "class QRangeModel__"
                 quoteBeforeLine: "}// class"
             }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QRangeModel_611__"
+                quoteBeforeLine: "}// class"
+                since: [6,10]
+            }
         }
         ModifyFunction{
             signature: "QRangeModel<Range,true>(Range&&,QObject*)"
             Instantiation{
+                Remove{codeClass: RemoveFlag.Shell}
                 Argument{
                     type: "QSpan<QVariant>"
                     isImplicit: true
@@ -27416,7 +27617,6 @@ static FilterResetter resetter(%0);
                 AddArgument{
                     type: "io.qt.core.QRangeModel$@NonNull RowCategory"
                     name: "rowCategory"
-                    defaultExpression: "RowCategory.Default"
                     index: 2
                 }
                 ModifyArgument{
@@ -27429,30 +27629,18 @@ static FilterResetter resetter(%0);
                     }
                     ConversionRule{
                         codeClass: CodeClass.Native
-                        Text{content: String.raw`QSpan<QVariant>* %out{nullptr};`}
-                    }
-                }
-                ModifyArgument{
-                    index: 2
-                    ConversionRule{
-                        codeClass: CodeClass.Native
-                        Text{content: String.raw`
-QObject* %out = qtjambi_cast<QObject*>(%env, %in);
-QtJambiAPI::checkThreadOnParent(%env, %out);
-if(initializeModelBySpanPointer(__qtjambi_ptr, %env, __jni_object, __qtjambi_constructor_options, %1, false, qtjambi_cast<QRangeModel::RowCategory>(%env, rowCategory), %out))
-    return;
-ContainerAPI::getAsQSpan(%env, %1, QMetaType::fromType<QVariant>(), *reinterpret_cast<void**>(&__qt_%1));
-                            `}
+                        Text{content: String.raw`initializeModelBySpanPointer(%env, __jni_object, %in, false, rowCategory, [&](auto&& %out){`}
                     }
                 }
                 InjectCode{
                     target: CodeClass.Native
                     position: Position.End
-                    Text{content: String.raw`Q_UNUSED(rowCategory)`}
+                    Text{content: String.raw`});`}
                 }
                 noImplicitArguments: true
             }
             Instantiation{
+                Remove{codeClass: RemoveFlag.Shell}
                 Argument{
                     type: "QSpan<const QVariant>"
                     isImplicit: true
@@ -27463,7 +27651,6 @@ ContainerAPI::getAsQSpan(%env, %1, QMetaType::fromType<QVariant>(), *reinterpret
                 AddArgument{
                     type: "io.qt.core.QRangeModel$@NonNull RowCategory"
                     name: "rowCategory"
-                    defaultExpression: "RowCategory.Default"
                     index: 2
                 }
                 ModifyArgument{
@@ -27476,30 +27663,18 @@ ContainerAPI::getAsQSpan(%env, %1, QMetaType::fromType<QVariant>(), *reinterpret
                     }
                     ConversionRule{
                         codeClass: CodeClass.Native
-                        Text{content: String.raw`QSpan<const QVariant>* %out{nullptr};`}
-                    }
-                }
-                ModifyArgument{
-                    index: 2
-                    ConversionRule{
-                        codeClass: CodeClass.Native
-                        Text{content: String.raw`
-QObject* %out = qtjambi_cast<QObject*>(%env, %in);
-QtJambiAPI::checkThreadOnParent(%env, %out);
-if(initializeModelBySpanPointer(__qtjambi_ptr, %env, __jni_object, __qtjambi_constructor_options, %1, true, qtjambi_cast<QRangeModel::RowCategory>(%env, rowCategory), %out))
-    return;
-ContainerAPI::getAsQSpan(%env, %1, QMetaType::fromType<QVariant>(), *reinterpret_cast<void**>(&__qt_%1));
-                            `}
+                        Text{content: String.raw`initializeModelBySpanPointer(%env, __jni_object, %in, true, rowCategory, [&](auto&& %out){`}
                     }
                 }
                 InjectCode{
                     target: CodeClass.Native
                     position: Position.End
-                    Text{content: String.raw`Q_UNUSED(rowCategory)`}
+                    Text{content: String.raw`});`}
                 }
                 noImplicitArguments: true
             }
             Instantiation{
+                Remove{codeClass: RemoveFlag.Shell}
                 Argument{
                     type: "QList<QVariant>"
                     isImplicit: true
@@ -27508,9 +27683,8 @@ ContainerAPI::getAsQSpan(%env, %1, QMetaType::fromType<QVariant>(), *reinterpret
                     name: "T"
                 }
                 AddArgument{
-                    type: "io.qt.core.QRangeModel$RowCategory"
+                    type: "io.qt.core.QRangeModel$@NonNull RowCategory"
                     name: "rowCategory"
-                    defaultExpression: "false"
                     index: 2
                 }
                 ModifyArgument{
@@ -27523,26 +27697,13 @@ ContainerAPI::getAsQSpan(%env, %1, QMetaType::fromType<QVariant>(), *reinterpret
                     }
                     ConversionRule{
                         codeClass: CodeClass.Native
-                        Text{content: String.raw`QList<QVariant> %out;`}
-                    }
-                }
-                ModifyArgument{
-                    index: 2
-                    ConversionRule{
-                        codeClass: CodeClass.Native
-                        Text{content: String.raw`
-QObject* %out = qtjambi_cast<QObject*>(%env, %in);
-QtJambiAPI::checkThreadOnParent(%env, %out);
-if(initializeModelByListPointer(__qtjambi_ptr, %env, __jni_object, __qtjambi_constructor_options, %1, qtjambi_cast<QRangeModel::RowCategory>(%env, rowCategory), %out))
-    return;
-__qt_%1 = qtjambi_cast<QList<QVariant>>(%env, %1);
-                            `}
+                        Text{content: String.raw`initializeModelByListPointer(%env, __jni_object, %in, rowCategory, [&](auto&& %out){`}
                     }
                 }
                 InjectCode{
                     target: CodeClass.Native
                     position: Position.End
-                    Text{content: String.raw`Q_UNUSED(rowCategory)`}
+                    Text{content: String.raw`});`}
                 }
                 noImplicitArguments: true
             }
@@ -27841,4 +28002,5 @@ __qt_%1 = qtjambi_cast<QList<QVariant>>(%env, %1);
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QDeadlineTimer::deadline<Clock,Duration>()const"}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: Cloneable class QFuture*<QVariant> is missing an explicit copy constructor"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'open*' for function modification in 'QFSFileEngine' not found. Possible candidates: *"}
+    SuppressedWarning{text: "WARNING(JavaGenerator) :: Cloneable class QCborStreamReader::StringResult<QVariant> is missing an explicit copy constructor"}
 }

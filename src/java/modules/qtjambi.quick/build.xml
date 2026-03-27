@@ -32,22 +32,22 @@
     <target name="build">
         <dirname property="antfile.dir" file="${ant.file}"/>
         <basename property="module" file="${antfile.dir}"/>
-        <condition property="build.module" value="true">
-            <available file="${generator.outputdir}/java/${module}" type="dir"/>
-        </condition>
-        <antcall inheritrefs="true" target="build.impl"/>
-    </target>
-    <target name="build.impl" if="build.module">
-        <condition property="module.excludes" value="" else="io/qt/quick/QSGSimpleMaterial*.java,io/qt/quick/QSGSimpleMaterial*.class">
-            <equals arg1="${qtjambi.soname.version.major}" arg2="5"/>
-        </condition>
-        <path id="sourcedirs">
-            <pathelement location="${generator.outputdir}/java/${module}"/>
-            <pathelement location="${antfile.dir}"/>
-        </path>
-        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build-impl">
-            <property name="jar.excludes" value="${module.excludes}"/>
-            <property name="module.excludes" value="${module.excludes}"/>
-        </ant>
+        <propertycopy name="module.available" from="${module}.any.true"/>
+        <if>
+            <and>
+                <istrue value="${module.available}"/>
+                <available file="${generator.outputdir}/java/${module}" type="dir"/>
+            </and>
+            <then>
+                <path id="sourcedirs">
+                    <pathelement location="${generator.outputdir}/java/${module}"/>
+                    <pathelement location="${antfile.dir}"/>
+                </path>
+                <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build-impl">
+                    <property name="jar.excludes" value=""/>
+                    <property name="module.excludes" value=""/>
+                </ant>
+            </then>
+        </if>
     </target>
 </project>

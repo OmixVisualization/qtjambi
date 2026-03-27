@@ -36,7 +36,6 @@ import io.qt.core.QMetaObject;
 import io.qt.core.QThread;
 import io.qt.autotests.generated.PerformanceTests;
 
-@SuppressWarnings("preview")
 public class TestJDK19VirtualThreads extends ApplicationInitializer {
 	
 	@BeforeClass

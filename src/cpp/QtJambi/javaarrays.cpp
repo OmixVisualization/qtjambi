@@ -315,13 +315,13 @@ PersistentConstChar32PointerArray::PersistentConstChar32PointerArray(JNIEnv *env
 #undef PointerArrayINIT
 #undef PointerArrayDEL
 
-bool isValidArray(JNIEnv *env, jobject object, jclass contentType){
+bool isValidPrimitiveArray(JNIEnv *env, jobject object, jclass contentType){
     if(!object)
         return false;
     jclass arrayClass = env->GetObjectClass(object);
     if(Java::Runtime::Class::isArray(env, arrayClass)){
         jclass componentType = Java::Runtime::Class::getComponentType(env, arrayClass);
-        return env->IsAssignableFrom(componentType, contentType);
+        return env->IsSameObject(componentType, contentType);
     }
     return false;
 }
@@ -458,16 +458,16 @@ PersistentJ##Type##ArrayPointer::ElementType& PersistentJ##Type##ArrayPointer::o
 
 #define PointerArrayValid(Type)\
 bool JConst##Type##ArrayPointer::isValidArray(JNIEnv *env, jobject object){\
-    return ::isValidArray(env, object, QtJambiPrivate::ElementForArray<JArrayType>::RuntimeType::primitiveType(env));\
+    return isValidPrimitiveArray(env, object, QtJambiPrivate::ElementForArray<JArrayType>::RuntimeType::primitiveType(env));\
 }\
 bool J##Type##ArrayPointer::isValidArray(JNIEnv *env, jobject object){\
-    return ::isValidArray(env, object, QtJambiPrivate::ElementForArray<JArrayType>::RuntimeType::primitiveType(env));\
+    return isValidPrimitiveArray(env, object, QtJambiPrivate::ElementForArray<JArrayType>::RuntimeType::primitiveType(env));\
 }\
 bool PersistentJConst##Type##ArrayPointer::isValidArray(JNIEnv *env, jobject object){\
-    return ::isValidArray(env, object, QtJambiPrivate::ElementForArray<JArrayType>::RuntimeType::primitiveType(env));\
+    return isValidPrimitiveArray(env, object, QtJambiPrivate::ElementForArray<JArrayType>::RuntimeType::primitiveType(env));\
 }\
 bool PersistentJ##Type##ArrayPointer::isValidArray(JNIEnv *env, jobject object){\
-    return ::isValidArray(env, object, QtJambiPrivate::ElementForArray<JArrayType>::RuntimeType::primitiveType(env));\
+    return isValidPrimitiveArray(env, object, QtJambiPrivate::ElementForArray<JArrayType>::RuntimeType::primitiveType(env));\
 }
 
 #define PointerArrayInitializerList(_const,type)\

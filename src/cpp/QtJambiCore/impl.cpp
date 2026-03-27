@@ -237,9 +237,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showCMessageFromSuppl
         if (messageType != QtMsgType::QtFatalMsg && !category.isEnabled(QtMsgType(messageType)))
             return;
         jstring message = Java::Runtime::Object::toString(env, Java::Runtime::Supplier::get(env, messageSupplier));
-        const char* _message = env->GetStringUTFChars(message, nullptr);
-        const char* _method = nullptr;
-        const char* _className = nullptr;
+        J2CStringBuffer _message(env, message);
         int line = 0;
 #if !defined (QT_NO_DEBUG)
         jobject invocationInfoProvider = Java::QtJambi::ReflectionUtility::invocationInfoProvider(env);
@@ -252,36 +250,33 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showCMessageFromSuppl
         }
         jstring method = Java::QtJambi::InternalAccess$CallerContext::methodName(env, invocationInfo);
         line = Java::QtJambi::InternalAccess$CallerContext::lineNumber(env, invocationInfo);
-        _method = env->GetStringUTFChars(method, nullptr);
         jstring className = Java::Runtime::Class::getName(env, declaringClass);
-        _className = env->GetStringUTFChars(className, nullptr);
+        J2CStringBuffer _method(env, method);
+        J2CStringBuffer _className(env, className);
 #else
+        const char* _method = nullptr;
+        const char* _className = nullptr;
         Q_UNUSED(loggingClass)
 #endif
         QtJambiExceptionRaiser __exnRaiser;
         QMessageLogger logger(_className, line, _method, category.categoryName());
         switch(messageType){
         case QtMsgType::QtWarningMsg:
-            logger.warning(category, "%s", _message);
+            logger.warning(category, "%s", _message.constData());
             break;
         case QtMsgType::QtCriticalMsg:
-            logger.critical(category, "%s", _message);
+            logger.critical(category, "%s", _message.constData());
             break;
         case QtMsgType::QtDebugMsg:
-            logger.debug(category, "%s", _message);
+            logger.debug(category, "%s", _message.constData());
             break;
         case QtMsgType::QtInfoMsg:
-            logger.info(category, "%s", _message);
+            logger.info(category, "%s", _message.constData());
             break;
         case QtMsgType::QtFatalMsg:
-            logger.fatal("%s", _message);
+            logger.fatal("%s", _message.constData());
             break;
         }
-#if !defined (QT_NO_DEBUG)
-        env->ReleaseStringUTFChars(method, _method);
-        env->ReleaseStringUTFChars(className, _className);
-#endif
-        env->ReleaseStringUTFChars(message, _message);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
         __exnRaiser.raise(env);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -323,8 +318,6 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QLogging_getDebug(JNIEnv *e
     }
     QTJAMBI_TRY{
         if(enabled){
-            const char* _method = nullptr;
-            const char* _className = nullptr;
             int line = 0;
 #if !defined (QT_NO_DEBUG)
             jobject invocationInfoProvider = Java::QtJambi::ReflectionUtility::invocationInfoProvider(env);
@@ -339,18 +332,18 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QLogging_getDebug(JNIEnv *e
             line = Java::QtJambi::InternalAccess$CallerContext::lineNumber(env, invocationInfo);
             jobject _data = qtjambi_cast<jobject>(env, QByteArray());
             QByteArray* data = qtjambi_cast<QByteArray*>(env, _data);
-            _method = env->GetStringUTFChars(method, nullptr);
-            data->append(_method);
-            data->append('\0');
-            env->ReleaseStringUTFChars(method, _method);
-            auto size = data->size();
             jstring className = Java::Runtime::Class::getName(env, declaringClass);
-            _className = env->GetStringUTFChars(className, nullptr);
-            data->append(_className);
-            env->ReleaseStringUTFChars(className, _className);
-            _method = data->constData();
-            _className = data->constData()+size;
+            J2CStringBuffer methodBf(env, method);
+            J2CStringBuffer classNameBf(env, className);
+            data->append(methodBf.constData());
+            data->append('\0');
+            auto size = data->size();
+            data->append(classNameBf.constData());
+            const char* _method = data->constData();
+            const char* _className = data->constData()+size;
 #else
+            const char* _method = nullptr;
+            const char* _className = nullptr;
             Q_UNUSED(loggingClass)
 #endif
             QMessageLogger logger(_className, line, _method);
@@ -396,8 +389,6 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QLogging_getCDebug(JNIEnv *
     QTJAMBI_TRY{
         const QLoggingCategory& category = QtJambiAPI::objectReferenceFromNativeId<QLoggingCategory>(env, categoryId);
         if(messageType != QtMsgType::QtFatalMsg && category.isEnabled(QtMsgType(messageType))){
-            const char* _method = nullptr;
-            const char* _className = nullptr;
             int line = 0;
 #if !defined (QT_NO_DEBUG)
             jobject invocationInfoProvider = Java::QtJambi::ReflectionUtility::invocationInfoProvider(env);
@@ -408,22 +399,22 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QLogging_getCDebug(JNIEnv *
                 invocationInfo = Java::Runtime::IntFunction::apply(env, invocationInfoProvider, ++offset);
                 declaringClass = Java::QtJambi::InternalAccess$CallerContext::declaringClass(env, invocationInfo);
             }
-            jstring method = Java::QtJambi::InternalAccess$CallerContext::methodName(env, invocationInfo);
             line = Java::QtJambi::InternalAccess$CallerContext::lineNumber(env, invocationInfo);
             jobject _data = qtjambi_cast<jobject>(env, QByteArray());
             QByteArray* data = qtjambi_cast<QByteArray*>(env, _data);
-            _method = env->GetStringUTFChars(method, nullptr);
-            data->append(_method);
-            data->append('\0');
-            env->ReleaseStringUTFChars(method, _method);
-            auto size = data->size();
+            jstring method = Java::QtJambi::InternalAccess$CallerContext::methodName(env, invocationInfo);
             jstring className = Java::Runtime::Class::getName(env, declaringClass);
-            _className = env->GetStringUTFChars(className, nullptr);
-            data->append(_className);
-            env->ReleaseStringUTFChars(className, _className);
-            _method = data->constData();
-            _className = data->constData()+size;
+            J2CStringBuffer methodBf(env, method);
+            J2CStringBuffer classNameBf(env, className);
+            data->append(methodBf.constData());
+            data->append('\0');
+            auto size = data->size();
+            data->append(classNameBf.constData());
+            const char* _method = data->constData();
+            const char* _className = data->constData()+size;
 #else
+            const char* _method = nullptr;
+            const char* _className = nullptr;
             Q_UNUSED(loggingClass)
 #endif
             QMessageLogger logger(_className, line, _method, category.categoryName());
@@ -469,9 +460,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showCMessage(JNIEnv *
         const QLoggingCategory& category = QtJambiAPI::objectReferenceFromNativeId<QLoggingCategory>(env, categoryId);
         if (messageType != QtMsgType::QtFatalMsg && !category.isEnabled(QtMsgType(messageType)))
             return;
-        const char* _message = env->GetStringUTFChars(message, nullptr);
-        const char* _method = nullptr;
-        const char* _className = nullptr;
+        J2CStringBuffer _message(env, message);
         int line = 0;
 #if !defined (QT_NO_DEBUG)
         jobject invocationInfoProvider = Java::QtJambi::ReflectionUtility::invocationInfoProvider(env);
@@ -484,36 +473,33 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showCMessage(JNIEnv *
         }
         jstring method = Java::QtJambi::InternalAccess$CallerContext::methodName(env, invocationInfo);
         line = Java::QtJambi::InternalAccess$CallerContext::lineNumber(env, invocationInfo);
-        _method = env->GetStringUTFChars(method, nullptr);
         jstring className = Java::Runtime::Class::getName(env, declaringClass);
-        _className = env->GetStringUTFChars(className, nullptr);
+        J2CStringBuffer _method(env, method);
+        J2CStringBuffer _className(env, className);
 #else
+        const char* _method = nullptr;
+        const char* _className = nullptr;
         Q_UNUSED(loggingClass)
 #endif
         QtJambiExceptionRaiser __exnRaiser;
         QMessageLogger logger(_className, line, _method, category.categoryName());
         switch(messageType){
         case QtMsgType::QtWarningMsg:
-            logger.warning(category, "%s", _message);
+            logger.warning(category, "%s", _message.constData());
             break;
         case QtMsgType::QtCriticalMsg:
-            logger.critical(category, "%s", _message);
+            logger.critical(category, "%s", _message.constData());
             break;
         case QtMsgType::QtDebugMsg:
-            logger.debug(category, "%s", _message);
+            logger.debug(category, "%s", _message.constData());
             break;
         case QtMsgType::QtInfoMsg:
-            logger.info(category, "%s", _message);
+            logger.info(category, "%s", _message.constData());
             break;
         case QtMsgType::QtFatalMsg:
-            logger.fatal("%s", _message);
+            logger.fatal("%s", _message.constData());
             break;
         }
-#if !defined (QT_NO_DEBUG)
-        env->ReleaseStringUTFChars(method, _method);
-        env->ReleaseStringUTFChars(className, _className);
-#endif
-        env->ReleaseStringUTFChars(message, _message);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
         __exnRaiser.raise(env);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -537,9 +523,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showMessageFromSuppli
     }
     QTJAMBI_TRY{
         jstring message = Java::Runtime::Object::toString(env, Java::Runtime::Supplier::get(env, messageSupplier));
-        const char* _message = env->GetStringUTFChars(message, nullptr);
-        const char* _method = nullptr;
-        const char* _className = nullptr;
+        J2CStringBuffer _message(env, message);
         int line = 0;
 #if !defined (QT_NO_DEBUG)
         jobject invocationInfoProvider = Java::QtJambi::ReflectionUtility::invocationInfoProvider(env);
@@ -552,36 +536,33 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showMessageFromSuppli
         }
         jstring method = Java::QtJambi::InternalAccess$CallerContext::methodName(env, invocationInfo);
         line = Java::QtJambi::InternalAccess$CallerContext::lineNumber(env, invocationInfo);
-        _method = env->GetStringUTFChars(method, nullptr);
         jstring className = Java::Runtime::Class::getName(env, declaringClass);
-        _className = env->GetStringUTFChars(className, nullptr);
+        J2CStringBuffer _method(env, method);
+        J2CStringBuffer _className(env, className);
 #else
+        const char* _method = nullptr;
+        const char* _className = nullptr;
         Q_UNUSED(loggingClass)
 #endif
         QtJambiExceptionRaiser __exnRaiser;
         QMessageLogger logger(_className, line, _method);
         switch(messageType){
         case QtMsgType::QtWarningMsg:
-            logger.warning("%s", _message);
+            logger.warning("%s", _message.constData());
             break;
         case QtMsgType::QtCriticalMsg:
-            logger.critical("%s", _message);
+            logger.critical("%s", _message.constData());
             break;
         case QtMsgType::QtDebugMsg:
-            logger.debug("%s", _message);
+            logger.debug("%s", _message.constData());
             break;
         case QtMsgType::QtInfoMsg:
-            logger.info("%s", _message);
+            logger.info("%s", _message.constData());
             break;
         case QtMsgType::QtFatalMsg:
-            logger.fatal("%s", _message);
+            logger.fatal("%s", _message.constData());
             break;
         }
-#if !defined (QT_NO_DEBUG)
-        env->ReleaseStringUTFChars(method, _method);
-        env->ReleaseStringUTFChars(className, _className);
-#endif
-        env->ReleaseStringUTFChars(message, _message);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
         __exnRaiser.raise(env);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -604,9 +585,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showMessage(JNIEnv *e
         }
     }
     QTJAMBI_TRY{
-        const char* _message = env->GetStringUTFChars(message, nullptr);
-        const char* _method = nullptr;
-        const char* _className = nullptr;
+        J2CStringBuffer _message(env, message);
         int line = 0;
 #if !defined (QT_NO_DEBUG)
         jobject invocationInfoProvider = Java::QtJambi::ReflectionUtility::invocationInfoProvider(env);
@@ -619,36 +598,33 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showMessage(JNIEnv *e
         }
         jstring method = Java::QtJambi::InternalAccess$CallerContext::methodName(env, invocationInfo);
         line = Java::QtJambi::InternalAccess$CallerContext::lineNumber(env, invocationInfo);
-        _method = env->GetStringUTFChars(method, nullptr);
+        J2CStringBuffer _method(env, method);
         jstring className = Java::Runtime::Class::getName(env, declaringClass);
-        _className = env->GetStringUTFChars(className, nullptr);
+        J2CStringBuffer _className(env, className);
 #else
+        const char* _method = nullptr;
+        const char* _className = nullptr;
         Q_UNUSED(loggingClass)
 #endif
         QtJambiExceptionRaiser __exnRaiser;
         QMessageLogger logger(_className, line, _method);
         switch(messageType){
         case QtMsgType::QtWarningMsg:
-            logger.warning("%s", _message);
+            logger.warning("%s", _message.constData());
             break;
         case QtMsgType::QtCriticalMsg:
-            logger.critical("%s", _message);
+            logger.critical("%s", _message.constData());
             break;
         case QtMsgType::QtDebugMsg:
-            logger.debug("%s", _message);
+            logger.debug("%s", _message.constData());
             break;
         case QtMsgType::QtInfoMsg:
-            logger.info("%s", _message);
+            logger.info("%s", _message.constData());
             break;
         case QtMsgType::QtFatalMsg:
-            logger.fatal("%s", _message);
+            logger.fatal("%s", _message.constData());
             break;
         }
-#if !defined (QT_NO_DEBUG)
-        env->ReleaseStringUTFChars(method, _method);
-        env->ReleaseStringUTFChars(className, _className);
-#endif
-        env->ReleaseStringUTFChars(message, _message);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
         __exnRaiser.raise(env);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -664,9 +640,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showMessage(JNIEnv *e
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_qErrnoWarning(JNIEnv *env, jclass, jint code, jstring message){
     QTJAMBI_TRY{
-        const char* _message = env->GetStringUTFChars(message, nullptr);
+        J2CStringBuffer _message(env, message);
         qErrnoWarning(code, _message);
-        env->ReleaseStringUTFChars(message, _message);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
@@ -682,14 +657,66 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_qSetMessagePattern(JN
     }QTJAMBI_TRY_END
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_qFormatLogMessage(JNIEnv *env, jclass, jint type, QtJambiNativeID context, jstring str){
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_qFormatLogMessage(JNIEnv *env, jclass, jint type, jobject context, jstring str){
     QTJAMBI_TRY{
         QString _str = qtjambi_cast<QString>(env, str);
-        const QMessageLogContext& _context = QtJambiAPI::objectReferenceFromNativeId<QMessageLogContext>(env, context);
+        const QMessageLogContext& _context = reinterpret_value_cast<QMessageLogContext>(reinterpret_cast<const void*>(context ? Java::QtCore::QMessageLogContext::__qt_directLink(env, context) : 0));
         qFormatLogMessage(QtMsgType(type), _context, _str);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
     }QTJAMBI_TRY_END
+}
+
+namespace Java{
+namespace Runtime{
+QTJAMBI_REPOSITORY_DECLARE_CLASS(Formatter,
+                             QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(format))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util/logging,Formatter,
+                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(format,(Ljava/util/logging/LogRecord;)Ljava/lang/String;))
+QTJAMBI_REPOSITORY_DECLARE_CLASS(LogRecord,
+                                 QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getSourceMethodName)
+                                 QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getSourceClassName))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util/logging,LogRecord,
+                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(getSourceMethodName,()Ljava/lang/String;)
+                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(getSourceClassName,()Ljava/lang/String;))
+}
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_00024Handler_log(JNIEnv *env, jclass, jint msgType, QtJambiNativeID loggingCategoryId, jobject formatter, jobject record){
+    QLoggingCategory * loggingCategory;
+    if(!!loggingCategoryId){
+        loggingCategory = QtJambiAPI::objectFromNativeId<QLoggingCategory>(loggingCategoryId);
+    }else{
+        loggingCategory = QLoggingCategory::defaultCategory();
+    }
+    if (msgType != QtMsgType::QtFatalMsg) {
+        if (loggingCategory) {
+            if (!loggingCategory->isEnabled(QtMsgType(msgType)))
+                return;
+        }
+    }
+    J2CStringBuffer _className(env, Java::Runtime::LogRecord::getSourceClassName(env, record));
+    J2CStringBuffer _method(env, Java::Runtime::LogRecord::getSourceMethodName(env, record));
+    int line = 0;
+    QMessageLogger logger(_className, line, _method);
+    J2CStringBuffer _message(env, Java::Runtime::Formatter::format(env, formatter, record));
+    switch(msgType){
+    case QtMsgType::QtWarningMsg:
+        logger.warning("%s", _message.constData());
+        break;
+    case QtMsgType::QtCriticalMsg:
+        logger.critical("%s", _message.constData());
+        break;
+    case QtMsgType::QtDebugMsg:
+        logger.debug("%s", _message.constData());
+        break;
+    case QtMsgType::QtInfoMsg:
+        logger.info("%s", _message.constData());
+        break;
+    case QtMsgType::QtFatalMsg:
+        logger.fatal("%s", _message.constData());
+        break;
+    }
 }
 
 // QByteArrayList::join()

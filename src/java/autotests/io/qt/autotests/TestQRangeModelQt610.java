@@ -130,6 +130,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
 		public final static QHash<Integer,QByteArray> roleNames = QHash.of(0, new QByteArray("display"), 1, new QByteArray("decoration"), 3, new QByteArray("toolTip"), 40, new QByteArray("modelData"));
 	}
 	
+	@QRangeModel.RowOptions(QRangeModel.RowCategory.MultiRoleItem)
 	public static class ColorEntryObject extends QObject{
 		ColorEntryObject() {
 			this("black");
@@ -164,6 +165,69 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
 		final static QHash<Integer,QByteArray> roleNames = QHash.of(0, new QByteArray("display"), 1, new QByteArray("decoration"), 3, new QByteArray("toolTip"), 40, new QByteArray("modelData"));
 	}
 	
+	static class MultiRoleRangeModel extends QRangeModel{
+		public <T> MultiRoleRangeModel(@StrictNonNull QConstSpan<T> range, @Nullable QObject parent) {
+			super(range, parent);
+		}
+
+		public <T> MultiRoleRangeModel(@StrictNonNull QConstSpan<T> range) {
+			super(range);
+		}
+
+		public <T> MultiRoleRangeModel(@StrictNonNull QList<T> range, @Nullable QObject parent) {
+			super(range, parent);
+		}
+
+		public <T> MultiRoleRangeModel(@StrictNonNull QList<T> range) {
+			super(range);
+		}
+
+		public <T> MultiRoleRangeModel(@StrictNonNull QSpan<T> range, @Nullable QObject parent) {
+			super(range, parent);
+		}
+
+		public <T> MultiRoleRangeModel(@StrictNonNull QSpan<T> range) {
+			super(range);
+		}
+
+		@Override
+		protected @NonNull RowCategory rowCategory(@NonNull Class<?> itemType) {
+			return RowCategory.MultiRoleItem;
+		}
+	}
+	
+	static class DefaultRangeModel extends QRangeModel{
+		public <T> DefaultRangeModel(@StrictNonNull QConstSpan<T> range, @Nullable QObject parent) {
+			super(range, parent);
+		}
+
+		public <T> DefaultRangeModel(@StrictNonNull QConstSpan<T> range) {
+			super(range);
+		}
+
+		public <T> DefaultRangeModel(@StrictNonNull QList<T> range, @Nullable QObject parent) {
+			super(range, parent);
+		}
+
+		public <T> DefaultRangeModel(@StrictNonNull QList<T> range) {
+			super(range);
+		}
+
+		public <T> DefaultRangeModel(@StrictNonNull QSpan<T> range, @Nullable QObject parent) {
+			super(range, parent);
+		}
+
+		public <T> DefaultRangeModel(@StrictNonNull QSpan<T> range) {
+			super(range);
+		}
+
+		@Override
+		protected @NonNull RowCategory rowCategory(@NonNull Class<?> itemType) {
+			return RowCategory.Default;
+		}
+	}
+	
+//	@QRangeModel.RowOptions(QRangeModel.RowCategory.MultiRoleItem)
 	public static class ColorConstTreeEntryGadget extends QRangeModel.ConstTreeRow<ColorConstTreeEntryGadget>{
 		ColorConstTreeEntryGadget(ColorConstTreeEntryGadget parent) {
 			this("black", parent);
@@ -204,7 +268,6 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
 		public ColorConstTreeEntryGadget addChild(String colorName) {
 			return new ColorConstTreeEntryGadget(colorName, this);
 		}
-		
 		final static QHash<Integer,QByteArray> roleNames = QHash.of(0, new QByteArray("display"), 1, new QByteArray("decoration"), 3, new QByteArray("toolTip"), 40, new QByteArray("modelData"));
 	}
 	
@@ -722,7 +785,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
     								new ColorEntryObject("green"),
     								new ColorEntryObject("blue")
 								 );
-    	QRangeModel model = new QRangeModel(range, parent);
+    	QRangeModel model = new DefaultRangeModel(range, parent);
     	assertEquals(defaultRoleNames, model.roleNames());
     	assertEquals(parent, model.parent());
     	assertEquals(3, model.rowCount());
@@ -738,7 +801,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
     	model.dispose();
     	range.at(2).setDisplay("blue");
     	range.remove(3);
-    	model = new QRangeModel(QSpan.ofList(range));
+    	model = new DefaultRangeModel(QSpan.ofList(range));
     	assertEquals(defaultRoleNames, model.roleNames());
     	assertEquals(null, model.parent());
     	assertEquals(3, model.rowCount());
@@ -751,7 +814,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
     	assertEquals(new QColor("yellow"), model.data(model.index(2,decorationProp.relativePropertyIndex()), Qt.ItemDataRole.DisplayRole));
     	model.dispose();
     	range.at(2).setDisplay("blue");
-    	model = new QRangeModel(QConstSpan.ofList(range));
+    	model = new DefaultRangeModel(QConstSpan.ofList(range));
     	assertEquals(defaultRoleNames, model.roleNames());
     	assertEquals(null, model.parent());
     	assertEquals(3, model.rowCount());
@@ -764,7 +827,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
     	assertEquals(new QColor("blue"), model.data(model.index(2,decorationProp.relativePropertyIndex()), Qt.ItemDataRole.DisplayRole));
     	model.dispose();
     	
-    	model = new QRangeModel(range, QRangeModel.RowCategory.MultiRoleItem, parent);
+    	model = new QRangeModel(range, parent);
     	assertEquals(ColorEntryObject.roleNames, model.roleNames());
     	assertEquals(parent, model.parent());
     	assertEquals(3, model.rowCount());
@@ -780,7 +843,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
     	model.dispose();
     	range.at(2).setDisplay("blue");
     	range.remove(3);
-    	model = new QRangeModel(QSpan.ofList(range), QRangeModel.RowCategory.MultiRoleItem);
+    	model = new QRangeModel(QSpan.ofList(range));
     	assertEquals(ColorEntryObject.roleNames, model.roleNames());
     	assertEquals(null, model.parent());
     	assertEquals(3, model.rowCount());
@@ -793,7 +856,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
     	assertEquals(new QColor("yellow"), model.data(model.index(2,0), Qt.ItemDataRole.DecorationRole));
     	model.dispose();
     	range.at(2).setDisplay("blue");
-    	model = new QRangeModel(QConstSpan.ofList(range), QRangeModel.RowCategory.MultiRoleItem);
+    	model = new QRangeModel(QConstSpan.ofList(range));
     	assertEquals(ColorEntryObject.roleNames, model.roleNames());
     	assertEquals(null, model.parent());
     	assertEquals(3, model.rowCount());
@@ -907,7 +970,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
     	model.dispose();
     	range.at(2).setDisplay("blue");
     	range.remove(3);
-    	model = new QRangeModel(QSpan.ofList(range), QRangeModel.RowCategory.MultiRoleItem);
+    	model = new MultiRoleRangeModel(QSpan.ofList(range));
     	assertEquals(ColorEntryGadget.roleNames, model.roleNames());
     	assertEquals(null, model.parent());
     	assertEquals(3, model.rowCount());
@@ -1041,7 +1104,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
     	assertTrue(model.setData(model.index(2,0), "blue", Qt.ItemDataRole.DisplayRole));
     	model.dispose();
     	range.remove(3);
-    	model = new QRangeModel(QSpan.ofList(range), QRangeModel.RowCategory.MultiRoleItem);
+    	model = new MultiRoleRangeModel(QSpan.ofList(range));
     	assertEquals(ColorEntryValue.roleNames, model.roleNames());
     	assertEquals(null, model.parent());
     	assertEquals(3, model.rowCount());
@@ -1441,7 +1504,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
     	ColorConstTreeEntryObject child = range.at(1).addChild("lightgreen");
     	child.addChild("darkgreen");
     	child.addChild("blue");
-    	QRangeModel model = new QRangeModel(range, QRangeModel.RowCategory.MultiRoleItem);
+    	QRangeModel model = new MultiRoleRangeModel(range);
     	assertEquals(ColorConstTreeEntryObject.roleNames, model.roleNames());
     	assertEquals(2, model.rowCount());
     	assertEquals(1, model.columnCount());
@@ -1549,7 +1612,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
     	ColorTreeEntryObject child = range.at(1).addChild("lightgreen");
     	child.addChild("darkgreen");
     	child.addChild("blue");
-    	QRangeModel model = new QRangeModel(range, QRangeModel.RowCategory.MultiRoleItem);
+    	QRangeModel model = new MultiRoleRangeModel(range);
     	assertEquals(ColorTreeEntryObject.roleNames, model.roleNames());
     	assertEquals(2, model.rowCount());
     	assertEquals(1, model.columnCount());
@@ -1664,7 +1727,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
     	assertTrue(model.setData(newSubIndex.siblingAtColumn(displayProp.relativePropertyIndex()), "gold", Qt.ItemDataRole.DisplayRole));
     	assertEquals("gold", range.get(3).childRows().get(0).display());
     	
-    	model = new QRangeModel(QSpan.ofList(range), QRangeModel.RowCategory.MultiRoleItem);
+    	model = new MultiRoleRangeModel(QSpan.ofList(range));
     	assertEquals(ColorTreeEntryObject.roleNames, model.roleNames());
     	assertEquals(4, model.rowCount());
     	assertEquals(1, model.columnCount());
@@ -1707,7 +1770,12 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
     	ColorConstTreeEntryGadget child = range.at(1).addChild("lightgreen");
     	child.addChild("darkgreen");
     	child.addChild("blue");
-    	QRangeModel model = new QRangeModel(range, QRangeModel.RowCategory.MultiRoleItem);
+    	QRangeModel model = new QRangeModel(range){
+			@Override
+			protected @NonNull RowCategory rowCategory(@NonNull Class<?> itemType) {
+				return QRangeModel.RowCategory.MultiRoleItem;
+			}
+    	};
     	assertEquals(ColorConstTreeEntryGadget.roleNames, model.roleNames());
     	assertEquals(2, model.rowCount());
     	assertEquals(1, model.columnCount());
@@ -1815,7 +1883,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
     	ColorTreeEntryGadget child = range.at(1).addChild("lightgreen");
     	child.addChild("darkgreen");
     	child.addChild("blue");
-    	QRangeModel model = new QRangeModel(range, QRangeModel.RowCategory.MultiRoleItem);
+    	QRangeModel model = new MultiRoleRangeModel(range);
     	assertEquals(ColorTreeEntryGadget.roleNames, model.roleNames());
     	assertEquals(2, model.rowCount());
     	assertEquals(1, model.columnCount());
@@ -1930,7 +1998,7 @@ public class TestQRangeModelQt610 extends ApplicationInitializer {
     	assertTrue(model.setData(newSubIndex.siblingAtColumn(displayProp.relativePropertyIndex()), "gold", Qt.ItemDataRole.DisplayRole));
     	assertEquals("gold", range.get(3).childRows().get(0).display());
     	
-    	model = new QRangeModel(QSpan.ofList(range), QRangeModel.RowCategory.MultiRoleItem);
+    	model = new MultiRoleRangeModel(QSpan.ofList(range));
     	assertEquals(ColorTreeEntryGadget.roleNames, model.roleNames());
     	assertEquals(4, model.rowCount());
     	assertEquals(1, model.columnCount());

@@ -28,6 +28,14 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,6 +44,7 @@ import io.qt.NonNull;
 import io.qt.Nullable;
 import io.qt.QtInvokable;
 import io.qt.QtPropertyReader;
+import io.qt.autotests.generated.General;
 import io.qt.core.QAbstractListModel;
 import io.qt.core.QAbstractTableModel;
 import io.qt.core.QEventLoop;
@@ -44,12 +53,17 @@ import io.qt.core.QLogging;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaProperty;
+import io.qt.core.QMetaType;
 import io.qt.core.QModelIndex;
 import io.qt.core.QObject;
 import io.qt.core.QRandomGenerator;
+import io.qt.core.QStringListModel;
 import io.qt.core.QTimer;
+import io.qt.core.QVariant;
 import io.qt.core.Qt;
 import io.qt.core.Qt.Orientation;
+import io.qt.gui.QFontDatabase;
+import io.qt.qml.QJSValue;
 import io.qt.qml.QQmlComponent;
 import io.qt.qml.QQmlEngine;
 import io.qt.qml.QtQml;
@@ -438,6 +452,175 @@ public class TestQml3 extends ApplicationInitializer{
 		view.close();
 		view.dispose();
 		component.dispose();
+		engine.dispose();
+	}
+    
+    static class MyObject extends QStringListModel{
+    	static final AtomicInteger created = new AtomicInteger();
+    	static final AtomicInteger deleted = new AtomicInteger();
+    	MyObject(){
+    		super(QFontDatabase.families());
+//    		QJSEngine.setObjectOwnership(this, QJSEngine.ObjectOwnership.JavaScriptOwnership);
+    		created.incrementAndGet();
+    		General.internalAccess.registerCleaner(this, ()->{
+    			System.out.println("Java-deleting MyObject");
+    			deleted.incrementAndGet();
+    		});
+    		destroyed.connect(()->{
+    			System.out.println("Native-deleting MyObject");
+    		});
+    	}
+    	private String text = "TEST";
+
+		public String getText() {
+			return text;
+		}
+
+		public void setText(String text) {
+			this.text = text;
+		}
+    }
+    
+    static class MyValue{
+    }
+    
+    static class MyRoot extends QObject{
+    	final ArrayList<Object> receivedObjects = new ArrayList<>();
+    	//@QtMetaType(name = "_jobject*") 
+    	final Signal1<MyValue> myValueChanged = new Signal1<>();
+    	final Signal1<Optional<MyValue>> myOptionalValueChanged = new Signal1<>();
+    	final Signal1<OptionalInt> intOptChanged = new Signal1<>();
+    	private final QQmlEngine engine;
+    	public MyRoot(QQmlEngine engine) {
+			this.engine = engine;
+//			System.out.println(QMetaMethod.fromSignal(myValueChanged).cppMethodSignature());
+//			System.out.println(QMetaMethod.fromSignal(intOptChanged).cppMethodSignature());
+		}
+		@QtPropertyReader(name="object")
+    	public QJSValue object() {
+    		return engine.newQObject(new MyObject());
+    	}
+    	@QtPropertyReader(name="list")
+    	public List<MyObject> list() {
+    		return List.of(new MyObject());
+    	}
+//    	@QtPropertyReader(name="variant")
+//    	public Object variant() {
+//    		return List.of(new MyObject());
+//    	}
+    	@QtInvokable
+    	public void runGC() {
+    		var v = MyObject.created.get();
+    		assertTrue(v>0);
+    		for (int i = 0; i < 200 && MyObject.deleted.get()!=v; i++) {
+        		ApplicationInitializer.runGC();				
+        		Thread.yield();
+			}
+//    		assertEquals(v, MyObject.deleted.get());
+    	}
+    	@QtInvokable
+    	public void deleteObject(QObject o) {
+    		o.dispose();
+    	}
+    	@QtInvokable
+    	public void testObject(Object o) {
+    		receivedObjects.add(o);
+    	}
+    }
+    
+	@Test
+	public void testOptional() {
+//		QMetaType.fromType(MyValue.class);
+//		System.out.println(QMetaType.fromType(java.util.OptionalInt.class).name());
+//		System.out.println(QMetaType.fromType(java.util.OptionalLong.class).name());
+//		System.out.println(QMetaType.fromType(java.util.OptionalDouble.class).name());
+//		System.out.println(QMetaType.fromType(java.util.Optional.class, QMetaType.fromType(MyValue.class)).name());
+//		System.out.println(QMetaType.fromName("QSharedPointer<JObjectWrapper<io::qt::autotests::TestQmlException::MyValue>>").name());
+		QLogging.qInstallMessageHandler((a,b,c)->{
+			System.out.println(c);
+		});
+		QQmlEngine engine = new QQmlEngine();
+		MyRoot root = new MyRoot(engine);
+		engine.newQObject(root);
+		engine.rootContext().setContextProperty("myroot", root);
+		engine.rootContext().setContextProperty("jnull", new QVariant(QMetaType.fromType(MyValue.class), null));
+		QQmlComponent component = new QQmlComponent(engine);
+		component.setData("import QtQml\n"
+				+ "import QtQuick\n"
+				+ "import QtQuick.Controls\n"
+				+ "Window{\n"
+				+ "  visible: true\n"
+				+ "  ListView{\n"
+				+ "    id: list\n"
+				+ "    anchors.fill: parent\n"
+				+ "    property var text\n"
+				+ "    model: myroot.object\n"
+				+ "    visible: !model.empty\n"
+				+ "    delegate: ItemDelegate {\n"
+				+ "      text: model.display\n"
+				+ "      width: list.width\n"
+				+ "    }\n"
+				+ "  }\n"
+				+ "  Connections{\n"
+				+ "    target: myroot\n"
+				+ "    function onMyValueChanged(m){\n"
+				+ "        if(m==jnull){console.log('null');}\n"
+				+ "        myroot.testObject(m);\n"
+//				+ "        console.log(m);\n"
+				+ "    }\n"
+				+ "  }\n"
+				+ "  Connections{\n"
+				+ "    target: myroot\n"
+				+ "    function onMyOptionalValueChanged(m){\n"
+				+ "        if(m==null){console.log('null');}\n"
+				+ "        myroot.testObject(m);\n"
+//				+ "        console.log(m);\n"
+				+ "    }\n"
+				+ "  }\n"
+				+ "  Connections{\n"
+				+ "    target: myroot\n"
+				+ "    function onIntOptChanged(i){\n"
+				+ "        if(i==null){console.log('null');}\n"
+				+ "        myroot.testObject(i);\n"
+//				+ "        console.log(i);\n"
+				+ "    }\n"
+				+ "  }\n"
+				+ "  Component.onCompleted: {\n"
+//				+ "    var o = list.model;\n"
+//				+ "    console.log(o, o.text);\n"
+//				+ "    object = o;\n"
+//				+ "    root.deleteObject(o);\n" 
+//				+ "    console.log(o, o.text);\n"
+//				+ "    myroot.runGC();\n"
+//				+ "    console.log(list.model, list.model?.text);\n"
+//				+ "    console.log(o[0]);\n"
+//				+ "    text = model.text;\n"
+				+ "  }\n"
+				+ "  onClosing: {\n"
+//				+ "    var o = list.model;\n"
+//				+ "    console.log(o);\n"
+				+ "  }\n"
+				+ "}", ":/");
+		component.create();
+//		assertEquals("", item.property("text"));
+		QTimer.singleShot(500, root::runGC);
+		QTimer.singleShot(100, ()->{
+			root.myValueChanged.emit(null);
+			root.myValueChanged.emit(new MyValue());
+			root.myOptionalValueChanged.emit(Optional.ofNullable(null));
+			root.myOptionalValueChanged.emit(Optional.of(new MyValue()));
+			root.intOptChanged.emit(OptionalInt.of(6));
+//			QApplication.quit();
+		});
+		QTimer.singleShot(1500, QApplication::quit);
+		QApplication.exec();
+		Assert.assertEquals(5, root.receivedObjects.size());
+		Assert.assertEquals(null, root.receivedObjects.get(0));
+		Assert.assertTrue(root.receivedObjects.get(1) instanceof MyValue);
+		Assert.assertEquals(Optional.ofNullable(null), root.receivedObjects.get(2));
+		Assert.assertTrue(root.receivedObjects.get(3) instanceof Optional && ((Optional<?>)root.receivedObjects.get(3)).get() instanceof MyValue);
+		Assert.assertTrue(root.receivedObjects.get(4) instanceof OptionalInt);
+		Assert.assertEquals(6, ((OptionalInt)root.receivedObjects.get(4)).getAsInt());
 		engine.dispose();
 	}
 }

@@ -140,8 +140,12 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      */
     public QMultiMap(Map<? extends Key,? extends List<? extends T>> other) {
 		super(null);
-		QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
-		initialize(metaTypes.first.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.first), metaTypes.second.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.second), other);
+		if(other instanceof QMultiMap) {
+			initialize(null, 0, null, 0, other);
+		}else {
+			QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
+			initialize(metaTypes.first.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.first), metaTypes.second.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.second), other);
+		}
 	}
     
     /**

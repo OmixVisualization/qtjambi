@@ -2476,7 +2476,7 @@ abstract class SignalUtility {
 					}
 					throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", name(), signalParameters(), slotMethod.toGenericString()));
 				}
-	            return addConnectionToMethod(receiver, slotMethod, null, null, connectionType);
+	            return addConnectionToMethod(receiver, slotMethod, null, false, null, connectionType);
 	        }
         }
 
@@ -3536,25 +3536,25 @@ abstract class SignalUtility {
         }
 
         @io.qt.QtUninvokable
-        private QMetaObject.Connection addConnectionToMethod(Object receiver, Method slot, MethodHandle slotHandle, Object[] lambdaArgs, Qt.ConnectionType... connectionType) {
+        private QMetaObject.Connection addConnectionToMethod(Object receiver, Method slot, MethodHandle slotHandle, boolean isStatic, Object[] lambdaArgs, Qt.ConnectionType... connectionType) {
     		checkConnection(receiver, false);
         	LambdaArgsProvider _lambdaArgs;
 			if(lambdaArgs!=null && lambdaArgs.length>0) {
 	        	boolean hasWeakLambdaArgs = false;
 	        	if(this.containingObject()!=null) {
 					for (int i = 0; i < lambdaArgs.length; i++) {
-						if(lambdaArgs[i] == this.containingObject()) {
+						Object arg = lambdaArgs[i];
+						if(arg!=null && (arg == this.containingObject() || arg == receiver)) {
 							hasWeakLambdaArgs = true;
 							break;
 						}
 					}
 	        	}
-	        	boolean isThreadAffine = receiver==null && lambdaArgs[0] instanceof QtThreadAffineInterface;
 				if(hasWeakLambdaArgs) {
 					Supplier<?>[] array = new Supplier[lambdaArgs.length];
 					for (int i = 0; i < lambdaArgs.length; i++) {
 						Object arg = lambdaArgs[i];
-						if(arg!=null && arg == this.containingObject()) {
+						if(arg!=null && (arg == this.containingObject() || arg == receiver)) {
 							WeakReference<Object> reference = new WeakReference<>(arg);
 							array[i] = ()->{
 								Object result = reference.get();
@@ -3566,14 +3566,14 @@ abstract class SignalUtility {
 							array[i] = ()->arg;
 						}
 					}
-					if(isThreadAffine) {
-						_lambdaArgs = new ThreadAffineSupplierLambdaArgsProvider(new WeakReference<>((QtThreadAffineInterface)lambdaArgs[0]), array);
+					if(receiver instanceof QtThreadAffineInterface) {
+						_lambdaArgs = new ThreadAffineSupplierLambdaArgsProvider(new WeakReference<>((QtThreadAffineInterface)receiver), array);
 					}else {
 						_lambdaArgs = new SupplierLambdaArgsProvider(array);
 					}
 				}else {
-					if(isThreadAffine) {
-						_lambdaArgs = new ThreadAffineLambdaArgsProvider(new WeakReference<>((QtThreadAffineInterface)lambdaArgs[0]), lambdaArgs);
+					if(receiver instanceof QtThreadAffineInterface) {
+						_lambdaArgs = new ThreadAffineLambdaArgsProvider(new WeakReference<>((QtThreadAffineInterface)receiver), lambdaArgs);
 					}else {
 						_lambdaArgs = new ObjectLambdaArgsProvider(lambdaArgs);
 					}
@@ -3649,7 +3649,7 @@ abstract class SignalUtility {
 						if(checkConnectArgs)
 							break;
 					case JavaMatch:
-						return addConnectionToMethod(receiver, slotMethod, null, null, connectionType);
+						return addConnectionToMethod(receiver, slotMethod, null, false, null, connectionType);
 					default:
 						break;
 					}
@@ -3772,7 +3772,7 @@ abstract class SignalUtility {
 						}
 						throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", name(), signalParameters(), methodInfo.reflectiveMethod.toGenericString()));
 					}
-					return addConnectionToMethod(owner, methodInfo.reflectiveMethod, methodInfo.methodHandle, lambdaArgs, connectionType);
+					return addConnectionToMethod(owner, methodInfo.reflectiveMethod, methodInfo.methodHandle, methodInfo.isStaticMethod, lambdaArgs, connectionType);
 				}else if(methodIndex()>=0 && methodInfo.metaObject!=null && methodInfo.methodIndex>=0 
 						&& capturedArgCount==1) {
 					QMetaMethod metaMethod = methodInfo.metaMethod();
@@ -3792,7 +3792,7 @@ abstract class SignalUtility {
 							}
 							throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", name(), signalParameters(), methodInfo.reflectiveMethod.toGenericString()));
 						}
-						return addConnectionToMethod(arg1, methodInfo.reflectiveMethod, methodInfo.methodHandle, null, connectionType);
+						return addConnectionToMethod(arg1, methodInfo.reflectiveMethod, methodInfo.methodHandle, methodInfo.isStaticMethod, null, connectionType);
 					}else {
 						if(metaMethod.methodType()==QMetaMethod.MethodType.Signal) {
 							MethodInfo _methodInfo = methodInfo;
@@ -3846,7 +3846,7 @@ abstract class SignalUtility {
 						}
 						throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", name(), signalParameters(), methodInfo.reflectiveMethod.toGenericString()));
 					}
-					return addConnectionToMethod(arg1, methodInfo.reflectiveMethod, methodInfo.methodHandle, lambdaArgs, connectionType);
+					return addConnectionToMethod(arg1, methodInfo.reflectiveMethod, methodInfo.methodHandle, methodInfo.isStaticMethod, lambdaArgs, connectionType);
 				}else{
 					try {
 						lambdaOwnerClass = Class.forName(methodInfo.capturingClass.replace('/', '.'));
@@ -3997,11 +3997,11 @@ abstract class SignalUtility {
 					Object[] lambdaArgs = null;
 					if(capturedArgCount>0){
 						lambdaArgs = new Object[capturedArgCount+1];
-						lambdaArgs[0] = lambdaOwner;
 						for(int i=0; i<capturedArgCount; i++) {
-							lambdaArgs[i+1] = ClassAnalyzerUtility.LambdaTools.getCapturedArg(serializedLambda, i);
-				        	checkConnection(lambdaArgs[i+1], true);
+							lambdaArgs[i] = ClassAnalyzerUtility.LambdaTools.getCapturedArg(serializedLambda, i);
+				        	checkConnection(lambdaArgs[i], true);
 						}
+						lambdaArgs[capturedArgCount] = lambdaOwner;
 					}else {
 						lambdaArgs = new Object[] {lambdaOwner};
 					}
@@ -4031,7 +4031,7 @@ abstract class SignalUtility {
 						}
 						throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", name(), signalParameters(), methodInfo.reflectiveMethod.toGenericString()));
 					}
-					return addConnectionToMethod(null, methodInfo.reflectiveMethod, methodInfo.methodHandle, lambdaArgs, connectionType);
+					return addConnectionToMethod(lambdaOwner, methodInfo.reflectiveMethod, methodInfo.methodHandle, methodInfo.isStaticMethod, lambdaArgs, connectionType);
 				}else if(methodIndex()>=0 
 						&& methodInfo.metaObject!=null 
 						&& methodInfo.methodIndex>=0 
@@ -4051,7 +4051,7 @@ abstract class SignalUtility {
 							}
 							throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", name(), signalParameters(), methodInfo.reflectiveMethod.toGenericString()));
 						}
-						return addConnectionToMethod(lambdaOwner, methodInfo.reflectiveMethod, methodInfo.methodHandle, null, connectionType);
+						return addConnectionToMethod(lambdaOwner, methodInfo.reflectiveMethod, methodInfo.methodHandle, methodInfo.isStaticMethod, null, connectionType);
 					}else {
 						checkConnection(lambdaOwner, true);
 						QMetaMethod metaMethod = methodInfo.metaMethod();
@@ -4100,7 +4100,7 @@ abstract class SignalUtility {
 						}
 						throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", name(), signalParameters(), methodInfo.reflectiveMethod.toGenericString()));
 					}
-					return addConnectionToMethod(lambdaOwner, methodInfo.reflectiveMethod, methodInfo.methodHandle, lambdaArgs, connectionType);
+					return addConnectionToMethod(lambdaOwner, methodInfo.reflectiveMethod, methodInfo.methodHandle, methodInfo.isStaticMethod, lambdaArgs, connectionType);
 				}else{
 					checkConnection(lambdaOwner, true);
 					try {
@@ -4137,7 +4137,7 @@ abstract class SignalUtility {
 	    			if(mtd.getName().equals("emit") 
 	    					&& mtd.getReturnType()==void.class
 	    					&& mtd.getParameterCount()==signalTypeCount) {
-	    				return addConnectionToMethod(signalObject, mtd, null, null, connectionType);
+	    				return addConnectionToMethod(signalObject, mtd, null, false, null, connectionType);
 	    			}
 	    		}
     		}
@@ -4606,7 +4606,7 @@ abstract class SignalUtility {
 		                                	Class<?> _cls = AccessUtility.instance.getClass(this);
 		                                	while (_cls != SignalUtility.AbstractMultiSignal.class) {
 		                                		try {
-		                                			Method emitMethod = _cls.getDeclaredMethod("emit", signalCore.types);
+		                                			Method emitMethod = ClassAnalyzerUtility.findDeclaredMethod(_cls, false, "emit", null, signalCore.types);
 		                    	            		SignalInfo signalInfo = SignalUtility.signalInfo(null, metaObject, field, emitMethod);
 		                    	            		if(signalInfo.signalTypes==null) {
 		                    	            			signal.setCore(declaringClass, name, isStatic, resolveSignal(emitMethod), -1, 0);
@@ -5273,7 +5273,7 @@ abstract class SignalUtility {
     		*/
         	}
         	if(metaMethod==null || !metaMethod.isValid() || matches.get(matchingSignals.get(0))==AbstractSignal.Match.JavaMatch) {
-        		return matchingSignals.get(0).addConnectionToMethod(receiver, slotMethod, null, null, connectionType);
+        		return matchingSignals.get(0).addConnectionToMethod(receiver, slotMethod, null, false, null, connectionType);
         	}
         	else
         		return matchingSignals.get(0).addConnectionToMethod(receiver, metaMethod, connectionType);

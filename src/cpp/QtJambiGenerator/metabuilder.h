@@ -135,7 +135,7 @@ class MetaBuilder {
 
         QString translateDefaultValue(const QString& defaultValueExpression, MetaType *type,
                                       MetaFunction *fnc, MetaClass *,
-                                      int argument_index);
+                                      int argument_index, bool* ok = nullptr);
         MetaType *translateType(TypeInfo type_info, bool* ok, const QString &contextString = QString(),
                                       bool resolveType = true, bool resolveScope = true, bool prependScope = true);
 
@@ -144,7 +144,7 @@ class MetaBuilder {
         void inheritHiddenBaseType(MetaClass *subclass,
                              const MetaClass *template_class,
                              const TypeInfo &info, QList<MetaClass *>& pendingConstructorUsages);
-        MetaType *inheritTemplateType(const QList<const MetaType *> &template_types, const MetaType *meta_type, bool *ok = nullptr);
+        MetaType *inheritTemplateType(const QHash<QString,const MetaType *>& template_types_by_name, const MetaType *meta_type, bool *ok = nullptr);
 
         bool isClass(const QString &qualified_name, const QString& className);
         bool isEnum(const QStringList &qualified_name);
@@ -177,6 +177,8 @@ protected:
 
         void fixFunctions(MetaClass * cls);
     private:
+        static void analyzeInvokable(MetaClass* meta_class);
+        static void analyzeFunctional(MetaFunctional* meta_functional, const QList<MetaArgument*>& actualArguments);
         TypeInfo analyzeTypeInfo(MetaClass *cls, QString strg);
         TypeInfo convertInfo(MetaClass *cls, const TypeParser::Info& ti);
         MetaFunctional * findFunctional(MetaClass *cls, const FunctionalTypeEntry * fentry);
@@ -245,6 +247,7 @@ protected:
         QString m_generateTypeSystemQML;
         QSet<MetaClass*> m_functions_fixed;
         QList<MetaFunction*> m_textStreamFunctions;
+        QSet<MetaFunction*> m_defaultValueFunctions;
         QList<QPair<MetaClass*,QString>> m_pendingScopedClasses;
         QList<QPair<QPair<QString,FunctionModelItem>,MetaFunction*>> m_pendingHashFunctions;
         QList<QPair<QPair<QString,FunctionModelItem>,MetaFunction*>> m_pendingSwapFunctions;

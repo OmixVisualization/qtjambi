@@ -66,8 +66,6 @@ class AbstractSpanAccess;
 #endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
 
 class AbstractSetAccess;
-class AbstractLinkedListAccess;
-class AbstractVectorAccess;
 class AbstractHashAccess;
 class AbstractMultiHashAccess;
 class AbstractMapAccess;
@@ -543,28 +541,52 @@ QTJAMBI_EXPORT bool convertJavaToModelIndex(JNIEnv *env, jobject java_object, cl
 #endif
                                             );
 
-template<typename T>
-jobject convertNativeToJavaOwnedObjectAsWrapper(JNIEnv *env, const T *qt_object, const char *nativeTypeName = nullptr)
+template<typename T, size_t N>
+jobject convertNativeToJavaOwnedObjectAsWrapper(JNIEnv *env, const T *qt_object, const char (&nativeTypeName)[N])
 {
     return convertNativeToJavaOwnedObjectAsWrapper(env, qt_object, typeid(T), nativeTypeName);
 }
 
-template<typename T>
-jobject convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(JNIEnv *env, QtJambiScope& scope, const T *qt_object, const char *nativeTypeName = nullptr)
+template<typename T, size_t N>
+jobject convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(JNIEnv *env, QtJambiScope& scope, const T *qt_object, const char (&nativeTypeName)[N])
 {
     return convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(env, scope, qt_object, typeid(T), nativeTypeName);
 }
 
-template<typename T>
-jobject convertNativeToJavaObjectAsWrapper(JNIEnv *env, const T *qt_object, const char *nativeTypeName = nullptr)
+template<typename T, size_t N>
+jobject convertNativeToJavaObjectAsWrapper(JNIEnv *env, const T *qt_object, const char (&nativeTypeName)[N])
 {
     return convertNativeToJavaObjectAsWrapper(env, qt_object, typeid(T), nativeTypeName);
 }
 
-template<typename T>
-jobject convertNativeToJavaObjectAsCopy(JNIEnv *env, const T *qt_object, const char *nativeTypeName = nullptr)
+template<typename T, size_t N>
+jobject convertNativeToJavaObjectAsCopy(JNIEnv *env, const T *qt_object, const char (&nativeTypeName)[N])
 {
     return convertNativeToJavaObjectAsCopy(env, qt_object, typeid(T), nativeTypeName);
+}
+
+template<typename T>
+jobject convertNativeToJavaOwnedObjectAsWrapper(JNIEnv *env, const T *qt_object)
+{
+    return convertNativeToJavaOwnedObjectAsWrapper(env, qt_object, typeid(T));
+}
+
+template<typename T>
+jobject convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(JNIEnv *env, QtJambiScope& scope, const T *qt_object)
+{
+    return convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(env, scope, qt_object, typeid(T));
+}
+
+template<typename T>
+jobject convertNativeToJavaObjectAsWrapper(JNIEnv *env, const T *qt_object)
+{
+    return convertNativeToJavaObjectAsWrapper(env, qt_object, typeid(T));
+}
+
+template<typename T>
+jobject convertNativeToJavaObjectAsCopy(JNIEnv *env, const T *qt_object)
+{
+    return convertNativeToJavaObjectAsCopy(env, qt_object, typeid(T));
 }
 
 template<typename Ret, typename... Args>
@@ -572,8 +594,6 @@ struct FunctionType{
     typedef Ret(*type)(Args...);
     typedef Ret(signature)(Args...);
 };
-
-QTJAMBI_EXPORT jobject convertQObjectToJavaObject(JNIEnv *env, const QObject *qt_object, const char *className);
 
 QTJAMBI_EXPORT jobject convertQObjectToJavaObject(JNIEnv *env, const QObject *qt_object, jclass clazz);
 
@@ -623,6 +643,10 @@ QTJAMBI_EXPORT jobject convertNativeToQNativePointer(JNIEnv *env, const void *qt
 
 QTJAMBI_EXPORT QString getClassName(JNIEnv *env, jclass java_class);
 QTJAMBI_EXPORT QString getObjectClassName(JNIEnv *env, jobject java_object);
+QTJAMBI_EXPORT QString getClassNamePrintable(JNIEnv *env, jclass java_class);
+QTJAMBI_EXPORT QString getObjectClassNamePrintable(JNIEnv *env, jobject java_object);
+QTJAMBI_EXPORT QByteArray getClassNameJNI(JNIEnv *env, jclass java_class);
+QTJAMBI_EXPORT QByteArray getObjectClassNameJNI(JNIEnv *env, jobject java_object);
 
 QTJAMBI_EXPORT jobject toJavaIntegerObject(JNIEnv *env, jint int_value);
 QTJAMBI_EXPORT jobject toJavaDoubleObject(JNIEnv *env, jdouble double_value);
@@ -1069,7 +1093,7 @@ Container createIterable(typename Container::const_iterator begin, typename Cont
 
 } // namespace QtJambiAPI
 
-inline bool operator < (const QVariant& v1, const QVariant& v2){
+inline bool operator<(const QVariant& v1, const QVariant& v2){
     if(v1.userType()==v2.userType()){
         QPartialOrdering result = QMetaType(v1.userType()).compare(v1.data(), v2.data());
         return result==QPartialOrdering::Less;

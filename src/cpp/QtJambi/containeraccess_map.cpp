@@ -35,7 +35,7 @@ QT_WARNING_DISABLE_GCC("-Winaccessible-base")
 QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
 
 QSharedPointer<AutoMapAccess> getMapAccess(const QtPrivate::QMetaTypeInterface *iface){
-    return findContainerAccess(QMetaType(iface)).dynamicCast<AutoMapAccess>();
+    return findContainerAccess(QMetaType(iface)).staticCast<AutoMapAccess>();
 }
 void AutoMapAccess::defaultCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr){
     if(QSharedPointer<class AutoMapAccess> access = getMapAccess(iface)){
@@ -1644,6 +1644,52 @@ std::unique_ptr<AbstractMapAccess::KeyValueIterator> AutoMapAccess::keyValueIter
         QPair<const void*,void*> mutableNext() override {
             return {nullptr, nullptr};
         }
+        std::function<jobject(JNIEnv*,const void*)> keyConverter() const override {
+            if(m_access->m_keyDataType & AbstractContainerAccess::PointersMask){
+                return [internalToExternalConverter = m_access->m_keyInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, &pointer, _value, true);
+                    return _value.l;
+                };
+            }else if (JObjectValueWrapper::isValueType(m_access->m_keyMetaType)
+                       || isNativeWrapperMetaType(m_access->m_keyMetaType)
+                       || isJObjectWrappedMetaType(m_access->m_keyMetaType)) {
+                return [](JNIEnv* env,const void* pointer) -> jobject{
+                    return reinterpret_cast<const JObjectWrapper*>(pointer)->object(env);
+                };
+            }else{
+                return [internalToExternalConverter = m_access->m_keyInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, pointer, _value, true);
+                    return _value.l;
+                };
+            }
+        }
+        std::function<jobject(JNIEnv*,const void*)> valueConverter() const override {
+            if(m_access->m_valueDataType & AbstractContainerAccess::PointersMask){
+                return [internalToExternalConverter = m_access->m_valueInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, &pointer, _value, true);
+                    return _value.l;
+                };
+            }else if (JObjectValueWrapper::isValueType(m_access->m_valueMetaType)
+                       || isNativeWrapperMetaType(m_access->m_valueMetaType)
+                       || isJObjectWrappedMetaType(m_access->m_valueMetaType)) {
+                return [](JNIEnv* env,const void* pointer) -> jobject{
+                    return reinterpret_cast<const JObjectWrapper*>(pointer)->object(env);
+                };
+            }else{
+                return [internalToExternalConverter = m_access->m_valueInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, pointer, _value, true);
+                    return _value.l;
+                };
+            }
+        }
     };
     return std::unique_ptr<AbstractMapAccess::KeyValueIterator>(new KeyValueIterator(this, *reinterpret_cast<const MapDataPointer*>(container)));
 }
@@ -1710,6 +1756,52 @@ std::unique_ptr<AbstractMapAccess::KeyValueIterator> AutoMapAccess::keyValueIter
             ++current;
             return {key, value};
         }
+        std::function<jobject(JNIEnv*,const void*)> keyConverter() const override {
+            if(m_access->m_keyDataType & AbstractContainerAccess::PointersMask){
+                return [internalToExternalConverter = m_access->m_keyInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, &pointer, _value, true);
+                    return _value.l;
+                };
+            }else if (JObjectValueWrapper::isValueType(m_access->m_keyMetaType)
+                       || isNativeWrapperMetaType(m_access->m_keyMetaType)
+                       || isJObjectWrappedMetaType(m_access->m_keyMetaType)) {
+                return [](JNIEnv* env,const void* pointer) -> jobject{
+                    return reinterpret_cast<const JObjectWrapper*>(pointer)->object(env);
+                };
+            }else{
+                return [internalToExternalConverter = m_access->m_keyInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, pointer, _value, true);
+                    return _value.l;
+                };
+            }
+        }
+        std::function<jobject(JNIEnv*,const void*)> valueConverter() const override {
+            if(m_access->m_valueDataType & AbstractContainerAccess::PointersMask){
+                return [internalToExternalConverter = m_access->m_valueInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, &pointer, _value, true);
+                    return _value.l;
+                };
+            }else if (JObjectValueWrapper::isValueType(m_access->m_valueMetaType)
+                       || isNativeWrapperMetaType(m_access->m_valueMetaType)
+                       || isJObjectWrappedMetaType(m_access->m_valueMetaType)) {
+                return [](JNIEnv* env,const void* pointer) -> jobject{
+                    return reinterpret_cast<const JObjectWrapper*>(pointer)->object(env);
+                };
+            }else{
+                return [internalToExternalConverter = m_access->m_valueInternalToExternalConverter](JNIEnv* env,const void* pointer) -> jobject{
+                    jvalue _value;
+                    _value.l = nullptr;
+                    internalToExternalConverter(env, nullptr, pointer, _value, true);
+                    return _value.l;
+                };
+            }
+        }
     };
     return std::unique_ptr<AbstractMapAccess::KeyValueIterator>(new KeyValueIterator(this, *reinterpret_cast<MapDataPointer*>(container)));
 }
@@ -1774,6 +1866,7 @@ AutoMapAccess::AutoMapAccess(
     m_size = m_offset2 + m_valueMetaType.sizeOf();
 }
 
+AbstractNestedAssociativeAccess* AutoMapAccess::asNested() { return this; }
 void AutoMapAccess::dispose(){ delete this; }
 AbstractMapAccess* AutoMapAccess::clone(){ return new AutoMapAccess(*this); }
 
@@ -1807,11 +1900,14 @@ bool AutoMapAccess::hasKeyNestedContainerAccess() {
 }
 bool AutoMapAccess::hasKeyNestedPointers() {
     if(hasKeyNestedContainerAccess()){
-        if(auto daccess = dynamic_cast<AbstractSequentialAccess*>(m_keyNestedContainerAccess.data())){
+        if(m_keyNestedContainerAccess->isSequential()){
+            auto daccess = static_cast<AbstractSequentialAccess*>(m_keyNestedContainerAccess.data());
             return (daccess->elementType() & PointersMask) || daccess->hasNestedPointers();
-        }else if(auto daccess = dynamic_cast<AbstractAssociativeAccess*>(m_keyNestedContainerAccess.data())){
+        }else if(m_keyNestedContainerAccess->isAssociative()){
+            auto daccess = static_cast<AbstractAssociativeAccess*>(m_keyNestedContainerAccess.data());
             return (daccess->keyType() & PointersMask) || daccess->hasKeyNestedPointers() || (daccess->valueType() & PointersMask) || daccess->hasValueNestedPointers();
-        }else if(auto daccess = dynamic_cast<AbstractPairAccess*>(m_keyNestedContainerAccess.data())){
+        }else if(m_keyNestedContainerAccess->isPair()){
+            auto daccess = static_cast<AbstractPairAccess*>(m_keyNestedContainerAccess.data());
             return (daccess->firstType() & PointersMask) || daccess->hasFirstNestedPointers() || (daccess->secondType() & PointersMask) || daccess->hasSecondNestedPointers();
         }
     }
@@ -1822,11 +1918,14 @@ bool AutoMapAccess::hasValueNestedContainerAccess() {
 }
 bool AutoMapAccess::hasValueNestedPointers() {
     if(hasValueNestedContainerAccess()){
-        if(auto daccess = dynamic_cast<AbstractSequentialAccess*>(m_valueNestedContainerAccess.data())){
+        if(m_valueNestedContainerAccess->isSequential()){
+            auto daccess = static_cast<AbstractSequentialAccess*>(m_valueNestedContainerAccess.data());
             return (daccess->elementType() & PointersMask) || daccess->hasNestedPointers();
-        }else if(auto daccess = dynamic_cast<AbstractAssociativeAccess*>(m_valueNestedContainerAccess.data())){
+        }else if(m_valueNestedContainerAccess->isAssociative()){
+            auto daccess = static_cast<AbstractAssociativeAccess*>(m_valueNestedContainerAccess.data());
             return (daccess->keyType() & PointersMask) || daccess->hasKeyNestedPointers() || (daccess->valueType() & PointersMask) || daccess->hasValueNestedPointers();
-        }else if(auto daccess = dynamic_cast<AbstractPairAccess*>(m_valueNestedContainerAccess.data())){
+        }else if(m_valueNestedContainerAccess->isPair()){
+            auto daccess = static_cast<AbstractPairAccess*>(m_valueNestedContainerAccess.data());
             return (daccess->firstType() & PointersMask) || daccess->hasFirstNestedPointers() || (daccess->secondType() & PointersMask) || daccess->hasSecondNestedPointers();
         }
     }
@@ -2310,7 +2409,7 @@ jboolean AutoMapAccess::equal(JNIEnv *env, const void* container, jobject other)
     }
 }
 
-QMetaType AutoMapAccess::registerContainer(const QByteArray& typeName)
+QMetaType AutoMapAccess::registerContainer(QByteArrayView typeName)
 {
     QMetaType newMetaType = QMetaType::fromName(typeName);
     if(!newMetaType.isValid()){
@@ -2607,22 +2706,33 @@ QtMetaContainerPrivate::QMetaAssociationInterface* AutoMapAccess::createMetaAsso
 
 ContainerAndAccessInfo AutoMapAccess::keys(JNIEnv *env, const ConstContainerInfo& container)
 {
+#if defined(QTJAMBI_GENERIC_ACCESS)
+    using namespace ContainerAccessAPI;
+#endif
     ContainerAndAccessInfo result;
-    AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(ContainerAccessAPI::createContainerAccess(SequentialContainerType::QList, m_keyMetaType));
-    if(!listAccess)
-        listAccess = dynamic_cast<AbstractListAccess*>(ContainerAccessAPI::createContainerAccess(
-                                                                           env,
-                                                                           SequentialContainerType::QList,
-                                                                           m_keyMetaType,
-                                                                           m_keyMetaType.alignOf(),
-                                                                           m_keyMetaType.sizeOf(),
-                                                                           AbstractContainerAccess::isPointerType(m_keyMetaType),
-                                                                           m_keyHashFunction,
-                                                                           m_keyInternalToExternalConverter,
-                                                                           m_keyExternalToInternalConverter,
-                                                                           m_keyNestedContainerAccess,
-                                                                           m_keyOwnerFunction
-                                                                           ));
+    AbstractListAccess* listAccess{nullptr};
+    {
+        auto containerAccess = createContainerAccess(SequentialContainerType::QList, m_keyMetaType);
+        if(containerAccess && containerAccess->isList())
+            listAccess = static_cast<AbstractListAccess*>(containerAccess);
+        else{
+            containerAccess = createContainerAccess(
+                env,
+                SequentialContainerType::QList,
+                m_keyMetaType,
+                m_keyMetaType.alignOf(),
+                m_keyMetaType.sizeOf(),
+                AbstractContainerAccess::isPointerType(m_keyMetaType),
+                m_keyHashFunction,
+                m_keyInternalToExternalConverter,
+                m_keyExternalToInternalConverter,
+                m_keyNestedContainerAccess,
+                m_keyOwnerFunction
+                );
+            if(containerAccess && containerAccess->isList())
+                listAccess = static_cast<AbstractListAccess*>(containerAccess);
+        }
+    }
     if(listAccess){
         CHECK_CONTAINER_ACCESS(env, listAccess)
         result.container = listAccess->createContainer();
@@ -2651,22 +2761,33 @@ ContainerAndAccessInfo AutoMapAccess::keys(JNIEnv *env, const ConstContainerInfo
 
 ContainerAndAccessInfo AutoMapAccess::keys(JNIEnv *env, const ConstContainerInfo& container, jobject value)
 {
+#if defined(QTJAMBI_GENERIC_ACCESS)
+    using namespace ContainerAccessAPI;
+#endif
     ContainerAndAccessInfo result;
-    AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(ContainerAccessAPI::createContainerAccess(SequentialContainerType::QList, m_keyMetaType));
-    if(!listAccess)
-        listAccess = dynamic_cast<AbstractListAccess*>(ContainerAccessAPI::createContainerAccess(
-                                                                           env,
-                                                                           SequentialContainerType::QList,
-                                                                           m_keyMetaType,
-                                                                           m_keyMetaType.alignOf(),
-                                                                           m_keyMetaType.sizeOf(),
-                                                                           AbstractContainerAccess::isPointerType(m_keyMetaType),
-                                                                           m_keyHashFunction,
-                                                                           m_keyInternalToExternalConverter,
-                                                                           m_keyExternalToInternalConverter,
-                                                                           m_keyNestedContainerAccess,
-                                                                           m_keyOwnerFunction
-                                                                           ));
+    AbstractListAccess* listAccess{nullptr};
+    {
+        auto containerAccess = createContainerAccess(SequentialContainerType::QList, m_keyMetaType);
+        if(containerAccess && containerAccess->isList())
+            listAccess = static_cast<AbstractListAccess*>(containerAccess);
+        else{
+            containerAccess = createContainerAccess(
+                env,
+                SequentialContainerType::QList,
+                m_keyMetaType,
+                m_keyMetaType.alignOf(),
+                m_keyMetaType.sizeOf(),
+                AbstractContainerAccess::isPointerType(m_keyMetaType),
+                m_keyHashFunction,
+                m_keyInternalToExternalConverter,
+                m_keyExternalToInternalConverter,
+                m_keyNestedContainerAccess,
+                m_keyOwnerFunction
+                );
+            if(containerAccess && containerAccess->isList())
+                listAccess = static_cast<AbstractListAccess*>(containerAccess);
+        }
+    }
     if(listAccess){
         CHECK_CONTAINER_ACCESS(env, listAccess)
         result.container = listAccess->createContainer();
@@ -2749,22 +2870,33 @@ jobject AutoMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject
 
 ContainerAndAccessInfo AutoMapAccess::values(JNIEnv *env, const ConstContainerInfo& container)
 {
+#if defined(QTJAMBI_GENERIC_ACCESS)
+    using namespace ContainerAccessAPI;
+#endif
     ContainerAndAccessInfo result;
-    AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(ContainerAccessAPI::createContainerAccess(SequentialContainerType::QList, m_valueMetaType));
-    if(!listAccess)
-        listAccess = dynamic_cast<AbstractListAccess*>(ContainerAccessAPI::createContainerAccess(
-                                                                           env,
-                                                                           SequentialContainerType::QList,
-                                                                           m_valueMetaType,
-                                                                           m_valueMetaType.alignOf(),
-                                                                           m_valueMetaType.sizeOf(),
-                                                                           AbstractContainerAccess::isPointerType(m_valueMetaType),
-                                                                           m_valueHashFunction,
-                                                                           m_valueInternalToExternalConverter,
-                                                                           m_valueExternalToInternalConverter,
-                                                                           m_valueNestedContainerAccess,
-                                                                           m_valueOwnerFunction
-                                                                           ));
+    AbstractListAccess* listAccess{nullptr};
+    {
+        auto containerAccess = createContainerAccess(SequentialContainerType::QList, m_valueMetaType);
+        if(containerAccess && containerAccess->isList())
+            listAccess = static_cast<AbstractListAccess*>(containerAccess);
+        else{
+            containerAccess = createContainerAccess(
+                env,
+                SequentialContainerType::QList,
+                m_valueMetaType,
+                m_valueMetaType.alignOf(),
+                m_valueMetaType.sizeOf(),
+                AbstractContainerAccess::isPointerType(m_valueMetaType),
+                m_valueHashFunction,
+                m_valueInternalToExternalConverter,
+                m_valueExternalToInternalConverter,
+                m_valueNestedContainerAccess,
+                m_valueOwnerFunction
+                );
+            if(containerAccess && containerAccess->isList())
+                listAccess = static_cast<AbstractListAccess*>(containerAccess);
+        }
+    }
     if(listAccess){
         CHECK_CONTAINER_ACCESS(env, listAccess)
         result.container = listAccess->createContainer();
@@ -2792,27 +2924,27 @@ ContainerAndAccessInfo AutoMapAccess::values(JNIEnv *env, const ConstContainerIn
 
 jobject AutoMapAccess::createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr)
 {
-    AbstractAssociativeConstIteratorAccess* containerAccess = new AutoAssociativeConstIteratorAccess(m_valueInternalToExternalConverter,
-            [](AutoAssociativeConstIteratorAccess*,void*ptr){
+    AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>* containerAccess = createAutoAssociativeConstIteratorAccess(m_valueInternalToExternalConverter,
+            [](auto*,void*ptr){
                 iterator& cursor = *reinterpret_cast<iterator*>(ptr);
                 ++cursor;
             },
-            [](AutoAssociativeConstIteratorAccess*,void*ptr){
+            [](auto*,void*ptr){
                 iterator& cursor = *reinterpret_cast<iterator*>(ptr);
                 --cursor;
             },
-            [](AutoAssociativeConstIteratorAccess*,const void*ptr)->const void*{
+            [](auto*,const void*ptr)->const void*{
                 const iterator& cursor = *reinterpret_cast<const iterator*>(ptr);
                 return cursor.value();
             },
             nullptr,
-            [](AutoAssociativeConstIteratorAccess*,const void*ptr1,const void*ptr2)->bool{
+            [](auto*,const void*ptr1,const void*ptr2)->bool{
                 const iterator& n1 = *reinterpret_cast<const iterator*>(ptr1);
                 const iterator& n2 = *reinterpret_cast<const iterator*>(ptr2);
                 return n1==n2;
             },
             m_keyInternalToExternalConverter,
-            [](AutoAssociativeConstIteratorAccess*,const void*ptr)->const void*{
+            [](auto*,const void*ptr)->const void*{
                 const iterator& cursor = *reinterpret_cast<const iterator*>(ptr);
                 return cursor.key();
             },
@@ -2904,6 +3036,8 @@ void AutoMapAccess::swap(JNIEnv *, const ContainerInfo& container, const Contain
 KeyPointerRCAutoMapAccess::KeyPointerRCAutoMapAccess(KeyPointerRCAutoMapAccess& other)
     : AutoMapAccess(other), ReferenceCountingSetContainer() {}
 
+AbstractReferenceCountingContainer* KeyPointerRCAutoMapAccess::asRC() {return this;}
+
 KeyPointerRCAutoMapAccess* KeyPointerRCAutoMapAccess::clone(){
     return new KeyPointerRCAutoMapAccess(*this);
 }
@@ -2992,6 +3126,8 @@ jobject KeyPointerRCAutoMapAccess::take(JNIEnv *env, const ContainerInfo& contai
 
 ValuePointerRCAutoMapAccess::ValuePointerRCAutoMapAccess(ValuePointerRCAutoMapAccess& other)
     : AutoMapAccess(other), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* ValuePointerRCAutoMapAccess::asRC() {return this;}
 
 ValuePointerRCAutoMapAccess* ValuePointerRCAutoMapAccess::clone(){
     return new ValuePointerRCAutoMapAccess(*this);
@@ -3084,6 +3220,8 @@ jobject ValuePointerRCAutoMapAccess::take(JNIEnv *env, const ContainerInfo& cont
 
 PointersRCAutoMapAccess::PointersRCAutoMapAccess(PointersRCAutoMapAccess& other)
     : AutoMapAccess(other), ReferenceCountingMapContainer(other) {}
+
+AbstractReferenceCountingContainer* PointersRCAutoMapAccess::asRC() {return this;}
 
 PointersRCAutoMapAccess* PointersRCAutoMapAccess::clone(){
     return new PointersRCAutoMapAccess(*this);
@@ -3195,6 +3333,8 @@ jobject PointersRCAutoMapAccess::take(JNIEnv *env, const ContainerInfo& containe
 
 NestedPointersRCAutoMapAccess::NestedPointersRCAutoMapAccess(NestedPointersRCAutoMapAccess& other)
     : AutoMapAccess(other), ReferenceCountingSetContainer() {}
+
+AbstractReferenceCountingContainer* NestedPointersRCAutoMapAccess::asRC() {return this;}
 
 NestedPointersRCAutoMapAccess* NestedPointersRCAutoMapAccess::clone(){
     return new NestedPointersRCAutoMapAccess(*this);

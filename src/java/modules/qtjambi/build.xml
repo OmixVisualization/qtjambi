@@ -34,113 +34,118 @@
         <dirname property="antfile.dir" file="${ant.file}"/>
         <basename property="module" file="${antfile.dir}"/>
         <condition property="build.module" value="true">
-            <available file="${generator.outputdir}/java/${module}" type="dir"/>
+            <and>
+                <istrue value="${qtjambi.core.any.true}"/>
+                <istrue value="${qtjambi.gui.any.true}"/>
+                <istrue value="${qtjambi.widgets.any.true}"/>
+                <available file="${generator.outputdir}/java/${module}" type="dir"/>
+            </and>
         </condition>
         <antcall inheritrefs="true" target="build.impl"/>
     </target>
     <target name="build.impl" if="build.module">
-		<if>
-			<and>
-				<istrue value="${qtjambi-build}"/>
-				<not>
-					<istrue value="${qtjambi.no.jsr305}"/>
-				</not>
-			</and>
-			<then>
-				<if>
-					<not>
-						<available file="${resourcesdir}/jsr305.jar" type="file"/>
-					</not>
-					<then>
-						<mkdir dir="${resourcesdir}"/>
-						<trycatch>
-							<try>
-								<get src="${jsr305.url}" dest="${resourcesdir}/jsr305.jar" verbose="true"/>
-							</try>
-							<catch>
-								<echo>Unable to download ${jsr305.url}. Defaulting to no-jsr305.</echo>
-								<property name="qtjambi.no.jsr305" value="true"/>
-							</catch>
-						</trycatch>
-					</then>
-				</if>
-				<if>
-					<not>
-						<or>
-							<available file="${resourcesdir}/kotlin-annotations-jvm.jar" type="file"/>
-							<istrue value="${qtjambi.no.jsr305}"/>
-						</or>
-					</not>
-					<then>
-					    <mkdir dir="${resourcesdir}"/>
-						<get src="${kotlin-annotations-jvm.url}" dest="${resourcesdir}/kotlin-annotations-jvm.jar" verbose="true"/>
-					</then>
-				</if>
-			</then>
-		</if>
+        <if>
+            <and>
+                <istrue value="${qtjambi-build}"/>
+                <not>
+                    <istrue value="${qtjambi.no.jsr305}"/>
+                </not>
+            </and>
+            <then>
+                <if>
+                    <not>
+                        <available file="${resourcesdir}/jsr305.jar" type="file"/>
+                    </not>
+                    <then>
+                        <mkdir dir="${resourcesdir}"/>
+                        <trycatch>
+                            <try>
+                                <get src="${jsr305.url}" dest="${resourcesdir}/jsr305.jar" verbose="true"/>
+                            </try>
+                            <catch>
+                                <echo>Unable to download ${jsr305.url}. Defaulting to no-jsr305.</echo>
+                                <property name="qtjambi.no.jsr305" value="true"/>
+                            </catch>
+                        </trycatch>
+                    </then>
+                </if>
+                <if>
+                    <not>
+                        <or>
+                            <available file="${resourcesdir}/kotlin-annotations-jvm.jar" type="file"/>
+                            <istrue value="${qtjambi.no.jsr305}"/>
+                        </or>
+                    </not>
+                    <then>
+                        <mkdir dir="${resourcesdir}"/>
+                        <get src="${kotlin-annotations-jvm.url}" dest="${resourcesdir}/kotlin-annotations-jvm.jar" verbose="true"/>
+                    </then>
+                </if>
+            </then>
+        </if>
         <delete dir="${java.outdir}/${module}" failonerror="no"/>
         <condition property="retroversion" value="11" else="8">
             <istrue value="${java.module.based}"/>
         </condition>
         <condition property="jsr305-dir" value="non-jsr305" else="jsr305">
-			<istrue value="${qtjambi.no.jsr305}"/>
+            <istrue value="${qtjambi.no.jsr305}"/>
         </condition>
         <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
-		<path id="sourcedirs">
-			<pathelement location="${generator.outputdir}/java/${module}"/>
-			<pathelement location="${antfile.dir}/main"/>
-			<pathelement location="${antfile.dir}/Retro-JDK${retroversion}"/>
-			<pathelement location="${antfile.dir}/${jsr305-dir}"/>
-		</path>
-		<if>
-			<and>
-				<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
-				<less arg1="${qtjambi.soname.version.minor}" arg2="5"/>
-			</and>
-			<then>
-				<extendpath refid="sourcedirs" location="${antfile.dir}/Qt6.0-bindings"/>
-			</then>
-			<else>
-				<!-- Qt 6.5 and higher -->
-				<extendpath refid="sourcedirs" location="${antfile.dir}/Qt6.5-bindings"/>
-			</else>
-		</if>
-		<if>
-			<and>
-				<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
-				<greater-or-equals arg1="${qtjambi.soname.version.minor}" arg2="7"/>
-			</and>
-			<then>
-				<!-- Qt 6.9 and higher -->
-				<extendpath refid="sourcedirs" location="${antfile.dir}/Qt6-span"/>
-			</then>
-		</if>
-		<if>
-			<and>
-				<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
-				<greater-or-equals arg1="${qtjambi.soname.version.minor}" arg2="9"/>
-			</and>
-			<then>
-				<!-- Qt 6.9 and higher -->
-				<extendpath refid="sourcedirs" location="${antfile.dir}/Qt6-longflags"/>
-			</then>
-		</if>
+        <path id="sourcedirs">
+            <pathelement location="${generator.outputdir}/java/${module}"/>
+            <pathelement location="${antfile.dir}/main"/>
+            <pathelement location="${antfile.dir}/Retro-JDK${retroversion}"/>
+            <pathelement location="${antfile.dir}/${jsr305-dir}"/>
+        </path>
+        <if>
+            <and>
+                <equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+                <less arg1="${qtjambi.soname.version.minor}" arg2="5"/>
+            </and>
+            <then>
+                <extendpath refid="sourcedirs" location="${antfile.dir}/Qt6.0-bindings"/>
+            </then>
+            <else>
+                <!-- Qt 6.5 and higher -->
+                <extendpath refid="sourcedirs" location="${antfile.dir}/Qt6.5-bindings"/>
+            </else>
+        </if>
+        <if>
+            <and>
+                <equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+                <greater-or-equals arg1="${qtjambi.soname.version.minor}" arg2="7"/>
+            </and>
+            <then>
+                <!-- Qt 6.9 and higher -->
+                <extendpath refid="sourcedirs" location="${antfile.dir}/Qt6-span"/>
+            </then>
+        </if>
+        <if>
+            <and>
+                <equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+                <greater-or-equals arg1="${qtjambi.soname.version.minor}" arg2="9"/>
+            </and>
+            <then>
+                <!-- Qt 6.9 and higher -->
+                <extendpath refid="sourcedirs" location="${antfile.dir}/Qt6-longflags"/>
+            </then>
+        </if>
         <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build-impl">
             <property name="jar.excludes" value=""/>
             <property name="module.excludes" value=""/>
         </ant>
         <if>
-			<and>
-				<istrue value="${qtjambi-build}"/>
-				<not>
-					<istrue value="${qtjambi.no.jsr305}"/>
-				</not>
-			</and>
+            <and>
+                <istrue value="${qtjambi-build}"/>
+                <not>
+                    <istrue value="${qtjambi.no.jsr305}"/>
+                </not>
+            </and>
             <then>
                 <copy todir="${java.outsrcdir}/${module}/io/qt" overwrite="true">
-					<fileset dir="${antfile.dir}/non-jsr305/io/qt"/>
-				</copy>
+                    <fileset dir="${antfile.dir}/non-jsr305/io/qt"/>
+                </copy>
             </then>
         </if>
     </target>

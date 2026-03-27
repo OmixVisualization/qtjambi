@@ -7,7 +7,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.qt.QtUtilities;
+import io.qt.autotests.generated.ContainerTest;
 import io.qt.autotests.generated.General;
+import io.qt.autotests.generated.QList_QObject;
 import io.qt.autotests.generated.Tulip;
 import io.qt.autotests.generated.Variants;
 import io.qt.core.QCoreApplication;
@@ -61,10 +63,118 @@ public class TestReferenceCountingQList extends ApplicationInitializer {
 		}
         Assert.assertEquals(COUNT+1, counter.get());
     }
+	
+	@Test
+    public void test_derived_QList_QObject() throws InterruptedException {
+    	AtomicInteger counter = new AtomicInteger();
+    	QList<QObject> clone;
+    	{
+	    	QList<QObject> container = new QList_QObject();
+	    	for(int i=0; i<COUNT; ++i) {
+	    		QObject object = new QObject();
+	    		General.internalAccess.registerCleaner(object, counter::incrementAndGet);
+	    		container.add(object);
+	    		object = null;
+	    	}
+	        for (int i = 0; i < 20 && counter.get()==0; i++) {
+	            ApplicationInitializer.runGC();
+	            synchronized(ApplicationInitializer.class) {
+	            	Thread.sleep(25);
+	            }
+	            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+	            QCoreApplication.processEvents();
+			}
+	        Assert.assertEquals(0, counter.get());
+	        General.internalAccess.registerCleaner(container, counter::incrementAndGet);
+	        clone = container.clone();
+	        General.internalAccess.registerCleaner(clone, counter::incrementAndGet);
+	        container = null;
+	    }
+        for (int i = 0; i < 50 && counter.get()<1; i++) {
+            ApplicationInitializer.runGC();
+            synchronized(ApplicationInitializer.class) {
+            	Thread.sleep(25);
+            }
+            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+            QCoreApplication.processEvents();
+		}
+        Assert.assertEquals(1, counter.get());
+        clone = null;
+        for (int i = 0; i < 50 && counter.get()<COUNT+2; i++) {
+            ApplicationInitializer.runGC();
+            synchronized(ApplicationInitializer.class) {
+            	Thread.sleep(25);
+            }
+            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+            QCoreApplication.processEvents();
+		}
+        Assert.assertEquals(COUNT+2, counter.get());
+//        System.out.println(clone.at(0));
+    }
+	
+	@Test
+    public void test_derived_prefilled_QList_QObject() throws InterruptedException {
+		QObject nativeObject = null;
+    	try {
+	    	AtomicInteger counter = new AtomicInteger();
+	    	QList<QObject> clone;
+	    	{
+		    	QList<QObject> container = ContainerTest.asListOfObjects(null);
+		    	Assert.assertEquals(1, container.size());
+		    	nativeObject = container.first();
+		    	General.internalAccess.registerCleaner(nativeObject, counter::incrementAndGet);
+		    	Assert.assertTrue(General.internalAccess.isSplitOwnership(nativeObject));
+		    	for(int i=0; i<COUNT; ++i) {
+		    		QObject object = new QObject();
+		    		General.internalAccess.registerCleaner(object, counter::incrementAndGet);
+		    		container.add(object);
+		    		object = null;
+		    	}
+		        for (int i = 0; i < 20 && counter.get()==0; i++) {
+		            ApplicationInitializer.runGC();
+		            synchronized(ApplicationInitializer.class) {
+		            	Thread.sleep(25);
+		            }
+		            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+		            QCoreApplication.processEvents();
+				}
+		        Assert.assertEquals(0, counter.get());
+		        General.internalAccess.registerCleaner(container, counter::incrementAndGet);
+		        clone = container.clone();
+		        container.dispose();
+		        General.internalAccess.registerCleaner(clone, counter::incrementAndGet);
+		        container = null;
+		    }
+	        for (int i = 0; i < 50 && counter.get()<1; i++) {
+	            ApplicationInitializer.runGC();
+	            synchronized(ApplicationInitializer.class) {
+	            	Thread.sleep(25);
+	            }
+	            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+	            QCoreApplication.processEvents();
+			}
+	        Assert.assertEquals(1, counter.get());
+	        clone = null;
+	        for (int i = 0; i < 50 && counter.get()<COUNT+2; i++) {
+	            ApplicationInitializer.runGC();
+	            synchronized(ApplicationInitializer.class) {
+	            	Thread.sleep(25);
+	            }
+	            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+	            QCoreApplication.processEvents();
+			}
+	        Assert.assertEquals(COUNT+2, counter.get());
+	//        System.out.println(clone.at(0));
+    	}finally {
+    		if(nativeObject!=null)
+    			nativeObject.dispose();
+    	}
+    }
     
     @Test
     public void test_new_QList_QRunnable() throws InterruptedException {
     	AtomicInteger counter = new AtomicInteger();
+    	QList<QRunnable> clone;
     	{
 	    	QList<QRunnable> container = new QList<>(QRunnable.class);
 	    	for(int i=0; i<COUNT; ++i) {
@@ -83,9 +193,11 @@ public class TestReferenceCountingQList extends ApplicationInitializer {
 			}
 	        Assert.assertEquals(0, counter.get());
 	        General.internalAccess.registerCleaner(container, counter::incrementAndGet);
+	        clone = container.clone();
+	        General.internalAccess.registerCleaner(clone, counter::incrementAndGet);
 	        container = null;
     	}
-        for (int i = 0; i < 50 && counter.get()<COUNT+1; i++) {
+    	for (int i = 0; i < 50 && counter.get()<1; i++) {
             ApplicationInitializer.runGC();
             synchronized(ApplicationInitializer.class) {
             	Thread.sleep(25);
@@ -93,7 +205,17 @@ public class TestReferenceCountingQList extends ApplicationInitializer {
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
             QCoreApplication.processEvents();
 		}
-        Assert.assertEquals(COUNT+1, counter.get());
+        Assert.assertEquals(1, counter.get());
+        clone = null;
+        for (int i = 0; i < 50 && counter.get()<COUNT+2; i++) {
+            ApplicationInitializer.runGC();
+            synchronized(ApplicationInitializer.class) {
+            	Thread.sleep(25);
+            }
+            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+            QCoreApplication.processEvents();
+		}
+        Assert.assertEquals(COUNT+2, counter.get());
     }
     
     @Test

@@ -103,17 +103,17 @@ struct IntermediateSequentialContainer : Container<T>, IntermediateData<cast_var
 typedef bool (*IsContainerFunction)(JNIEnv *, jobject, const std::type_info&, const QMetaType&, void*& pointer);
 typedef bool (*IsContainerAccessFunction)(JNIEnv *, jobject, const QMetaType&, void*& pointer, AbstractContainerAccess*& access);
 
-template<typename Iterator>
-class QSequentialConstIteratorAccess : public AbstractConstIteratorAccess<Iterator>{
+template<typename Iterator, typename SuperType = AbstractSequentialConstIteratorAccess>
+class QSequentialConstIteratorAccess : public AbstractConstIteratorAccess<Iterator,SuperType>{
 protected:
     QSequentialConstIteratorAccess(){}
 public:
-    static QSequentialConstIteratorAccess<Iterator>* newInstance(){
-        static QSequentialConstIteratorAccess<Iterator> instance;
+    static QSequentialConstIteratorAccess<Iterator,SuperType>* newInstance(){
+        static QSequentialConstIteratorAccess<Iterator,SuperType> instance;
         return &instance;
     }
 
-    AbstractSequentialConstIteratorAccess* clone() override{
+    QSequentialConstIteratorAccess<Iterator,SuperType>* clone() override{
         return this;
     }
 
@@ -133,43 +133,43 @@ public:
 };
 
 template<typename Iterator>
-class QSequentialIteratorAccess : public virtual QSequentialConstIteratorAccess<Iterator>, public virtual AbstractSequentialIteratorAccess{
+class QSequentialIteratorAccess : public QSequentialConstIteratorAccess<Iterator,AbstractSequentialIteratorAccess>{
 private:
     QSequentialIteratorAccess(){}
 public:
-    static QSequentialConstIteratorAccess<Iterator>* newInstance(){
+    static QSequentialIteratorAccess<Iterator>* newInstance(){
         static QSequentialIteratorAccess<Iterator> instance;
         return &instance;
     }
 
-    AbstractConstIteratorAccess<Iterator>* clone() override{
+    QSequentialIteratorAccess<Iterator>* clone() override{
         return this;
     }
 
     void dispose() override {}
 
     const QMetaType& valueMetaType() override{
-        return QSequentialConstIteratorAccess<Iterator>::valueMetaType();
+        return QSequentialConstIteratorAccess<Iterator,AbstractSequentialIteratorAccess>::valueMetaType();
     }
 
     jobject value(JNIEnv * env, const void* ptr) override {
-        return QSequentialConstIteratorAccess<Iterator>::value(env, ptr);
+        return QSequentialConstIteratorAccess<Iterator,AbstractSequentialIteratorAccess>::value(env, ptr);
     }
 
     void increment(JNIEnv *env, void* iterator) override {
-        QSequentialConstIteratorAccess<Iterator>::increment(env, iterator);
+        QSequentialConstIteratorAccess<Iterator,AbstractSequentialIteratorAccess>::increment(env, iterator);
     }
     void decrement(JNIEnv *env, void* iterator) override {
-        QSequentialConstIteratorAccess<Iterator>::decrement(env, iterator);
+        QSequentialConstIteratorAccess<Iterator,AbstractSequentialIteratorAccess>::decrement(env, iterator);
     }
     jboolean lessThan(JNIEnv *env, const void* iterator, const void* other) override {
-        return QSequentialConstIteratorAccess<Iterator>::lessThan(env, iterator, other);
+        return QSequentialConstIteratorAccess<Iterator,AbstractSequentialIteratorAccess>::lessThan(env, iterator, other);
     }
     bool canLess() override {
-        return QSequentialConstIteratorAccess<Iterator>::canLess();
+        return QSequentialConstIteratorAccess<Iterator,AbstractSequentialIteratorAccess>::canLess();
     }
     jboolean equals(JNIEnv *env, const void* ptr, const void* ptr2) override {
-        return QSequentialConstIteratorAccess<Iterator>::equals(env, ptr, ptr2);
+        return QSequentialConstIteratorAccess<Iterator,AbstractSequentialIteratorAccess>::equals(env, ptr, ptr2);
     }
 
     void setValue(JNIEnv * env, void* ptr, jobject newValue) override {
@@ -990,6 +990,7 @@ class ReferenceCountingSequentialSetAccess : public Super, public ReferenceCount
 protected:
     ReferenceCountingSequentialSetAccess(){}
 public:
+    AbstractReferenceCountingContainer* asRC() override {return this;}
     void updateRC(JNIEnv * env, const ContainerInfo& container) override {
         Super* _this = this;
         JniLocalFrame frame(env, 200);
@@ -1161,12 +1162,15 @@ public:
     void swap(JNIEnv *env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override{
         reinterpret_cast<QList<T> *>(container.container)->swap(*reinterpret_cast<QList<T> *>(container2.container));
         if constexpr(ContainerContentType<T>::needsReferenceCounting){
-            if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(container2.access)){
-                Q_UNUSED(access)
-                if(container2.access!=this)
-                    Super::swapRC(env, container, container2);
-            }else{
-                Super::updateRC(env, container);
+            if(container2.access!=this){
+                if(AbstractReferenceCountingContainer* access = container2.access->asRC()){
+                    if(access->asRCSet())
+                        Super::swapRC(env, container, container2);
+                    else
+                        Super::updateRC(env, container);
+                }else{
+                    Super::updateRC(env, container);
+                }
             }
         }else{
             Q_UNUSED(env);
@@ -1249,18 +1253,21 @@ public:
     void assign(JNIEnv *env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override {
         (*reinterpret_cast<QList<T>*>(container.container)) = (*reinterpret_cast<const QList<T>*>(other.container));
         if constexpr(ContainerContentType<T>::needsReferenceCounting){
-            if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(other.access)){
-                Q_UNUSED(access)
-                if(other.access!=this)
-                    ReferenceCountingSetContainer::assignRC(env, container.object, other.object);
-            }else{
-                Super::updateRC(env, container);
+            if(other.access!=this){
+                if(AbstractReferenceCountingContainer* access = other.access->asRC()){
+                    if(access->asRCSet())
+                        Super::assignRC(env, container.object, other.object);
+                    else
+                        Super::updateRC(env, container);
+                }else{
+                    Super::updateRC(env, container);
+                }
             }
         }else{
             Q_UNUSED(env);
         }
     }
-    QMetaType registerContainer(const QByteArray& containerTypeName) override {
+    QMetaType registerContainer(QByteArrayView containerTypeName) override {
         return RegistryAPI::registerMetaType<QList<T>>(containerTypeName, this);
     }
 
@@ -1614,6 +1621,11 @@ private:
         std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
             return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
         }
+        std::function<jobject(JNIEnv*,const void*)> elementConverter() const override {
+            return [](JNIEnv* env,const void* pointer) -> jobject{
+                return qtjambi_cast<jobject,const T*,JNIEnv*>::cast(reinterpret_cast<const T*>(pointer), env);
+            };
+        }
     };
 public:
     std::unique_ptr<AbstractListAccess::ElementIterator> elementIterator(const void* container) override {
@@ -1666,12 +1678,15 @@ public:
     void swap(JNIEnv *env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override{
         reinterpret_cast<QSet<T> *>(container.container)->swap(*reinterpret_cast<QSet<T> *>(container2.container));
         if constexpr(ContainerContentType<T>::needsReferenceCounting){
-            if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(container2.access)){
-                Q_UNUSED(access)
-                if(container2.access!=this)
-                    Super::swapRC(env, container, container2);
-            }else{
-                Super::updateRC(env, container);
+            if(container2.access!=this){
+                if(AbstractReferenceCountingContainer* access = container2.access->asRC()){
+                    if(access->asRCSet())
+                        Super::swapRC(env, container, container2);
+                    else
+                        Super::updateRC(env, container);
+                }else{
+                    Super::updateRC(env, container);
+                }
             }
         }else{
             Q_UNUSED(env);
@@ -1703,12 +1718,15 @@ public:
     void assign(JNIEnv *env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override {
         (*reinterpret_cast<QSet<T>*>(container.container)) = (*reinterpret_cast<const QSet<T>*>(other.container));
         if constexpr(ContainerContentType<T>::needsReferenceCounting){
-            if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(other.access)){
-                Q_UNUSED(access)
-                if(other.access!=this)
-                    ReferenceCountingSetContainer::assignRC(env, container.object, other.object);
-            }else{
-                Super::updateRC(env, container);
+            if(other.access!=this){
+                if(AbstractReferenceCountingContainer* access = other.access->asRC()){
+                    if(access->asRCSet())
+                        Super::assignRC(env, container.object, other.object);
+                    else
+                        Super::updateRC(env, container);
+                }else{
+                    Super::updateRC(env, container);
+                }
             }
         }else{
             Q_UNUSED(env);
@@ -1740,7 +1758,7 @@ public:
         return true;
     }
 
-    QMetaType registerContainer(const QByteArray& containerTypeName) override {
+    QMetaType registerContainer(QByteArrayView containerTypeName) override {
         return RegistryAPI::registerMetaType<QSet<T>>(containerTypeName, this);
     }
 
@@ -1875,6 +1893,11 @@ private:
         std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
             return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
         }
+        std::function<jobject(JNIEnv*,const void*)> elementConverter() const override {
+            return [](JNIEnv* env,const void* pointer) -> jobject{
+                return qtjambi_cast<jobject,const T*,JNIEnv*>::cast(reinterpret_cast<const T*>(pointer), env);
+            };
+        }
     };
 public:
     std::unique_ptr<AbstractSetAccess::ElementIterator> elementIterator(const void* container) override {
@@ -1930,12 +1953,15 @@ public:
     void assign(JNIEnv *env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override {
         (*reinterpret_cast<QSpan<T,E>*>(container.container)) = (*reinterpret_cast<const QSpan<T,E>*>(other.container));
         if constexpr(ContainerContentType<T>::needsReferenceCounting){
-            if(ReferenceCountingSetContainer* access = dynamic_cast<ReferenceCountingSetContainer*>(other.access)){
-                Q_UNUSED(access)
-                if(other.access!=this)
-                    ReferenceCountingSetContainer::assignRC(env, container.object, other.object);
-            }else{
-                Super::updateRC(env, container);
+            if(other.access!=this){
+                if(AbstractReferenceCountingContainer* access = other.access->asRC()){
+                    if(access->asRCSet())
+                        Super::assignRC(env, container.object, other.object);
+                    else
+                        Super::updateRC(env, container);
+                }else{
+                    Super::updateRC(env, container);
+                }
             }
         }else{
             Q_UNUSED(env);
@@ -1967,7 +1993,7 @@ public:
         return true;
     }
 
-    QMetaType registerContainer(const QByteArray& containerTypeName) override {
+    QMetaType registerContainer(QByteArrayView containerTypeName) override {
         return RegistryAPI::registerMetaType<QSpan<T,E>>(containerTypeName, this);
     }
 
@@ -2125,6 +2151,11 @@ private:
         }
         std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
             return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
+        }
+        std::function<jobject(JNIEnv*,const void*)> elementConverter() const override {
+            return [](JNIEnv* env,const void* pointer) -> jobject{
+                return qtjambi_cast<jobject,const T*,JNIEnv*>::cast(reinterpret_cast<const T*>(pointer), env);
+            };
         }
     };
 public:

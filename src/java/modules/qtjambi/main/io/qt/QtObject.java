@@ -33,8 +33,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -204,5 +202,9 @@ class Utility extends io.qt.internal.NativeUtility{
 	
 	protected static int qtjambiPatchVersion() {
 		return io.qt.internal.NativeUtility.qtjambiPatchVersion();
+	}
+	
+	protected static boolean initializePackage(ClassLoader classLoader, String packagePath) {
+		return io.qt.internal.NativeUtility.initializePackage(classLoader, packagePath);
 	}
 }

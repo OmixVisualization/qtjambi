@@ -360,6 +360,23 @@ JObjectValueWrapper JObjectValueWrapper::create(JNIEnv* env, jobject object, QMe
     return {};
 }
 
+JObjectValueWrapper JObjectValueWrapper::wrap(JNIEnv* env, jobject object, QMetaType metaType){
+    QExplicitlySharedDataPointer<JObjectValueWrapperPrivate> methods;
+    QtJambiStorage* cache = getQtJambiStorage();
+    {
+        {
+            auto iface = metaType.iface();
+            QReadLocker locker(cache->lock());
+            if(cache->metaTypeInterfaces().contains(iface))
+                methods = cache->metaTypeInterfaces()[iface];
+        }
+    }
+    if(methods){
+        return JObjectValueWrapper(env, object, std::move(methods));
+    }
+    return {};
+}
+
 JObjectValueWrapper::JObjectValueWrapper() : JObjectWrapper(), p(nullptr) {}
 JObjectValueWrapper::JObjectValueWrapper(QExplicitlySharedDataPointer<JObjectValueWrapperPrivate> _p)
     : JObjectWrapper(qtjambiCreateObject(_p.data())),
@@ -746,40 +763,42 @@ bool getFunctions(JNIEnv *env, const QMetaType& elementType, QtJambiUtils::QHash
     return false;
 }
 
-QMetaType registerJObjectValueWrapper(JNIEnv *env, jclass clazz, const QString& javaClassName, const QByteArray& metaTypeName){
-    JObjectValueWrapperPrivate* p = new JObjectValueWrapperPrivate;
-    p->constructor = env->GetMethodID(clazz, "<init>", "()V");
-    if(env->ExceptionCheck())
-        env->ExceptionClear();
-    p->clone = env->GetMethodID(clazz, "clone", qPrintable(QString("()L%1;").arg(javaClassName)));
-    if(env->ExceptionCheck())
-        env->ExceptionClear();
-    if(!p->clone && p->constructor && Java::Runtime::Cloneable::isAssignableFrom(env, clazz)){
-        jobject newObject = env->NewObject(clazz, p->constructor);
+QMetaType registerJObjectValueWrapper(JNIEnv *env, jclass clazz, QByteArrayView javaClassName, const QByteArray& metaTypeName){
+    QMetaType metaType;
+    JConstObjectArrayPointer<jobject> array(env, Java::QtJambi::ClassAnalyzerUtility::analyzeValueType(env, clazz));
+    jmethodID constructor{nullptr};
+    if(jobject declaredConstructor = array[0])
+        constructor = env->FromReflectedMethod(declaredConstructor);
+    jmethodID clone{nullptr};
+    if(jobject cloneMethod = array[1])
+        clone = env->FromReflectedMethod(cloneMethod);
+    if(!clone && constructor && Java::Runtime::Cloneable::isAssignableFrom(env, clazz)){
+        jobject newObject = env->NewObject(clazz, constructor);
         if(env->ExceptionCheck())
             env->ExceptionClear();
         if(!newObject){
-            p->constructor = nullptr;
+            constructor = nullptr;
         }else{
-            p->clone = Java::Runtime::Object::clone_ID(env);
-            jobject clonedObject = env->CallObjectMethod(newObject, p->clone);
+            clone = Java::Runtime::Object::clone_ID(env);
+            jobject clonedObject = env->CallObjectMethod(newObject, clone);
             if(env->ExceptionCheck())
                 env->ExceptionClear();
             if(!env->IsInstanceOf(clonedObject, clazz))
-                p->clone = nullptr;
+                clone = nullptr;
         }
     }
-    if(p->constructor && p->clone){
-        p->writeTo = env->GetMethodID(clazz, "writeTo", "(Lio/qt/core/QDataStream;)V");
-        if(env->ExceptionCheck())
-            env->ExceptionClear();
-        p->readFrom = env->GetMethodID(clazz, "readFrom", "(Lio/qt/core/QDataStream;)V");
-        if(env->ExceptionCheck())
-            env->ExceptionClear();
+    if(constructor && clone){
+        QExplicitlySharedDataPointer<JObjectValueWrapperPrivate> p{new JObjectValueWrapperPrivate};
+        p->constructor = constructor;
+        p->clone = clone;
+        if(jobject writeToMethod = array[2])
+            p->writeTo = env->FromReflectedMethod(writeToMethod);
+        if(jobject readFromMethod = array[3])
+            p->readFrom = env->FromReflectedMethod(readFromMethod);
         if(!p->writeTo && !p->readFrom){
             p->isSerializable = Java::Runtime::Serializable::isAssignableFrom(env, clazz);
         }
-        p->clazz = getGlobalClassRef(env, clazz, qPrintable(javaClassName));
+        p->clazz = getGlobalClassRef(env, clazz);
         p->name = metaTypeName;
 #if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
         uint flags = QtPrivate::QMetaTypeTypeFlags<JObjectValueWrapper>::Flags;
@@ -808,16 +827,15 @@ QMetaType registerJObjectValueWrapper(JNIEnv *env, jclass clazz, const QString& 
         };
         QtJambiStorage* cache = getQtJambiStorage();
         {
-            auto hashcode = qHash(javaClassName);
             QWriteLocker locker(cache->lock());
-            if(const QtPrivate::QMetaTypeInterface * iface = cache->classMetaTypeInterfaces().value(hashcode)){
+            if(const QtPrivate::QMetaTypeInterface * iface = cache->metaTypesByJavaTypeNames().value(javaClassName)){
                 delete metaTypeInterface;
                 return QMetaType(iface);
             }
-            cache->classMetaTypeInterfaces().insert(hashcode, metaTypeInterface);
-            cache->metaTypeInterfaces()[metaTypeInterface] = QExplicitlySharedDataPointer<JObjectValueWrapperPrivate>(p);
+            cache->metaTypesByJavaTypeNames().insert(javaClassName.toByteArray(), metaTypeInterface);
+            cache->metaTypeInterfaces()[metaTypeInterface] = std::move(p);
         }
-        QMetaType metaType(metaTypeInterface);
+        metaType = QMetaType(metaTypeInterface);
         if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<QString>())){
             QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
                 bool ok = false;
@@ -868,10 +886,9 @@ QMetaType registerJObjectValueWrapper(JNIEnv *env, jclass clazz, const QString& 
             }, QMetaType::fromType<JObjectWrapper>(), metaType);
         }
         registerJavaClassForCustomMetaType(env, metaType, clazz);
-        registerConverterVariant(env, metaType, QLatin1String(metaTypeInterface->name), javaClassName, clazz);
-        return metaType;
+        registerConverterVariant(env, metaType, metaTypeInterface->name, javaClassName, clazz);
     }
-    return {};
+    return metaType;
 }
 
 #define CACHE_MEMBER_DECL(Type,variable)\
@@ -932,7 +949,6 @@ CACHE_MEMBER_DECL(QtJambiStorage::FunctionInfoHash, virtualFunctionInfos)
 CACHE_MEMBER_DECL(QtJambiStorage::ConstructorInfoHash, constructorInfos)
 CACHE_MEMBER_DECL(QtJambiStorage::ReturnScopeHash, returnScopes)
 CACHE_MEMBER_DECL(QtJambiStorage::DestructorHash, destructorHash)
-CACHE_MEMBER_DECL(QtJambiStorage::NameHash, flagEnumNameHash)
 CACHE_MEMBER_DECL(QtJambiStorage::NameHash, interfaceHash)
 CACHE_MEMBER_DECL(QtJambiStorage::NameHash, interfaceIIDsHash)
 CACHE_MEMBER_DECL(QtJambiStorage::HashSet, functionalHash)
@@ -965,15 +981,12 @@ CACHE_MEMBER_DECL(QtJambiStorage::ParameterTypeInfoProviderHash, parameterTypeIn
 CACHE_MEMBER_DECL(QtJambiStorage::RenamedMethodsHash, renamedMethodsHash)
 CACHE_MEMBER_DECL(QtJambiStorage::FunctionalResolverHash, functionalResolverHash)
 CACHE_MEMBER_DECL(QtJambiStorage::TypeInfoSupplierHash, typeInfoSupplierHash)
-CACHE_MEMBER_DECL(QtJambiStorage::TypeStringHash, mediaControlIIDHash)
-CACHE_MEMBER_DECL(QtJambiStorage::StrintypeHash, mediaControlIIDClassHash)
 CACHE_MEMBER_DECL(QtJambiStorage::ClassIdHash, classHash)
 CACHE_MEMBER_DECL(QtJambiStorage::FieldIdHash, fieldHash)
 CACHE_MEMBER_DECL(QtJambiStorage::MethodIdHash, methodHash)
 CACHE_MEMBER_DECL(QtJambiStorage::ClassIdHash, qtSuperclassHash)
 CACHE_MEMBER_DECL(QtJambiStorage::MetaTypeMetaObjectHash, metaTypeMetaObjectHash)
-CACHE_MEMBER_DECL(QtJambiStorage::TypeNameSet, typeNames)
-CACHE_MEMBER_DECL(QtJambiStorage::ClassMetaTypeInterfaceHash, classMetaTypeInterfaces)
+CACHE_MEMBER_DECL(QtJambiStorage::PersistentByteArraySet, persistentByteArrays)
 CACHE_MEMBER_DECL(QtJambiStorage::MetaTypeInterfacesHash, metaTypeInterfaces)
 CACHE_MEMBER_DECL(QtJambiStorage::MetaTypeEnumClassesHash, metaTypeEnumClasses)
 CACHE_MEMBER_DECL(QtJambiStorage::GlobalClassPointers, globalClassPointers)
@@ -1086,7 +1099,6 @@ void QtJambiStorage::cleanup(GlobalClassPointers& globalClassPointers,
     CACHE_DESTRUCTOR_VAR(ConstructorInfoHash, constructorInfos)
     CACHE_DESTRUCTOR_VAR(ReturnScopeHash, returnScopes)
     CACHE_DESTRUCTOR_VAR(DestructorHash, destructorHash)
-    CACHE_DESTRUCTOR_VAR(NameHash, flagEnumNameHash)
     CACHE_DESTRUCTOR_VAR(NameHash, interfaceHash)
     CACHE_DESTRUCTOR_VAR(NameHash, interfaceIIDsHash)
     CACHE_DESTRUCTOR_VAR(HashSet, functionalHash)
@@ -1117,14 +1129,11 @@ void QtJambiStorage::cleanup(GlobalClassPointers& globalClassPointers,
     CACHE_DESTRUCTOR_VAR(RenamedMethodsHash, renamedMethodsHash)
     CACHE_DESTRUCTOR_VAR(FunctionalResolverHash, functionalResolverHash)
     CACHE_DESTRUCTOR_VAR(TypeInfoSupplierHash, typeInfoSupplierHash)
-    CACHE_DESTRUCTOR_VAR(TypeStringHash, mediaControlIIDHash)
-    CACHE_DESTRUCTOR_VAR(StrintypeHash, mediaControlIIDClassHash)
     CACHE_DESTRUCTOR_VAR(FieldIdHash, fieldHash)
     CACHE_DESTRUCTOR_VAR(MethodIdHash, methodHash)
     CACHE_DESTRUCTOR_VAR(ClassIdHash, qtSuperclassHash)
     CACHE_DESTRUCTOR_VAR(MetaTypeMetaObjectHash, metaTypeMetaObjectHash)
-    CACHE_DESTRUCTOR_VAR(TypeNameSet, typeNames)
-    CACHE_DESTRUCTOR_VAR(ClassMetaTypeInterfaceHash, classMetaTypeInterfaces)
+    CACHE_DESTRUCTOR_VAR(PersistentByteArraySet, persistentByteArrays)
     CACHE_DESTRUCTOR_VAR(MetaTypeInterfacesHash, metaTypeInterfaces)
     CACHE_DESTRUCTOR_VAR(MetaTypeEnumClassesHash, metaTypeEnumClasses)
 #if defined(ALLOW_SCOPED_POINTER_METATYPE)
@@ -1249,7 +1258,6 @@ void QtJambiStorage::cleanup(GlobalClassPointers& globalClassPointers,
         CACHE_DESTRUCTOR_SWAP(constructorInfos)
         CACHE_DESTRUCTOR_SWAP(returnScopes)
         CACHE_DESTRUCTOR_SWAP(destructorHash)
-        CACHE_DESTRUCTOR_SWAP(flagEnumNameHash)
         CACHE_DESTRUCTOR_SWAP(interfaceHash)
         CACHE_DESTRUCTOR_SWAP(interfaceIIDsHash)
         CACHE_DESTRUCTOR_SWAP(functionalHash)
@@ -1281,15 +1289,12 @@ void QtJambiStorage::cleanup(GlobalClassPointers& globalClassPointers,
         CACHE_DESTRUCTOR_SWAP(renamedMethodsHash)
         CACHE_DESTRUCTOR_SWAP(functionalResolverHash)
         CACHE_DESTRUCTOR_SWAP(typeInfoSupplierHash)
-        CACHE_DESTRUCTOR_SWAP(mediaControlIIDHash)
-        CACHE_DESTRUCTOR_SWAP(mediaControlIIDClassHash)
         CACHE_DESTRUCTOR_SWAP(classHash)
         CACHE_DESTRUCTOR_SWAP(fieldHash)
         CACHE_DESTRUCTOR_SWAP(methodHash)
         CACHE_DESTRUCTOR_SWAP(qtSuperclassHash)
         CACHE_DESTRUCTOR_SWAP(metaTypeMetaObjectHash)
-        CACHE_DESTRUCTOR_SWAP(typeNames)
-        CACHE_DESTRUCTOR_SWAP(classMetaTypeInterfaces)
+        CACHE_DESTRUCTOR_SWAP(persistentByteArrays)
         CACHE_DESTRUCTOR_SWAP(metaTypeInterfaces)
         CACHE_DESTRUCTOR_SWAP(metaTypeEnumClasses)
         CACHE_DESTRUCTOR_SWAP(globalClassPointers)
@@ -1457,8 +1462,7 @@ QMetaType getNativeWrapperType(const QMetaType& metaType){
             }
             if(!nativeWrapperType){
                 bool isQObject = metaType.flags().testFlag(QMetaType::PointerToQObject);
-                QByteArray typeName = QByteArray("JObjectWrapper<") + QByteArray(metaType.name()) + ">";
-                const char* name = registerMetaTypeName(typeName);
+                const char* name = getPersistentByteArray(QByteArrayView("JObjectWrapper<") + metaType.name() + ">");
                 QtPrivate::QMetaTypeInterface* metaTypeInterface;
                 const QMetaObject *originalMetaObject{nullptr};
                 if(isQObject){
@@ -1624,13 +1628,16 @@ QMetaType getNativeWrapperType(const QMetaType& metaType){
                             if(isQObject){
                                 builder.setFlags(PropertyAccessInStaticMetaCall);
                                 builder.setStaticMetacallFunction([](QObject *gadget, QMetaObject::Call call, int argc, void **argv){
-                                    JObjectWrapper* wrapper = reinterpret_cast<JObjectWrapper*>(gadget);
+                                    gadget->qt_metacall(call, argc, argv);
+                                    //JQObjectWrapper* wrapper = reinterpret_cast<JQObjectWrapper*>(gadget);
+                                    //wrapper->qobject()->qt_metacall(call, argc, argv);
+                                    /*
                                     if(JniEnvironment env{200}){
                                         if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, wrapper->object(env))){
                                             Q_ASSERT(link->isQObject());
                                             link->qobject()->qt_metacall(call, argc, argv);
                                         }
-                                    }
+                                    }*/
                                 });
                             }else if(originalMetaObject->d.static_metacall){
                                 builder.setFlags(PropertyAccessInStaticMetaCall);
@@ -1642,8 +1649,8 @@ QMetaType getNativeWrapperType(const QMetaType& metaType){
                                             if(const QMetaType* metaTypePtr = link->metaType()){
                                                 metaType = *metaTypePtr;
                                             }else if(jclass object_class = env->GetObjectClass(wrapper->object(env))){
-                                                QString qtName = QtJambiTypeManager::getInternalTypeName(env, object_class, false);
-                                                metaType = QMetaType::fromName(qPrintable(qtName));
+                                                QByteArray qtName = QtJambiTypeManager::getInternalTypeName(env, object_class, false);
+                                                metaType = QMetaType::fromName(qtName);
                                             }
                                             if(metaType.metaObject() && metaType.metaObject()->d.static_metacall)
                                                 metaType.metaObject()->d.static_metacall(reinterpret_cast<QObject*>(link->pointer()), call, argc, argv);

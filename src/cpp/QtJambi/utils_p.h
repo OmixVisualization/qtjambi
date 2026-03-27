@@ -36,7 +36,7 @@
 #include <QtCore/QMutex>
 #include "qtjambiapi.h"
 #include "qmlapi.h"
-#include "containeraccess.h"
+#include "containeraccess_p.h"
 #include "supertypeinfo_p.h"
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
@@ -70,8 +70,6 @@ QSharedPointer<AbstractContainerAccess> findContainerAccess(const QMetaType& met
 
 QString getFunctionLibraryPath(QFunctionPointer function);
 
-bool isValidArray(JNIEnv *env, jobject object, jclass contentType);
-
 jobject resolveLongEnum(JNIEnv *env, jint hashCode, jclass enumClass, jlong value, jstring entryName);
 jobject resolveByteEnum(JNIEnv *env, jint hashCode, jclass enumClass, jbyte value, jstring entryName);
 jobject resolveShortEnum(JNIEnv *env, jint hashCode, jclass enumClass, jshort value, jstring entryName);
@@ -100,12 +98,12 @@ enum class NativeToJavaConversionMode{
     CppOwnership
 };
 
-jobject convertSmartPointerToJavaObject(JNIEnv *env, const char *className,
+jobject convertSmartPointerToJavaObject(JNIEnv *env, jclass clazz,
                                                 const QSharedPointer<char>& ptr_shared_pointer);
+jobject convertSmartPointerToJavaObject(JNIEnv *env, jclass clazz,
+                                        const std::shared_ptr<char>& ptr_shared_pointer);
 jobject convertSmartPointerToJavaInterface(JNIEnv *env, const std::type_info& interfaceType,
                                                 const QSharedPointer<char>& ptr_shared_pointer);
-jobject convertSmartPointerToJavaObject(JNIEnv *env, const char *className,
-                                                 const std::shared_ptr<char>& ptr_shared_pointer);
 jobject convertSmartPointerToJavaInterface(JNIEnv *env, const std::type_info& interfaceType,
                                                     const std::shared_ptr<char>& ptr_shared_pointer);
 
@@ -172,13 +170,6 @@ public:
     MethodPrintFromLink(const QSharedPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function);
     MethodPrintFromLink(const QWeakPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function);
     MethodPrintFromLink(const QtJambiLink* link, const char* method, const char* file, int line, const char *function);
-};
-
-class MethodPrintFromArgs : public MethodPrint
-{
-public:
-    MethodPrintFromArgs(MethodPrint::Type callType, const char* file, int line, const char *function, const char* method, ...);
-    MethodPrintFromArgs(const QLoggingCategory& category, const char* file, int line, const char *function, const char* method, ...);
 };
 
 class MethodPrintFromSupplier : public MethodPrint
@@ -254,23 +245,23 @@ class ParameterTypeInfo{
 public:
     ParameterTypeInfo();
     ParameterTypeInfo(
-        const QMetaType& metaType,
+        QMetaType&& metaType,
         jclass _javaClass
         );
     ParameterTypeInfo(
-        const QMetaType& metaType,
-        const QString& typeName,
+        QMetaType&& metaType,
+        QByteArrayView typeName,
         jclass _javaClass
         );
     ParameterTypeInfo(
-        const QMetaType& metaType,
+        QMetaType&& metaType,
         jclass _javaClass,
         QtJambiUtils::InternalToExternalConverter&& internalToExternalConverter,
         QtJambiUtils::ExternalToInternalConverter&& externalToInternalConverter
         );
     ParameterTypeInfo(
-        const QMetaType& metaType,
-        const QString& typeName,
+        QMetaType&& metaType,
+        QByteArrayView typeName,
         jclass _javaClass,
         QtJambiUtils::InternalToExternalConverter&& internalToExternalConverter,
         QtJambiUtils::ExternalToInternalConverter&& externalToInternalConverter
@@ -291,7 +282,7 @@ private:
     void resolveI2E(JNIEnv* env);
     void resolveE2I(JNIEnv* env);
     QMetaType m_metaType;
-    QString m_typeName;
+    QByteArray m_typeName;
     jclass m_javaClass;
     QtJambiUtils::InternalToExternalConverter m_internalToExternalConverter;
     QtJambiUtils::ExternalToInternalConverter m_externalToInternalConverter;
@@ -332,6 +323,7 @@ public:
     static bool isValueType(QMetaType metaType);
     static bool hasCustomDebugStreamOperator(QMetaType metaType);
     static JObjectValueWrapper create(JNIEnv* env, jobject object, QMetaType metaType);
+    static JObjectValueWrapper wrap(JNIEnv* env, jobject object, QMetaType metaType);
 private:
     friend JObjectValueWrapperPrivate;
     JObjectValueWrapper(QExplicitlySharedDataPointer<JObjectValueWrapperPrivate> methods);
@@ -447,8 +439,7 @@ struct QtJambiStorage{
     typedef QHash<size_t, jfieldID> FieldIdHash;
     typedef QHash<size_t, jmethodID> MethodIdHash;
     typedef QHash<const QtPrivate::QMetaTypeInterface*,const QMetaObject*> MetaTypeMetaObjectHash;
-    typedef QSet<QByteArray> TypeNameSet;
-    typedef QMap<size_t, const QtPrivate::QMetaTypeInterface *> ClassMetaTypeInterfaceHash;
+    typedef QHash<QByteArray,QHashDummyValue> PersistentByteArraySet;
     typedef QMap<const QtPrivate::QMetaTypeInterface *,QExplicitlySharedDataPointer<JObjectValueWrapperPrivate>> MetaTypeInterfacesHash;
     typedef QMap<const QtPrivate::QMetaTypeInterface *,jclass> MetaTypeEnumClassesHash;
     typedef QList<void**> GlobalClassPointers;
@@ -508,7 +499,6 @@ struct QtJambiStorage{
     CACHE_MEMBER(ConstructorInfoHash, constructorInfos)
     CACHE_MEMBER(ReturnScopeHash, returnScopes)
     CACHE_MEMBER(DestructorHash, destructorHash)
-    CACHE_MEMBER(NameHash, flagEnumNameHash)
     CACHE_MEMBER(NameHash, interfaceHash)
     CACHE_MEMBER(NameHash, interfaceIIDsHash)
     CACHE_MEMBER(HashSet, functionalHash)
@@ -541,15 +531,12 @@ struct QtJambiStorage{
     CACHE_MEMBER(RenamedMethodsHash, renamedMethodsHash)
     CACHE_MEMBER(FunctionalResolverHash, functionalResolverHash)
     CACHE_MEMBER(TypeInfoSupplierHash, typeInfoSupplierHash)
-    CACHE_MEMBER(TypeStringHash, mediaControlIIDHash)
-    CACHE_MEMBER(StrintypeHash, mediaControlIIDClassHash)
     CACHE_MEMBER(ClassIdHash, classHash)
     CACHE_MEMBER(FieldIdHash, fieldHash)
     CACHE_MEMBER(MethodIdHash, methodHash)
     CACHE_MEMBER(ClassIdHash, qtSuperclassHash)
     CACHE_MEMBER(MetaTypeMetaObjectHash, metaTypeMetaObjectHash)
-    CACHE_MEMBER(TypeNameSet, typeNames)
-    CACHE_MEMBER(ClassMetaTypeInterfaceHash, classMetaTypeInterfaces)
+    CACHE_MEMBER(PersistentByteArraySet, persistentByteArrays)
     CACHE_MEMBER(MetaTypeInterfacesHash, metaTypeInterfaces)
     CACHE_MEMBER(MetaTypeEnumClassesHash, metaTypeEnumClasses)
     CACHE_MEMBER(GlobalClassPointers, globalClassPointers)
@@ -677,5 +664,41 @@ private:
 
 typedef CacheRef<QtJambiStorage> QtJambiStorageRef;
 typedef CacheOptional<QtJambiStorage> QtJambiStorageOptional;
+
+inline jobjectArray typeArray(JNIEnv * env, std::initializer_list<jclass> elements){
+    JObjectArrayPointer<jclass> array(env, env->NewObjectArray(jsize(elements.size()), Java::Runtime::Class::getClass(env), nullptr));
+    for (jsize i = 0; i < array.length(); ++i) {
+        array[i] = *(elements.begin()+i);
+    }
+    return array.array();
+}
+
+template<size_t N>
+inline QByteArray operator+(QByteArrayView lhs, const char(&rhs)[N])
+{
+    QByteArray tmp{lhs.size() + qsizetype(N), Qt::Uninitialized};
+    return tmp.assign(lhs).append(rhs);
+}
+Q_WEAK_OVERLOAD
+inline QByteArray operator+(QByteArrayView lhs, char rhs)
+{
+    QByteArray tmp{lhs.size() + 1, Qt::Uninitialized};
+    return tmp.assign(lhs).append(rhs);
+}
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
+Q_WEAK_OVERLOAD
+    inline QByteArray operator+(const QByteArray &lhs, QByteArrayView rhs)
+{
+    QByteArray tmp{lhs.size() + rhs.size(), Qt::Uninitialized};
+    return tmp.assign(lhs).append(rhs);
+}
+Q_WEAK_OVERLOAD
+inline QByteArray operator+(QByteArrayView lhs, const QByteArray &rhs)
+{
+    QByteArray tmp{lhs.size() + rhs.size(), Qt::Uninitialized};
+    return tmp.assign(lhs).append(rhs);
+}
+#endif
 
 #endif // QTJAMBI_UTILS_P_H

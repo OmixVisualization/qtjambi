@@ -47,6 +47,23 @@ QExplicitlySharedDataPointer<QmlAPI::CreatorFunctionMetaData> QmlAPI::creatorFun
     }
 }
 
+bool QmlAPI::isJObjectWrapper(const QMetaType& metaType){
+    return isNativeWrapperMetaType(metaType)
+           || isJObjectWrappedMetaType(metaType)
+           || metaType == QMetaType::fromType<JObjectWrapper>()
+           || metaType == QMetaType::fromType<JIntArrayWrapper>()
+           || metaType == QMetaType::fromType<JByteArrayWrapper>()
+           || metaType == QMetaType::fromType<JShortArrayWrapper>()
+           || metaType == QMetaType::fromType<JLongArrayWrapper>()
+           || metaType == QMetaType::fromType<JBooleanArrayWrapper>()
+           || metaType == QMetaType::fromType<JCharArrayWrapper>()
+           || metaType == QMetaType::fromType<JDoubleArrayWrapper>()
+           || metaType == QMetaType::fromType<JFloatArrayWrapper>()
+           || metaType == QMetaType::fromType<JObjectArrayWrapper>()
+           || metaType == QMetaType::fromType<JCollectionWrapper>()
+           || metaType == QMetaType::fromType<JMapWrapper>();
+}
+
 int QmlAPI::getInterfaceOffset(JNIEnv *env, jclass cls, const std::type_info& interfacetype){
     if(const InterfaceOffsetInfo* info = getInterfaceOffsets(env, cls)){
         if(info->offsets.contains(unique_id(interfacetype)))

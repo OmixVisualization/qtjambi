@@ -254,7 +254,11 @@ QVariant sequentialRemoveLast(QVariant variant){
 QVariant sequentialSetAt(QVariant variant, int index, const QVariant& value){
     if (variant.canConvert<SequentialIterable>()) {
         SequentialIterable iterable = variant.view<SequentialIterable>();
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+        iterable.setAt(index, value);
+#else
         iterable.set(index, value);
+#endif
     }else{
         return QVariant(QString("cannot convert %1 to sequential iterable").arg(variant.metaType().name()));
     }
@@ -340,6 +344,31 @@ QPair<QVariant,QVariant> associativeFindAndReplace(QVariant variant, const QVari
         return {variant,QVariant(QString("cannot convert %1 to associative iterable").arg(variant.metaType().name()))};
     }
     return {variant,QVariant()};
+}
+
+
+QList_QObject asListOfObjects(QObject* parent, std::initializer_list<QObject*> e){
+    QList_QObject result{e};
+    result << new QObject(parent);
+    return result;
+}
+
+QList_QList_QObject asListOfLists(QObject* parent, std::initializer_list<QList<QObject*>> e){
+    QList_QList_QObject result{e};
+    if(result.isEmpty())
+        result.append({new QObject(parent)});
+    else
+        result[0].prepend(new QObject(parent));
+    return result;
+}
+
+QList_QHash_QObject_QObject asListOfHashs(QObject* parent, std::initializer_list<QHash<QObject*,QObject*>> e){
+    QList_QHash_QObject_QObject result{e};
+    if(result.isEmpty())
+        result.append({{nullptr, new QObject(parent)}});
+    else
+        result[0].insert(nullptr, new QObject(parent));
+    return result;
 }
 
 bool associativeFind(const QVariant& variant, const QVariant& key){

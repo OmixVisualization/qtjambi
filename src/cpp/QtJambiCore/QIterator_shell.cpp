@@ -62,8 +62,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QAssociativeConstIterator_k
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("Iterator::key() const", container.first)
-        AbstractAssociativeConstIteratorAccess* containerAccess = dynamic_cast<AbstractAssociativeConstIteratorAccess*>(container.second);
-        Q_ASSERT(containerAccess);
+        QTJAMBI_CONTAINER_CAST(AssociativeConstIterator, containerAccess, container.second);
         result = containerAccess->key(__jni_env, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -79,8 +78,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QAssociativeConstIterator_k
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
-        AbstractAssociativeConstIteratorAccess* containerAccess = dynamic_cast<AbstractAssociativeConstIteratorAccess*>(container.second);
-        Q_ASSERT(containerAccess);
+        QTJAMBI_CONTAINER_CAST(AssociativeConstIterator, containerAccess, container.second);
         result = qtjambi_cast<jobject>(__jni_env, containerAccess->keyMetaType());
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -99,11 +97,11 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractIterator_setValue_
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("Iterator::operator*()", container.first)
-        if(AbstractSequentialIteratorAccess* containerAccess = dynamic_cast<AbstractSequentialIteratorAccess*>(container.second)){
-            containerAccess->setValue(__jni_env, container.first, newValue);
+        if(container.second->isSequentialIterator()){
+            static_cast<AbstractSequentialIteratorAccess*>(container.second)->setValue(__jni_env, container.first, newValue);
             result = true;
-        }else if(AbstractAssociativeIteratorAccess* containerAccess = dynamic_cast<AbstractAssociativeIteratorAccess*>(container.second)){
-            containerAccess->setValue(__jni_env, container.first, newValue);
+        }else if(container.second->isAssociativeIterator()){
+            static_cast<AbstractAssociativeIteratorAccess*>(container.second)->setValue(__jni_env, container.first, newValue);
             result = true;
         }
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -121,8 +119,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_AbstractIterator_valueType_
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
-        AbstractSequentialConstIteratorAccess* containerAccess = dynamic_cast<AbstractSequentialConstIteratorAccess*>(container.second);
-        Q_ASSERT(containerAccess);
+        QTJAMBI_CONTAINER_CAST(SequentialConstIterator, containerAccess, container.second);
         result = qtjambi_cast<jobject>(__jni_env, containerAccess->valueMetaType());
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -140,8 +137,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_AbstractIterator_value__J
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("Iterator::operator*() const", container.first)
-        AbstractSequentialConstIteratorAccess* containerAccess = dynamic_cast<AbstractSequentialConstIteratorAccess*>(container.second);
-        Q_ASSERT(containerAccess);
+        QTJAMBI_CONTAINER_CAST(SequentialConstIterator, containerAccess, container.second);
         result = containerAccess->value(__jni_env, container.first);
             }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -159,8 +155,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_AbstractIterator_increment__J
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("Iterator::operator++()", container.first)
-        AbstractSequentialConstIteratorAccess* containerAccess = dynamic_cast<AbstractSequentialConstIteratorAccess*>(container.second);
-        Q_ASSERT(containerAccess);
+        QTJAMBI_CONTAINER_CAST(SequentialConstIterator, containerAccess, container.second);
         containerAccess->increment(__jni_env, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -177,8 +172,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_AbstractIterator_decrement__J
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("Iterator::operator--()", container.first)
-        AbstractSequentialConstIteratorAccess* containerAccess = dynamic_cast<AbstractSequentialConstIteratorAccess*>(container.second);
-        Q_ASSERT(containerAccess);
+        QTJAMBI_CONTAINER_CAST(SequentialConstIterator, containerAccess, container.second);
         containerAccess->decrement(__jni_env, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -193,8 +187,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractIterator_canLess__
     jboolean result{false};
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        AbstractSequentialConstIteratorAccess* containerAccess = dynamic_cast<AbstractSequentialConstIteratorAccess*>(container.second);
-        Q_ASSERT(containerAccess);
+        QTJAMBI_CONTAINER_CAST(SequentialConstIterator, containerAccess, container.second);
         result = containerAccess->canLess();
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
@@ -214,8 +207,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractIterator_lessThan_
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("Iterator::operator<(const Iterator & other) const", container.first)
-        AbstractSequentialConstIteratorAccess* containerAccess = dynamic_cast<AbstractSequentialConstIteratorAccess*>(container.second);
-        Q_ASSERT(containerAccess);
+        QTJAMBI_CONTAINER_CAST(SequentialConstIterator, containerAccess, container.second);
         void *__qt_other0 = QtJambiAPI::fromNativeId(other0);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_other0, typeid(QList<QVariant>::const_iterator));
         result = containerAccess->lessThan(__jni_env, container.first, __qt_other0);
@@ -237,7 +229,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractIterator_equals__J
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("Iterator::operator==(const Iterator & o) const", container.first)
-        QTJAMBI_CONTAINER_CAST(AbstractSequentialConstIteratorAccess, containerAccess, container.second);
+        QTJAMBI_CONTAINER_CAST(SequentialConstIterator, containerAccess, container.second);
         void *__qt_o0 = QtJambiAPI::fromNativeId(o0);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_o0, typeid(QList<QVariant>::const_iterator));
         result = containerAccess->equals(__jni_env, container.first, __qt_o0);
@@ -256,11 +248,11 @@ extern "C" JNIEXPORT jstring JNICALL Java_io_qt_core_AbstractIterator_toString
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
-        AbstractSequentialConstIteratorAccess* containerAccess = dynamic_cast<AbstractSequentialConstIteratorAccess*>(container.second);
-        if(containerAccess){
-            bool isConst = dynamic_cast<AbstractSequentialIteratorAccess*>(container.second)==nullptr
-                           && dynamic_cast<AbstractAssociativeIteratorAccess*>(container.second)==nullptr;
-            bool isAssociative = dynamic_cast<AbstractAssociativeConstIteratorAccess*>(container.second)!=nullptr;
+        if(container.second->isSequentialConstIterator()){
+            AbstractSequentialConstIteratorAccess* containerAccess = static_cast<AbstractSequentialConstIteratorAccess*>(container.second);
+            bool isConst = !container.second->isSequentialIterator()
+                           && !container.second->isAssociativeIterator();
+            bool isAssociative = container.second->isAssociativeConstIterator();
             result = qtjambi_cast<jstring>(env, QString::asprintf("Q%s%sIterator<%s>(%p)",
                                                                   isAssociative ? "Associative" : "Sequential",
                                                                   isConst ? "Const" : "",
@@ -282,11 +274,10 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_AbstractIterator_hashCode
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
-        AbstractSequentialConstIteratorAccess* containerAccess = dynamic_cast<AbstractSequentialConstIteratorAccess*>(container.second);
-        if(containerAccess){
-            bool isConst = dynamic_cast<AbstractSequentialIteratorAccess*>(container.second)==nullptr
-                            && dynamic_cast<AbstractAssociativeIteratorAccess*>(container.second)==nullptr;
-            bool isAssociative = dynamic_cast<AbstractAssociativeConstIteratorAccess*>(container.second)!=nullptr;
+        if(container.second->isSequentialConstIterator()){
+            bool isConst = !container.second->isSequentialIterator()
+                           && !container.second->isAssociativeIterator();
+            bool isAssociative = container.second->isAssociativeConstIterator();
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
             QtPrivate::QHashCombine hash;
 #else

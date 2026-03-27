@@ -74,6 +74,11 @@ const std::type_info& typeid_QFutureInterfaceBase_shell();
 namespace Java{
 namespace QtCore
 {
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtMsgType,
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(resolve))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QMessageLogContext,
+                                 QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                 QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(__qt_directLink))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QUnhandledException,
                                     QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()
                                      )
@@ -286,6 +291,19 @@ namespace Internal
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(createByFactory))
 }
 #if QT_VERSION >= QT_VERSION_CHECK(6,10,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+#define QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD_611(method) QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(method)
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QRangeModel$ItemAccess,
+                                    QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(readRole)
+                                    QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(writeRole)
+                                    )
+#else
+    #define QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD_611(method)
+#endif
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QRangeModel,
+                                    QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(rowCategory)
+                                    QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD_611(itemAccess)
+                                    )
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QRangeModel$ConstTreeRowInterface,
                                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(parentRow)
                                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(childRows)
@@ -367,11 +385,8 @@ namespace Runtime{
 
 QtPrivate::QPropertyObserverCallback qtjambi_get_signal_callback(JNIEnv *, QUntypedPropertyData *);
 
-#if defined(QT_NO_DEBUG)
-#define QTJAMBI_CONTAINER_CAST(Type, target, source) Type* target = static_cast<Type*>(source)
-#else
-#define QTJAMBI_CONTAINER_CAST(Type, target, source) Type* target = dynamic_cast<Type*>(source);\
-Q_ASSERT(target)
-#endif
+#define QTJAMBI_CONTAINER_CAST(Type, target, source) \
+Q_ASSERT(source->is##Type());\
+Abstract##Type##Access* target = static_cast<Abstract##Type##Access*>(source);
 
 #endif // QTJAMBICORE_UTILS_H
