@@ -38,7 +38,7 @@
     <target name="build">
         <if>
 			<and>
-				<istrue value="qtjambi.qml.any.true"/>
+				<istrue value="${qtjambi.qml.any.true}"/>
 				<available file="${generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
 			</and>
 			<then>
