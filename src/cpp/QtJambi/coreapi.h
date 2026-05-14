@@ -53,8 +53,8 @@ class QTJAMBI_EXPORT ApplicationData final : public QtJambiObjectData
 public:
     template<typename T>
     static std::unique_ptr<ApplicationData> initialize(JNIEnv *env, jobjectArray array){
-        typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type T_;
-        return initialize(env, array, typeid(T_), !std::is_same<T_, QCoreApplication>::value);
+        typedef std::remove_cv_t<std::remove_pointer_t<T>> T_;
+        return initialize(env, array, typeid(T_), !std::is_same_v<T_, QCoreApplication>);
     }
     ~ApplicationData() override;
 
@@ -117,7 +117,7 @@ QTJAMBI_EXPORT QMetaMethod findMetaMethod(const QMetaObject *metaObject, const Q
 
 QTJAMBI_EXPORT jobject newInstanceForMetaObject(JNIEnv *env, QtJambiNativeID constructor, jobjectArray args);
 
-QTJAMBI_EXPORT const QMetaObject *metaObjectForClass(JNIEnv *env, jclass java_class, const QMetaObject *original_meta_object = nullptr, bool hasCustomMetaObject = false);
+QTJAMBI_EXPORT const QMetaObject *metaObjectForClass(JNIEnv *env, jclass java_class);
 
 QTJAMBI_EXPORT QString externalTypeTame(JNIEnv *env, const QString& internalName);
 

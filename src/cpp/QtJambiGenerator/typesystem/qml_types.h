@@ -52,17 +52,6 @@ private:
     Q_DISABLE_COPY(AbstractType)
 };
 
-class TemplateType : public AbstractType
-{
-    Q_OBJECT
-    QML_ELEMENT
-public:
-    explicit TemplateType(QObject *parent = nullptr):AbstractType{parent}{}
-signals:
-private:
-    Q_DISABLE_COPY(TemplateType)
-};
-
 class PrimitiveType : public AbstractType
 {
     Q_OBJECT
@@ -184,6 +173,15 @@ public:
     bool getAddTextStreamFunctions() const;
     void setAddTextStreamFunctions(bool newAddTextStreamFunctions);
 
+    QString getPermitting() const;
+    void setPermitting(const QString &newPermitting);
+
+    bool getSealed() const;
+    void setSealed(bool newSealed);
+
+    bool getNonSealed() const;
+    void setNonSealed(bool newNonSealed);
+
 signals:
     void packageNameChanged();
 
@@ -235,9 +233,16 @@ signals:
 
     void addTextStreamFunctionsChanged();
 
+    void permittingChanged();
+
+    void sealedChanged();
+
+    void nonSealedChanged();
+
 private:
     QString packageName;
     QString implementing;
+    QString permitting;
     QString m_using;
     QString javaName;
     QString defaultSuperClass;
@@ -261,6 +266,8 @@ private:
     bool pushUpStatics = false;
     bool noInstance = false;
     bool addTextStreamFunctions = false;
+    bool sealed = false;
+    bool nonSealed = false;
     Q_PROPERTY(QString packageName READ getPackageName WRITE setPackageName NOTIFY packageNameChanged)
     Q_PROPERTY(QString implementing READ getImplementing WRITE setImplementing NOTIFY implementingChanged)
     Q_PROPERTY(QString using READ getUsing WRITE setUsing NOTIFY usingChanged)
@@ -286,6 +293,9 @@ private:
     Q_PROPERTY(bool noInstance READ getNoInstance WRITE setNoInstance NOTIFY noInstanceChanged FINAL)
     Q_PROPERTY(bool forceFinal READ getForceFinal WRITE setForceFinal NOTIFY forceFinalChanged FINAL)
     Q_PROPERTY(bool addTextStreamFunctions READ getAddTextStreamFunctions WRITE setAddTextStreamFunctions NOTIFY addTextStreamFunctionsChanged FINAL)
+    Q_PROPERTY(QString permitting READ getPermitting WRITE setPermitting NOTIFY permittingChanged FINAL)
+    Q_PROPERTY(bool sealed READ getSealed WRITE setSealed NOTIFY sealedChanged FINAL)
+    Q_PROPERTY(bool nonSealed READ getNonSealed WRITE setNonSealed NOTIFY nonSealedChanged FINAL)
 };
 
 class ObjectType : public ComplexType
@@ -653,7 +663,6 @@ QML_DECLARE_TYPE(InterfaceType)
 QML_DECLARE_TYPE(NamespaceType)
 QML_DECLARE_TYPE(IteratorType)
 QML_DECLARE_TYPE(PrimitiveType)
-QML_DECLARE_TYPE(TemplateType)
 QML_DECLARE_TYPE(TypeAliasType)
 QML_DECLARE_TYPE(NativePointerType)
 

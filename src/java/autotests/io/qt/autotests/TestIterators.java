@@ -149,13 +149,15 @@ public class TestIterators extends ApplicationInitializer {
 	    	}
 	    	Assert.assertEquals(new HashSet<>(Arrays.asList(".", "..", "A", "B", "C", "D", "E")), subDirs);
     	}finally {
+    		userDir.assign(System.getProperty("user.dir", ""));
     		if(userDir.exists(uniqueDirectory)) {
         		userDir.cd(uniqueDirectory);
-        		for(String s : userDir.entryList()) {
-        			userDir.rmdir(s);
-        		}
-        		userDir.cdUp();
-        		userDir.rmdir(uniqueDirectory);
+        		userDir.removeRecursively();
+        	}
+    		userDir = QDir.temp();
+    		if(userDir.exists(uniqueDirectory)) {
+        		userDir.cd(uniqueDirectory);
+        		userDir.removeRecursively();
         	}
 		}
     }

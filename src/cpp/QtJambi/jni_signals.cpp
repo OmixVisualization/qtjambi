@@ -51,7 +51,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_SignalUtility_00024Nat
     (JNIEnv *env, jclass, QtJambiNativeID nativeId)
 {
     try{
-        QMetaObject::Connection* connection = QtJambiAPI::objectFromNativeId<QMetaObject::Connection>(nativeId);
+        QMetaObject::Connection* connection = qtjambi_cast<QMetaObject::Connection*>(nativeId);
         return *connection ? true : false;
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
@@ -63,8 +63,8 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_SignalUtility_00024Nat
     (JNIEnv *env, jclass, QtJambiNativeID nativeId, QtJambiNativeID otherNativeId)
 {
     try{
-        QMetaObject::Connection* connection = QtJambiAPI::objectFromNativeId<QMetaObject::Connection>(nativeId);
-        QMetaObject::Connection* otherConnection = QtJambiAPI::objectFromNativeId<QMetaObject::Connection>(otherNativeId);
+        QMetaObject::Connection* connection = qtjambi_cast<QMetaObject::Connection*>(nativeId);
+        QMetaObject::Connection* otherConnection = qtjambi_cast<QMetaObject::Connection*>(otherNativeId);
         if(connection && otherConnection){
             QObjectPrivate::Connection* ptr1 = reinterpret_cast<ConnectionAccess*>(connection)->d_ptr;
             QObjectPrivate::Connection* ptr2 = reinterpret_cast<ConnectionAccess*>(otherConnection)->d_ptr;
@@ -88,7 +88,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_00024Nati
     (JNIEnv * env, jclass, QtJambiNativeID nativeId)
 {
     try{
-        QMetaObject::Connection* connection = QtJambiAPI::objectFromNativeId<QMetaObject::Connection>(nativeId);
+        QMetaObject::Connection* connection = qtjambi_cast<QMetaObject::Connection*>(nativeId);
         return QtJambiAPI::convertQObjectToJavaObject(env, connectionSender(connection));
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
@@ -100,7 +100,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_00024Nati
     (JNIEnv * env, jclass, QtJambiNativeID nativeId)
 {
     try{
-        QMetaObject::Connection* connection = QtJambiAPI::objectFromNativeId<QMetaObject::Connection>(nativeId);
+        QMetaObject::Connection* connection = qtjambi_cast<QMetaObject::Connection*>(nativeId);
         if(*connection){
             QObjectPrivate::Connection* ptr = reinterpret_cast<ConnectionAccess*>(connection)->d_ptr;
             QObject* receiver = ptr->receiver;
@@ -117,7 +117,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_00024Nati
 {
     try{
         QMetaMethod signal;
-        QMetaObject::Connection* connection = QtJambiAPI::objectFromNativeId<QMetaObject::Connection>(nativeId);
+        QMetaObject::Connection* connection = qtjambi_cast<QMetaObject::Connection*>(nativeId);
         if(*connection){
             env->EnsureLocalCapacity(100);
             QObjectPrivate::Connection* ptr = reinterpret_cast<ConnectionAccess*>(connection)->d_ptr;
@@ -135,7 +135,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_00024Nati
     (JNIEnv * env, jclass, QtJambiNativeID nativeId)
 {
     try{
-        QMetaObject::Connection* connection = QtJambiAPI::objectFromNativeId<QMetaObject::Connection>(nativeId);
+        QMetaObject::Connection* connection = qtjambi_cast<QMetaObject::Connection*>(nativeId);
         QMetaMethod method;
         if(*connection){
             env->EnsureLocalCapacity(100);
@@ -156,7 +156,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_SignalUtility_00024Nat
     (JNIEnv * env, jclass, QtJambiNativeID nativeId)
 {
     try{
-        QMetaObject::Connection* connection = QtJambiAPI::objectFromNativeId<QMetaObject::Connection>(nativeId);
+        QMetaObject::Connection* connection = qtjambi_cast<QMetaObject::Connection*>(nativeId);
         if(*connection){
             QObjectPrivate::Connection* ptr = reinterpret_cast<ConnectionAccess*>(connection)->d_ptr;
             return ptr->isSlotObject;
@@ -171,7 +171,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_00024Nati
     (JNIEnv * env, jclass, QtJambiNativeID nativeId)
 {
     try{
-        QMetaObject::Connection* connection = QtJambiAPI::objectFromNativeId<QMetaObject::Connection>(nativeId);
+        QMetaObject::Connection* connection = qtjambi_cast<QMetaObject::Connection*>(nativeId);
         return qtjambi_cast<jobject>(env, QMetaObject::Connection(*connection));
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
@@ -184,7 +184,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_SignalUtility_00024NativeC
 {
     jint __java_return_value{0};
     try{
-        QMetaObject::Connection* connection = QtJambiAPI::objectFromNativeId<QMetaObject::Connection>(nativeId);
+        QMetaObject::Connection* connection = qtjambi_cast<QMetaObject::Connection*>(nativeId);
         QObjectPrivate::Connection* ptr = reinterpret_cast<ConnectionAccess*>(connection)->d_ptr;
         size_t hashValue = qHash(ptr);
         __java_return_value = jint(quint64(hashValue) ^ quint64(hashValue) >> 32);
@@ -199,7 +199,7 @@ extern "C" JNIEXPORT jstring JNICALL Java_io_qt_internal_SignalUtility_00024Nati
 {
     jstring __java_return_value{nullptr};
     try{
-        QMetaObject::Connection* connection = QtJambiAPI::objectFromNativeId<QMetaObject::Connection>(nativeId);
+        QMetaObject::Connection* connection = qtjambi_cast<QMetaObject::Connection*>(nativeId);
         QString res;
         {
             QDebug dbg(&res);
@@ -219,8 +219,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_SignalUtility_00024Abstrac
 (JNIEnv * env, jobject connection, QtJambiNativeID s, QtJambiNativeID r, jobjectArray args)
 {
     try{
-        QObject *the_sender = QtJambiAPI::objectFromNativeId<QObject>(s);
-        QObject *the_receiver = QtJambiAPI::objectFromNativeId<QObject>(r);
+        QObject *the_sender = qtjambi_cast<QObject*>(s);
+        QObject *the_receiver = qtjambi_cast<QObject*>(r);
         Q_ASSERT(the_receiver);
         // we need to use meta call because that's the only way to get signal lock which is QtCore-internal.
         struct Call : QAbstractMetaCallEvent{
@@ -269,7 +269,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_SignalUtility_initializeMu
 (JNIEnv *env, jclass, jobject multiSignal, jclass declaringClass, jobject reflectedField)
 {
     try{
-        const QMetaObject* mo = CoreAPI::metaObjectForClass(env, declaringClass);
+        const QMetaObject* mo = metaObjectForClass(env, declaringClass);
         QVector<QtJambiMetaObject::SignalInfo> signalInfos = QtJambiMetaObject::signalInfos(env, mo, env->FromReflectedField(reflectedField));
         if(!signalInfos.isEmpty()){
             jintArray methodIndexes = env->NewIntArray(jsize(signalInfos.size()));
@@ -530,7 +530,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_connectNa
         const QMetaObject* senderMetaObject = reinterpret_cast<const QMetaObject*>(senderMetaObjectId);
         QMetaMethod qt_signalMethod = senderMetaObject->method(signal);
         QObject* deletable = nullptr;
-        QObject* context = QtJambiAPI::objectFromNativeId<QObject>(contextNativeId);
+        QObject* context = qtjambi_cast<QObject*>(contextNativeId);
         int reducedConnectionType = (connectionType & ~Qt::UniqueConnection) & ~Qt::SingleShotConnection;
         QThread* senderAsThread = dynamic_cast<QThread*>(sender);
         if(reducedConnectionType==Qt::AutoConnection || reducedConnectionType==Qt::DirectConnection){
@@ -547,7 +547,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_connectNa
             }else{
                 _connectionType = "QueuedConnection";
             }
-            Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot use signal QThread::%1 from adopted thread with connection type %2.").arg(qt_signalMethod.methodSignature().data()).arg(_connectionType) QTJAMBI_STACKTRACEINFO);
+            JavaException::raise<Java::Runtime::IllegalStateException>(env, QStringLiteral("Cannot use signal QThread::%1 from adopted thread with connection type %2.").arg(qt_signalMethod.methodSignature().data()).arg(_connectionType) QTJAMBI_STACKTRACEINFO);
             return nullptr;
         }
         if(!context)
@@ -652,7 +652,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_SignalUtility_connectNa
         if(senderMetaObjectId)
             signalMethod = reinterpret_cast<const QMetaObject*>(senderMetaObjectId)->method(signal);
         QObject* receiver = receiverLink ? receiverLink->qobject() : nullptr;
-        QMetaMethod slotMethod = QtJambiAPI::valueReferenceFromNativeId<QMetaMethod>(slotId);
+        QMetaMethod slotMethod = qtjambi_cast<QMetaMethod>(slotId);
         if(!QMetaObject::checkConnectArgs(signalMethod, slotMethod)){
             QString message("Signal and slot signatures misfit: %1 != %2");
             message = message.arg(QLatin1String(signalMethod.methodSignature())).arg(QLatin1String(slotMethod.methodSignature()));
@@ -678,7 +678,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_SignalUtility_disconne
         if(senderMetaObjectId)
             signalMethod = reinterpret_cast<const QMetaObject*>(senderMetaObjectId)->method(signal);
         QObject* receiver = receiverLink ? receiverLink->qobject() : nullptr;
-        QMetaMethod slotMethod = QtJambiAPI::valueReferenceFromNativeId<QMetaMethod>(slotId);
+        QMetaMethod slotMethod = qtjambi_cast<QMetaMethod>(slotId);
         return QObject::disconnect(sender, signalMethod, receiver, slotMethod);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);

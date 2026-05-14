@@ -344,13 +344,13 @@ QFunctionPointer extractFunction(
             }else{
                 library->unload();
                 if(JniEnvironment env{300}) {
-                    Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Unable to find 'initialize' function for %1.").arg(typeName) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseRuntimeException(env, QStringLiteral("Unable to find 'initialize' function for %1.").arg(typeName) QTJAMBI_STACKTRACEINFO );
                 }
                 qCCritical(DebugAPI::internalCategory) << "Unable to find 'initialize' function for " << typeName << ".";
             }
         }else{
             if(JniEnvironment env{300}) {
-                Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Unable to create function pointer. %1").arg(library->errorString()) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseRuntimeException(env, QStringLiteral("Unable to create function pointer. %1").arg(library->errorString()) QTJAMBI_STACKTRACEINFO );
             }
             qCCritical(DebugAPI::internalCategory) << "Unable to create function pointer. " << library->errorString();
         }
@@ -358,17 +358,17 @@ QFunctionPointer extractFunction(
         if(QFileInfo::exists(":/io/qt/qtjambi/functionpointers/"+typeName)){
             if(JniEnvironment env{300}) {
                 if(!dirErrorString.isEmpty())
-                    Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Unable to copy function pointer library :/io/qt/qtjambi/functionpointers/%1 to %2: %3 %4").arg(typeName, tmpFile, dirErrorString, file.errorString()) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseRuntimeException(env, QStringLiteral("Unable to copy function pointer library :/io/qt/qtjambi/functionpointers/%1 to %2: %3 %4").arg(typeName, tmpFile, dirErrorString, file.errorString()) QTJAMBI_STACKTRACEINFO );
                 if(!QFileInfo(tmpFile).dir().exists()){
-                    Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Unable to copy function pointer library :/io/qt/qtjambi/functionpointers/%1 to %2: directory %3 does not exist. %4").arg(typeName, tmpFile, QFileInfo(tmpFile).dir().absolutePath(), file.errorString()) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseRuntimeException(env, QStringLiteral("Unable to copy function pointer library :/io/qt/qtjambi/functionpointers/%1 to %2: directory %3 does not exist. %4").arg(typeName, tmpFile, QFileInfo(tmpFile).dir().absolutePath(), file.errorString()) QTJAMBI_STACKTRACEINFO );
                 }else{
-                    Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Unable to copy function pointer library :/io/qt/qtjambi/functionpointers/%1 to %2: %3").arg(typeName, tmpFile, file.errorString()) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseRuntimeException(env, QStringLiteral("Unable to copy function pointer library :/io/qt/qtjambi/functionpointers/%1 to %2: %3").arg(typeName, tmpFile, file.errorString()) QTJAMBI_STACKTRACEINFO );
                 }
             }
             qCCritical(DebugAPI::internalCategory) << "Unable to copy function pointer library to " << tmpFile;
         }else{
             if(JniEnvironment env{300}) {
-                Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Unable to find function pointer library :/io/qt/qtjambi/functionpointers/%1").arg(typeName) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseRuntimeException(env, QStringLiteral("Unable to find function pointer library :/io/qt/qtjambi/functionpointers/%1").arg(typeName) QTJAMBI_STACKTRACEINFO );
             }
             qCCritical(DebugAPI::internalCategory) << "Unable to find function pointer library " << typeName;
         }
@@ -387,7 +387,7 @@ bool disposeFunction(QFunctionPointer fn){
 void noFunctionAvailable(const std::type_info& functionTypeId){
     if(typeid_not_equals(functionTypeId, typeid(QtMessageHandler))){
         if(DefaultJniEnvironment env{100}){
-            Java::Runtime::NullPointerException::throwNew(env, QStringLiteral("Function pointer %1 is null.").arg(QLatin1String(QtJambiAPI::typeName(functionTypeId))) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseNullPointerException(env, QStringLiteral("Function pointer %1 is null.").arg(QLatin1String(QtJambiAPI::typeName(functionTypeId))) QTJAMBI_STACKTRACEINFO );
         }
     }
 }

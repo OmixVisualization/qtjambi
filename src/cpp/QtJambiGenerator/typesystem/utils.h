@@ -44,11 +44,11 @@
 #include <QException>
 
 namespace TS {
-    class TemplateEntry;
-    class TemplateTypeEntry;
+    class CodeTemplate;
+    class TypeTemplate;
 
-    typedef QMap<QString, TemplateEntry *> TemplateEntryHash;
-    typedef QMap<QString, TemplateTypeEntry *> TemplateTypeEntryHash;
+    typedef QMap<QString, CodeTemplate *> CodeTemplateHash;
+    typedef QMap<QString, TypeTemplate *> TypeTemplateHash;
 
     class TemplateInstance {
         public:

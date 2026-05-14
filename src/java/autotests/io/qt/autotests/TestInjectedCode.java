@@ -38,7 +38,9 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.ReadOnlyBufferException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.junit.*;
 
@@ -421,7 +423,9 @@ public class TestInjectedCode extends ApplicationInitializer {
     public void testQAccessibleAttributesDontCrashOnNull()
     {
         MyAccessibleInterface m = new MyAccessibleInterface();
-        AccessibleTextInterfaceSubclass.callAttributes(m, 10, null, null);
+        int[] startOffset = {0};
+        int[] endOffset = {0};
+        AccessibleTextInterfaceSubclass.callAttributes(m, 10, startOffset, endOffset);
     }
 
     @Test
@@ -439,7 +443,9 @@ public class TestInjectedCode extends ApplicationInitializer {
     public void testQAccessibleSelectionDontCrashOnNull()
     {
         MyAccessibleInterface m = new MyAccessibleInterface();
-        AccessibleTextInterfaceSubclass.callSelection(m, 10, null, null);
+        int[] startOffset = {0};
+        int[] endOffset = {0};
+        AccessibleTextInterfaceSubclass.callSelection(m, 10, startOffset, endOffset);
     }
 
     @Test
@@ -457,7 +463,9 @@ public class TestInjectedCode extends ApplicationInitializer {
     public void testQAccessibleTextBeforeOffsetDontCrashOnNull()
     {
         MyAccessibleInterface m = new MyAccessibleInterface();
-        AccessibleTextInterfaceSubclass.callTextBeforeOffset(m, 10, QAccessible.TextBoundaryType.CharBoundary, null, null);
+        int[] startOffset = {0};
+        int[] endOffset = {0};
+        AccessibleTextInterfaceSubclass.callTextBeforeOffset(m, 10, QAccessible.TextBoundaryType.CharBoundary, startOffset, endOffset);
     }
 
     @Test
@@ -475,7 +483,9 @@ public class TestInjectedCode extends ApplicationInitializer {
     public void testQAccessibleTextAfterOffsetDontCrashOnNull()
     {
         MyAccessibleInterface m = new MyAccessibleInterface();
-        AccessibleTextInterfaceSubclass.callTextAfterOffset(m, 10, QAccessible.TextBoundaryType.CharBoundary, null, null);
+        int[] startOffset = {0};
+        int[] endOffset = {0};
+        AccessibleTextInterfaceSubclass.callTextAfterOffset(m, 10, QAccessible.TextBoundaryType.CharBoundary, startOffset, endOffset);
     }
 
     @Test
@@ -493,7 +503,9 @@ public class TestInjectedCode extends ApplicationInitializer {
     public void testQAccessibleTextAtOffsetDontCrashOnNull()
     {
         MyAccessibleInterface m = new MyAccessibleInterface();
-        AccessibleTextInterfaceSubclass.callTextAtOffset(m, 10, QAccessible.TextBoundaryType.CharBoundary, null, null);
+        int[] startOffset = {0};
+        int[] endOffset = {0};
+        AccessibleTextInterfaceSubclass.callTextAtOffset(m, 10, QAccessible.TextBoundaryType.CharBoundary, startOffset, endOffset);
     }
 
     @Test
@@ -1724,10 +1736,28 @@ public class TestInjectedCode extends ApplicationInitializer {
     @Test
     public void testByteArray() {
 		io.qt.core.QByteArray bv = new io.qt.core.QByteArray("Byte\0Array");
-		for(@SuppressWarnings("unused") Byte b : bv) {
+		List<Byte> bytes = new ArrayList<>();
+		for(Byte b : bv) {
+			bytes.add(b);
 		}
+		assertArrayEquals(new Byte[] {
+				Byte.valueOf((byte)'B'),
+				Byte.valueOf((byte)'y'),
+				Byte.valueOf((byte)'t'),
+				Byte.valueOf((byte)'e'),
+				Byte.valueOf((byte)0),
+				Byte.valueOf((byte)'A'),
+				Byte.valueOf((byte)'r'),
+				Byte.valueOf((byte)'r'),
+				Byte.valueOf((byte)'a'),
+				Byte.valueOf((byte)'y')
+		}, bytes.toArray(new Byte[bytes.size()]));
 		assertArrayEquals("Byte\0Array".getBytes(), bv.toArray());
 		assertEquals("Byte\0Array", new String(bv.toArray()));
+		io.qt.core.QByteArray clone = bv.clone();
+		assertEquals(bv, clone);
+		assertArrayEquals("Byte\0Array".getBytes(), clone.toArray());
+		assertEquals("Byte\0Array", new String(clone.toArray()));
 		bv.dispose();
 		bv = new io.qt.core.QByteArray("Byte\0Array".getBytes());
 		assertArrayEquals("Byte\0Array".getBytes(), bv.toArray());

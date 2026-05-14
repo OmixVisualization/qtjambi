@@ -102,14 +102,14 @@ public class TestMultimediaCloneable extends ApplicationInitializer {
 	@Test
 	public void run_clone_QVideoFrameFormat() {
 		QVideoFrameFormat org = new QVideoFrameFormat();
-		org.setFrameRate(20.0);
+		org.setStreamFrameRate(20.0);
 		QVideoFrameFormat clone = org.clone();
 		assertTrue("not java ownership", General.internalAccess.isJavaOwnership(clone));
 		org.dispose();
 		QVideoFrameFormat clone2 = clone.clone();
 		assertTrue("not java ownership", General.internalAccess.isJavaOwnership(clone2));
-		assertEquals((Object)clone.frameRate(), 20.);
-		assertEquals((Object)clone.frameRate(), clone2.frameRate());
+		assertEquals((Object)clone.streamFrameRate(), 20.);
+		assertEquals((Object)clone.streamFrameRate(), clone2.streamFrameRate());
 	}
 
     public static void main(String args[]) {

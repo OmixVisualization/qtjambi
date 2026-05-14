@@ -135,9 +135,9 @@ void QClassPathFileEngineHandler::insertJarFileResources(JNIEnv *env, jobject en
         if(Q_LIKELY(handler)){
             const QString& jarFileName = qtjambi_cast<QString>(env, _jarFileName);
             QWriteLocker locker(&handler->m_fileEngineLock);
-            jobject iter = Java::Runtime::Collection::iterator(env, Java::Runtime::Map::entrySet(env, entryPaths));
-            while(Java::Runtime::Iterator::hasNext(env, iter)){
-                jstring entry = jstring(Java::Runtime::Iterator::next(env, iter));
+            jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, Java::Runtime::Map::entrySet(env, entryPaths));
+            while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+                jstring entry = jstring(QtJambiAPI::nextOfJavaIterator(env, iter));
                 jstring path = jstring(Java::Runtime::Map$Entry::getKey(env, entry));
                 JConstLongArrayPointer pt(env, jlongArray(Java::Runtime::Map$Entry::getValue(env, entry)));
                 qint64 size = pt.size()<=0 ? -1 : pt[0];

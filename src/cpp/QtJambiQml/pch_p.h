@@ -32,6 +32,7 @@
 #ifndef PCH_P_H
 #define PCH_P_H
 
+#include <QtCore/QtCore>
 #include <QtQml/QtQml>
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/QmlAPI>

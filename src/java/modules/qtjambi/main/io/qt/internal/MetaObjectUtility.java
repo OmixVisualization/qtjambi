@@ -82,6 +82,17 @@ final class MetaObjectUtility{
     		Boolean.getBoolean("io.qt.enable-metaobject-logs") 
 	    		? EnabledIntDataDescriptions::new 
 	    		: IntDataDescriptions::new;
+    
+    private final static boolean hasGetNestMembers;
+    
+    static{
+    	boolean _hasGetNestMembers = false;
+    	try {
+    		MetaObjectUtility.class.getNestMembers();
+		} catch (Throwable e1) {
+		}
+    	hasGetNestMembers = _hasGetNestMembers;
+    }
 	
     /**
      * this method analyzes the given class for meta object data.
@@ -97,7 +108,7 @@ final class MetaObjectUtility{
             else if(clazz.isArray()) {
             	throw new RuntimeException("Cannot analyze meta object from array type");
             }
-            MetaObjectData metaObjectData = new MetaObjectData();
+            MetaObjectData metaObjectData = new MetaObjectData(clazz);
             metaObjectData.addStringDataAndReturnIndex("Reserving the first string for QDynamicMetaObject identification.");
             IntDataDescriptions intdataDescriptions = intDescriptionFactory.get();
             final String classname = clazz.getName().replace(".", "::").replace("$", "::");
@@ -107,10 +118,12 @@ final class MetaObjectUtility{
             for(QtClassInfo info : clazz.getAnnotationsByType(QtClassInfo.class)) {
                 classInfos.put(info.key(), info.value());
             }
+            metaObjectData.hasClassInfo = !classInfos.isEmpty();
             Map<String,String> qmlClassInfos = Collections.emptyMap();
             if(qmlClassInfoGeneratorFunction!=null) {
             	qmlClassInfos = qmlClassInfoGeneratorFunction.apply(clazz);
             	classInfos.putAll(qmlClassInfos);
+            	metaObjectData.hasQmlClassInfo = !qmlClassInfos.isEmpty();
             }
             
             Map<Method, MethodFlags> methodFlags = new HashMap<>();
@@ -161,13 +174,34 @@ final class MetaObjectUtility{
             if(isQObject && isGadget){
             	throw new IllegalStateException("Must not annotate QObject type '"+clazz.getTypeName()+"' with @QtAsGadget.");
             }
+            metaObjectData.hasExplicitMembers |= isGadget;
             if(!isQObject && !isGadget){
+            	metaObjectData.hasExplicitMembers |= gadgetClasses.contains(clazz);
             	isGadget = gadgetClasses.contains(clazz) || gadgetPackages.contains(clazz.getPackage().getName());
             }
             {
-            	try {
-					Class<?> syntheticClass = Class.forName(clazz.getName()+"$WhenMappings", false, clazz.getClassLoader());
-					if(syntheticClass.isSynthetic()) {
+            	Map<String, Class<?>> embeddedClasses = null;
+            	if(hasGetNestMembers) {
+            		try {
+	            		Class<?>[] nestMembers = clazz.getNestMembers();
+	            		embeddedClasses = new TreeMap<>();
+		            	for(Class<?> embeddedClass : nestMembers){
+		                	embeddedClasses.put(embeddedClass.getName(), embeddedClass);
+		                }
+					} catch (Throwable e1) {
+					}
+            	}
+                try {
+					Class<?> syntheticClass = null;
+					if(embeddedClasses==null) {
+						try {
+		                	syntheticClass = Class.forName(clazz.getName()+"$WhenMappings", false, clazz.getClassLoader());
+						} catch (Throwable e1) {
+						}
+					}else {
+						syntheticClass = embeddedClasses.get(clazz.getName()+"$WhenMappings");
+					}
+					if(syntheticClass!=null && syntheticClass.isSynthetic()) {
 						for(Field declaredField : syntheticClass.getDeclaredFields()) {
 							if(Modifier.isStatic(declaredField.getModifiers()) 
 									&& declaredField.getType()==int[].class
@@ -180,7 +214,17 @@ final class MetaObjectUtility{
 				}
             	for(int i=1;;++i) {
             		try {
-						Class<?> syntheticClass = Class.forName(clazz.getName()+"$"+i, false, clazz.getClassLoader());
+						Class<?> syntheticClass = null;
+						if(embeddedClasses==null) {
+							try {
+			                	syntheticClass = Class.forName(clazz.getName()+"$"+i, false, clazz.getClassLoader());
+							} catch (Throwable e1) {
+							}
+						}else {
+							syntheticClass = embeddedClasses.get(clazz.getName()+"$"+i);
+						}
+						if(syntheticClass==null)
+							break;
 						if(syntheticClass.isSynthetic()) {
 							for(Field declaredField : syntheticClass.getDeclaredFields()) {
 								if(Modifier.isStatic(declaredField.getModifiers()) 
@@ -194,6 +238,8 @@ final class MetaObjectUtility{
 						break;
 					}
             	}
+            }
+            {
             	TreeSet<Field> declaredFields = new TreeSet<>((m1, m2)->{
                 	return m1.getName().compareTo(m2.getName());
                 });
@@ -486,6 +532,7 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	            		PropertyAnnotation member = PropertyAnnotation.memberAnnotation(declaredField);
 	            		if(member!=null) {
 	            			if(member.enabled()) {
+	            				metaObjectData.hasExplicitMembers = true;
     	            			String property = member.name();
 	            				if(isQObject && isValidQProperty(declaredField)) {
 	            					if (!Modifier.isFinal(declaredField.getModifiers())) {
@@ -591,6 +638,7 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
                 for(Constructor<?> constructor : declaredConstructors){
 					Class<?>[] parameterTypes = constructor.getParameterTypes();
 				    if(constructor.isAnnotationPresent(QtInvokable.class) || forcedInvokableConstructors.contains(constructor)) {
+				    	metaObjectData.hasExplicitMembers = true;
 				    	List<String> cppTypes = new ArrayList<>();
 				        List<ParameterInfo> constructorParameterInfos = new ArrayList<>();
 				        Type[] genericParameterTypes = constructor.getGenericParameterTypes();
@@ -734,6 +782,7 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
                             (reader != null && reader.enabled())
                             && isValidGetter(declaredMethod)) {
 
+                    	metaObjectData.hasExplicitMembers = true;
                         String name = reader.name();
                         // If the return type of the property reader is not registered, then
                         // we need to register the owner class in the meta object (in which case
@@ -777,6 +826,7 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
                     if ( writer != null 
                             && writer.enabled()
                             && isValidSetter(declaredMethod)) {
+                    	metaObjectData.hasExplicitMembers = true;
                         propertyWriters.computeIfAbsent(writer.name(), arrayListFactory()).add(declaredMethod);
                     }
                 }
@@ -844,15 +894,18 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
                 {
                     PropertyAnnotation resetter = PropertyAnnotation.resetterAnnotation(declaredMethod);
                     if (resetter != null
+                		&& resetter.enabled()
                         && declaredMethod.getParameterCount() == 0
                         && declaredMethod.getReturnType() == void.class) {
+                    	metaObjectData.hasExplicitMembers = true;
                         propertyResetters.put(resetter.name(), declaredMethod);
                     }
                 }
                 
                 if(isValidBindable(declaredMethod)) {
 	                PropertyAnnotation bindables = PropertyAnnotation.bindableAnnotation(declaredMethod);
-                    if (bindables != null) {
+                    if (bindables != null && bindables.enabled()) {
+                    	metaObjectData.hasExplicitMembers = true;
                         propertyBindables.put(bindables.name(), declaredMethod);
                     }else{
                     	if(possibleBindables.isEmpty())
@@ -1006,6 +1059,7 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
                                 && invokable.value()
                         )
                     ) {
+            		metaObjectData.hasExplicitMembers |= ( invokable!=null && invokable.value() );
                 	List<ParameterInfo> methodParameterInfos = new ArrayList<>();
                 	boolean isPointer = false;
                     boolean isReference = false;
@@ -2673,6 +2727,10 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
 @NativeAccess
 class MetaObjectData {
 	
+	public MetaObjectData(Class<?> type) {
+		super();
+		this.classLoader = type.getClassLoader();
+	}
 	@NativeAccess
 	static class MetaTypeInfo{
 		final @NativeAccess int metaTypeId;
@@ -2741,6 +2799,7 @@ class MetaObjectData {
 		return stringData.get(index);
 	}
 	
+	final @NativeAccess ClassLoader classLoader;
     final @NativeAccess IntArray intData = new IntArray();
     private final @NativeAccess List<String>  stringData = new ArrayList<>();
 
@@ -2769,6 +2828,9 @@ class MetaObjectData {
     final @NativeAccess List<Field> switchTableFields = new ArrayList<>();
 
     @NativeAccess boolean hasStaticMembers;
+    @NativeAccess boolean hasExplicitMembers;
+    @NativeAccess boolean hasClassInfo;
+    @NativeAccess boolean hasQmlClassInfo;
     final @NativeAccess IntArray metaTypes = new IntArray();
     @NativeAccess Constructor<?> privateConstructor;
     @NativeAccess Constructor<?> inPlaceConstructor;

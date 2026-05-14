@@ -27,7 +27,7 @@
 **
 ****************************************************************************/
 
-#include "util_p.h"
+#include "utils_p.h"
 #include <QtCore/QtGlobal>
 #include <QtTaskTree/QTaskTree>
 #include <QtTaskTree/QBarrier>
@@ -41,6 +41,11 @@
 
 #include <QtJambi/RegistryAPI>
 #include <QtJambi/Cast>
+#include <QtJambi/TimeCast>
+#include <QtJambi/Template1Cast>
+#include <QtJambi/Template2Cast>
+#include <QtJambi/Template3Cast>
+#include <QtJambi/ContainerCast>
 
 jobject convertTaskInterface(JNIEnv* env, QtTaskTree::QTaskInterface *iface){
     return qtjambi_cast<jobject>(env, iface);
@@ -53,7 +58,7 @@ void __qt_destruct_QtTaskTree_QCustomTask_JObjectWrapper_(void* ptr)
     reinterpret_cast<QtTaskTree::QCustomTask<JObjectWrapper>*>(ptr)->~DESTRUCTOR();
 }
 
-void deleter_QtTaskTree_QCustomTask_JObjectWrapper_(void *ptr, bool isShell)
+void __qt_delete_QtTaskTree_QCustomTask_JObjectWrapper_(void *ptr, bool isShell)
 {
     QTJAMBI_NATIVE_METHOD_CALL("qtjambi_deleter for QtTaskTree::QCustomTask<JObjectWrapper>")
     QtTaskTree::QCustomTask<JObjectWrapper> *_ptr = reinterpret_cast<QtTaskTree::QCustomTask<JObjectWrapper> *>(ptr);
@@ -130,13 +135,13 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_tasktree_QCustomTask_initialize_1na
         arguments[2].l = callDone2;
         arguments[3].l = taskFactory;
         arguments[4].l = adapterFactory;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QCustomTask, sizeof(QtTaskTree::QCustomTask<JObjectWrapper>), alignof(QtTaskTree::QCustomTask<JObjectWrapper>), typeid(QtTaskTree::QCustomTask<JObjectWrapper>), 0, false, &deleter_QtTaskTree_QCustomTask_JObjectWrapper_, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QCustomTask, sizeof(QtTaskTree::QCustomTask<JObjectWrapper>), alignof(QtTaskTree::QCustomTask<JObjectWrapper>), typeid(QtTaskTree::QCustomTask<JObjectWrapper>), 0, false, &__qt_delete_QtTaskTree_QCustomTask_JObjectWrapper_, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
 }
 
-void deleter_QTimeoutTask(void *ptr, bool isShell)
+void __qt_delete_QTimeoutTask(void *ptr, bool isShell)
 {
     QTJAMBI_NATIVE_METHOD_CALL("qtjambi_deleter for QtTaskTree::QCustomTask<JObjectWrapper>")
     QtTaskTree::QTimeoutTask *_ptr = reinterpret_cast<QtTaskTree::QTimeoutTask *>(ptr);
@@ -209,13 +214,13 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_tasktree_QCustomTask_initialize_1na
         arguments[0].l = setup0;
         arguments[1].l = done1;
         arguments[2].l = callDone2;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QTimeoutTask, sizeof(QtTaskTree::QTimeoutTask), alignof(QtTaskTree::QCustomTask<JObjectWrapper>), typeid(QtTaskTree::QCustomTask<JObjectWrapper>), 0, false, &deleter_QTimeoutTask, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QTimeoutTask, sizeof(QtTaskTree::QTimeoutTask), alignof(QtTaskTree::QCustomTask<JObjectWrapper>), typeid(QtTaskTree::QCustomTask<JObjectWrapper>), 0, false, &__qt_delete_QTimeoutTask, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
 }
 
-void deleter_QBarrierTask(void *ptr, bool isShell)
+void __qt_delete_QBarrierTask(void *ptr, bool isShell)
 {
     QTJAMBI_NATIVE_METHOD_CALL("qtjambi_deleter for QtTaskTree::QCustomTask<JObjectWrapper>")
     QtTaskTree::QBarrierTask *_ptr = reinterpret_cast<QtTaskTree::QBarrierTask *>(ptr);
@@ -284,13 +289,13 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_tasktree_QCustomTask_initialize_1na
         arguments[0].l = setup0;
         arguments[1].l = done1;
         arguments[2].l = callDone2;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QBarrierTask, sizeof(QtTaskTree::QBarrierTask), alignof(QtTaskTree::QCustomTask<JObjectWrapper>), typeid(QtTaskTree::QCustomTask<JObjectWrapper>), 0, false, &deleter_QBarrierTask, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QBarrierTask, sizeof(QtTaskTree::QBarrierTask), alignof(QtTaskTree::QCustomTask<JObjectWrapper>), typeid(QtTaskTree::QCustomTask<JObjectWrapper>), 0, false, &__qt_delete_QBarrierTask, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
 }
 
-void deleter_QTaskTreeTask(void *ptr, bool isShell)
+void __qt_delete_QTaskTreeTask(void *ptr, bool isShell)
 {
     QTJAMBI_NATIVE_METHOD_CALL("qtjambi_deleter for QtTaskTree::QCustomTask<JObjectWrapper>")
     QtTaskTree::QTaskTreeTask *_ptr = reinterpret_cast<QtTaskTree::QTaskTreeTask *>(ptr);
@@ -359,13 +364,13 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_tasktree_QCustomTask_initialize_1na
         arguments[0].l = setup0;
         arguments[1].l = done1;
         arguments[2].l = callDone2;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QTaskTreeTask, sizeof(QtTaskTree::QTaskTreeTask), alignof(QtTaskTree::QCustomTask<JObjectWrapper>), typeid(QtTaskTree::QCustomTask<JObjectWrapper>), 0, false, &deleter_QTaskTreeTask, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QTaskTreeTask, sizeof(QtTaskTree::QTaskTreeTask), alignof(QtTaskTree::QCustomTask<JObjectWrapper>), typeid(QtTaskTree::QCustomTask<JObjectWrapper>), 0, false, &__qt_delete_QTaskTreeTask, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
 }
 
-void deleter_QThreadFunctionTask(void *ptr, bool isShell)
+void __qt_delete_QThreadFunctionTask(void *ptr, bool isShell)
 {
     QTJAMBI_NATIVE_METHOD_CALL("qtjambi_deleter for QtTaskTree::QCustomTask<JObjectWrapper>")
     QtTaskTree::QThreadFunctionTask<QVariant> *_ptr = reinterpret_cast<QtTaskTree::QThreadFunctionTask<QVariant> *>(ptr);
@@ -438,13 +443,92 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_tasktree_QCustomTask_initialize_1na
         arguments[0].l = setup0;
         arguments[1].l = done1;
         arguments[2].l = callDone2;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QThreadFunctionTask, sizeof(QtTaskTree::QThreadFunctionTask<QVariant>), alignof(QtTaskTree::QCustomTask<JObjectWrapper>), typeid(QtTaskTree::QCustomTask<JObjectWrapper>), 0, false, &deleter_QThreadFunctionTask, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QThreadFunctionTask, sizeof(QtTaskTree::QThreadFunctionTask<QVariant>), alignof(QtTaskTree::QCustomTask<JObjectWrapper>), typeid(QtTaskTree::QCustomTask<JObjectWrapper>), 0, false, &__qt_delete_QThreadFunctionTask, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
 }
 
-void deleter_QProcessTask(void *ptr, bool isShell)
+void __qt_delete_QThreadFunctionVoidTask(void *ptr, bool isShell)
+{
+    QTJAMBI_NATIVE_METHOD_CALL("qtjambi_deleter for QtTaskTree::QCustomTask<JObjectWrapper>")
+    QtTaskTree::QThreadFunctionTask<void> *_ptr = reinterpret_cast<QtTaskTree::QThreadFunctionTask<void> *>(ptr);
+    if(!isShell){
+        QtJambiAPI::registerNonShellDeletion(ptr);
+    }
+    delete _ptr;
+}
+
+// new QtTaskTree::QThreadFunctionTask(SetupHandler &&,DoneHandler &&,CallDone)
+void __qt_construct_QThreadFunctionVoidTask(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions __qtjambi_constructor_options)
+{
+    QTJAMBI_NATIVE_METHOD_CALL("construct QThreadFunctionTask(QtTaskTree::QSyncBoolSupplier&&)")
+    jobject setup0 = __java_arguments[0].l;
+    jobject done1 = __java_arguments[1].l;
+    jobject callDone2 = __java_arguments[2].l;
+    QtTaskTree::QThreadFunctionTask<void>::TaskSetupHandler __qt_setup0;
+    if(setup0){
+        __qt_setup0 = [wrapper = JObjectWrapper(__jni_env, setup0)](QtTaskTree::QThreadFunction<void>& arg) -> QtTaskTree::SetupResult {
+            QtTaskTree::SetupResult result{};
+            if(JniEnvironment env{200}){
+                QTJAMBI_TRY{
+                    jobject _arg = qtjambi_cast<jobject>(env, arg);
+                    QTJAMBI_INVALIDATE_AFTER_USE(env, _arg);
+                    jobject value = Java::Runtime::Function::apply(env, wrapper.object(env), _arg);
+                    result = qtjambi_cast<QtTaskTree::SetupResult>(env, value);
+                }QTJAMBI_CATCH(const JavaException& exn){
+                    exn.report(env);
+                }QTJAMBI_TRY_END
+            }
+            return result;
+        };
+    }
+    QtTaskTree::QThreadFunctionTask<void>::TaskDoneHandler __qt_done1;
+    if(done1){
+        __qt_done1 = [wrapper = JObjectWrapper(__jni_env, done1)](const QtTaskTree::QThreadFunction<void>& arg, QtTaskTree::DoneWith arg2) -> QtTaskTree::DoneResult {
+            QtTaskTree::DoneResult result{};
+            if(JniEnvironment env{200}){
+                QTJAMBI_TRY{
+                    jobject _arg = qtjambi_cast<jobject>(env, arg);
+                    QTJAMBI_INVALIDATE_AFTER_USE(env, _arg);
+                    jobject value = Java::Runtime::BiFunction::apply(env, wrapper.object(env), _arg, qtjambi_cast<jobject>(env, arg2));
+                    result = qtjambi_cast<QtTaskTree::DoneResult>(env, value);
+                }QTJAMBI_CATCH(const JavaException& exn){
+                    exn.report(env);
+                }QTJAMBI_TRY_END
+            }
+            return result;
+        };
+    }
+    QtTaskTree::QThreadFunctionTask<void> *__qt_this;
+    __qt_this = new(__qtjambi_ptr) QtTaskTree::QThreadFunctionTask<void>(std::move(__qt_setup0), std::move(__qt_done1), qtjambi_cast<QtTaskTree::CallDone>(__jni_env, callDone2));
+    Q_UNUSED(__qt_this)
+    Q_UNUSED(__jni_object)
+    Q_UNUSED(__qtjambi_constructor_options)
+}
+
+// QtTaskTree::QCustomTask<JObjectWrapper>(SetupHandler &&,DoneHandler &&,CallDone)
+extern "C" JNIEXPORT void JNICALL Java_io_qt_tasktree_QCustomTask_initialize_1native_1QThreadFunctionVoidTask
+    (JNIEnv *__jni_env,
+     jclass __jni_class,
+     jobject __jni_object,
+     jobject setup0,
+     jobject done1,
+     jobject callDone2)
+{
+    QTJAMBI_NATIVE_METHOD_CALL("QtTaskTree::QCustomTask<JObjectWrapper>::QCustomTask<JObjectWrapper>(QtTaskTree::QSyncBoolSupplier&&)")
+    QTJAMBI_TRY {
+        jvalue arguments[3];
+        arguments[0].l = setup0;
+        arguments[1].l = done1;
+        arguments[2].l = callDone2;
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QThreadFunctionVoidTask, sizeof(QtTaskTree::QThreadFunctionTask<void>), alignof(QtTaskTree::QCustomTask<JObjectWrapper>), typeid(QtTaskTree::QCustomTask<JObjectWrapper>), 0, false, &__qt_delete_QThreadFunctionVoidTask, arguments);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+}
+
+void __qt_delete_QProcessTask(void *ptr, bool isShell)
 {
     QTJAMBI_NATIVE_METHOD_CALL("qtjambi_deleter for QtTaskTree::QCustomTask<JObjectWrapper>")
     QtTaskTree::QProcessTask *_ptr = reinterpret_cast<QtTaskTree::QProcessTask *>(ptr);
@@ -513,7 +597,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_tasktree_QCustomTask_initialize_1na
         arguments[0].l = setup0;
         arguments[1].l = done1;
         arguments[2].l = callDone2;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QProcessTask, sizeof(QtTaskTree::QProcessTask), alignof(QtTaskTree::QCustomTask<JObjectWrapper>), typeid(QtTaskTree::QCustomTask<JObjectWrapper>), 0, false, &deleter_QProcessTask, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QProcessTask, sizeof(QtTaskTree::QProcessTask), alignof(QtTaskTree::QCustomTask<JObjectWrapper>), typeid(QtTaskTree::QCustomTask<JObjectWrapper>), 0, false, &__qt_delete_QProcessTask, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -528,7 +612,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_tasktree_QCustomTask_clone_1nati
 {
     jobject __java_return_value = nullptr;
     QTJAMBI_TRY {
-        const QtTaskTree::QCustomTask<JObjectWrapper> *__qt_this = QtJambiAPI::objectFromNativeId<QtTaskTree::QCustomTask<JObjectWrapper>>(__this_nativeId);
+        const QtTaskTree::QCustomTask<JObjectWrapper> *__qt_this = qtjambi_cast<const QtTaskTree::QCustomTask<JObjectWrapper>*>(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         __java_return_value = qtjambi_cast<jobject>(__jni_env, *__qt_this);
     } QTJAMBI_CATCH(const JavaException& exn){
@@ -541,7 +625,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_tasktree_Timeout_getTimeout(JNIE
     jobject __java_return_value = nullptr;
     QTJAMBI_TRY {
         Q_ASSERT(__qt_directLink);
-        __java_return_value = QtJambiAPI::convertDuration(__jni_env, *reinterpret_cast<const std::chrono::milliseconds*>(__qt_directLink));
+        __java_return_value = qtjambi_cast<jobject>(__jni_env, *reinterpret_cast<const std::chrono::milliseconds*>(__qt_directLink));
     } QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     } QTJAMBI_TRY_END
@@ -551,7 +635,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_tasktree_Timeout_getTimeout(JNIE
 extern "C" JNIEXPORT void JNICALL Java_io_qt_tasktree_Timeout_setTimeout(JNIEnv *__jni_env, jclass, jlong __qt_directLink, jobject time){
     QTJAMBI_TRY {
         Q_ASSERT(__qt_directLink);
-        *reinterpret_cast<std::chrono::milliseconds*>(__qt_directLink) = QtJambiAPI::convertDuration(__jni_env, time, std::chrono::milliseconds{});
+        *reinterpret_cast<std::chrono::milliseconds*>(__qt_directLink) = qtjambi_cast<std::chrono::milliseconds>(__jni_env, time);
     } QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     } QTJAMBI_TRY_END
@@ -559,13 +643,13 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_tasktree_Timeout_setTimeout(JNIEnv 
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_tasktree_QTaskTree_onStorageSetup(JNIEnv *env, jclass, QtJambiNativeID __this_nativeId, QtJambiNativeID storage, jobject handler){
     QTJAMBI_TRY {
-        QtTaskTree::QTaskTree *__qt_this = QtJambiAPI::objectFromNativeId<QtTaskTree::QTaskTree>(__this_nativeId);
+        QtTaskTree::QTaskTree *__qt_this = qtjambi_cast<QtTaskTree::QTaskTree*>(__this_nativeId);
         QtJambiAPI::checkNullPointer(env, __qt_this);
-        const QtTaskTree::Storage<QVariant> &__qt_storage = QtJambiAPI::objectReferenceFromNativeId<QtTaskTree::Storage<QVariant>>(env, storage);
+        const QtTaskTree::Storage<QVariant> &__qt_storage = qtjambi_cast<QtTaskTree::Storage<QVariant>&>(env, storage);
         __qt_this->onStorageSetup(__qt_storage, [structType = __qt_storage.structType(), handler = JObjectWrapper(env, handler)](QVariant& storageStruct){
             if(JniEnvironment env{200}){
                 QTJAMBI_TRY{
-                    jobject variant = QtJambiAPI::convertQVariantToJavaVariant(env, storageStruct);
+                    jobject variant = qtjambi_cast<jcoreobject>(env, storageStruct);
                     InvalidateAfterUse invalidate(env, variant);
                     jobject activeStorage = Java::QtTaskTree::Storage$ActiveStorage::newInstance(env, structType.object(env), variant);
                     Java::Runtime::Consumer::accept(env, activeStorage);
@@ -581,13 +665,13 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_tasktree_QTaskTree_onStorageSetup(J
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_tasktree_QTaskTree_onStorageDone(JNIEnv *env, jclass, QtJambiNativeID __this_nativeId, QtJambiNativeID storage, jobject handler){
     QTJAMBI_TRY {
-        QtTaskTree::QTaskTree *__qt_this = QtJambiAPI::objectFromNativeId<QtTaskTree::QTaskTree>(__this_nativeId);
+        QtTaskTree::QTaskTree *__qt_this = qtjambi_cast<QtTaskTree::QTaskTree*>(__this_nativeId);
         QtJambiAPI::checkNullPointer(env, __qt_this);
-        const QtTaskTree::Storage<QVariant> &__qt_storage = QtJambiAPI::objectReferenceFromNativeId<QtTaskTree::Storage<QVariant>>(env, storage);
+        const QtTaskTree::Storage<QVariant> &__qt_storage = qtjambi_cast<QtTaskTree::Storage<QVariant>&>(env, storage);
         __qt_this->onStorageDone(__qt_storage, [handler = JObjectWrapper(env, handler)](const QVariant& storageStruct){
             if(JniEnvironment env{200}){
                 QTJAMBI_TRY{
-                    jobject activeStorage = QtJambiAPI::convertQVariantToJavaObject(env, storageStruct);
+                    jobject activeStorage = qtjambi_cast<jobject>(env, storageStruct);
                     Java::Runtime::Consumer::accept(env, activeStorage);
                 }QTJAMBI_CATCH(const JavaException& exn){
                     exn.report(env);
@@ -601,9 +685,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_tasktree_QTaskTree_onStorageDone(JN
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_tasktree_QTaskTree_onStorageSetupBarrier(JNIEnv *env, jclass, QtJambiNativeID __this_nativeId, QtJambiNativeID storage, jobject handler){
     QTJAMBI_TRY {
-        QtTaskTree::QTaskTree *__qt_this = QtJambiAPI::objectFromNativeId<QtTaskTree::QTaskTree>(__this_nativeId);
+        QtTaskTree::QTaskTree *__qt_this = qtjambi_cast<QtTaskTree::QTaskTree*>(__this_nativeId);
         QtJambiAPI::checkNullPointer(env, __qt_this);
-        const QtTaskTree::QStoredBarrier &__qt_storage = QtJambiAPI::objectReferenceFromNativeId<QtTaskTree::QStoredBarrier>(env, storage);
+        const QtTaskTree::QStoredBarrier &__qt_storage = qtjambi_cast<QtTaskTree::QStoredBarrier&>(env, storage);
         __qt_this->onStorageSetup(__qt_storage, [handler = JObjectWrapper(env, handler)](QtTaskTree::QStartedBarrier& storageStruct){
             if(JniEnvironment env{200}){
                 QTJAMBI_TRY{
@@ -620,9 +704,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_tasktree_QTaskTree_onStorageSetupBa
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_tasktree_QTaskTree_onStorageDoneBarrier(JNIEnv *env, jclass, QtJambiNativeID __this_nativeId, QtJambiNativeID storage, jobject handler){
     QTJAMBI_TRY {
-        QtTaskTree::QTaskTree *__qt_this = QtJambiAPI::objectFromNativeId<QtTaskTree::QTaskTree>(__this_nativeId);
+        QtTaskTree::QTaskTree *__qt_this = qtjambi_cast<QtTaskTree::QTaskTree*>(__this_nativeId);
         QtJambiAPI::checkNullPointer(env, __qt_this);
-        const QtTaskTree::QStoredBarrier &__qt_storage = QtJambiAPI::objectReferenceFromNativeId<QtTaskTree::QStoredBarrier>(env, storage);
+        const QtTaskTree::QStoredBarrier &__qt_storage = qtjambi_cast<QtTaskTree::QStoredBarrier&>(env, storage);
         __qt_this->onStorageDone(__qt_storage, [handler = JObjectWrapper(env, handler)](const QtTaskTree::QStartedBarrier& storageStruct){
             if(JniEnvironment env{200}){
                 QTJAMBI_TRY{
@@ -652,9 +736,9 @@ auto QtTaskTree::Storage<QVariant>::ctor(JNIEnv* env, jobject supplier) -> Stora
         if(JniEnvironment env{200}){
             QTJAMBI_TRY{
                 jobject value = Java::Runtime::Supplier::get(env, supplier.object(env));
-                QVariant variant = QtJambiAPI::convertJavaObjectToQVariant(env, value);
+                QVariant variant = qtjambi_cast<QVariant>(env, value);
                 if(variant.metaType().flags() & QMetaType::IsPointer){
-                    Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Unable to use %1 as storage.").arg(variant.metaType().name()) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseRuntimeException(env, QStringLiteral("Unable to use %1 as storage.").arg(variant.metaType().name()) QTJAMBI_STACKTRACEINFO );
                 }
                 return new QVariant(variant);
             }QTJAMBI_CATCH(const JavaException& exn){
@@ -683,7 +767,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/tasktree,Timeout,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/tasktree,Storage$ActiveStorage,
                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/Class;Lio/qt/core/QVariant;)
                                 )
-
 }
 }
 
@@ -694,7 +777,7 @@ void initialize_meta_info_QtTaskTree_impl(){
         Q_UNUSED(typeId)
         registerConstructorInfos(typeId, 0, &__qt_destruct_QtTaskTree_QCustomTask_JObjectWrapper_, {
                                                                                                    });
-        registerDeleter(typeId, &deleter_QtTaskTree_QCustomTask_JObjectWrapper_);
+        registerDeleter(typeId, &__qt_delete_QtTaskTree_QCustomTask_JObjectWrapper_);
         registerMetaType<QtTaskTree::QCustomTask<JObjectWrapper>>("QtTaskTree::QCustomTask<JObjectWrapper>");
     }
 }

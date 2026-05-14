@@ -209,7 +209,7 @@ void registerPluginImporter(){
                 return reinterpret_cast<void*>(convertNativeToJavaObjectAsCopy);
             }else if(QLatin1String(type)==QLatin1String("CoreAPI::metaObjectForClass")){
                 const QMetaObject *(*metaObjectForClass)(JNIEnv *, jclass) = [](JNIEnv *env, jclass cls)->const QMetaObject *{
-                    return CoreAPI::metaObjectForClass(env, cls);
+                    return ::metaObjectForClass(env, cls);
                 };
                 return reinterpret_cast<void*>(metaObjectForClass);
             }else if(QLatin1String(type)==QLatin1String("JNIEnv")){

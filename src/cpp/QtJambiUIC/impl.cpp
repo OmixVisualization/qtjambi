@@ -31,7 +31,9 @@
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/CoreAPI>
 #include <QtJambi/RegistryAPI>
-#include <QtJambi/qtjambi_cast.h>
+#include <QtJambi/ContainerCast>
+#include <QtJambi/ArithmeticCast>
+#include <QtJambi/Cast>
 
 extern "C" JNIEXPORT jstring JNICALL Java_io_qt_uic_java_WriteClass_getExternalTypeName(JNIEnv *env, jclass, jstring externalName){
     jstring result = nullptr;
@@ -46,12 +48,13 @@ extern "C" JNIEXPORT jstring JNICALL Java_io_qt_uic_java_WriteClass_getExternalT
 
 void initialize_meta_info_UIC(){
     using namespace RegistryAPI;
-    registerContainerAccessFactory(typeid(QHash<DomWidget*,QString>), NewContainerAccessFunction(&QtJambiPrivate::QHashAccess<DomWidget*,QString>::newInstance));
-    registerContainerAccessFactory(typeid(QHash<DomSpacer*,QString>), NewContainerAccessFunction(&QtJambiPrivate::QHashAccess<DomSpacer*,QString>::newInstance));
-    registerContainerAccessFactory(typeid(QHash<DomLayout*,QString>), NewContainerAccessFunction(&QtJambiPrivate::QHashAccess<DomLayout*,QString>::newInstance));
-    registerContainerAccessFactory(typeid(QHash<DomActionGroup*,QString>), NewContainerAccessFunction(&QtJambiPrivate::QHashAccess<DomActionGroup*,QString>::newInstance));
-    registerContainerAccessFactory(typeid(QHash<DomButtonGroup*,QString>), NewContainerAccessFunction(&QtJambiPrivate::QHashAccess<DomButtonGroup*,QString>::newInstance));
-    registerContainerAccessFactory(typeid(QHash<DomAction*,QString>), NewContainerAccessFunction(&QtJambiPrivate::QHashAccess<DomAction*,QString>::newInstance));
-    registerContainerAccessFactory(typeid(QHash<QString,bool>), NewContainerAccessFunction(&QtJambiPrivate::QHashAccess<QString,bool>::newInstance));
-    registerContainerAccessFactory(typeid(QHash<QString,DomProperty*>), NewContainerAccessFunction(&QtJambiPrivate::QHashAccess<QString,DomProperty*>::newInstance));
+    using namespace QtJambiPrivate;
+    registerContainerAccessFactory(typeid(QHash<DomWidget*,QString>), NewContainerAccessFunction(&QHashAccess<DomWidget*,QString>::newInstance));
+    registerContainerAccessFactory(typeid(QHash<DomSpacer*,QString>), NewContainerAccessFunction(&QHashAccess<DomSpacer*,QString>::newInstance));
+    registerContainerAccessFactory(typeid(QHash<DomLayout*,QString>), NewContainerAccessFunction(&QHashAccess<DomLayout*,QString>::newInstance));
+    registerContainerAccessFactory(typeid(QHash<DomActionGroup*,QString>), NewContainerAccessFunction(&QHashAccess<DomActionGroup*,QString>::newInstance));
+    registerContainerAccessFactory(typeid(QHash<DomButtonGroup*,QString>), NewContainerAccessFunction(&QHashAccess<DomButtonGroup*,QString>::newInstance));
+    registerContainerAccessFactory(typeid(QHash<DomAction*,QString>), NewContainerAccessFunction(&QHashAccess<DomAction*,QString>::newInstance));
+    registerContainerAccessFactory(typeid(QHash<QString,bool>), NewContainerAccessFunction(&QHashAccess<QString,bool>::newInstance));
+    registerContainerAccessFactory(typeid(QHash<QString,DomProperty*>), NewContainerAccessFunction(&QHashAccess<QString,DomProperty*>::newInstance));
 }

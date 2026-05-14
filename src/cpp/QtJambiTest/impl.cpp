@@ -33,7 +33,8 @@
 #include <QtTest/QSignalSpy>
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/RegistryAPI>
-#include <QtJambi/qtjambi_cast.h>
+
+#include <QtJambi/Cast>
 #include <QtGui/QPointingDevice>
 
 namespace QTest{

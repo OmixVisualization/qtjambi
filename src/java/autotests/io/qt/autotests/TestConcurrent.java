@@ -45,8 +45,6 @@ import org.junit.Test;
 import io.qt.QNoImplementationException;
 import io.qt.autotests.generated.FutureHandler;
 import io.qt.concurrent.QtConcurrent;
-import io.qt.concurrent.QtConcurrent.QTypedPromiseTaskBuilder1Arg1;
-import io.qt.concurrent.QtConcurrent.QTypedTaskBuilder1Arg1;
 import io.qt.core.QFuture;
 import io.qt.core.QFutureInterface;
 import io.qt.core.QFutureSynchronizer;
@@ -157,7 +155,8 @@ public class TestConcurrent extends ApplicationInitializer {
 
         future.waitForFinished();
         assertEquals(1, future.resultCount());
-        assertEquals(n, Integer.parseInt(future.result()));
+        String result = future.result();
+        assertEquals(n, Integer.parseInt(result));
     }
 
     @Test
@@ -188,14 +187,16 @@ public class TestConcurrent extends ApplicationInitializer {
         for (int i=0; i<COUNT*2; ++i)
             ints.add(i);
 
-        QFuture<Integer> future = QtConcurrent.filtered(ints, i->i >= COUNT);
+        QFuture<Integer> future = QtConcurrent.filtered(ints, 
+        		i->i >= COUNT
+    		);
 
         future.waitForFinished();
         assertEquals(COUNT*2, ints.size());
         assertEquals(COUNT, future.resultCount());
 
         List<Integer> lst = future.results();
-        for (int i=0; i<future.resultCount(); ++i)
+        for (int i=0; i<lst.size(); ++i)
             assertEquals(i+COUNT, (int) lst.get(i));
     }
 
@@ -613,7 +614,7 @@ public class TestConcurrent extends ApplicationInitializer {
 	
 	@Test
     public void testTaskWithThreadPool() {
-		QTypedTaskBuilder1Arg1<Integer, String> task = QtConcurrent.task((String number)->{
+		var task = QtConcurrent.task((String number)->{
 			QThread.msleep(200);
 			return Integer.parseInt(number);
 		}).withArguments("12342").onThreadPool(pool);
@@ -623,7 +624,7 @@ public class TestConcurrent extends ApplicationInitializer {
 	
 	@Test
     public void testTaskWithPromiseWithThreadPool() {
-		QTypedPromiseTaskBuilder1Arg1<Integer, String> task = QtConcurrent.task((QPromise<Integer> promise, String number)->{
+		var task = QtConcurrent.task((QPromise<Integer> promise, String number)->{
 			QThread.msleep(200);
 			promise.addResult(Integer.parseInt(number));
 		}).withArguments("12343").onThreadPool(pool);
@@ -666,7 +667,7 @@ public class TestConcurrent extends ApplicationInitializer {
 	
 	@Test
     public void testTask() {
-		QTypedTaskBuilder1Arg1<Integer, String> task = QtConcurrent.task((String number)->{
+		var task = QtConcurrent.task((String number)->{
 			QThread.msleep(200);
 			return Integer.parseInt(number);
 		}).withArguments("12346");
@@ -676,7 +677,7 @@ public class TestConcurrent extends ApplicationInitializer {
 	
 	@Test
     public void testTaskWithPromise() {
-		QTypedPromiseTaskBuilder1Arg1<Integer, String> task = QtConcurrent.task((QPromise<Integer> promise, String number)->{
+		var task = QtConcurrent.task((QPromise<Integer> promise, String number)->{
 			QThread.msleep(200);
 			promise.addResult(Integer.parseInt(number));
 			promise.addResult(Integer.parseInt(number.substring(1)));

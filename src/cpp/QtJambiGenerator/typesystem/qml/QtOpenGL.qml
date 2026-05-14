@@ -183,7 +183,7 @@ TypeSystem{
         preferredConversion: false
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLESFunctions"
         InjectCode{
             target: CodeClass.Native
@@ -531,7 +531,7 @@ TypeSystem{
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_0_template_until_4_5"
         ModifyFunction{
             signature: "glGetBooleanv(GLenum, GLboolean *)"
@@ -626,7 +626,7 @@ TypeSystem{
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_0_template_until_4_4"
         ModifyFunction{
             signature: "glReadPixels(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, GLvoid *)"
@@ -658,7 +658,7 @@ TypeSystem{
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_0_template_since_4_4"
         ModifyFunction{
             signature: "glReadPixels(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, void *)"
@@ -690,7 +690,7 @@ TypeSystem{
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_0_template_until_3_1A"
         ModifyFunction{
             signature: "glPixelMapfv(GLenum, GLint, const GLfloat *)"
@@ -729,7 +729,7 @@ TypeSystem{
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_0_template_until_3_1B"
         ModifyFunction{
             signature: "glPixelMapfv(GLenum, GLsizei, const GLfloat *)"
@@ -768,7 +768,7 @@ TypeSystem{
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_0_template_until_3_1"
         ModifyFunction{
             signature: "glColor4ub(GLubyte,GLubyte,GLubyte,GLubyte)"
@@ -1808,7 +1808,7 @@ TypeSystem{
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_1_deprecated"
         ModifyFunction{
             signature: "glAreTexturesResident(GLsizei, const GLuint *, GLboolean *)"
@@ -1839,7 +1839,7 @@ TypeSystem{
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_1_deprecatedA"
         ModifyFunction{
             signature: "glColorPointer(GLint, GLenum, GLsizei, const GLvoid *)"
@@ -1892,7 +1892,7 @@ TypeSystem{
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_1_deprecatedB"
         ModifyFunction{
             signature: "glColorPointer(GLint, GLenum, GLsizei, const void *)"
@@ -1945,8 +1945,14 @@ TypeSystem{
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_1"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/BufferAPI"
+                location: Include.Global
+            }
+        }
         ModifyFunction{
             signature: "glGenTextures(GLsizei, GLuint *)"
             ModifyArgument{
@@ -1963,8 +1969,14 @@ TypeSystem{
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_1A"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/BufferAPI"
+                location: Include.Global
+            }
+        }
         ModifyFunction{
             signature: "glGetPointerv(GLenum, GLvoid**)"
             ModifyArgument{
@@ -1972,7 +1984,7 @@ TypeSystem{
                 NoNullPointer{
                 }
                 ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
+                    modifiedType: "java.nio.@NonNull Buffer @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2013,7 +2025,7 @@ TypeSystem{
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_1B"
         ModifyFunction{
             signature: "glDrawElements(GLenum, GLsizei, GLenum, const void *)"
@@ -2038,7 +2050,7 @@ TypeSystem{
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_1_until_4_4"
         ModifyFunction{
             signature: "glIndexubv(const GLubyte *)"
@@ -2051,7 +2063,7 @@ TypeSystem{
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_1B_until_4_4"
         ModifyFunction{
             signature: "glGetPointerv(GLenum, void**)"
@@ -2060,7 +2072,7 @@ TypeSystem{
                 NoNullPointer{
                 }
                 ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
+                    modifiedType: "java.nio.@NonNull Buffer @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2080,9 +2092,17 @@ TypeSystem{
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_4A"
         ExtraIncludes{
+            Include{
+                fileName: "QtJambi/BufferAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/ArithmeticCast"
+                location: Include.Global
+            }
             Include{
                 fileName: "QtJambi/JavaAPI"
                 location: Include.Global
@@ -2099,7 +2119,7 @@ TypeSystem{
                 NoNullPointer{
                 }
                 ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
+                    modifiedType: "java.nio.@NonNull Buffer @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2122,9 +2142,17 @@ if(%out.size()==0)
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_4B"
         ExtraIncludes{
+            Include{
+                fileName: "QtJambi/BufferAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/ArithmeticCast"
+                location: Include.Global
+            }
             Include{
                 fileName: "QtJambi/JavaAPI"
                 location: Include.Global
@@ -2141,7 +2169,7 @@ if(%out.size()==0)
                 NoNullPointer{
                 }
                 ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
+                    modifiedType: "java.nio.@NonNull Buffer @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2161,8 +2189,14 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_5"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/BufferAPI"
+                location: Include.Global
+            }
+        }
         ModifyFunction{
             signature: "glMapBuffer(GLenum, GLenum)"
             ModifyArgument{
@@ -2178,25 +2212,30 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_2_0"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/StringAPI"
+                location: Include.Global
+            }
+        }
         ModifyFunction{
             signature: "glShaderSource(GLuint, GLsizei, const GLchar *const*, const GLint*)"
             ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.lang.String[]"
+                    modifiedType: "java.lang.@NonNull String @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
-                                  "const char** %out = nullptr;\n"+
-                                  "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
-                                  "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
-                                  "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        jsize length = %env->GetArrayLength(jarray(%in));
+                        auto %outPtr = std::make_unique<const char*[]>(size_t(length));
+                        const char** %out = %outPtr.get();
+                        for(jsize i=0; i<length; ++i){
+                            %out[i] = qtjambi_cast<const char*>(%env, %scope, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));
+                        }`}
                 }
             }
             ModifyArgument{
@@ -2215,14 +2254,14 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_5A"
         ModifyFunction{
             signature: "glGetBufferPointerv(GLenum, GLenum, GLvoid **)"
             ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
+                    modifiedType: "java.nio.@NonNull Buffer @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2242,14 +2281,14 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_5B"
         ModifyFunction{
             signature: "glGetBufferPointerv(GLenum, GLenum, void **)"
             ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
+                    modifiedType: "java.nio.@NonNull Buffer @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2269,7 +2308,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_2_0A"
         Import{
             template: "QOpenGLFunctions_2_0"
@@ -2288,7 +2327,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
+                    modifiedType: "java.nio.@NonNull Buffer @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2305,14 +2344,14 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_2_0B"
         ModifyFunction{
             signature: "glGetBufferPointerv(GLenum, GLenum, void **)"
             ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
+                    modifiedType: "java.nio.@NonNull Buffer @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2332,7 +2371,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_2_0B"
         Import{
             template: "QOpenGLFunctions_2_0"
@@ -2351,7 +2390,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
+                    modifiedType: "java.nio.@NonNull Buffer @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2368,8 +2407,14 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_3_0"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/StringAPI"
+                location: Include.Global
+            }
+        }
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
@@ -2391,18 +2436,17 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.lang.String[]"
+                    modifiedType: "java.lang.@NonNull String @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
-                                  "const GLchar** %out = nullptr;\n"+
-                                  "QScopedArrayPointer<const GLchar*> %outPtr(%out = new const GLchar*[quint32(__qt_%2)]);\n"+
-                                  "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
-                                  "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        jsize length = %env->GetArrayLength(jarray(%in));
+                        auto %outPtr = std::make_unique<const char*[]>(size_t(length));
+                        const char** %out = %outPtr.get();
+                        for(jsize i=0; i<length; ++i){
+                            %out[i] = qtjambi_cast<const char*>(%env, %scope, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));
+                        }`}
                 }
             }
         }
@@ -2442,7 +2486,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             ModifyArgument{
                 index: 7
                 ReplaceType{
-                    modifiedType: "java.lang.String[]"
+                    modifiedType: "java.lang.@NonNull String @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2496,7 +2540,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_3_1"
         Import{
             template: "QOpenGLFunctions_3_0"
@@ -2515,18 +2559,17 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.lang.String[]"
+                    modifiedType: "java.lang.@NonNull String @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
-                                  "const char** %out = nullptr;\n"+
-                                  "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
-                                  "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
-                                  "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        jsize length = %env->GetArrayLength(jarray(%in));
+                        auto %outPtr = std::make_unique<const char*[]>(size_t(length));
+                        const char** %out = %outPtr.get();
+                        for(jsize i=0; i<length; ++i){
+                            %out[i] = qtjambi_cast<const char*>(%env, %scope, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));
+                        }`}
                 }
             }
             ModifyArgument{
@@ -2542,8 +2585,14 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_3_2"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/BufferAPI"
+                location: Include.Global
+            }
+        }
         ModifyFunction{
             signature: "glGetSynciv(__GLsync *, GLenum, GLsizei, GLsizei *, GLint *)"
             ModifyArgument{
@@ -2571,7 +2620,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_3_2A"
         Import{
             template: "QOpenGLFunctions_3_2"
@@ -2579,6 +2628,10 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/ArithmeticCast"
                 location: Include.Global
             }
         }
@@ -2593,7 +2646,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 NoNullPointer{
                 }
                 ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
+                    modifiedType: "java.nio.@NonNull Buffer @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2617,7 +2670,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_3_2B"
         Import{
             template: "QOpenGLFunctions_3_2"
@@ -2625,6 +2678,10 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/ArithmeticCast"
                 location: Include.Global
             }
         }
@@ -2639,7 +2696,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 NoNullPointer{
                 }
                 ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
+                    modifiedType: "java.nio.@NonNull Buffer @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2663,7 +2720,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_4_1"
         Import{
             template: "QOpenGLFunctions_3_1"
@@ -2692,7 +2749,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             ModifyArgument{
                 index: 4
                 ReplaceType{
-                    modifiedType: "java.lang.String[]"
+                    modifiedType: "java.lang.@NonNull String @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2714,18 +2771,17 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.lang.String[]"
+                    modifiedType: "java.lang.@NonNull String @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
-                                  "const char** %out = nullptr;\n"+
-                                  "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
-                                  "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
-                                  "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        jsize length = %env->GetArrayLength(jarray(%in));
+                        auto %outPtr = std::make_unique<const char*[]>(size_t(length));
+                        const char** %out = %outPtr.get();
+                        for(jsize i=0; i<length; ++i){
+                            %out[i] = qtjambi_cast<const char*>(%env, %scope, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));
+                        }`}
                 }
             }
             ModifyArgument{
@@ -2740,7 +2796,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_4_3"
         Import{
             template: "QOpenGLFunctions_4_1"
@@ -2769,7 +2825,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             ModifyArgument{
                 index: 6
                 ReplaceType{
-                    modifiedType: "java.lang.String[]"
+                    modifiedType: "java.lang.@NonNull String @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2788,7 +2844,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_4_4"
         Import{
             template: "QOpenGLFunctions_4_3"
@@ -2872,7 +2928,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             ModifyArgument{
                 index: 8
                 ReplaceType{
-                    modifiedType: "java.lang.String[]"
+                    modifiedType: "java.lang.@NonNull String @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2930,7 +2986,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             ModifyArgument{
                 index: 4
                 ReplaceType{
-                    modifiedType: "java.lang.String[]"
+                    modifiedType: "java.lang.@NonNull String @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2971,7 +3027,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             ModifyArgument{
                 index: 5
                 ReplaceType{
-                    modifiedType: "java.lang.String[]"
+                    modifiedType: "java.lang.@NonNull String @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -3006,25 +3062,30 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 index: 2
                 RemoveArgument{
                 }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`GLsizei %out = %3 ? %env->GetStringUTFLength(%3) : 0;`}
+                }
             }
             ModifyArgument{
                 index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, %in);\n"+
-                                  "GLsizei %2(%out.length());"}
+                AsString{}
+                NoNullPointer{
                 }
             }
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_4_5"
         Import{
             template: "QOpenGLFunctions_4_4"
+        }
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/BufferAPI"
+                location: Include.Global
+            }
         }
         ModifyFunction{
             signature: "glMapNamedBuffer(GLuint, GLenum)"
@@ -3072,7 +3133,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
+                    modifiedType: "java.nio.@NonNull Buffer @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -3089,7 +3150,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_0_template_full"
         Import{
             template: "QOpenGLFunctions_1_0_template_until_3_1"
@@ -3105,7 +3166,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_0_template_full2"
         Import{
             template: "QOpenGLFunctions_1_0_template_until_3_1"
@@ -3121,7 +3182,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_1_template_full"
         Import{
             template: "QOpenGLFunctions_1_1"
@@ -3140,7 +3201,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_1_template_full2"
         Import{
             template: "QOpenGLFunctions_1_1"
@@ -3162,7 +3223,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_1_template_until_4_5"
         Import{
             template: "QOpenGLFunctions_1_1"
@@ -3172,7 +3233,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         }
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QOpenGLFunctions_1_1_template_until_4_5B"
         Import{
             template: "QOpenGLFunctions_1_1"
@@ -3283,6 +3344,10 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/ArithmeticCast"
                 location: Include.Global
             }
         }
@@ -3935,15 +4000,23 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
     
     ObjectType{
         name: "QOpenGLFunctions_ES2"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/BufferAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/ArrayAPI"
+                location: Include.Global
+            }
+        }
         ppCondition: "QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_ES2>)"
         forceFinal: true
         ModifyFunction{
             signature: "glBindAttribLocation(GLuint,GLuint,const GLchar*)"
             ModifyArgument{
                 index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
+                AsString{}
             }
         }
         ModifyFunction{
@@ -3951,7 +4024,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
+                    modifiedType: "java.nio.@NonNull Buffer @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -4049,9 +4122,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             signature: "glGetAttribLocation(GLuint, const GLchar*)"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
+                AsString{}
             }
         }
         ModifyFunction{
@@ -4092,18 +4163,17 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.lang.String[]"
+                    modifiedType: "java.lang.@NonNull String @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
-                                  "const char** %out = nullptr;\n"+
-                                  "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
-                                  "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
-                                  "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        jsize length = %env->GetArrayLength(jarray(%in));
+                        auto %outPtr = std::make_unique<const char*[]>(size_t(length));
+                        const char** %out = %outPtr.get();
+                        for(jsize i=0; i<length; ++i){
+                            %out[i] = qtjambi_cast<const char*>(%env, %scope, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));
+                        }`}
                 }
             }
             ModifyArgument{
@@ -4136,9 +4206,7 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             signature: "glGetUniformLocation(GLuint, const GLchar*)"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
+                AsString{}
             }
         }
         ModifyFunction{

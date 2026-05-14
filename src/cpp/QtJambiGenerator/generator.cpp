@@ -62,6 +62,7 @@
 #include "metainfogenerator.h"
 #include <jni.h>
 #include <QtCore/QCommandLineOption>
+#include <QtConcurrent/QtConcurrent>
 
 QT_WARNING_DISABLE_DEPRECATED
 
@@ -480,35 +481,6 @@ void GeneratorApplication::parseArguments(){
 
 void dumpMetaJavaClass(const MetaClass *cls);
 
-template <class Function>
-auto concurrent_run(Function&& f){
-    typedef decltype(std::declval<Function>()()) ReturnType;
-    QFutureInterface<ReturnType> promise;
-    promise.setThreadPool(QThreadPool::globalInstance());
-    QRunnable* runnable = QRunnable::create([promise, function = std::move(f)]() mutable {
-        if (promise.isCanceled()) {
-            promise.reportFinished();
-            return;
-        }
-        try {
-            if constexpr(std::is_same<void,ReturnType>::value){
-                function();
-            }else{
-                promise.reportResult(function());
-            }
-        } catch (QException &e) {
-            promise.reportException(e);
-        } catch (...) {
-            promise.reportException(std::current_exception());
-        }
-        promise.reportFinished();
-    });
-    promise.setRunnable(runnable);
-    promise.reportStarted();
-    QThreadPool::globalInstance()->start(runnable);
-    return promise.future();
-}
-
 int GeneratorApplication::generate() {
     try{
         //parse the type system file
@@ -517,7 +489,7 @@ int GeneratorApplication::generate() {
         QFuture<void> typeSystemFuture;
         QFuture<const DocModel*> docModelFuture;
         if (!m_astToXml) {
-            typeSystemFuture = concurrent_run([this,&versionAvailable,&docDirectoryAvailable](){
+            typeSystemFuture = QtConcurrent::run([this,&versionAvailable,&docDirectoryAvailable](){
                 versionAvailable.acquire(3);
                 if(m_docsDirectory.isEmpty()){
                     if(m_qtVersionMajor==QT_VERSION_MAJOR && m_qtVersionMinor==QT_VERSION_MINOR){
@@ -541,7 +513,7 @@ int GeneratorApplication::generate() {
             if(!m_dumpObjectTree && m_generateTypeSystemQML.isEmpty()){
                 QThread* targetThread = QThread::currentThread();
                 if(m_docsDirectory.isEmpty()){
-                    docModelFuture = concurrent_run([&docDirectoryAvailable,targetThread,this]() -> const DocModel* {
+                    docModelFuture = QtConcurrent::run([&docDirectoryAvailable,targetThread,this]() -> const DocModel* {
                         docDirectoryAvailable.acquire();
                         QDir docsDirectory(m_docsDirectory);
                         if(docsDirectory.exists()){
@@ -550,7 +522,7 @@ int GeneratorApplication::generate() {
                         }else return nullptr;
                     });
                 }else{
-                    docModelFuture = concurrent_run([this, targetThread]() -> const DocModel* {
+                    docModelFuture = QtConcurrent::run([this, targetThread]() -> const DocModel* {
                         QDir docsDirectory(m_docsDirectory);
                         if(docsDirectory.exists()){
                             DocIndexReader reader;
@@ -776,7 +748,7 @@ int GeneratorApplication::generate() {
                     generator->printClasses();
                 }else{
                     QString context = contexts.at(i);
-                    generated << concurrent_run([generator, context](){
+                    generated << QtConcurrent::run([generator, context](){
                                  ReportHandler::setContext(context);
                                  generator->generate();
                     });

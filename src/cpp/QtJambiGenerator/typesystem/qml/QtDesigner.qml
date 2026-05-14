@@ -161,6 +161,12 @@ TypeSystem{
     
     InterfaceType{
         name: "QDesignerLanguageExtension"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/ArrayCast"
+                location: Include.Global
+            }
+        }
         ModifyFunction{
             signature: "createFormWindowSettingsDialog(QDesignerFormWindowInterface*,QWidget*)"
             ModifyArgument{
@@ -1263,6 +1269,12 @@ TypeSystem{
     
     ObjectType{
         name: "QDesignerIntegration"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/ArrayCast"
+                location: Include.Global
+            }
+        }
         ModifyFunction{
             signature: "createResourceBrowser(QWidget*)"
             ModifyArgument{

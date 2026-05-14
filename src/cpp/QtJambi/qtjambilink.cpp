@@ -714,8 +714,8 @@ struct OwnerInfo{
 };
 template<typename Super>
 struct OwnerInfo<Super,true> : OwnerInfo<Super,false>{
-    typedef typename std::conditional<std::is_same<typename Super::SmartPointerType,QWeakPointer<char>>::value, QSharedPointer<char>,
-                                      typename std::conditional<std::is_same<typename Super::SmartPointerType,std::weak_ptr<char>>::value, std::shared_ptr<char>, typename Super::SmartPointerType>::type>::type SharedPointerT;
+    typedef std::conditional_t<std::is_same_v<typename Super::SmartPointerType,QWeakPointer<char>>, QSharedPointer<char>,
+                                      std::conditional_t<std::is_same_v<typename Super::SmartPointerType,std::weak_ptr<char>>, std::shared_ptr<char>, typename Super::SmartPointerType>> SharedPointerT;
     SharedPointerT shared_pointer;
 };
 
@@ -728,8 +728,8 @@ private:
         OwnerInfo<Super> ownerInfo;
         QtJambiLinkWriteLock locker;
         if constexpr(Super::IS_SMART_POINTER){
-            if constexpr(std::is_same<typename Super::SmartPointerType,QWeakPointer<char>>::value
-                    || std::is_same<typename Super::SmartPointerType,std::weak_ptr<char>>::value){
+            if constexpr(std::is_same_v<typename Super::SmartPointerType,QWeakPointer<char>>
+                    || std::is_same_v<typename Super::SmartPointerType,std::weak_ptr<char>>){
                 ownerInfo.shared_pointer = this->m_smartPointer.lock();
             }else{
                 ownerInfo.shared_pointer = this->m_smartPointer;
@@ -810,8 +810,8 @@ protected:
         return QtJambiLink::getStrongPointer().template staticCast<SmartPointerLink<SmartPointer_,T_>>();
     }
 public:
-    typedef typename std::conditional<std::is_same<SmartPointerType,QWeakPointer<T>>::value, QSharedPointer<T>,
-                                      typename std::conditional<std::is_same<SmartPointerType,std::weak_ptr<T>>::value, std::shared_ptr<T>, SmartPointerType>::type>::type SharedPointerT;
+    typedef std::conditional_t<std::is_same<SmartPointerType,QWeakPointer<T>>::value, QSharedPointer<T>,
+                                      std::conditional_t<std::is_same<SmartPointerType,std::weak_ptr<T>>::value, std::shared_ptr<T>, SmartPointerType>> SharedPointerT;
     void setCppOwnership(JNIEnv *env) override final;
     void setSplitOwnership(JNIEnv *env) override final;
     void setJavaOwnership(JNIEnv *env) override final;
@@ -1201,9 +1201,9 @@ public:
                 if(JniEnvironment env{128}){
                     if(jobject obj = getJavaObjectLocalRef(env)){
                         QString className = QtJambiAPI::getObjectClassNamePrintable(env, obj);
-                        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Object of type %s points to dangling pointer %p", qPrintable(className), ptr) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("Object of type %s points to dangling pointer %p", qPrintable(className), ptr) QTJAMBI_STACKTRACEINFO );
                     }else{
-                        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Dangling pointer %p detected", ptr) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("Dangling pointer %p detected", ptr) QTJAMBI_STACKTRACEINFO );
                     }
                 }else{
                     ptr = nullptr;
@@ -2131,15 +2131,15 @@ struct SmartContainerDeleter : SmartPointerDeleter<SmartPointer,char>{
 template<template<typename> class SmartPointer>
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToQObject(JNIEnv *env, jobject javaObject, SafeBool created_by_java, QtJambiLink::Ownership ownership, SafeBool is_shell, QObject* object, SafeBool isQThread, SmartPointer<QObject>& smartPointer, const QMetaObject* superTypeForCustomMetaObject)
 {
-    typedef typename std::conditional<std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value, QSharedPointer<QObject>,
-                                      typename std::conditional<std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value, std::shared_ptr<QObject>, SmartPointer<QObject>>::type>::type SharedPointerT;
-    typedef typename std::conditional</*if*/std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value,
+    typedef std::conditional_t<std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value, QSharedPointer<QObject>,
+                                      std::conditional_t<std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value, std::shared_ptr<QObject>, SmartPointer<QObject>>> SharedPointerT;
+    typedef std::conditional_t</*if*/std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value,
                                       /*then*/QObjectSmartPointerLink<QSharedPointer>,
-                                      /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value,
+                                      /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value,
                                                                         /*then*/QObjectSmartPointerLink<std::shared_ptr>,
-                                                                        /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<QObject>,QSharedPointer<QObject>>::value,
+                                                                        /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<QObject>,QSharedPointer<QObject>>::value,
                                                                                                           /*then*/QObjectSmartPointerLink<QWeakPointer>,
-                                                                                                          /*else*/QObjectSmartPointerLink<std::weak_ptr>>::type>::type>::type Link;
+                                                                                                          /*else*/QObjectSmartPointerLink<std::weak_ptr>>>> Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(object);
@@ -2156,13 +2156,13 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToQObject(J
         if(extraSignals.isEmpty())
             qtJambiLink.reset(new PlainQObjectSmartPointerLink(env, nativeLink, javaObject, created_by_java, ownership, is_shell, object, isQThread, smartPointerTarget, ocurredException));
         else{
-            typedef typename std::conditional</*if*/std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value,
+            typedef std::conditional_t</*if*/std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value,
                                               /*then*/QObjectWithExtraSignalsSmartPointerLink<QSharedPointer>,
-                                              /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value,
+                                              /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value,
                                                                                 /*then*/QObjectWithExtraSignalsSmartPointerLink<std::shared_ptr>,
-                                                                                /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<QObject>,QSharedPointer<QObject>>::value,
+                                                                                /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<QObject>,QSharedPointer<QObject>>::value,
                                                                                                                   /*then*/QObjectWithExtraSignalsSmartPointerLink<QWeakPointer>,
-                                                                                                                  /*else*/QObjectWithExtraSignalsSmartPointerLink<std::weak_ptr>>::type>::type>::type ExtraLink;
+                                                                                                                  /*else*/QObjectWithExtraSignalsSmartPointerLink<std::weak_ptr>>>> ExtraLink;
             qtJambiLink.reset(new ExtraLink(env, nativeLink, javaObject, created_by_java, ownership, is_shell, object, isQThread, smartPointerTarget, ocurredException));
         }
     }
@@ -2348,7 +2348,7 @@ template<template<typename> class SmartPointer>
 QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
                                                                                           LINK_NAME_ARG(const char* qt_name)
                                                                                           SafeBool created_by_java, SafeBool is_shell,
-                                                                                          const QObject* extension,
+                                                                                          QPointer<const QObject>&& extension,
                                                                                           const SmartPointer<char>& smartPointer)
 {
     Q_ASSERT(env);
@@ -2366,7 +2366,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForSmartPointerToObje
                                                                    smartPointer.get(),
                                                                    smartPointerTarget,
                                                                    ocurredException)};
-    qtJambiLink->m_extension = extension;
+    qtJambiLink->m_extension = std::move(extension);
     *smartPointerTarget = smartPointer;
     if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
@@ -2382,7 +2382,7 @@ template<template<typename> class SmartPointer>
 QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
                                                                                           LINK_NAME_ARG(const char* qt_name)
                                                                                           SafeBool created_by_java, SafeBool is_shell,
-                                                                                          const QObject* extension,
+                                                                                          QPointer<const QObject>&& extension,
                                                                                           PtrOwnerFunction ownerFunction,
                                                                                           const SmartPointer<char>& smartPointer)
 {
@@ -2404,7 +2404,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForSmartPointerToObje
                                                                    smartPointerTarget,
                                                                    ocurredException)};
     qtJambiLink->m_owner_function = ownerFunction;
-    qtJambiLink->m_extension = extension;
+    qtJambiLink->m_extension = std::move(extension);
     *smartPointerTarget = smartPointer;
     if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
@@ -2419,37 +2419,37 @@ QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForSmartPointerToObje
 QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
                                                                                           LINK_NAME_ARG(const char* qt_name)
                                                                                           SafeBool created_by_java, SafeBool is_shell,
-                                                                                          const QObject* extension,
+                                                                                          QPointer<const QObject>&& extension,
                                                                                           const std::shared_ptr<char>& smartPointer){
     return createExtendedLinkForSmartPointerToObject<std::shared_ptr>(env, javaObject,
                                                                      LINK_NAME_ARG(qt_name)
                                                                      created_by_java, is_shell,
-                                                                     extension,
+                                                                     std::move(extension),
                                                                      smartPointer);
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
                                                                                           LINK_NAME_ARG(const char* qt_name)
                                                                                           SafeBool created_by_java, SafeBool is_shell,
-                                                                                          const QObject* extension,
+                                                                                          QPointer<const QObject>&& extension,
                                                                                           const QSharedPointer<char>& smartPointer){
     return createExtendedLinkForSmartPointerToObject<QSharedPointer>(env, javaObject,
                                                                      LINK_NAME_ARG(qt_name)
                                                                      created_by_java, is_shell,
-                                                                     extension,
+                                                                     std::move(extension),
                                                                      smartPointer);
 }
 
 QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
                                                                                           LINK_NAME_ARG(const char* qt_name)
                                                                                           SafeBool created_by_java, SafeBool is_shell,
-                                                                                          const QObject* extension,
+                                                                                          QPointer<const QObject>&& extension,
                                                                                           PtrOwnerFunction ownerFunction,
                                                                                           const std::shared_ptr<char>& smartPointer){
     return createExtendedLinkForSmartPointerToObject<std::shared_ptr>(env, javaObject,
                                                                      LINK_NAME_ARG(qt_name)
                                                                      created_by_java, is_shell,
-                                                                     extension,
+                                                                     std::move(extension),
                                                                      ownerFunction,
                                                                      smartPointer);
 }
@@ -2457,13 +2457,13 @@ QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForSmartPointerToObje
 QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForSmartPointerToObject(JNIEnv *env, jobject javaObject,
                                                                                           LINK_NAME_ARG(const char* qt_name)
                                                                                           SafeBool created_by_java, SafeBool is_shell,
-                                                                                          const QObject* extension,
+                                                                                          QPointer<const QObject>&& extension,
                                                                                           PtrOwnerFunction ownerFunction,
                                                                                           const QSharedPointer<char>& smartPointer){
     return createExtendedLinkForSmartPointerToObject<QSharedPointer>(env, javaObject,
                                                                      LINK_NAME_ARG(qt_name)
                                                                      created_by_java, is_shell,
-                                                                     extension,
+                                                                     std::move(extension),
                                                                      ownerFunction,
                                                                      smartPointer);
 }
@@ -2476,15 +2476,15 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
                                                                                   const QMetaType& elementMetaType,
                                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo)
 {
-    typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
-                                      typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
-    typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
+    typedef std::conditional_t<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
+                                      std::conditional_t<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>> SharedPointerT;
+    typedef std::conditional_t</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
                                       /*then*/InterfaceLink<OwnedMetaTypedObjectSmartPointerLink<QSharedPointer>>,
-                                      /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
+                                      /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
                                                                         /*then*/InterfaceLink<OwnedMetaTypedObjectSmartPointerLink<std::shared_ptr>>,
-                                                                        /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
+                                                                        /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
                                                                                                           /*then*/InterfaceLink<OwnedMetaTypedObjectSmartPointerLink<QWeakPointer>>,
-                                                                                                          /*else*/InterfaceLink<OwnedMetaTypedObjectSmartPointerLink<std::weak_ptr>>>::type>::type>::type Link;
+                                                                                                          /*else*/InterfaceLink<OwnedMetaTypedObjectSmartPointerLink<std::weak_ptr>>>>> Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(pointer);
@@ -2522,15 +2522,15 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
                                                                                   const QMetaType& elementMetaType,
                                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo)
 {
-    typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
-                                      typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
-    typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
+    typedef std::conditional_t<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
+                                      std::conditional_t<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>> SharedPointerT;
+    typedef std::conditional_t</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
                                       /*then*/InterfaceLink<MetaTypedObjectSmartPointerLink<QSharedPointer>>,
-                                      /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
+                                      /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
                                                                         /*then*/InterfaceLink<MetaTypedObjectSmartPointerLink<std::shared_ptr>>,
-                                                                        /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
+                                                                        /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
                                                                                                           /*then*/InterfaceLink<MetaTypedObjectSmartPointerLink<QWeakPointer>>,
-                                                                                                          /*else*/InterfaceLink<MetaTypedObjectSmartPointerLink<std::weak_ptr>>>::type>::type>::type Link;
+                                                                                                          /*else*/InterfaceLink<MetaTypedObjectSmartPointerLink<std::weak_ptr>>>>> Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(pointer);
@@ -2628,15 +2628,15 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
                                                                                   SmartPointer<char>& smartPointer,
                                                                                   const QMetaType& elementMetaType)
 {
-    typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
-                                      typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
-    typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
+    typedef std::conditional_t<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
+                                      std::conditional_t<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>> SharedPointerT;
+    typedef std::conditional_t</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
                                       /*then*/OwnedMetaTypedObjectSmartPointerLink<QSharedPointer>,
-                                      /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
+                                      /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
                                                                         /*then*/OwnedMetaTypedObjectSmartPointerLink<std::shared_ptr>,
-                                                                        /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
+                                                                        /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
                                                                                                           /*then*/OwnedMetaTypedObjectSmartPointerLink<QWeakPointer>,
-                                                                                                          /*else*/OwnedMetaTypedObjectSmartPointerLink<std::weak_ptr>>::type>::type>::type Link;
+                                                                                                          /*else*/OwnedMetaTypedObjectSmartPointerLink<std::weak_ptr>>>> Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(pointer);
@@ -2679,15 +2679,15 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
                                                                                   SmartPointer<char>& smartPointer,
                                                                                   const QMetaType& elementMetaType)
 {
-    typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
-                                      typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
-    typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
+    typedef std::conditional_t<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
+                                      std::conditional_t<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>> SharedPointerT;
+    typedef std::conditional_t</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
                                       /*then*/MetaTypedObjectSmartPointerLink<QSharedPointer>,
-                                      /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
+                                      /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
                                                                         /*then*/MetaTypedObjectSmartPointerLink<std::shared_ptr>,
-                                                                        /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
+                                                                        /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
                                                                                                           /*then*/MetaTypedObjectSmartPointerLink<QWeakPointer>,
-                                                                                                          /*else*/MetaTypedObjectSmartPointerLink<std::weak_ptr>>::type>::type>::type Link;
+                                                                                                          /*else*/MetaTypedObjectSmartPointerLink<std::weak_ptr>>>> Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(pointer);
@@ -2730,15 +2730,15 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
                                                                                   PtrDeleterFunction deleterFunction,
                                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo)
 {
-    typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
-                                      typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
-    typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
+    typedef std::conditional_t<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
+                                      std::conditional_t<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>> SharedPointerT;
+    typedef std::conditional_t</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
                                       /*then*/InterfaceLink<PlainOwnedObjectSmartPointerLink<QSharedPointer>>,
-                                      /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
+                                      /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
                                                                         /*then*/InterfaceLink<PlainOwnedObjectSmartPointerLink<std::shared_ptr>>,
-                                                                        /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
+                                                                        /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
                                                                                                           /*then*/InterfaceLink<PlainOwnedObjectSmartPointerLink<QWeakPointer>>,
-                                                                                                          /*else*/InterfaceLink<PlainOwnedObjectSmartPointerLink<std::weak_ptr>>>::type>::type>::type Link;
+                                                                                                          /*else*/InterfaceLink<PlainOwnedObjectSmartPointerLink<std::weak_ptr>>>>> Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(pointer);
@@ -2781,15 +2781,15 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
                                                                                   PtrDeleterFunction deleterFunction,
                                                                                   const InterfaceOffsetInfo& interfaceOffsetInfo)
 {
-    typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
-                                      typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
-    typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
+    typedef std::conditional_t<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
+                                      std::conditional_t<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>> SharedPointerT;
+    typedef std::conditional_t</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
                                       /*then*/InterfaceLink<PlainObjectSmartPointerLink<QSharedPointer>>,
-                                      /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
+                                      /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
                                                                         /*then*/InterfaceLink<PlainObjectSmartPointerLink<std::shared_ptr>>,
-                                                                        /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
+                                                                        /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
                                                                                                           /*then*/InterfaceLink<PlainObjectSmartPointerLink<QWeakPointer>>,
-                                                                                                          /*else*/InterfaceLink<PlainObjectSmartPointerLink<std::weak_ptr>>>::type>::type>::type Link;
+                                                                                                          /*else*/InterfaceLink<PlainObjectSmartPointerLink<std::weak_ptr>>>>> Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(pointer);
@@ -2829,15 +2829,15 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
                                                                                   SmartPointer<char>& smartPointer,
                                                                                   PtrDeleterFunction deleterFunction)
 {
-    typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
-                                      typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
-    typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
+    typedef std::conditional_t<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
+                                      std::conditional_t<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>> SharedPointerT;
+    typedef std::conditional_t</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
                                       /*then*/PlainOwnedObjectSmartPointerLink<QSharedPointer>,
-                                      /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
+                                      /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
                                                                         /*then*/PlainOwnedObjectSmartPointerLink<std::shared_ptr>,
-                                                                        /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
+                                                                        /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
                                                                                                           /*then*/PlainOwnedObjectSmartPointerLink<QWeakPointer>,
-                                                                                                          /*else*/PlainOwnedObjectSmartPointerLink<std::weak_ptr>>::type>::type>::type Link;
+                                                                                                          /*else*/PlainOwnedObjectSmartPointerLink<std::weak_ptr>>>> Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(pointer);
@@ -2878,15 +2878,15 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
                                                                                   SmartPointer<char>& smartPointer,
                                                                                   PtrDeleterFunction deleterFunction)
 {
-    typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
-                                      typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
-    typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
+    typedef std::conditional_t<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
+                                      std::conditional_t<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>> SharedPointerT;
+    typedef std::conditional_t</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
                                       /*then*/PlainObjectSmartPointerLink<QSharedPointer>,
-                                      /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
+                                      /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
                                                                         /*then*/PlainObjectSmartPointerLink<std::shared_ptr>,
-                                                                        /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
+                                                                        /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
                                                                                                           /*then*/PlainObjectSmartPointerLink<QWeakPointer>,
-                                                                                                          /*else*/PlainObjectSmartPointerLink<std::weak_ptr>>::type>::type>::type Link;
+                                                                                                          /*else*/PlainObjectSmartPointerLink<std::weak_ptr>>>> Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(pointer);
@@ -3674,15 +3674,15 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
                                                                                      AbstractContainerAccess* containerAccess,
                                                                                      const InterfaceOffsetInfo& interfaceOffsetInfo)
 {
-    typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
-                                      typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
-    typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
+    typedef std::conditional_t<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
+                                      std::conditional_t<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>> SharedPointerT;
+    typedef std::conditional_t</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
                                       /*then*/InterfaceLink<ContainerObjectSmartPointerLink<QSharedPointer>>,
-                                      /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
+                                      /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
                                                                         /*then*/InterfaceLink<ContainerObjectSmartPointerLink<std::shared_ptr>>,
-                                                                        /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
+                                                                        /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
                                                                                                           /*then*/InterfaceLink<ContainerObjectSmartPointerLink<QWeakPointer>>,
-                                                                                                          /*else*/InterfaceLink<ContainerObjectSmartPointerLink<std::weak_ptr>>>::type>::type>::type Link;
+                                                                                                          /*else*/InterfaceLink<ContainerObjectSmartPointerLink<std::weak_ptr>>>>> Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(pointer);
@@ -3722,15 +3722,15 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewSmartPointerToObject(JN
                                                                                      void* pointer, SmartPointer<char>& smartPointer,
                                                                                      AbstractContainerAccess* containerAccess)
 {
-    typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
-                                      typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
-    typedef typename std::conditional</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
+    typedef std::conditional_t<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
+                                      std::conditional_t<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>> SharedPointerT;
+    typedef std::conditional_t</*if*/std::is_same<SmartPointer<char>,QWeakPointer<char>>::value,
                                       /*then*/ContainerObjectSmartPointerLink<QSharedPointer>,
-                                      /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
+                                      /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value,
                                                                         /*then*/ContainerObjectSmartPointerLink<std::shared_ptr>,
-                                                                        /*else*/typename std::conditional</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
+                                                                        /*else*/std::conditional_t</*if*/std::is_same<SmartPointer<char>,QSharedPointer<char>>::value,
                                                                                                           /*then*/ContainerObjectSmartPointerLink<QWeakPointer>,
-                                                                                                          /*else*/ContainerObjectSmartPointerLink<std::weak_ptr>>::type>::type>::type Link;
+                                                                                                          /*else*/ContainerObjectSmartPointerLink<std::weak_ptr>>>> Link;
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
     Q_ASSERT(pointer);
@@ -3976,7 +3976,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
         QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
-        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
     // Initialize the link
@@ -4059,7 +4059,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
         QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
-        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
     // Initialize the link
@@ -4099,7 +4099,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
         QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
-        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
     // Initialize the link
@@ -4183,7 +4183,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(destructor_function);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
         QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
-        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
     // Initialize the link
@@ -4318,7 +4318,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
         QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
-        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
     checkValueOwner(env, ownerFunction, ptr);
 
@@ -4409,7 +4409,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
         QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
-        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
     checkValueOwner(env, ownerFunction, ptr);
 
@@ -4485,7 +4485,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
         QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
-        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
     // Initialize the link
@@ -4560,7 +4560,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
         QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
-        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
     // Initialize the link
@@ -4728,7 +4728,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForObject(JNIEnv *env
                                                                       LINK_NAME_ARG(const char* qt_name)
                                                                       SafeBool created_by_java, SafeBool is_shell,
                                                                       PtrDeleterFunction destructor_function,
-                                                                      const QObject* extension, QtJambiLink::Ownership ownership)
+                                                                      QPointer<const QObject>&& extension, QtJambiLink::Ownership ownership)
 {
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
@@ -4742,7 +4742,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createExtendedLinkForObject(JNIEnv *env
                                                                                                                                           LINK_NAME_ARG(qt_name)
                                                                                                                                           ptr, created_by_java, is_shell, ocurredException)};
     qtJambiLink->m_deleter_function = destructor_function;
-    qtJambiLink->m_extension = extension;
+    qtJambiLink->m_extension = std::move(extension);
     if(Q_UNLIKELY(ocurredException)){
         ocurredException.raise();
         return {};
@@ -4931,7 +4931,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
         QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
-        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
     checkValueOwner(env, ownerFunction, ptr);
 
@@ -5043,7 +5043,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
         QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
-        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
     checkValueOwner(env, ownerFunction, ptr);
 
@@ -5133,7 +5133,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
         QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
-        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
     // Initialize the link
@@ -5226,7 +5226,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
         QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
-        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
     // Initialize the link
@@ -5300,7 +5300,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
         QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
-        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
     // Initialize the link
@@ -5373,7 +5373,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
     Q_ASSERT(typeInfoSupplier);
     if(enabledDanglingPointerCheck() && checkedGetTypeInfo(typeInfoSupplier, ptr)==nullptr){
         QString className = QtJambiAPI::getObjectClassNamePrintable(env, javaObject);
-        Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("Unable to convert dangling pointer %p to object of type %s", ptr, qPrintable(className)) QTJAMBI_STACKTRACEINFO );
     }
 
     // Initialize the link
@@ -5974,7 +5974,7 @@ void* QtJambiLink::findPointerForJavaInterface(JNIEnv *env, jobject java, const 
         }
     }else if(env->IsSameObject(nullptr, java))
         return nullptr;
-    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java)) QTJAMBI_STACKTRACEINFO );
+    JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java)) QTJAMBI_STACKTRACEINFO );
     return nullptr;
 }
 
@@ -5988,7 +5988,7 @@ void* QtJambiLink::findPointerForJavaObject(JNIEnv *env, jobject java)
         if(void* ptr = link->pointer())
             return ptr;
     }else if (!env->IsSameObject(nullptr, java))
-        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java)) QTJAMBI_STACKTRACEINFO );
     return nullptr;
 }
 
@@ -7516,8 +7516,8 @@ void MetaTypedLink<Super>::deleteNow(JNIEnv *, void* pointer){
 
 template<template<typename> class SmartPointer>
 void PlainObjectSmartPointerLink<SmartPointer>::deleteNativeObject(JNIEnv *env, bool){
-    typedef typename std::conditional<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
-                                      typename std::conditional<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>::type>::type SharedPointerT;
+    typedef std::conditional_t<std::is_same<SmartPointer<char>,QWeakPointer<char>>::value, QSharedPointer<char>,
+                                      std::conditional_t<std::is_same<SmartPointer<char>,std::weak_ptr<char>>::value, std::shared_ptr<char>, SmartPointer<char>>> SharedPointerT;
     if(this->m_pointer){
         QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(this, "QtJambiLink::deleteNativeObject(JNIEnv *env, bool)")
         if(!this->isShell())
@@ -7697,8 +7697,8 @@ std::shared_ptr<QObject> QObjectSmartPointerLink<std::weak_ptr>::getSmartPointer
 
 template<template<typename> class SmartPointer>
 void QObjectSmartPointerLink<SmartPointer>::deleteNativeObject(JNIEnv *env, bool){
-    typedef typename std::conditional<std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value, QSharedPointer<QObject>,
-                                      typename std::conditional<std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value, std::shared_ptr<QObject>, SmartPointer<QObject>>::type>::type SharedPointerT;
+    typedef std::conditional_t<std::is_same<SmartPointer<QObject>,QWeakPointer<QObject>>::value, QSharedPointer<QObject>,
+                                      std::conditional_t<std::is_same<SmartPointer<QObject>,std::weak_ptr<QObject>>::value, std::shared_ptr<QObject>, SmartPointer<QObject>>> SharedPointerT;
     QObject* obj;
     SharedPointerT shared_pointer;
     {

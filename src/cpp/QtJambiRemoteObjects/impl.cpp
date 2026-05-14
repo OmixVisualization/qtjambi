@@ -35,7 +35,8 @@
 #include <QtJambi/CoreAPI>
 #include <QtRemoteObjects/qconnectionfactories.h>
 #include <QtRemoteObjects/QRemoteObjectPendingCall>
-#include <QtJambi/qtjambi_cast.h>
+
+#include <QtJambi/Cast>
 #include "hashes.h"
 #include "utils_p.h"
 
@@ -134,15 +135,8 @@ void qtjambi_copyStoredProperties(JNIEnv *env, jclass type, jobject src, jobject
         JavaException::raiseIllegalArgumentException(env, "Only gadget types allowed." QTJAMBI_STACKTRACEINFO );
     }
     const QMetaObject *meta_object = CoreAPI::metaObjectForClass(env, type);
-    if(!meta_object){
-        jclass closestClass = JavaAPI::resolveClosestQtSuperclass(env, type);
-        if(closestClass){
-            const QMetaObject *original_meta_object = CoreAPI::metaObjectForClass(env, closestClass);
-            meta_object = CoreAPI::metaObjectForClass(env, type, original_meta_object);
-        }
-    }
     if(!meta_object)
-        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("No meta object available for class %1").arg(QtJambiAPI::getClassNamePrintable(env, type)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raiseIllegalArgumentException(env, QStringLiteral("No meta object available for class %1").arg(QtJambiAPI::getClassNamePrintable(env, type)) QTJAMBI_STACKTRACEINFO );
     const void *_src;
     void *_dst;
     if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, src)){
@@ -165,15 +159,8 @@ void qtjambi_copyStoredProperties(JNIEnv *env, jclass type, QDataStream& src, jo
         JavaException::raiseIllegalArgumentException(env, "Only gadget types allowed." QTJAMBI_STACKTRACEINFO );
     }
     const QMetaObject *meta_object = CoreAPI::metaObjectForClass(env, type);
-    if(!meta_object){
-        jclass closestClass = JavaAPI::resolveClosestQtSuperclass(env, type);
-        if(closestClass){
-            const QMetaObject *original_meta_object = CoreAPI::metaObjectForClass(env, closestClass);
-            meta_object = CoreAPI::metaObjectForClass(env, type, original_meta_object);
-        }
-    }
     if(!meta_object)
-        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("No meta object available for class %1").arg(QtJambiAPI::getClassNamePrintable(env, type)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raiseIllegalArgumentException(env, QStringLiteral("No meta object available for class %1").arg(QtJambiAPI::getClassNamePrintable(env, type)) QTJAMBI_STACKTRACEINFO );
     void *_dst;
     JObjectWrapper wrapper;
     if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, dst)){
@@ -190,15 +177,8 @@ void qtjambi_copyStoredProperties(JNIEnv *env, jclass type, jobject src, QDataSt
         JavaException::raiseIllegalArgumentException(env, "Only gadget types allowed." QTJAMBI_STACKTRACEINFO );
     }
     const QMetaObject *meta_object = CoreAPI::metaObjectForClass(env, type);
-    if(!meta_object){
-        jclass closestClass = JavaAPI::resolveClosestQtSuperclass(env, type);
-        if(closestClass){
-            const QMetaObject *original_meta_object = CoreAPI::metaObjectForClass(env, closestClass);
-            meta_object = CoreAPI::metaObjectForClass(env, type, original_meta_object);
-        }
-    }
     if(!meta_object)
-        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("No meta object available for class %1").arg(QtJambiAPI::getClassNamePrintable(env, type)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raiseIllegalArgumentException(env, QStringLiteral("No meta object available for class %1").arg(QtJambiAPI::getClassNamePrintable(env, type)) QTJAMBI_STACKTRACEINFO );
     const void *_src;
     JObjectWrapper wrapper;
     if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, src)){

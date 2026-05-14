@@ -30,6 +30,11 @@
 #include "pch_p.h"
 #include "containerapi.h"
 #include "registryutil_p.h"
+#include "qtjambi_cast_object.h"
+#include "qtjambi_cast_template1.h"
+#include "qtjambi_cast_container.h"
+#include "qtjambi_cast_template2.h"
+#include "qtjambi_cast_model.h"
 
 const char* getQtNameByFunctional(QByteArrayView java_name);
 
@@ -607,7 +612,7 @@ jobject CoreAPI::convertToJavaObject(JNIEnv *env, const QMetaType &metaType, con
     }
 }
 
-void QtJambiAPI::convertJavaObjectToQModelRoleData(JNIEnv *env, QtJambiScope& scope, jobject java_object, void * &data, qsizetype &length){
+void QtJambiAPI::convertJavaObjectToQModelRoleData(JNIEnv *env, QtJambiScope& scope, jobject java_object, QModelRoleData * &data, qsizetype &length){
     struct ModelRoleData
     {
         int m_role = 0;
@@ -620,7 +625,7 @@ void QtJambiAPI::convertJavaObjectToQModelRoleData(JNIEnv *env, QtJambiScope& sc
         if(length>0){
             ModelRoleData* _data = new ModelRoleData[size_t(length)];
             scope.addArrayDeletion(_data);
-            data = _data;
+            data = reinterpret_cast<QModelRoleData*>(_data);
             size_t i=0;
             for(auto iter = map->keyValueBegin(), end = map->keyValueEnd(); iter != end; ++iter){
                 _data[i].m_role = iter->first;
@@ -633,7 +638,7 @@ void QtJambiAPI::convertJavaObjectToQModelRoleData(JNIEnv *env, QtJambiScope& sc
         if(length>0){
             ModelRoleData* _data = new ModelRoleData[size_t(length)];
             scope.addArrayDeletion(_data);
-            data = _data;
+            data = reinterpret_cast<QModelRoleData*>(_data);
             size_t i=0;
             for(auto iter = hash->keyValueBegin(), end = hash->keyValueEnd(); iter != end; ++iter){
                 _data[i].m_role = iter->first;
@@ -646,7 +651,7 @@ void QtJambiAPI::convertJavaObjectToQModelRoleData(JNIEnv *env, QtJambiScope& sc
         if(length>0){
             ModelRoleData* _data = new ModelRoleData[size_t(length)];
             scope.addArrayDeletion(_data);
-            data = _data;
+            data = reinterpret_cast<QModelRoleData*>(_data);
             jobject iter = QtJambiAPI::entrySetIteratorOfJavaMap(env, java_object);
             size_t i=0;
             while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
@@ -1348,7 +1353,7 @@ QVariant QtJambiAPI::convertJavaObjectToQVariant(JNIEnv *env, jobject java_objec
                 return QVariant();
             }
         }else{
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, object_class)) QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, object_class)) QTJAMBI_STACKTRACEINFO );
         }
 #endif
     } else if (Java::QtCore::QPair::isInstanceOf(env, java_object)) {
@@ -1509,7 +1514,7 @@ QVariant QtJambiAPI::convertJavaObjectToQVariant(JNIEnv *env, jobject java_objec
                     }
                 }
             }else{
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, object_class)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, object_class)) QTJAMBI_STACKTRACEINFO );
             }
         }else if (Java::QtCore::QSet::isInstanceOf(env, java_object)) {
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
@@ -1565,10 +1570,10 @@ QVariant QtJambiAPI::convertJavaObjectToQVariant(JNIEnv *env, jobject java_objec
                     }
                 }
             }else{
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, object_class)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, object_class)) QTJAMBI_STACKTRACEINFO );
             }
         }
-        if(Java::Runtime::Collection::size(env, java_object)>0){
+        if(QtJambiAPI::sizeOfJavaCollection(env, java_object)>0){
             jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, java_object);
             jobject element = QtJambiAPI::nextOfJavaIterator(env, iter);
             QMetaType elementMetaType = element ? getMetaTypeIdForObject(env, element) : QMetaType(QMetaType::Nullptr);
@@ -1670,7 +1675,7 @@ QVariant QtJambiAPI::convertJavaObjectToQVariant(JNIEnv *env, jobject java_objec
                     }
                 }
             }else{
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, object_class)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, object_class)) QTJAMBI_STACKTRACEINFO );
             }
         }else if (Java::QtCore::QHash::isInstanceOf(env, java_object)) {
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
@@ -1728,7 +1733,7 @@ QVariant QtJambiAPI::convertJavaObjectToQVariant(JNIEnv *env, jobject java_objec
                     }
                 }
             }else{
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, object_class)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, object_class)) QTJAMBI_STACKTRACEINFO );
             }
         }else if (Java::QtCore::QMultiMap::isInstanceOf(env, java_object)) {
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
@@ -1786,7 +1791,7 @@ QVariant QtJambiAPI::convertJavaObjectToQVariant(JNIEnv *env, jobject java_objec
                     }
                 }
             }else{
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, object_class)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, object_class)) QTJAMBI_STACKTRACEINFO );
             }
         }else if (Java::QtCore::QMultiHash::isInstanceOf(env, java_object)) {
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
@@ -1844,7 +1849,7 @@ QVariant QtJambiAPI::convertJavaObjectToQVariant(JNIEnv *env, jobject java_objec
                     }
                 }
             }else{
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, object_class)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, object_class)) QTJAMBI_STACKTRACEINFO );
             }
         }
         if(Java::Runtime::Map::size(env, java_object)>0){
@@ -2016,7 +2021,7 @@ QVariant QtJambiAPI::convertJavaObjectToQVariant(JNIEnv *env, jobject java_objec
                     break;
                 }
             }else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, java_object)){
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java_object)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java_object)) QTJAMBI_STACKTRACEINFO );
             }
         }
         if(findConverter){
@@ -2145,7 +2150,7 @@ void *QtJambiAPI::convertJavaObjectToNative(JNIEnv *env, jobject java_object)
     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, java_object))
         return link->pointer();
     else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, java_object))
-        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java_object)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java_object)) QTJAMBI_STACKTRACEINFO );
     return nullptr;
 }
 
@@ -2154,7 +2159,7 @@ QObject *QtJambiAPI::convertJavaObjectToQObject(JNIEnv *env, jobject java_object
     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, java_object))
         return link->isQObject() ? link->qobject() : nullptr;
     else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, java_object))
-        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java_object)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java_object)) QTJAMBI_STACKTRACEINFO );
     return nullptr;
 }
 
@@ -2197,7 +2202,7 @@ SmartPointer<QObject> convertToNativeSmartPointer(JNIEnv *env, jobject java_obje
             }
         }
         else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, java_object))
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java_object)) QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java_object)) QTJAMBI_STACKTRACEINFO );
     }
     return result;
 }
@@ -2365,7 +2370,7 @@ SmartPointer<char> convertToNativeSmartPointer(JNIEnv *env, const std::type_info
                 }
             }
         }else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, java_object)){
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java_object)) QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java_object)) QTJAMBI_STACKTRACEINFO );
         }else if((!typeId || typeid_equals(*typeId, typeid(QString))) && Java::Runtime::String::isInstanceOf(env, java_object)){
             auto sp = SmartPointerUtility<SmartPointer>::template SharedPointer<QString>(new QString(::qtjambi_cast<QString>(env, static_cast<jstring>(java_object))));
             result = SmartPointer<char>(SmartPointerUtility<SmartPointer>::template SharedPointer<char>(sp, reinterpret_cast<char*>(sp.get())));
@@ -3565,7 +3570,7 @@ jobject convertQObjectToJavaObjectOfClass(JNIEnv *env, const QObject *const_qt_o
             java_type = className.toByteArray().replace('/', '.').replace('$', '.');
         }
         if(enabledDanglingPointerCheck()){
-            Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Cannot convert dangling pointer %p to object of type %s", qt_object, java_type.constData()) QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("Cannot convert dangling pointer %p to object of type %s", qt_object, java_type.constData()) QTJAMBI_STACKTRACEINFO );
         }else{
             qCWarning(DebugAPI::internalCategory, "Trying to convert possible dangling pointer %p to object of type %s", qt_object, java_type.constData());
         }

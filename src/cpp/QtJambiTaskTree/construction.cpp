@@ -29,9 +29,10 @@
 
 #include <QtTaskTree/qtasktree.h>
 #include <QtTaskTree/qprocesstask.h>
-#include "util_p.h"
+#include "utils_p.h"
 #include <QtCore/QObject>
 #include <QtJambi/QtJambiAPI>
+#include <QtJambi/QtJambiArrayAPI>
 #include <QtJambi/Cast>
 
 class QProcess;
@@ -169,7 +170,7 @@ std::initializer_list<QtTaskTree::GroupItem> convertGroupItems(JNIEnv* env, jobj
             if(item)
                 groupItems[i] = *item;
         }
-        return QtJambiAPI::createIterable<std::initializer_list<QtTaskTree::GroupItem>>(groupItems, size);
+        return QtJambiAPI::initializer_list<QtTaskTree::GroupItem>(groupItems, size);
     }else{
         return {};
     }

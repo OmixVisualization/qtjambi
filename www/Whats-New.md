@@ -1,10 +1,24 @@
-# What's new in QtJambi 6.11.0
+# What's new in QtJambi 6.11.1
+
+* Full support for `QtTaskTree`
+* Type cast refactored to improve maintainability
+* Several methods in `QtConcurrent` refactored to improve maintainability. However, this breaks binary compatibility of existing code. 
+* QtJambi type system now supports `std::string`, `std::string_view` and related types
+* `QVariantAnimation` now provides `registerAnimationInterpolator()`.
+* Divide-by-zero checks in all division operators.
+* Bugfix: iterator causing crash after container modification
+* Bugfix: placement construction crashed with `-Xcheck:jni` enabled
+
+# History
+
+## What's new in QtJambi 6.11.0
 
 Solved issue:
 * [Issue 238](../../../issues/238): QUrl.fromLocalFile("classpath:...") causes huge memory leak and crash with Qt 6.11.0
 * [Issue 236](../../../issues/236): Cross-compilation from x64 host to ARM32 target produces corrupted QMetaObject at runtime (blindfix)
-
-# History
+* Bugfix: deadlock in enabled method logs combined with installed custom QtMessageHandler
+* Bugfix: connecting static lambda expression to signals
+* Bugfix: `QVariant` converting Java `null` to `QString` crashes
 
 ## What's new in QtJambi 6.10.2
 

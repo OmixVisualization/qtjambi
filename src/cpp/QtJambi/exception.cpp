@@ -205,8 +205,10 @@ void JavaException::raise() const{
 }
 
 #ifdef QTJAMBI_STACKTRACE
+#define QTJAMBI_STACKTRACEINFO_DECL_RAISE(env) env, methodName, fileName, lineNumber
 #define QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) env, t, methodName, fileName, lineNumber
 #else
+#define QTJAMBI_STACKTRACEINFO_DECL_RAISE(env)
 #define QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) env, t
 #endif
 
@@ -222,9 +224,6 @@ void JavaException::raise(JNIEnv* env, const char *methodName, const char *fileN
         throw JavaException(env, t);
     }
 }
-#define raiseThrowable QtJambiPrivate::raiseJavaException
-#else
-#define raiseThrowable throw JavaException
 #endif
 
 #ifdef QTJAMBI_STACKTRACE
@@ -243,58 +242,39 @@ void JavaException::check(JNIEnv* env QTJAMBI_STACKTRACEINFO_DECL ){
     if(Q_UNLIKELY(env->ExceptionCheck())){
         jthrowable t = env->ExceptionOccurred();
         env->ExceptionClear();
-        if(t)
-            raiseThrowable( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
+        if(t){
+            JavaException jexn(env, t);
+            jexn.raise(QTJAMBI_STACKTRACEINFO_DECL_RAISE(env));
+        }
     }
 }
 
 void JavaException::raiseNullPointerException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL ){
-    jstring jmessage = qtjambi_cast<jstring>(env, message);
-    check(env);
-    jthrowable t = Java::Runtime::NullPointerException::newInstance(env, jmessage);
-    raiseThrowable( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
+    JavaException::raise<Java::Runtime::NullPointerException>(QTJAMBI_STACKTRACEINFO_DECL_USE(env, message));
 }
 
 void JavaException::raiseIllegalArgumentException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL ){
-    jstring jmessage = qtjambi_cast<jstring>(env, message);
-    check(env);
-    jthrowable t = Java::Runtime::IllegalArgumentException::newInstance(env,jmessage);
-    raiseThrowable( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
+    JavaException::raise<Java::Runtime::IllegalArgumentException>(QTJAMBI_STACKTRACEINFO_DECL_USE(env, message));
 }
 
 void JavaException::raiseQNoImplementationException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL ){
-    jstring jmessage = qtjambi_cast<jstring>(env, message);
-    check(env);
-    jthrowable t = Java::QtJambi::QNoImplementationException::newInstance(env,jmessage);
-    raiseThrowable( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
+    JavaException::raise<Java::QtJambi::QNoImplementationException>(QTJAMBI_STACKTRACEINFO_DECL_USE(env, message));
 }
 
 void JavaException::raiseError(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL ){
-    jstring jmessage = qtjambi_cast<jstring>(env, message);
-    check(env);
-    jthrowable t = Java::Runtime::Error::newInstance(env,jmessage);
-    raiseThrowable( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
+    JavaException::raise<Java::Runtime::Error>(QTJAMBI_STACKTRACEINFO_DECL_USE(env, message));
 }
 
 void JavaException::raiseRuntimeException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL ){
-    jstring jmessage = qtjambi_cast<jstring>(env, message);
-    check(env);
-    jthrowable t = Java::Runtime::RuntimeException::newInstance(env,jmessage);
-    raiseThrowable( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
+    JavaException::raise<Java::Runtime::RuntimeException>(QTJAMBI_STACKTRACEINFO_DECL_USE(env, message));
 }
 
 void JavaException::raiseUnsupportedOperationException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL ){
-    jstring jmessage = qtjambi_cast<jstring>(env, message);
-    check(env);
-    jthrowable t = Java::Runtime::UnsupportedOperationException::newInstance(env,jmessage);
-    raiseThrowable( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
+    JavaException::raise<Java::Runtime::UnsupportedOperationException>(QTJAMBI_STACKTRACEINFO_DECL_USE(env, message));
 }
 
 void JavaException::raiseIndexOutOfBoundsException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL ){
-    jstring jmessage = qtjambi_cast<jstring>(env, message);
-    check(env);
-    jthrowable t = Java::Runtime::IndexOutOfBoundsException::newInstance(env,jmessage);
-    raiseThrowable( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
+    JavaException::raise<Java::Runtime::IndexOutOfBoundsException>(QTJAMBI_STACKTRACEINFO_DECL_USE(env, message));
 }
 
 void JavaException::raiseQThreadAffinityException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL , jobject t1, QThread* t2, QThread* t3){
@@ -304,7 +284,9 @@ void JavaException::raiseQThreadAffinityException(JNIEnv* env, QAnyStringView me
                                                           qtjambi_cast<jobject>(env, t2),
                                                           qtjambi_cast<jobject>(env, t3)
                                         );
-    raiseThrowable( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
+    JavaException jexn(env, t);
+    jexn.raise(QTJAMBI_STACKTRACEINFO_DECL_RAISE(env));
+    throw jexn;
 }
 
 JNIEnv *currentJNIEnvironment(bool& requiresDetach, JniEnvironmentFlags flags = JniEnvironmentFlag::Default);
@@ -844,25 +826,6 @@ void tryCatch(TypedTrial&& fct, TypedCatcher&& handler){
         handler(exn);
     }
 }
-}
-#endif
-
-void QtJambiPrivate::raiseJavaException(JNIEnv* env, jthrowable newInstance)
-{
-    Q_ASSERT(newInstance);
-    throw JavaException(env, newInstance);
-}
-
-#ifdef QTJAMBI_STACKTRACE
-void QtJambiPrivate::raiseJavaException(JNIEnv* env, jthrowable newInstance, const char *methodName, const char *fileName, int lineNumber)
-{
-    Q_ASSERT(newInstance);
-    jstring jmethodName = methodName ? env->NewStringUTF(methodName) : nullptr;
-    jstring jfileName = fileName ? env->NewStringUTF(fileName) : nullptr;
-    try{
-        Java::QtJambi::ExceptionUtility::extendStackTrace(env, newInstance, jmethodName, jfileName, lineNumber);
-    }catch(const JavaException& exn){ exn.report(env); }
-    throw JavaException(env, newInstance);
 }
 #endif
 

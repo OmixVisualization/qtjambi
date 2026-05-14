@@ -41,10 +41,12 @@ namespace QtJambiPrivate {
 
 size_t qHash(const QLowEnergyCharacteristicData &value, size_t seed = 0);
 
+#if QT_VERSION <= QT_VERSION_CHECK(6, 11, 0)
 inline size_t qHash(const QBluetoothUuid &value, size_t seed = 0)
 {
     return qHash(value.toByteArray(), seed);
 }
+#endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
 inline size_t qHash(const QBluetoothAddress &value, size_t seed = 0)

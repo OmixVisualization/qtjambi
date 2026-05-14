@@ -9428,8 +9428,7 @@ class QObject___ extends QObject {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qobject.html#qobject_cast"><code>qobject_cast&lt;T>(QObject *)</code></a>
+     * See <a href="@docRoot/qobject.html#qobject_cast"><code>qobject_cast&lt;T>(QObject *)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -9845,8 +9844,8 @@ class QObject___ extends QObject {
     /**
      * <p>
      * The <code>QProperty</code> class enables automatic property bindings. The
-     * Java type <code>QProperty</code> corresponds to the C++ type <a href=
-     * "@docRoot/qobjectbindableproperty.html"><code>QObjectBindableProperty</code></a>.
+     * Java type <code>QProperty</code> corresponds to the C++ type
+     * <a href="@docRoot/qobjectbindableproperty.html"><code>QObjectBindableProperty</code></a>.
      * </p>
      * <p>
      * It is only allowed to use <code>QProperty</code> as
@@ -9940,8 +9939,7 @@ class QObject___ extends QObject {
      * <li>{@link QCharProperty}</li>
      * </ul>
      * <p>
-     * See <a href=
-     * "@docRoot/qobjectbindableproperty.html"><code>QObjectBindableProperty</code></a>
+     * See <a href="@docRoot/qobjectbindableproperty.html"><code>QObjectBindableProperty</code></a>
      * </p>
      */
     public final class QProperty<T> extends QPropertyData<T> {
@@ -10014,8 +10012,7 @@ class QObject___ extends QObject {
          * Returns the value of the property. This may evaluate a binding expression
          * that is tied to this property, before returning the value.
          * <p>
-         * See <a href=
-         * "@docRoot/qobjectbindableproperty.html#value"><code>QObjectBindableProperty::value()const</code></a>
+         * See <a href="@docRoot/qobjectbindableproperty.html#value"><code>QObjectBindableProperty::value()const</code></a>
          * </p>
          * 
          * @return value
@@ -10031,8 +10028,7 @@ class QObject___ extends QObject {
          * binding, if present.
          * </p>
          * <p>
-         * See <a href=
-         * "@docRoot/qobjectbindableproperty.html#setValue"><code>QObjectBindableProperty::setValue(T)</code></a>
+         * See <a href="@docRoot/qobjectbindableproperty.html#setValue"><code>QObjectBindableProperty::setValue(T)</code></a>
          * </p>
          * 
          * @param newValue
@@ -10269,8 +10265,7 @@ class QObject___ extends QObject {
          * Programmatically signals a change of the property. Any binding which depend
          * on it will be notified, and if the property has a signal, it will be emitted.
          * <p>
-         * See <a href=
-         * "@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
+         * See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
          * </p>
          */
         @QtUninvokable
@@ -10651,8 +10646,7 @@ class QObject___ extends QObject {
          * Programmatically signals a change of the property. Any binding which depend
          * on it will be notified, and if the property has a signal, it will be emitted.
          * <p>
-         * See <a href=
-         * "@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
+         * See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
          * </p>
          */
         @QtUninvokable
@@ -11027,8 +11021,7 @@ class QObject___ extends QObject {
          * Programmatically signals a change of the property. Any binding which depend
          * on it will be notified, and if the property has a signal, it will be emitted.
          * <p>
-         * See <a href=
-         * "@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
+         * See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
          * </p>
          */
         @QtUninvokable
@@ -11407,8 +11400,7 @@ class QObject___ extends QObject {
          * Programmatically signals a change of the property. Any binding which depend
          * on it will be notified, and if the property has a signal, it will be emitted.
          * <p>
-         * See <a href=
-         * "@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
+         * See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
          * </p>
          */
         @QtUninvokable
@@ -11783,8 +11775,7 @@ class QObject___ extends QObject {
          * Programmatically signals a change of the property. Any binding which depend
          * on it will be notified, and if the property has a signal, it will be emitted.
          * <p>
-         * See <a href=
-         * "@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
+         * See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
          * </p>
          */
         @QtUninvokable
@@ -12159,8 +12150,7 @@ class QObject___ extends QObject {
          * Programmatically signals a change of the property. Any binding which depend
          * on it will be notified, and if the property has a signal, it will be emitted.
          * <p>
-         * See <a href=
-         * "@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
+         * See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
          * </p>
          */
         @QtUninvokable
@@ -12536,8 +12526,7 @@ class QObject___ extends QObject {
          * Programmatically signals a change of the property. Any binding which depend
          * on it will be notified, and if the property has a signal, it will be emitted.
          * <p>
-         * See <a href=
-         * "@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
+         * See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
          * </p>
          */
         @QtUninvokable
@@ -12913,8 +12902,7 @@ class QObject___ extends QObject {
          * Programmatically signals a change of the property. Any binding which depend
          * on it will be notified, and if the property has a signal, it will be emitted.
          * <p>
-         * See <a href=
-         * "@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
+         * See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
          * </p>
          */
         @QtUninvokable
@@ -13289,8 +13277,7 @@ class QObject___ extends QObject {
          * Programmatically signals a change of the property. Any binding which depend
          * on it will be notified, and if the property has a signal, it will be emitted.
          * <p>
-         * See <a href=
-         * "@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
+         * See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a>
          * </p>
          */
         @QtUninvokable
@@ -14169,8 +14156,7 @@ abstract class QUrl___ extends QUrl {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qurl.html#toDisplayString"><code>QUrl::toDisplayString(QUrl::FormattingOptions)const</code></a>
+     * See <a href="@docRoot/qurl.html#toDisplayString"><code>QUrl::toDisplayString(QUrl::FormattingOptions)const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -14180,8 +14166,7 @@ abstract class QUrl___ extends QUrl {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qurl.html#toString"><code>QUrl::toString(QUrl::FormattingOptions)const</code></a>
+     * See <a href="@docRoot/qurl.html#toString"><code>QUrl::toString(QUrl::FormattingOptions)const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -14191,8 +14176,7 @@ abstract class QUrl___ extends QUrl {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qurl.html#url"><code>QUrl::url(QUrl::FormattingOptions)const</code></a>
+     * See <a href="@docRoot/qurl.html#url"><code>QUrl::url(QUrl::FormattingOptions)const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -14202,8 +14186,7 @@ abstract class QUrl___ extends QUrl {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qurl.html#toEncoded"><code>QUrl::toEncoded(QUrl::FormattingOptions)const</code></a>
+     * See <a href="@docRoot/qurl.html#toEncoded"><code>QUrl::toEncoded(QUrl::FormattingOptions)const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -14213,8 +14196,7 @@ abstract class QUrl___ extends QUrl {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qurl.html#toStringList"><code>QUrl::toStringList(QList&lt;QUrl&gt;,QUrl::FormattingOptions)</code></a>
+     * See <a href="@docRoot/qurl.html#toStringList"><code>QUrl::toStringList(QList&lt;QUrl&gt;,QUrl::FormattingOptions)</code></a>
      * </p>
      */
     public static @NonNull QStringList toStringList(java.util.Collection<? extends io.qt.core.@NonNull QUrl> uris,
@@ -14224,8 +14206,7 @@ abstract class QUrl___ extends QUrl {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qurl.html#adjusted"><code>QUrl::adjusted(QUrl::FormattingOptions)const</code></a>
+     * See <a href="@docRoot/qurl.html#adjusted"><code>QUrl::adjusted(QUrl::FormattingOptions)const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -14246,8 +14227,7 @@ abstract class QAbstractItemModel___ extends QAbstractItemModel {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qabstractitemmodel.html#setData"><code>QAbstractItemModel::setData(QModelIndex,QVariant,int)</code></a>
+     * See <a href="@docRoot/qabstractitemmodel.html#setData"><code>QAbstractItemModel::setData(QModelIndex,QVariant,int)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -14257,8 +14237,7 @@ abstract class QAbstractItemModel___ extends QAbstractItemModel {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qabstractitemmodel.html#setData"><code>QAbstractItemModel::setData(QModelIndex,QVariant,int)</code></a>
+     * See <a href="@docRoot/qabstractitemmodel.html#setData"><code>QAbstractItemModel::setData(QModelIndex,QVariant,int)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -14268,8 +14247,7 @@ abstract class QAbstractItemModel___ extends QAbstractItemModel {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qabstractitemmodel.html#data"><code>QAbstractItemModel::data(QModelIndex,int)const</code></a>
+     * See <a href="@docRoot/qabstractitemmodel.html#data"><code>QAbstractItemModel::data(QModelIndex,int)const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -14279,8 +14257,7 @@ abstract class QAbstractItemModel___ extends QAbstractItemModel {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qabstractitemmodel.html#data"><code>QAbstractItemModel::data(QModelIndex,int)</code></a>
+     * See <a href="@docRoot/qabstractitemmodel.html#data"><code>QAbstractItemModel::data(QModelIndex,int)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -14290,8 +14267,7 @@ abstract class QAbstractItemModel___ extends QAbstractItemModel {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qabstractitemmodel.html#createIndex-1"><code>QAbstractItemModel::createIndex(int,int,quintptr)</code></a>
+     * See <a href="@docRoot/qabstractitemmodel.html#createIndex-1"><code>QAbstractItemModel::createIndex(int,int,quintptr)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -14303,8 +14279,7 @@ abstract class QAbstractItemModel___ extends QAbstractItemModel {
 class QMutex___ extends QMutex {
     /**
      * <p>
-     * See <code><a href=
-     * "@docRoot/qmutex.html#try_lock_for">QMutex::<wbr/>try_lock_for(std::chrono::duration)</a></code>
+     * See <code><a href="@docRoot/qmutex.html#try_lock_for">QMutex::<wbr/>try_lock_for(std::chrono::duration)</a></code>
      * </p>
      */
     @QtUninvokable
@@ -14314,8 +14289,7 @@ class QMutex___ extends QMutex {
 
     /**
      * <p>
-     * See <code><a href=
-     * "@docRoot/qmutex.html#try_lock_until">QMutex::<wbr/>try_lock_until(std::chrono::time_point)</a></code>
+     * See <code><a href="@docRoot/qmutex.html#try_lock_until">QMutex::<wbr/>try_lock_until(std::chrono::time_point)</a></code>
      * </p>
      */
     @QtUninvokable
@@ -14327,8 +14301,7 @@ class QMutex___ extends QMutex {
 class QTimer___ extends QTimer {
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtimer.html#callOnTimeout"><code>QTimer::callOnTimeout(Args&amp;&amp;...)</code></a>
+     * See <a href="@docRoot/qtimer.html#callOnTimeout"><code>QTimer::callOnTimeout(Args&amp;&amp;...)</code></a>
      * </p>
      */
     public final QMetaObject.@NonNull Connection callOnTimeout(QMetaObject.@NonNull Slot0 slot,
@@ -14338,8 +14311,7 @@ class QTimer___ extends QTimer {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtimer.html#callOnTimeout"><code>QTimer::callOnTimeout(Args&amp;&amp;...)</code></a>
+     * See <a href="@docRoot/qtimer.html#callOnTimeout"><code>QTimer::callOnTimeout(Args&amp;&amp;...)</code></a>
      * </p>
      */
     public final QMetaObject.@NonNull Connection callOnTimeout(QMetaObject.@NonNull Connectable0 connectable,
@@ -14349,8 +14321,7 @@ class QTimer___ extends QTimer {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtimer.html#callOnTimeout"><code>QTimer::callOnTimeout(Args&amp;&amp;...)</code></a>
+     * See <a href="@docRoot/qtimer.html#callOnTimeout"><code>QTimer::callOnTimeout(Args&amp;&amp;...)</code></a>
      * </p>
      */
     public final QMetaObject.@NonNull Connection callOnTimeout(@Nullable QObject receiver, @NonNull String method,
@@ -14360,8 +14331,7 @@ class QTimer___ extends QTimer {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtimer.html#callOnTimeout"><code>QTimer::callOnTimeout(Args&amp;&amp;...)</code></a>
+     * See <a href="@docRoot/qtimer.html#callOnTimeout"><code>QTimer::callOnTimeout(Args&amp;&amp;...)</code></a>
      * </p>
      */
     public final <Receiver> QMetaObject.@NonNull Connection callOnTimeout(@StrictNonNull Receiver receiver,
@@ -14374,8 +14344,7 @@ class QTimer___ extends QTimer {
 class QChronoTimer___ extends QChronoTimer {
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qchronotimer.html#callOnTimeout"><code>QChronoTimer::callOnTimeout(Args&amp;&amp;...)</code></a>
+     * See <a href="@docRoot/qchronotimer.html#callOnTimeout"><code>QChronoTimer::callOnTimeout(Args&amp;&amp;...)</code></a>
      * </p>
      */
     public final QMetaObject.@NonNull Connection callOnTimeout(QMetaObject.@NonNull Slot0 slot,
@@ -14385,8 +14354,7 @@ class QChronoTimer___ extends QChronoTimer {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qchronotimer.html#callOnTimeout"><code>QChronoTimer::callOnTimeout(Args&amp;&amp;...)</code></a>
+     * See <a href="@docRoot/qchronotimer.html#callOnTimeout"><code>QChronoTimer::callOnTimeout(Args&amp;&amp;...)</code></a>
      * </p>
      */
     public final QMetaObject.@NonNull Connection callOnTimeout(QMetaObject.@NonNull Connectable0 connectable,
@@ -14396,8 +14364,7 @@ class QChronoTimer___ extends QChronoTimer {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qchronotimer.html#callOnTimeout"><code>QChronoTimer::callOnTimeout(Args&amp;&amp;...)</code></a>
+     * See <a href="@docRoot/qchronotimer.html#callOnTimeout"><code>QChronoTimer::callOnTimeout(Args&amp;&amp;...)</code></a>
      * </p>
      */
     public final QMetaObject.@NonNull Connection callOnTimeout(@Nullable QObject receiver, @NonNull String method,
@@ -14407,8 +14374,7 @@ class QChronoTimer___ extends QChronoTimer {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qchronotimer.html#callOnTimeout"><code>QChronoTimer::callOnTimeout(Args&amp;&amp;...)</code></a>
+     * See <a href="@docRoot/qchronotimer.html#callOnTimeout"><code>QChronoTimer::callOnTimeout(Args&amp;&amp;...)</code></a>
      * </p>
      */
     public final <Receiver> QMetaObject.@NonNull Connection callOnTimeout(@StrictNonNull Receiver receiver,
@@ -14517,8 +14483,7 @@ class QCoreApplication___ extends QCoreApplication {
     /**
      * Destroys the QCoreApplication instance and purges Qt.
      * 
-     * @see <a href=
-     *      "@docRoot/qcoreapplication.html#dtor.QCoreApplication"><code>~QCoreApplication()</code></a>
+     * @see <a href="@docRoot/qcoreapplication.html#dtor.QCoreApplication"><code>~QCoreApplication()</code></a>
      */
     @QtUninvokable
     public static void shutdown() {
@@ -14627,8 +14592,7 @@ class QCoreApplication___ extends QCoreApplication {
     /**
      * Adds a post-routine to be executed when deleting QCoreApplication.
      * 
-     * @see <a href=
-     *      "@docRoot/qcoreapplication.html#qAddPostRoutine"><code>qAddPostRoutine(QtCleanUpFunction)</code></a>
+     * @see <a href="@docRoot/qcoreapplication.html#qAddPostRoutine"><code>qAddPostRoutine(QtCleanUpFunction)</code></a>
      * @see shutdown()
      */
     @QtUninvokable
@@ -14639,8 +14603,7 @@ class QCoreApplication___ extends QCoreApplication {
     /**
      * Removes a previously added post-routine.
      * 
-     * @see <a href=
-     *      "@docRoot/qcoreapplication.html#qRemovePostRoutine"><code>qRemovePostRoutine(QtCleanUpFunction)</code></a>
+     * @see <a href="@docRoot/qcoreapplication.html#qRemovePostRoutine"><code>qRemovePostRoutine(QtCleanUpFunction)</code></a>
      * @see addPostRoutine(Runnable)
      * @see shutdown()
      */
@@ -15059,6 +15022,12 @@ class QCoreApplication___ extends QCoreApplication {
 }// class
 
 class QCoreApplication__62_ {
+     /**
+      * <p>See <code>QCoreApplication::<wbr/>nativeInterface&lt;>(NativeInterface)</code></p>
+      * @since This function was introduced in Qt 6.2.
+      * @param nativeInterfaceClass NativeInterface type
+      * @return NativeInterface
+      */
     @QtUninvokable
     public final <QNativeInterface extends QtObjectInterface> QNativeInterface nativeInterface(
             Class<QNativeInterface> nativeInterfaceClass) {
@@ -15078,8 +15047,7 @@ class QCoreApplication__65_ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qcoreapplication.html#checkPermission"><code>QCoreApplication::checkPermission(QPermission)</code></a>
+     * See <a href="@docRoot/qcoreapplication.html#checkPermission"><code>QCoreApplication::checkPermission(QPermission)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15090,8 +15058,7 @@ class QCoreApplication__65_ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</code></a>
+     * See <a href="@docRoot/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15106,8 +15073,7 @@ class QCoreApplication__65_ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</code></a>
+     * See <a href="@docRoot/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15122,8 +15088,7 @@ class QCoreApplication__65_ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</code></a>
+     * See <a href="@docRoot/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15137,8 +15102,7 @@ class QCoreApplication__65_ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</code></a>
+     * See <a href="@docRoot/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15178,8 +15142,7 @@ class QPermission___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpermission.html#QPermission"><code>QPermission::data&lt;T>()</code></a>
+     * See <a href="@docRoot/qpermission.html#QPermission"><code>QPermission::data&lt;T>()</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15260,8 +15223,7 @@ class QDebug___ extends QDebug {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qdebug.html#operator-lt-lt"><code>QDebug::operator&lt;&lt;</code></a>
+     * See <a href="@docRoot/qdebug.html#operator-lt-lt"><code>QDebug::operator&lt;&lt;</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15314,8 +15276,7 @@ class QDebug___ extends QDebug {
 class QTextStream___ extends QTextStream {
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#string"><code>QTextStream::string() const</code></a>
+     * See <a href="@docRoot/qtextstream.html#string"><code>QTextStream::string() const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15344,8 +15305,7 @@ class QTextStream___ extends QTextStream {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#device"><code>QTextStream::device()const</code></a>
+     * See <a href="@docRoot/qtextstream.html#device"><code>QTextStream::device()const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15358,8 +15318,7 @@ class QTextStream___ extends QTextStream {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a>
+     * See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15371,8 +15330,7 @@ class QTextStream___ extends QTextStream {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a>
+     * See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15383,8 +15341,7 @@ class QTextStream___ extends QTextStream {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a>
+     * See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15398,8 +15355,7 @@ class QTextStream___ extends QTextStream {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a>
+     * See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15409,8 +15365,7 @@ class QTextStream___ extends QTextStream {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a>
+     * See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15420,8 +15375,7 @@ class QTextStream___ extends QTextStream {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a>
+     * See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15632,8 +15586,7 @@ class QByteArray___ extends QByteArray {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join()</code></a>
+     * See <a href="@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join()</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15641,8 +15594,7 @@ class QByteArray___ extends QByteArray {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join(char)</code></a>
+     * See <a href="@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join(char)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15651,8 +15603,7 @@ class QByteArray___ extends QByteArray {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join(QByteArray)</code></a>
+     * See <a href="@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join(QByteArray)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15664,8 +15615,7 @@ class QByteArray___ extends QByteArray {
 class QByteArray_63__ extends QByteArray {
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join(QByteArrayView)</code></a>
+     * See <a href="@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join(QByteArrayView)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15677,8 +15627,7 @@ class QByteArrayView___ extends QByteArray {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qbytearrayview.html#fromArray"><code>QByteArrayView::fromArray&lt;Byte,Size>(const Byte(&amp;)[Size])</code></a>
+     * See <a href="@docRoot/qbytearrayview.html#fromArray"><code>QByteArrayView::fromArray&lt;Byte,Size>(const Byte(&amp;)[Size])</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15688,8 +15637,7 @@ class QByteArrayView___ extends QByteArray {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qbytearrayview.html#fromArray"><code>QByteArrayView::fromArray&lt;Byte,Size>(const Byte(&amp;)[Size])</code></a>
+     * See <a href="@docRoot/qbytearrayview.html#fromArray"><code>QByteArrayView::fromArray&lt;Byte,Size>(const Byte(&amp;)[Size])</code></a>
      * </p>
      */
     @QtUninvokable
@@ -16159,10 +16107,1160 @@ class QAbstractFileEngine_UnMapExtensionOption___ extends QAbstractFileEngine_Un
 }// class
 
 class QtFuture___ {
+
+     /**
+      * Runnable without arguments.
+      * @see java.lang.Runnable
+      */
+     @FunctionalInterface
+     public interface Runnable extends java.io.Serializable{
+         /**
+          * @throws Throwable
+          * @see Runnable#run()
+          */
+         public void run() throws Throwable;
+     }
+
+     /**
+      * Runnable with one argument.
+      * @see java.lang.Runnable
+      * @param <A>
+      */
+     @FunctionalInterface
+     public interface Runnable1<A> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param a
+          * @throws Throwable
+          */
+         public void run(A a) throws Throwable;
+     }
+
+     /**
+      * Runnable with two arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      */
+     @FunctionalInterface
+     public interface Runnable2<A,B> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param a
+          * @param b
+          * @throws Throwable
+          */
+         public void run(A a, B b) throws Throwable;
+     }
+
+     /**
+      * Runnable with three arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      */
+     @FunctionalInterface
+     public interface Runnable3<A,B,C> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param a
+          * @param b
+          * @param c
+          * @throws Throwable
+          */
+         public void run(A a, B b, C c) throws Throwable;
+     }
+
+     /**
+      * Runnable with four arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      */
+     @FunctionalInterface
+     public interface Runnable4<A,B,C,D> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @throws Throwable
+          */
+         public void run(A a, B b, C c, D d) throws Throwable;
+     }
+
+     /**
+      * Runnable with five arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      */
+     @FunctionalInterface
+     public interface Runnable5<A,B,C,D,E> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @throws Throwable
+          */
+         public void run(A a, B b, C c, D d, E e) throws Throwable;
+     }
+
+     /**
+      * Runnable with six arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      */
+     @FunctionalInterface
+     public interface Runnable6<A,B,C,D,E,F> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @throws Throwable
+          */
+         public void run(A a, B b, C c, D d, E e, F f) throws Throwable;
+     }
+
+     /**
+      * Runnable with seven arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      * @param <G>
+      */
+     @FunctionalInterface
+     public interface Runnable7<A,B,C,D,E,F,G> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @param g
+          * @throws Throwable
+          */
+         public void run(A a, B b, C c, D d, E e, F f, G g) throws Throwable;
+     }
+
+     /**
+      * Runnable with eight arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      * @param <G>
+      * @param <H>
+      */
+     @FunctionalInterface
+     public interface Runnable8<A,B,C,D,E,F,G,H> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @param g
+          * @param h
+          * @throws Throwable
+          */
+         public void run(A a, B b, C c, D d, E e, F f, G g, H h) throws Throwable;
+     }
+
+     /**
+      * Runnable with nine arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      * @param <G>
+      * @param <H>
+      * @param <I>
+      */
+     @FunctionalInterface
+     public interface Runnable9<A,B,C,D,E,F,G,H,I> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @param g
+          * @param h
+          * @param i
+          * @throws Throwable
+          */
+         public void run(A a, B b, C c, D d, E e, F f, G g, H h, I i) throws Throwable;
+     }
+
+     /**
+      * Runnable with void promise.
+      * @see java.lang.Runnable
+      */
+     @FunctionalInterface
+     public interface RunnableWithVoidPromise extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise void promise
+          * @throws Throwable
+          */
+         public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise) throws Throwable;
+     }
+
+     /**
+      * Runnable with void promise and one arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      */
+     @FunctionalInterface
+     public interface RunnableWithVoidPromise1<A> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise void promise
+          * @param a
+          * @throws Throwable
+          */
+         public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a) throws Throwable;
+     }
+
+     /**
+      * Runnable with void promise and two arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      */
+     @FunctionalInterface
+     public interface RunnableWithVoidPromise2<A, B> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise void promise
+          * @param a
+          * @param b
+          * @throws Throwable
+          */
+         public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a, B b) throws Throwable;
+     }
+
+     /**
+      * Runnable with void promise and three arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      */
+     @FunctionalInterface
+     public interface RunnableWithVoidPromise3<A, B, C> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise void promise
+          * @param a
+          * @param b
+          * @param c
+          * @throws Throwable
+          */
+         public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a, B b, C c) throws Throwable;
+     }
+
+     /**
+      * Runnable with void promise and four arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      */
+     @FunctionalInterface
+     public interface RunnableWithVoidPromise4<A, B, C, D> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise void promise
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @throws Throwable
+          */
+         public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a, B b, C c, D d) throws Throwable;
+     }
+
+     /**
+      * Runnable with void promise and five arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      */
+     @FunctionalInterface
+     public interface RunnableWithVoidPromise5<A, B, C, D, E> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise void promise
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @throws Throwable
+          */
+         public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a, B b, C c, D d, E e) throws Throwable;
+     }
+
+     /**
+      * Runnable with void promise and six arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      */
+     @FunctionalInterface
+     public interface RunnableWithVoidPromise6<A, B, C, D, E, F> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise void promise
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @throws Throwable
+          */
+         public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a, B b, C c, D d, E e, F f) throws Throwable;
+     }
+
+     /**
+      * Runnable with void promise and seven arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      * @param <G>
+      */
+     @FunctionalInterface
+     public interface RunnableWithVoidPromise7<A, B, C, D, E, F, G> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise void promise
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @param g
+          * @throws Throwable
+          */
+         public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a, B b, C c, D d, E e, F f, G g) throws Throwable;
+     }
+
+     /**
+      * Runnable with void promise and eight arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      * @param <G>
+      * @param <H>
+      */
+     @FunctionalInterface
+     public interface RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise void promise
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @param g
+          * @param h
+          * @throws Throwable
+          */
+         public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a, B b, C c, D d, E e, F f, G g, H h) throws Throwable;
+     }
+
+     /**
+      * Runnable with void promise and nine arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      * @param <G>
+      * @param <H>
+      * @param <I>
+      */
+     @FunctionalInterface
+     public interface RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise void promise
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @param g
+          * @param h
+          * @param i
+          * @throws Throwable
+          */
+         public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a, B b, C c, D d, E e, F f, G g, H h, I i) throws Throwable;
+     }
+
+     /**
+      * Runnable with typed promise.
+      * @see java.lang.Runnable
+      */
+     @FunctionalInterface
+     public interface RunnableWithPromise<T> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise typed promise to receive the method result
+          * @throws Throwable
+          */
+         public void run(io.qt.core.@StrictNonNull QPromise<T> promise) throws Throwable;
+     }
+
+     /**
+      * Runnable with typed promise and one argument.
+      * @see java.lang.Runnable
+      * @param <A>
+      */
+     @FunctionalInterface
+     public interface RunnableWithPromise1<T, A> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise typed promise to receive the method result
+          * @param a
+          * @throws Throwable
+          */
+         public void run(io.qt.core.@StrictNonNull QPromise<T> promise, A a) throws Throwable;
+     }
+
+     /**
+      * Runnable with typed promise and two arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      */
+     @FunctionalInterface
+     public interface RunnableWithPromise2<T, A, B> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise typed promise to receive the method result
+          * @param a
+          * @param b
+          * @throws Throwable
+          */
+         public void run(io.qt.core.@StrictNonNull QPromise<T> promise, A a, B b) throws Throwable;
+     }
+
+     /**
+      * Runnable with typed promise and three arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      */
+     @FunctionalInterface
+     public interface RunnableWithPromise3<T, A, B, C> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise typed promise to receive the method result
+          * @param a
+          * @param b
+          * @param c
+          * @throws Throwable
+          */
+         public void run(io.qt.core.@StrictNonNull QPromise<T> promise, A a, B b, C c) throws Throwable;
+     }
+
+     /**
+      * Runnable with typed promise and four arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      */
+     @FunctionalInterface
+     public interface RunnableWithPromise4<T, A, B, C, D> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise typed promise to receive the method result
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @throws Throwable
+          */
+         public void run(io.qt.core.@StrictNonNull QPromise<T> promise, A a, B b, C c, D d) throws Throwable;
+     }
+
+     /**
+      * Runnable with typed promise and five arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      */
+     @FunctionalInterface
+     public interface RunnableWithPromise5<T, A, B, C, D, E> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise typed promise to receive the method result
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @throws Throwable
+          */
+         public void run(io.qt.core.@StrictNonNull QPromise<T> promise, A a, B b, C c, D d, E e) throws Throwable;
+     }
+
+     /**
+      * Runnable with typed promise and six arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      */
+     @FunctionalInterface
+     public interface RunnableWithPromise6<T, A, B, C, D, E, F> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise typed promise to receive the method result
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @throws Throwable
+          */
+         public void run(io.qt.core.@StrictNonNull QPromise<T> promise, A a, B b, C c, D d, E e, F f) throws Throwable;
+     }
+
+     /**
+      * Runnable with typed promise and seven arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      * @param <G>
+      */
+     @FunctionalInterface
+     public interface RunnableWithPromise7<T, A, B, C, D, E, F, G> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise typed promise to receive the method result
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @param g
+          * @throws Throwable
+          */
+         public void run(io.qt.core.@StrictNonNull QPromise<T> promise, A a, B b, C c, D d, E e, F f, G g) throws Throwable;
+     }
+
+     /**
+      * Runnable with typed promise and eight arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      * @param <G>
+      * @param <H>
+      */
+     @FunctionalInterface
+     public interface RunnableWithPromise8<T, A, B, C, D, E, F, G, H> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise typed promise to receive the method result
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @param g
+          * @param h
+          * @throws Throwable
+          */
+         public void run(io.qt.core.@StrictNonNull QPromise<T> promise, A a, B b, C c, D d, E e, F f, G g, H h) throws Throwable;
+     }
+
+     /**
+      * Runnable with typed promise and nine arguments.
+      * @see java.lang.Runnable
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      * @param <G>
+      * @param <H>
+      * @param <I>
+      */
+     @FunctionalInterface
+     public interface RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> extends java.io.Serializable{
+         /**
+          * @see Runnable#run()
+          * @param promise typed promise to receive the method result
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @param g
+          * @param h
+          * @param i
+          * @throws Throwable
+          */
+         public void run(io.qt.core.@StrictNonNull QPromise<T> promise, A a, B b, C c, D d, E e, F f, G g, H h, I i) throws Throwable;
+     }
+
+     /**
+      * Callable with five arguments.
+      * @see java.util.concurrent.Callable
+      * @param <T>
+      */
+     @FunctionalInterface
+     public interface Callable<T> extends java.io.Serializable{
+         /**
+          * @see java.util.concurrent.Callable#call()
+          * @throws Throwable
+          * @return result of callable
+          */
+         public T call() throws Throwable;
+     }
+
+     /**
+      * Callable with five arguments.
+      * @see java.util.concurrent.Callable
+      * @param <T>
+      * @param <A>
+      */
+     @FunctionalInterface
+     public interface Callable1<T,A> extends java.io.Serializable{
+         /**
+          * @see java.util.concurrent.Callable#call()
+          * @param a
+          * @throws Throwable
+          * @return result of callable
+          */
+         public T call(A a) throws Throwable;
+     }
+
+     /**
+      * Callable with five arguments.
+      * @see java.util.concurrent.Callable
+      * @param <T>
+      * @param <A>
+      * @param <B>
+      */
+     @FunctionalInterface
+     public interface Callable2<T,A,B> extends java.io.Serializable{
+         /**
+          * @see java.util.concurrent.Callable#call()
+          * @param a
+          * @param b
+          * @throws Throwable
+          * @return result of callable
+          */
+         public T call(A a, B b) throws Throwable;
+     }
+
+     /**
+      * Callable with five arguments.
+      * @see java.util.concurrent.Callable
+      * @param <T>
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      */
+     @FunctionalInterface
+     public interface Callable3<T,A,B,C> extends java.io.Serializable{
+         /**
+          * @see java.util.concurrent.Callable#call()
+          * @param a
+          * @param b
+          * @param c
+          * @throws Throwable
+          * @return result of callable
+          */
+         public T call(A a, B b, C c) throws Throwable;
+     }
+
+     /**
+      * Callable with five arguments.
+      * @see java.util.concurrent.Callable
+      * @param <T>
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      */
+     @FunctionalInterface
+     public interface Callable4<T,A,B,C,D> extends java.io.Serializable{
+         /**
+          * @see java.util.concurrent.Callable#call()
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @throws Throwable
+          * @return result of callable
+          */
+         public T call(A a, B b, C c, D d) throws Throwable;
+     }
+
+     /**
+      * Callable with five arguments.
+      * @see java.util.concurrent.Callable
+      * @param <T>
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      */
+     @FunctionalInterface
+     public interface Callable5<T,A,B,C,D,E> extends java.io.Serializable{
+         /**
+          * @see java.util.concurrent.Callable#call()
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @throws Throwable
+          * @return result of callable
+          */
+         public T call(A a, B b, C c, D d, E e) throws Throwable;
+     }
+
+     /**
+      * Callable with six arguments.
+      * @see java.util.concurrent.Callable
+      * @param <T>
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      */
+     @FunctionalInterface
+     public interface Callable6<T,A,B,C,D,E,F> extends java.io.Serializable{
+         /**
+          * @see java.util.concurrent.Callable#call()
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @throws Throwable
+          * @return result of callable
+          */
+         public T call(A a, B b, C c, D d, E e, F f) throws Throwable;
+     }
+
+     /**
+      * Callable with seven arguments.
+      * @see java.util.concurrent.Callable
+      * @param <T>
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      * @param <G>
+      */
+     @FunctionalInterface
+     public interface Callable7<T,A,B,C,D,E,F,G> extends java.io.Serializable{
+         /**
+          * @see java.util.concurrent.Callable#call()
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @param g
+          * @throws Throwable
+          * @return result of callable
+          */
+         public T call(A a, B b, C c, D d, E e, F f, G g) throws Throwable;
+     }
+
+     /**
+      * Callable with eight arguments.
+      * @see java.util.concurrent.Callable
+      * @param <T>
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      * @param <G>
+      * @param <H>
+      */
+     @FunctionalInterface
+     public interface Callable8<T,A,B,C,D,E,F,G,H> extends java.io.Serializable{
+         /**
+          * @see java.util.concurrent.Callable#call()
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @param g
+          * @param h
+          * @throws Throwable
+          * @return result of callable
+          */
+         public T call(A a, B b, C c, D d, E e, F f, G g, H h) throws Throwable;
+     }
+
+     /**
+      * Callable with nine arguments.
+      * @see java.util.concurrent.Callable
+      * @param <T>
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      * @param <G>
+      * @param <H>
+      * @param <I>
+      */
+     @FunctionalInterface
+     public interface Callable9<T,A,B,C,D,E,F,G,H,I> extends java.io.Serializable{
+         /**
+          * @see java.util.concurrent.Callable#call()
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @param g
+          * @param h
+          * @param i
+          * @throws Throwable
+          * @return result of callable
+          */
+         public T call(A a, B b, C c, D d, E e, F f, G g, H h, I i) throws Throwable;
+     }
+
+     /**
+      * Predicate with five arguments.
+      * @see java.util.function.Predicate
+      */
+     @FunctionalInterface
+     public interface Predicate extends java.io.Serializable{
+         /**
+          * @see java.util.function.Predicate#test(java.lang.Object)
+          * @throws Throwable
+          * @return result of predicate
+          */
+         public boolean test() throws Throwable;
+     }
+
+     /**
+      * Predicate with five arguments.
+      * @see java.util.function.Predicate
+      * @param <A>
+      */
+     @FunctionalInterface
+     public interface Predicate1<A> extends java.io.Serializable{
+         /**
+          * @see java.util.function.Predicate#test(java.lang.Object)
+          * @param a
+          * @throws Throwable
+          * @return result of predicate
+          */
+         public boolean test(A a) throws Throwable;
+     }
+
+     /**
+      * Predicate with five arguments.
+      * @see java.util.function.Predicate
+      * @param <A>
+      * @param <B>
+      */
+     @FunctionalInterface
+     public interface Predicate2<A,B> extends java.io.Serializable{
+         /**
+          * @see java.util.function.Predicate#test(java.lang.Object)
+          * @param a
+          * @param b
+          * @throws Throwable
+          * @return result of predicate
+          */
+         public boolean test(A a, B b) throws Throwable;
+     }
+
+     /**
+      * Predicate with five arguments.
+      * @see java.util.function.Predicate
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      */
+     @FunctionalInterface
+     public interface Predicate3<A,B,C> extends java.io.Serializable{
+         /**
+          * @see java.util.function.Predicate#test(java.lang.Object)
+          * @param a
+          * @param b
+          * @param c
+          * @throws Throwable
+          * @return result of predicate
+          */
+         public boolean test(A a, B b, C c) throws Throwable;
+     }
+
+     /**
+      * Predicate with five arguments.
+      * @see java.util.function.Predicate
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      */
+     @FunctionalInterface
+     public interface Predicate4<A,B,C,D> extends java.io.Serializable{
+         /**
+          * @see java.util.function.Predicate#test(java.lang.Object)
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @throws Throwable
+          * @return result of predicate
+          */
+         public boolean test(A a, B b, C c, D d) throws Throwable;
+     }
+
+     /**
+      * Predicate with five arguments.
+      * @see java.util.function.Predicate
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      */
+     @FunctionalInterface
+     public interface Predicate5<A,B,C,D,E> extends java.io.Serializable{
+         /**
+          * @see java.util.function.Predicate#test(java.lang.Object)
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @throws Throwable
+          * @return result of predicate
+          */
+         public boolean test(A a, B b, C c, D d, E e) throws Throwable;
+     }
+
+     /**
+      * Predicate with six arguments.
+      * @see java.util.function.Predicate
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      */
+     @FunctionalInterface
+     public interface Predicate6<A,B,C,D,E,F> extends java.io.Serializable{
+         /**
+          * @see java.util.function.Predicate#test(java.lang.Object)
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @throws Throwable
+          * @return result of predicate
+          */
+         public boolean test(A a, B b, C c, D d, E e, F f) throws Throwable;
+     }
+
+     /**
+      * Predicate with seven arguments.
+      * @see java.util.function.Predicate
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      * @param <G>
+      */
+     @FunctionalInterface
+     public interface Predicate7<A,B,C,D,E,F,G> extends java.io.Serializable{
+         /**
+          * @see java.util.function.Predicate#test(java.lang.Object)
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @param g
+          * @throws Throwable
+          * @return result of predicate
+          */
+         public boolean test(A a, B b, C c, D d, E e, F f, G g) throws Throwable;
+     }
+
+     /**
+      * Predicate with eight arguments.
+      * @see java.util.function.Predicate
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      * @param <G>
+      * @param <H>
+      */
+     @FunctionalInterface
+     public interface Predicate8<A,B,C,D,E,F,G,H> extends java.io.Serializable{
+         /**
+          * @see java.util.function.Predicate#test(java.lang.Object)
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @param g
+          * @param h
+          * @throws Throwable
+          * @return result of predicate
+          */
+         public boolean test(A a, B b, C c, D d, E e, F f, G g, H h) throws Throwable;
+     }
+
+     /**
+      * Predicate with nine arguments.
+      * @see java.util.function.Predicate
+      * @param <A>
+      * @param <B>
+      * @param <C>
+      * @param <D>
+      * @param <E>
+      * @param <F>
+      * @param <G>
+      * @param <H>
+      * @param <I>
+      */
+     @FunctionalInterface
+     public interface Predicate9<A,B,C,D,E,F,G,H,I> extends java.io.Serializable{
+         /**
+          * @see java.util.function.Predicate#test(java.lang.Object)
+          * @param a
+          * @param b
+          * @param c
+          * @param d
+          * @param e
+          * @param f
+          * @param g
+          * @param h
+          * @param i
+          * @throws Throwable
+          * @return result of predicate
+          */
+         public boolean test(A a, B b, C c, D d, E e, F f, G g, H h, I i) throws Throwable;
+     }
+
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
+     * See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -16190,8 +17288,7 @@ class QtFuture___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
+     * See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -16220,8 +17317,7 @@ class QtFuture___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
+     * See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -16266,8 +17362,7 @@ class QtFuture___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
+     * See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -16309,8 +17404,7 @@ class QtFuture___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
+     * See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -16352,8 +17446,7 @@ class QtFuture___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
+     * See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -16395,8 +17488,7 @@ class QtFuture___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
+     * See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -16438,8 +17530,7 @@ class QtFuture___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
+     * See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -16481,8 +17572,7 @@ class QtFuture___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
+     * See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -16524,8 +17614,7 @@ class QtFuture___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
+     * See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -16558,8 +17647,7 @@ class QtFuture___ {
 class QtFuture_6_3to5__ {
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#whenAny-1"><code>QtFuture::whenAny(Futures)</code></a>
+     * See <a href="@docRoot/qtfuture.html#whenAny-1"><code>QtFuture::whenAny(Futures)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -16569,8 +17657,7 @@ class QtFuture_6_3to5__ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#whenAny-1"><code>QtFuture::whenAny(Futures)</code></a>
+     * See <a href="@docRoot/qtfuture.html#whenAny-1"><code>QtFuture::whenAny(Futures)</code></a>
      * </p>
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -16595,8 +17682,7 @@ class QtFuture_6_3to5__ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#whenAll-1"><code>QtFuture::whenAll(Futures)</code></a>
+     * See <a href="@docRoot/qtfuture.html#whenAll-1"><code>QtFuture::whenAll(Futures)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -16607,8 +17693,7 @@ class QtFuture_6_3to5__ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#whenAll-1"><code>QtFuture::whenAll(Futures)</code></a>
+     * See <a href="@docRoot/qtfuture.html#whenAll-1"><code>QtFuture::whenAll(Futures)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -16636,8 +17721,7 @@ class QtFuture_6_3to5__ {
 class QtFuture_6_6__ {
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#whenAny-1"><code>QtFuture::whenAny(Futures)</code></a>
+     * See <a href="@docRoot/qtfuture.html#whenAny-1"><code>QtFuture::whenAny(Futures)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -16647,8 +17731,7 @@ class QtFuture_6_6__ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#whenAny-1"><code>QtFuture::whenAny(Futures)</code></a>
+     * See <a href="@docRoot/qtfuture.html#whenAny-1"><code>QtFuture::whenAny(Futures)</code></a>
      * </p>
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -16672,8 +17755,7 @@ class QtFuture_6_6__ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#whenAll-1"><code>QtFuture::whenAll(Futures)</code></a>
+     * See <a href="@docRoot/qtfuture.html#whenAll-1"><code>QtFuture::whenAll(Futures)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -16684,8 +17766,7 @@ class QtFuture_6_6__ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qtfuture.html#whenAll-1"><code>QtFuture::whenAll(Futures)</code></a>
+     * See <a href="@docRoot/qtfuture.html#whenAll-1"><code>QtFuture::whenAll(Futures)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -17778,8 +18859,7 @@ class QVariant___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qvariant.html#canConvert"><code>QVariant::canConvert(QMetaType)const</code></a>
+     * See <a href="@docRoot/qvariant.html#canConvert"><code>QVariant::canConvert(QMetaType)const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -17807,8 +18887,7 @@ class QVariant___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qvariant.html#canConvert"><code>QVariant::canConvert(QMetaType)const</code></a>
+     * See <a href="@docRoot/qvariant.html#canConvert"><code>QVariant::canConvert(QMetaType)const</code></a>
      * </p>
      */
     @Deprecated(forRemoval = true, since = "6.8.2")
@@ -17832,8 +18911,7 @@ class QVariant___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qvariant.html#convert"><code>QVariant::convert(QMetaType)</code></a>
+     * See <a href="@docRoot/qvariant.html#convert"><code>QVariant::convert(QMetaType)</code></a>
      * </p>
      */
     public final boolean convert(@StrictNonNull Class<?> cl,
@@ -18943,8 +20021,7 @@ class QVariant___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qvariant.html#qvariant_cast"><code>qvariant_cast&lt;T>(QVariant)</code></a>
+     * See <a href="@docRoot/qvariant.html#qvariant_cast"><code>qvariant_cast&lt;T>(QVariant)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -18958,29 +20035,25 @@ class QVariant___ {
 class QPartialOrdering___ {
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Equivalent-var"><code>QPartialOrdering::Equivalent</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Equivalent-var"><code>QPartialOrdering::Equivalent</code></a>
      * </p>
      */
     public static final int Equivalent = 0;
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Less-var"><code>QPartialOrdering::Less</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Less-var"><code>QPartialOrdering::Less</code></a>
      * </p>
      */
     public static final int Greater = 1;
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Greater-var"><code>QPartialOrdering::Greater</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Greater-var"><code>QPartialOrdering::Greater</code></a>
      * </p>
      */
     public static final int Less = -1;
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Unordered-var"><code>QPartialOrdering::Unordered</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Unordered-var"><code>QPartialOrdering::Unordered</code></a>
      * </p>
      */
     public static final int Unordered = -127;
@@ -18989,29 +20062,25 @@ class QPartialOrdering___ {
 class QPartialOrdering_67__ {
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Equivalent-var"><code>QPartialOrdering::equivalent</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Equivalent-var"><code>QPartialOrdering::equivalent</code></a>
      * </p>
      */
     public static final int equivalent = 0;
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Less-var"><code>QPartialOrdering::less</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Less-var"><code>QPartialOrdering::less</code></a>
      * </p>
      */
     public static final int greater = 1;
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Greater-var"><code>QPartialOrdering::greater</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Greater-var"><code>QPartialOrdering::greater</code></a>
      * </p>
      */
     public static final int less = -1;
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Unordered-var"><code>QPartialOrdering::unordered</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Unordered-var"><code>QPartialOrdering::unordered</code></a>
      * </p>
      */
     public static final int unordered = -127;
@@ -19020,29 +20089,25 @@ class QPartialOrdering_67__ {
 class partial_ordering___ {
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Equivalent-var"><code>partial_ordering::equivalent</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Equivalent-var"><code>partial_ordering::equivalent</code></a>
      * </p>
      */
     public static final int equivalent = 0;
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Less-var"><code>partial_ordering::less</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Less-var"><code>partial_ordering::less</code></a>
      * </p>
      */
     public static final int greater = 1;
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Greater-var"><code>partial_ordering::greater</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Greater-var"><code>partial_ordering::greater</code></a>
      * </p>
      */
     public static final int less = -1;
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Unordered-var"><code>partial_ordering::unordered</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Unordered-var"><code>partial_ordering::unordered</code></a>
      * </p>
      */
     public static final int unordered = unordered();
@@ -19053,22 +20118,19 @@ class partial_ordering___ {
 class weak_ordering___ {
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Equivalent-var"><code>weak_ordering::equivalent</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Equivalent-var"><code>weak_ordering::equivalent</code></a>
      * </p>
      */
     public static final int equivalent = 0;
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Less-var"><code>weak_ordering::less</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Less-var"><code>weak_ordering::less</code></a>
      * </p>
      */
     public static final int greater = 1;
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Greater-var"><code>weak_ordering::greater</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Greater-var"><code>weak_ordering::greater</code></a>
      * </p>
      */
     public static final int less = -1;
@@ -19077,29 +20139,25 @@ class weak_ordering___ {
 class strong_ordering___ {
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Equivalent-var"><code>strong_ordering::equivalent</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Equivalent-var"><code>strong_ordering::equivalent</code></a>
      * </p>
      */
     public static final int equivalent = 0;
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Equivalent-var"><code>strong_ordering::equal</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Equivalent-var"><code>strong_ordering::equal</code></a>
      * </p>
      */
     public static final int equal = 0;
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Less-var"><code>strong_ordering::less</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Less-var"><code>strong_ordering::less</code></a>
      * </p>
      */
     public static final int greater = 1;
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpartialordering.html#Greater-var"><code>strong_ordering::greater</code></a>
+     * See <a href="@docRoot/qpartialordering.html#Greater-var"><code>strong_ordering::greater</code></a>
      * </p>
      */
     public static final int less = -1;
@@ -19320,8 +20378,7 @@ class QMetaObject___ {
 
     /**
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#newInstance">QMetaObject::<wbr/>newInstance(Args &amp;&amp;...)const</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#newInstance">QMetaObject::<wbr/>newInstance(Args &amp;&amp;...)const</a></code>
      * </p>
      * 
      * @return new instance
@@ -44254,8 +45311,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param sender         the signal sender
@@ -44274,8 +45330,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -44295,8 +45350,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -44318,8 +45372,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -44342,8 +45395,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -44367,8 +45419,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -44394,8 +45445,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -44422,8 +45472,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -44451,8 +45500,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -44481,8 +45529,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -44512,8 +45559,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -44535,8 +45581,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -44560,8 +45605,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -44586,8 +45630,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -44613,8 +45656,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -44641,8 +45683,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -44670,8 +45711,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -44700,8 +45740,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -44731,8 +45770,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -44763,8 +45801,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -44797,8 +45834,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param sender         the signal sender
@@ -44822,8 +45858,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -44845,8 +45880,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -44869,8 +45903,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -44895,8 +45928,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -44922,8 +45954,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -44950,8 +45981,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -44979,8 +46009,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -45009,8 +46038,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -45040,8 +46068,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href=
-     * "https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -45075,8 +46102,7 @@ class QMetaMethod___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qmetamethod.html#parameterTypes"><code>QMetaMethod::parameterTypes() const</code></a>
+     * See <a href="@docRoot/qmetamethod.html#parameterTypes"><code>QMetaMethod::parameterTypes() const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -45092,8 +46118,7 @@ class QMetaMethod___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qmetamethod.html#parameterType"><code>QMetaMethod::parameterType(int index) const</code></a>
+     * See <a href="@docRoot/qmetamethod.html#parameterType"><code>QMetaMethod::parameterType(int index) const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -45103,8 +46128,7 @@ class QMetaMethod___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qmetamethod.html#returnType"><code>QMetaMethod::returnType() const</code></a>
+     * See <a href="@docRoot/qmetamethod.html#returnType"><code>QMetaMethod::returnType() const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -45119,8 +46143,7 @@ class QMetaMethod___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qmetamethod.html#methodSignature"><code>QMetaMethod::methodSignature() const</code></a>
+     * See <a href="@docRoot/qmetamethod.html#methodSignature"><code>QMetaMethod::methodSignature() const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -45172,8 +46195,7 @@ class QMetaMethod___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qmetamethod.html#invoke-1"><code>QMetaMethod::invoke(QObject *object, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</code></a>
+     * See <a href="@docRoot/qmetamethod.html#invoke-1"><code>QMetaMethod::invoke(QObject *object, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -45184,8 +46206,7 @@ class QMetaMethod___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qmetamethod.html#invoke"><code>QMetaMethod::invoke(QObject *object, Qt::ConnectionType connectionType, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</code></a>
+     * See <a href="@docRoot/qmetamethod.html#invoke"><code>QMetaMethod::invoke(QObject *object, Qt::ConnectionType connectionType, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -45201,8 +46222,7 @@ class QMetaMethod___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qmetamethod.html#invokeOnGadget"><code>QMetaMethod::invokeOnGadget(void *gadget, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</code></a>
+     * See <a href="@docRoot/qmetamethod.html#invokeOnGadget"><code>QMetaMethod::invokeOnGadget(void *gadget, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -45566,8 +46586,7 @@ class QMetaProperty___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qmetaproperty.html#resetOnGadget"><code>QMetaProperty::resetOnGadget(const void *) const</code></a>
+     * See <a href="@docRoot/qmetaproperty.html#resetOnGadget"><code>QMetaProperty::resetOnGadget(const void *) const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -45575,8 +46594,7 @@ class QMetaProperty___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qmetaproperty.html#readOnGadget"><code>QMetaProperty::readOnGadget(const void *) const</code></a>
+     * See <a href="@docRoot/qmetaproperty.html#readOnGadget"><code>QMetaProperty::readOnGadget(const void *) const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -45584,8 +46602,7 @@ class QMetaProperty___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qmetaproperty.html#writeOnGadget"><code>QMetaProperty::writeOnGadget(void *, const QVariant &amp;) const</code></a>
+     * See <a href="@docRoot/qmetaproperty.html#writeOnGadget"><code>QMetaProperty::writeOnGadget(void *, const QVariant &amp;) const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -45601,8 +46618,7 @@ class QMetaProperty___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qmetaproperty.html#metaType"><code>QMetaProperty::metaType() const</code></a>
+     * See <a href="@docRoot/qmetaproperty.html#metaType"><code>QMetaProperty::metaType() const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -45756,8 +46772,7 @@ class QMetaEnum___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qmetaenum.html#keysToValue"><code>QMetaEnum::keysToValue(const char *) const</code></a>
+     * See <a href="@docRoot/qmetaenum.html#keysToValue"><code>QMetaEnum::keysToValue(const char *) const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -45767,8 +46782,7 @@ class QMetaEnum___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qmetaenum.html#keysToValue"><code>QMetaEnum::keysToValue(const char *) const</code></a>
+     * See <a href="@docRoot/qmetaenum.html#keysToValue"><code>QMetaEnum::keysToValue(const char *) const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -46924,8 +47938,7 @@ class QPluginLoader_java__ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpluginloader.html#instance"><code>QPluginLoader::instance()</code></a>
+     * See <a href="@docRoot/qpluginloader.html#instance"><code>QPluginLoader::instance()</code></a>
      * </p>
      */
     @QtUninvokable
@@ -46950,8 +47963,7 @@ class QPluginLoader_java__ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a>
+     * See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a>
      * </p>
      */
     public static void qRegisterStaticPluginFunction(QObject instance) {
@@ -46960,8 +47972,7 @@ class QPluginLoader_java__ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a>
+     * See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a>
      * </p>
      */
     public static void qRegisterStaticPluginFunction(QObject instance, QJsonObject metaData) {
@@ -46973,8 +47984,7 @@ class QPluginLoader_java__ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a>
+     * See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a>
      * </p>
      */
     public static void qRegisterStaticPluginFunction(QObject instance, java.util.Map<String, Object> metaData) {
@@ -46983,8 +47993,7 @@ class QPluginLoader_java__ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a>
+     * See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a>
      * </p>
      */
     public static void qRegisterStaticPluginFunction(Class<? extends QObject> pluginClass) {
@@ -46993,8 +48002,7 @@ class QPluginLoader_java__ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a>
+     * See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a>
      * </p>
      */
     public static void qRegisterStaticPluginFunction(Class<? extends QObject> pluginClass,
@@ -47004,8 +48012,7 @@ class QPluginLoader_java__ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a>
+     * See <a href="@docRoot/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a>
      * </p>
      */
     public static void qRegisterStaticPluginFunction(Class<? extends QObject> pluginClass, QJsonObject metaData) {
@@ -47190,8 +48197,7 @@ class QPluginLoader_java__ {
 class QStaticPlugin_java__ {
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qstaticplugin.html#instance-var"><code>QStaticPlugin::instance</code></a>
+     * See <a href="@docRoot/qstaticplugin.html#instance-var"><code>QStaticPlugin::instance</code></a>
      * </p>
      */
     @QtUninvokable
@@ -47238,8 +48244,7 @@ class QThread___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
+     * See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
      * </p>
      * 
      * @see Thread#Thread(Runnable)
@@ -47250,8 +48255,7 @@ class QThread___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
+     * See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
      * </p>
      * 
      * @see Thread#Thread(Runnable)
@@ -47262,8 +48266,7 @@ class QThread___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
+     * See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
      * </p>
      * 
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
@@ -47274,8 +48277,7 @@ class QThread___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
+     * See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
      * </p>
      * 
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
@@ -47286,8 +48288,7 @@ class QThread___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
+     * See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
      * </p>
      * 
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
@@ -47298,8 +48299,7 @@ class QThread___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
+     * See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
      * </p>
      * 
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
@@ -47311,8 +48311,7 @@ class QThread___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
+     * See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
      * </p>
      * 
      * @see Thread#Thread(ThreadGroup, Runnable, String)
@@ -47323,8 +48322,7 @@ class QThread___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
+     * See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
      * </p>
      * 
      * @see Thread#Thread(ThreadGroup, Runnable, String)
@@ -47336,8 +48334,7 @@ class QThread___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
+     * See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
      * </p>
      * 
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
@@ -47349,8 +48346,7 @@ class QThread___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
+     * See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
      * </p>
      * 
      * @see Thread#Thread(Runnable, String)
@@ -47362,8 +48358,7 @@ class QThread___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
+     * See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
      * </p>
      * 
      * @see Thread#Thread(Runnable, String)
@@ -47374,8 +48369,7 @@ class QThread___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
+     * See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
      * </p>
      * 
      * @see Thread#Thread(Runnable, String)
@@ -47387,8 +48381,7 @@ class QThread___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
+     * See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
      * </p>
      * 
      * @see Thread#Thread(Runnable, String)
@@ -47399,8 +48392,7 @@ class QThread___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
+     * See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
      * </p>
      * 
      * @see Thread#Thread(ThreadGroup, Runnable)
@@ -47411,8 +48403,7 @@ class QThread___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
+     * See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a>
      * </p>
      * 
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
@@ -48187,8 +49178,7 @@ class QResource__ {
 class QDataStream___ {
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a>
+     * See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a>
      * </p>
      */
     @QtUninvokable
@@ -48204,8 +49194,7 @@ class QDataStream___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qdatastream.html#operator-gt-gt-1"><code>QDataStream::operator&gt;&gt;</code></a>
+     * See <a href="@docRoot/qdatastream.html#operator-gt-gt-1"><code>QDataStream::operator&gt;&gt;</code></a>
      * </p>
      */
     @SuppressWarnings("unchecked")
@@ -48222,8 +49211,7 @@ class QDataStream___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a>
+     * See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a>
      * </p>
      */
     @QtUninvokable
@@ -48233,8 +49221,7 @@ class QDataStream___ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a>
+     * See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a>
      * </p>
      */
     @QtUninvokable
@@ -48420,8 +49407,7 @@ class QString__ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qstring.html#arg"><code>QString::arg(Args &amp;&amp;... args) const</code></a>
+     * See <a href="@docRoot/qstring.html#arg"><code>QString::arg(Args &amp;&amp;... args) const</code></a>
      * </p>
      */
     @QtUninvokable
@@ -48540,8 +49526,7 @@ class QtGlobal__ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qhash.html#qHashMulti"><code>qHashMulti(long,T...)</code></a>
+     * See <a href="@docRoot/qhash.html#qHashMulti"><code>qHashMulti(long,T...)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -48549,8 +49534,7 @@ class QtGlobal__ {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qhash.html#qHashMultiCommutative"><code>qHashMultiCommutative(long,T...)</code></a>
+     * See <a href="@docRoot/qhash.html#qHashMultiCommutative"><code>qHashMultiCommutative(long,T...)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -48619,8 +49603,7 @@ class QDeadlineTimer__ {
 
     /**
      * <p>
-     * See <code><a href=
-     * "@docRoot/qdeadlinetimer.html#setRemainingTime-2">QDeadlineTimer::<wbr/>setRemainingTime(std::chrono::duration, Qt::TimerType)</a></code>
+     * See <code><a href="@docRoot/qdeadlinetimer.html#setRemainingTime-2">QDeadlineTimer::<wbr/>setRemainingTime(std::chrono::duration, Qt::TimerType)</a></code>
      * </p>
      */
     @QtUninvokable
@@ -48652,8 +49635,7 @@ class QDeadlineTimer__ {
 
     /**
      * <p>
-     * See <code><a href=
-     * "@docRoot/qdeadlinetimer.html#setDeadline-2">QDeadlineTimer::<wbr/>setDeadline(std::chrono::time_point, Qt::TimerType)</a></code>
+     * See <code><a href="@docRoot/qdeadlinetimer.html#setDeadline-2">QDeadlineTimer::<wbr/>setDeadline(std::chrono::time_point, Qt::TimerType)</a></code>
      * </p>
      */
     @QtUninvokable
@@ -48674,8 +49656,7 @@ class QDeadlineTimer__ {
 
     /**
      * <p>
-     * See <code><a href=
-     * "@docRoot/qdeadlinetimer.html#operator-eq">QDeadlineTimer::<wbr/>operator=(std::chrono::time_point)</a></code>
+     * See <code><a href="@docRoot/qdeadlinetimer.html#operator-eq">QDeadlineTimer::<wbr/>operator=(std::chrono::time_point)</a></code>
      * </p>
      */
     @QtUninvokable
@@ -48685,8 +49666,7 @@ class QDeadlineTimer__ {
 
     /**
      * <p>
-     * See <code><a href=
-     * "@docRoot/qdeadlinetimer.html#operator-eq-1">QDeadlineTimer::<wbr/>operator=(std::chrono::duration)</a></code>
+     * See <code><a href="@docRoot/qdeadlinetimer.html#operator-eq-1">QDeadlineTimer::<wbr/>operator=(std::chrono::duration)</a></code>
      * </p>
      */
     @QtUninvokable
@@ -49551,9 +50531,6 @@ class QMutexLocker___ {
 
     @QtPropertyMember(enabled = false)
     private AbstractMutex __rcMutex;
-}// class
-
-class QMutexLocker_6__ {
 
     @QtUninvokable
     @NativeAccess
@@ -49586,7 +50563,7 @@ namespace QtCore{
 }
 }
 
-void deleter_QMutexLocker_QRecursiveMutex_(void* ptr, bool isShell) {
+void __qt_delete_QMutexLocker_QRecursiveMutex_(void* ptr, bool isShell) {
     QTJAMBI_NATIVE_METHOD_CALL("qtjambi_deleter for QMutexLocker<QRecursiveMutex>")
     QMutexLocker<QRecursiveMutex>* _ptr = reinterpret_cast<QMutexLocker<QRecursiveMutex>*>(ptr);
     if(!isShell){
@@ -49624,7 +50601,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMutexLocker_initialize_1nativ
     QTJAMBI_TRY {
         jvalue arguments;
         arguments.l = mutex0;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QMutexLocker_QRecursiveMutex__QRecursiveMutex_ptr, sizeof(QMutexLocker<QRecursiveMutex>), alignof(QMutexLocker<QRecursiveMutex>), typeid(QMutexLocker<QRecursiveMutex>), 0, false, &deleter_QMutexLocker_QRecursiveMutex_, &arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QMutexLocker_QRecursiveMutex__QRecursiveMutex_ptr, sizeof(QMutexLocker<QRecursiveMutex>), alignof(QMutexLocker<QRecursiveMutex>), typeid(QMutexLocker<QRecursiveMutex>), 0, false, &__qt_delete_QMutexLocker_QRecursiveMutex_, &arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -49634,7 +50611,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMutexLocker_initialize_1nativ
 
 class QMutexLocker_metainfo__ {
 const std::type_info&typeId2=registerObjectTypeInfo<QMutexLocker<QRecursiveMutex>>("QMutexLocker<QRecursiveMutex>","io/qt/core/QMutexLocker");
-registerDeleter(typeId2, &deleter_QMutexLocker_QRecursiveMutex_);
+registerDeleter(typeId2, &__qt_delete_QMutexLocker_QRecursiveMutex_);
 registerConstructorInfos(typeId2, 0, &__qt_destruct_QMutexLocker_QRecursiveMutex_, {
     ConstructorInfo{&__qt_construct_QMutexLocker_QRecursiveMutex__QRecursiveMutex_ptr, "Lio/qt/core/QRecursiveMutex;"}
 });
@@ -50477,4 +51454,149 @@ QRangeModel_shell::QRangeModel_shell(Range &&range, Protocol &&protocol, QObject
     QTJAMBI_IN_CONSTRUCTOR_CALL("QRangeModel::QRangeModel_shell(Range&& range, Protocol &&protocol, QObject* parent)", this)
     QRangeModel_shell::__shell()->constructed(typeid(QRangeModel));
 }
+}// class
+
+class QVariantAnimation__ {
+     @FunctionalInterface
+     public interface Interpolator<T> extends java.io.Serializable{
+          T compute(T from, T to, double progress);
+     }
+
+     @FunctionalInterface
+     public interface IntInterpolator{
+          int compute(int from, int to, double progress);
+          static IntInterpolator interpolate() {
+               return (f,t,p)->(int)(f + (t - f) * p);
+          }
+     }
+
+     @FunctionalInterface
+     public interface LongInterpolator{
+          long compute(long from, long to, double progress);
+          static LongInterpolator interpolate() {
+               return (f,t,p)->(long)(f + (t - f) * p);
+          }
+     }
+
+     @FunctionalInterface
+     public interface ByteInterpolator{
+          byte compute(byte from, byte to, double progress);
+          static ByteInterpolator interpolate() {
+               return (f,t,p)->(byte)(f + (t - f) * p);
+          }
+     }
+
+     @FunctionalInterface
+     public interface ShortInterpolator{
+          short compute(short from, short to, double progress);
+          static ShortInterpolator interpolate() {
+               return (f,t,p)->(short)(f + (t - f) * p);
+          }
+     }
+
+     @FunctionalInterface
+     public interface CharInterpolator{
+          char compute(char from, char to, double progress);
+          static CharInterpolator interpolate() {
+               return (f,t,p)->(char)(f + (t - f) * p);
+          }
+     }
+
+     @FunctionalInterface
+     public interface BooleanInterpolator{
+          boolean compute(boolean from, boolean to, double progress);
+          static BooleanInterpolator interpolate() {
+               return (f,t,p)->p==0 ? f : t;
+          }
+     }
+
+     @FunctionalInterface
+     public interface DoubleInterpolator{
+          double compute(double from, double to, double progress);
+          static DoubleInterpolator interpolate() {
+               return (f,t,p)->f + (t - f) * p;
+          }
+     }
+
+     @FunctionalInterface
+     public interface FloatInterpolator{
+          float compute(float from, float to, double progress);
+          static FloatInterpolator interpolate() {
+               return (f,t,p)->(float)(f + (t - f) * p);
+          }
+     }
+
+     public static <T> void registerAnimationInterpolator(@StrictNonNull Interpolator<T> interpolator) {
+          int[] metaTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(Interpolator.class, java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
+          if(metaTypes!=null && metaTypes.length>0 && metaTypes[0]!=0) {
+               registerAnimationInterpolator(interpolator, metaTypes[0]);
+          }else {
+               throw new IllegalArgumentException("Unable to determine type of interpolator.");
+          }
+     }
+
+     public static <T> void registerAnimationInterpolator(@StrictNonNull Class<T> cls, @StrictNonNull Interpolator<T> interpolator) {
+          int[] metaTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(Interpolator.class, java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
+          if(metaTypes!=null && metaTypes.length>0 && metaTypes[0]!=0) {
+               registerAnimationInterpolator(interpolator, metaTypes[0]);
+          }else {
+               QMetaType metaType = QMetaType.fromType(cls);
+               if(metaType!=null && metaType.isValid()) {
+                    registerAnimationInterpolator(interpolator, metaType.id());
+               }else {
+                    throw new IllegalArgumentException("Unable to determine type of interpolator.");
+               }
+          }
+     }
+
+     public static <T> void registerAnimationInterpolator(@StrictNonNull QMetaType metaType, @StrictNonNull Interpolator<T> interpolator) {
+          int[] metaTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(Interpolator.class, java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
+          if(metaTypes!=null && metaTypes.length>0 && metaTypes[0]!=0) {
+               registerAnimationInterpolator(interpolator, metaTypes[0]);
+          }else {
+               registerAnimationInterpolator(interpolator, metaType.id());
+          }
+     }
+
+     private static native void registerAnimationInterpolator(Interpolator<?> interpolator, int metaType);
+
+     public static void registerAnimationInterpolator(@StrictNonNull IntInterpolator interpolator) {
+         registerAnimationInterpolatorI(java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
+     }
+     private static native void registerAnimationInterpolatorI(IntInterpolator interpolator);
+
+     public static void registerAnimationInterpolator(@StrictNonNull LongInterpolator interpolator) {
+         registerAnimationInterpolatorJ(java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
+     }
+     private static native void registerAnimationInterpolatorJ(LongInterpolator interpolator);
+
+     public static void registerAnimationInterpolator(@StrictNonNull ByteInterpolator interpolator) {
+         registerAnimationInterpolatorB(java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
+     }
+     private static native void registerAnimationInterpolatorB(ByteInterpolator interpolator);
+
+     public static void registerAnimationInterpolator(@StrictNonNull ShortInterpolator interpolator) {
+         registerAnimationInterpolatorS(java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
+     }
+     private static native void registerAnimationInterpolatorS(ShortInterpolator interpolator);
+
+     public static void registerAnimationInterpolator(@StrictNonNull CharInterpolator interpolator) {
+         registerAnimationInterpolatorC(java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
+     }
+     private static native void registerAnimationInterpolatorC(CharInterpolator interpolator);
+
+     public static void registerAnimationInterpolator(@StrictNonNull BooleanInterpolator interpolator) {
+         registerAnimationInterpolatorZ(java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
+     }
+     private static native void registerAnimationInterpolatorZ(BooleanInterpolator interpolator);
+
+     public static void registerAnimationInterpolator(@StrictNonNull DoubleInterpolator interpolator) {
+         registerAnimationInterpolatorD(java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
+     }
+     private static native void registerAnimationInterpolatorD(DoubleInterpolator interpolator);
+
+     public static void registerAnimationInterpolator(@StrictNonNull FloatInterpolator interpolator) {
+         registerAnimationInterpolatorF(java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
+     }
+     private static native void registerAnimationInterpolatorF(FloatInterpolator interpolator);
 }// class

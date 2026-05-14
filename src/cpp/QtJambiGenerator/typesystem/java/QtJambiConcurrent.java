@@ -40,14 +40,14 @@ class QtConcurrent___ extends QtConcurrent {
         }
 
         @QtUninvokable
-        public final @NonNull QFuture<T> startAsynchronously(){
-            QFuture<T> result = startAsynchronously(QtJambi_LibraryUtilities.internal.nativeId(this));
+        public final io.qt.core.@NonNull QFuture<T> startAsynchronously(){
+            io.qt.core.QFuture<T> result = startAsynchronously(QtJambi_LibraryUtilities.internal.nativeId(this));
             dispose();
             return result;
         }
         
         @QtUninvokable
-        private static native final <T> @NonNull QFuture<T> startAsynchronously(long nativeId);
+        private static native final <T> io.qt.core.QFuture<T> startAsynchronously(long nativeId);
     }
     
     /**
@@ -56,13 +56,7 @@ class QtConcurrent___ extends QtConcurrent {
      *
      */
     @FunctionalInterface
-    public interface MapFunctor<T> {
-    
-        /**
-         * This function is called for each item in the Collection. The function is then free to alter <code>object</code> as it see fit.
-         */
-        @NativeAccess
-        public void map(T object);
+    public interface MapFunctor<T> extends io.qt.core.QtFuture.Runnable1<T>{
     }
     
     /**
@@ -71,14 +65,7 @@ class QtConcurrent___ extends QtConcurrent {
      * and returns the result.
      */
     @FunctionalInterface
-    public interface MappedFunctor<U, T> {
-    
-        /**
-         * This method is called for each object in a collection. It should returned a new altered
-         * object.
-         */
-        @NativeAccess
-        public U map(T object);
+    public interface MappedFunctor<U, T> extends io.qt.core.QtFuture.@StrictNonNull Callable1<U,T>{
     }
     
     /**
@@ -86,2265 +73,207 @@ class QtConcurrent___ extends QtConcurrent {
      * The filter method if this interface is called for each item in a java.util.Collection.
      *
      */
-    public interface FilteredFunctor<T> {
-    
-        /**
-         *  This method is called for each item in a java.util.Collection. The items for which
-         *  this method returns true are removed from the collection.
-         */
-        public boolean filter(T object);
+     @FunctionalInterface
+    public interface KeepFunctor<T> extends io.qt.core.QtFuture.Predicate1<T>{
     }
     
     /**
      * Implement this interface in order to perform a reduce operation.
      * <p>
      * The reduce method will be called once per intermediate result (the result of the mapping of the data)
-     * and the very first time the reduce() method is called for the particular data set, the result is set to
-     * the returned value of the defaultResult() method.
+     * and the very first time the reduce() method is called for the particular data set.
      */
     @FunctionalInterface
-    public interface ReduceFunctor<U, T> extends java.io.Serializable{
-        /**
-         * Performs a reduce operation on <code>intermediate</code>.
-         * Returns the result of the reduction.
-         */
-        @NativeAccess
-        public U reduce(U result, T intermediate);
+    public interface ReduceFunctor<U, T> extends io.qt.core.QtFuture.Callable2<U, U, T>, java.io.Serializable{
     }
-    
+
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    private static <U> U computeDefaultResult(ReduceFunctor<U,?> functor) {
-        int[] types = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(ReduceFunctor.class, functor);
+    private static <U> U computeDefaultResult(ReduceFunctor<U,?> reduce) {
+        java.util.Objects.requireNonNull(reduce, "Argument 'reduce': null not expected.");
+        int[] types = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(ReduceFunctor.class, reduce);
         if(types!=null && types.length>0) {
-            return (U)new QMetaType(types[0]).create();
+            return (U)new io.qt.core.QMetaType(types[0]).create();
         }
         return null;
     }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#map"><code>QtConcurrent::map(Sequence, MapFunctor)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T> @NonNull QFuture<@QtPrimitiveType Void> map(@StrictNonNull Collection<T> sequence, MapFunctor<T> functor){
-        return startMap(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected.")).startAsynchronously();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMap"><code>QtConcurrent::blockingMap(Sequence, MapFunctor)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T> void blockingMap(@StrictNonNull Collection<T> sequence, MapFunctor<T> functor){
-        QFuture<@QtPrimitiveType Void> future = map(sequence, functor);
-        future.waitForFinished();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mapped"><code>QtConcurrent::mapped(Sequence, MappedFunctor)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> @NonNull QFuture<U> mapped(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<U, T> functor){
-        return startMapped(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected.")).startAsynchronously();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMapped"><code>QtConcurrent::blockingMapped(Sequence, MappedFunctor)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> @NonNull QList<U> blockingMapped(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<U, T> functor){
-        QFuture<U> future = mapped(sequence, functor);
-        return future.results();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> @NonNull QFuture<U> mappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor) {
-        return mappedReduced(sequence, functor, reduceFunctor, ReduceOption.UnorderedReduce, ReduceOption.SequentialReduce);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> @NonNull QFuture<U> mappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
-        return mappedReduced(sequence, functor, reduceFunctor, new ReduceOptions(options));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> @NonNull QFuture<U> mappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOptions options) {
-           return startMappedReduced(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), computeDefaultResult(reduceFunctor), options.value()).startAsynchronously();
-     }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> U blockingMappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor) {
-        QFuture<U> future = mappedReduced(sequence, functor, reduceFunctor);
-        return future.result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> U blockingMappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
-        QFuture<U> future = mappedReduced(sequence, functor, reduceFunctor, options);
-        return future.result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> U blockingMappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOptions options) {
-        QFuture<U> future = mappedReduced(sequence, functor, reduceFunctor, options);
-        return future.result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filter"><code>QtConcurrent::filter(Sequence, @StrictNonNull FilteredFunctor)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T> @NonNull QFuture<@QtPrimitiveType Void> filter(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
-        return filter(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilter"><code>QtConcurrent::blockingFilter(Sequence, @StrictNonNull FilteredFunctor)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T> void blockingFilter(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
-        QFuture<@QtPrimitiveType Void> future = filter(sequence, filteredFunctor);
-        future.waitForFinished();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filtered"><code>QtConcurrent::filtered(Sequence, @StrictNonNull FilteredFunctor)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T> @NonNull QFuture<T> filtered(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
-        return startFiltered(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected.")).startAsynchronously();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFiltered"><code>QtConcurrent::blockingFiltered(Sequence, @StrictNonNull FilteredFunctor)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T> @NonNull QList<T> blockingFiltered(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
-        QFuture<T> future = filtered(sequence, filteredFunctor);
-        return future.results();
-    }
-        
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> @NonNull QFuture<U> filteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor) {
-        return filteredReduced(sequence, filteredFunctor, reduceFunctor, ReduceOption.UnorderedReduce, ReduceOption.SequentialReduce);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> @NonNull QFuture<U> filteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
-        return filteredReduced(sequence, filteredFunctor, reduceFunctor, new ReduceOptions(options));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> @NonNull QFuture<U> filteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOptions options) {
-        return startFilteredReduced(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), computeDefaultResult(reduceFunctor), options.value()).startAsynchronously();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> U blockingFilteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor) {
-        QFuture<U> future = filteredReduced(sequence, filteredFunctor, reduceFunctor);
-        return future.result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> U blockingFilteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
-        QFuture<U> future = filteredReduced(sequence, filteredFunctor, reduceFunctor, options);
-        return future.result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> U blockingFilteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOptions options) {
-        QFuture<U> future = filteredReduced(sequence, filteredFunctor, reduceFunctor, options);
-        return future.result();
-    }
-    
-    @QtUninvokable
-    private native static <T> @NonNull QFuture<@QtPrimitiveType Void> filter(long threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor);
-    
-    @QtUninvokable
-    private native static <T> @NonNull ThreadEngineStarter<@QtPrimitiveType Void> startMap(long threadPool, Collection<T> sequence, MapFunctor<T> functor);
-    
-    @QtUninvokable
-    private native static <U, T> @NonNull ThreadEngineStarter<U> startMapped(long threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<U, T> functor);
-    
-    @QtUninvokable
-    private native static <U, V, T> @NonNull ThreadEngineStarter<U> startMappedReduced(long threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, int options);
-    
-    @QtUninvokable
-    private native static <U, T> @NonNull ThreadEngineStarter<U> startFilteredReduced(long threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, int options);
-    
-    @QtUninvokable
-    private native static <T> @NonNull ThreadEngineStarter<T> startFiltered(long threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T> @NonNull QFuture<T> run(@StrictNonNull Callable<T> callable){
-        return run0(null, Objects.requireNonNull(callable, "Argument 'callable': null not expected."));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable<T> callable){
-        return run0(threadPool, Objects.requireNonNull(callable, "Argument 'callable': null not expected."));
-    }
-    @QtUninvokable
-    private native static <T> @NonNull QFuture<T> run0(@Nullable QThreadPool threadPool, @StrictNonNull Callable<T> callable);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable runnable) {
-        return runVoid0(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable runnable) {
-        return runVoid0(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."));
-    }
-    @QtUninvokable
-    private native static @NonNull QFuture<@QtPrimitiveType Void> runVoid0(@Nullable QThreadPool threadPool, @StrictNonNull Runnable runnable);
-    
-    /**
-     * Runnable with one argument.
-     * @see java.lang.Runnable
-     * @param <A>
-     */
-    @FunctionalInterface
-    public interface Runnable1<A>{
-        /**
-         * @see Runnable#run()
-         * @param a
-         */
-        public void run(A a);
-    }
-    
-    /**
-     * Runnable with two arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     */
-    @FunctionalInterface
-    public interface Runnable2<A,B>{
-        /**
-         * @see Runnable#run()
-         * @param a
-         * @param b
-         */
-        public void run(A a, B b);
-    }
-    
-    /**
-     * Runnable with three arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     */
-    @FunctionalInterface
-    public interface Runnable3<A,B,C>{
-        /**
-         * @see Runnable#run()
-         * @param a
-         * @param b
-         * @param c
-         */
-        public void run(A a, B b, C c);
-    }
-    
-    /**
-     * Runnable with four arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     */
-    @FunctionalInterface
-    public interface Runnable4<A,B,C,D>{
-        /**
-         * @see Runnable#run()
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         */
-        public void run(A a, B b, C c, D d);
-    }
-    
-    /**
-     * Runnable with five arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     */
-    @FunctionalInterface
-    public interface Runnable5<A,B,C,D,E>{
-        /**
-         * @see Runnable#run()
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         */
-        public void run(A a, B b, C c, D d, E e);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable1<A> runnable, A a) {
-        return runVoid1(null, runnable, a);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable1<A> runnable, A a) {
-        return runVoid1(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a);
-    }
-    private native static <A> @NonNull QFuture<@QtPrimitiveType Void> runVoid1(@Nullable QThreadPool threadPool, @StrictNonNull Runnable1<A> runnable, A a);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A,B> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable2<A,B> runnable, A a, B b) {
-        return runVoid2(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A,B> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable2<A,B> runnable, A a, B b) {
-        return runVoid2(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b);
-    }
-    private native static <A,B> @NonNull QFuture<@QtPrimitiveType Void> runVoid2(@Nullable QThreadPool threadPool, @StrictNonNull Runnable2<A,B> runnable, A a, B b);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A,B,C> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable3<A,B,C> runnable, A a, B b, C c) {
-        return runVoid3(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A,B,C> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable3<A,B,C> runnable, A a, B b, C c) {
-        return runVoid3(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c);
-    }
-    private native static <A,B,C> @NonNull QFuture<@QtPrimitiveType Void> runVoid3(@Nullable QThreadPool threadPool, @StrictNonNull Runnable3<A,B,C> runnable, A a, B b, C c);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A,B,C,D> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable4<A,B,C,D> runnable, A a, B b, C c, D d) {
-        return runVoid4(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A,B,C,D> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable4<A,B,C,D> runnable, A a, B b, C c, D d) {
-        return runVoid4(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d);
-    }
-    private native static <A,B,C,D> @NonNull QFuture<@QtPrimitiveType Void> runVoid4(@Nullable QThreadPool threadPool, @StrictNonNull Runnable4<A,B,C,D> runnable, A a, B b, C c, D d);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A,B,C,D,E> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable5<A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
-        return runVoid5(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A,B,C,D,E> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable5<A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
-        return runVoid5(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e);
-    }
-    private native static <A,B,C,D,E> @NonNull QFuture<@QtPrimitiveType Void> runVoid5(@Nullable QThreadPool threadPool, @StrictNonNull Runnable5<A,B,C,D,E> runnable, A a, B b, C c, D d, E e);
-    
-    
-    
-    /**
-     * Callable with five arguments.
-     * @see java.util.concurrent.Callable
-     * @param <T>
-     * @param <A>
-     */
-    @FunctionalInterface
-    public interface Callable1<T,A>{
-        /**
-         * @see java.util.concurrent.Callable#call()
-         * @param a
-         * @return result of callable
-         */
-        public T call(A a);
-    }
-    
-    /**
-     * Callable with five arguments.
-     * @see java.util.concurrent.Callable
-     * @param <T>
-     * @param <A>
-     * @param <B>
-     */
-    @FunctionalInterface
-    public interface Callable2<T,A,B>{
-        /**
-         * @see java.util.concurrent.Callable#call()
-         * @param a
-         * @param b
-         * @return result of callable
-         */
-        public T call(A a, B b);
-    }
-    
-    /**
-     * Callable with five arguments.
-     * @see java.util.concurrent.Callable
-     * @param <T>
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     */
-    @FunctionalInterface
-    public interface Callable3<T,A,B,C>{
-        /**
-         * @see java.util.concurrent.Callable#call()
-         * @param a
-         * @param b
-         * @param c
-         * @return result of callable
-         */
-        public T call(A a, B b, C c);
-    }
-    
-    /**
-     * Callable with five arguments.
-     * @see java.util.concurrent.Callable
-     * @param <T>
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     */
-    @FunctionalInterface
-    public interface Callable4<T,A,B,C,D>{
-        /**
-         * @see java.util.concurrent.Callable#call()
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @return result of callable
-         */
-        public T call(A a, B b, C c, D d);
-    }
-    
-    /**
-     * Callable with five arguments.
-     * @see java.util.concurrent.Callable
-     * @param <T>
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     */
-    @FunctionalInterface
-    public interface Callable5<T,A,B,C,D,E>{
-        /**
-         * @see java.util.concurrent.Callable#call()
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         * @return result of callable
-         */
-        public T call(A a, B b, C c, D d, E e);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T,A> @NonNull QFuture<T> run(@StrictNonNull Callable1<T,A> runnable, A a) {
-        return run1(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T,A> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable1<T,A> runnable, A a) {
-        return run1(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a);
-    }
-    private native static <T,A> @NonNull QFuture<T> run1(@Nullable QThreadPool threadPool, Callable1<T,A> runnable, A a);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T,A,B> @NonNull QFuture<T> run(@StrictNonNull Callable2<T,A,B> runnable, A a, B b) {
-        return run2(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T,A,B> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable2<T,A,B> runnable, A a, B b) {
-        return run2(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b);
-    }
-    private native static <T,A,B> @NonNull QFuture<T> run2(@Nullable QThreadPool threadPool, Callable2<T,A,B> runnable, A a, B b);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T,A,B,C> @NonNull QFuture<T> run(@StrictNonNull Callable3<T,A,B,C> runnable, A a, B b, C c) {
-        return run3(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T,A,B,C> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable3<T,A,B,C> runnable, A a, B b, C c) {
-        return run3(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c);
-    }
-    private native static <T,A,B,C> @NonNull QFuture<T> run3(@Nullable QThreadPool threadPool, Callable3<T,A,B,C> runnable, A a, B b, C c);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T,A,B,C,D> @NonNull QFuture<T> run(@StrictNonNull Callable4<T,A,B,C,D> runnable, A a, B b, C c, D d) {
-        return run4(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T,A,B,C,D> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable4<T,A,B,C,D> runnable, A a, B b, C c, D d) {
-        return run4(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d);
-    }
-    private native static <T,A,B,C,D> @NonNull QFuture<T> run4(@Nullable QThreadPool threadPool, Callable4<T,A,B,C,D> runnable, A a, B b, C c, D d);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T,A,B,C,D,E> @NonNull QFuture<T> run(@StrictNonNull Callable5<T,A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
-        return run5(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-     @QtUninvokable
-    public static <T,A,B,C,D,E> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable5<T,A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
-        return run5(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e);
-    }
-    private native static <T,A,B,C,D,E> @NonNull QFuture<T> run5(@Nullable QThreadPool threadPool, Callable5<T,A,B,C,D,E> runnable, A a, B b, C c, D d, E e);
-        
-    /**
-     * Runnable with six arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     * @param <F>
-     */
-    @FunctionalInterface
-    public interface Runnable6<A,B,C,D,E,F>{
-        /**
-         * @see Runnable#run()
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         * @param f
-         */
-        public void run(A a, B b, C c, D d, E e, F f);
-    }
-    
-    /**
-     * Runnable with seven arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     * @param <F>
-     * @param <G>
-     */
-    @FunctionalInterface
-    public interface Runnable7<A,B,C,D,E,F,G>{
-        /**
-         * @see Runnable#run()
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         * @param f
-         * @param g
-         */
-        public void run(A a, B b, C c, D d, E e, F f, G g);
-    }
-    
-    /**
-     * Runnable with eight arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     * @param <F>
-     * @param <G>
-     * @param <H>
-     */
-    @FunctionalInterface
-    public interface Runnable8<A,B,C,D,E,F,G,H>{
-        /**
-         * @see Runnable#run()
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         * @param f
-         * @param g
-         * @param h
-         */
-        public void run(A a, B b, C c, D d, E e, F f, G g, H h);
-    }
-    
-    /**
-     * Runnable with nine arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     * @param <F>
-     * @param <G>
-     * @param <H>
-     * @param <I>
-     */
-    @FunctionalInterface
-    public interface Runnable9<A,B,C,D,E,F,G,H,I>{
-        /**
-         * @see Runnable#run()
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         * @param f
-         * @param g
-         * @param h
-         * @param i
-         */
-        public void run(A a, B b, C c, D d, E e, F f, G g, H h, I i);
-    }
-    
-    /**
-     * Callable with six arguments.
-     * @see java.util.concurrent.Callable
-     * @param <T>
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     * @param <F>
-     */
-    @FunctionalInterface
-    public interface Callable6<T,A,B,C,D,E,F>{
-        /**
-         * @see java.util.concurrent.Callable#call()
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         * @param f
-         * @return result of callable
-         */
-        public T call(A a, B b, C c, D d, E e, F f);
-    }
-    
-    /**
-     * Callable with seven arguments.
-     * @see java.util.concurrent.Callable
-     * @param <T>
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     * @param <F>
-     * @param <G>
-     */
-    @FunctionalInterface
-    public interface Callable7<T,A,B,C,D,E,F,G>{
-        /**
-         * @see java.util.concurrent.Callable#call()
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         * @param f
-         * @param g
-         * @return result of callable
-         */
-        public T call(A a, B b, C c, D d, E e, F f, G g);
-    }
-    
-    /**
-     * Callable with eight arguments.
-     * @see java.util.concurrent.Callable
-     * @param <T>
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     * @param <F>
-     * @param <G>
-     * @param <H>
-     */
-    @FunctionalInterface
-    public interface Callable8<T,A,B,C,D,E,F,G,H>{
-        /**
-         * @see java.util.concurrent.Callable#call()
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         * @param f
-         * @param g
-         * @param h
-         * @return result of callable
-         */
-        public T call(A a, B b, C c, D d, E e, F f, G g, H h);
-    }
-    
-    /**
-     * Callable with nine arguments.
-     * @see java.util.concurrent.Callable
-     * @param <T>
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     * @param <F>
-     * @param <G>
-     * @param <H>
-     * @param <I>
-     */
-    @FunctionalInterface
-    public interface Callable9<T,A,B,C,D,E,F,G,H,I>{
-        /**
-         * @see java.util.concurrent.Callable#call()
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         * @param f
-         * @param g
-         * @param h
-         * @param i
-         * @return result of callable
-         */
-        public T call(A a, B b, C c, D d, E e, F f, G g, H h, I i);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A,B,C,D,E,F> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable6<A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
-        return runVoid6(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A,B,C,D,E,F> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable6<A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
-        return runVoid6(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f);
-    }
-    private native static <A,B,C,D,E,F> @NonNull QFuture<@QtPrimitiveType Void> runVoid6(@Nullable QThreadPool threadPool, @StrictNonNull Runnable6<A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A,B,C,D,E,F,G> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable7<A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
-        return runVoid7(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A,B,C,D,E,F,G> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable7<A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
-        return runVoid7(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g);
-    }
-    private native static <A,B,C,D,E,F,G> @NonNull QFuture<@QtPrimitiveType Void> runVoid7(@Nullable QThreadPool threadPool, @StrictNonNull Runnable7<A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable8<A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return runVoid8(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable8<A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return runVoid8(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h);
-    }
-    private native static <A,B,C,D,E,F,G,H> @NonNull QFuture<@QtPrimitiveType Void> runVoid8(@Nullable QThreadPool threadPool, @StrictNonNull Runnable8<A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable9<A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return runVoid9(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h, i);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable9<A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return runVoid9(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h, i);
-    }
-    private native static <A,B,C,D,E,F,G,H,I> @NonNull QFuture<@QtPrimitiveType Void> runVoid9(@Nullable QThreadPool threadPool, @StrictNonNull Runnable9<A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T,A,B,C,D,E,F> @NonNull QFuture<T> run(Callable6<T,A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
-        return run6(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T,A,B,C,D,E,F> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, Callable6<T,A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
-        return run6(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f);
-    }
-    private native static <T,A,B,C,D,E,F> @NonNull QFuture<T> run6(@Nullable QThreadPool threadPool, Callable6<T,A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T,A,B,C,D,E,F,G> @NonNull QFuture<T> run(Callable7<T,A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
-        return run7(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T,A,B,C,D,E,F,G> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, Callable7<T,A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
-        return run7(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g);
-    }
-    private native static <T,A,B,C,D,E,F,G> @NonNull QFuture<T> run7(@Nullable QThreadPool threadPool, Callable7<T,A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T,A,B,C,D,E,F,G,H> @NonNull QFuture<T> run(Callable8<T,A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return run8(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T,A,B,C,D,E,F,G,H> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, Callable8<T,A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return run8(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h);
-    }
-    private native static <T,A,B,C,D,E,F,G,H> @NonNull QFuture<T> run8(@Nullable QThreadPool threadPool, Callable8<T,A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T,A,B,C,D,E,F,G,H,I> @NonNull QFuture<T> run(Callable9<T,A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return run9(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h, i);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T,A,B,C,D,E,F,G,H,I> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, Callable9<T,A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return run9(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h, i);
-    }
-    private native static <T,A,B,C,D,E,F,G,H,I> @NonNull QFuture<T> run9(@Nullable QThreadPool threadPool, Callable9<T,A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#map"><code>QtConcurrent::map(@Nullable QThreadPool*, Sequence, MapFunctor)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T> @NonNull QFuture<@QtPrimitiveType Void> map(@Nullable QThreadPool threadPool, Collection<T> sequence, MapFunctor<T> functor){
-        return startMap(threadPool, sequence, functor).startAsynchronously();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMap"><code>QtConcurrent::blockingMap(@Nullable QThreadPool*, Sequence, MapFunctor)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T> void blockingMap(@Nullable QThreadPool threadPool, Collection<T> sequence, MapFunctor<T> functor){
-        QFuture<@QtPrimitiveType Void> future = map(threadPool, sequence, functor);
-        future.waitForFinished();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mapped"><code>QtConcurrent::mapped(@Nullable QThreadPool*, Sequence, MappedFunctor)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> @NonNull QFuture<U> mapped(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<U, T> functor){
-        return startMapped(threadPool, sequence, functor).startAsynchronously();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMapped"><code>QtConcurrent::blockingMapped(@Nullable QThreadPool*, Sequence, MappedFunctor)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> QList<U> blockingMapped(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<U, T> functor){
-        QFuture<U> future = mapped(threadPool, sequence, functor);
-        return future.results();
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> @NonNull QFuture<U> mappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor) {
-        return mappedReduced(threadPool, sequence, functor, reduceFunctor, ReduceOption.UnorderedReduce, ReduceOption.SequentialReduce);
-    }
-    
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> @NonNull QFuture<U> mappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
-        return mappedReduced(threadPool, sequence, functor, reduceFunctor, new ReduceOptions(options));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> @NonNull QFuture<U> mappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOptions options) {
-        return startMappedReduced(threadPool, sequence, functor, reduceFunctor, options).startAsynchronously();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> @NonNull QFuture<U> mappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue) {
-        return mappedReduced(threadPool, sequence, functor, reduceFunctor, initialValue, ReduceOption.UnorderedReduce, ReduceOption.SequentialReduce);
-    }
-    
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> @NonNull QFuture<U> mappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOption @NonNull... options) {
-        return mappedReduced(threadPool, sequence, functor, reduceFunctor, initialValue, new ReduceOptions(options));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> @NonNull QFuture<U> mappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
-        return startMappedReduced(threadPool, sequence, functor, reduceFunctor, initialValue, options).startAsynchronously();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> @NonNull QFuture<U> mappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue) {
-        return mappedReduced(sequence, functor, reduceFunctor, initialValue, ReduceOption.UnorderedReduce, ReduceOption.SequentialReduce);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> @NonNull QFuture<U> mappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOption @NonNull... options) {
-        return mappedReduced(sequence, functor, reduceFunctor, initialValue, new ReduceOptions(options));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> @NonNull QFuture<U> mappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
-        return startMappedReduced(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), computeDefaultResult(reduceFunctor), options.value()).startAsynchronously();
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> U blockingMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor) {
-        QFuture<U> future = mappedReduced(threadPool, sequence, functor, reduceFunctor);
-        return future.result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> U blockingMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
-        QFuture<U> future = mappedReduced(threadPool, sequence, functor, reduceFunctor, options);
-        return future.result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> U blockingMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOptions options) {
-        QFuture<U> future = mappedReduced(threadPool, sequence, functor, reduceFunctor, options);
-        return future.result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> U blockingMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue) {
-        QFuture<U> future = mappedReduced(threadPool, sequence, functor, reduceFunctor, initialValue);
-        return future.result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> U blockingMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOption @NonNull... options) {
-        QFuture<U> future = mappedReduced(threadPool, sequence, functor, reduceFunctor, initialValue, options);
-        return future.result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> U blockingMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
-        QFuture<U> future = mappedReduced(threadPool, sequence, functor, reduceFunctor, initialValue, options);
-        return future.result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> U blockingMappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue) {
-        QFuture<U> future = mappedReduced(sequence, functor, reduceFunctor, initialValue);
-        return future.result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> U blockingMappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOption @NonNull... options) {
-        QFuture<U> future = mappedReduced(sequence, functor, reduceFunctor, initialValue, options);
-        return future.result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, V, T> U blockingMappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
-        QFuture<U> future = mappedReduced(sequence, functor, reduceFunctor, initialValue, options);
-        return future.result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filter"><code>QtConcurrent::filter(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T> @NonNull QFuture<@QtPrimitiveType Void> filter(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
-        return filter(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected.")), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), filteredFunctor);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filtered"><code>QtConcurrent::filtered(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T> @NonNull QFuture<T> filtered(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
-        return startFiltered(threadPool, sequence, filteredFunctor).startAsynchronously();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFiltered"><code>QtConcurrent::blockingFiltered(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T> QList<T> blockingFiltered(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
-        QFuture<T> future = filtered(threadPool, sequence, filteredFunctor);
-        return future.results();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilter"><code>QtConcurrent::blockingFilter(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T> void blockingFilter(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
-        QFuture<@QtPrimitiveType Void> future = filter(threadPool, sequence, filteredFunctor);
-        future.waitForFinished();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> @NonNull QFuture<U> filteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor) {
-        return filteredReduced(threadPool, sequence, filteredFunctor, reduceFunctor, ReduceOption.UnorderedReduce, ReduceOption.SequentialReduce);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> @NonNull QFuture<U> filteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
-        return filteredReduced(threadPool, sequence, filteredFunctor, reduceFunctor, new ReduceOptions(options));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> @NonNull QFuture<U> filteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOptions options) {
-        return startFilteredReduced(threadPool, sequence, filteredFunctor, reduceFunctor, options).startAsynchronously();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> @NonNull QFuture<U> filteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue) {
-        return filteredReduced(threadPool, sequence, filteredFunctor, reduceFunctor, initialValue, ReduceOption.UnorderedReduce, ReduceOption.SequentialReduce);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> @NonNull QFuture<U> filteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOption @NonNull... options) {
-        return filteredReduced(threadPool, sequence, filteredFunctor, reduceFunctor, initialValue, new ReduceOptions(options));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> @NonNull QFuture<U> filteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
-        return startFilteredReduced(threadPool, sequence, filteredFunctor, reduceFunctor, initialValue, options).startAsynchronously();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> @NonNull QFuture<U> filteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue) {
-        return filteredReduced(sequence, filteredFunctor, reduceFunctor, initialValue, ReduceOption.UnorderedReduce, ReduceOption.SequentialReduce);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> @NonNull QFuture<U> filteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOption @NonNull... options) {
-        return filteredReduced(sequence, filteredFunctor, reduceFunctor, initialValue, new ReduceOptions(options));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> @NonNull QFuture<U> filteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
-        return startFilteredReduced(0, Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), initialValue, options.value()).startAsynchronously();
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> U blockingFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor) {
-        return filteredReduced(threadPool, sequence, filteredFunctor, reduceFunctor).result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> U blockingFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
-        return filteredReduced(threadPool, sequence, filteredFunctor, reduceFunctor, options).result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> U blockingFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOptions options) {
-        return filteredReduced(threadPool, sequence, filteredFunctor, reduceFunctor, options).result();
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> U blockingFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue) {
-        return filteredReduced(threadPool, sequence, filteredFunctor, reduceFunctor, initialValue).result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> U blockingFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOption @NonNull... options) {
-        return filteredReduced(threadPool, sequence, filteredFunctor, reduceFunctor, initialValue, options).result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> U blockingFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
-        return filteredReduced(threadPool, sequence, filteredFunctor, reduceFunctor, initialValue, options).result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> U blockingFilteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue) {
-        return filteredReduced(sequence, filteredFunctor, reduceFunctor, initialValue).result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> U blockingFilteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOption @NonNull... options) {
-        return filteredReduced(sequence, filteredFunctor, reduceFunctor, initialValue, options).result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
-     */
-    @QtUninvokable
-    public static <U, T> U blockingFilteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
-        return filteredReduced(sequence, filteredFunctor, reduceFunctor, initialValue, options).result();
-    }
-    
-    @QtUninvokable
-    public static <T> @NonNull ThreadEngineStarter<@QtPrimitiveType Void> startMap(@Nullable QThreadPool threadPool, Collection<T> sequence, MapFunctor<T> functor) {
-        return startMap(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected.")), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."));
-    }
-    
-    @QtUninvokable
-    public static <U, T> @NonNull ThreadEngineStarter<U> startMapped(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<U, T> functor){
-        return startMapped(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected.")), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."));
-    }
-    
-    @QtUninvokable
-    public static <U, V, T> @NonNull ThreadEngineStarter<U> startMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor) {
-        return startMappedReduced(threadPool, sequence, functor, reduceFunctor, computeDefaultResult(reduceFunctor), ReduceOption.UnorderedReduce, ReduceOption.SequentialReduce);
-    }
-    
-    @QtUninvokable
-    public static <U, V, T> @NonNull ThreadEngineStarter<U> startMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOptions options) {
-        return startMappedReduced(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected.")), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), computeDefaultResult(reduceFunctor), options.value());
-    }
-    
-    @QtUninvokable
-    public static <U, V, T> @NonNull ThreadEngineStarter<U> startMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, ReduceOption... options) {
-        return startMappedReduced(threadPool, sequence, functor, reduceFunctor, new ReduceOptions(options));
-    }
-    
-    @QtUninvokable
-    public static <U, V, T> @NonNull ThreadEngineStarter<U> startMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue) {
-        return startMappedReduced(threadPool, sequence, functor, reduceFunctor, initialValue, ReduceOption.UnorderedReduce, ReduceOption.SequentialReduce);
-    }
-    
-    @QtUninvokable
-    public static <U, V, T> @NonNull ThreadEngineStarter<U> startMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
-        return startMappedReduced(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected.")), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(functor, "Argument 'functor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), initialValue, options.value());
-    }
-    
-    @QtUninvokable
-    public static <U, V, T> @NonNull ThreadEngineStarter<U> startMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, ReduceOption... options) {
-        return startMappedReduced(threadPool, sequence, functor, reduceFunctor, initialValue, new ReduceOptions(options));
-    }
-    
-    @QtUninvokable
-    public static <U, T> @NonNull ThreadEngineStarter<U> startFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor) {
-        return startFilteredReduced(threadPool, sequence, filteredFunctor, reduceFunctor, ReduceOption.UnorderedReduce, ReduceOption.SequentialReduce);
-    }
-    
-    @QtUninvokable
-    public static <U, T> @NonNull ThreadEngineStarter<U> startFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
-        return startFilteredReduced(threadPool, sequence, filteredFunctor, reduceFunctor, new ReduceOptions(options));
-    }
-    
-    @QtUninvokable
-    public static <U, T> @NonNull ThreadEngineStarter<U> startFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOptions options) {
-        return startFilteredReduced(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected.")), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), computeDefaultResult(reduceFunctor), options.value());
-    }
-    
-    @QtUninvokable
-    public static <U, T> @NonNull ThreadEngineStarter<U> startFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue) {
-        return startFilteredReduced(threadPool, sequence, filteredFunctor, reduceFunctor, initialValue, ReduceOption.UnorderedReduce, ReduceOption.SequentialReduce);
-    }
-    
-    @QtUninvokable
-    public static <U, T> @NonNull ThreadEngineStarter<U> startFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOption @NonNull... options) {
-        return startFilteredReduced(threadPool, sequence, filteredFunctor, reduceFunctor, initialValue, new ReduceOptions(options));
-    }
-    
-    @QtUninvokable
-    public static <U, T> @NonNull ThreadEngineStarter<U> startFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
-        return startFilteredReduced(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected.")), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), initialValue, options.value());
-    }
-    
-    @QtUninvokable
-    public static <T> @NonNull ThreadEngineStarter<T> startFiltered(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
-        return startFiltered(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected.")), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."));
-    }
-    
-    /**
-     * Runnable with typed promise.
-     * @see java.lang.Runnable
-     */
-    @FunctionalInterface
-    public interface RunnableWithPromise<T> {
-        /**
-         * @see Runnable#run()
-         * @param promise typed promise to receive the method result
-         */
-        public void run(@StrictNonNull QPromise<T> promise);
-    }
-    
-    /**
-     * Runnable with typed promise and one argument.
-     * @see java.lang.Runnable
-     * @param <A>
-     */
-    @FunctionalInterface
-    public interface RunnableWithPromise1<T, A> {
-        /**
-         * @see Runnable#run()
-         * @param promise typed promise to receive the method result
-         * @param a
-         */
-        public void run(@StrictNonNull QPromise<T> promise, A a);
-    }
-
-    /**
-     * Runnable with typed promise and two arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     */
-    @FunctionalInterface
-    public interface RunnableWithPromise2<T, A, B> {
-        /**
-         * @see Runnable#run()
-         * @param promise typed promise to receive the method result
-         * @param a
-         * @param b
-         */
-        public void run(@StrictNonNull QPromise<T> promise, A a, B b);
-    }
-
-    /**
-     * Runnable with typed promise and three arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     */
-    @FunctionalInterface
-    public interface RunnableWithPromise3<T, A, B, C> {
-        /**
-         * @see Runnable#run()
-         * @param promise typed promise to receive the method result
-         * @param a
-         * @param b
-         * @param c
-         */
-        public void run(@StrictNonNull QPromise<T> promise, A a, B b, C c);
-    }
-
-    /**
-     * Runnable with typed promise and four arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     */
-    @FunctionalInterface
-    public interface RunnableWithPromise4<T, A, B, C, D> {
-        /**
-         * @see Runnable#run()
-         * @param promise typed promise to receive the method result
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         */
-        public void run(@StrictNonNull QPromise<T> promise, A a, B b, C c, D d);
-    }
-
-    /**
-     * Runnable with typed promise and five arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     */
-    @FunctionalInterface
-    public interface RunnableWithPromise5<T, A, B, C, D, E> {
-        /**
-         * @see Runnable#run()
-         * @param promise typed promise to receive the method result
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         */
-        public void run(@StrictNonNull QPromise<T> promise, A a, B b, C c, D d, E e);
-    }
-
-    /**
-     * Runnable with typed promise and six arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     * @param <F>
-     */
-    @FunctionalInterface
-    public interface RunnableWithPromise6<T, A, B, C, D, E, F> {
-        /**
-         * @see Runnable#run()
-         * @param promise typed promise to receive the method result
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         * @param f
-         */
-        public void run(@StrictNonNull QPromise<T> promise, A a, B b, C c, D d, E e, F f);
-    }
-
-    /**
-     * Runnable with typed promise and seven arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     * @param <F>
-     * @param <G>
-     */
-    @FunctionalInterface
-    public interface RunnableWithPromise7<T, A, B, C, D, E, F, G> {
-        /**
-         * @see Runnable#run()
-         * @param promise typed promise to receive the method result
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         * @param f
-         * @param g
-         */
-        public void run(@StrictNonNull QPromise<T> promise, A a, B b, C c, D d, E e, F f, G g);
-    }
-
-    /**
-     * Runnable with typed promise and eight arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     * @param <F>
-     * @param <G>
-     * @param <H>
-     */
-    @FunctionalInterface
-    public interface RunnableWithPromise8<T, A, B, C, D, E, F, G, H> {
-        /**
-         * @see Runnable#run()
-         * @param promise typed promise to receive the method result
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         * @param f
-         * @param g
-         * @param h
-         */
-        public void run(@StrictNonNull QPromise<T> promise, A a, B b, C c, D d, E e, F f, G g, H h);
-    }
-
-    /**
-     * Runnable with typed promise and nine arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     * @param <F>
-     * @param <G>
-     * @param <H>
-     * @param <I>
-     */
-    @FunctionalInterface
-    public interface RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> {
-        /**
-         * @see Runnable#run()
-         * @param promise typed promise to receive the method result
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         * @param f
-         * @param g
-         * @param h
-         * @param i
-         */
-        public void run(@StrictNonNull QPromise<T> promise, A a, B b, C c, D d, E e, F f, G g, H h, I i);
-    }
-    
-    /**
-     * Runnable with void promise.
-     * @see java.lang.Runnable
-     */
-    @FunctionalInterface
-    public interface RunnableWithVoidPromise {
-        /**
-         * @see Runnable#run()
-         * @param promise void promise
-         */
-        public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise);
-    }
-
-    /**
-     * Runnable with void promise and one arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     */
-    @FunctionalInterface
-    public interface RunnableWithVoidPromise1<A> {
-        /**
-         * @see Runnable#run()
-         * @param promise void promise
-         * @param a
-         */
-        public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a);
-    }
-
-    /**
-     * Runnable with void promise and two arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     */
-    @FunctionalInterface
-    public interface RunnableWithVoidPromise2<A, B> {
-        /**
-         * @see Runnable#run()
-         * @param promise void promise
-         * @param a
-         * @param b
-         */
-        public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a, B b);
-    }
-
-    /**
-     * Runnable with void promise and three arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     */
-    @FunctionalInterface
-    public interface RunnableWithVoidPromise3<A, B, C> {
-        /**
-         * @see Runnable#run()
-         * @param promise void promise
-         * @param a
-         * @param b
-         * @param c
-         */
-        public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a, B b, C c);
-    }
-
-    /**
-     * Runnable with void promise and four arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     */
-    @FunctionalInterface
-    public interface RunnableWithVoidPromise4<A, B, C, D> {
-        /**
-         * @see Runnable#run()
-         * @param promise void promise
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         */
-        public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a, B b, C c, D d);
-    }
-
-    /**
-     * Runnable with void promise and five arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     */
-    @FunctionalInterface
-    public interface RunnableWithVoidPromise5<A, B, C, D, E> {
-        /**
-         * @see Runnable#run()
-         * @param promise void promise
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         */
-        public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a, B b, C c, D d, E e);
-    }
-
-    /**
-     * Runnable with void promise and six arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     * @param <F>
-     */
-    @FunctionalInterface
-    public interface RunnableWithVoidPromise6<A, B, C, D, E, F> {
-        /**
-         * @see Runnable#run()
-         * @param promise void promise
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         * @param f
-         */
-        public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a, B b, C c, D d, E e, F f);
-    }
-
-    /**
-     * Runnable with void promise and seven arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     * @param <F>
-     * @param <G>
-     */
-    @FunctionalInterface
-    public interface RunnableWithVoidPromise7<A, B, C, D, E, F, G> {
-        /**
-         * @see Runnable#run()
-         * @param promise void promise
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         * @param f
-         * @param g
-         */
-        public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a, B b, C c, D d, E e, F f, G g);
-    }
-
-    /**
-     * Runnable with void promise and eight arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     * @param <F>
-     * @param <G>
-     * @param <H>
-     */
-    @FunctionalInterface
-    public interface RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> {
-        /**
-         * @see Runnable#run()
-         * @param promise void promise
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         * @param f
-         * @param g
-         * @param h
-         */
-        public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a, B b, C c, D d, E e, F f, G g, H h);
-    }
-
-    /**
-     * Runnable with void promise and nine arguments.
-     * @see java.lang.Runnable
-     * @param <A>
-     * @param <B>
-     * @param <C>
-     * @param <D>
-     * @param <E>
-     * @param <F>
-     * @param <G>
-     * @param <H>
-     * @param <I>
-     */
-    @FunctionalInterface
-    public interface RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> {
-        /**
-         * @see Runnable#run()
-         * @param promise void promise
-         * @param a
-         * @param b
-         * @param c
-         * @param d
-         * @param e
-         * @param f
-         * @param g
-         * @param h
-         * @param i
-         */
-        public void run(@StrictNonNull QPromise<@QtPrimitiveType Void> promise, A a, B b, C c, D d, E e, F f, G g, H h, I i);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise<T> runnable) {
-        return runWithPromise0(null, runnable);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise<T> runnable) {
-        return runWithPromise0(threadPool, runnable);
-    }
-
-    private native static <T> @NonNull QFuture<T> runWithPromise0(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise<T> runnable);
-    
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T, A> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise1<T, A> runnable, A a) {
-        return runWithPromise1(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T, A> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise1<T, A> runnable, A a) {
-        return runWithPromise1(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a);
-    }
 
-    private native static <T, A> @NonNull QFuture<T> runWithPromise1(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise1<T, A> runnable, A a);
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T, A, B> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise2<T, A, B> runnable, A a, B b) {
-        return runWithPromise2(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T, A, B> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise2<T, A, B> runnable, A a, B b) {
-        return runWithPromise2(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b);
-    }
-
-    private native static <T, A, B> @NonNull QFuture<T> runWithPromise2(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise2<T, A, B> runnable, A a, B b);
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T, A, B, C> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise3<T, A, B, C> runnable, A a, B b, C c) {
-        return runWithPromise3(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T, A, B, C> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise3<T, A, B, C> runnable, A a, B b, C c) {
-        return runWithPromise3(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c);
-    }
-
-    private native static <T, A, B, C> @NonNull QFuture<T> runWithPromise3(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise3<T, A, B, C> runnable, A a, B b,
-            C c);
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T, A, B, C, D> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b, C c, D d) {
-        return runWithPromise4(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T, A, B, C, D> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b,
-            C c, D d) {
-        return runWithPromise4(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d);
-    }
-
-    private native static <T, A, B, C, D> @NonNull QFuture<T> runWithPromise4(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable,
-            A a, B b, C c, D d);
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T, A, B, C, D, E> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
-        return runWithPromise5(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e);
-    }
-
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #blockingMappedReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+     *  with <code>options = SequentialReduce | UnorderedReduce</code>.</p>
      */
-    @QtUninvokable
-    public static <T, A, B, C, D, E> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable, A a,
-            B b, C c, D d, E e) {
-        return runWithPromise5(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e);
+    public static <U,V,T> U blockingMappedReduced(io.qt.core.@Nullable QThreadPool pool, java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce) {
+        return blockingMappedReduced(pool, sequence, map, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(5));
     }
 
-    private native static <T, A, B, C, D, E> @NonNull QFuture<T> runWithPromise5(@Nullable QThreadPool threadPool,
-            RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c, D d, E e);
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T, A, B, C, D, E, F> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e,
-            F f) {
-        return runWithPromise6(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T, A, B, C, D, E, F> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable,
-            A a, B b, C c, D d, E e, F f) {
-        return runWithPromise6(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f);
-    }
-
-    private native static <T, A, B, C, D, E, F> @NonNull QFuture<T> runWithPromise6(@Nullable QThreadPool threadPool,
-            RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f);
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T, A, B, C, D, E, F, G> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c,
-            D d, E e, F f, G g) {
-        return runWithPromise7(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <T, A, B, C, D, E, F, G> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool,
-            RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g) {
-        return runWithPromise7(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g);
-    }
-
-    private native static <T, A, B, C, D, E, F, G> @NonNull QFuture<T> runWithPromise7(@Nullable QThreadPool threadPool,
-            RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g);
-
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #blockingMappedReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
      */
-    @QtUninvokable
-    public static <T, A, B, C, D, E, F, G, H> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b,
-            C c, D d, E e, F f, G g, H h) {
-        return runWithPromise8(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h);
+    public static <U,V,T> U blockingMappedReduced(io.qt.core.@Nullable QThreadPool pool, java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOption @NonNull... options) {
+        return blockingMappedReduced(pool, sequence, map, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(options));
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #blockingMappedReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
      */
-    @QtUninvokable
-    public static <T, A, B, C, D, E, F, G, H> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool,
-            RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return runWithPromise8(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h);
+    public static <U,V,T> U blockingMappedReduced(io.qt.core.@Nullable QThreadPool pool, java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options){
+        return blockingMappedReduced(pool, sequence, map, reduce, computeDefaultResult(reduce), options);
     }
-
-    private native static <T, A, B, C, D, E, F, G, H> @NonNull QFuture<T> runWithPromise8(@Nullable QThreadPool threadPool,
-            RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #blockingMappedReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+     *  with <code>options = SequentialReduce | UnorderedReduce</code>.</p>
      */
-    @QtUninvokable
-    public static <T, A, B, C, D, E, F, G, H, I> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a,
-            B b, C c, D d, E e, F f, G g, H h, I i) {
-        return runWithPromise9(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h, i);
+    public static <U,V,T> U blockingMappedReduced(java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce) {
+        return blockingMappedReduced(sequence, map, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(5));
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #blockingMappedReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
      */
-    @QtUninvokable
-    public static <T, A, B, C, D, E, F, G, H, I> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool,
-            RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return runWithPromise9(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h, i);
+    public static <U,V,T> U blockingMappedReduced(java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOption @NonNull... options) {
+        return blockingMappedReduced(sequence, map, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(options));
     }
 
-    private native static <T, A, B, C, D, E, F, G, H, I> @NonNull QFuture<T> runWithPromise9(@Nullable QThreadPool threadPool,
-            RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
-
-    
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #blockingMappedReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
      */
-    @QtUninvokable
-    public static @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise runnable) {
-        return runWithPromiseVoid0(null, runnable);
+    public static <U,V,T> U blockingMappedReduced(java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options){
+        return blockingMappedReduced(sequence, map, reduce, computeDefaultResult(reduce), options);
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #filteredReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+     *  with <code>options = SequentialReduce | UnorderedReduce</code>.</p>
      */
-    @QtUninvokable
-    public static @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise runnable) {
-        return runWithPromiseVoid0(threadPool, runnable);
+    public static <U,T> io.qt.core.@NonNull QFuture<U> filteredReduced(io.qt.core.@Nullable QThreadPool pool, java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce) {
+        return filteredReduced(pool, sequence, keep, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(5));
     }
 
-    private native static @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid0(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise runnable);
-    
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #filteredReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
      */
-    @QtUninvokable
-    public static <A> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise1<A> runnable, A a) {
-        return runWithPromiseVoid1(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a);
+    public static <U,T> io.qt.core.@NonNull QFuture<U> filteredReduced(io.qt.core.@Nullable QThreadPool pool, java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOption @NonNull... options) {
+        return filteredReduced(pool, sequence, keep, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(options));
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #filteredReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
      */
-    @QtUninvokable
-    public static <A> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise1<A> runnable, A a) {
-        return runWithPromiseVoid1(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a);
+    public static <U,T> io.qt.core.@NonNull QFuture<U> filteredReduced(io.qt.core.@Nullable QThreadPool pool, java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options){
+        return filteredReduced(pool, sequence, keep, reduce, computeDefaultResult(reduce), options);
     }
-
-    private native static <A> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid1(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise1<A> runnable, A a);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #filteredReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+     *  with <code>options = SequentialReduce | UnorderedReduce</code>.</p>
      */
-    @QtUninvokable
-    public static <A, B> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise2<A, B> runnable, A a, B b) {
-        return runWithPromiseVoid2(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b);
+    public static <U,T> io.qt.core.@NonNull QFuture<U> filteredReduced(java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce) {
+        return filteredReduced(sequence, keep, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(5));
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #filteredReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
      */
-    @QtUninvokable
-    public static <A, B> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise2<A, B> runnable, A a, B b) {
-        return runWithPromiseVoid2(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b);
+    public static <U,T> io.qt.core.@NonNull QFuture<U> filteredReduced(java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOption @NonNull... options) {
+        return filteredReduced(sequence, keep, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(options));
     }
 
-    private native static <A, B> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid2(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise2<A, B> runnable, A a, B b);
-
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #filteredReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
      */
-    @QtUninvokable
-    public static <A, B, C> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable, A a, B b, C c) {
-        return runWithPromiseVoid3(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c);
+    public static <U,T> io.qt.core.@NonNull QFuture<U> filteredReduced(java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options){
+        return filteredReduced(sequence, keep, reduce, computeDefaultResult(reduce), options);
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #blockingFilteredReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+     *  with <code>options = SequentialReduce | UnorderedReduce</code>.</p>
      */
-    @QtUninvokable
-    public static <A, B, C> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable, A a, B b, C c) {
-        return runWithPromiseVoid3(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c);
+    public static <U,T> U blockingFilteredReduced(io.qt.core.@Nullable QThreadPool pool, java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce) {
+        return blockingFilteredReduced(pool, sequence, keep, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(5));
     }
-
-    private native static <A, B, C> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid3(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable, A a, B b,
-            C c);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #blockingFilteredReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
      */
-    @QtUninvokable
-    public static <A, B, C, D> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c, D d) {
-        return runWithPromiseVoid4(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d);
+    public static <U,T> U blockingFilteredReduced(io.qt.core.@Nullable QThreadPool pool, java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOption @NonNull... options) {
+        return blockingFilteredReduced(pool, sequence, keep, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(options));
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #blockingFilteredReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
      */
-    @QtUninvokable
-    public static <A, B, C, D> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c,
-            D d) {
-        return runWithPromiseVoid4(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d);
+    public static <U,T> U blockingFilteredReduced(io.qt.core.@Nullable QThreadPool pool, java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options){
+        return blockingFilteredReduced(pool, sequence, keep, reduce, computeDefaultResult(reduce), options);
     }
 
-    private native static <A, B, C, D> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid4(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable, A a,
-            B b, C c, D d);
-
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #blockingFilteredReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+     *  with <code>options = SequentialReduce | UnorderedReduce</code>.</p>
      */
-    @QtUninvokable
-    public static <A, B, C, D, E> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
-        return runWithPromiseVoid5(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e);
+    public static <U,T> U blockingFilteredReduced(java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce) {
+        return blockingFilteredReduced(sequence, keep, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(5));
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #blockingFilteredReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
      */
-    @QtUninvokable
-    public static <A, B, C, D, E> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b,
-            C c, D d, E e) {
-        return runWithPromiseVoid5(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e);
+    public static <U,T> U blockingFilteredReduced(java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOption @NonNull... options) {
+        return blockingFilteredReduced(sequence, keep, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(options));
     }
-
-    private native static <A, B, C, D, E> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid5(@Nullable QThreadPool threadPool,
-            RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #blockingFilteredReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
      */
-    @QtUninvokable
-    public static <A, B, C, D, E, F> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e,
-            F f) {
-        return runWithPromiseVoid6(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f);
+    public static <U,T> U blockingFilteredReduced(java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options){
+        return blockingFilteredReduced(sequence, keep, reduce, computeDefaultResult(reduce), options);
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #mappedReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}
      */
-    @QtUninvokable
-    public static <A, B, C, D, E, F> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a,
-            B b, C c, D d, E e, F f) {
-        return runWithPromiseVoid6(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f);
+    public static <U,V,T> io.qt.core.@NonNull QFuture<U> mappedReduced(io.qt.core.@Nullable QThreadPool pool, java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce) {
+        return mappedReduced(pool, sequence, map, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(5));
     }
 
-    private native static <A, B, C, D, E, F> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid6(@Nullable QThreadPool threadPool,
-            RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f);
-
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #mappedReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}
      */
-    @QtUninvokable
-    public static <A, B, C, D, E, F, G> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d,
-            E e, F f, G g) {
-        return runWithPromiseVoid7(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g);
+    public static <U,V,T> io.qt.core.@NonNull QFuture<U> mappedReduced(io.qt.core.@Nullable QThreadPool pool, java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOption @NonNull... options) {
+        return mappedReduced(pool, sequence, map, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(options));
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #mappedReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}
      */
-    @QtUninvokable
-    public static <A, B, C, D, E, F, G> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable,
-            A a, B b, C c, D d, E e, F f, G g) {
-        return runWithPromiseVoid7(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g);
+    public static <U,V,T> io.qt.core.@NonNull QFuture<U> mappedReduced(io.qt.core.@Nullable QThreadPool pool, java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options) {
+        return mappedReduced(pool, sequence, map, reduce, computeDefaultResult(reduce), options);
     }
-
-    private native static <A, B, C, D, E, F, G> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid7(@Nullable QThreadPool threadPool,
-            RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #mappedReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}
      */
-    @QtUninvokable
-    public static <A, B, C, D, E, F, G, H> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c,
-            D d, E e, F f, G g, H h) {
-        return runWithPromiseVoid8(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h);
+    public static <U,V,T> io.qt.core.@NonNull QFuture<U> mappedReduced(java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce) {
+        return mappedReduced(sequence, map, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(5));
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #mappedReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}
      */
-    @QtUninvokable
-    public static <A, B, C, D, E, F, G, H> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool,
-            RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return runWithPromiseVoid8(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h);
+    public static <U,V,T> io.qt.core.@NonNull QFuture<U> mappedReduced(java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOption @NonNull... options) {
+        return mappedReduced(sequence, map, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(options));
     }
 
-    private native static <A, B, C, D, E, F, G, H> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid8(@Nullable QThreadPool threadPool,
-            RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
-
-    /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
-     */
-    @QtUninvokable
-    public static <A, B, C, D, E, F, G, H, I> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b,
-            C c, D d, E e, F f, G g, H h, I i) {
-        return runWithPromiseVoid9(null, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h, i);
-    }
-    
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
+     * <p>Overloaded function for {@link #mappedReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}
      */
-    @QtUninvokable
-    public static <A, B, C, D, E, F, G, H, I> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool,
-            RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return runWithPromiseVoid9(threadPool, Objects.requireNonNull(runnable, "Argument 'runnable': null not expected."), a, b, c, d, e, f, g, h, i);
+    public static <U,V,T> io.qt.core.@NonNull QFuture<U> mappedReduced(java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options) {
+        return mappedReduced(sequence, map, reduce, computeDefaultResult(reduce), options);
     }
-
-    private native static <A, B, C, D, E, F, G, H, I> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid9(@Nullable QThreadPool threadPool,
-            RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
+}// class
 
+class QtConcurrent_DISMISS_1__ extends QtConcurrent {
     /**
      * The QTaskBuilder class is used for adjusting task parameters. Call {@code withArguments(...)} to assign arguments to the task.
      * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
@@ -2377,8 +306,8 @@ class QtConcurrent___ extends QtConcurrent {
          * @throws RuntimeException if there are still missing arguments. Therfore, call {@code withArguments(...)} to assign arguments to the task.
          */
         @QtUninvokable
-        public final void spawn(QtConcurrent.FutureResult result) {
-            spawn();
+        public void spawn(QtConcurrent.FutureResult result) {
+            throw new RuntimeException("Unable to spawn due to missing arguments.");
         }
 
         /**
@@ -2413,7 +342,7 @@ class QtConcurrent___ extends QtConcurrent {
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static QTaskBuilderVoid0Arg0 task(@StrictNonNull Runnable runnable) {
+    public static QTaskBuilderVoid0Arg0 task(QtFuture.@StrictNonNull Runnable runnable) {
         return new QTaskBuilderVoid0Arg0(0, null, runnable);
     }
     
@@ -2423,11 +352,11 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static class QTaskBuilderVoid0Arg0 extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid0Arg0(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable runnable) {
+        QTaskBuilderVoid0Arg0(int newPriority, QThreadPool threadPool, QtFuture.Runnable runnable) {
             super(newPriority, threadPool);
             this.runnable = runnable;
         }
-        private final Runnable runnable;
+        private final QtFuture.Runnable runnable;
         
         /**
          * {@inheritDoc}
@@ -2455,14 +384,24 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable);
         }
         
-        private native static @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority, @StrictNonNull Runnable runnable);
+        private native static QFuture<Void> spawn(QThreadPool threadPool, int priority, QtFuture.Runnable runnable);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), runnable);
+        }
+
+        private native static void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Runnable runnable);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A> QTaskBuilderVoid1Arg0<A> task(@StrictNonNull Runnable1<A> runnable) {
+    public static <A> QTaskBuilderVoid1Arg0<A> task(QtFuture.@StrictNonNull Runnable1<A> runnable) {
         return new QTaskBuilderVoid1Arg0<>(0, null, runnable);
     }
     
@@ -2472,9 +411,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid1Arg0<A> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final Runnable1<A> runnable;
+        private final QtFuture.Runnable1<A> runnable;
         
-        QTaskBuilderVoid1Arg0(int priority, QThreadPool threadPool, @StrictNonNull Runnable1<A> runnable) {
+        QTaskBuilderVoid1Arg0(int priority, QThreadPool threadPool, QtFuture.Runnable1<A> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -2511,12 +450,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid1Arg1<A> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid1Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable1<A> runnable, A a) {
+        QTaskBuilderVoid1Arg1(int newPriority, QThreadPool threadPool, QtFuture.Runnable1<A> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final Runnable1<A> runnable;
+        private final QtFuture.Runnable1<A> runnable;
         private final A a;
         
         /**
@@ -2545,15 +484,24 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a);
         }
         
-        private native static <A> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                Runnable1<A> runnable, A a);
+        private native static <A> QFuture<Void> spawn(QThreadPool threadPool, int priority, QtFuture.Runnable1<A> runnable, A a);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), runnable, a);
+        }
+
+        private native static <A> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Runnable1<A> runnable, A a);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A, B> QTaskBuilderVoid2Arg0<A, B> task(@StrictNonNull Runnable2<A, B> runnable) {
+    public static <A, B> QTaskBuilderVoid2Arg0<A, B> task(QtFuture.@StrictNonNull Runnable2<A, B> runnable) {
         return new QTaskBuilderVoid2Arg0<>(0, null, runnable);
     }
     
@@ -2563,9 +511,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid2Arg0<A, B> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final Runnable2<A, B> runnable;
+        private final QtFuture.Runnable2<A, B> runnable;
         
-        QTaskBuilderVoid2Arg0(int priority, QThreadPool threadPool, @StrictNonNull Runnable2<A, B> runnable) {
+        QTaskBuilderVoid2Arg0(int priority, QThreadPool threadPool, QtFuture.@StrictNonNull Runnable2<A, B> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -2609,12 +557,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid2Arg1<A, B> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid2Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable2<A, B> runnable, A a) {
+        QTaskBuilderVoid2Arg1(int newPriority, QThreadPool threadPool, QtFuture.@StrictNonNull Runnable2<A, B> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final Runnable2<A, B> runnable;
+        private final QtFuture.Runnable2<A, B> runnable;
         private final A a;
         
         /**
@@ -2649,13 +597,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid2Arg2<A, B> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid2Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable2<A, B> runnable, A a, B b) {
+        QTaskBuilderVoid2Arg2(int newPriority, QThreadPool threadPool, QtFuture.Runnable2<A, B> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final Runnable2<A, B> runnable;
+        private final QtFuture.Runnable2<A, B> runnable;
         private final A a;
         private final B b;
         
@@ -2685,15 +633,24 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b);
         }
         
-        private native static <A, B> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                Runnable2<A, B> runnable, A a, B b);
+        private native static <A, B> QFuture<Void> spawn(QThreadPool threadPool, int priority, QtFuture.Runnable2<A, B> runnable, A a, B b);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), runnable, a, b);
+        }
+
+        private native static <A, B> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Runnable2<A, B> runnable, A a, B b);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A, B, C> QTaskBuilderVoid3Arg0<A, B, C> task(@StrictNonNull Runnable3<A, B, C> runnable) {
+    public static <A, B, C> QTaskBuilderVoid3Arg0<A, B, C> task(QtFuture.@StrictNonNull Runnable3<A, B, C> runnable) {
         return new QTaskBuilderVoid3Arg0<>(0, null, runnable);
     }
     
@@ -2703,9 +660,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid3Arg0<A, B, C> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final Runnable3<A, B, C> runnable;
+        private final QtFuture.Runnable3<A, B, C> runnable;
         
-        QTaskBuilderVoid3Arg0(int priority, QThreadPool threadPool, @StrictNonNull Runnable3<A, B, C> runnable) {
+        QTaskBuilderVoid3Arg0(int priority, QThreadPool threadPool, QtFuture.Runnable3<A, B, C> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -2756,12 +713,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid3Arg1<A, B, C> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid3Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable3<A, B, C> runnable, A a) {
+        QTaskBuilderVoid3Arg1(int newPriority, QThreadPool threadPool, QtFuture.Runnable3<A, B, C> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final Runnable3<A, B, C> runnable;
+        private final QtFuture.Runnable3<A, B, C> runnable;
         private final A a;
         
         /**
@@ -2803,13 +760,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid3Arg2<A, B, C> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid3Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable3<A, B, C> runnable, A a, B b) {
+        QTaskBuilderVoid3Arg2(int newPriority, QThreadPool threadPool, QtFuture.Runnable3<A, B, C> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final Runnable3<A, B, C> runnable;
+        private final QtFuture.Runnable3<A, B, C> runnable;
         private final A a;
         private final B b;
         
@@ -2845,14 +802,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid3Arg3<A, B, C> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid3Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable3<A, B, C> runnable, A a, B b, C c) {
+        QTaskBuilderVoid3Arg3(int newPriority, QThreadPool threadPool, QtFuture.Runnable3<A, B, C> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final Runnable3<A, B, C> runnable;
+        private final QtFuture.Runnable3<A, B, C> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -2883,15 +840,24 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c);
         }
         
-        private native static <A, B, C> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                Runnable3<A, B, C> runnable, A a, B b, C c);
+        private native static <A, B, C> QFuture<Void> spawn(QThreadPool threadPool, int priority, QtFuture.Runnable3<A, B, C> runnable, A a, B b, C c);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), runnable, a, b, c);
+        }
+
+        private native static <A, B, C> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Runnable3<A, B, C> runnable, A a, B b, C c);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A, B, C, D> QTaskBuilderVoid4Arg0<A, B, C, D> task(@StrictNonNull Runnable4<A, B, C, D> runnable) {
+    public static <A, B, C, D> QTaskBuilderVoid4Arg0<A, B, C, D> task(QtFuture.@StrictNonNull Runnable4<A, B, C, D> runnable) {
         return new QTaskBuilderVoid4Arg0<>(0, null, runnable);
     }
     
@@ -2901,9 +867,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid4Arg0<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final Runnable4<A, B, C, D> runnable;
+        private final QtFuture.Runnable4<A, B, C, D> runnable;
         
-        QTaskBuilderVoid4Arg0(int priority, QThreadPool threadPool, @StrictNonNull Runnable4<A, B, C, D> runnable) {
+        QTaskBuilderVoid4Arg0(int priority, QThreadPool threadPool, QtFuture.Runnable4<A, B, C, D> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -2961,12 +927,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid4Arg1<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid4Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable4<A, B, C, D> runnable, A a) {
+        QTaskBuilderVoid4Arg1(int newPriority, QThreadPool threadPool, QtFuture.Runnable4<A, B, C, D> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final Runnable4<A, B, C, D> runnable;
+        private final QtFuture.Runnable4<A, B, C, D> runnable;
         private final A a;
         
         /**
@@ -3015,13 +981,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid4Arg2<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid4Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable4<A, B, C, D> runnable, A a, B b) {
+        QTaskBuilderVoid4Arg2(int newPriority, QThreadPool threadPool, QtFuture.Runnable4<A, B, C, D> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final Runnable4<A, B, C, D> runnable;
+        private final QtFuture.Runnable4<A, B, C, D> runnable;
         private final A a;
         private final B b;
         
@@ -3064,14 +1030,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid4Arg3<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid4Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable4<A, B, C, D> runnable, A a, B b, C c) {
+        QTaskBuilderVoid4Arg3(int newPriority, QThreadPool threadPool, QtFuture.Runnable4<A, B, C, D> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final Runnable4<A, B, C, D> runnable;
+        private final QtFuture.Runnable4<A, B, C, D> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -3108,7 +1074,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid4Arg4<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid4Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable4<A, B, C, D> runnable, A a, B b, C c, D d) {
+        QTaskBuilderVoid4Arg4(int newPriority, QThreadPool threadPool, QtFuture.Runnable4<A, B, C, D> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -3116,7 +1082,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final Runnable4<A, B, C, D> runnable;
+        private final QtFuture.Runnable4<A, B, C, D> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -3148,15 +1114,24 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c, d);
         }
         
-        private native static <A, B, C, D> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                Runnable4<A, B, C, D> runnable, A a, B b, C c, D d);
+        private native static <A, B, C, D> QFuture<Void> spawn(QThreadPool threadPool, int priority, QtFuture.Runnable4<A, B, C, D> runnable, A a, B b, C c, D d);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), runnable, a, b, c, d);
+        }
+
+        private native static <A, B, C, D> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Runnable4<A, B, C, D> runnable, A a, B b, C c, D d);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A, B, C, D, E> QTaskBuilderVoid5Arg0<A, B, C, D, E> task(@StrictNonNull Runnable5<A, B, C, D, E> runnable) {
+    public static <A, B, C, D, E> QTaskBuilderVoid5Arg0<A, B, C, D, E> task(QtFuture.@StrictNonNull Runnable5<A, B, C, D, E> runnable) {
         return new QTaskBuilderVoid5Arg0<>(0, null, runnable);
     }
     
@@ -3166,9 +1141,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid5Arg0<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final Runnable5<A, B, C, D, E> runnable;
+        private final QtFuture.Runnable5<A, B, C, D, E> runnable;
         
-        QTaskBuilderVoid5Arg0(int priority, QThreadPool threadPool, @StrictNonNull Runnable5<A, B, C, D, E> runnable) {
+        QTaskBuilderVoid5Arg0(int priority, QThreadPool threadPool, QtFuture.Runnable5<A, B, C, D, E> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -3233,12 +1208,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid5Arg1<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid5Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable5<A, B, C, D, E> runnable, A a) {
+        QTaskBuilderVoid5Arg1(int newPriority, QThreadPool threadPool, QtFuture.Runnable5<A, B, C, D, E> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final Runnable5<A, B, C, D, E> runnable;
+        private final QtFuture.Runnable5<A, B, C, D, E> runnable;
         private final A a;
         
         /**
@@ -3294,13 +1269,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid5Arg2<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid5Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable5<A, B, C, D, E> runnable, A a, B b) {
+        QTaskBuilderVoid5Arg2(int newPriority, QThreadPool threadPool, QtFuture.Runnable5<A, B, C, D, E> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final Runnable5<A, B, C, D, E> runnable;
+        private final QtFuture.Runnable5<A, B, C, D, E> runnable;
         private final A a;
         private final B b;
         
@@ -3350,14 +1325,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid5Arg3<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid5Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable5<A, B, C, D, E> runnable, A a, B b, C c) {
+        QTaskBuilderVoid5Arg3(int newPriority, QThreadPool threadPool, QtFuture.Runnable5<A, B, C, D, E> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final Runnable5<A, B, C, D, E> runnable;
+        private final QtFuture.Runnable5<A, B, C, D, E> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -3401,7 +1376,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid5Arg4<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid5Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable5<A, B, C, D, E> runnable, A a, B b, C c, D d) {
+        QTaskBuilderVoid5Arg4(int newPriority, QThreadPool threadPool, QtFuture.Runnable5<A, B, C, D, E> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -3409,7 +1384,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final Runnable5<A, B, C, D, E> runnable;
+        private final QtFuture.Runnable5<A, B, C, D, E> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -3447,7 +1422,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid5Arg5<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid5Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
+        QTaskBuilderVoid5Arg5(int newPriority, QThreadPool threadPool, QtFuture.Runnable5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -3456,7 +1431,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final Runnable5<A, B, C, D, E> runnable;
+        private final QtFuture.Runnable5<A, B, C, D, E> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -3489,15 +1464,24 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c, d, e);
         }
         
-        private native static <A, B, C, D, E> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                Runnable5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e);
+        private native static <A, B, C, D, E> QFuture<Void> spawn(QThreadPool threadPool, int priority, QtFuture.Runnable5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), runnable, a, b, c, d, e);
+        }
+
+        private native static <A, B, C, D, E> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Runnable5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A, B, C, D, E, F> QTaskBuilderVoid6Arg0<A, B, C, D, E, F> task(@StrictNonNull Runnable6<A, B, C, D, E, F> runnable) {
+    public static <A, B, C, D, E, F> QTaskBuilderVoid6Arg0<A, B, C, D, E, F> task(QtFuture.@StrictNonNull Runnable6<A, B, C, D, E, F> runnable) {
         return new QTaskBuilderVoid6Arg0<>(0, null, runnable);
     }
     
@@ -3507,9 +1491,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid6Arg0<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final Runnable6<A, B, C, D, E, F> runnable;
+        private final QtFuture.Runnable6<A, B, C, D, E, F> runnable;
         
-        QTaskBuilderVoid6Arg0(int priority, QThreadPool threadPool, @StrictNonNull Runnable6<A, B, C, D, E, F> runnable) {
+        QTaskBuilderVoid6Arg0(int priority, QThreadPool threadPool, QtFuture.Runnable6<A, B, C, D, E, F> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -3581,12 +1565,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid6Arg1<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid6Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable6<A, B, C, D, E, F> runnable, A a) {
+        QTaskBuilderVoid6Arg1(int newPriority, QThreadPool threadPool, QtFuture.Runnable6<A, B, C, D, E, F> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final Runnable6<A, B, C, D, E, F> runnable;
+        private final QtFuture.Runnable6<A, B, C, D, E, F> runnable;
         private final A a;
         
         /**
@@ -3649,13 +1633,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid6Arg2<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid6Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable6<A, B, C, D, E, F> runnable, A a, B b) {
+        QTaskBuilderVoid6Arg2(int newPriority, QThreadPool threadPool, QtFuture.Runnable6<A, B, C, D, E, F> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final Runnable6<A, B, C, D, E, F> runnable;
+        private final QtFuture.Runnable6<A, B, C, D, E, F> runnable;
         private final A a;
         private final B b;
         
@@ -3712,14 +1696,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid6Arg3<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid6Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable6<A, B, C, D, E, F> runnable, A a, B b, C c) {
+        QTaskBuilderVoid6Arg3(int newPriority, QThreadPool threadPool, QtFuture.Runnable6<A, B, C, D, E, F> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final Runnable6<A, B, C, D, E, F> runnable;
+        private final QtFuture.Runnable6<A, B, C, D, E, F> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -3770,7 +1754,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid6Arg4<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid6Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable6<A, B, C, D, E, F> runnable, A a, B b, C c, D d) {
+        QTaskBuilderVoid6Arg4(int newPriority, QThreadPool threadPool, QtFuture.Runnable6<A, B, C, D, E, F> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -3778,7 +1762,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final Runnable6<A, B, C, D, E, F> runnable;
+        private final QtFuture.Runnable6<A, B, C, D, E, F> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -3823,7 +1807,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid6Arg5<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid6Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e) {
+        QTaskBuilderVoid6Arg5(int newPriority, QThreadPool threadPool, QtFuture.Runnable6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -3832,7 +1816,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final Runnable6<A, B, C, D, E, F> runnable;
+        private final QtFuture.Runnable6<A, B, C, D, E, F> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -3871,7 +1855,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid6Arg6<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid6Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f) {
+        QTaskBuilderVoid6Arg6(int newPriority, QThreadPool threadPool, QtFuture.Runnable6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -3881,7 +1865,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.e = e;
             this.f = f;
         }
-        private final Runnable6<A, B, C, D, E, F> runnable;
+        private final QtFuture.Runnable6<A, B, C, D, E, F> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -3915,15 +1899,24 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f);
         }
         
-        private native static <A, B, C, D, E, F> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                Runnable6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f);
+        private native static <A, B, C, D, E, F> QFuture<Void> spawn(QThreadPool threadPool, int priority, QtFuture.Runnable6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), runnable, a, b, c, d, e, f);
+        }
+
+        private native static <A, B, C, D, E, F> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Runnable6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A, B, C, D, E, F, G> QTaskBuilderVoid7Arg0<A, B, C, D, E, F, G> task(@StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable) {
+    public static <A, B, C, D, E, F, G> QTaskBuilderVoid7Arg0<A, B, C, D, E, F, G> task(QtFuture.@StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable) {
         return new QTaskBuilderVoid7Arg0<>(0, null, runnable);
     }
     
@@ -3933,9 +1926,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid7Arg0<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final Runnable7<A, B, C, D, E, F, G> runnable;
+        private final QtFuture.Runnable7<A, B, C, D, E, F, G> runnable;
         
-        QTaskBuilderVoid7Arg0(int priority, QThreadPool threadPool, @StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable) {
+        QTaskBuilderVoid7Arg0(int priority, QThreadPool threadPool, QtFuture.Runnable7<A, B, C, D, E, F, G> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -4014,12 +2007,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid7Arg1<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid7Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable, A a) {
+        QTaskBuilderVoid7Arg1(int newPriority, QThreadPool threadPool, QtFuture.Runnable7<A, B, C, D, E, F, G> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final Runnable7<A, B, C, D, E, F, G> runnable;
+        private final QtFuture.Runnable7<A, B, C, D, E, F, G> runnable;
         private final A a;
         
         /**
@@ -4089,13 +2082,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid7Arg2<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid7Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable, A a, B b) {
+        QTaskBuilderVoid7Arg2(int newPriority, QThreadPool threadPool, QtFuture.Runnable7<A, B, C, D, E, F, G> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final Runnable7<A, B, C, D, E, F, G> runnable;
+        private final QtFuture.Runnable7<A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         
@@ -4159,14 +2152,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid7Arg3<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid7Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c) {
+        QTaskBuilderVoid7Arg3(int newPriority, QThreadPool threadPool, QtFuture.Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final Runnable7<A, B, C, D, E, F, G> runnable;
+        private final QtFuture.Runnable7<A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -4224,7 +2217,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid7Arg4<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid7Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d) {
+        QTaskBuilderVoid7Arg4(int newPriority, QThreadPool threadPool, QtFuture.Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -4232,7 +2225,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final Runnable7<A, B, C, D, E, F, G> runnable;
+        private final QtFuture.Runnable7<A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -4284,7 +2277,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid7Arg5<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid7Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e) {
+        QTaskBuilderVoid7Arg5(int newPriority, QThreadPool threadPool, QtFuture.Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -4293,7 +2286,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final Runnable7<A, B, C, D, E, F, G> runnable;
+        private final QtFuture.Runnable7<A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -4339,7 +2332,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid7Arg6<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid7Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f) {
+        QTaskBuilderVoid7Arg6(int newPriority, QThreadPool threadPool, QtFuture.Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -4349,7 +2342,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.e = e;
             this.f = f;
         }
-        private final Runnable7<A, B, C, D, E, F, G> runnable;
+        private final QtFuture.Runnable7<A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -4389,7 +2382,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid7Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g) {
+        QTaskBuilderVoid7Arg7(int newPriority, QThreadPool threadPool, QtFuture.Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -4400,7 +2393,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.f = f;
             this.g = g;
         }
-        private final Runnable7<A, B, C, D, E, F, G> runnable;
+        private final QtFuture.Runnable7<A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -4435,15 +2428,24 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f, g);
         }
         
-        private native static <A, B, C, D, E, F, G> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g);
+        private native static <A, B, C, D, E, F, G> QFuture<Void> spawn(QThreadPool threadPool, int priority, QtFuture.Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), runnable, a, b, c, d, e, f, g);
+        }
+
+        private native static <A, B, C, D, E, F, G> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g);
     }
 
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A, B, C, D, E, F, G, H> QTaskBuilderVoid8Arg0<A, B, C, D, E, F, G, H> task(@StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable) {
+    public static <A, B, C, D, E, F, G, H> QTaskBuilderVoid8Arg0<A, B, C, D, E, F, G, H> task(QtFuture.@StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable) {
         return new QTaskBuilderVoid8Arg0<>(0, null, runnable);
     }
     
@@ -4453,9 +2455,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid8Arg0<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final Runnable8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable;
         
-        QTaskBuilderVoid8Arg0(int priority, QThreadPool threadPool, @StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable) {
+        QTaskBuilderVoid8Arg0(int priority, QThreadPool threadPool, QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -4541,12 +2543,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid8Arg1<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid8Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable, A a) {
+        QTaskBuilderVoid8Arg1(int newPriority, QThreadPool threadPool, QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final Runnable8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable;
         private final A a;
         
         /**
@@ -4623,13 +2625,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid8Arg2<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid8Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b) {
+        QTaskBuilderVoid8Arg2(int newPriority, QThreadPool threadPool, QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final Runnable8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         
@@ -4700,14 +2702,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid8Arg3<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid8Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c) {
+        QTaskBuilderVoid8Arg3(int newPriority, QThreadPool threadPool, QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final Runnable8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -4772,7 +2774,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid8Arg4<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid8Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d) {
+        QTaskBuilderVoid8Arg4(int newPriority, QThreadPool threadPool, QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -4780,7 +2782,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final Runnable8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -4839,7 +2841,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid8Arg5<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid8Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e) {
+        QTaskBuilderVoid8Arg5(int newPriority, QThreadPool threadPool, QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -4848,7 +2850,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final Runnable8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -4901,7 +2903,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid8Arg6<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid8Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f) {
+        QTaskBuilderVoid8Arg6(int newPriority, QThreadPool threadPool, QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -4911,7 +2913,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.e = e;
             this.f = f;
         }
-        private final Runnable8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -4958,7 +2960,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid8Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g) {
+        QTaskBuilderVoid8Arg7(int newPriority, QThreadPool threadPool, QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -4969,7 +2971,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.f = f;
             this.g = g;
         }
-        private final Runnable8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -5010,7 +3012,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid8Arg8(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
+        QTaskBuilderVoid8Arg8(int newPriority, QThreadPool threadPool, QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -5022,7 +3024,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.g = g;
             this.h = h;
         }
-        private final Runnable8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -5058,15 +3060,24 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f, g, h);
         }
         
-        private native static <A, B, C, D, E, F, G, H> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
+        private native static <A, B, C, D, E, F, G, H> QFuture<Void> spawn(QThreadPool threadPool, int priority, QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), runnable, a, b, c, d, e, f, g, h);
+        }
+
+        private native static <A, B, C, D, E, F, G, H> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A, B, C, D, E, F, G, H, I> QTaskBuilderVoid9Arg0<A, B, C, D, E, F, G, H, I> task(@StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable) {
+    public static <A, B, C, D, E, F, G, H, I> QTaskBuilderVoid9Arg0<A, B, C, D, E, F, G, H, I> task(QtFuture.@StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable) {
         return new QTaskBuilderVoid9Arg0<>(0, null, runnable);
     }
     
@@ -5076,9 +3087,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid9Arg0<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final Runnable9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable;
         
-        QTaskBuilderVoid9Arg0(int priority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable) {
+        QTaskBuilderVoid9Arg0(int priority, QThreadPool threadPool, QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -5171,12 +3182,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid9Arg1<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid9Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a) {
+        QTaskBuilderVoid9Arg1(int newPriority, QThreadPool threadPool, QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final Runnable9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         
         /**
@@ -5260,13 +3271,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid9Arg2<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid9Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b) {
+        QTaskBuilderVoid9Arg2(int newPriority, QThreadPool threadPool, QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final Runnable9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         
@@ -5344,14 +3355,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid9Arg3<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid9Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c) {
+        QTaskBuilderVoid9Arg3(int newPriority, QThreadPool threadPool, QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final Runnable9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -5423,7 +3434,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid9Arg4<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid9Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d) {
+        QTaskBuilderVoid9Arg4(int newPriority, QThreadPool threadPool, QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -5431,7 +3442,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final Runnable9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -5497,7 +3508,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid9Arg5<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid9Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e) {
+        QTaskBuilderVoid9Arg5(int newPriority, QThreadPool threadPool, QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -5506,7 +3517,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final Runnable9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -5566,7 +3577,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid9Arg6<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid9Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f) {
+        QTaskBuilderVoid9Arg6(int newPriority, QThreadPool threadPool, QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -5576,7 +3587,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.e = e;
             this.f = f;
         }
-        private final Runnable9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -5630,7 +3641,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid9Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g) {
+        QTaskBuilderVoid9Arg7(int newPriority, QThreadPool threadPool, QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -5641,7 +3652,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.f = f;
             this.g = g;
         }
-        private final Runnable9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -5689,7 +3700,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid9Arg8(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
+        QTaskBuilderVoid9Arg8(int newPriority, QThreadPool threadPool, QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -5701,7 +3712,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.g = g;
             this.h = h;
         }
-        private final Runnable9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -5743,7 +3754,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QTaskBuilderVoid9Arg9(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
+        QTaskBuilderVoid9Arg9(int newPriority, QThreadPool threadPool, QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -5756,7 +3767,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.h = h;
             this.i = i;
         }
-        private final Runnable9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -5792,14 +3803,23 @@ class QtConcurrent___ extends QtConcurrent {
             super.onThreadPool(newThreadPool);
             return this;
         }
-        private native static <A, B, C, D, E, F, G, H, I> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
+        private native static <A, B, C, D, E, F, G, H, I> QFuture<Void> spawn(QThreadPool threadPool, int priority, QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), runnable, a, b, c, d, e, f, g, h, i);
+        }
+
+        private native static <A, B, C, D, E, F, G, H, I> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
-    public static <T> @NonNull QTypedTaskBuilder0Arg0<T> task(java.util.concurrent.@StrictNonNull Callable<T> callable) {
+    public static <T> @NonNull QTypedTaskBuilder0Arg0<T> task(QtFuture.@StrictNonNull Callable<T> callable) {
         return new QTypedTaskBuilder0Arg0<>(0, null, callable);
     }
     
@@ -5809,11 +3829,11 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder0Arg0<T> extends QTaskBuilder<T>{
-        QTypedTaskBuilder0Arg0(int newPriority, QThreadPool threadPool, java.util.concurrent.Callable<T> callable) {
+        QTypedTaskBuilder0Arg0(int newPriority, QThreadPool threadPool, QtFuture.Callable<T> callable) {
             super(newPriority, threadPool);
             this.callable = callable;
         }
-        private final java.util.concurrent.Callable<T> callable;
+        private final QtFuture.Callable<T> callable;
         
         /**
          * {@inheritDoc}
@@ -5841,14 +3861,24 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), callable);
         }
         
-        private native static <T> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority, java.util.concurrent.Callable<T> callable);
+        private native static <T> QFuture<T> spawn(QThreadPool threadPool, int priority, QtFuture.Callable<T> callable);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), callable);
+        }
+
+        private native static void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Callable<?> callable);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A> @NonNull QTypedTaskBuilder1Arg0<T, A> task(@StrictNonNull Callable1<T, A> callable) {
+    public static <T, A> @NonNull QTypedTaskBuilder1Arg0<T, A> task(QtFuture.@StrictNonNull Callable1<T, A> callable) {
         return new QTypedTaskBuilder1Arg0<>(0, null, callable);
     }
     
@@ -5858,9 +3888,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder1Arg0<T, A> extends QTaskBuilder<T>{
-        private final Callable1<T, A> callable;
+        private final QtFuture.Callable1<T, A> callable;
         
-        QTypedTaskBuilder1Arg0(int priority, QThreadPool threadPool, Callable1<T, A> callable) {
+        QTypedTaskBuilder1Arg0(int priority, QThreadPool threadPool, QtFuture.Callable1<T, A> callable) {
             super(priority, threadPool);
             this.callable = callable;
         }
@@ -5897,12 +3927,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder1Arg1<T, A> extends QTaskBuilder<T>{
-        QTypedTaskBuilder1Arg1(int newPriority, QThreadPool threadPool, Callable1<T, A> callable, A a) {
+        QTypedTaskBuilder1Arg1(int newPriority, QThreadPool threadPool, QtFuture.Callable1<T, A> callable, A a) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
         }
-        private final Callable1<T, A> callable;
+        private final QtFuture.Callable1<T, A> callable;
         private final A a;
         
         /**
@@ -5931,15 +3961,24 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), callable, a);
         }
         
-        private native static <T, A> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                Callable1<T, A> callable, A a);
+        private native static <T, A> QFuture<T> spawn(QThreadPool threadPool, int priority, QtFuture.Callable1<T, A> callable, A a);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), callable, a);
+        }
+
+        private native static <A> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Callable1<?, A> callable, A a);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A, B> @NonNull QTypedTaskBuilder2Arg0<T, A, B> task(@StrictNonNull Callable2<T, A, B> callable) {
+    public static <T, A, B> @NonNull QTypedTaskBuilder2Arg0<T, A, B> task(QtFuture.@StrictNonNull Callable2<T, A, B> callable) {
         return new QTypedTaskBuilder2Arg0<>(0, null, callable);
     }
     
@@ -5949,9 +3988,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder2Arg0<T, A, B> extends QTaskBuilder<T>{
-        private final Callable2<T, A, B> callable;
+        private final QtFuture.Callable2<T, A, B> callable;
         
-        QTypedTaskBuilder2Arg0(int priority, QThreadPool threadPool, Callable2<T, A, B> callable) {
+        QTypedTaskBuilder2Arg0(int priority, QThreadPool threadPool, QtFuture.Callable2<T, A, B> callable) {
             super(priority, threadPool);
             this.callable = callable;
         }
@@ -5995,12 +4034,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder2Arg1<T, A, B> extends QTaskBuilder<T>{
-        QTypedTaskBuilder2Arg1(int newPriority, QThreadPool threadPool, Callable2<T, A, B> callable, A a) {
+        QTypedTaskBuilder2Arg1(int newPriority, QThreadPool threadPool, QtFuture.Callable2<T, A, B> callable, A a) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
         }
-        private final Callable2<T, A, B> callable;
+        private final QtFuture.Callable2<T, A, B> callable;
         private final A a;
         
         /**
@@ -6035,13 +4074,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder2Arg2<T, A, B> extends QTaskBuilder<T>{
-        QTypedTaskBuilder2Arg2(int newPriority, QThreadPool threadPool, Callable2<T, A, B> callable, A a, B b) {
+        QTypedTaskBuilder2Arg2(int newPriority, QThreadPool threadPool, QtFuture.Callable2<T, A, B> callable, A a, B b) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
             this.b = b;
         }
-        private final Callable2<T, A, B> callable;
+        private final QtFuture.Callable2<T, A, B> callable;
         private final A a;
         private final B b;
         
@@ -6071,15 +4110,24 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), callable, a, b);
         }
         
-        private native static <T, A, B> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                Callable2<T, A, B> callable, A a, B b);
+        private native static <T, A, B> QFuture<T> spawn(QThreadPool threadPool, int priority, QtFuture.Callable2<T, A, B> callable, A a, B b);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), callable, a, b);
+        }
+
+        private native static <A, B> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Callable2<?, A, B> callable, A a, B b);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A, B, C> @NonNull QTypedTaskBuilder3Arg0<T, A, B, C> task(@StrictNonNull Callable3<T, A, B, C> callable) {
+    public static <T, A, B, C> @NonNull QTypedTaskBuilder3Arg0<T, A, B, C> task(QtFuture.@StrictNonNull Callable3<T, A, B, C> callable) {
         return new QTypedTaskBuilder3Arg0<>(0, null, callable);
     }
     
@@ -6089,9 +4137,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder3Arg0<T, A, B, C> extends QTaskBuilder<T>{
-        private final Callable3<T, A, B, C> callable;
+        private final QtFuture.Callable3<T, A, B, C> callable;
         
-        QTypedTaskBuilder3Arg0(int priority, QThreadPool threadPool, Callable3<T, A, B, C> callable) {
+        QTypedTaskBuilder3Arg0(int priority, QThreadPool threadPool, QtFuture.Callable3<T, A, B, C> callable) {
             super(priority, threadPool);
             this.callable = callable;
         }
@@ -6142,12 +4190,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder3Arg1<T, A, B, C> extends QTaskBuilder<T>{
-        QTypedTaskBuilder3Arg1(int newPriority, QThreadPool threadPool, Callable3<T, A, B, C> callable, A a) {
+        QTypedTaskBuilder3Arg1(int newPriority, QThreadPool threadPool, QtFuture.Callable3<T, A, B, C> callable, A a) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
         }
-        private final Callable3<T, A, B, C> callable;
+        private final QtFuture.Callable3<T, A, B, C> callable;
         private final A a;
         
         /**
@@ -6189,13 +4237,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder3Arg2<T, A, B, C> extends QTaskBuilder<T>{
-        QTypedTaskBuilder3Arg2(int newPriority, QThreadPool threadPool, Callable3<T, A, B, C> callable, A a, B b) {
+        QTypedTaskBuilder3Arg2(int newPriority, QThreadPool threadPool, QtFuture.Callable3<T, A, B, C> callable, A a, B b) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
             this.b = b;
         }
-        private final Callable3<T, A, B, C> callable;
+        private final QtFuture.Callable3<T, A, B, C> callable;
         private final A a;
         private final B b;
         
@@ -6231,14 +4279,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder3Arg3<T, A, B, C> extends QTaskBuilder<T>{
-        QTypedTaskBuilder3Arg3(int newPriority, QThreadPool threadPool, Callable3<T, A, B, C> callable, A a, B b, C c) {
+        QTypedTaskBuilder3Arg3(int newPriority, QThreadPool threadPool, QtFuture.Callable3<T, A, B, C> callable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final Callable3<T, A, B, C> callable;
+        private final QtFuture.Callable3<T, A, B, C> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -6269,15 +4317,25 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), callable, a, b, c);
         }
         
-        private native static <T, A, B, C> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                Callable3<T, A, B, C> callable, A a, B b, C c);
+        private native static <T, A, B, C> QFuture<T> spawn(QThreadPool threadPool, int priority,
+                QtFuture.Callable3<T, A, B, C> callable, A a, B b, C c);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), callable, a, b, c);
+        }
+
+        private native static <A, B, C> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Callable3<?, A, B, C> callable, A a, B b, C c);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A, B, C, D> @NonNull QTypedTaskBuilder4Arg0<T, A, B, C, D> task(@StrictNonNull Callable4<T, A, B, C, D> callable) {
+    public static <T, A, B, C, D> @NonNull QTypedTaskBuilder4Arg0<T, A, B, C, D> task(QtFuture.@StrictNonNull Callable4<T, A, B, C, D> callable) {
         return new QTypedTaskBuilder4Arg0<>(0, null, callable);
     }
     
@@ -6287,9 +4345,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder4Arg0<T, A, B, C, D> extends QTaskBuilder<T>{
-        private final Callable4<T, A, B, C, D> callable;
+        private final QtFuture.Callable4<T, A, B, C, D> callable;
         
-        QTypedTaskBuilder4Arg0(int priority, QThreadPool threadPool, Callable4<T, A, B, C, D> callable) {
+        QTypedTaskBuilder4Arg0(int priority, QThreadPool threadPool, QtFuture.Callable4<T, A, B, C, D> callable) {
             super(priority, threadPool);
             this.callable = callable;
         }
@@ -6347,12 +4405,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder4Arg1<T, A, B, C, D> extends QTaskBuilder<T>{
-        QTypedTaskBuilder4Arg1(int newPriority, QThreadPool threadPool, Callable4<T, A, B, C, D> callable, A a) {
+        QTypedTaskBuilder4Arg1(int newPriority, QThreadPool threadPool, QtFuture.Callable4<T, A, B, C, D> callable, A a) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
         }
-        private final Callable4<T, A, B, C, D> callable;
+        private final QtFuture.Callable4<T, A, B, C, D> callable;
         private final A a;
         
         /**
@@ -6401,13 +4459,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder4Arg2<T, A, B, C, D> extends QTaskBuilder<T>{
-        QTypedTaskBuilder4Arg2(int newPriority, QThreadPool threadPool, Callable4<T, A, B, C, D> callable, A a, B b) {
+        QTypedTaskBuilder4Arg2(int newPriority, QThreadPool threadPool, QtFuture.Callable4<T, A, B, C, D> callable, A a, B b) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
             this.b = b;
         }
-        private final Callable4<T, A, B, C, D> callable;
+        private final QtFuture.Callable4<T, A, B, C, D> callable;
         private final A a;
         private final B b;
         
@@ -6450,14 +4508,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder4Arg3<T, A, B, C, D> extends QTaskBuilder<T>{
-        QTypedTaskBuilder4Arg3(int newPriority, QThreadPool threadPool, Callable4<T, A, B, C, D> callable, A a, B b, C c) {
+        QTypedTaskBuilder4Arg3(int newPriority, QThreadPool threadPool, QtFuture.Callable4<T, A, B, C, D> callable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final Callable4<T, A, B, C, D> callable;
+        private final QtFuture.Callable4<T, A, B, C, D> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -6494,7 +4552,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder4Arg4<T, A, B, C, D> extends QTaskBuilder<T>{
-        QTypedTaskBuilder4Arg4(int newPriority, QThreadPool threadPool, Callable4<T, A, B, C, D> callable, A a, B b, C c, D d) {
+        QTypedTaskBuilder4Arg4(int newPriority, QThreadPool threadPool, QtFuture.Callable4<T, A, B, C, D> callable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -6502,7 +4560,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final Callable4<T, A, B, C, D> callable;
+        private final QtFuture.Callable4<T, A, B, C, D> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -6534,15 +4592,25 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), callable, a, b, c, d);
         }
         
-        private native static <T, A, B, C, D> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                Callable4<T, A, B, C, D> callable, A a, B b, C c, D d);
+        private native static <T, A, B, C, D> QFuture<T> spawn(QThreadPool threadPool, int priority,
+                QtFuture.Callable4<T, A, B, C, D> callable, A a, B b, C c, D d);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), callable, a, b, c, d);
+        }
+
+        private native static <A, B, C, D> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Callable4<?, A, B, C, D> callable, A a, B b, C c, D d);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A, B, C, D, E> @NonNull QTypedTaskBuilder5Arg0<T, A, B, C, D, E> task(@StrictNonNull Callable5<T, A, B, C, D, E> callable) {
+    public static <T, A, B, C, D, E> @NonNull QTypedTaskBuilder5Arg0<T, A, B, C, D, E> task(QtFuture.@StrictNonNull Callable5<T, A, B, C, D, E> callable) {
         return new QTypedTaskBuilder5Arg0<>(0, null, callable);
     }
     
@@ -6552,9 +4620,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder5Arg0<T, A, B, C, D, E> extends QTaskBuilder<T>{
-        private final Callable5<T, A, B, C, D, E> callable;
+        private final QtFuture.Callable5<T, A, B, C, D, E> callable;
         
-        QTypedTaskBuilder5Arg0(int priority, QThreadPool threadPool, Callable5<T, A, B, C, D, E> callable) {
+        QTypedTaskBuilder5Arg0(int priority, QThreadPool threadPool, QtFuture.Callable5<T, A, B, C, D, E> callable) {
             super(priority, threadPool);
             this.callable = callable;
         }
@@ -6619,12 +4687,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder5Arg1<T, A, B, C, D, E> extends QTaskBuilder<T>{
-        QTypedTaskBuilder5Arg1(int newPriority, QThreadPool threadPool, Callable5<T, A, B, C, D, E> callable, A a) {
+        QTypedTaskBuilder5Arg1(int newPriority, QThreadPool threadPool, QtFuture.Callable5<T, A, B, C, D, E> callable, A a) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
         }
-        private final Callable5<T, A, B, C, D, E> callable;
+        private final QtFuture.Callable5<T, A, B, C, D, E> callable;
         private final A a;
         
         /**
@@ -6680,13 +4748,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder5Arg2<T, A, B, C, D, E> extends QTaskBuilder<T>{
-        QTypedTaskBuilder5Arg2(int newPriority, QThreadPool threadPool, Callable5<T, A, B, C, D, E> callable, A a, B b) {
+        QTypedTaskBuilder5Arg2(int newPriority, QThreadPool threadPool, QtFuture.Callable5<T, A, B, C, D, E> callable, A a, B b) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
             this.b = b;
         }
-        private final Callable5<T, A, B, C, D, E> callable;
+        private final QtFuture.Callable5<T, A, B, C, D, E> callable;
         private final A a;
         private final B b;
         
@@ -6736,14 +4804,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder5Arg3<T, A, B, C, D, E> extends QTaskBuilder<T>{
-        QTypedTaskBuilder5Arg3(int newPriority, QThreadPool threadPool, Callable5<T, A, B, C, D, E> callable, A a, B b, C c) {
+        QTypedTaskBuilder5Arg3(int newPriority, QThreadPool threadPool, QtFuture.Callable5<T, A, B, C, D, E> callable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final Callable5<T, A, B, C, D, E> callable;
+        private final QtFuture.Callable5<T, A, B, C, D, E> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -6787,7 +4855,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder5Arg4<T, A, B, C, D, E> extends QTaskBuilder<T>{
-        QTypedTaskBuilder5Arg4(int newPriority, QThreadPool threadPool, Callable5<T, A, B, C, D, E> callable, A a, B b, C c, D d) {
+        QTypedTaskBuilder5Arg4(int newPriority, QThreadPool threadPool, QtFuture.Callable5<T, A, B, C, D, E> callable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -6795,7 +4863,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final Callable5<T, A, B, C, D, E> callable;
+        private final QtFuture.Callable5<T, A, B, C, D, E> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -6833,7 +4901,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder5Arg5<T, A, B, C, D, E> extends QTaskBuilder<T>{
-        QTypedTaskBuilder5Arg5(int newPriority, QThreadPool threadPool, Callable5<T, A, B, C, D, E> callable, A a, B b, C c, D d, E e) {
+        QTypedTaskBuilder5Arg5(int newPriority, QThreadPool threadPool, QtFuture.Callable5<T, A, B, C, D, E> callable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -6842,7 +4910,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final Callable5<T, A, B, C, D, E> callable;
+        private final QtFuture.Callable5<T, A, B, C, D, E> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -6875,15 +4943,25 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), callable, a, b, c, d, e);
         }
         
-        private native static <T, A, B, C, D, E> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                Callable5<T, A, B, C, D, E> callable, A a, B b, C c, D d, E e);
+        private native static <T, A, B, C, D, E> QFuture<T> spawn(QThreadPool threadPool, int priority,
+                QtFuture.Callable5<T, A, B, C, D, E> callable, A a, B b, C c, D d, E e);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), callable, a, b, c, d, e);
+        }
+
+        private native static <A, B, C, D, E> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Callable5<?, A, B, C, D, E> callable, A a, B b, C c, D d, E e);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A, B, C, D, E, F> @NonNull QTypedTaskBuilder6Arg0<T, A, B, C, D, E, F> task(@StrictNonNull Callable6<T, A, B, C, D, E, F> callable) {
+    public static <T, A, B, C, D, E, F> @NonNull QTypedTaskBuilder6Arg0<T, A, B, C, D, E, F> task(QtFuture.@StrictNonNull Callable6<T, A, B, C, D, E, F> callable) {
         return new QTypedTaskBuilder6Arg0<>(0, null, callable);
     }
     
@@ -6893,9 +4971,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder6Arg0<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
-        private final Callable6<T, A, B, C, D, E, F> callable;
+        private final QtFuture.Callable6<T, A, B, C, D, E, F> callable;
         
-        QTypedTaskBuilder6Arg0(int priority, QThreadPool threadPool, Callable6<T, A, B, C, D, E, F> callable) {
+        QTypedTaskBuilder6Arg0(int priority, QThreadPool threadPool, QtFuture.Callable6<T, A, B, C, D, E, F> callable) {
             super(priority, threadPool);
             this.callable = callable;
         }
@@ -6967,12 +5045,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder6Arg1<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
-        QTypedTaskBuilder6Arg1(int newPriority, QThreadPool threadPool, Callable6<T, A, B, C, D, E, F> callable, A a) {
+        QTypedTaskBuilder6Arg1(int newPriority, QThreadPool threadPool, QtFuture.Callable6<T, A, B, C, D, E, F> callable, A a) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
         }
-        private final Callable6<T, A, B, C, D, E, F> callable;
+        private final QtFuture.Callable6<T, A, B, C, D, E, F> callable;
         private final A a;
         
         /**
@@ -7035,13 +5113,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder6Arg2<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
-        QTypedTaskBuilder6Arg2(int newPriority, QThreadPool threadPool, Callable6<T, A, B, C, D, E, F> callable, A a, B b) {
+        QTypedTaskBuilder6Arg2(int newPriority, QThreadPool threadPool, QtFuture.Callable6<T, A, B, C, D, E, F> callable, A a, B b) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
             this.b = b;
         }
-        private final Callable6<T, A, B, C, D, E, F> callable;
+        private final QtFuture.Callable6<T, A, B, C, D, E, F> callable;
         private final A a;
         private final B b;
         
@@ -7098,14 +5176,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder6Arg3<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
-        QTypedTaskBuilder6Arg3(int newPriority, QThreadPool threadPool, Callable6<T, A, B, C, D, E, F> callable, A a, B b, C c) {
+        QTypedTaskBuilder6Arg3(int newPriority, QThreadPool threadPool, QtFuture.Callable6<T, A, B, C, D, E, F> callable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final Callable6<T, A, B, C, D, E, F> callable;
+        private final QtFuture.Callable6<T, A, B, C, D, E, F> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -7156,7 +5234,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder6Arg4<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
-        QTypedTaskBuilder6Arg4(int newPriority, QThreadPool threadPool, Callable6<T, A, B, C, D, E, F> callable, A a, B b, C c, D d) {
+        QTypedTaskBuilder6Arg4(int newPriority, QThreadPool threadPool, QtFuture.Callable6<T, A, B, C, D, E, F> callable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -7164,7 +5242,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final Callable6<T, A, B, C, D, E, F> callable;
+        private final QtFuture.Callable6<T, A, B, C, D, E, F> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -7209,7 +5287,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder6Arg5<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
-        QTypedTaskBuilder6Arg5(int newPriority, QThreadPool threadPool, Callable6<T, A, B, C, D, E, F> callable, A a, B b, C c, D d, E e) {
+        QTypedTaskBuilder6Arg5(int newPriority, QThreadPool threadPool, QtFuture.Callable6<T, A, B, C, D, E, F> callable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -7218,7 +5296,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final Callable6<T, A, B, C, D, E, F> callable;
+        private final QtFuture.Callable6<T, A, B, C, D, E, F> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -7257,7 +5335,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder6Arg6<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
-        QTypedTaskBuilder6Arg6(int newPriority, QThreadPool threadPool, Callable6<T, A, B, C, D, E, F> callable, A a, B b, C c, D d, E e, F f) {
+        QTypedTaskBuilder6Arg6(int newPriority, QThreadPool threadPool, QtFuture.Callable6<T, A, B, C, D, E, F> callable, A a, B b, C c, D d, E e, F f) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -7267,7 +5345,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.e = e;
             this.f = f;
         }
-        private final Callable6<T, A, B, C, D, E, F> callable;
+        private final QtFuture.Callable6<T, A, B, C, D, E, F> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -7301,15 +5379,25 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), callable, a, b, c, d, e, f);
         }
         
-        private native static <T, A, B, C, D, E, F> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                Callable6<T, A, B, C, D, E, F> callable, A a, B b, C c, D d, E e, F f);
+        private native static <T, A, B, C, D, E, F> QFuture<T> spawn(QThreadPool threadPool, int priority,
+                QtFuture.Callable6<T, A, B, C, D, E, F> callable, A a, B b, C c, D d, E e, F f);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), callable, a, b, c, d, e, f);
+        }
+
+        private native static <A, B, C, D, E, F> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Callable6<?, A, B, C, D, E, F> callable, A a, B b, C c, D d, E e, F f);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A, B, C, D, E, F, G> @NonNull QTypedTaskBuilder7Arg0<T, A, B, C, D, E, F, G> task(@StrictNonNull Callable7<T, A, B, C, D, E, F, G> callable) {
+    public static <T, A, B, C, D, E, F, G> @NonNull QTypedTaskBuilder7Arg0<T, A, B, C, D, E, F, G> task(QtFuture.@StrictNonNull Callable7<T, A, B, C, D, E, F, G> callable) {
         return new QTypedTaskBuilder7Arg0<>(0, null, callable);
     }
     
@@ -7319,9 +5407,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder7Arg0<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
-        private final Callable7<T, A, B, C, D, E, F, G> callable;
+        private final QtFuture.Callable7<T, A, B, C, D, E, F, G> callable;
         
-        QTypedTaskBuilder7Arg0(int priority, QThreadPool threadPool, Callable7<T, A, B, C, D, E, F, G> callable) {
+        QTypedTaskBuilder7Arg0(int priority, QThreadPool threadPool, QtFuture.Callable7<T, A, B, C, D, E, F, G> callable) {
             super(priority, threadPool);
             this.callable = callable;
         }
@@ -7400,12 +5488,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder7Arg1<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
-        QTypedTaskBuilder7Arg1(int newPriority, QThreadPool threadPool, Callable7<T, A, B, C, D, E, F, G> callable, A a) {
+        QTypedTaskBuilder7Arg1(int newPriority, QThreadPool threadPool, QtFuture.Callable7<T, A, B, C, D, E, F, G> callable, A a) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
         }
-        private final Callable7<T, A, B, C, D, E, F, G> callable;
+        private final QtFuture.Callable7<T, A, B, C, D, E, F, G> callable;
         private final A a;
         
         /**
@@ -7475,13 +5563,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder7Arg2<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
-        QTypedTaskBuilder7Arg2(int newPriority, QThreadPool threadPool, Callable7<T, A, B, C, D, E, F, G> callable, A a, B b) {
+        QTypedTaskBuilder7Arg2(int newPriority, QThreadPool threadPool, QtFuture.Callable7<T, A, B, C, D, E, F, G> callable, A a, B b) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
             this.b = b;
         }
-        private final Callable7<T, A, B, C, D, E, F, G> callable;
+        private final QtFuture.Callable7<T, A, B, C, D, E, F, G> callable;
         private final A a;
         private final B b;
         
@@ -7545,14 +5633,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder7Arg3<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
-        QTypedTaskBuilder7Arg3(int newPriority, QThreadPool threadPool, Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c) {
+        QTypedTaskBuilder7Arg3(int newPriority, QThreadPool threadPool, QtFuture.Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final Callable7<T, A, B, C, D, E, F, G> callable;
+        private final QtFuture.Callable7<T, A, B, C, D, E, F, G> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -7610,7 +5698,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder7Arg4<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
-        QTypedTaskBuilder7Arg4(int newPriority, QThreadPool threadPool, Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c, D d) {
+        QTypedTaskBuilder7Arg4(int newPriority, QThreadPool threadPool, QtFuture.Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -7618,7 +5706,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final Callable7<T, A, B, C, D, E, F, G> callable;
+        private final QtFuture.Callable7<T, A, B, C, D, E, F, G> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -7670,7 +5758,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder7Arg5<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
-        QTypedTaskBuilder7Arg5(int newPriority, QThreadPool threadPool, Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c, D d, E e) {
+        QTypedTaskBuilder7Arg5(int newPriority, QThreadPool threadPool, QtFuture.Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -7679,7 +5767,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final Callable7<T, A, B, C, D, E, F, G> callable;
+        private final QtFuture.Callable7<T, A, B, C, D, E, F, G> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -7725,7 +5813,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder7Arg6<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
-        QTypedTaskBuilder7Arg6(int newPriority, QThreadPool threadPool, Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c, D d, E e, F f) {
+        QTypedTaskBuilder7Arg6(int newPriority, QThreadPool threadPool, QtFuture.Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c, D d, E e, F f) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -7735,7 +5823,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.e = e;
             this.f = f;
         }
-        private final Callable7<T, A, B, C, D, E, F, G> callable;
+        private final QtFuture.Callable7<T, A, B, C, D, E, F, G> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -7775,7 +5863,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder7Arg7<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
-        QTypedTaskBuilder7Arg7(int newPriority, QThreadPool threadPool, Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c, D d, E e, F f, G g) {
+        QTypedTaskBuilder7Arg7(int newPriority, QThreadPool threadPool, QtFuture.Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c, D d, E e, F f, G g) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -7786,7 +5874,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.f = f;
             this.g = g;
         }
-        private final Callable7<T, A, B, C, D, E, F, G> callable;
+        private final QtFuture.Callable7<T, A, B, C, D, E, F, G> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -7821,15 +5909,25 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), callable, a, b, c, d, e, f, g);
         }
         
-        private native static <T, A, B, C, D, E, F, G> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c, D d, E e, F f, G g);
+        private native static <T, A, B, C, D, E, F, G> QFuture<T> spawn(QThreadPool threadPool, int priority,
+                QtFuture.Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c, D d, E e, F f, G g);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), callable, a, b, c, d, e, f, g);
+        }
+
+        private native static <A, B, C, D, E, F, G> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Callable7<?, A, B, C, D, E, F, G> callable, A a, B b, C c, D d, E e, F f, G g);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A, B, C, D, E, F, G, H> @NonNull QTypedTaskBuilder8Arg0<T, A, B, C, D, E, F, G, H> task(@StrictNonNull Callable8<T, A, B, C, D, E, F, G, H> callable) {
+    public static <T, A, B, C, D, E, F, G, H> @NonNull QTypedTaskBuilder8Arg0<T, A, B, C, D, E, F, G, H> task(QtFuture.@StrictNonNull Callable8<T, A, B, C, D, E, F, G, H> callable) {
         return new QTypedTaskBuilder8Arg0<>(0, null, callable);
     }
     
@@ -7839,9 +5937,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder8Arg0<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        private final Callable8<T, A, B, C, D, E, F, G, H> callable;
+        private final QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable;
         
-        QTypedTaskBuilder8Arg0(int priority, QThreadPool threadPool, Callable8<T, A, B, C, D, E, F, G, H> callable) {
+        QTypedTaskBuilder8Arg0(int priority, QThreadPool threadPool, QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable) {
             super(priority, threadPool);
             this.callable = callable;
         }
@@ -7927,12 +6025,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder8Arg1<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        QTypedTaskBuilder8Arg1(int newPriority, QThreadPool threadPool, Callable8<T, A, B, C, D, E, F, G, H> callable, A a) {
+        QTypedTaskBuilder8Arg1(int newPriority, QThreadPool threadPool, QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable, A a) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
         }
-        private final Callable8<T, A, B, C, D, E, F, G, H> callable;
+        private final QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable;
         private final A a;
         
         /**
@@ -8009,13 +6107,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder8Arg2<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        QTypedTaskBuilder8Arg2(int newPriority, QThreadPool threadPool, Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b) {
+        QTypedTaskBuilder8Arg2(int newPriority, QThreadPool threadPool, QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
             this.b = b;
         }
-        private final Callable8<T, A, B, C, D, E, F, G, H> callable;
+        private final QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable;
         private final A a;
         private final B b;
         
@@ -8086,14 +6184,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder8Arg3<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        QTypedTaskBuilder8Arg3(int newPriority, QThreadPool threadPool, Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c) {
+        QTypedTaskBuilder8Arg3(int newPriority, QThreadPool threadPool, QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final Callable8<T, A, B, C, D, E, F, G, H> callable;
+        private final QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -8158,7 +6256,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder8Arg4<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        QTypedTaskBuilder8Arg4(int newPriority, QThreadPool threadPool, Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d) {
+        QTypedTaskBuilder8Arg4(int newPriority, QThreadPool threadPool, QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -8166,7 +6264,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final Callable8<T, A, B, C, D, E, F, G, H> callable;
+        private final QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -8225,7 +6323,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder8Arg5<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        QTypedTaskBuilder8Arg5(int newPriority, QThreadPool threadPool, Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d, E e) {
+        QTypedTaskBuilder8Arg5(int newPriority, QThreadPool threadPool, QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -8234,7 +6332,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final Callable8<T, A, B, C, D, E, F, G, H> callable;
+        private final QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -8287,7 +6385,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder8Arg6<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        QTypedTaskBuilder8Arg6(int newPriority, QThreadPool threadPool, Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d, E e, F f) {
+        QTypedTaskBuilder8Arg6(int newPriority, QThreadPool threadPool, QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d, E e, F f) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -8297,7 +6395,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.e = e;
             this.f = f;
         }
-        private final Callable8<T, A, B, C, D, E, F, G, H> callable;
+        private final QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -8344,7 +6442,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        QTypedTaskBuilder8Arg7(int newPriority, QThreadPool threadPool, Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d, E e, F f, G g) {
+        QTypedTaskBuilder8Arg7(int newPriority, QThreadPool threadPool, QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d, E e, F f, G g) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -8355,7 +6453,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.f = f;
             this.g = g;
         }
-        private final Callable8<T, A, B, C, D, E, F, G, H> callable;
+        private final QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -8396,7 +6494,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        QTypedTaskBuilder8Arg8(int newPriority, QThreadPool threadPool, Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d, E e, F f, G g, H h) {
+        QTypedTaskBuilder8Arg8(int newPriority, QThreadPool threadPool, QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d, E e, F f, G g, H h) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -8408,7 +6506,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.g = g;
             this.h = h;
         }
-        private final Callable8<T, A, B, C, D, E, F, G, H> callable;
+        private final QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -8444,15 +6542,25 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), callable, a, b, c, d, e, f, g, h);
         }
         
-        private native static <T, A, B, C, D, E, F, G, H> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d, E e, F f, G g, H h);
+        private native static <T, A, B, C, D, E, F, G, H> QFuture<T> spawn(QThreadPool threadPool, int priority,
+                QtFuture.Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d, E e, F f, G g, H h);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), callable, a, b, c, d, e, f, g, h);
+        }
+
+        private native static <A, B, C, D, E, F, G, H> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Callable8<?, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d, E e, F f, G g, H h);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A, B, C, D, E, F, G, H, I> @NonNull QTypedTaskBuilder9Arg0<T, A, B, C, D, E, F, G, H, I> task(@StrictNonNull Callable9<T, A, B, C, D, E, F, G, H, I> callable) {
+    public static <T, A, B, C, D, E, F, G, H, I> @NonNull QTypedTaskBuilder9Arg0<T, A, B, C, D, E, F, G, H, I> task(QtFuture.@StrictNonNull Callable9<T, A, B, C, D, E, F, G, H, I> callable) {
         return new QTypedTaskBuilder9Arg0<>(0, null, callable);
     }
     
@@ -8462,9 +6570,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder9Arg0<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        private final Callable9<T, A, B, C, D, E, F, G, H, I> callable;
+        private final QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable;
         
-        QTypedTaskBuilder9Arg0(int priority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable) {
+        QTypedTaskBuilder9Arg0(int priority, QThreadPool threadPool, QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable) {
             super(priority, threadPool);
             this.callable = callable;
         }
@@ -8557,12 +6665,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder9Arg1<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedTaskBuilder9Arg1(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a) {
+        QTypedTaskBuilder9Arg1(int newPriority, QThreadPool threadPool, QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
         }
-        private final Callable9<T, A, B, C, D, E, F, G, H, I> callable;
+        private final QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable;
         private final A a;
         
         /**
@@ -8646,13 +6754,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder9Arg2<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedTaskBuilder9Arg2(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b) {
+        QTypedTaskBuilder9Arg2(int newPriority, QThreadPool threadPool, QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
             this.b = b;
         }
-        private final Callable9<T, A, B, C, D, E, F, G, H, I> callable;
+        private final QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable;
         private final A a;
         private final B b;
         
@@ -8730,14 +6838,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder9Arg3<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedTaskBuilder9Arg3(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c) {
+        QTypedTaskBuilder9Arg3(int newPriority, QThreadPool threadPool, QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final Callable9<T, A, B, C, D, E, F, G, H, I> callable;
+        private final QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -8809,7 +6917,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder9Arg4<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedTaskBuilder9Arg4(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d) {
+        QTypedTaskBuilder9Arg4(int newPriority, QThreadPool threadPool, QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -8817,7 +6925,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final Callable9<T, A, B, C, D, E, F, G, H, I> callable;
+        private final QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -8883,7 +6991,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder9Arg5<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedTaskBuilder9Arg5(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e) {
+        QTypedTaskBuilder9Arg5(int newPriority, QThreadPool threadPool, QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -8892,7 +7000,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final Callable9<T, A, B, C, D, E, F, G, H, I> callable;
+        private final QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -8952,7 +7060,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder9Arg6<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedTaskBuilder9Arg6(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e, F f) {
+        QTypedTaskBuilder9Arg6(int newPriority, QThreadPool threadPool, QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e, F f) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -8962,7 +7070,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.e = e;
             this.f = f;
         }
-        private final Callable9<T, A, B, C, D, E, F, G, H, I> callable;
+        private final QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -9016,7 +7124,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedTaskBuilder9Arg7(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e, F f, G g) {
+        QTypedTaskBuilder9Arg7(int newPriority, QThreadPool threadPool, QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e, F f, G g) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -9027,7 +7135,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.f = f;
             this.g = g;
         }
-        private final Callable9<T, A, B, C, D, E, F, G, H, I> callable;
+        private final QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -9075,7 +7183,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedTaskBuilder9Arg8(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e, F f, G g, H h) {
+        QTypedTaskBuilder9Arg8(int newPriority, QThreadPool threadPool, QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e, F f, G g, H h) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -9087,7 +7195,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.g = g;
             this.h = h;
         }
-        private final Callable9<T, A, B, C, D, E, F, G, H, I> callable;
+        private final QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -9129,7 +7237,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedTaskBuilder9Arg9(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
+        QTypedTaskBuilder9Arg9(int newPriority, QThreadPool threadPool, QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
             super(newPriority, threadPool);
             this.callable = callable;
             this.a = a;
@@ -9142,7 +7250,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.h = h;
             this.i = i;
         }
-        private final Callable9<T, A, B, C, D, E, F, G, H, I> callable;
+        private final QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable;
         private final A a;
         private final B b;
         private final C c;
@@ -9178,15 +7286,25 @@ class QtConcurrent___ extends QtConcurrent {
             super.onThreadPool(newThreadPool);
             return this;
         }
-        private native static <T, A, B, C, D, E, F, G, H, I> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
+        private native static <T, A, B, C, D, E, F, G, H, I> QFuture<T> spawn(QThreadPool threadPool, int priority,
+                QtFuture.Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void spawn(QtConcurrent.FutureResult result) {
+            spawnIgnore(threadPool(), priority(), callable, a, b, c, d, e, f, g, h, i);
+        }
+
+        private native static <A, B, C, D, E, F, G, H, I> void spawnIgnore(QThreadPool threadPool, int priority, QtFuture.Callable9<?, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
     }
         
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static QPromiseTaskBuilderVoid0Arg0 task(@StrictNonNull RunnableWithVoidPromise runnable) {
+    public static QPromiseTaskBuilderVoid0Arg0 task(QtFuture.@StrictNonNull RunnableWithVoidPromise runnable) {
         return new QPromiseTaskBuilderVoid0Arg0(0, null, runnable);
     }
     
@@ -9196,11 +7314,11 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid0Arg0 extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid0Arg0(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise runnable) {
+        QPromiseTaskBuilderVoid0Arg0(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise runnable) {
             super(newPriority, threadPool);
             this.runnable = runnable;
         }
-        private final RunnableWithVoidPromise runnable;
+        private final QtFuture.RunnableWithVoidPromise runnable;
         
         /**
          * {@inheritDoc}
@@ -9228,14 +7346,14 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable);
         }
         
-        private native static @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority, @StrictNonNull RunnableWithVoidPromise runnable);
+        private native static QFuture<Void> spawn(QThreadPool threadPool, int priority, QtFuture.RunnableWithVoidPromise runnable);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A> QPromiseTaskBuilderVoid1Arg0<A> task(@StrictNonNull RunnableWithVoidPromise1<A> runnable) {
+    public static <A> QPromiseTaskBuilderVoid1Arg0<A> task(QtFuture.@StrictNonNull RunnableWithVoidPromise1<A> runnable) {
         return new QPromiseTaskBuilderVoid1Arg0<>(0, null, runnable);
     }
     
@@ -9245,9 +7363,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid1Arg0<A> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final RunnableWithVoidPromise1<A> runnable;
+        private final QtFuture.RunnableWithVoidPromise1<A> runnable;
         
-        QPromiseTaskBuilderVoid1Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise1<A> runnable) {
+        QPromiseTaskBuilderVoid1Arg0(int priority, QThreadPool threadPool, QtFuture.@StrictNonNull RunnableWithVoidPromise1<A> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -9284,12 +7402,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid1Arg1<A> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid1Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise1<A> runnable, A a) {
+        QPromiseTaskBuilderVoid1Arg1(int newPriority, QThreadPool threadPool, QtFuture.@StrictNonNull RunnableWithVoidPromise1<A> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithVoidPromise1<A> runnable;
+        private final QtFuture.RunnableWithVoidPromise1<A> runnable;
         private final A a;
         
         /**
@@ -9318,15 +7436,15 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a);
         }
         
-        private native static <A> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithVoidPromise1<A> runnable, A a);
+        private native static <A> QFuture<Void> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithVoidPromise1<A> runnable, A a);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A, B> QPromiseTaskBuilderVoid2Arg0<A, B> task(@StrictNonNull RunnableWithVoidPromise2<A, B> runnable) {
+    public static <A, B> QPromiseTaskBuilderVoid2Arg0<A, B> task(QtFuture.@StrictNonNull RunnableWithVoidPromise2<A, B> runnable) {
         return new QPromiseTaskBuilderVoid2Arg0<>(0, null, runnable);
     }
     
@@ -9336,9 +7454,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid2Arg0<A, B> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final RunnableWithVoidPromise2<A, B> runnable;
+        private final QtFuture.RunnableWithVoidPromise2<A, B> runnable;
         
-        QPromiseTaskBuilderVoid2Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise2<A, B> runnable) {
+        QPromiseTaskBuilderVoid2Arg0(int priority, QThreadPool threadPool, QtFuture.@StrictNonNull RunnableWithVoidPromise2<A, B> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -9382,12 +7500,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid2Arg1<A, B> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid2Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise2<A, B> runnable, A a) {
+        QPromiseTaskBuilderVoid2Arg1(int newPriority, QThreadPool threadPool, QtFuture.@StrictNonNull RunnableWithVoidPromise2<A, B> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithVoidPromise2<A, B> runnable;
+        private final QtFuture.RunnableWithVoidPromise2<A, B> runnable;
         private final A a;
         
         /**
@@ -9422,13 +7540,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid2Arg2<A, B> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid2Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise2<A, B> runnable, A a, B b) {
+        QPromiseTaskBuilderVoid2Arg2(int newPriority, QThreadPool threadPool, QtFuture.@StrictNonNull RunnableWithVoidPromise2<A, B> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final RunnableWithVoidPromise2<A, B> runnable;
+        private final QtFuture.RunnableWithVoidPromise2<A, B> runnable;
         private final A a;
         private final B b;
         
@@ -9458,15 +7576,15 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b);
         }
         
-        private native static <A, B> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithVoidPromise2<A, B> runnable, A a, B b);
+        private native static <A, B> QFuture<Void> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithVoidPromise2<A, B> runnable, A a, B b);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A, B, C> QPromiseTaskBuilderVoid3Arg0<A, B, C> task(@StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable) {
+    public static <A, B, C> QPromiseTaskBuilderVoid3Arg0<A, B, C> task(QtFuture.@StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable) {
         return new QPromiseTaskBuilderVoid3Arg0<>(0, null, runnable);
     }
     
@@ -9476,9 +7594,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid3Arg0<A, B, C> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final RunnableWithVoidPromise3<A, B, C> runnable;
+        private final QtFuture.RunnableWithVoidPromise3<A, B, C> runnable;
         
-        QPromiseTaskBuilderVoid3Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable) {
+        QPromiseTaskBuilderVoid3Arg0(int priority, QThreadPool threadPool, QtFuture.@StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -9529,12 +7647,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid3Arg1<A, B, C> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid3Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable, A a) {
+        QPromiseTaskBuilderVoid3Arg1(int newPriority, QThreadPool threadPool, QtFuture.@StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithVoidPromise3<A, B, C> runnable;
+        private final QtFuture.RunnableWithVoidPromise3<A, B, C> runnable;
         private final A a;
         
         /**
@@ -9576,13 +7694,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid3Arg2<A, B, C> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid3Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable, A a, B b) {
+        QPromiseTaskBuilderVoid3Arg2(int newPriority, QThreadPool threadPool, QtFuture.@StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final RunnableWithVoidPromise3<A, B, C> runnable;
+        private final QtFuture.RunnableWithVoidPromise3<A, B, C> runnable;
         private final A a;
         private final B b;
         
@@ -9618,14 +7736,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid3Arg3<A, B, C> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid3Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable, A a, B b, C c) {
+        QPromiseTaskBuilderVoid3Arg3(int newPriority, QThreadPool threadPool, QtFuture.@StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final RunnableWithVoidPromise3<A, B, C> runnable;
+        private final QtFuture.RunnableWithVoidPromise3<A, B, C> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -9656,15 +7774,15 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c);
         }
         
-        private native static <A, B, C> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithVoidPromise3<A, B, C> runnable, A a, B b, C c);
+        private native static <A, B, C> QFuture<Void> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithVoidPromise3<A, B, C> runnable, A a, B b, C c);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A, B, C, D> QPromiseTaskBuilderVoid4Arg0<A, B, C, D> task(@StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable) {
+    public static <A, B, C, D> QPromiseTaskBuilderVoid4Arg0<A, B, C, D> task(QtFuture.@StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable) {
         return new QPromiseTaskBuilderVoid4Arg0<>(0, null, runnable);
     }
     
@@ -9674,9 +7792,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid4Arg0<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final RunnableWithVoidPromise4<A, B, C, D> runnable;
+        private final QtFuture.RunnableWithVoidPromise4<A, B, C, D> runnable;
         
-        QPromiseTaskBuilderVoid4Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable) {
+        QPromiseTaskBuilderVoid4Arg0(int priority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise4<A, B, C, D> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -9734,12 +7852,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid4Arg1<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid4Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable, A a) {
+        QPromiseTaskBuilderVoid4Arg1(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise4<A, B, C, D> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithVoidPromise4<A, B, C, D> runnable;
+        private final QtFuture.RunnableWithVoidPromise4<A, B, C, D> runnable;
         private final A a;
         
         /**
@@ -9788,13 +7906,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid4Arg2<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid4Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b) {
+        QPromiseTaskBuilderVoid4Arg2(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final RunnableWithVoidPromise4<A, B, C, D> runnable;
+        private final QtFuture.RunnableWithVoidPromise4<A, B, C, D> runnable;
         private final A a;
         private final B b;
         
@@ -9837,14 +7955,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid4Arg3<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid4Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c) {
+        QPromiseTaskBuilderVoid4Arg3(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final RunnableWithVoidPromise4<A, B, C, D> runnable;
+        private final QtFuture.RunnableWithVoidPromise4<A, B, C, D> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -9881,7 +7999,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid4Arg4<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid4Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c, D d) {
+        QPromiseTaskBuilderVoid4Arg4(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -9889,7 +8007,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final RunnableWithVoidPromise4<A, B, C, D> runnable;
+        private final QtFuture.RunnableWithVoidPromise4<A, B, C, D> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -9921,15 +8039,15 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c, d);
         }
         
-        private native static <A, B, C, D> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c, D d);
+        private native static <A, B, C, D> QFuture<Void> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c, D d);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A, B, C, D, E> QPromiseTaskBuilderVoid5Arg0<A, B, C, D, E> task(@StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable) {
+    public static <A, B, C, D, E> QPromiseTaskBuilderVoid5Arg0<A, B, C, D, E> task(QtFuture.@StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable) {
         return new QPromiseTaskBuilderVoid5Arg0<>(0, null, runnable);
     }
     
@@ -9939,9 +8057,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid5Arg0<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final RunnableWithVoidPromise5<A, B, C, D, E> runnable;
+        private final QtFuture.RunnableWithVoidPromise5<A, B, C, D, E> runnable;
         
-        QPromiseTaskBuilderVoid5Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable) {
+        QPromiseTaskBuilderVoid5Arg0(int priority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise5<A, B, C, D, E> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -10006,12 +8124,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid5Arg1<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid5Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a) {
+        QPromiseTaskBuilderVoid5Arg1(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithVoidPromise5<A, B, C, D, E> runnable;
+        private final QtFuture.RunnableWithVoidPromise5<A, B, C, D, E> runnable;
         private final A a;
         
         /**
@@ -10067,13 +8185,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid5Arg2<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid5Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b) {
+        QPromiseTaskBuilderVoid5Arg2(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final RunnableWithVoidPromise5<A, B, C, D, E> runnable;
+        private final QtFuture.RunnableWithVoidPromise5<A, B, C, D, E> runnable;
         private final A a;
         private final B b;
         
@@ -10123,14 +8241,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid5Arg3<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid5Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c) {
+        QPromiseTaskBuilderVoid5Arg3(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final RunnableWithVoidPromise5<A, B, C, D, E> runnable;
+        private final QtFuture.RunnableWithVoidPromise5<A, B, C, D, E> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -10174,7 +8292,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid5Arg4<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid5Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c, D d) {
+        QPromiseTaskBuilderVoid5Arg4(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -10182,7 +8300,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final RunnableWithVoidPromise5<A, B, C, D, E> runnable;
+        private final QtFuture.RunnableWithVoidPromise5<A, B, C, D, E> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -10220,7 +8338,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid5Arg5<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid5Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
+        QPromiseTaskBuilderVoid5Arg5(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -10229,7 +8347,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final RunnableWithVoidPromise5<A, B, C, D, E> runnable;
+        private final QtFuture.RunnableWithVoidPromise5<A, B, C, D, E> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -10262,15 +8380,15 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c, d, e);
         }
         
-        private native static <A, B, C, D, E> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e);
+        private native static <A, B, C, D, E> QFuture<Void> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A, B, C, D, E, F> QPromiseTaskBuilderVoid6Arg0<A, B, C, D, E, F> task(@StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable) {
+    public static <A, B, C, D, E, F> QPromiseTaskBuilderVoid6Arg0<A, B, C, D, E, F> task(QtFuture.@StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable) {
         return new QPromiseTaskBuilderVoid6Arg0<>(0, null, runnable);
     }
     
@@ -10280,9 +8398,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid6Arg0<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final RunnableWithVoidPromise6<A, B, C, D, E, F> runnable;
+        private final QtFuture.RunnableWithVoidPromise6<A, B, C, D, E, F> runnable;
         
-        QPromiseTaskBuilderVoid6Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable) {
+        QPromiseTaskBuilderVoid6Arg0(int priority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise6<A, B, C, D, E, F> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -10354,12 +8472,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid6Arg1<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid6Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a) {
+        QPromiseTaskBuilderVoid6Arg1(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithVoidPromise6<A, B, C, D, E, F> runnable;
+        private final QtFuture.RunnableWithVoidPromise6<A, B, C, D, E, F> runnable;
         private final A a;
         
         /**
@@ -10422,13 +8540,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid6Arg2<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid6Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b) {
+        QPromiseTaskBuilderVoid6Arg2(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final RunnableWithVoidPromise6<A, B, C, D, E, F> runnable;
+        private final QtFuture.RunnableWithVoidPromise6<A, B, C, D, E, F> runnable;
         private final A a;
         private final B b;
         
@@ -10485,14 +8603,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid6Arg3<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid6Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c) {
+        QPromiseTaskBuilderVoid6Arg3(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final RunnableWithVoidPromise6<A, B, C, D, E, F> runnable;
+        private final QtFuture.RunnableWithVoidPromise6<A, B, C, D, E, F> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -10543,7 +8661,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid6Arg4<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid6Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d) {
+        QPromiseTaskBuilderVoid6Arg4(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -10551,7 +8669,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final RunnableWithVoidPromise6<A, B, C, D, E, F> runnable;
+        private final QtFuture.RunnableWithVoidPromise6<A, B, C, D, E, F> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -10596,7 +8714,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid6Arg5<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid6Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e) {
+        QPromiseTaskBuilderVoid6Arg5(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -10605,7 +8723,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final RunnableWithVoidPromise6<A, B, C, D, E, F> runnable;
+        private final QtFuture.RunnableWithVoidPromise6<A, B, C, D, E, F> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -10644,7 +8762,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid6Arg6<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid6Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f) {
+        QPromiseTaskBuilderVoid6Arg6(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -10654,7 +8772,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.e = e;
             this.f = f;
         }
-        private final RunnableWithVoidPromise6<A, B, C, D, E, F> runnable;
+        private final QtFuture.RunnableWithVoidPromise6<A, B, C, D, E, F> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -10688,15 +8806,15 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f);
         }
         
-        private native static <A, B, C, D, E, F> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f);
+        private native static <A, B, C, D, E, F> QFuture<Void> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A, B, C, D, E, F, G> QPromiseTaskBuilderVoid7Arg0<A, B, C, D, E, F, G> task(@StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable) {
+    public static <A, B, C, D, E, F, G> QPromiseTaskBuilderVoid7Arg0<A, B, C, D, E, F, G> task(QtFuture.@StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable) {
         return new QPromiseTaskBuilderVoid7Arg0<>(0, null, runnable);
     }
     
@@ -10706,9 +8824,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid7Arg0<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable;
+        private final QtFuture.RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable;
         
-        QPromiseTaskBuilderVoid7Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable) {
+        QPromiseTaskBuilderVoid7Arg0(int priority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -10787,12 +8905,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid7Arg1<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid7Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a) {
+        QPromiseTaskBuilderVoid7Arg1(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable;
+        private final QtFuture.RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable;
         private final A a;
         
         /**
@@ -10862,13 +8980,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid7Arg2<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid7Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b) {
+        QPromiseTaskBuilderVoid7Arg2(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable;
+        private final QtFuture.RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         
@@ -10932,14 +9050,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid7Arg3<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid7Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c) {
+        QPromiseTaskBuilderVoid7Arg3(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable;
+        private final QtFuture.RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -10997,7 +9115,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid7Arg4<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid7Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d) {
+        QPromiseTaskBuilderVoid7Arg4(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -11005,7 +9123,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable;
+        private final QtFuture.RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -11057,7 +9175,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid7Arg5<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid7Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e) {
+        QPromiseTaskBuilderVoid7Arg5(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -11066,7 +9184,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable;
+        private final QtFuture.RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -11112,7 +9230,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid7Arg6<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid7Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f) {
+        QPromiseTaskBuilderVoid7Arg6(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -11122,7 +9240,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.e = e;
             this.f = f;
         }
-        private final RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable;
+        private final QtFuture.RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -11162,7 +9280,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid7Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g) {
+        QPromiseTaskBuilderVoid7Arg7(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -11173,7 +9291,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.f = f;
             this.g = g;
         }
-        private final RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable;
+        private final QtFuture.RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -11208,15 +9326,15 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f, g);
         }
         
-        private native static <A, B, C, D, E, F, G> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g);
+        private native static <A, B, C, D, E, F, G> QFuture<Void> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A, B, C, D, E, F, G, H> QPromiseTaskBuilderVoid8Arg0<A, B, C, D, E, F, G, H> task(@StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable) {
+    public static <A, B, C, D, E, F, G, H> QPromiseTaskBuilderVoid8Arg0<A, B, C, D, E, F, G, H> task(QtFuture.@StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable) {
         return new QPromiseTaskBuilderVoid8Arg0<>(0, null, runnable);
     }
     
@@ -11226,9 +9344,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid8Arg0<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
         
-        QPromiseTaskBuilderVoid8Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable) {
+        QPromiseTaskBuilderVoid8Arg0(int priority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -11314,12 +9432,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid8Arg1<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid8Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a) {
+        QPromiseTaskBuilderVoid8Arg1(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
         private final A a;
         
         /**
@@ -11396,13 +9514,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid8Arg2<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid8Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b) {
+        QPromiseTaskBuilderVoid8Arg2(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         
@@ -11473,14 +9591,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid8Arg3<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid8Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c) {
+        QPromiseTaskBuilderVoid8Arg3(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -11545,7 +9663,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid8Arg4<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid8Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d) {
+        QPromiseTaskBuilderVoid8Arg4(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -11553,7 +9671,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -11612,7 +9730,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid8Arg5<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid8Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e) {
+        QPromiseTaskBuilderVoid8Arg5(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -11621,7 +9739,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -11674,7 +9792,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid8Arg6<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid8Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f) {
+        QPromiseTaskBuilderVoid8Arg6(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -11684,7 +9802,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.e = e;
             this.f = f;
         }
-        private final RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -11731,7 +9849,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid8Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g) {
+        QPromiseTaskBuilderVoid8Arg7(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -11742,7 +9860,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.f = f;
             this.g = g;
         }
-        private final RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -11783,7 +9901,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid8Arg8(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
+        QPromiseTaskBuilderVoid8Arg8(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -11795,7 +9913,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.g = g;
             this.h = h;
         }
-        private final RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -11831,15 +9949,15 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f, g, h);
         }
         
-        private native static <A, B, C, D, E, F, G, H> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
+        private native static <A, B, C, D, E, F, G, H> QFuture<Void> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <A, B, C, D, E, F, G, H, I> QPromiseTaskBuilderVoid9Arg0<A, B, C, D, E, F, G, H, I> task(@StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable) {
+    public static <A, B, C, D, E, F, G, H, I> QPromiseTaskBuilderVoid9Arg0<A, B, C, D, E, F, G, H, I> task(QtFuture.@StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable) {
         return new QPromiseTaskBuilderVoid9Arg0<>(0, null, runnable);
     }
     
@@ -11849,9 +9967,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid9Arg0<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        private final RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
         
-        QPromiseTaskBuilderVoid9Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable) {
+        QPromiseTaskBuilderVoid9Arg0(int priority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -11944,12 +10062,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid9Arg1<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid9Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a) {
+        QPromiseTaskBuilderVoid9Arg1(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         
         /**
@@ -12033,13 +10151,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid9Arg2<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid9Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b) {
+        QPromiseTaskBuilderVoid9Arg2(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         
@@ -12117,14 +10235,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid9Arg3<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid9Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c) {
+        QPromiseTaskBuilderVoid9Arg3(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -12196,7 +10314,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid9Arg4<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid9Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d) {
+        QPromiseTaskBuilderVoid9Arg4(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -12204,7 +10322,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -12270,7 +10388,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid9Arg5<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid9Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e) {
+        QPromiseTaskBuilderVoid9Arg5(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -12279,7 +10397,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -12339,7 +10457,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid9Arg6<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid9Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f) {
+        QPromiseTaskBuilderVoid9Arg6(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -12349,7 +10467,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.e = e;
             this.f = f;
         }
-        private final RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -12403,7 +10521,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid9Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g) {
+        QPromiseTaskBuilderVoid9Arg7(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -12414,7 +10532,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.f = f;
             this.g = g;
         }
-        private final RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -12462,7 +10580,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid9Arg8(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
+        QPromiseTaskBuilderVoid9Arg8(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -12474,7 +10592,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.g = g;
             this.h = h;
         }
-        private final RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -12516,7 +10634,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QPromiseTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
-        QPromiseTaskBuilderVoid9Arg9(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
+        QPromiseTaskBuilderVoid9Arg9(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -12529,7 +10647,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.h = h;
             this.i = i;
         }
-        private final RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -12565,15 +10683,15 @@ class QtConcurrent___ extends QtConcurrent {
             super.onThreadPool(newThreadPool);
             return this;
         }
-        private native static <A, B, C, D, E, F, G, H, I> @NonNull QFuture<@QtPrimitiveType Void> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
+        private native static <A, B, C, D, E, F, G, H, I> QFuture<Void> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T> QTypedPromiseTaskBuilder0Arg0<T> task(@StrictNonNull RunnableWithPromise<T> callable) {
+    public static <T> QTypedPromiseTaskBuilder0Arg0<T> task(QtFuture.@StrictNonNull RunnableWithPromise<T> callable) {
         return new QTypedPromiseTaskBuilder0Arg0<>(0, null, callable);
     }
     
@@ -12583,11 +10701,11 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder0Arg0<T> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder0Arg0(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise<T> runnable) {
+        QTypedPromiseTaskBuilder0Arg0(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise<T> runnable) {
             super(newPriority, threadPool);
             this.runnable = runnable;
         }
-        private final RunnableWithPromise<T> runnable;
+        private final QtFuture.RunnableWithPromise<T> runnable;
         
         /**
          * {@inheritDoc}
@@ -12615,14 +10733,14 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable);
         }
         
-        private native static <T> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority, @StrictNonNull RunnableWithPromise<T> runnable);
+        private native static <T> QFuture<T> spawn(QThreadPool threadPool, int priority, QtFuture.RunnableWithPromise<T> runnable);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A> QTypedPromiseTaskBuilder1Arg0<T, A> task(@StrictNonNull RunnableWithPromise1<T, A> runnable) {
+    public static <T, A> QTypedPromiseTaskBuilder1Arg0<T, A> task(QtFuture.@StrictNonNull RunnableWithPromise1<T, A> runnable) {
         return new QTypedPromiseTaskBuilder1Arg0<>(0, null, runnable);
     }
     
@@ -12632,9 +10750,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder1Arg0<T, A> extends QTaskBuilder<T>{
-        private final RunnableWithPromise1<T, A> runnable;
+        private final QtFuture.RunnableWithPromise1<T, A> runnable;
         
-        QTypedPromiseTaskBuilder1Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise1<T, A> runnable) {
+        QTypedPromiseTaskBuilder1Arg0(int priority, QThreadPool threadPool, QtFuture.RunnableWithPromise1<T, A> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -12671,12 +10789,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder1Arg1<T, A> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder1Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise1<T, A> runnable, A a) {
+        QTypedPromiseTaskBuilder1Arg1(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise1<T, A> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithPromise1<T, A> runnable;
+        private final QtFuture.RunnableWithPromise1<T, A> runnable;
         private final A a;
         
         /**
@@ -12705,15 +10823,15 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a);
         }
         
-        private native static <T, A> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithPromise1<T, A> runnable, A a);
+        private native static <T, A> QFuture<T> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithPromise1<T, A> runnable, A a);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A, B> QTypedPromiseTaskBuilder2Arg0<T, A, B> task(@StrictNonNull RunnableWithPromise2<T, A, B> runnable) {
+    public static <T, A, B> QTypedPromiseTaskBuilder2Arg0<T, A, B> task(QtFuture.@StrictNonNull RunnableWithPromise2<T, A, B> runnable) {
         return new QTypedPromiseTaskBuilder2Arg0<>(0, null, runnable);
     }
     
@@ -12723,9 +10841,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder2Arg0<T, A, B> extends QTaskBuilder<T>{
-        private final RunnableWithPromise2<T, A, B> runnable;
+        private final QtFuture.RunnableWithPromise2<T, A, B> runnable;
         
-        QTypedPromiseTaskBuilder2Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise2<T, A, B> runnable) {
+        QTypedPromiseTaskBuilder2Arg0(int priority, QThreadPool threadPool, QtFuture.RunnableWithPromise2<T, A, B> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -12769,12 +10887,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder2Arg1<T, A, B> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder2Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise2<T, A, B> runnable, A a) {
+        QTypedPromiseTaskBuilder2Arg1(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise2<T, A, B> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithPromise2<T, A, B> runnable;
+        private final QtFuture.RunnableWithPromise2<T, A, B> runnable;
         private final A a;
         
         /**
@@ -12809,13 +10927,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder2Arg2<T, A, B> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder2Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise2<T, A, B> runnable, A a, B b) {
+        QTypedPromiseTaskBuilder2Arg2(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise2<T, A, B> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final RunnableWithPromise2<T, A, B> runnable;
+        private final QtFuture.RunnableWithPromise2<T, A, B> runnable;
         private final A a;
         private final B b;
         
@@ -12845,15 +10963,15 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b);
         }
         
-        private native static <T, A, B> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithPromise2<T, A, B> runnable, A a, B b);
+        private native static <T, A, B> QFuture<T> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithPromise2<T, A, B> runnable, A a, B b);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A, B, C> QTypedPromiseTaskBuilder3Arg0<T, A, B, C> task(@StrictNonNull RunnableWithPromise3<T, A, B, C> runnable) {
+    public static <T, A, B, C> QTypedPromiseTaskBuilder3Arg0<T, A, B, C> task(QtFuture.@StrictNonNull RunnableWithPromise3<T, A, B, C> runnable) {
         return new QTypedPromiseTaskBuilder3Arg0<>(0, null, runnable);
     }
     
@@ -12863,9 +10981,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder3Arg0<T, A, B, C> extends QTaskBuilder<T>{
-        private final RunnableWithPromise3<T, A, B, C> runnable;
+        private final QtFuture.RunnableWithPromise3<T, A, B, C> runnable;
         
-        QTypedPromiseTaskBuilder3Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise3<T, A, B, C> runnable) {
+        QTypedPromiseTaskBuilder3Arg0(int priority, QThreadPool threadPool, QtFuture.RunnableWithPromise3<T, A, B, C> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -12916,12 +11034,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder3Arg1<T, A, B, C> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder3Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise3<T, A, B, C> runnable, A a) {
+        QTypedPromiseTaskBuilder3Arg1(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise3<T, A, B, C> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithPromise3<T, A, B, C> runnable;
+        private final QtFuture.RunnableWithPromise3<T, A, B, C> runnable;
         private final A a;
         
         /**
@@ -12963,13 +11081,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder3Arg2<T, A, B, C> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder3Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise3<T, A, B, C> runnable, A a, B b) {
+        QTypedPromiseTaskBuilder3Arg2(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise3<T, A, B, C> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final RunnableWithPromise3<T, A, B, C> runnable;
+        private final QtFuture.RunnableWithPromise3<T, A, B, C> runnable;
         private final A a;
         private final B b;
         
@@ -13005,14 +11123,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder3Arg3<T, A, B, C> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder3Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise3<T, A, B, C> runnable, A a, B b, C c) {
+        QTypedPromiseTaskBuilder3Arg3(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise3<T, A, B, C> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final RunnableWithPromise3<T, A, B, C> runnable;
+        private final QtFuture.RunnableWithPromise3<T, A, B, C> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -13043,15 +11161,15 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c);
         }
         
-        private native static <T, A, B, C> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithPromise3<T, A, B, C> runnable, A a, B b, C c);
+        private native static <T, A, B, C> QFuture<T> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithPromise3<T, A, B, C> runnable, A a, B b, C c);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A, B, C, D> QTypedPromiseTaskBuilder4Arg0<T, A, B, C, D> task(@StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable) {
+    public static <T, A, B, C, D> QTypedPromiseTaskBuilder4Arg0<T, A, B, C, D> task(QtFuture.@StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable) {
         return new QTypedPromiseTaskBuilder4Arg0<>(0, null, runnable);
     }
     
@@ -13061,9 +11179,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder4Arg0<T, A, B, C, D> extends QTaskBuilder<T>{
-        private final RunnableWithPromise4<T, A, B, C, D> runnable;
+        private final QtFuture.RunnableWithPromise4<T, A, B, C, D> runnable;
         
-        QTypedPromiseTaskBuilder4Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable) {
+        QTypedPromiseTaskBuilder4Arg0(int priority, QThreadPool threadPool, QtFuture.RunnableWithPromise4<T, A, B, C, D> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -13121,12 +11239,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder4Arg1<T, A, B, C, D> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder4Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable, A a) {
+        QTypedPromiseTaskBuilder4Arg1(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise4<T, A, B, C, D> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithPromise4<T, A, B, C, D> runnable;
+        private final QtFuture.RunnableWithPromise4<T, A, B, C, D> runnable;
         private final A a;
         
         /**
@@ -13175,13 +11293,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder4Arg2<T, A, B, C, D> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder4Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b) {
+        QTypedPromiseTaskBuilder4Arg2(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final RunnableWithPromise4<T, A, B, C, D> runnable;
+        private final QtFuture.RunnableWithPromise4<T, A, B, C, D> runnable;
         private final A a;
         private final B b;
         
@@ -13224,14 +11342,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder4Arg3<T, A, B, C, D> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder4Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b, C c) {
+        QTypedPromiseTaskBuilder4Arg3(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final RunnableWithPromise4<T, A, B, C, D> runnable;
+        private final QtFuture.RunnableWithPromise4<T, A, B, C, D> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -13268,7 +11386,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder4Arg4<T, A, B, C, D> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder4Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b, C c, D d) {
+        QTypedPromiseTaskBuilder4Arg4(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -13276,7 +11394,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final RunnableWithPromise4<T, A, B, C, D> runnable;
+        private final QtFuture.RunnableWithPromise4<T, A, B, C, D> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -13308,15 +11426,15 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c, d);
         }
         
-        private native static <T, A, B, C, D> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b, C c, D d);
+        private native static <T, A, B, C, D> QFuture<T> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b, C c, D d);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A, B, C, D, E> QTypedPromiseTaskBuilder5Arg0<T, A, B, C, D, E> task(@StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable) {
+    public static <T, A, B, C, D, E> QTypedPromiseTaskBuilder5Arg0<T, A, B, C, D, E> task(QtFuture.@StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable) {
         return new QTypedPromiseTaskBuilder5Arg0<>(0, null, runnable);
     }
     
@@ -13326,9 +11444,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder5Arg0<T, A, B, C, D, E> extends QTaskBuilder<T>{
-        private final RunnableWithPromise5<T, A, B, C, D, E> runnable;
+        private final QtFuture.RunnableWithPromise5<T, A, B, C, D, E> runnable;
         
-        QTypedPromiseTaskBuilder5Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable) {
+        QTypedPromiseTaskBuilder5Arg0(int priority, QThreadPool threadPool, QtFuture.RunnableWithPromise5<T, A, B, C, D, E> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -13393,12 +11511,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder5Arg1<T, A, B, C, D, E> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder5Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable, A a) {
+        QTypedPromiseTaskBuilder5Arg1(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise5<T, A, B, C, D, E> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithPromise5<T, A, B, C, D, E> runnable;
+        private final QtFuture.RunnableWithPromise5<T, A, B, C, D, E> runnable;
         private final A a;
         
         /**
@@ -13454,13 +11572,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder5Arg2<T, A, B, C, D, E> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder5Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b) {
+        QTypedPromiseTaskBuilder5Arg2(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final RunnableWithPromise5<T, A, B, C, D, E> runnable;
+        private final QtFuture.RunnableWithPromise5<T, A, B, C, D, E> runnable;
         private final A a;
         private final B b;
         
@@ -13510,14 +11628,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder5Arg3<T, A, B, C, D, E> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder5Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c) {
+        QTypedPromiseTaskBuilder5Arg3(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final RunnableWithPromise5<T, A, B, C, D, E> runnable;
+        private final QtFuture.RunnableWithPromise5<T, A, B, C, D, E> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -13561,7 +11679,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder5Arg4<T, A, B, C, D, E> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder5Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c, D d) {
+        QTypedPromiseTaskBuilder5Arg4(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -13569,7 +11687,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final RunnableWithPromise5<T, A, B, C, D, E> runnable;
+        private final QtFuture.RunnableWithPromise5<T, A, B, C, D, E> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -13607,7 +11725,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder5Arg5<T, A, B, C, D, E> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder5Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
+        QTypedPromiseTaskBuilder5Arg5(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -13616,7 +11734,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final RunnableWithPromise5<T, A, B, C, D, E> runnable;
+        private final QtFuture.RunnableWithPromise5<T, A, B, C, D, E> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -13649,15 +11767,15 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c, d, e);
         }
         
-        private native static <T, A, B, C, D, E> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c, D d, E e);
+        private native static <T, A, B, C, D, E> QFuture<T> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c, D d, E e);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A, B, C, D, E, F> QTypedPromiseTaskBuilder6Arg0<T, A, B, C, D, E, F> task(@StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable) {
+    public static <T, A, B, C, D, E, F> QTypedPromiseTaskBuilder6Arg0<T, A, B, C, D, E, F> task(QtFuture.@StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable) {
         return new QTypedPromiseTaskBuilder6Arg0<>(0, null, runnable);
     }
     
@@ -13667,9 +11785,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder6Arg0<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
-        private final RunnableWithPromise6<T, A, B, C, D, E, F> runnable;
+        private final QtFuture.RunnableWithPromise6<T, A, B, C, D, E, F> runnable;
         
-        QTypedPromiseTaskBuilder6Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable) {
+        QTypedPromiseTaskBuilder6Arg0(int priority, QThreadPool threadPool, QtFuture.RunnableWithPromise6<T, A, B, C, D, E, F> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -13741,12 +11859,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder6Arg1<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder6Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a) {
+        QTypedPromiseTaskBuilder6Arg1(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithPromise6<T, A, B, C, D, E, F> runnable;
+        private final QtFuture.RunnableWithPromise6<T, A, B, C, D, E, F> runnable;
         private final A a;
         
         /**
@@ -13809,13 +11927,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder6Arg2<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder6Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b) {
+        QTypedPromiseTaskBuilder6Arg2(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final RunnableWithPromise6<T, A, B, C, D, E, F> runnable;
+        private final QtFuture.RunnableWithPromise6<T, A, B, C, D, E, F> runnable;
         private final A a;
         private final B b;
         
@@ -13872,14 +11990,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder6Arg3<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder6Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c) {
+        QTypedPromiseTaskBuilder6Arg3(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final RunnableWithPromise6<T, A, B, C, D, E, F> runnable;
+        private final QtFuture.RunnableWithPromise6<T, A, B, C, D, E, F> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -13930,7 +12048,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder6Arg4<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder6Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d) {
+        QTypedPromiseTaskBuilder6Arg4(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -13938,7 +12056,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final RunnableWithPromise6<T, A, B, C, D, E, F> runnable;
+        private final QtFuture.RunnableWithPromise6<T, A, B, C, D, E, F> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -13983,7 +12101,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder6Arg5<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder6Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e) {
+        QTypedPromiseTaskBuilder6Arg5(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -13992,7 +12110,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final RunnableWithPromise6<T, A, B, C, D, E, F> runnable;
+        private final QtFuture.RunnableWithPromise6<T, A, B, C, D, E, F> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -14031,7 +12149,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder6Arg6<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder6Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f) {
+        QTypedPromiseTaskBuilder6Arg6(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -14041,7 +12159,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.e = e;
             this.f = f;
         }
-        private final RunnableWithPromise6<T, A, B, C, D, E, F> runnable;
+        private final QtFuture.RunnableWithPromise6<T, A, B, C, D, E, F> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -14075,15 +12193,15 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f);
         }
         
-        private native static <T, A, B, C, D, E, F> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f);
+        private native static <T, A, B, C, D, E, F> QFuture<T> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A, B, C, D, E, F, G> QTypedPromiseTaskBuilder7Arg0<T, A, B, C, D, E, F, G> task(@StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable) {
+    public static <T, A, B, C, D, E, F, G> QTypedPromiseTaskBuilder7Arg0<T, A, B, C, D, E, F, G> task(QtFuture.@StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable) {
         return new QTypedPromiseTaskBuilder7Arg0<>(0, null, runnable);
     }
     
@@ -14093,9 +12211,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder7Arg0<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
-        private final RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable;
+        private final QtFuture.RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable;
         
-        QTypedPromiseTaskBuilder7Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable) {
+        QTypedPromiseTaskBuilder7Arg0(int priority, QThreadPool threadPool, QtFuture.RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -14174,12 +12292,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder7Arg1<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder7Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a) {
+        QTypedPromiseTaskBuilder7Arg1(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable;
+        private final QtFuture.RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable;
         private final A a;
         
         /**
@@ -14249,13 +12367,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder7Arg2<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder7Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b) {
+        QTypedPromiseTaskBuilder7Arg2(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable;
+        private final QtFuture.RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         
@@ -14319,14 +12437,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder7Arg3<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder7Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c) {
+        QTypedPromiseTaskBuilder7Arg3(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable;
+        private final QtFuture.RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -14384,7 +12502,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder7Arg4<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder7Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d) {
+        QTypedPromiseTaskBuilder7Arg4(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -14392,7 +12510,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable;
+        private final QtFuture.RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -14444,7 +12562,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder7Arg5<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder7Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e) {
+        QTypedPromiseTaskBuilder7Arg5(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -14453,7 +12571,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable;
+        private final QtFuture.RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -14499,7 +12617,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder7Arg6<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder7Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f) {
+        QTypedPromiseTaskBuilder7Arg6(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -14509,7 +12627,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.e = e;
             this.f = f;
         }
-        private final RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable;
+        private final QtFuture.RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -14549,7 +12667,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder7Arg7<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder7Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g) {
+        QTypedPromiseTaskBuilder7Arg7(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -14560,7 +12678,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.f = f;
             this.g = g;
         }
-        private final RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable;
+        private final QtFuture.RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -14595,15 +12713,15 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f, g);
         }
         
-        private native static <T, A, B, C, D, E, F, G> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g);
+        private native static <T, A, B, C, D, E, F, G> QFuture<T> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A, B, C, D, E, F, G, H> QTypedPromiseTaskBuilder8Arg0<T, A, B, C, D, E, F, G, H> task(@StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable) {
+    public static <T, A, B, C, D, E, F, G, H> QTypedPromiseTaskBuilder8Arg0<T, A, B, C, D, E, F, G, H> task(QtFuture.@StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable) {
         return new QTypedPromiseTaskBuilder8Arg0<>(0, null, runnable);
     }
     
@@ -14613,9 +12731,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder8Arg0<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        private final RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
         
-        QTypedPromiseTaskBuilder8Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable) {
+        QTypedPromiseTaskBuilder8Arg0(int priority, QThreadPool threadPool, QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -14701,12 +12819,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder8Arg1<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder8Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a) {
+        QTypedPromiseTaskBuilder8Arg1(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
         private final A a;
         
         /**
@@ -14783,13 +12901,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder8Arg2<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder8Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b) {
+        QTypedPromiseTaskBuilder8Arg2(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         
@@ -14860,14 +12978,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder8Arg3<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder8Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c) {
+        QTypedPromiseTaskBuilder8Arg3(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -14932,7 +13050,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder8Arg4<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder8Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d) {
+        QTypedPromiseTaskBuilder8Arg4(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -14940,7 +13058,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -14999,7 +13117,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder8Arg5<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder8Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e) {
+        QTypedPromiseTaskBuilder8Arg5(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -15008,7 +13126,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -15061,7 +13179,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder8Arg6<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder8Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f) {
+        QTypedPromiseTaskBuilder8Arg6(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -15071,7 +13189,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.e = e;
             this.f = f;
         }
-        private final RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -15118,7 +13236,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder8Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g) {
+        QTypedPromiseTaskBuilder8Arg7(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -15129,7 +13247,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.f = f;
             this.g = g;
         }
-        private final RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -15170,7 +13288,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder8Arg8(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
+        QTypedPromiseTaskBuilder8Arg8(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -15182,7 +13300,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.g = g;
             this.h = h;
         }
-        private final RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
+        private final QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -15218,15 +13336,15 @@ class QtConcurrent___ extends QtConcurrent {
             return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f, g, h);
         }
         
-        private native static <T, A, B, C, D, E, F, G, H> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
+        private native static <T, A, B, C, D, E, F, G, H> QFuture<T> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
     }
     
     /**
      * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      * @return {@link QTaskBuilder}
      */
-    public static <T, A, B, C, D, E, F, G, H, I> QTypedPromiseTaskBuilder9Arg0<T, A, B, C, D, E, F, G, H, I> task(@StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable) {
+    public static <T, A, B, C, D, E, F, G, H, I> QTypedPromiseTaskBuilder9Arg0<T, A, B, C, D, E, F, G, H, I> task(QtFuture.@StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable) {
         return new QTypedPromiseTaskBuilder9Arg0<>(0, null, runnable);
     }
     
@@ -15236,9 +13354,9 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder9Arg0<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        private final RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
         
-        QTypedPromiseTaskBuilder9Arg0(int priority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable) {
+        QTypedPromiseTaskBuilder9Arg0(int priority, QThreadPool threadPool, QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable) {
             super(priority, threadPool);
             this.runnable = runnable;
         }
@@ -15331,12 +13449,12 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder9Arg1<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder9Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a) {
+        QTypedPromiseTaskBuilder9Arg1(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
         }
-        private final RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         
         /**
@@ -15420,13 +13538,13 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder9Arg2<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder9Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b) {
+        QTypedPromiseTaskBuilder9Arg2(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
         }
-        private final RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         
@@ -15504,14 +13622,14 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder9Arg3<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder9Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c) {
+        QTypedPromiseTaskBuilder9Arg3(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
             this.b = b;
             this.c = c;
         }
-        private final RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -15583,7 +13701,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder9Arg4<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder9Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d) {
+        QTypedPromiseTaskBuilder9Arg4(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -15591,7 +13709,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.c = c;
             this.d = d;
         }
-        private final RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -15657,7 +13775,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder9Arg5<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder9Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e) {
+        QTypedPromiseTaskBuilder9Arg5(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -15666,7 +13784,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.d = d;
             this.e = e;
         }
-        private final RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -15726,7 +13844,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder9Arg6<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder9Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f) {
+        QTypedPromiseTaskBuilder9Arg6(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -15736,7 +13854,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.e = e;
             this.f = f;
         }
-        private final RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -15790,7 +13908,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder9Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g) {
+        QTypedPromiseTaskBuilder9Arg7(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -15801,7 +13919,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.f = f;
             this.g = g;
         }
-        private final RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -15849,7 +13967,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder9Arg8(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
+        QTypedPromiseTaskBuilder9Arg8(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -15861,7 +13979,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.g = g;
             this.h = h;
         }
-        private final RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -15903,7 +14021,7 @@ class QtConcurrent___ extends QtConcurrent {
      * @hidden
      */
     public static final class QTypedPromiseTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
-        QTypedPromiseTaskBuilder9Arg9(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
+        QTypedPromiseTaskBuilder9Arg9(int newPriority, QThreadPool threadPool, QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
             super(newPriority, threadPool);
             this.runnable = runnable;
             this.a = a;
@@ -15916,7 +14034,7 @@ class QtConcurrent___ extends QtConcurrent {
             this.h = h;
             this.i = i;
         }
-        private final RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
+        private final QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
         private final A a;
         private final B b;
         private final C c;
@@ -15952,8 +14070,8 @@ class QtConcurrent___ extends QtConcurrent {
             super.onThreadPool(newThreadPool);
             return this;
         }
-        private native static <T, A, B, C, D, E, F, G, H, I> @NonNull QFuture<T> spawn(@Nullable QThreadPool threadPool, int priority,
-                RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
+        private native static <T, A, B, C, D, E, F, G, H, I> QFuture<T> spawn(QThreadPool threadPool, int priority,
+                QtFuture.RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
     }
 }// class
 
@@ -16513,11 +14631,11 @@ class QtConcurrent_DISMISS__ extends QtConcurrent {
     
     static final class FilteredReducedKernel<T,U> extends IterateKernel<T,U>{
         private U reducedResult;
-        private final FilteredFunctor<T> keep;
+        private final KeepFunctor<T> keep;
         private final ReduceFunctor<U,T> reduce;
         private final ReduceKernel<U,T> reducer;
 
-        FilteredReducedKernel(@Nullable QThreadPool pool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> keep, @StrictNonNull ReduceFunctor<U, T> reduce, @NonNull ReduceOptions options) {
+        FilteredReducedKernel(@Nullable QThreadPool pool, Collection<T> sequence, @StrictNonNull KeepFunctor<T> keep, @StrictNonNull ReduceFunctor<U, T> reduce, @NonNull ReduceOptions options) {
             super(pool, sequence);
             this.keep = keep;
             this.reduce = reduce;
@@ -16569,9 +14687,9 @@ class QtConcurrent_DISMISS__ extends QtConcurrent {
     }
     
     static final class FilteredEachKernel<T> extends IterateKernel<T,T>{
-        private final FilteredFunctor<T> keep;
+        private final KeepFunctor<T> keep;
 
-        FilteredEachKernel(@Nullable QThreadPool pool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> keep) {
+        FilteredEachKernel(@Nullable QThreadPool pool, Collection<T> sequence, @StrictNonNull KeepFunctor<T> keep) {
             super(pool, sequence);
             this.keep = keep;
         }
@@ -16612,11 +14730,11 @@ class QtConcurrent_DISMISS__ extends QtConcurrent {
     static final class FilterKernel<T> extends IterateKernel<T,Void>{
         private final Collection<T> sequence;
         private Collection<T> reducedResult = new ArrayList<>();
-        private final FilteredFunctor<T> keep;
+        private final KeepFunctor<T> keep;
         private final ReduceFunctor<Collection<T>,T> reduce;
         private final ReduceKernel<Collection<T>,T> reducer;
 
-        FilterKernel(@Nullable QThreadPool pool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> keep, @StrictNonNull ReduceFunctor<Collection<T>, T> reduce, @NonNull ReduceOptions options) {
+        FilterKernel(@Nullable QThreadPool pool, Collection<T> sequence, @StrictNonNull KeepFunctor<T> keep, @StrictNonNull ReduceFunctor<Collection<T>, T> reduce, @NonNull ReduceOptions options) {
             super(pool, sequence);
             this.sequence = sequence;
             this.keep = keep;
@@ -16707,7 +14825,7 @@ class QtConcurrent_DISMISS__ extends QtConcurrent {
      * Note that while filterFunction is called concurrently, only one thread at a time will call reduceFunction. The order in which reduceFunction is called is undefined if reduceOptions is QtConcurrent::UnorderedReduce. If reduceOptions is QtConcurrent::OrderedReduce, reduceFunction is called in the order of the original sequence.
      */
     @QtUninvokable
-    public static <U, T> @NonNull ThreadEngineStarter<U> startFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
+    public static <U, T> @NonNull ThreadEngineStarter<U> startFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull KeepFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
         return startFilteredReduced(threadPool, sequence, filteredFunctor, reduceFunctor, new ReduceOptions(options));
     }
     
@@ -16717,7 +14835,7 @@ class QtConcurrent_DISMISS__ extends QtConcurrent {
      * Note that while filterFunction is called concurrently, only one thread at a time will call reduceFunction. The order in which reduceFunction is called is undefined if reduceOptions is QtConcurrent::UnorderedReduce. If reduceOptions is QtConcurrent::OrderedReduce, reduceFunction is called in the order of the original sequence.
      */
     @QtUninvokable
-    public static <U, T> @NonNull ThreadEngineStarter<U> startFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOptions options) {
+    public static <U, T> @NonNull ThreadEngineStarter<U> startFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull KeepFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOptions options) {
         return new ThreadEngineStarter<>(new FilteredReducedKernel<>(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected."), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), options));
     }
     
@@ -16725,7 +14843,7 @@ class QtConcurrent_DISMISS__ extends QtConcurrent {
      * Calls filterFunctor's filter() method once for each item in sequence and returns a new Sequence of kept items. If filterFunction returns true, a copy of the item is put in the new Sequence. Otherwise, the item will not appear in the new Sequence.
      */
     @QtUninvokable
-    public static <T> @NonNull ThreadEngineStarter<T> startFiltered(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
+    public static <T> @NonNull ThreadEngineStarter<T> startFiltered(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull KeepFunctor<T> filteredFunctor){
         return new ThreadEngineStarter<>(new FilteredEachKernel<>(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected."), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected.")));
     }
     
@@ -16733,7 +14851,7 @@ class QtConcurrent_DISMISS__ extends QtConcurrent {
      * Calls filterFunctor's filter() method once for each item in sequence and returns a new Sequence of kept items. If filterFunction returns true, a copy of the item is put in the new Sequence. Otherwise, the item will not appear in the new Sequence.
      */
     @QtUninvokable
-    static <T> @NonNull ThreadEngineStarter<@QtPrimitiveType Void> filterInternal(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<Collection<T>, T> reduceFunctor){
+    static <T> @NonNull ThreadEngineStarter<@QtPrimitiveType Void> filterInternal(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull KeepFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<Collection<T>, T> reduceFunctor){
         return new ThreadEngineStarter<>(new FilterKernel<>(Objects.requireNonNull(threadPool, "Argument 'threadPool': null not expected."), Objects.requireNonNull(sequence, "Argument 'sequence': null not expected."), Objects.requireNonNull(filteredFunctor, "Argument 'filteredFunctor': null not expected."), Objects.requireNonNull(reduceFunctor, "Argument 'reduceFunctor': null not expected."), new ReduceOptions()));
     }
     

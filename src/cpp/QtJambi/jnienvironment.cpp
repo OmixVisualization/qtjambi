@@ -943,19 +943,19 @@ void JniEnvironment::checkException(){
         }
     }
 }
-#define QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) env, t, methodName, fileName, lineNumber
-#define raiseThrowable QtJambiPrivate::raiseJavaException
+#define QTJAMBI_STACKTRACEINFO_DECL_RAISE(env) env, methodName, fileName, lineNumber
 #else
-#define QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) env, t
-#define raiseThrowable throw JavaException
+#define QTJAMBI_STACKTRACEINFO_DECL_RAISE(env)
 #endif
 
 void JniEnvironment::checkException(QTJAMBI_STACKTRACEINFO_DECL_NOENV){
     if(Q_UNLIKELY(m_env && m_env->ExceptionCheck())){
         jthrowable t = m_env->ExceptionOccurred();
         m_env->ExceptionClear();
-        if(t)
-            raiseThrowable( QTJAMBI_STACKTRACEINFO_DECL_USE(m_env, t) );
+        if(t){
+            JavaException jexn(m_env, t);
+            jexn.raise(QTJAMBI_STACKTRACEINFO_DECL_RAISE(m_env));
+        }
     }
 }
 

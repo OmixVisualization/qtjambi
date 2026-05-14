@@ -36,15 +36,11 @@
 #include <typeinfo>
 
 #include <QtCore/QObject>
+#include "qtjambiapi_construct.h"
 
 class AbstractContainerAccess;
 class QtJambiShellImpl;
 enum class QtJambiNativeID : jlong;
-
-namespace QtJambiAPI{
-enum ConstructorOptions : uchar;
-typedef void (*ConstructorFn)(void*, JNIEnv*, jobject, jvalue*, QtJambiAPI::ConstructorOptions);
-}
 
 class QTJAMBI_EXPORT QtJambiShell{
 public:
@@ -103,6 +99,12 @@ public:
                            AbstractContainerAccess* containerAccess,
                            PtrDeleterFunction delete_function, PtrOwnerFunction ownerFunction,
                            jvalue* arguments = nullptr, QtJambiNativeID owner = QtJambiNativeID(0));
+
+    static bool javaObjectHasShell(JNIEnv *env, jobject object);
+
+    static bool javaInterfaceHasShell(JNIEnv *env, jobject object);
+
+    static bool isShell(QtJambiNativeID nativeId);
 private:
     QtJambiShell();
     virtual ~QtJambiShell();

@@ -408,7 +408,7 @@ public:
                                                                     LINK_NAME_ARG(const char* qt_name)
                                                                     SafeBool created_by_java, SafeBool is_shell,
                                                                     PtrDeleterFunction destructor_function,
-                                                                    const QObject* extension, QtJambiLink::Ownership ownership);
+                                                                    QPointer<const QObject>&& extension, QtJambiLink::Ownership ownership);
     static QSharedPointer<QtJambiLink> createLinkForDependentObject(JNIEnv *env, jobject java, void *ptr, const QMetaType& metaType,
                                                                            SafeBool created_by_java, SafeBool is_shell, const QObject* dependsOn, QtJambiLink::Ownership ownership);
     static QSharedPointer<QtJambiLink> createLinkForDependentObject(JNIEnv *env, jobject java, void *ptr, const QMetaType& metaType,
@@ -728,24 +728,24 @@ public:
     static QSharedPointer<QtJambiLink> createExtendedLinkForSmartPointerToObject(JNIEnv *env, jobject java,
                                                                                         LINK_NAME_ARG(const char* qt_name)
                                                                                         SafeBool created_by_java, SafeBool is_shell,
-                                                                                        const QObject* extension,
+                                                                                        QPointer<const QObject>&& extension,
                                                                                         PtrOwnerFunction ownerFunction,
                                                                                         const QSharedPointer<char>& smartPointer);
     static QSharedPointer<QtJambiLink> createExtendedLinkForSmartPointerToObject(JNIEnv *env, jobject java,
                                                                                  LINK_NAME_ARG(const char* qt_name)
                                                                                  SafeBool created_by_java, SafeBool is_shell,
-                                                                                 const QObject* extension,
+                                                                                 QPointer<const QObject>&& extension,
                                                                                  const QSharedPointer<char>& smartPointer);
     static QSharedPointer<QtJambiLink> createExtendedLinkForSmartPointerToObject(JNIEnv *env, jobject java,
                                                                                         LINK_NAME_ARG(const char* qt_name)
                                                                                         SafeBool created_by_java, SafeBool is_shell,
-                                                                                        const QObject* extension,
+                                                                                        QPointer<const QObject>&& extension,
                                                                                         PtrOwnerFunction ownerFunction,
                                                                                         const std::shared_ptr<char>& smartPointer);
     static QSharedPointer<QtJambiLink> createExtendedLinkForSmartPointerToObject(JNIEnv *env, jobject java,
                                                                                  LINK_NAME_ARG(const char* qt_name)
                                                                                  SafeBool created_by_java, SafeBool is_shell,
-                                                                                 const QObject* extension,
+                                                                                 QPointer<const QObject>&& extension,
                                                                                  const std::shared_ptr<char>& smartPointer);
     static QSharedPointer<QtJambiLink> createLinkForNativeQObject(JNIEnv *env, jobject& java, QObject *object, SafeBool isQThread);
     static QSharedPointer<QtJambiLink> createLinkForNativeQObject(JNIEnv *env, jobject& java, QObject *object){
@@ -901,14 +901,14 @@ private:
     static QSharedPointer<QtJambiLink> createExtendedLinkForSmartPointerToObject(JNIEnv *env, jobject java,
                                                                                         LINK_NAME_ARG(const char* qt_name)
                                                                                         SafeBool created_by_java, SafeBool is_shell,
-                                                                                        const QObject* extension,
+                                                                                        QPointer<const QObject>&& extension,
                                                                                         PtrOwnerFunction ownerFunction,
                                                                                         const SmartPointer<char>& smartPointer);
     template<template<typename> class SmartPointer>
     static QSharedPointer<QtJambiLink> createExtendedLinkForSmartPointerToObject(JNIEnv *env, jobject java,
                                                                                  LINK_NAME_ARG(const char* qt_name)
                                                                                  SafeBool created_by_java, SafeBool is_shell,
-                                                                                 const QObject* extension,
+                                                                                 QPointer<const QObject>&& extension,
                                                                                  const SmartPointer<char>& smartPointer);
     template<template<typename> class SmartPointer>
     static QSharedPointer<QtJambiLink> createLinkForNewSmartPointerToObject(JNIEnv *env, jobject java,

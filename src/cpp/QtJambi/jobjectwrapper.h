@@ -36,8 +36,8 @@
 #include <QtCore/QStringList>
 #include <QtCore/QDebug>
 #include <typeinfo>
+#include "typetests.h"
 #include "jnienvironment.h"
-#include "qtjambi_cast_impl_util.h"
 
 class JObjectWrapperData;
 
@@ -118,10 +118,28 @@ public:
 
     template<typename T>
     operator T() const{
-        if constexpr(std::is_same<T,bool>::value)
+        if constexpr(std::is_same_v<T,bool>)
             return !isNull();
-        else
+        else if constexpr(std::is_same_v<T,jstring>
+                           || std::is_same_v<T,jclass>
+                           || std::is_same_v<T,jthrowable>
+                           || std::is_same_v<T,jarray>
+                           || std::is_same_v<T,jobjectArray>
+                           || std::is_same_v<T,jintArray>
+                           || std::is_same_v<T,jshortArray>
+                           || std::is_same_v<T,jbyteArray>
+                           || std::is_same_v<T,jbooleanArray>
+                           || std::is_same_v<T,jcharArray>
+                           || std::is_same_v<T,jfloatArray>
+                           || std::is_same_v<T,jdoubleArray>
+                           || std::is_same_v<T,jlongArray>)
             return static_cast<T>(operator jobject());
+        else{
+            if(JniEnvironment env{128}){
+                return qtjambi_cast<T>(env, object(env));
+            }
+            return T{};
+        }
     }
 
     void clear(JNIEnv *env);
@@ -410,7 +428,7 @@ template<typename ArrayType> class JArrayWrapper;
 
 template<typename ArrayType>
 class JArrayAccessRef{
-    typedef typename QtJambiPrivate::jni_type<ArrayType>::ElementType ElementType;
+    typedef QtJambiPrivate::jni_array_element_type_t<ArrayType> ElementType;
 public:
     JArrayAccessRef& operator=(ElementType newValue){
         if(m_array){
@@ -447,7 +465,7 @@ private:
 template<typename ArrayType>
 class QTJAMBI_EXPORT JArrayWrapper: public JObjectWrapper
 {
-    typedef typename QtJambiPrivate::jni_type<ArrayType>::ElementType ElementType;
+    typedef QtJambiPrivate::jni_array_element_type_t<ArrayType> ElementType;
 public:
     JArrayWrapper();
     JArrayWrapper(JNIEnv *env, ArrayType obj, bool globalRefs = true);
@@ -484,6 +502,15 @@ public:
     using JObjectWrapper::compareEqual;
     using JObjectWrapper::compareLess;
 };
+
+extern template class JArrayWrapper<jintArray>;
+extern template class JArrayWrapper<jlongArray>;
+extern template class JArrayWrapper<jshortArray>;
+extern template class JArrayWrapper<jbyteArray>;
+extern template class JArrayWrapper<jbooleanArray>;
+extern template class JArrayWrapper<jcharArray>;
+extern template class JArrayWrapper<jfloatArray>;
+extern template class JArrayWrapper<jdoubleArray>;
 
 typedef JArrayWrapper<jintArray> JIntArrayWrapper;
 Q_DECLARE_METATYPE(JIntArrayWrapper)
@@ -569,6 +596,61 @@ inline QDataStream &operator>>(QDataStream &in, JArrayWrapper<JType> &myObj){
 template<typename JType>
 inline QDebug operator<<(QDebug out, const JArrayWrapper<JType> &myObj){
     return out << static_cast<const JObjectWrapper &>(myObj);
+}
+
+namespace QtJambiPrivate {
+    template<bool forward,
+             typename JniType,
+             template<typename T> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
+             typename T, typename... Args>
+    struct qtjambi_jobject_template1_cast;
+
+    template<typename... Args>
+    struct cast_var_args;
+
+    template<bool is_pointer, bool is_const, bool is_reference, class Type, typename... Args>
+    struct pointer_ref_or_clone_decider;
+
+    template<bool forward,
+             typename JniType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
+             typename T, typename... Args>
+    struct qtjambi_jobject_template1_cast<forward,
+                                          JniType,
+                                          JArrayWrapper, is_pointer, is_const, is_reference, is_rvalue,
+                                          T, Args...>{
+        typedef JArrayWrapper<T> NativeType;
+        typedef std::conditional_t<is_const, std::add_const_t<NativeType>, NativeType> NativeType_c;
+        typedef std::conditional_t<is_reference, std::conditional_t<is_rvalue, std::add_rvalue_reference_t<NativeType_c>, std::add_lvalue_reference_t<NativeType_c>>, NativeType_c> NativeType_cr;
+        typedef std::conditional_t<is_pointer, std::add_pointer_t<NativeType_c>, NativeType_cr> NativeType_in;
+        typedef std::conditional_t<is_pointer, std::add_pointer_t<NativeType_c>, NativeType_cr> NativeType_out;
+        typedef std::conditional_t<forward, NativeType_in, JniType> In;
+        typedef std::conditional_t<forward, JniType, NativeType_out> Out;
+        static constexpr bool isObjectOrArray = std::is_same_v<JniType,jobject>
+                                                || std::is_same_v<JniType,jarray>
+                                                || (is_jni_array_type_v<JniType> && std::is_same_v<jni_array_element_type_t<JniType>,T>);
+
+        static Out cast(In in, Args... args){
+            auto env = cast_var_args<Args...>::env(args...);
+            if constexpr(forward){
+                Q_STATIC_ASSERT_X(isObjectOrArray, "Cannot cast this JArrayWrapper to JniType.");
+                if constexpr(is_pointer){
+                    return JniType(in->object(env));
+                }else{
+                    return JniType(in.object(env));
+                }
+            }else{
+                Q_STATIC_ASSERT_X(isObjectOrArray, "Cannot cast this JniType to JArrayWrapper.");
+                Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast to non-const JArrayWrapper& without scope");
+                if constexpr(is_pointer){
+                    if(!in)
+                        return nullptr;
+                }
+                NativeType result;
+                result.assign(env, in);
+                return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(std::move(result), args...);
+            }
+        }
+    };
 }
 
 #endif // QTJAMBI_JOBJECTWRAPPER_H

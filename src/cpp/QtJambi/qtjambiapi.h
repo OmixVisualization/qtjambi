@@ -38,75 +38,25 @@
 #include <QtCore/QMetaEnum>
 #include <QtCore/QMetaMethod>
 #include <QtCore/QMetaProperty>
-#include <functional>
 #include <typeinfo>
 
 #include "jnienvironment.h"
 #include "debugapi.h"
 #include "qtjambishell.h"
 #include "exception.h"
-#include "javaarrays.h"
-#include "javabuffers.h"
-#include "javastrings.h"
 #include "javainvalidate.h"
+#include "typetests.h"
 #include "scope.h"
+#include "qtjambiapi_nativeid.h"
+#include "qtjambiapi_ownership.h"
+#include "qtjambiapi_thread.h"
 
 QT_WARNING_DISABLE_CLANG("-Wshift-count-overflow")
 
-class QFutureInterfaceBase;
-template <typename> class QFutureInterface;
-class QFutureWatcherBase;
-class QPaintDevice;
 class QtJambiScope;
-class AbstractSequentialConstIteratorAccess;
-class AbstractAssociativeConstIteratorAccess;
-class AbstractListAccess;
-#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
-class AbstractSpanAccess;
-#endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
-
-class AbstractSetAccess;
-class AbstractHashAccess;
-class AbstractMultiHashAccess;
-class AbstractMapAccess;
-class AbstractMultiMapAccess;
-enum class QtJambiNativeID : jlong { Invalid = 0 };
-
-#define InvalidNativeID QtJambiNativeID::Invalid
-
-QTJAMBI_EXPORT bool operator !(QtJambiNativeID nativeId);
-QTJAMBI_EXPORT bool operator &&(QtJambiNativeID nativeId, QtJambiNativeID nativeId2);
-QTJAMBI_EXPORT bool operator &&(QtJambiNativeID nativeId, bool b2);
-QTJAMBI_EXPORT bool operator &&(bool b1, QtJambiNativeID nativeId);
-QTJAMBI_EXPORT bool operator ||(QtJambiNativeID nativeId, QtJambiNativeID nativeId2);
-QTJAMBI_EXPORT bool operator ||(QtJambiNativeID nativeId, bool b2);
-QTJAMBI_EXPORT bool operator ||(bool b1, QtJambiNativeID nativeId);
-
-template<typename BoolSupplier>
-typename std::enable_if<std::is_invocable_r<bool, BoolSupplier>::value, bool>::type
-operator &&(QtJambiNativeID nativeId, BoolSupplier&& b2){
-    return nativeId!=InvalidNativeID && b2();
-}
-
-template<typename BoolSupplier>
-typename std::enable_if<std::is_invocable_r<bool, BoolSupplier>::value, bool>::type
-operator ||(QtJambiNativeID nativeId, BoolSupplier&& b2){
-    return nativeId!=InvalidNativeID || b2();
-}
-
-typedef const std::type_info* (*TypeInfoSupplier)(const void *object);
 
 namespace QtJambiAPI{
-
-enum ConstructorOptions : uchar{
-    NoConstructorOption = 0,
-    HasDerivedMetaObject = 0x01,
-    HasOverrides = 0x02,
-    IsNativeConstruction = 0x04,
-    IsQmlConstruction = 0x08 | IsNativeConstruction
-};
-typedef void (*ConstructorFn)(void*, JNIEnv*, jobject, jvalue*, QtJambiAPI::ConstructorOptions);
-
+typedef const std::type_info* (*TypeInfoSupplier)(const void *object);
 void QTJAMBI_EXPORT checkNullPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId);
 void QTJAMBI_EXPORT checkNullPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId, TypeInfoSupplier typeInfoSupplier);
 void QTJAMBI_EXPORT checkDanglingPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId, TypeInfoSupplier typeInfoSupplier);
@@ -147,7 +97,7 @@ struct CheckPointer{
 };
 template<typename T>
 struct CheckPointer<T,false>{
-    static constexpr TypeInfoSupplier supplyType = nullptr;
+    static constexpr QtJambiAPI::TypeInfoSupplier supplyType = nullptr;
     static void checkNullPointer(JNIEnv *env, const T* ptr){
         QtJambiAPI::checkNullPointer(env, ptr, typeid(T));
     }
@@ -177,117 +127,6 @@ T& checkedAddressOf(JNIEnv *env, T * ptr)
     return *ptr;
 }
 
-QTJAMBI_EXPORT QByteArray typeName(const std::type_info* typeId);
-
-QTJAMBI_EXPORT QByteArray typeName(const std::type_info& typeId);
-
-QTJAMBI_EXPORT jintArray toJIntArray(JNIEnv *__jni_env, const jint* in, jsize length);
-QTJAMBI_EXPORT jshortArray toJShortArray(JNIEnv *__jni_env, const jshort* in, jsize length);
-QTJAMBI_EXPORT jbyteArray toJByteArray(JNIEnv *__jni_env, const jbyte* in, jsize length);
-QTJAMBI_EXPORT jlongArray toJLongArray(JNIEnv *__jni_env, const jlong* in, jsize length);
-QTJAMBI_EXPORT jfloatArray toJFloatArray(JNIEnv *__jni_env, const jfloat* in, jsize length);
-QTJAMBI_EXPORT jdoubleArray toJDoubleArray(JNIEnv *__jni_env, const jdouble* in, jsize length);
-QTJAMBI_EXPORT jcharArray toJCharArray(JNIEnv *__jni_env, const jchar* in, jsize length);
-QTJAMBI_EXPORT jbooleanArray toJBooleanArray(JNIEnv *__jni_env, const jboolean* in, jsize length);
-
-QTJAMBI_EXPORT bool convertJavaToNative(JNIEnv *env, jobject java_object, void * output, const std::type_info& typeId);
-QTJAMBI_EXPORT bool convertJavaToNative(JNIEnv *env, jobject java_object, void * output, QtJambiScope& scope, const std::type_info& typeId);
-
-QTJAMBI_EXPORT bool convertJavaToNative(JNIEnv *env, jobject java_object, void * output, const std::type_info& typeId, const char* typeName);
-QTJAMBI_EXPORT bool convertJavaToNative(JNIEnv *env, jobject java_object, void * output, QtJambiScope& scope, const std::type_info& typeId, const char* typeName);
-
-QTJAMBI_EXPORT bool isShell(QtJambiNativeID nativeId);
-
-QTJAMBI_EXPORT bool javaObjectHasShell(JNIEnv *env, jobject object);
-
-QTJAMBI_EXPORT bool javaInterfaceHasShell(JNIEnv *env, jobject object);
-
-QTJAMBI_EXPORT QtJambiNativeID javaObjectToNativeId(JNIEnv *env, jobject object);
-
-QTJAMBI_EXPORT QtJambiNativeID javaInterfaceToNativeId(JNIEnv *env, jobject object);
-
-QTJAMBI_EXPORT void *fromNativeId(QtJambiNativeID nativeId);
-
-QTJAMBI_EXPORT void *fromNativeId(QtJambiNativeID nativeId, const std::type_info& typeId);
-
-template<typename T, typename = void>
-struct is_complete : std::false_type {};
-
-template<typename T>
-struct is_complete<T, std::void_t<decltype(sizeof(T))>> : std::true_type {};
-
-template<typename T>
-T *objectFromNativeId(QtJambiNativeID nativeId)
-{
-    if constexpr(is_complete<T>::value){
-        return reinterpret_cast<T*>(fromNativeId(nativeId, typeid(T)));
-    }else{
-        return reinterpret_cast<T*>(fromNativeId(nativeId));
-    }
-}
-
-template<typename T>
-T& objectReferenceFromNativeId(JNIEnv *env, QtJambiNativeID nativeId)
-{
-    return checkedAddressOf<T>(env, objectFromNativeId<T>(nativeId));
-}
-
-QTJAMBI_EXPORT QVariant convertJavaObjectToQVariant(JNIEnv *env, jobject java_object);
-
-QTJAMBI_EXPORT jobject convertQVariantToJavaObject(JNIEnv *env, const QVariant &qt_variant);
-
-QTJAMBI_EXPORT void convertJavaObjectToQModelRoleData(JNIEnv *env, QtJambiScope& scope, jobject java_object, void * &data, qsizetype &length);
-
-QTJAMBI_EXPORT void *convertJavaObjectToNative(JNIEnv *env, jobject java_object);
-
-template<typename T>
-T *convertJavaObjectToNative(JNIEnv *env, jobject java_object)
-{
-    return reinterpret_cast<T*>(convertJavaObjectToNative(env, java_object));
-}
-
-template<typename T>
-T& convertJavaObjectToNativeReference(JNIEnv *env, jobject java_object)
-{
-    return checkedAddressOf<T>(env, reinterpret_cast<T*>(convertJavaObjectToNative(env, java_object)));
-}
-
-QTJAMBI_EXPORT void *convertJavaInterfaceToNative(JNIEnv *env, jobject java_object, const char *interface_name, const std::type_info& typeId);
-
-QTJAMBI_EXPORT void *convertJavaInterfaceToNative(JNIEnv *env, jobject java_object, const std::type_info& typeId);
-
-template<typename T>
-T *convertJavaInterfaceToNative(JNIEnv *env, jobject java_object)
-{
-    return reinterpret_cast<T*>(convertJavaInterfaceToNative(env, java_object, typeid(T)));
-}
-
-template<typename T>
-T& convertJavaInterfaceToNativeReference(JNIEnv *env, jobject java_object)
-{
-    return checkedAddressOf<T>(env, convertJavaInterfaceToNative<T>(env, java_object));
-}
-
-template<typename T>
-T *convertJavaInterfaceToNative(JNIEnv *env, jobject java_object, const char *interface_name)
-{
-    return reinterpret_cast<T*>(convertJavaInterfaceToNative(env, java_object, interface_name, typeid(T)));
-}
-
-template<typename T>
-T& convertJavaInterfaceToNativeReference(JNIEnv *env, jobject java_object, const char *interface_name)
-{
-    return checkedAddressOf<T>(env, convertJavaInterfaceToNative<T>(env, java_object, interface_name));
-}
-
-QTJAMBI_EXPORT QObject *convertJavaObjectToQObject(JNIEnv *env, jobject java_object);
-
-template<typename T>
-T *convertJavaObjectToQObject(JNIEnv *env, jobject java_object)
-{
-    return dynamic_cast<T*>(convertJavaObjectToQObject(env, java_object));
-}
-
 QTJAMBI_EXPORT bool enumValue(JNIEnv *env, jobject java_object, void* ptr, size_t size);
 
 template<typename I = int>
@@ -297,135 +136,6 @@ I enumValue(JNIEnv *env, jobject object){
     return i;
 }
 
-QTJAMBI_EXPORT jstring toJavaString(JNIEnv *env, jobject object);
-
-QTJAMBI_EXPORT QSharedPointer<QObject> convertJavaObjectToQSharedPointer(JNIEnv *env, jobject java_object);
-
-QTJAMBI_EXPORT QSharedPointer<char> convertJavaObjectToQSharedPointer(JNIEnv *env,
-                                                                             const std::type_info* typeId,
-                                                                             jobject java_object);
-
-QTJAMBI_EXPORT QWeakPointer<QObject> convertJavaObjectToQWeakPointer(JNIEnv *env, jobject java_object);
-
-QTJAMBI_EXPORT QWeakPointer<char> convertJavaObjectToQWeakPointer(JNIEnv *env,
-                                                                      const std::type_info* typeId,
-                                                                      jobject java_object);
-
-QTJAMBI_EXPORT std::shared_ptr<QObject> convertJavaObjectToSharedPtr(JNIEnv *env, jobject java_object);
-
-QTJAMBI_EXPORT std::shared_ptr<char> convertJavaObjectToSharedPtr(JNIEnv *env,
-                                                                          const std::type_info* typeId,
-                                                                          jobject java_object);
-
-QTJAMBI_EXPORT std::weak_ptr<QObject> convertJavaObjectToWeakPtr(JNIEnv *env, jobject java_object);
-
-QTJAMBI_EXPORT std::weak_ptr<char> convertJavaObjectToWeakPtr(JNIEnv *env,
-                                                                  const std::type_info* typeId,
-                                                                  jobject java_object);
-
-QTJAMBI_EXPORT jobject convertSmartPointerToJavaObject(JNIEnv *env,
-                                                       const std::type_info& typeId,
-                                                       const QSharedPointer<QObject>& smartPointer);
-QTJAMBI_EXPORT jobject convertSmartPointerToJavaObject(JNIEnv *env,
-                                                       const std::type_info& typeId,
-                                                       const QSharedPointer<char>& smartPointer);
-QTJAMBI_EXPORT jobject convertSmartPointerToJavaObject(JNIEnv *env,
-                                                       const std::type_info& typeId,
-                                                       const std::shared_ptr<QObject>& smartPointer);
-QTJAMBI_EXPORT jobject convertSmartPointerToJavaObject(JNIEnv *env,
-                                                       const std::type_info& typeId,
-                                                       const std::shared_ptr<char>& smartPointer);
-
-}//namespace QtJambiAPI
-
-namespace QtJambiPrivate{
-
-template<template<typename> class SmartPointer, typename T, bool = std::is_base_of<QObject,T>::value>
-struct JavaObjectToNativeAsSmartPointerConverter{
-};
-
-template<typename T>
-struct JavaObjectToNativeAsSmartPointerConverter<QSharedPointer,T,false>{
-    static QSharedPointer<T> convert(JNIEnv *env,
-                                     jobject java_object){
-        QSharedPointer<char> sp = QtJambiAPI::convertJavaObjectToQSharedPointer(env, &typeid(T), java_object);
-        char* _ptr = sp.get();
-        return QtSharedPointer::copyAndSetPointer(reinterpret_cast<T*>(_ptr), sp);
-    }
-    static QSharedPointer<char> convertSmartPointer(const QSharedPointer<T>& sp){
-        T* _ptr = sp.get();
-        return QtSharedPointer::copyAndSetPointer(reinterpret_cast<char*>(_ptr), sp);
-    }
-};
-
-template<typename T>
-struct JavaObjectToNativeAsSmartPointerConverter<std::shared_ptr,T,false>{
-    static std::shared_ptr<T> convert(JNIEnv *env,
-                                      jobject java_object){
-        std::shared_ptr<char> sp = QtJambiAPI::convertJavaObjectToSharedPtr(env, &typeid(T), java_object);
-        char* _ptr = sp.get();
-        return std::shared_ptr<T>(sp, reinterpret_cast<T*>(_ptr));
-    }
-    static std::shared_ptr<char> convertSmartPointer(const std::shared_ptr<T>& sp){
-        T* _ptr = sp.get();
-        return std::shared_ptr<char>(sp, reinterpret_cast<char*>(_ptr));
-    }
-};
-
-template<typename T>
-struct JavaObjectToNativeAsSmartPointerConverter<QSharedPointer,T,true>{
-    static QSharedPointer<T> convert(JNIEnv *env,
-                                     jobject java_object){
-        QSharedPointer<QObject> sp = QtJambiAPI::convertJavaObjectToQSharedPointer(env, java_object);
-#if defined(Q_OS_ANDROID) || defined(Q_OS_FREEBSD)
-        return sp.objectCast<T>();
-#else
-        return sp.dynamicCast<T>();
-#endif
-    }
-    static QSharedPointer<QObject> convertSmartPointer(const QSharedPointer<T>& sp){
-        return sp.template staticCast<QObject>();
-    }
-};
-
-template<typename T>
-struct JavaObjectToNativeAsSmartPointerConverter<std::shared_ptr,T,true>{
-    static std::shared_ptr<T> convert(JNIEnv *env,
-                                      jobject java_object){
-        std::shared_ptr<QObject> sp = QtJambiAPI::convertJavaObjectToSharedPtr(env, java_object);
-#if defined(Q_OS_ANDROID) || defined(Q_OS_FREEBSD)
-        return std::static_pointer_cast<T>(sp);
-#else
-        return std::dynamic_pointer_cast<T>(sp);
-#endif
-    }
-    static std::shared_ptr<QObject> convertSmartPointer(const std::shared_ptr<T>& sp){
-        return std::static_pointer_cast<QObject>(sp);
-    }
-};
-
-template<>
-struct JavaObjectToNativeAsSmartPointerConverter<std::shared_ptr,QObject,true>{
-    static std::shared_ptr<QObject> convert(JNIEnv *env,
-                                            jobject java_object){
-        return QtJambiAPI::convertJavaObjectToSharedPtr(env, java_object);
-    }
-    static const std::shared_ptr<QObject>& convertSmartPointer(const std::shared_ptr<QObject>& sp){
-        return sp;
-    }
-};
-
-template<>
-struct JavaObjectToNativeAsSmartPointerConverter<QSharedPointer,QObject,true>{
-    static QSharedPointer<QObject> convert(JNIEnv *env,
-                                           jobject java_object){
-        return QtJambiAPI::convertJavaObjectToQSharedPointer(env, java_object);
-    }
-    static const QSharedPointer<QObject>& convertSmartPointer(const QSharedPointer<QObject>& sp){
-        return sp;
-    }
-};
-
 typedef const void* (*DefaultValueCreator)();
 QTJAMBI_EXPORT const void* getDefaultValue(const std::type_info& type_info, DefaultValueCreator creator);
 
@@ -434,185 +144,6 @@ const T& getDefaultValue(){
     return *reinterpret_cast<const T*>(getDefaultValue(typeid(T), []()->const void*{return new T();}));
 }
 
-}//namespace QtJambiPrivate
-
-namespace QtJambiAPI{
-
-template<template<typename> class SmartPointer, typename T>
-SmartPointer<T> convertJavaObjectToSmartPointer(JNIEnv *env, jobject java_object){
-    auto out = QtJambiPrivate::JavaObjectToNativeAsSmartPointerConverter<SmartPointer,T>::convert(env, java_object);
-    return SmartPointer<T>(*reinterpret_cast<const SmartPointer<T>*>(&out));
-}
-
-template<template<typename> class SmartPointer, typename O>
-inline jobject convertSmartPointerToJavaObject(JNIEnv *env, const SmartPointer<O> & smartPointer){
-    return convertSmartPointerToJavaObject(env,
-                typeid(O),
-                QtJambiPrivate::JavaObjectToNativeAsSmartPointerConverter<SmartPointer,O>::convertSmartPointer(smartPointer));
-}
-
-QTJAMBI_EXPORT void setQQmlListPropertyElementType(JNIEnv *env, jobject list, jobject elementType);
-
-QTJAMBI_EXPORT jobject convertQStringToJavaObject(JNIEnv *env, const QString &strg);
-
-QTJAMBI_EXPORT jobject convertQStringToJavaObject(JNIEnv *env, QString &&strg);
-
-QTJAMBI_EXPORT jobject convertQStringToJavaObject(JNIEnv *env, QString *strg);
-
-QTJAMBI_EXPORT jobject convertQStringToJavaObjectAndInvalidateAfterUse(JNIEnv *env, QtJambiScope& scope, QString *strg);
-
-QTJAMBI_EXPORT jobject convertQVariantToJavaVariant(JNIEnv *env, const QVariant &variant);
-
-QTJAMBI_EXPORT jobject convertQVariantToJavaVariant(JNIEnv *env, QVariant &&variant);
-
-QTJAMBI_EXPORT jobject convertQVariantToJavaVariant(JNIEnv *env, QVariant *variant);
-
-QTJAMBI_EXPORT jobject convertQVariantToJavaVariantAndInvalidateAfterUse(JNIEnv *env, QtJambiScope& scope, QVariant *variant);
-
-QTJAMBI_EXPORT jobject convertQCharToJavaObject(JNIEnv *env, const QChar &strg);
-
-QTJAMBI_EXPORT jobject convertQCharToJavaObject(JNIEnv *env, QChar *strg);
-
-QTJAMBI_EXPORT bool isQStringObject(JNIEnv *env, jobject obj);
-
-QTJAMBI_EXPORT bool isQVariantObject(JNIEnv *env, jobject obj);
-
-QTJAMBI_EXPORT bool isQCharObject(JNIEnv *env, jobject obj);
-
-QTJAMBI_EXPORT bool isQByteArrayObject(JNIEnv *env, jobject obj);
-
-QTJAMBI_EXPORT bool isQByteArrayViewObject(JNIEnv *env, jobject obj);
-
-QTJAMBI_EXPORT bool isSequentialConstIterator(JNIEnv *env, jobject obj);
-
-QTJAMBI_EXPORT bool isSequentialIterator(JNIEnv *env, jobject obj);
-
-#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
-QTJAMBI_EXPORT bool isQSpanObject(JNIEnv *env, jobject obj);
-
-QTJAMBI_EXPORT void commitQSpanObject(JNIEnv *env, jobject obj);
-
-QTJAMBI_EXPORT QPair<void*,jlong> fromQSpanObject(JNIEnv *env, jobject obj, bool isConst, const QMetaType& metaType);
-#endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
-
-QTJAMBI_EXPORT bool isJavaString(JNIEnv *env, jobject obj);
-
-QTJAMBI_EXPORT bool isJavaCharSequence(JNIEnv *env, jobject obj);
-
-QTJAMBI_EXPORT bool isJavaList(JNIEnv *env, jobject obj);
-
-QTJAMBI_EXPORT bool isJavaCollection(JNIEnv *env, jobject obj);
-
-QTJAMBI_EXPORT bool isJavaIterable(JNIEnv *env, jobject obj);
-
-QTJAMBI_EXPORT jobject convertNativeToJavaOwnedObjectAsWrapper(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *nativeTypeName = nullptr);
-
-QTJAMBI_EXPORT jobject convertNativeToJavaOwnedObjectAsWrapper(JNIEnv *env, const void *qt_object, jclass clazz);
-
-QTJAMBI_EXPORT jobject convertNativeToJavaObjectAsWrapper(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *nativeTypeName = nullptr);
-
-QTJAMBI_EXPORT jobject convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(JNIEnv *env, QtJambiScope& scope, const void *qt_object, const std::type_info& typeId, const char *nativeTypeName = nullptr);
-
-QTJAMBI_EXPORT jobject convertNativeToJavaObjectAsWrapper(JNIEnv *env, const void *qt_object, jclass clazz);
-
-QTJAMBI_EXPORT jobject convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(JNIEnv *env, QtJambiScope& scope, const void *qt_object, jclass clazz);
-
-QTJAMBI_EXPORT jobject convertNativeToJavaObjectAsCopy(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *nativeTypeName = nullptr);
-
-QTJAMBI_EXPORT jobject convertNativeToJavaObjectAsCopy(JNIEnv *env, void *qt_object, const std::type_info& typeId, const char *nativeTypeName = nullptr);
-
-QTJAMBI_EXPORT jobject convertNativeToJavaObjectAsCopy(JNIEnv *env, const void *qt_object, jclass clazz);
-
-QTJAMBI_EXPORT jobject convertModelIndexToJavaObject(JNIEnv *env, class QModelIndex&& index);
-
-QTJAMBI_EXPORT jobject convertModelIndexToJavaObject(JNIEnv *env, const class QModelIndex& index);
-
-QTJAMBI_EXPORT jobject convertModelIndexToJavaObject(JNIEnv *env, const class QModelIndex* index);
-
-QTJAMBI_EXPORT jobject convertModelIndexToEphemeralJavaObject(JNIEnv *env, QtJambiScope& scope, const class QModelIndex* index);
-
-QTJAMBI_EXPORT jobject convertModelIndexToEphemeralJavaObject(JNIEnv *env, QtJambiScope& scope, const class QModelIndex& index);
-
-QTJAMBI_EXPORT bool convertJavaToModelIndex(JNIEnv *env, jobject java_object, class QModelIndex& output);
-
-QTJAMBI_EXPORT bool convertJavaToModelIndex(JNIEnv *env, jobject java_object, class QModelIndex*& output
-#if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
-                                            , QtJambiScope& scope
-#endif
-                                            );
-
-template<typename T, size_t N>
-jobject convertNativeToJavaOwnedObjectAsWrapper(JNIEnv *env, const T *qt_object, const char (&nativeTypeName)[N])
-{
-    return convertNativeToJavaOwnedObjectAsWrapper(env, qt_object, typeid(T), nativeTypeName);
-}
-
-template<typename T, size_t N>
-jobject convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(JNIEnv *env, QtJambiScope& scope, const T *qt_object, const char (&nativeTypeName)[N])
-{
-    return convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(env, scope, qt_object, typeid(T), nativeTypeName);
-}
-
-template<typename T, size_t N>
-jobject convertNativeToJavaObjectAsWrapper(JNIEnv *env, const T *qt_object, const char (&nativeTypeName)[N])
-{
-    return convertNativeToJavaObjectAsWrapper(env, qt_object, typeid(T), nativeTypeName);
-}
-
-template<typename T, size_t N>
-jobject convertNativeToJavaObjectAsCopy(JNIEnv *env, const T *qt_object, const char (&nativeTypeName)[N])
-{
-    return convertNativeToJavaObjectAsCopy(env, qt_object, typeid(T), nativeTypeName);
-}
-
-template<typename T>
-jobject convertNativeToJavaOwnedObjectAsWrapper(JNIEnv *env, const T *qt_object)
-{
-    return convertNativeToJavaOwnedObjectAsWrapper(env, qt_object, typeid(T));
-}
-
-template<typename T>
-jobject convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(JNIEnv *env, QtJambiScope& scope, const T *qt_object)
-{
-    return convertNativeToJavaObjectAsWrapperAndInvalidateAfterUse(env, scope, qt_object, typeid(T));
-}
-
-template<typename T>
-jobject convertNativeToJavaObjectAsWrapper(JNIEnv *env, const T *qt_object)
-{
-    return convertNativeToJavaObjectAsWrapper(env, qt_object, typeid(T));
-}
-
-template<typename T>
-jobject convertNativeToJavaObjectAsCopy(JNIEnv *env, const T *qt_object)
-{
-    return convertNativeToJavaObjectAsCopy(env, qt_object, typeid(T));
-}
-
-template<typename Ret, typename... Args>
-struct FunctionType{
-    typedef Ret(*type)(Args...);
-    typedef Ret(signature)(Args...);
-};
-
-QTJAMBI_EXPORT jobject convertQObjectToJavaObject(JNIEnv *env, const QObject *qt_object, jclass clazz);
-
-QTJAMBI_EXPORT jobject convertQObjectToJavaObject(JNIEnv *env, const QObject *qt_object, const std::type_info& typeId);
-
-template<typename O>
-jobject convertQObjectToJavaObject(JNIEnv *env, const O *qt_object)
-{
-    return convertQObjectToJavaObject(env, qt_object, typeid(O));
-}
-
-template<typename E>
-jobject convertQFlagsToJavaObject(JNIEnv *env, QFlags<E> qt_flags)
-{
-    return convertNativeToJavaObjectAsCopy(env, &qt_flags, typeid(QFlags<E>));
-}
-
-QTJAMBI_EXPORT jstring convertNativeToJavaObject(JNIEnv *env, QAnyStringView s);
-
 QTJAMBI_EXPORT void setFlagsValue(JNIEnv *env, jobject flagsObject, jint value);
 #if QT_VERSION >= QT_VERSION_CHECK(6,9,0)
 QTJAMBI_EXPORT void setFlagsValue(JNIEnv *env, jobject flagsObject, jlong value);
@@ -620,66 +151,7 @@ QTJAMBI_EXPORT void setFlagsValue(JNIEnv *env, jobject flagsObject, jlong value)
 
 }//namespace QtJambiAPI
 
-namespace QNativePointer{
-    enum class Type{
-        /** Java Boolean*/ Boolean = 0,
-        /** Java Byte*/ Byte,
-        /** Java Char*/ Char,
-        /** Java Short*/ Short,
-        /** Java Int*/ Int,
-        /** Java Long*/ Long,
-        /** Java Float*/ Float,
-        /** Java Double*/ Double,
-        /** Another QNativePointer of any type*/ Pointer,
-        /** Java String*/ String
-    };
-}//namespace QNativePointer
-
 namespace QtJambiAPI{
-
-QTJAMBI_EXPORT void *convertQNativePointerToNative(JNIEnv *env, jobject java_object, int* size = nullptr, int* indirections = nullptr);
-
-QTJAMBI_EXPORT jobject convertNativeToQNativePointer(JNIEnv *env, const void *qt_pointer, QNativePointer::Type type_id, quint64 size, uint indirections);
-
-QTJAMBI_EXPORT QString getClassName(JNIEnv *env, jclass java_class);
-QTJAMBI_EXPORT QString getObjectClassName(JNIEnv *env, jobject java_object);
-QTJAMBI_EXPORT QString getClassNamePrintable(JNIEnv *env, jclass java_class);
-QTJAMBI_EXPORT QString getObjectClassNamePrintable(JNIEnv *env, jobject java_object);
-QTJAMBI_EXPORT QByteArray getClassNameJNI(JNIEnv *env, jclass java_class);
-QTJAMBI_EXPORT QByteArray getObjectClassNameJNI(JNIEnv *env, jobject java_object);
-
-QTJAMBI_EXPORT jobject toJavaIntegerObject(JNIEnv *env, jint int_value);
-QTJAMBI_EXPORT jobject toJavaDoubleObject(JNIEnv *env, jdouble double_value);
-QTJAMBI_EXPORT jobject toJavaBooleanObject(JNIEnv *env, jboolean bool_value);
-QTJAMBI_EXPORT jobject toJavaLongObject(JNIEnv *env, jlong long_value);
-QTJAMBI_EXPORT jobject toJavaShortObject(JNIEnv *env, jshort short_value);
-QTJAMBI_EXPORT jobject toJavaFloatObject(JNIEnv *env, jfloat float_value);
-QTJAMBI_EXPORT jobject toJavaByteObject(JNIEnv *env, jbyte byte_value);
-QTJAMBI_EXPORT jobject toJavaCharacterObject(JNIEnv *env, jchar char_value);
-QTJAMBI_EXPORT jobject convertDuration(JNIEnv *env, std::chrono::nanoseconds t);
-QTJAMBI_EXPORT jobject convertDuration(JNIEnv *env, std::chrono::seconds t);
-QTJAMBI_EXPORT jobject convertDuration(JNIEnv *env, std::chrono::milliseconds t);
-QTJAMBI_EXPORT std::chrono::nanoseconds convertDuration(JNIEnv *env, jobject t, std::chrono::nanoseconds defaultValue = std::chrono::nanoseconds::zero());
-QTJAMBI_EXPORT std::chrono::seconds convertDuration(JNIEnv *env, jobject t, std::chrono::seconds defaultValue = std::chrono::seconds::zero());
-QTJAMBI_EXPORT std::chrono::milliseconds convertDuration(JNIEnv *env, jobject t, std::chrono::milliseconds defaultValue = std::chrono::milliseconds::zero());
-QTJAMBI_EXPORT jobject convertTimePointFromEpoch(JNIEnv *env, std::chrono::seconds t);
-QTJAMBI_EXPORT jobject convertTimePointFromEpoch(JNIEnv *env, std::chrono::nanoseconds t);
-QTJAMBI_EXPORT jobject convertTimePointFromEpoch(JNIEnv *env, std::chrono::milliseconds t);
-QTJAMBI_EXPORT std::chrono::nanoseconds convertTimePointFromEpoch(JNIEnv *env, jobject t, std::chrono::nanoseconds defaultValue = std::chrono::nanoseconds::zero());
-QTJAMBI_EXPORT std::chrono::seconds convertTimePointFromEpoch(JNIEnv *env, jobject t, std::chrono::seconds defaultValue = std::chrono::seconds::zero());
-QTJAMBI_EXPORT std::chrono::milliseconds convertTimePointFromEpoch(JNIEnv *env, jobject t, std::chrono::milliseconds defaultValue = std::chrono::milliseconds::zero());
-QTJAMBI_EXPORT QPair<std::chrono::seconds, std::chrono::nanoseconds> readDuration(JNIEnv *env, jobject t);
-QTJAMBI_EXPORT QPair<std::chrono::seconds, std::chrono::nanoseconds> readTimePoint(JNIEnv *env, jobject t);
-
-QTJAMBI_EXPORT jdouble fromJavaDoubleObject(JNIEnv *env, jobject double_object);
-QTJAMBI_EXPORT jint fromJavaIntegerObject(JNIEnv *env, jobject int_object);
-QTJAMBI_EXPORT bool fromJavaBooleanObject(JNIEnv *env, jobject bool_object);
-QTJAMBI_EXPORT jlong fromJavaLongObject(JNIEnv *env, jobject long_object);
-QTJAMBI_EXPORT jchar fromJavaCharacterObject(JNIEnv *env, jobject char_object);
-QTJAMBI_EXPORT jfloat fromJavaFloatObject(JNIEnv *env, jobject float_object);
-QTJAMBI_EXPORT jshort fromJavaShortObject(JNIEnv *env, jobject short_object);
-QTJAMBI_EXPORT jbyte fromJavaByteObject(JNIEnv *env, jobject byte_object);
-
 QTJAMBI_EXPORT jobject newQPair(JNIEnv *env, jobject first, jobject second);
 QTJAMBI_EXPORT jobject getQPairFirst(JNIEnv *env, jobject pair);
 QTJAMBI_EXPORT jobject getQPairSecond(JNIEnv *env, jobject pair);
@@ -694,7 +166,7 @@ QTJAMBI_EXPORT void clearJavaMap(JNIEnv *env, jobject map);
 QTJAMBI_EXPORT jobject entrySetIteratorOfJavaMap(JNIEnv *env, jobject map);
 QTJAMBI_EXPORT jobject keyOfJavaMapEntry(JNIEnv *env, jobject entry);
 QTJAMBI_EXPORT jobject valueOfJavaMapEntry(JNIEnv *env, jobject entry);
-QTJAMBI_EXPORT jobject newJavaArrayList(JNIEnv *env, jint size = 0);
+QTJAMBI_EXPORT jobject newJavaArrayList(JNIEnv *env, int size = 0);
 
 QTJAMBI_EXPORT void addToJavaCollection(JNIEnv *env, jobject list, jobject obj);
 QTJAMBI_EXPORT void addAllToJavaCollection(JNIEnv *env, jobject list, jobject obj);
@@ -703,7 +175,8 @@ QTJAMBI_EXPORT int sizeOfJavaCollection(JNIEnv *env, jobject col);
 QTJAMBI_EXPORT jobject iteratorOfJavaIterable(JNIEnv *env, jobject col);
 QTJAMBI_EXPORT jobject nextOfJavaIterator(JNIEnv *env, jobject col);
 QTJAMBI_EXPORT bool hasJavaIteratorNext(JNIEnv *env, jobject col);
-QTJAMBI_EXPORT void setAtJavaList(JNIEnv *env, jobject list, jint index, jobject obj);
+QTJAMBI_EXPORT void setAtJavaList(JNIEnv *env, jobject list, int index, jobject obj);
+QTJAMBI_EXPORT jobject getAtJavaList(JNIEnv *env, jobject list, int index);
 
 QTJAMBI_EXPORT jobject findObject(JNIEnv *env, const void * pointer);
 QTJAMBI_EXPORT jobject findObject(JNIEnv *env, const void * pointer, const std::type_info& typeId);
@@ -716,29 +189,6 @@ jobject findObject(JNIEnv *env, const T* pointer){
         return findObject(env, pointer, typeid(T));
     }
 }
-QTJAMBI_EXPORT jobject findFunctionPointerObject(JNIEnv *env, const void * pointer, const std::type_info& typeId);
-
-template<typename T>
-const T& valueReferenceFromNativeId(QtJambiNativeID nativeId){
-    if(!!nativeId){
-        if(const T* value = objectFromNativeId<T>(nativeId)){
-            return *value;
-        }
-    }
-    return QtJambiPrivate::getDefaultValue<T>();
-}
-
-template<typename T>
-T valueFromNativeId(QtJambiNativeID nativeId){
-    if(!!nativeId){
-        if(const T* value = objectFromNativeId<T>(nativeId)){
-            return *value;
-        }
-    }
-    return T{};
-}
-
-bool QTJAMBI_EXPORT isValidArray(JNIEnv *env, jobject object, const std::type_info& typeId);
 
 class DeclarativeUtil{
 static QTJAMBI_EXPORT void reportDestruction(QObject * obj);
@@ -774,135 +224,11 @@ public:
 
 QTJAMBI_EXPORT void registerNonShellDeletion(void* ptr);
 
-QTJAMBI_EXPORT void setJavaOwnership(JNIEnv *env, jobject object);
-
-QTJAMBI_EXPORT void setCppOwnership(JNIEnv *env, jobject object);
-
-QTJAMBI_EXPORT bool isSplitOwnership(JNIEnv *env, jobject object);
-
-QTJAMBI_EXPORT bool isCppOwnership(JNIEnv *env, jobject object);
-
-QTJAMBI_EXPORT bool isJavaOwnership(JNIEnv *env, jobject object);
-
-QTJAMBI_EXPORT void setCppOwnershipAndInvalidate(JNIEnv *env, jobject object);
-
-QTJAMBI_EXPORT void setDefaultOwnership(JNIEnv *env, jobject object);
-
-QTJAMBI_EXPORT void setJavaOwnership(JNIEnv *env, QtJambiNativeID objectId);
-
-QTJAMBI_EXPORT void setCppOwnership(JNIEnv *env, QtJambiNativeID objectId);
-
-QTJAMBI_EXPORT void changeSplitToCppOwnership(JNIEnv *env, QtJambiNativeID objectId);
-
-QTJAMBI_EXPORT void changeSplitToCppOwnership(JNIEnv *env, jobject object);
-
-QTJAMBI_EXPORT void setCppOwnershipAndInvalidate(JNIEnv *env, QtJambiNativeID objectId);
-
-QTJAMBI_EXPORT void setDefaultOwnership(JNIEnv *env, QtJambiNativeID objectId);
-
-QTJAMBI_EXPORT bool isSplitOwnership(QtJambiNativeID objectId);
-
-QTJAMBI_EXPORT bool isCppOwnership(QtJambiNativeID objectId);
-
-QTJAMBI_EXPORT bool isJavaOwnership(QtJambiNativeID objectId);
-
-QTJAMBI_EXPORT bool isSplitOwnership(const QObject* object);
-
-QTJAMBI_EXPORT bool isCppOwnership(const QObject* object);
-
-QTJAMBI_EXPORT bool isJavaOwnership(const QObject* object);
-
-QTJAMBI_EXPORT bool isSplitOwnership(const void* object);
-
-QTJAMBI_EXPORT bool isCppOwnership(const void* object);
-
-QTJAMBI_EXPORT bool isJavaOwnership(const void* object);
-
-QTJAMBI_EXPORT void setJavaOwnershipForTopLevelObject(JNIEnv *env, QObject* qobject);
-
-QTJAMBI_EXPORT void setCppOwnershipForTopLevelObject(JNIEnv *env, QObject* qobject);
-
-QTJAMBI_EXPORT void setDefaultOwnershipForTopLevelObject(JNIEnv *env, QObject* qobject);
-
-QTJAMBI_EXPORT void registerDependency(JNIEnv *env, jobject dependentObject, QtJambiNativeID _this_nativeId);
-
-QTJAMBI_EXPORT uint getJavaObjectIdentity(JNIEnv *env, jobject object);
-
 QTJAMBI_EXPORT uint getJavaObjectHashCode(JNIEnv *env, jobject object);
-
-QTJAMBI_EXPORT jobject newJavaOptional(JNIEnv *env, bool hasValue, jobject object);
-
-QTJAMBI_EXPORT jobject newJavaOptionalInt(JNIEnv *env, bool hasValue, jint value);
-
-QTJAMBI_EXPORT jobject newJavaOptionalLong(JNIEnv *env, bool hasValue, jlong value);
-
-QTJAMBI_EXPORT jobject newJavaOptionalDouble(JNIEnv *env, bool hasValue, jdouble value);
-
-QTJAMBI_EXPORT jobject readJavaOptional(JNIEnv *env, jobject object, bool& isPresent);
-
-QTJAMBI_EXPORT jint readJavaOptionalInt(JNIEnv *env, jobject object, bool& isPresent);
-
-QTJAMBI_EXPORT jlong readJavaOptionalLong(JNIEnv *env, jobject object, bool& isPresent);
-
-QTJAMBI_EXPORT jdouble readJavaOptionalDouble(JNIEnv *env, jobject object, bool& isPresent);
-
-QTJAMBI_EXPORT void checkThread(JNIEnv *env, const QObject* object);
-
-QTJAMBI_EXPORT void checkThread(JNIEnv *env, const std::type_info& argumentType, const void* object);
-
-QTJAMBI_EXPORT void checkMainThread(JNIEnv *env, const std::type_info& typeId);
-
-QTJAMBI_EXPORT void checkThreadOnArgument(JNIEnv *env, const char* argumentName, const QObject* argument);
-
-QTJAMBI_EXPORT void checkThreadOnArgument(JNIEnv *env, const char* argumentName, const std::type_info& argumentType, const QObject* argumentOwner);
-
-QTJAMBI_EXPORT void checkThreadOnArgument(JNIEnv *env, const char* argumentName, const std::type_info& argumentType, const void* argument);
-
-QTJAMBI_EXPORT void checkMainThreadOnArgument(JNIEnv *env, const char* argumentName, const std::type_info& argumentType);
-
-QTJAMBI_EXPORT void checkMainThreadConstructing(JNIEnv *env, const std::type_info& constructedType);
-
-QTJAMBI_EXPORT void checkThreadOnParent(JNIEnv *env, const QObject* parent);
-
-QTJAMBI_EXPORT void checkThreadOnParent(JNIEnv *env, const std::type_info& parentType, const void* parent);
-
-QTJAMBI_EXPORT void checkThreadOnParent(JNIEnv *env, const std::type_info& parentType, const QObject* parentOwner);
 
 QTJAMBI_EXPORT const QObject* mainThreadOwner(const void *);
 
 QTJAMBI_EXPORT const QObject* getPixmapOwner(const void *);
-
-QTJAMBI_EXPORT void checkThreadConstructingQWindow(JNIEnv *env, const std::type_info& constructedType, const QObject* parent);
-
-QTJAMBI_EXPORT void checkThreadConstructingQPixmap(JNIEnv *env, const std::type_info& constructedType);
-
-QTJAMBI_EXPORT void checkThreadConstructingQWidget(JNIEnv *env, const std::type_info& constructedType, const QObject* parent);
-
-QTJAMBI_EXPORT void checkThreadOnArgumentQPixmap(JNIEnv *env, const char* argumentName, const std::type_info& argumentType);
-
-QTJAMBI_EXPORT void checkThreadQPixmap(JNIEnv *env, const std::type_info& typeId);
-
-typedef void(*ResultTranslator)(const QFutureInterfaceBase*, QFutureInterfaceBase*, int, int);
-
-typedef bool(*FutureInterfaceTypeTest)(const QFutureInterfaceBase*);
-
-QTJAMBI_EXPORT QFutureInterfaceBase* translateQFutureInterface(QSharedPointer<QFutureInterfaceBase>&& sourceFuture, QSharedPointer<QFutureInterfaceBase>&& targetFuture, ResultTranslator resultTranslator, ResultTranslator resultRetranslator, FutureInterfaceTypeTest futureInterfaceTypeTest);
-
-typedef void(*FutureSetter)(JNIEnv *, QFutureWatcherBase*, jobject);
-typedef jobject(*FutureResult)(JNIEnv *, QFutureWatcherBase*, int);
-typedef jobject(*FutureGetter)(JNIEnv *, QFutureWatcherBase*);
-typedef std::unique_ptr<QFutureInterfaceBase>(*FutureInterfaceGetter)(QFutureWatcherBase*);
-QTJAMBI_EXPORT jobject convertQFutureWatcherToJavaObject(JNIEnv* env, const QFutureWatcherBase* futureWatcher,
-                                                   FutureSetter futureSetter, FutureResult futureResult, FutureGetter futureGetter, FutureInterfaceGetter futureInterfaceGetter);
-
-QTJAMBI_EXPORT std::unique_ptr<QFutureInterfaceBase> getQFutureInterfaceFromQFutureWatcher(JNIEnv* env, jobject future);
-
-QTJAMBI_EXPORT QFutureInterface<void>* asVoidFutureInterface(QFutureInterfaceBase* base);
-QTJAMBI_EXPORT const QFutureInterface<void>* asVoidFutureInterface(const QFutureInterfaceBase* base);
-QTJAMBI_EXPORT QFutureInterface<QVariant>* asVariantFutureInterface(QFutureInterfaceBase* base);
-QTJAMBI_EXPORT const QFutureInterface<QVariant>* asVariantFutureInterface(const QFutureInterfaceBase* base);
-QTJAMBI_EXPORT bool isVoidFutureInterface(const QFutureInterfaceBase* base);
-QTJAMBI_EXPORT bool isVariantFutureInterface(const QFutureInterfaceBase* base);
 
 QTJAMBI_EXPORT QMetaObject::Connection connect(const QObject *sender, const char *signal,
                                 const QObject *receiver, const char *member, Qt::ConnectionType = Qt::AutoConnection);
@@ -910,185 +236,38 @@ QTJAMBI_EXPORT QMetaObject::Connection connect(const QObject *sender, const QMet
                         const QObject *receiver, const QMetaMethod &method,
                         Qt::ConnectionType type = Qt::AutoConnection);
 
-enum class ListType{
-    QList, QQueue, QStack
-};
+QTJAMBI_EXPORT void putReferenceCount(JNIEnv *__jni_env, jobject owner, jclass declaringClass, jstring fieldName, bool isThreadSafe, bool isStatic, jobject key, jobject value);
+QTJAMBI_EXPORT void setReferenceCount(JNIEnv *__jni_env, jobject owner, jclass declaringClass, jstring fieldName, bool isThreadSafe, bool isStatic, jobject value);
+QTJAMBI_EXPORT void addAllReferenceCount(JNIEnv *__jni_env, jobject owner, jclass declaringClass, jstring fieldName, bool isThreadSafe, bool isStatic, jobject values);
+QTJAMBI_EXPORT void addReferenceCount(JNIEnv *__jni_env, jobject owner, jclass declaringClass, jstring fieldName, bool isThreadSafe, bool isStatic, jobject value);
+QTJAMBI_EXPORT void copyReferenceCount(JNIEnv *__jni_env, jobject owner, jclass declaringClass, jstring fieldName, jobject copy);
 
-QTJAMBI_EXPORT jobject convertQSequentialIteratorToJavaObject(JNIEnv *env,
-                           QtJambiNativeID owner,
-                           void* iteratorPtr,
-                           PtrDeleterFunction destructor_function,
-                           AbstractSequentialConstIteratorAccess* access);
-
-#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
-QTJAMBI_EXPORT jobject convertQSpanToJavaObject(JNIEnv *env,
-                                                QtJambiNativeID owner,
-                                                AbstractSpanAccess* access,
-                                                const void* begin,
-                                                jlong size
-                                                );
-
-QTJAMBI_EXPORT jobject convertQSpanFromQListToJavaObject(JNIEnv *env,
-                                                const void* span,
-                                                CopyFunction copyFunction,
-                                                PtrDeleterFunction destructor_function,
-                                                AbstractListAccess* containerAccess, bool isConst);
-#endif
-
-QTJAMBI_EXPORT jobject convertQAssociativeIteratorToJavaObject(JNIEnv *env,
-                           QtJambiNativeID owner,
-                           void* iteratorPtr,
-                           PtrDeleterFunction destructor_function,
-                           AbstractAssociativeConstIteratorAccess* access);
-
-QTJAMBI_EXPORT jobject convertQListToJavaObject(JNIEnv *__jni_env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     CopyFunction copyFunction,
-                                     PtrDeleterFunction deleter,
-                                     ListType listType,
-                                     AbstractListAccess* listAccess
-                                );
-
-QTJAMBI_EXPORT jobject convertQListToJavaObject(JNIEnv *__jni_env,
-                                     const QSharedPointer<char>& listPtr,
-                                     ListType listType,
-                                     AbstractListAccess* listAccess
-                                );
-QTJAMBI_EXPORT jobject convertQListToJavaObject(JNIEnv *__jni_env,
-                                                const std::shared_ptr<char>& listPtr,
-                                                ListType listType,
-                                                AbstractListAccess* listAccess
-                                                );
-
-QTJAMBI_EXPORT jobject convertQStringListToJavaObject(JNIEnv *__jni_env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     CopyFunction copyFunction,
-                                     PtrDeleterFunction deleter
-                                );
-
-QTJAMBI_EXPORT jobject convertQStringListToJavaObject(JNIEnv *__jni_env,
-                                     const QSharedPointer<char>& listPtr
-                                );
-QTJAMBI_EXPORT jobject convertQStringListToJavaObject(JNIEnv *__jni_env,
-                                                      const std::shared_ptr<char>& listPtr
-                                                      );
-
-QTJAMBI_EXPORT jobject convertQSetToJavaObject(JNIEnv *__jni_env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     CopyFunction copyFunction,
-                                     PtrDeleterFunction deleter,
-                                     AbstractSetAccess* setAccess
-                                );
-
-QTJAMBI_EXPORT jobject convertQSetToJavaObject(JNIEnv *__jni_env,
-                                     const QSharedPointer<char>& listPtr,
-                                     AbstractSetAccess* setAccess
-                                );
-QTJAMBI_EXPORT jobject convertQSetToJavaObject(JNIEnv *__jni_env,
-                                               const std::shared_ptr<char>& listPtr,
-                                               AbstractSetAccess* setAccess
-                                               );
-
-QTJAMBI_EXPORT jobject convertQHashToJavaObject(JNIEnv *__jni_env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     CopyFunction copyFunction,
-                                     PtrDeleterFunction deleter,
-                                     AbstractHashAccess* hashAccess
-                                );
-
-QTJAMBI_EXPORT jobject convertQHashToJavaObject(JNIEnv *__jni_env,
-                                     const QSharedPointer<char>& listPtr,
-                                     AbstractHashAccess* hashAccess
-                                );
-QTJAMBI_EXPORT jobject convertQHashToJavaObject(JNIEnv *__jni_env,
-                                                const std::shared_ptr<char>& listPtr,
-                                                AbstractHashAccess* hashAccess
-                                                );
-
-QTJAMBI_EXPORT jobject convertQMultiHashToJavaObject(JNIEnv *__jni_env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     CopyFunction copyFunction,
-                                     PtrDeleterFunction deleter,
-                                     AbstractMultiHashAccess* multiHashAccess
-                                );
-
-QTJAMBI_EXPORT jobject convertQMultiHashToJavaObject(JNIEnv *__jni_env,
-                                     const QSharedPointer<char>& listPtr,
-                                     AbstractMultiHashAccess* multiHashAccess
-                                );
-QTJAMBI_EXPORT jobject convertQMultiHashToJavaObject(JNIEnv *__jni_env,
-                                                     const std::shared_ptr<char>& listPtr,
-                                                     AbstractMultiHashAccess* multiHashAccess
-                                                     );
-
-QTJAMBI_EXPORT jobject convertQMapToJavaObject(JNIEnv *__jni_env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     CopyFunction copyFunction,
-                                     PtrDeleterFunction deleter,
-                                     AbstractMapAccess* mapAccess
-                                );
-
-QTJAMBI_EXPORT jobject convertQMapToJavaObject(JNIEnv *__jni_env,
-                                     const QSharedPointer<char>& listPtr,
-                                     AbstractMapAccess* mapAccess
-                                );
-
-QTJAMBI_EXPORT jobject convertQMapToJavaObject(JNIEnv *__jni_env,
-                                               const std::shared_ptr<char>& listPtr,
-                                               AbstractMapAccess* mapAccess
-                                               );
-
-QTJAMBI_EXPORT jobject convertQMultiMapToJavaObject(JNIEnv *__jni_env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     CopyFunction copyFunction,
-                                     PtrDeleterFunction deleter,
-                                     AbstractMultiMapAccess* mapAccess
-                                );
-
-
-QTJAMBI_EXPORT jobject convertQMultiMapToJavaObject(JNIEnv *__jni_env,
-                                     const QSharedPointer<char>& listPtr,
-                                     AbstractMultiMapAccess* mapAccess
-                                );
-QTJAMBI_EXPORT jobject convertQMultiMapToJavaObject(JNIEnv *__jni_env,
-                                                    const std::shared_ptr<char>& listPtr,
-                                                    AbstractMultiMapAccess* mapAccess
-                                                    );
-
-template<class Container>
-Container createIterable(typename Container::const_iterator begin, typename Container::size_type size){
-#ifdef Q_CC_MSVC
-    return Container(begin, begin+size);
-#else
-    struct ContainerAccess{
-        typename Container::iterator begin;
-        typename Container::size_type size;
-    } access;
-    access.begin = begin;
-    access.size = size;
-    union{
-        Container* container;
-        ContainerAccess* access;
-    } u;
-    u.access = &access;
-    return Container(*u.container);
-#endif
-}
-
-template<class Container>
-Container createIterable(typename Container::const_iterator begin, typename Container::const_iterator end){
-#ifdef Q_CC_MSVC
-    return Container(begin, end);
-#else
-    return createIterable<Container>(begin, size_t(end)-size_t(begin));
-#endif
+template<class O, class T, size_t N>
+void copyArrayInto(JNIEnv *env, O javaArray, T(&nativeArray)[N]){
+    Q_STATIC_ASSERT_X(QtJambiPrivate::is_jni_array_type_v<O>, "qtjambi_copy_into can only be used for java array types");
+    jsize size{0};
+    if((size = javaArray ? env->GetArrayLength(javaArray) : 0) != N)
+        JavaException::raiseIllegalArgumentException(env, QString("Wrong number of elements in array. Found: %1, expected: %2").arg(size).arg(N) QTJAMBI_STACKTRACEINFO);
+    if constexpr(QtJambiPrivate::is_jni_primitive_array_type_v<O>){
+        if constexpr(std::is_same_v<O, jbooleanArray> && sizeof(T)!=sizeof(jboolean)){
+            jboolean buffer[N];
+            (env->*QtJambiPrivate::jni_primitive_array_functions<O>::GetArrayRegion)(javaArray, 0, jsize(N), buffer);
+            JavaException::check(env QTJAMBI_STACKTRACEINFO );
+            for(size_t i=0; i<N; ++i){
+                nativeArray[i] = buffer[i];
+            }
+        }else{
+            Q_STATIC_ASSERT_X(sizeof(T)==sizeof(QtJambiPrivate::jni_array_element_type_t<O>), "array element size mismatch");
+            (env->*QtJambiPrivate::jni_primitive_array_functions<O>::GetArrayRegion)(javaArray, 0, jsize(N), reinterpret_cast<QtJambiPrivate::jni_array_element_type_t<O>*>(nativeArray));
+            JavaException::check(env QTJAMBI_STACKTRACEINFO );
+        }
+    }else{
+        for(size_t i=0; i<N; ++i){
+            jobject element = env->GetObjectArrayElement(javaArray, jsize(i));
+            JavaException::check(env QTJAMBI_STACKTRACEINFO );
+            nativeArray[i] = qtjambi_cast<T>(env, element);
+        }
+    }
 }
 
 } // namespace QtJambiAPI
@@ -1107,7 +286,7 @@ const T& reinterpret_value_cast(const void * ptr)
     const T* _ptr = reinterpret_cast<const T*>(ptr);
     if(_ptr)
     return *_ptr;
-    return QtJambiPrivate::getDefaultValue<T>();
+    return QtJambiAPI::getDefaultValue<T>();
 }
 
 template<class T>

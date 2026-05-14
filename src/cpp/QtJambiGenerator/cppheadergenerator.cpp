@@ -123,7 +123,7 @@ void CppHeaderGenerator::writeFieldAccessors(QTextStream &s, const MetaField *ja
 void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class, int) {
 #if 0
     {
-        QString fileName("written_classes_h.log");
+        QString fileName(QStringLiteral(u"written_classes_h.log"));
         QFile file(fileName);
         QFile::OpenMode flags(QFile::WriteOnly);
         if(file.exists()){
@@ -136,8 +136,8 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
         }
     }
 #endif
+    QString include_block = QStringLiteral(u"%1_SHELL_H").arg(java_class->name().replace(u'$', u'_').toUpper());
     const FunctionalTypeEntry *ftype = reinterpret_cast<const FunctionalTypeEntry *>(java_class->typeEntry());
-    QString include_block = java_class->name().replace(u'$', u'_').toUpper() + "_SHELL_H";
     s << "#ifndef " << include_block << Qt::endl
       << "#define " << include_block << Qt::endl << Qt::endl;
 
@@ -155,16 +155,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
         }
     }
     writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtCore/QtGlobal")), included);
-    bool hasDeprecation = java_class->isDeclDeprecated() || (java_class->type() && (java_class->type()->typeEntry()->isDeclDeprecated() || java_class->type()->typeEntry()->isContainer()));
-    if(!hasDeprecation){
-        for(const MetaArgument* arg : java_class->arguments()){
-            if(arg->type()->typeEntry()->isDeclDeprecated() || arg->type()->typeEntry()->isContainer()){
-                hasDeprecation = true;
-                break;
-            }
-        }
-    }
-    if(hasDeprecation){
+    if(java_class->hasDeprecation()){
         writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtCore/qcompilerdetection.h")), included);
         s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl
           << "QT_WARNING_DISABLE_GCC(\"-Wdeprecated-declarations\")" << Qt::endl << Qt::endl;
@@ -179,6 +170,8 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
     if(ftype->isFunctionPointer() && !java_class->typeEntry()->getUsing().isEmpty()){
         writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/FunctionPointer")), included);
     }
+    if(java_class->needJObjectWrapper())
+        writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/JObjectWrapper")), included);
     IncludeList list = java_class->typeEntry()->extraIncludes();
     std::sort(list.begin(), list.end());
     for(const Include& inc : std::as_const(list)){
@@ -247,7 +240,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
     }
     s  << "#endif // " << include_block << Qt::endl;
 
-    QString pro_file_name = priGenerator->subDirectoryForClass(java_class, PriGenerator::CppDirectory) + "/generated.pri";
+    QString pro_file_name = QStringLiteral(u"%1/generated.pri").arg(priGenerator->subDirectoryForClass(java_class, PriGenerator::CppDirectory));
 
     priGenerator->addHeader(pro_file_name, fileNameForFunctional(java_class));
 }
@@ -268,7 +261,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
         }
     }
 #endif
-    QString include_block = java_class->name().replace(u'$', u'_').toUpper() + "_SHELL_H";
+    QString include_block = QStringLiteral(u"%1_SHELL_H").arg(java_class->name().replace(u'$', u'_').toUpper());
 
     s << "#ifndef " << include_block << Qt::endl
       << "#define " << include_block << Qt::endl << Qt::endl;
@@ -285,31 +278,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
         }
     }
 
-    bool hasDeprecation = java_class->isDeclDeprecated();
-    if(!hasDeprecation){
-        for(const MetaFunction* f : java_class->functions()){
-            if(!f->wasPrivate()){
-                if(f->isDeclDeprecated()){
-                    hasDeprecation = true;
-                    break;
-                }else{
-                    if(f->type() && (f->type()->typeEntry()->isDeclDeprecated() || f->type()->typeEntry()->isContainer())){
-                        hasDeprecation = true;
-                        break;
-                    }
-                    for(const MetaArgument* arg : f->arguments()){
-                        if(arg->type()->typeEntry()->isDeclDeprecated() || arg->type()->typeEntry()->isContainer()){
-                            hasDeprecation = true;
-                            break;
-                        }
-                    }
-                    if(hasDeprecation)
-                        break;
-                }
-            }
-        }
-    }
-    if(hasDeprecation){
+    if(java_class->hasDeprecation()){
         writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtCore/qcompilerdetection.h")), included);
         s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl << Qt::endl;
     }
@@ -325,6 +294,8 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
     writeInclude(s, java_class->typeEntry()->include(), included);
 
     writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/QtJambiAPI")), included);
+    if(java_class->needJObjectWrapper())
+        writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/JObjectWrapper")), included);
 
     IncludeList list = java_class->typeEntry()->extraIncludes();
     std::sort(list.begin(), list.end());
@@ -336,7 +307,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
     if(java_class->isQWindow()
         || java_class->isQWidget()
         || java_class->isQAction()
-        || (java_class->typeEntry()->isThreadAffine() && java_class->typeEntry()->threadAffinity()==QLatin1String("pixmap"))){
+        || (java_class->typeEntry()->isThreadAffine() && java_class->typeEntry()->threadAffinity()==QStringLiteral(u"pixmap"))){
         writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/GuiAPI")), included);
     }
     if(java_class->hasPaintMethod())

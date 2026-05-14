@@ -48,7 +48,7 @@ TypeSystem{
         position: Position.End
         Text{content: "initialize_meta_info_QtTaskTree_impl();"}
     }
-    Template{
+    CodeTemplate{
         name: "ifelse.ctr.overloads"
         ImportFile{
             name: ":/io/qtjambi/generator/typesystem/QtJambiTaskTree.java"
@@ -56,7 +56,7 @@ TypeSystem{
             quoteBeforeLine: "}// class"
         }
     }
-    Template{
+    CodeTemplate{
         name: "group.overloads"
         ImportFile{
             name: ":/io/qtjambi/generator/typesystem/QtJambiTaskTree.java"
@@ -64,7 +64,7 @@ TypeSystem{
             quoteBeforeLine: "}// class"
         }
     }
-    Template{
+    CodeTemplate{
         name: "runner.start.overloads"
         ImportFile{
             name: ":/io/qtjambi/generator/typesystem/QtJambiTaskTree.java"
@@ -124,7 +124,7 @@ TypeSystem{
                     location: Include.Global
                 }
                 Include{
-                    fileName: "util_p.h"
+                    fileName: "utils_p.h"
                     location: Include.Local
                 }
             }
@@ -174,7 +174,7 @@ TypeSystem{
                     location: Include.Global
                 }
                 Include{
-                    fileName: "util_p.h"
+                    fileName: "utils_p.h"
                     location: Include.Local
                 }
             }
@@ -211,7 +211,7 @@ TypeSystem{
             }
             ModifyFunction{
                 signature: "operator*() const"
-                remove: RemoveFlag.All
+                rename: "value"
             }
             ModifyFunction{
                 signature: "operator->() const"
@@ -234,7 +234,7 @@ TypeSystem{
             Rejection{enumName: "Type"}
             ExtraIncludes{
                 Include{
-                    fileName: "util_p.h"
+                    fileName: "utils_p.h"
                     location: Include.Local
                 }
             }
@@ -280,7 +280,7 @@ TypeSystem{
             name: "Group"
             ExtraIncludes{
                 Include{
-                    fileName: "util_p.h"
+                    fileName: "utils_p.h"
                     location: Include.Local
                 }
             }
@@ -301,6 +301,11 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
+                Text{content: String.raw`
+@QtUninvokable
+private static native io.qt.tasktree.@NonNull GroupItem onGroupSetupImpl(java.util.function.Supplier<io.qt.tasktree.QtTaskTree.SetupResult> handler);
+@QtUninvokable
+private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.util.function.Function<io.qt.tasktree.QtTaskTree.DoneWith,io.qt.tasktree.QtTaskTree.DoneResult> handler, io.qt.tasktree.QtTaskTree.CallDone callDone);`}
                 InsertTemplate{
                     name: "group.overloads"
                     Replace{
@@ -312,11 +317,6 @@ TypeSystem{
                         to: "onGroupSetupImpl"
                     }
                 }
-                Text{content: String.raw`
-@QtUninvokable
-private static native io.qt.tasktree.@NonNull GroupItem onGroupSetupImpl(java.util.function.Supplier<io.qt.tasktree.QtTaskTree.SetupResult> handler);
-@QtUninvokable
-private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.util.function.Function<io.qt.tasktree.QtTaskTree.DoneWith,io.qt.tasktree.QtTaskTree.DoneResult> handler, io.qt.tasktree.QtTaskTree.CallDone callDone);`}
             }
             InjectCode{
                 target: CodeClass.Native
@@ -332,7 +332,7 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
             name: "ExecutableItem"
             generate: "no-shell"
             Include{
-                fileName: "util_p.h"
+                fileName: "utils_p.h"
                 location: Include.Local
             }
             Rejection{functionName: "withCancel"}
@@ -399,11 +399,11 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
                 }
             }
         }
-        ObjectType{
+        ValueType{
             name: "ExecutionMode"
             generate: "no-shell"
         }
-        ObjectType{
+        ValueType{
             name: "ParallelLimit"
             generate: "no-shell"
         }
@@ -420,27 +420,45 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
                 target: CodeClass.Java
                 ImportFile{
                     name: ":/io/qtjambi/generator/typesystem/QtJambiTaskTree.java"
-                    quoteAfterLine: "class ForWhen{"
+                    quoteAfterLine: "class ThenFunctions{"
+                    quoteBeforeLine: "}// class"
+                    Replace{
+                        from: "ThenItem"
+                        to: "Group"
+                    }
+                    Replace{
+                        from: ".then("
+                        to: ".apply("
+                    }
+                    Replace{
+                        from: " then("
+                        to: " apply("
+                    }
+                    Replace{
+                        from: "new Then("
+                        to: "new Do("
+                    }
+                    Replace{
+                        from: "thenItem"
+                        to: "doItem"
+                    }
+                    Replace{
+                        from: " Then "
+                        to: " Do "
+                    }
+                }
+                ImportFile{
+                    name: ":/io/qtjambi/generator/typesystem/QtJambiTaskTree.java"
+                    quoteAfterLine: "class For{"
                     quoteBeforeLine: "}// class"
                 }
-                Text{content: String.raw`
-                    public static final <T> For each(io.qt.core.@StrictNonNull QList<T> list) {
-                        return new For(new ListIterator<>(list));
-                    }
-                    public static final For repeat(long count) {
-                        return new For(new RepeatIterator(count));
-                    }
-                    public static final For until(java.util.function.@NonNull LongPredicate condition) {
-                        return new For(new UntilIterator(condition));
-                    }
-                    `}
             }
         }
         ObjectType{
             name: "Do"
             ExtraIncludes{
                 Include{
-                    fileName: "util_p.h"
+                    fileName: "utils_p.h"
                     location: Include.Local
                 }
             }
@@ -461,7 +479,7 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
             name: "Forever"
             ExtraIncludes{
                 Include{
-                    fileName: "util_p.h"
+                    fileName: "utils_p.h"
                     location: Include.Local
                 }
             }
@@ -505,7 +523,7 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
             name: "QTimeoutTaskAdapter"
             ExtraIncludes{
                 Include{
-                    fileName: "util_p.h"
+                    fileName: "utils_p.h"
                     location: Include.Local
                 }
             }
@@ -535,11 +553,15 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
             name: "When"
             ExtraIncludes{
                 Include{
-                    fileName: "util_p.h"
+                    fileName: "utils_p.h"
                     location: Include.Local
                 }
                 Include{
                     fileName: "QtJambi/JObjectWrapper"
+                    location: Include.Global
+                }
+                Include{
+                    fileName: "QtJambi/Template1Cast"
                     location: Include.Global
                 }
                 Include{
@@ -589,25 +611,38 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
                 target: CodeClass.Java
                 ImportFile{
                     name: ":/io/qtjambi/generator/typesystem/QtJambiTaskTree.java"
-                    quoteAfterLine: "class ForWhen{"
+                    quoteAfterLine: "class ThenFunctions{"
                     quoteBeforeLine: "}// class"
+                    Replace{
+                        from: "ThenItem"
+                        to: "Group"
+                    }
+                    Replace{
+                        from: ".then("
+                        to: ".apply("
+                    }
+                    Replace{
+                        from: " then("
+                        to: " apply("
+                    }
+                    Replace{
+                        from: "new Then("
+                        to: "new Do("
+                    }
+                    Replace{
+                        from: "thenItem"
+                        to: "doItem"
+                    }
+                    Replace{
+                        from: " Then "
+                        to: " Do "
+                    }
                 }
                 ImportFile{
                     name: ":/io/qtjambi/generator/typesystem/QtJambiTaskTree.java"
                     quoteAfterLine: "class When{"
                     quoteBeforeLine: "}// class"
                 }
-                Text{content: String.raw`
-                    public static final When when(java.util.function.@NonNull Function<io.qt.tasktree.@NonNull QStoredBarrier, io.qt.tasktree.@NonNull ExecutableItem> kicker) {
-                        return new When(kicker);
-                    }
-                    public static final When when(java.util.function.@NonNull Function<io.qt.tasktree.@NonNull QStoredBarrier, io.qt.tasktree.@NonNull ExecutableItem> kicker, io.qt.tasktree.QtTaskTree.@NonNull WorkflowPolicy policy) {
-                        return new When(kicker, policy);
-                    }
-                    public static final <Task extends io.qt.core.QObject> When when(@StrictNonNull QCustomTask<Task, java.util.function.@NonNull BiConsumer<@Nullable Task,@Nullable QTaskInterface>> task, @StrictNonNull String signalName, io.qt.tasktree.QtTaskTree.@NonNull WorkflowPolicy policy) {
-                        return new When(task, signalName, policy);
-                    }
-                    `}
             }
             InjectCode{
                 target: CodeClass.Native
@@ -633,6 +668,16 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
             name: "If"
             InjectCode{
                 target: CodeClass.Java
+                ImportFile{
+                    name: ":/io/qtjambi/generator/typesystem/QtJambiTaskTree.java"
+                    quoteAfterLine: "class If{"
+                    quoteBeforeLine: "}// class"
+                }
+                ImportFile{
+                    name: ":/io/qtjambi/generator/typesystem/QtJambiTaskTree.java"
+                    quoteAfterLine: "class ThenFunctions{"
+                    quoteBeforeLine: "}// class"
+                }
                 InsertTemplate{
                     name: "ifelse.ctr.overloads"
                     Replace{
@@ -659,7 +704,7 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
             name: "Else"
             ExtraIncludes{
                 Include{
-                    fileName: "util_p.h"
+                    fileName: "utils_p.h"
                     location: Include.Local
                 }
             }
@@ -680,7 +725,7 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
             name: "Then"
             ExtraIncludes{
                 Include{
-                    fileName: "util_p.h"
+                    fileName: "utils_p.h"
                     location: Include.Local
                 }
             }
@@ -699,15 +744,78 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
         }
         ObjectType{
             name: "ThenItem"
+            InjectCode{
+                target: CodeClass.Java
+                ImportFile{
+                    name: ":/io/qtjambi/generator/typesystem/QtJambiTaskTree.java"
+                    quoteAfterLine: "class ThenItem{"
+                    quoteBeforeLine: "}// class"
+                }
+                ImportFile{
+                    name: ":/io/qtjambi/generator/typesystem/QtJambiTaskTree.java"
+                    quoteAfterLine: "class ThenFunctions{"
+                    quoteBeforeLine: "}// class"
+                    Replace{
+                        from: "ThenItem"
+                        to: "ElseItem"
+                    }
+                    Replace{
+                        from: ".then("
+                        to: ".otherwise("
+                    }
+                    Replace{
+                        from: " then("
+                        to: " otherwise("
+                    }
+                    Replace{
+                        from: "new Then("
+                        to: "new Else("
+                    }
+                    Replace{
+                        from: "thenItem"
+                        to: "elseItem"
+                    }
+                    Replace{
+                        from: " Then "
+                        to: " Else "
+                    }
+                }
+            }
+            ModifyFunction{
+                signature: "operator ExecutableItem()const"
+                rename: "endif"
+            }
         }
         ObjectType{
             name: "ElseItem"
+            ModifyFunction{
+                signature: "operator ExecutableItem()const"
+                rename: "endif"
+            }
         }
         ObjectType{
             name: "ElseIfItem"
+            InjectCode{
+                target: CodeClass.Java
+                ImportFile{
+                    name: ":/io/qtjambi/generator/typesystem/QtJambiTaskTree.java"
+                    quoteAfterLine: "class ThenFunctions{"
+                    quoteBeforeLine: "}// class"
+                }
+            }
         }
         ObjectType{
             name: "QNetworkReplyWrapper"
+            ModifyFunction{
+                signature: "setNetworkAccessManager(QNetworkAccessManager*)"
+                ModifyArgument{
+                    index: 1
+                    ReferenceCount{
+                        variableName: "__rcNetworkAccessManager"
+                        action: ReferenceCount.Set
+                    }
+                }
+            }
         }
         ObjectType{
             name: "QProcessTaskDeleter"
@@ -728,6 +836,10 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
             name: "QSingleTaskTreeRunner"
             ExtraIncludes{
                 Include{
+                    fileName: "QtJambi/JavaAPI"
+                    location: Include.Global
+                }
+                Include{
                     fileName: "QtJambi/JObjectWrapper"
                     location: Include.Global
                 }
@@ -742,7 +854,7 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
                     ConversionRule{
                         codeClass: CodeClass.Native
                         InsertTemplate{
-                            name: "core.comsumer.function"
+                            name: "core.consumer.function"
                             Replace{
                                 from: "%TYPE"
                                 to: "QtTaskTree::QTaskTree &"
@@ -787,6 +899,10 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
                         to: ""
                     }
                     Replace{
+                        from: "FIRSTLINK%"
+                        to: ""
+                    }
+                    Replace{
                         from: "FIRSTARG%"
                         to: ""
                     }
@@ -796,6 +912,10 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
         ObjectType{
             name: "QSequentialTaskTreeRunner"
             ExtraIncludes{
+                Include{
+                    fileName: "QtJambi/JavaAPI"
+                    location: Include.Global
+                }
                 Include{
                     fileName: "QtJambi/JObjectWrapper"
                     location: Include.Global
@@ -811,7 +931,7 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
                     ConversionRule{
                         codeClass: CodeClass.Native
                         InsertTemplate{
-                            name: "core.comsumer.function"
+                            name: "core.consumer.function"
                             Replace{
                                 from: "%TYPE"
                                 to: "QtTaskTree::QTaskTree &"
@@ -860,6 +980,10 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
                         to: ""
                     }
                     Replace{
+                        from: "FIRSTLINK%"
+                        to: ""
+                    }
+                    Replace{
                         from: "FIRSTARG%"
                         to: ""
                     }
@@ -869,6 +993,10 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
         ObjectType{
             name: "QParallelTaskTreeRunner"
             ExtraIncludes{
+                Include{
+                    fileName: "QtJambi/JavaAPI"
+                    location: Include.Global
+                }
                 Include{
                     fileName: "QtJambi/JObjectWrapper"
                     location: Include.Global
@@ -884,7 +1012,7 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
                     ConversionRule{
                         codeClass: CodeClass.Native
                         InsertTemplate{
-                            name: "core.comsumer.function"
+                            name: "core.consumer.function"
                             Replace{
                                 from: "%TYPE"
                                 to: "QtTaskTree::QTaskTree &"
@@ -929,6 +1057,10 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
                         to: ""
                     }
                     Replace{
+                        from: "FIRSTLINK%"
+                        to: ""
+                    }
+                    Replace{
                         from: "FIRSTARG%"
                         to: ""
                     }
@@ -953,7 +1085,11 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
                     location: Include.Global
                 }
                 Include{
-                    fileName: "util_p.h"
+                    fileName: "QtJambi/JavaAPI"
+                    location: Include.Global
+                }
+                Include{
+                    fileName: "utils_p.h"
                     location: Include.Local
                 }
             }
@@ -967,7 +1103,7 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
                     ConversionRule{
                         codeClass: CodeClass.Native
                         InsertTemplate{
-                            name: "core.comsumer.function"
+                            name: "core.consumer.function"
                             Replace{
                                 from: "%TYPE"
                                 to: "QtTaskTree::QTaskTree &"
@@ -1012,6 +1148,10 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
                         to: "@NonNull Key key, "
                     }
                     Replace{
+                        from: "FIRSTLINK%"
+                        to: "java.lang.Object, "
+                    }
+                    Replace{
                         from: "FIRSTARG%"
                         to: "key, "
                     }
@@ -1023,6 +1163,16 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
         }
         ObjectType{
             name: "QThreadFunctionBase"
+            ModifyFunction{
+                signature: "setThreadPool(QThreadPool*)"
+                ModifyArgument{
+                    index: 1
+                    ReferenceCount{
+                        variableName: "__rcThreadPool"
+                        action: ReferenceCount.Set
+                    }
+                }
+            }
         }
         ObjectType{
             name: "StorageBase"
@@ -1056,7 +1206,7 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
             generate: "no-shell"
             ExtraIncludes{
                 Include{
-                    fileName: "util_p.h"
+                    fileName: "utils_p.h"
                     location: Include.Local
                 }
             }
@@ -1120,7 +1270,7 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
                         codeClass: CodeClass.Native
                         Text{content: String.raw`
                             if(%in){
-                                jobject variant = QtJambiAPI::convertQVariantToJavaVariant(%env, %in);
+                                jobject variant = qtjambi_cast<jcoreobject>(%env, %in);
                                 QtJambiAPI::registerDependency(%env, variant, __this_nativeId);
                                 %out = Java::QtTaskTree::Storage$ActiveStorage::newInstance(%env, __qt_this->structType().typedObject<jclass>(%env), variant);
                             }
@@ -1195,7 +1345,7 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
                     location: Include.Global
                 }
                 Include{
-                    fileName: "util_p.h"
+                    fileName: "utils_p.h"
                     location: Include.Local
                 }
             }
@@ -1366,6 +1516,9 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
             TemplateArguments{
                 arguments: ["QVariant"]
             }
+            TemplateArguments{
+                arguments: ["void"]
+            }
         }
         ObjectType{
             name: "QThreadFunctionTaskAdapter<QVariant>"
@@ -1390,18 +1543,11 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
                         return (Class<QThreadFunctionTaskAdapter<ResultType>>)(Class<?>)QThreadFunctionTaskAdapter.class;
                     }`}
             }
-            InjectCode{
-                target: CodeClass.Native
-                position: Position.Beginning
-                Text{content: String.raw`
-                    namespace QtJambiAPI{
-                    template<typename T>
-                    T *objectFromNativeId(jobject object)
-                    {
-                        return qtjambi_cast<T*>(object);
-                    }
-                    }`}
-            }
+        }
+        ObjectType{
+            name: "QThreadFunctionTaskAdapter<void>"
+            javaName: "QThreadFunctionVoidTaskAdapter"
+            forceFinal: true
         }
         ObjectType{
             name: "QThreadFunction"
@@ -1409,13 +1555,25 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
             TemplateArguments{
                 arguments: ["QVariant"]
             }
+            TemplateArguments{
+                arguments: ["void"]
+            }
         }
+
         ObjectType{
             name: "QThreadFunction<QVariant>"
             ExtraIncludes{
                 Include{
                     fileName: "QtJambi/JObjectWrapper"
                     location: Include.Global
+                }
+                Include{
+                    fileName: "QtJambi/FutureAPI"
+                    location: Include.Global
+                }
+                Include{
+                    fileName: "utils_p.h"
+                    location: Include.Local
                 }
             }
             isGeneric: true
@@ -1434,39 +1592,1457 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
                     replaceType: "io.qt.core.@NonNull QFutureWatcher<ResultType>"
                 }
             }
+            FunctionalType{
+                name: "Callable"
+                using: "std::function<QVariant()>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Callable1"
+                using: "std::function<QVariant(const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Callable2"
+                using: "std::function<QVariant(const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Callable3"
+                using: "std::function<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Callable4"
+                using: "std::function<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Callable5"
+                using: "std::function<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Callable6"
+                using: "std::function<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Callable7"
+                using: "std::function<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Callable8"
+                using: "std::function<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Callable9"
+                using: "std::function<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithPromise"
+                using: "std::function<void(QPromise<QVariant>&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithPromise1"
+                using: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithPromise2"
+                using: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithPromise3"
+                using: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithPromise4"
+                using: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithPromise5"
+                using: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithPromise6"
+                using: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithPromise7"
+                using: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithPromise8"
+                using: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithPromise9"
+                using: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
             ModifyFunction{
                 signature: "setThreadFunctionData<Function,Args...>(Function&&,Args&&)"
                 Instantiation{
                     Argument{
-                        type: "QFutureSupplier"
+                        type: "std::function<QVariant()>"
                         isImplicit: true
                     }
                     ModifyArgument{
                         index: 1
-                        ReplaceType{
-                            modifiedType: "java.util.function.Supplier<ResultType>"
-                        }
+                        replaceType: "io.qt.core.QtFuture$Callable<ResultType>"
+                        rename: "callable"
                         NoNullPointer{}
                         ConversionRule{
                             codeClass: CodeClass.Native
-                            InsertTemplate{
-                                name: "core.supplier.function"
-                                Replace{
-                                    from: "%TYPE"
-                                    to: "QVariant"
-                                }
-                            }
+                            Text{content: "auto %out = FutureAPI::convert<QVariant()>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
                         }
                     }
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<QVariant>&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithPromise<ResultType>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<QVariant>&)>(%env, %in);"}
+                        }
+                    }
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<QVariant(const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Callable1<ResultType,A>"
+                        rename: "callable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<QVariant(const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithPromise1<ResultType,A>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<QVariant>&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<QVariant(const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Callable2<ResultType,A,B>"
+                        rename: "callable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<QVariant(const JObjectWrapper&,const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithPromise2<ResultType,A,B>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Callable3<ResultType,A,B,C>"
+                        rename: "callable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithPromise3<ResultType,A,B,C>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Callable4<ResultType,A,B,C,D>"
+                        rename: "callable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithPromise4<ResultType,A,B,C,D>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Callable5<ResultType,A,B,C,D,E>"
+                        rename: "callable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithPromise5<ResultType,A,B,C,D,E>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Callable6<ResultType,A,B,C,D,E,F>"
+                        rename: "callable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "F"}
+                    ModifyArgument{index: 7; replaceType: "F"; rename: "f"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithPromise6<ResultType,A,B,C,D,E,F>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "F"}
+                    ModifyArgument{index: 7; replaceType: "F"; rename: "f"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Callable7<ResultType,A,B,C,D,E,F,G>"
+                        rename: "callable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "F"}
+                    ModifyArgument{index: 7; replaceType: "F"; rename: "f"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "G"}
+                    ModifyArgument{index: 8; replaceType: "G"; rename: "g"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithPromise7<ResultType,A,B,C,D,E,F,G>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "F"}
+                    ModifyArgument{index: 7; replaceType: "F"; rename: "f"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "G"}
+                    ModifyArgument{index: 8; replaceType: "G"; rename: "g"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Callable8<ResultType,A,B,C,D,E,F,G,H>"
+                        rename: "callable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "F"}
+                    ModifyArgument{index: 7; replaceType: "F"; rename: "f"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "G"}
+                    ModifyArgument{index: 8; replaceType: "G"; rename: "g"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "H"}
+                    ModifyArgument{index: 9; replaceType: "H"; rename: "h"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithPromise8<ResultType,A,B,C,D,E,F,G,H>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "F"}
+                    ModifyArgument{index: 7; replaceType: "F"; rename: "f"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "G"}
+                    ModifyArgument{index: 8; replaceType: "G"; rename: "g"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "H"}
+                    ModifyArgument{index: 9; replaceType: "H"; rename: "h"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Callable9<ResultType,A,B,C,D,E,F,G,H,I>"
+                        rename: "callable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<QVariant(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "F"}
+                    ModifyArgument{index: 7; replaceType: "F"; rename: "f"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "G"}
+                    ModifyArgument{index: 8; replaceType: "G"; rename: "g"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "H"}
+                    ModifyArgument{index: 9; replaceType: "H"; rename: "h"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "I"}
+                    ModifyArgument{index: 10; replaceType: "I"; rename: "i"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithPromise9<ResultType,A,B,C,D,E,F,G,H,I>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<QVariant>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "F"}
+                    ModifyArgument{index: 7; replaceType: "F"; rename: "f"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "G"}
+                    ModifyArgument{index: 8; replaceType: "G"; rename: "g"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "H"}
+                    ModifyArgument{index: 9; replaceType: "H"; rename: "h"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "I"}
+                    ModifyArgument{index: 10; replaceType: "I"; rename: "i"}
                 }
             }
             InjectCode{
                 target: CodeClass.Java
-                Text{content: String.raw`
-                    @SuppressWarnings("unchecked")
-                    static <ResultType> Class<QThreadFunction<ResultType>> typedClass(){
-                        return (Class<QThreadFunction<ResultType>>)(Class<?>)QThreadFunction.class;
-                    }`}
+                ImportFile{
+                    name: ":/io/qtjambi/generator/typesystem/QtJambiTaskTree.java"
+                    quoteAfterLine: "class QThreadFunction{"
+                    quoteBeforeLine: "}// class"
+                }
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ImportFile{
+                    name: ":/io/qtjambi/generator/typesystem/QtJambiTaskTree.java"
+                    quoteAfterLine: "struct QThreadFunction{"
+                    quoteBeforeLine: "}// class"
+                }
+            }
+        }
+        ObjectType{
+            name: "QThreadFunction<void>"
+            javaName: "QThreadFunctionVoid"
+            ExtraIncludes{
+                Include{
+                    fileName: "QtJambi/JObjectWrapper"
+                    location: Include.Global
+                }
+                Include{
+                    fileName: "QtJambi/FutureAPI"
+                    location: Include.Global
+                }
+                Include{
+                    fileName: "utils_p.h"
+                    location: Include.Local
+                }
+            }
+            threadAffinity: "futureWatcher()"
+            ModifyFunction{
+                signature: "future()const"
+                ModifyArgument{
+                    index: 0
+                    replaceType: "io.qt.core.@NonNull QFuture<@QtPrimitiveType Void>"
+                }
+            }
+            ModifyFunction{
+                signature: "futureWatcher()const"
+                ModifyArgument{
+                    index: 0
+                    replaceType: "io.qt.core.@NonNull QFutureWatcher<@QtPrimitiveType Void>"
+                }
+            }
+            FunctionalType{
+                name: "Runnable"
+                using: "std::function<void()>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Runnable1"
+                using: "std::function<void(const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Runnable2"
+                using: "std::function<void(const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Runnable3"
+                using: "std::function<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Runnable4"
+                using: "std::function<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Runnable5"
+                using: "std::function<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Runnable6"
+                using: "std::function<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Runnable7"
+                using: "std::function<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Runnable8"
+                using: "std::function<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "Runnable9"
+                using: "std::function<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithVoidPromise"
+                using: "std::function<void(QPromise<void>&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithVoidPromise1"
+                using: "std::function<void(QPromise<void>&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithVoidPromise2"
+                using: "std::function<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithVoidPromise3"
+                using: "std::function<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithVoidPromise4"
+                using: "std::function<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithVoidPromise5"
+                using: "std::function<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithVoidPromise6"
+                using: "std::function<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithVoidPromise7"
+                using: "std::function<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithVoidPromise8"
+                using: "std::function<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            FunctionalType{
+                name: "RunnableWithVoidPromise9"
+                using: "std::function<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                generate: false
+            }
+            ModifyFunction{
+                signature: "setThreadFunctionData<Function,Args...>(Function&&,Args&&)"
+
+                Instantiation{
+                    Argument{
+                        type: "std::function<void()>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Runnable"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void()>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<void>&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithVoidPromise"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<void>&)>(%env, %in);"}
+                        }
+                    }
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Runnable1<A>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<void>&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithVoidPromise1<A>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<void>&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Runnable2<A,B>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(const JObjectWrapper&,const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithVoidPromise2<A,B>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Runnable3<A,B,C>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithVoidPromise3<A,B,C>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Runnable4<A,B,C,D>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithVoidPromise4<A,B,C,D>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Runnable5<A,B,C,D,E>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithVoidPromise5<A,B,C,D,E>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Runnable6<A,B,C,D,E,F>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "F"}
+                    ModifyArgument{index: 7; replaceType: "F"; rename: "f"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithVoidPromise6<A,B,C,D,E,F>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "F"}
+                    ModifyArgument{index: 7; replaceType: "F"; rename: "f"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Runnable7<A,B,C,D,E,F,G>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "F"}
+                    ModifyArgument{index: 7; replaceType: "F"; rename: "f"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "G"}
+                    ModifyArgument{index: 8; replaceType: "G"; rename: "g"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithVoidPromise7<A,B,C,D,E,F,G>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "F"}
+                    ModifyArgument{index: 7; replaceType: "F"; rename: "f"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "G"}
+                    ModifyArgument{index: 8; replaceType: "G"; rename: "g"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Runnable8<A,B,C,D,E,F,G,H>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "F"}
+                    ModifyArgument{index: 7; replaceType: "F"; rename: "f"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "G"}
+                    ModifyArgument{index: 8; replaceType: "G"; rename: "g"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "H"}
+                    ModifyArgument{index: 9; replaceType: "H"; rename: "h"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithVoidPromise8<A,B,C,D,E,F,G,H>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "F"}
+                    ModifyArgument{index: 7; replaceType: "F"; rename: "f"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "G"}
+                    ModifyArgument{index: 8; replaceType: "G"; rename: "g"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "H"}
+                    ModifyArgument{index: 9; replaceType: "H"; rename: "h"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$Runnable9<A,B,C,D,E,F,G,H,I>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in EXCEPTION_HANDLER_ARG(__qt_this->futureWatcher()));"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "F"}
+                    ModifyArgument{index: 7; replaceType: "F"; rename: "f"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "G"}
+                    ModifyArgument{index: 8; replaceType: "G"; rename: "g"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "H"}
+                    ModifyArgument{index: 9; replaceType: "H"; rename: "h"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "I"}
+                    ModifyArgument{index: 10; replaceType: "I"; rename: "i"}
+                }
+                Instantiation{
+                    Argument{
+                        type: "std::function<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        replaceType: "io.qt.core.QtFuture$RunnableWithVoidPromise9<A,B,C,D,E,F,G,H,I>"
+                        rename: "runnable"
+                        NoNullPointer{}
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "auto %out = FutureAPI::convert<void(QPromise<void>&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                        }
+                    }
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "A"}
+                    ModifyArgument{index: 2; replaceType: "A"; rename: "a"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "B"}
+                    ModifyArgument{index: 3; replaceType: "B"; rename: "b"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "C"}
+                    ModifyArgument{index: 4; replaceType: "C"; rename: "c"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "D"}
+                    ModifyArgument{index: 5; replaceType: "D"; rename: "d"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "E"}
+                    ModifyArgument{index: 6; replaceType: "E"; rename: "e"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "F"}
+                    ModifyArgument{index: 7; replaceType: "F"; rename: "f"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "G"}
+                    ModifyArgument{index: 8; replaceType: "G"; rename: "g"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "H"}
+                    ModifyArgument{index: 9; replaceType: "H"; rename: "h"}
+                    Argument{type: "JObjectWrapper"; isImplicit: true}
+                    AddTypeParameter{name: "I"}
+                    ModifyArgument{index: 10; replaceType: "I"; rename: "i"}
+                }
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ImportFile{
+                    name: ":/io/qtjambi/generator/typesystem/QtJambiTaskTree.java"
+                    quoteAfterLine: "class QThreadFunction{"
+                    quoteBeforeLine: "}// class"
+                }
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ImportFile{
+                    name: ":/io/qtjambi/generator/typesystem/QtJambiTaskTree.java"
+                    quoteAfterLine: "struct QThreadFunction{"
+                    quoteBeforeLine: "}// class"
+                }
             }
         }
         InjectCode{
@@ -1487,12 +3063,32 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
         ModifyFunction{
             signature: "operator>>(const QtTaskTree::For &, const QtTaskTree::Do &)"
             access: Modification.Friendly
-            rename: "then"
+            rename: "apply"
         }
         ModifyFunction{
             signature: "operator>>(const QtTaskTree::When &, const QtTaskTree::Do &)"
             access: Modification.Friendly
+            rename: "apply"
+        }
+        ModifyFunction{
+            signature: "operator>>(const QtTaskTree::If &, const QtTaskTree::Then &)"
             rename: "then"
+            access: Modification.Friendly
+        }
+        ModifyFunction{
+            signature: "operator>>(const QtTaskTree::ThenItem &, const QtTaskTree::Else &)"
+            rename: "otherwise"
+            access: Modification.Friendly
+        }
+        ModifyFunction{
+            signature: "operator>>(const QtTaskTree::ThenItem &, const QtTaskTree::ElseIf &)"
+            rename: "elif"
+            access: Modification.Friendly
+        }
+        ModifyFunction{
+            signature: "operator>>(const QtTaskTree::ElseIfItem &, const QtTaskTree::Then &)"
+            rename: "then"
+            access: Modification.Friendly
         }
     }
     GlobalFunction{
@@ -1501,6 +3097,22 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
     }
     GlobalFunction{
         signature: "operator>>(const QtTaskTree::When &, const QtTaskTree::Do &)"
+        targetType: "QtTaskTree"
+    }
+    GlobalFunction{
+        signature: "operator>>(const QtTaskTree::If &, const QtTaskTree::Then &)"
+        targetType: "QtTaskTree"
+    }
+    GlobalFunction{
+        signature: "operator>>(const QtTaskTree::ThenItem &, const QtTaskTree::Else &)"
+        targetType: "QtTaskTree"
+    }
+    GlobalFunction{
+        signature: "operator>>(const QtTaskTree::ThenItem &, const QtTaskTree::ElseIf &)"
+        targetType: "QtTaskTree"
+    }
+    GlobalFunction{
+        signature: "operator>>(const QtTaskTree::ElseIfItem &, const QtTaskTree::Then &)"
         targetType: "QtTaskTree"
     }
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'ExecutionMode' set to non-final, as it is extended by other classes"}

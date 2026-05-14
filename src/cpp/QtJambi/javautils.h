@@ -32,6 +32,8 @@
 #if !defined(QTJAMBI_JAVAUTILS_H) && !defined(QTJAMBI_GENERATOR_RUNNING)
 #define QTJAMBI_JAVAUTILS_H
 
+#include "global.h"
+
 namespace QtJambiPrivate{
 QTJAMBI_EXPORT void javaInstanceCheck(JNIEnv* env,jobject object, jclass class_ref, bool isMemberFunction, const char* name);
 QTJAMBI_EXPORT void javaExceptionCheck(JNIEnv* env);

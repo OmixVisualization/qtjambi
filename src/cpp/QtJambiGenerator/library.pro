@@ -182,7 +182,7 @@ SOURCES += \
 
 
 
-QT = core xml network qml
+QT = core xml network qml concurrent
 CONFIG += qmltypes
 
 QML_IMPORT_NAME = QtJambiGenerator

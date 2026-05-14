@@ -37,7 +37,7 @@
 		<if>
 			<and>
 				<istrue value="${qtjambi.designer.any.true}"/>
-				<available file="${generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
+				<available file="${qtjambi.generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
 			</and>
             <then>
                 <path id="sourcedirs">

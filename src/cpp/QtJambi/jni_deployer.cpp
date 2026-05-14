@@ -30,6 +30,9 @@
 ****************************************************************************/
 
 #include "pch_p.h"
+#include "qtjambi_cast_template2.h"
+#include "qtjambi_cast_container.h"
+#include "qtjambi_cast_arithmetic.h"
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 namespace QtJambiPrivate{

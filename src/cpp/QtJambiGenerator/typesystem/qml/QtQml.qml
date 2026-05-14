@@ -106,6 +106,66 @@ TypeSystem{
         functionName: "qjsvalue_cast"
     }
     Rejection{
+        className: "*"
+        functionName: "qt_qmlMarker_uncreatable"
+    }
+    Rejection{
+        className: "*"
+        enumName: "QmlIsUncreatable"
+    }
+    Rejection{
+        className: "*"
+        functionName: "qt_qmlMarker_anonymous"
+    }
+    Rejection{
+        className: "*"
+        enumName: "QmlIsAnonymous"
+    }
+    Rejection{
+        className: "*"
+        functionName: "qt_qmlMarker_singleton"
+    }
+    Rejection{
+        className: "*"
+        enumName: "QmlIsSingleton"
+    }
+    Rejection{
+        className: "*"
+        functionName: "qt_qmlMarker_attached"
+    }
+    Rejection{
+        className: "*"
+        functionName: "qt_qmlMarker_extended"
+    }
+    Rejection{
+        className: "*"
+        functionName: "qt_qmlMarker_extendedNamespace"
+    }
+    Rejection{
+        className: "*"
+        functionName: "qmlExtendedNamespace"
+    }
+    Rejection{
+        className: "*"
+        functionName: "qt_qmlMarker_interface"
+    }
+    Rejection{
+        className: "*"
+        enumName: "QmlIsInterface"
+    }
+    Rejection{
+        className: "*"
+        functionName: "qt_qmlMarker_sequence"
+    }
+    Rejection{
+        className: "*"
+        enumName: "QmlIsSequence"
+    }
+    Rejection{
+        className: "*"
+        functionName: "qt_qmlMarker_foreign"
+    }
+    Rejection{
         className: "QQmlTypeNotAvailable"
         since: 6.6
     }
@@ -244,6 +304,12 @@ TypeSystem{
     
     ValueType{
         name: "QQmlScriptString"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/ArithmeticCast"
+                location: Include.Global
+            }
+        }
         ModifyFunction{
             signature: "numberLiteral( bool * ) const"
             ModifyArgument{
@@ -253,7 +319,7 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = ok ? QtJambiAPI::toJavaDoubleObject(%env, %in) : nullptr;"}
+                    Text{content: "%out = ok ? qtjambi_cast<jobject>(%env, %in) : nullptr;"}
                 }
             }
             ModifyArgument{
@@ -276,7 +342,7 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = ok ? QtJambiAPI::toJavaBooleanObject(%env, %in) : nullptr;"}
+                    Text{content: "%out = ok ? qtjambi_cast<jobject>(%env, %in) : nullptr;"}
                 }
             }
             ModifyArgument{
@@ -302,12 +368,6 @@ TypeSystem{
             }
         }
         threadAffinity: "%1->engine()"
-        ExtraIncludes{
-            Include{
-                fileName: "utils_p.h"
-                location: Include.Local
-            }
-        }
         EnumType{
             name: "Type"
             since: [6, 1]
@@ -497,6 +557,21 @@ TypeSystem{
         ModifyFunction{
             signature: "operator/(QJSPrimitiveValue)"
             Delegate{name: "divided"; deprecated: true}
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: String.raw`
+                    QT_WARNING_PUSH
+                    QT_WARNING_DISABLE_MSVC(4723)
+                    QT_WARNING_DISABLE_CLANG("-Wdivision-by-zero")
+                    QT_WARNING_DISABLE_GCC("-Wdiv-by-zero")
+                    `}
+            }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                Text{content: String.raw`QT_WARNING_POP`}
+            }
         }
         ModifyFunction{
             signature: "operate<Operators>(QJSPrimitiveValue,QJSPrimitiveValue)"
@@ -575,12 +650,6 @@ TypeSystem{
             target: CodeClass.Java
             Text{
                 content: String.raw`<p>Either each <code>QJSValue</code> object or the <code>QJSEngine</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
-            }
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "utils_p.h"
-                location: Include.Local
             }
         }
         threadAffinity: "getPointerOwner(%1)"
@@ -1050,12 +1119,6 @@ TypeSystem{
         Implements{
             interfaces: "Iterable<io.qt.core.@NonNull QPair<@NonNull String,@NonNull QJSValue>>, java.util.Iterator<io.qt.core.@NonNull QPair<@NonNull String,@NonNull QJSValue>>"
         }
-        ExtraIncludes{
-            Include{
-                fileName: "utils_p.h"
-                location: Include.Local
-            }
-        }
         ModifyFunction{
             signature: "QJSValueIterator(QJSValue)"
             ModifyArgument{
@@ -1100,16 +1163,6 @@ public final io.qt.core.@NonNull QPair<@NonNull String,@NonNull QJSValue> next()
     
     NamespaceType{
         name: "QtQml"
-        ExtraIncludes{
-            Include{
-                fileName: "hashes.h"
-                location: Include.Local
-            }
-            Include{
-                fileName: "utils_p.h"
-                location: Include.Local
-            }
-        }
         Rejection{functionName: "qmlInfo"}
         InjectCode{
             ImportFile{
@@ -1121,48 +1174,14 @@ public final io.qt.core.@NonNull QPair<@NonNull String,@NonNull QJSValue> next()
 
         FunctionalType{
             name: "QQmlAttachedPropertiesFunc"
-            ExtraIncludes{
-                Include{
-                    fileName: "hashes.h"
-                    location: Include.Local
-                }
-            }
         }
 
         FunctionalType{
             name: "ValueCallback"
-            ExtraIncludes{
-                Include{
-                    fileName: "QtQml/QQmlEngine"
-                    location: Include.Global
-                }
-                Include{
-                    fileName: "QtQml/QJSEngine"
-                    location: Include.Global
-                }
-                Include{
-                    fileName: "hashes.h"
-                    location: Include.Local
-                }
-            }
         }
 
         FunctionalType{
             name: "ObjectCallback"
-            ExtraIncludes{
-                Include{
-                    fileName: "QtQml/QQmlEngine"
-                    location: Include.Global
-                }
-                Include{
-                    fileName: "QtQml/QJSEngine"
-                    location: Include.Global
-                }
-                Include{
-                    fileName: "hashes.h"
-                    location: Include.Local
-                }
-            }
         }
     }
     
@@ -1175,12 +1194,6 @@ public final io.qt.core.@NonNull QPair<@NonNull String,@NonNull QJSValue> next()
             Text{
                 content: String.raw`<p>Either the <code>QJSEngine</code> object or each associated <code>QJSValue</code> and <code>QJSManagedValue</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
                 since: 6.2
-            }
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "utils_p.h"
-                location: Include.Local
             }
         }
         Rejection{className: "FunctionWithArgSignature"}
@@ -1522,16 +1535,6 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
                 since: 6.2
             }
         }
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/QmlAPI"
-                location: Include.Global
-            }
-            Include{
-                fileName: "hashes.h"
-                location: Include.Local
-            }
-        }
         ModifyFunction{
             signature: "clearComponentCache()"
             threadAffinity: true
@@ -1672,12 +1675,6 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
                 since: 6.2
             }
         }
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/QmlAPI"
-                location: Include.Global
-            }
-        }
         ModifyFunction{
             signature: "QQmlApplicationEngine(QUrl,QObject*)"
             ModifyArgument{
@@ -1698,16 +1695,6 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
     
     ObjectType{
         name: "QQmlExtensionPlugin"
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QScopedPointer"
-                location: Include.Global
-            }
-            Include{
-                fileName: "QtCore/QByteArray"
-                location: Include.Global
-            }
-        }
     }
     
     ObjectType{
@@ -1716,12 +1703,6 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
     
     ObjectType{
         name: "QQmlComponent"
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/QmlAPI"
-                location: Include.Global
-            }
-        }
         EnumType{
             name: "CompilationMode"
         }
@@ -1831,12 +1812,6 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
     
     ObjectType{
         name: "QQmlExpression"
-        ExtraIncludes{
-            Include{
-                fileName: "utils_p.h"
-                location: Include.Local
-            }
-        }
         ModifyFunction{
             signature: "evaluate(bool *)"
             throwing: "ValueIsUndefined"
@@ -1855,7 +1830,7 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "if(valueIsUndefined){\n"+
-                                  "    Java::QtQml::QQmlExpression$ValueIsUndefined::throwNew(%env, \"Value is undefined.\" QTJAMBI_STACKTRACEINFO );\n"+
+                                  "    JavaException::raise<Java::QtQml::QQmlExpression$ValueIsUndefined>(%env, \"Value is undefined.\" QTJAMBI_STACKTRACEINFO );\n"+
                                   "}else{\n"+
                                   "    %out = qtjambi_cast<jobject>(%env, %in);\n"+
                                   "}"}
@@ -1885,12 +1860,6 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
     
     InterfaceType{
         name: "QQmlIncubationController"
-        ExtraIncludes{
-            Include{
-                fileName: "utils_p.h"
-                location: Include.Local
-            }
-        }
         InjectCode{
             target: CodeClass.JavaInterface
             ImportFile{
@@ -1969,16 +1938,6 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
     
     ValueType{
         name: "QQmlListReference"
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QScopedPointer"
-                location: Include.Global
-            }
-            Include{
-                fileName: "QtCore/QByteArray"
-                location: Include.Global
-            }
-        }
         InjectCode{
             target: CodeClass.Native
             Text{content: "QT_WARNING_DISABLE_DEPRECATED\nQT_WARNING_DISABLE_GCC(\"-Wdeprecated-declarations\")"}
@@ -2009,16 +1968,6 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
     
     InterfaceType{
         name: "QQmlTypesExtensionInterface"
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QScopedPointer"
-                location: Include.Global
-            }
-            Include{
-                fileName: "QtCore/QByteArray"
-                location: Include.Global
-            }
-        }
     }
     
     InterfaceType{
@@ -2027,12 +1976,6 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
     
     InterfaceType{
         name: "QQmlEngineExtensionInterface"
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/QmlAPI"
-                location: Include.Global
-            }
-        }
         ModifyFunction{
             signature: "initializeEngine(QQmlEngine *, const char *)"
             ModifyArgument{
@@ -2046,16 +1989,6 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
     
     ValueType{
         name: "QQmlProperty"
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QScopedPointer"
-                location: Include.Global
-            }
-            Include{
-                fileName: "QtCore/QByteArray"
-                location: Include.Global
-            }
-        }
         EnumType{
             name: "Type"
         }

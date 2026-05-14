@@ -32,7 +32,79 @@
 
 #include <functional>
 #include <QtCore/QExplicitlySharedDataPointer>
+#include <QtCore/QPointer>
 #include "global.h"
+
+namespace QtJambiPrivate {
+
+template<typename T, typename = void>
+struct is_complete : std::false_type {};
+
+template<typename T>
+struct is_complete<T, std::void_t<decltype(sizeof(T))>> : std::true_type {};
+
+template<typename O>
+constexpr bool is_complete_v = is_complete<O>::value;
+
+template<typename O>
+struct qtjambi_cast_result{
+    using type = std::conditional_t<std::is_array_v<O>, std::decay_t<O>, O>;
+};
+
+template<typename... Args>
+struct qtjambi_cast_enabled_test;
+
+template<typename... Args>
+static constexpr bool test_qtjambi_cast_enabled() {
+    if constexpr(is_complete_v<qtjambi_cast_enabled_test<Args...>>){
+        return qtjambi_cast_enabled_test<Args...>::value;
+    }else{
+        return true;
+    }
+}
+
+template<class O, typename... Args>
+struct qtjambi_cast_impl;
+
+template<typename O>
+struct jni_type;
+
+}
+
+template<typename O, typename... Args>
+using qtjambi_cast_result_t = std::enable_if_t<QtJambiPrivate::test_qtjambi_cast_enabled<Args...>(), typename QtJambiPrivate::qtjambi_cast_result<O>::type>;
+
+template<class O, typename... Args>
+static constexpr auto find_qtjambi_cast_impl() {
+    constexpr bool hasCastImpl = QtJambiPrivate::is_complete_v< QtJambiPrivate::qtjambi_cast_impl<O,Args...> >;
+    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/Cast>");
+    return QtJambiPrivate::qtjambi_cast_impl<O, Args...>{};
+}
+
+template<typename O, typename... Args>
+using qtjambi_cast_impl = decltype(find_qtjambi_cast_impl<O,Args...>());
+
+template<class O, typename... Args>
+constexpr qtjambi_cast_result_t<O,Args...> qtjambi_cast(Args&&... args){
+    return qtjambi_cast_impl<O, Args...>::cast(std::forward<Args>(args)...);
+}
+
+class QtJambiScope;
+
+template<class O, typename... Args>
+constexpr qtjambi_cast_result_t<O,JNIEnv*,Args...> qtjambi_cast(JNIEnv *env, Args&&... args){
+    return qtjambi_cast_impl<O,Args...,JNIEnv*>::cast(std::forward<Args>(args)..., env);
+}
+
+template<class O, typename... Args>
+constexpr qtjambi_cast_result_t<O,QtJambiScope&,Args...> qtjambi_cast(QtJambiScope& scope, Args&&... args){
+    return qtjambi_cast_impl<O,Args...,QtJambiScope&>::cast(std::forward<Args>(args)..., scope);
+}
+
+template<class O, typename... Args>
+constexpr qtjambi_cast_result_t<O,JNIEnv*,QtJambiScope&,Args...> qtjambi_cast(JNIEnv *env, QtJambiScope& scope, Args&&... args){
+    return qtjambi_cast_impl<O,Args...,JNIEnv*,QtJambiScope&>::cast(std::forward<Args>(args)..., env, scope);
+}
 
 struct RunnablePrivate;
 
@@ -57,21 +129,21 @@ public:
     Runnable& operator=(const Runnable& other) noexcept;
     Runnable& operator=(Runnable&& other) noexcept;
 
-    template<typename Functor, typename std::enable_if<!std::is_pointer<Functor>::value, bool>::type = true
-                             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, Runnable>::value, bool>::type = true
-                             , typename std::enable_if<!std::is_null_pointer<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::value, bool>::type = true
-                             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, FunctionPointer>::value, bool>::type = true
-                             , typename std::enable_if<std::is_invocable<Functor>::value, bool>::type = true
+    template<typename Functor, std::enable_if_t<!std::is_pointer_v<Functor>, bool> = true
+                             , std::enable_if_t<!std::is_same_v<std::remove_reference_t<std::remove_cv_t<Functor>>, Runnable>, bool> = true
+                             , std::enable_if_t<!std::is_null_pointer_v<std::remove_reference_t<std::remove_cv_t<Functor>>>, bool> = true
+                             , std::enable_if_t<!std::is_same_v<std::remove_reference_t<std::remove_cv_t<Functor>>, FunctionPointer>, bool> = true
+                             , std::enable_if_t<std::is_invocable_v<Functor>, bool> = true
     >
     Runnable(Functor&& functor) noexcept
         : Runnable(
-            new typename std::remove_reference<typename std::remove_cv<Functor>::type>::type(std::move(functor)),
+            new std::remove_reference_t<std::remove_cv_t<Functor>>(std::move(functor)),
             [](void* data){
-                typename std::remove_reference<typename std::remove_cv<Functor>::type>::type* fct = reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+                std::remove_reference_t<std::remove_cv_t<Functor>>* fct = reinterpret_cast<std::remove_reference_t<std::remove_cv_t<Functor>>*>(data);
                 (*fct)();
             },
             [](void* data){
-                delete reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+                delete reinterpret_cast<std::remove_reference_t<std::remove_cv_t<Functor>>*>(data);
             }
             ){}
     bool operator==(const Runnable& other) const noexcept;
@@ -97,6 +169,33 @@ public:
                     delete ptr;
                 }, nullptr);
         }
+    }
+    template<typename T>
+    static Runnable deleter(QScopedArrayPointer<T>&& t){
+        return Runnable(
+            reinterpret_cast<void*>(new QScopedArrayPointer<T>(std::move(t))),
+            [](void* data){
+                QScopedArrayPointer<T>* pointer = reinterpret_cast<QScopedArrayPointer<T>*>(data);
+                delete pointer;
+            }, nullptr);
+    }
+    template<typename T>
+    static Runnable deleter(QScopedPointer<T>&& t){
+        return Runnable(
+            reinterpret_cast<void*>(new QScopedPointer<T>(std::move(t))),
+            [](void* data){
+                QScopedPointer<T>* pointer = reinterpret_cast<QScopedPointer<T>*>(data);
+                delete pointer;
+            }, nullptr);
+    }
+    template<typename T>
+    static Runnable deleter(std::unique_ptr<T>&& t){
+        return Runnable(
+            reinterpret_cast<void*>(new std::unique_ptr<T>(std::move(t))),
+            [](void* data){
+                std::unique_ptr<T>* pointer = reinterpret_cast<std::unique_ptr<T>*>(data);
+                delete pointer;
+            }, nullptr);
     }
     template<typename T>
     static Runnable arrayDeleter(T* t){

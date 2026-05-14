@@ -32,6 +32,7 @@
 
 #include "global.h"
 #include "qtjambiapi.h"
+#include "typetests.h"
 #include <QtCore/QVector>
 #include <QtCore/QQueue>
 #include <QtCore/QHash>
@@ -45,6 +46,15 @@
 // required because msvc merges the templates as code optimization
 QTJAMBI_EXPORT QFunctionPointer template_keep_dummy(QFunctionPointer ptr, ushort n);
 #endif
+
+namespace QtJambiAPI {
+template<typename Ret, typename... Args>
+struct FunctionType{
+    typedef Ret(*type)(Args...);
+    typedef Ret(signature)(Args...);
+};
+QTJAMBI_EXPORT uint getJavaObjectIdentity(JNIEnv *env, jobject object);
+}//namespace QtJambiAPI
 
 namespace FunctionPointerPrivate{
 
@@ -79,13 +89,13 @@ struct FunctionParamTypeInfo{
 public:
     template<typename T>
     static FunctionParamTypeInfo create(){
-        return  FunctionParamTypeInfo(std::is_pointer<T>::value,
+        return  FunctionParamTypeInfo(std::is_pointer_v<T>,
                                       std::is_reference<T>::value,
-                                      std::is_const<typename std::remove_reference<T>::type>::value,
+                                      std::is_const<std::remove_reference_t<T>>::value,
                                       std::is_enum<T>::value,
                                       std::is_arithmetic<T>::value,
                                       TSize<T>::size,
-                                      typeid(typename std::conditional<std::is_pointer<T>::value, typename std::remove_pointer<T>::type, T>::type));
+                                      typeid(std::conditional_t<std::is_pointer_v<T>, std::remove_pointer_t<T>, T>));
     }
 private:
     FunctionParamTypeInfo(bool _isPointer,
@@ -120,7 +130,7 @@ union storage
     storage() {}
     storage(Callable&& clb) : callable(std::forward<Callable>(clb)) {}
     ~storage() {}
-    typename std::decay<Callable>::type callable;
+    std::decay_t<Callable> callable;
 };
 
 template<ushort count, typename Callable, typename Ret, typename... Args>
@@ -236,13 +246,13 @@ Ret CallableHash<count, Callable,Ret,Args...>::caller(Fn fn, Args...args){
     storage<Callable>* stor = instance().value(fn);
     if(!stor){
         noFunctionAvailable(typeid(Ret(*)(Args...)));
-        if constexpr(std::is_same<Ret,void>::value){
+        if constexpr(std::is_same_v<Ret,void>){
             return;
-        }else if constexpr(std::is_pointer<Ret>::value || std::is_null_pointer<Ret>::value){
+        }else if constexpr(std::is_pointer_v<Ret> || std::is_null_pointer_v<Ret>){
             return nullptr;
-        }else if constexpr(std::is_integral<Ret>::value || std::is_floating_point<Ret>::value){
+        }else if constexpr(std::is_integral_v<Ret> || std::is_floating_point_v<Ret>){
             return Ret{0};
-        }else if constexpr(std::is_default_constructible<Ret>::value){
+        }else if constexpr(QtJambiPrivate::is_default_constructible_v<Ret>){
             return Ret{};
         }else{
             throw std::bad_function_call();

@@ -33,7 +33,8 @@
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/JObjectWrapper>
 #include <QtJambi/JavaAPI>
-#include <QtJambi/qtjambi_cast.h>
+
+#include <QtJambi/Cast>
 #include "utils_p.h"
 
 namespace Java{

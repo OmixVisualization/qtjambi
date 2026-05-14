@@ -31,6 +31,7 @@
 #define QTJAMBI_JAVABUFFERS_H
 
 #include "global.h"
+#include "qtjambiapi_array.h"
 
 namespace QtJambiAPI{
 template<class Container>
@@ -82,7 +83,7 @@ public:
 #endif
     template<class T>
     operator std::initializer_list<T> () const {
-        return QtJambiAPI::createIterable<std::initializer_list<T>>(constData<T>(), size<T>());
+        return QtJambiAPI::initializer_list<T>(constData<T>(), size<T>());
     }
     static bool isBuffer(JNIEnv *env, jobject obj);
     static bool isReadOnlyBuffer(JNIEnv *env, jobject buffer);
@@ -141,7 +142,7 @@ public:
 #endif
     template<class T>
     operator std::initializer_list<T> () const {
-        return QtJambiAPI::createIterable<std::initializer_list<T>>(constData<T>(), size<T>());
+        return QtJambiAPI::initializer_list<T>(constData<T>(), size<T>());
     }
 private:
     Q_DISABLE_COPY(JBufferData)
@@ -194,7 +195,7 @@ public:
 #endif
     template<class T>
     operator std::initializer_list<T> () const {
-        return QtJambiAPI::createIterable<std::initializer_list<T>>(constData<T>(), size<T>());
+        return QtJambiAPI::initializer_list<T>(constData<T>(), size<T>());
     }
     static bool isBuffer(JNIEnv *env, jobject obj);
     static bool isReadOnlyBuffer(JNIEnv *env, jobject buffer);
@@ -242,7 +243,7 @@ public:
 #endif
     template<class T>
     operator std::initializer_list<T> () const {
-        return QtJambiAPI::createIterable<std::initializer_list<T>>(constData<T>(), size<T>());
+        return QtJambiAPI::initializer_list<T>(constData<T>(), size<T>());
     }
 private:
     Q_DISABLE_COPY(PersistentJBufferData)

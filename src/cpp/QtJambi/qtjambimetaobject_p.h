@@ -35,7 +35,8 @@
 #include <QtCore/QSharedPointer>
 #include <QtCore/private/qobject_p.h>
 #include "qtjambiapi.h"
-#include "typeutils.h"
+#include "qtjambiapi_construct.h"
+#include "containerutils.h"
 #include "jobjectwrapper.h"
 
 typedef void (*StaticMetaCallFunction)(QObject *, QMetaObject::Call, int, void **);
@@ -71,7 +72,7 @@ class InPlaceInitializer{
     QtJambiAPI::ConstructorFn m_constructorFunction;
     QList<jclass> m_constructorArgumentFunctionTypes;
     const bool m_matches;
-    QVector<jvalue> m_arguments;
+    QVector<JObjectWrapper> m_arguments;
     bool m_is_qml_call;
     QSharedPointer<bool> m_isInitialized;
     InPlaceInitializer* m_parentInitializer = nullptr;
@@ -79,7 +80,7 @@ class InPlaceInitializer{
 public:
     InPlaceInitializer(const QtJambiMetaObject* metaObject, void* placement, size_t _size, size_t _align,
                        const JConstructorInfo& constructorInfo,
-                       QVector<jvalue>&& arguments,
+                       QVector<JObjectWrapper>&& arguments,
                        bool is_qml_call = false);
     InPlaceInitializer(const QtJambiMetaObject* metaObject, void* placement, size_t _size, size_t _align,
                        QtJambiAPI::ConstructorFn constructorFunction,
@@ -90,7 +91,7 @@ protected:
                        QVector<ParameterTypeInfo>&& parameterTypeInfos,
                        QtJambiAPI::ConstructorFn constructorFunction,
                        const QList<jclass>& constructorArgumentFunctionTypes,
-                       QVector<jvalue> arguments,
+                       QVector<JObjectWrapper>&& arguments,
                        bool is_qml_call,
                        bool matches);
     friend class SuperInitializer;
@@ -113,7 +114,7 @@ public:
                      QVector<ParameterTypeInfo>&& parameterTypeInfos,
                      QtJambiAPI::ConstructorFn constructorFunction,
                      const QList<jclass>& constructorArgumentFunctionTypes,
-                     QVector<jvalue> arguments,
+                     QVector<JObjectWrapper>&& arguments,
                      bool is_qml_call,
                      bool matches, bool requireJava);
     jobject inPlaceObject(JNIEnv *env) const;
@@ -142,7 +143,10 @@ public:
     jfieldID getQPropertyField(int index) const;
     void registerQPropertyField(int index, jfieldID field);
     bool hasSignals() const;
-    const QSharedPointer<const QtJambiMetaObject>& thisPointer() const;
+    QSharedPointer<const QtJambiMetaObject> getStrongPointer() const;
+    inline QWeakPointer<const QtJambiMetaObject> getWeakPointer() const { return getStrongPointer(); }
+    inline operator QSharedPointer<const QtJambiMetaObject>() const { return getStrongPointer(); }
+    inline operator QWeakPointer<const QtJambiMetaObject>() const { return getStrongPointer(); }
     static jclass javaClass(JNIEnv * env, const QMetaObject* metaObject, bool exactOrNull = false);
     static bool isInstance(const QMetaObject* metaObject);
     static const QtJambiMetaObject* cast(const QMetaObject* metaObject);
@@ -168,20 +172,22 @@ public:
     static jobject convertToJavaObject(JNIEnv *env, const QMetaObject *metaObject);
     static const QMetaObject* findMetaObject(const char* name);
 private:
-    QtJambiMetaObject(JNIEnv *jni_env, jclass java_class);
+    QtJambiMetaObject();
     static jobject getSignalTypes(JNIEnv *env, jobject signal, const QMetaMethod& metaMethod);
-    void initialize(JNIEnv *env, const QMetaObject *original_meta_object, bool hasCustomMetaObject);
     void objectDestroyed(QObject *) /*override*/ {}
     ~QtJambiMetaObject() /*override*/;
     int metaCall(QObject *, QMetaObject::Call c, int _id, void **a) /*override*/;
     int metaCall(QMetaObject::Call, int _id, void **) /*override*/;
     QSharedPointer<const QtJambiMetaObject> dispose(JNIEnv * env) const;
-    QtJambiMetaObjectPrivate *d_ptr;
+    QtJambiMetaObjectPrivate *const d_ptr;
     Q_DECLARE_PRIVATE(QtJambiMetaObject)
     Q_DISABLE_COPY_MOVE(QtJambiMetaObject)
     friend QtJambiMetaObjectPrivate;
     friend QtSharedPointer::CustomDeleter<QtJambiMetaObject,QtSharedPointer::NormalDeleter>;
     friend void clearQtJambiStorage(JNIEnv* env, bool regular);
+    friend QtSharedPointer::ExternalRefCountWithCustomDeleter<const QtJambiMetaObject, QtSharedPointer::NormalDeleter>;
 };
+
+const QMetaObject *metaObjectForClass(JNIEnv *env, jclass java_class, const QMetaObject *original_meta_object = nullptr, bool hasCustomMetaObject = false);
 
 #endif // QTDYNAMICMETAOBJECT_P_H

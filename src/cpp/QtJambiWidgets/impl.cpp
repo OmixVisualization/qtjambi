@@ -39,7 +39,9 @@
 
 #include <QtWidgets/private/qwidget_p.h>
 #include <QtJambi/QtJambiAPI>
-#include <QtJambi/qtjambi_cast.h>
+#include <QtJambi/Cast>
+#include <QtJambi/Template1Cast>
+#include <QtJambi/ContainerCast>
 #include "utils_p.h"
 
 namespace Java{
@@ -261,3 +263,67 @@ const QObject* getPointerOwner(const QTableWidgetItem* item)
 {
     return ownerOrApp(item->tableWidget());
 }
+
+template jobject qtjambi_cast<jobject,QPaintDevice::PaintDeviceMetric&>(JNIEnv *, QPaintDevice::PaintDeviceMetric&);
+
+template jobject qtjambi_cast<jobject,QInputMethodEvent*&>(JNIEnv *, QInputMethodEvent*&);
+template jobject qtjambi_cast<jobject,QActionEvent*&>(JNIEnv *, QActionEvent*&);
+template jobject qtjambi_cast<jobject,QCloseEvent*&>(JNIEnv *, QCloseEvent*&);
+template jobject qtjambi_cast<jobject,QContextMenuEvent*&>(JNIEnv *, QContextMenuEvent*&);
+template jobject qtjambi_cast<jobject,QDragEnterEvent*&>(JNIEnv *, QDragEnterEvent*&);
+template jobject qtjambi_cast<jobject,QDragLeaveEvent*&>(JNIEnv *, QDragLeaveEvent*&);
+template jobject qtjambi_cast<jobject,QDragMoveEvent*&>(JNIEnv *, QDragMoveEvent*&);
+template jobject qtjambi_cast<jobject,QDropEvent*&>(JNIEnv *, QDropEvent*&);
+template jobject qtjambi_cast<jobject,QEnterEvent*&>(JNIEnv *, QEnterEvent*&);
+template jobject qtjambi_cast<jobject,QHideEvent*&>(JNIEnv *, QHideEvent*&);
+template jobject qtjambi_cast<jobject,QKeyEvent*&>(JNIEnv *, QKeyEvent*&);
+template jobject qtjambi_cast<jobject,QMouseEvent*&>(JNIEnv *, QMouseEvent*&);
+template jobject qtjambi_cast<jobject,QMoveEvent*&>(JNIEnv *, QMoveEvent*&);
+template jobject qtjambi_cast<jobject,QPaintEvent*&>(JNIEnv *, QPaintEvent*&);
+template jobject qtjambi_cast<jobject,QResizeEvent*&>(JNIEnv *, QResizeEvent*&);
+template jobject qtjambi_cast<jobject,QShowEvent*&>(JNIEnv *, QShowEvent*&);
+template jobject qtjambi_cast<jobject,QTabletEvent*&>(JNIEnv *, QTabletEvent*&);
+template jobject qtjambi_cast<jobject,QPainter*&>(JNIEnv *, QPainter*&);
+template jobject qtjambi_cast<jobject,QPaintEngine*&>(JNIEnv *, QPaintEngine*&);
+
+template jobject qtjambi_cast<jobject,QIcon>(JNIEnv *, QIcon&&);
+template jobject qtjambi_cast<jobject,const QIcon&>(JNIEnv *, const QIcon&);
+template jobject qtjambi_cast<jobject,QColor>(JNIEnv *, QColor&&);
+template jobject qtjambi_cast<jobject,const QColor&>(JNIEnv *, const QColor&);
+template jobject qtjambi_cast<jobject,QTransform>(JNIEnv *, QTransform&&);
+template jobject qtjambi_cast<jobject,const QTransform&>(JNIEnv *, const QTransform&);
+template jobject qtjambi_cast<jobject,QCursor>(JNIEnv *, QCursor&&);
+template jobject qtjambi_cast<jobject,const QCursor&>(JNIEnv *, const QCursor&);
+template jobject qtjambi_cast<jobject,QPainterPath>(JNIEnv *, QPainterPath&&);
+template jobject qtjambi_cast<jobject,const QPainterPath&>(JNIEnv *, const QPainterPath&);
+template jobject qtjambi_cast<jobject,QRegion>(JNIEnv *, QRegion&&);
+template jobject qtjambi_cast<jobject,const QRegion&>(JNIEnv *, const QRegion&);
+template jobject qtjambi_cast<jobject,QBrush>(JNIEnv *, QBrush&&);
+template jobject qtjambi_cast<jobject,const QBrush&>(JNIEnv *, const QBrush&);
+
+template jobject qtjambi_cast<jobject,QGraphicsItem::Extension&>(JNIEnv *, QGraphicsItem::Extension&);
+template jobject qtjambi_cast<jobject,QGraphicsItem::GraphicsItemChange&>(JNIEnv *, QGraphicsItem::GraphicsItemChange&);
+
+template jobject qtjambi_cast<jobject,QGraphicsItemGroup*&>(JNIEnv *, QGraphicsItemGroup*&);
+template jobject qtjambi_cast<jobject,QGraphicsItem*&>(JNIEnv *, QGraphicsItem*&);
+template jobject qtjambi_cast<jobject,const QGraphicsItem*&>(JNIEnv *, const QGraphicsItem*&);
+template jobject qtjambi_cast<jobject,QGraphicsEffect*&>(JNIEnv *, QGraphicsEffect*&);
+template jobject qtjambi_cast<jobject,QGraphicsSceneWheelEvent*&>(JNIEnv *, QGraphicsSceneWheelEvent*&);
+template jobject qtjambi_cast<jobject,const QStyleOptionGraphicsItem*&>(JNIEnv *, const QStyleOptionGraphicsItem*&);
+template jobject qtjambi_cast<jobject,QGraphicsSceneMouseEvent*&>(JNIEnv *, QGraphicsSceneMouseEvent*&);
+template jobject qtjambi_cast<jobject,QGraphicsSceneHoverEvent*&>(JNIEnv *, QGraphicsSceneHoverEvent*&);
+template jobject qtjambi_cast<jobject,QGraphicsSceneDragDropEvent*&>(JNIEnv *, QGraphicsSceneDragDropEvent*&);
+template jobject qtjambi_cast<jobject,QGraphicsSceneContextMenuEvent*&>(JNIEnv *, QGraphicsSceneContextMenuEvent*&);
+
+template QList<QAction*> qtjambi_cast<QList<QAction*>,jobject&>(JNIEnv *, jobject&);
+template jobject qtjambi_cast<jobject,QList<QAction*>>(JNIEnv *, QList<QAction*>&&);
+template jobject qtjambi_cast<jobject,const QList<QAction*>&>(JNIEnv *, const QList<QAction*>&);
+
+template jobject qtjambi_cast<jobject,QImage>(JNIEnv *, QImage&&);
+template jobject qtjambi_cast<jobject,const QImage&>(JNIEnv *, const QImage&);
+
+template jobject qtjambi_cast<jobject,QPixmap>(JNIEnv *, QPixmap&&);
+template jobject qtjambi_cast<jobject,const QPixmap&>(JNIEnv *, const QPixmap&);
+
+template jobject qtjambi_cast<jobject,QFont>(JNIEnv *, QFont&&);
+template jobject qtjambi_cast<jobject,const QFont&>(JNIEnv *, const QFont&);

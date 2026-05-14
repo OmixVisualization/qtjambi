@@ -519,7 +519,7 @@ struct JArrayRuntime<jdoubleArray>{
 template<typename ArrayType, typename Cleanup>
 class JArrayWrapperData : public JObjectWrapperData{
 protected:
-    typedef typename QtJambiPrivate::jni_type<ArrayType>::ElementType ElementType;
+    typedef QtJambiPrivate::jni_array_element_type_t<ArrayType> ElementType;
 public:
     Type type() const override { return JArrayRuntime<ArrayType>::ArrayRef; };
     bool isRefViaJava() const override { return false; }
@@ -622,7 +622,7 @@ private:
 template<typename ArrayType, typename Cleanup>
 class JArrayViaJavaWrapperData : public JObjectWrapperData{
 protected:
-    typedef typename QtJambiPrivate::jni_type<ArrayType>::ElementType ElementType;
+    typedef QtJambiPrivate::jni_array_element_type_t<ArrayType> ElementType;
 public:
     Type type() const override { return JArrayRuntime<ArrayType>::ArrayRef; };
     bool isRefViaJava() const override { return true; }
@@ -1462,7 +1462,7 @@ int JCollectionWrapper::size() const {
     if(JniEnvironment env{200}){
         jobject _object = object(env);
         if(_object){
-           return Java::Runtime::Collection::size(env, _object);
+           return QtJambiAPI::sizeOfJavaCollection(env, _object);
         }
     }
     return 0;
@@ -1471,10 +1471,10 @@ int JCollectionWrapper::size() const {
 jobject JCollectionWrapper::at(JNIEnv *env, jsize index) const{
     if(jobject obj = object(env)){
         jobject value = nullptr;
-        if(index<0 || index>=Java::Runtime::Collection::size(env, obj)){
+        if(index<0 || index>=QtJambiAPI::sizeOfJavaCollection(env, obj)){
             JavaException::raiseIndexOutOfBoundsException(env, QString::number(index) QTJAMBI_STACKTRACEINFO);
         }else if(Java::Runtime::List::isInstanceOf(env, obj)){
-            value = Java::Runtime::List::get(env, obj, index);
+            value = QtJambiAPI::getAtJavaList(env, obj, index);
         }else{
             jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, obj);
             for(int i=0; i<index; ++i){
@@ -1501,7 +1501,7 @@ JObjectWrapper JCollectionWrapper::operator[](jsize index) const{
 JObjectWrapperRef JCollectionWrapper::operator[](jsize index){
     if(JniEnvironment env{500}){
         if(jobject obj = object(env)){
-            if(index<0 || index>=Java::Runtime::Collection::size(env, obj)){
+            if(index<0 || index>=QtJambiAPI::sizeOfJavaCollection(env, obj)){
                 JavaException::raiseIndexOutOfBoundsException(env, QString::number(index) QTJAMBI_STACKTRACEINFO);
             }
         }
@@ -1518,9 +1518,9 @@ QList<QVariant> JCollectionWrapper::toList() const {
 
 QList<QVariant> JCollectionWrapper::toList(JNIEnv *env) const {
     QList<QVariant> list;
-    jobject iter = Java::Runtime::Collection::iterator(env, object(env));
-    while(Java::Runtime::Iterator::hasNext(env, iter)){
-        jobject o = Java::Runtime::Iterator::next(env, iter);
+    jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, object(env));
+    while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+        jobject o = QtJambiAPI::nextOfJavaIterator(env, iter);
         list << QtJambiAPI::convertJavaObjectToQVariant(env, o);
     }
     return list;
@@ -1536,9 +1536,9 @@ QStringList JCollectionWrapper::toStringList(bool * ok) const {
 
 QStringList JCollectionWrapper::toStringList(JNIEnv *env, bool * ok) const {
     QStringList list;
-    jobject iter = Java::Runtime::Collection::iterator(env, object(env));
-    while(Java::Runtime::Iterator::hasNext(env, iter)){
-        jobject o = Java::Runtime::Iterator::next(env, iter);
+    jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, object(env));
+    while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+        jobject o = QtJambiAPI::nextOfJavaIterator(env, iter);
         list << qtjambi_cast<QString>(env, o);
     }
     if(ok) ok[0] = true;
@@ -1630,9 +1630,9 @@ QMap<QVariant,QVariant> JMapWrapper::toMap() const {
     QMap<QVariant,QVariant> map;
     if(JniEnvironment env{200}){
         int type = QMetaType::UnknownType;
-        jobject iter = Java::Runtime::Collection::iterator(env, _entrySet(env));
-        while(Java::Runtime::Iterator::hasNext(env, iter)){
-            jobject entry = Java::Runtime::Iterator::next(env, iter);
+        jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, _entrySet(env));
+        while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+            jobject entry = QtJambiAPI::nextOfJavaIterator(env, iter);
             jobject key = Java::Runtime::Map$Entry::getKey(env, entry);
             jobject value = Java::Runtime::Map$Entry::getValue(env, entry);
             QVariant k(QtJambiAPI::convertJavaObjectToQVariant(env, key));
@@ -1653,9 +1653,9 @@ QMap<QVariant,QVariant> JMapWrapper::toMap() const {
 QVariantMap JMapWrapper::toStringMap(bool* ok) const {
     QVariantMap map;
     if(JniEnvironment env{200}){
-        jobject iter = Java::Runtime::Collection::iterator(env, _entrySet(env));
-        while(Java::Runtime::Iterator::hasNext(env, iter)){
-            jobject entry = Java::Runtime::Iterator::next(env, iter);
+        jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, _entrySet(env));
+        while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+            jobject entry = QtJambiAPI::nextOfJavaIterator(env, iter);
             jobject key = Java::Runtime::Map$Entry::getKey(env, entry);
             if(ok && key && !Java::Runtime::String::isInstanceOf(env, key)){
                 ok[0] = false;
@@ -1675,9 +1675,9 @@ QVariantMap JMapWrapper::toStringMap(bool* ok) const {
 QVariantHash JMapWrapper::toStringHash(bool* ok) const {
     QVariantHash map;
     if(JniEnvironment env{200}){
-        jobject iter = Java::Runtime::Collection::iterator(env, _entrySet(env));
-        while(Java::Runtime::Iterator::hasNext(env, iter)){
-            jobject entry = Java::Runtime::Iterator::next(env, iter);
+        jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, _entrySet(env));
+        while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+            jobject entry = QtJambiAPI::nextOfJavaIterator(env, iter);
             jobject key = Java::Runtime::Map$Entry::getKey(env, entry);
             if(ok && key && !Java::Runtime::String::isInstanceOf(env, key)){
                 ok[0] = false;
@@ -1756,7 +1756,7 @@ JObjectWrapperRef::operator JObjectWrapper() const
                 break;
             case JObjectWrapperData::JCollectionRef:
                 if(Java::Runtime::List::isInstanceOf(env, object)){
-                    value = Java::Runtime::List::get(env, object, m_index);
+                    value = QtJambiAPI::getAtJavaList(env, object, m_index);
                 }else{
                     jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, object);
                     for(int i=0; i<m_index; ++i){
@@ -1786,7 +1786,7 @@ JObjectWrapperRef::operator jobject() const
             break;
             case JObjectWrapperData::JCollectionRef:
                 if(Java::Runtime::List::isInstanceOf(env, object)){
-                    value = Java::Runtime::List::get(env, object, m_index);
+                    value = QtJambiAPI::getAtJavaList(env, object, m_index);
                 }else{
                     jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, object);
                     for(int i=0; i<m_index; ++i){
@@ -2249,17 +2249,10 @@ JArrayWrapper<ArrayType>& JArrayWrapper<ArrayType>::operator=(ArrayType object) 
 }
 
 template class QTJAMBI_EXPORT JArrayWrapper<jintArray>;
-
 template class QTJAMBI_EXPORT JArrayWrapper<jlongArray>;
-
 template class QTJAMBI_EXPORT JArrayWrapper<jshortArray>;
-
 template class QTJAMBI_EXPORT JArrayWrapper<jbyteArray>;
-
 template class QTJAMBI_EXPORT JArrayWrapper<jbooleanArray>;
-
 template class QTJAMBI_EXPORT JArrayWrapper<jcharArray>;
-
 template class QTJAMBI_EXPORT JArrayWrapper<jfloatArray>;
-
 template class QTJAMBI_EXPORT JArrayWrapper<jdoubleArray>;

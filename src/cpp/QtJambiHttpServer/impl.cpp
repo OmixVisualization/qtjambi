@@ -34,7 +34,8 @@
 #include <QtJambi/CoreAPI>
 #include <QtJambi/JObjectWrapper>
 #include <QtJambi/JavaAPI>
-#include <QtJambi/qtjambi_cast.h>
+#include <QtJambi/Cast>
+#include <QtJambi/ArrayCast>
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
 typedef void (QHttpServer::*SendResponse)(QHttpServerResponse &&, const QHttpServerRequest &, QTcpSocket *);
@@ -79,7 +80,7 @@ struct AddRuleArguments{
 template<>
 QHttpServerRouterRule *QHttpServerRouter::addRule<AddRuleArguments,void>(std::unique_ptr<QHttpServerRouterRule> ptr){
     AddRuleArguments* args = reinterpret_cast<AddRuleArguments*>(ptr.release());
-    return addRuleImpl(std::unique_ptr<QHttpServerRouterRule>(args->rule), QtJambiAPI::createIterable<std::initializer_list<QMetaType>>(args->metaTypes->data(), args->metaTypes->size()));
+    return addRuleImpl(std::unique_ptr<QHttpServerRouterRule>(args->rule), QtJambiAPI::initializer_list<QMetaType>(args->metaTypes->data(), args->metaTypes->size()));
 }
 
 extern "C" JNIEXPORT bool JNICALL Java_io_qt_httpserver_QHttpServerRouter_addRuleImpl
@@ -92,12 +93,12 @@ extern "C" JNIEXPORT bool JNICALL Java_io_qt_httpserver_QHttpServerRouter_addRul
     Q_UNUSED(__this)
     bool result = false;
     QTJAMBI_TRY {
-        QHttpServerRouter *__qt_this = QtJambiAPI::objectFromNativeId<QHttpServerRouter>(__this_nativeId);
+        QHttpServerRouter *__qt_this = qtjambi_cast<QHttpServerRouter*>(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::addRuleImpl(std::unique_ptr<QHttpServerRouterRule>, std::initializer_list<QMetaType>)", __qt_this)
         AddRuleArguments arguments;
-        arguments.rule = QtJambiAPI::objectFromNativeId<QHttpServerRouterRule>(__rule);
-        arguments.metaTypes = QtJambiAPI::objectFromNativeId<QList<QMetaType>>(__metaTypes);
+        arguments.rule = qtjambi_cast<QHttpServerRouterRule*>(__rule);
+        arguments.metaTypes = qtjambi_cast<QList<QMetaType>*>(__metaTypes);
         QtJambiAPI::checkNullPointer(__jni_env, arguments.rule);
         QtJambiAPI::checkNullPointer(__jni_env, arguments.metaTypes);
         QtJambiAPI::setCppOwnership(__jni_env, __rule);
@@ -122,17 +123,17 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServer_sendResponse
 {
     Q_UNUSED(__this)
     QTJAMBI_TRY {
-        QHttpServer *__qt_this = QtJambiAPI::objectFromNativeId<QHttpServer>(__this_nativeId);
+        QHttpServer *__qt_this = qtjambi_cast<QHttpServer*>(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::sendResponse(QHttpServerResponse &&response, const QHttpServerRequest &request, QHttpServerResponder &&responder)", __qt_this)
-        QHttpServerResponse *response = QtJambiAPI::objectFromNativeId<QHttpServerResponse>(__response);
+        QHttpServerResponse *response = qtjambi_cast<QHttpServerResponse*>(__response);
         QtJambiAPI::checkNullPointer(__jni_env, response);
-        const QHttpServerRequest *request = QtJambiAPI::objectFromNativeId<QHttpServerRequest>(__request);
+        const QHttpServerRequest *request = qtjambi_cast<QHttpServerRequest*>(__request);
         QtJambiAPI::checkNullPointer(__jni_env, request);
 #if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
-        QTcpSocket *argX = QtJambiAPI::objectFromNativeId<QTcpSocket>(__argX);
+        QTcpSocket *argX = qtjambi_cast<QTcpSocket*>(__argX);
 #else
-        QHttpServerResponder& argX = QtJambiAPI::objectReferenceFromNativeId<QHttpServerResponder>(__jni_env, __argX);
+        QHttpServerResponder& argX = qtjambi_cast<QHttpServerResponder&>(__jni_env, __argX);
 #endif
         SendResponse function{nullptr};
         __qt_this->route<void,SendResponse>({}, std::move(function));
@@ -153,13 +154,13 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServer_sendResponse
 {
     Q_UNUSED(__this)
     QTJAMBI_TRY {
-        QHttpServer *__qt_this = QtJambiAPI::objectFromNativeId<QHttpServer>(__this_nativeId);
+        QHttpServer *__qt_this = qtjambi_cast<QHttpServer*>(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::sendResponse(QFuture<QHttpServerResponse> &&response, const QHttpServerRequest &request, QHttpServerResponder &&responder)", __qt_this)
         QFuture<QVariant>& response = QtJambiAPI::convertJavaObjectToNativeReference<QFuture<QVariant>>(__jni_env, __response);
-        const QHttpServerRequest *request = QtJambiAPI::objectFromNativeId<QHttpServerRequest>(__request);
+        const QHttpServerRequest *request = qtjambi_cast<QHttpServerRequest*>(__request);
         QtJambiAPI::checkNullPointer(__jni_env, request);
-        QHttpServerResponder& argX = QtJambiAPI::objectReferenceFromNativeId<QHttpServerResponder>(__jni_env, __argX);
+        QHttpServerResponder& argX = qtjambi_cast<QHttpServerResponder&>(__jni_env, __argX);
         response.then(__qt_this,
                       [__qt_this, &request,
                        responder = std::move(argX)](QVariant &&vresponse) mutable {
@@ -194,7 +195,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServer_afterRequest
 {
     Q_UNUSED(__this)
     QTJAMBI_TRY {
-        QHttpServer *__qt_this = QtJambiAPI::objectFromNativeId<QHttpServer>(__this_nativeId);
+        QHttpServer *__qt_this = qtjambi_cast<QHttpServer*>(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::afterRequest()", __qt_this)
         if(isBi){
@@ -249,15 +250,15 @@ extern "C" JNIEXPORT bool JNICALL Java_io_qt_httpserver_QHttpServer_handleReques
     Q_UNUSED(__this)
     bool result = false;
     QTJAMBI_TRY {
-        QHttpServer *__qt_this = QtJambiAPI::objectFromNativeId<QHttpServer>(__this_nativeId);
+        QHttpServer *__qt_this = qtjambi_cast<QHttpServer*>(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::handleRequest(const QHttpServerRequest& request0, QHttpServerResponder &responder)", __qt_this)
-        const QHttpServerRequest *request = QtJambiAPI::objectFromNativeId<QHttpServerRequest>(__request);
+        const QHttpServerRequest *request = qtjambi_cast<QHttpServerRequest*>(__request);
         QtJambiAPI::checkNullPointer(__jni_env, request);
 #if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
-        QTcpSocket *argX = QtJambiAPI::objectFromNativeId<QTcpSocket>(__argX);
+        QTcpSocket *argX = qtjambi_cast<QTcpSocket*>(__argX);
 #else
-        QHttpServerResponder& argX = QtJambiAPI::objectReferenceFromNativeId<QHttpServerResponder>(__jni_env, __argX);
+        QHttpServerResponder& argX = qtjambi_cast<QHttpServerResponder&>(__jni_env, __argX);
 #endif
         HandleRequest function{nullptr};
         __qt_this->route<void,HandleRequest>({}, std::move(function));
@@ -277,15 +278,15 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServer_missingHandl
 {
     Q_UNUSED(__this)
     QTJAMBI_TRY {
-        QHttpServer *__qt_this = QtJambiAPI::objectFromNativeId<QHttpServer>(__this_nativeId);
+        QHttpServer *__qt_this = qtjambi_cast<QHttpServer*>(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::missingHandler(const QHttpServerRequest &request, QHttpServerResponder &&responder)", __qt_this)
-        const QHttpServerRequest *request = QtJambiAPI::objectFromNativeId<QHttpServerRequest>(__request);
+        const QHttpServerRequest *request = qtjambi_cast<QHttpServerRequest*>(__request);
         QtJambiAPI::checkNullPointer(__jni_env, request);
 #if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
-        QTcpSocket *argX = QtJambiAPI::objectFromNativeId<QTcpSocket>(__argX);
+        QTcpSocket *argX = qtjambi_cast<QTcpSocket*>(__argX);
 #else
-        QHttpServerResponder& argX = QtJambiAPI::objectReferenceFromNativeId<QHttpServerResponder>(__jni_env, __argX);
+        QHttpServerResponder& argX = qtjambi_cast<QHttpServerResponder&>(__jni_env, __argX);
 #endif
         MissingHandler function{nullptr};
         __qt_this->route<void,MissingHandler>({}, std::move(function));

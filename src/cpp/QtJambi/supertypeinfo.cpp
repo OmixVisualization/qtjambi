@@ -343,9 +343,9 @@ SuperTypeInfos SuperTypeInfos::fromClass(JNIEnv *env, jclass clazz)
 
             if(interfaceInfos && Java::Runtime::Map::size(env, interfaceInfos)!=0){
                 jobject keySet = Java::Runtime::Map::keySet(env, interfaceInfos);
-                jobject iterator = Java::Runtime::Collection::iterator(env, keySet);
-                while(Java::Runtime::Iterator::hasNext(env, iterator)) {
-                    jclass interfaceClass = jclass(Java::Runtime::Iterator::next(env, iterator));
+                jobject iterator = QtJambiAPI::iteratorOfJavaIterable(env, keySet);
+                while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
+                    jclass interfaceClass = jclass(QtJambiAPI::nextOfJavaIterator(env, iterator));
                     QByteArray className = QtJambiAPI::getClassNameJNI(env, interfaceClass);
                     if(const std::type_info* typeId = getTypeByJavaName(className)){
                         const char* qtName = getQtName(*typeId);

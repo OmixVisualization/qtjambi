@@ -732,6 +732,8 @@ QStringList MetaFunction::introspectionCompatibleSignatures(const QStringList &r
 }
 
 bool MetaFunction::hasUnresolvedTemplateTypes() const{
+    if(this->isModifiedRemoved())
+        return false;
     for(const MetaArgument *arg : m_arguments) {
         if (arg->type()->isTemplateArgument())
             return true;
@@ -742,8 +744,14 @@ bool MetaFunction::hasUnresolvedTemplateTypes() const{
             }
         }
     }
-    if(m_type && (m_type->isTemplateArgument() || m_type->typeUsagePattern()==MetaType::AutoPattern))
+    if(m_type && m_type->isTemplateArgument())
         return true;
+    if(m_type && m_type->typeUsagePattern()==MetaType::AutoPattern){
+        if(this->typeReplaced(0).isEmpty()
+            && this->replacedArgument()!="this"){
+            return true;
+        }
+    }
     if(m_type && m_type->isArray()){
         for(const QPair<int,QString>& pair : m_type->arrayElementCounts()){
             if(!pair.second.isEmpty())
@@ -1094,6 +1102,236 @@ bool MetaFunctional::needsReturnScope() const {
     return false;
 }
 
+bool MetaFunctional::hasDeprecation() const
+{
+    return m_hasDeprecation;
+}
+
+void MetaFunctional::setHasDeprecation(bool newHasDeprecation)
+{
+    m_hasDeprecation = newHasDeprecation;
+}
+
+bool MetaFunctional::needModelCast() const
+{
+    return m_needModelCast;
+}
+
+void MetaFunctional::setNeedModelCast(bool newNeedModelCast)
+{
+    m_needModelCast = newNeedModelCast;
+}
+
+bool MetaFunctional::needDBusCast() const
+{
+    return m_needDBusCast;
+}
+
+void MetaFunctional::setNeedDBusCast(bool newNeedDBusCast)
+{
+    m_needDBusCast = newNeedDBusCast;
+}
+
+bool MetaFunctional::needQmlCast() const
+{
+    return m_needQmlCast;
+}
+
+void MetaFunctional::setNeedQmlCast(bool newNeedQmlCast)
+{
+    m_needQmlCast = newNeedQmlCast;
+}
+
+bool MetaFunctional::needFutureCast() const
+{
+    return m_needFutureCast;
+}
+
+void MetaFunctional::setNeedFutureCast(bool newNeedFutureCast)
+{
+    m_needFutureCast = newNeedFutureCast;
+}
+
+bool MetaFunctional::needArrayCast() const
+{
+    return m_needArrayCast;
+}
+
+void MetaFunctional::setNeedArrayCast(bool newNeedArrayCast)
+{
+    m_needArrayCast = newNeedArrayCast;
+}
+
+bool MetaFunctional::needBufferCast() const
+{
+    return m_needBufferCast;
+}
+
+void MetaFunctional::setNeedBufferCast(bool newNeedBufferCast)
+{
+    m_needBufferCast = newNeedBufferCast;
+}
+
+bool MetaFunctional::needJObjectWrapper() const
+{
+    return m_needJObjectWrapper;
+}
+
+void MetaFunctional::setNeedJObjectWrapper(bool newNeedJObjectWrapper)
+{
+    m_needJObjectWrapper = newNeedJObjectWrapper;
+}
+
+bool MetaFunctional::needStringAPI() const
+{
+    return m_needStringAPI;
+}
+
+void MetaFunctional::setNeedStringAPI(bool newNeedStringAPI)
+{
+    m_needStringAPI = newNeedStringAPI;
+}
+
+bool MetaFunctional::needBufferAPI() const
+{
+    return m_needBufferAPI;
+}
+
+void MetaFunctional::setNeedBufferAPI(bool newNeedBufferAPI)
+{
+    m_needBufferAPI = newNeedBufferAPI;
+}
+
+bool MetaFunctional::needArrayAPI() const
+{
+    return m_needArrayAPI;
+}
+
+void MetaFunctional::setNeedArrayAPI(bool newNeedArrayAPI)
+{
+    m_needArrayAPI = newNeedArrayAPI;
+}
+
+bool MetaFunctional::needTimeCast() const
+{
+    return m_needTimeCast;
+}
+
+void MetaFunctional::setNeedTimeCast(bool newNeedTimeCast)
+{
+    m_needTimeCast = newNeedTimeCast;
+}
+
+bool MetaFunctional::needTemplate2Cast() const
+{
+    return m_needTemplate2Cast;
+}
+
+void MetaFunctional::setNeedTemplate2Cast(bool newNeedTemplate2Cast)
+{
+    m_needTemplate2Cast = newNeedTemplate2Cast;
+}
+
+bool MetaFunctional::needTemplate1Cast() const
+{
+    return m_needTemplate1Cast;
+}
+
+void MetaFunctional::setNeedTemplate1Cast(bool newNeedTemplate1Cast)
+{
+    m_needTemplate1Cast = newNeedTemplate1Cast;
+}
+
+bool MetaFunctional::needArithmeticCast() const
+{
+    return m_needArithmeticCast;
+}
+
+void MetaFunctional::setNeedArithmeticCast(bool newNeedArithmeticCast)
+{
+    m_needArithmeticCast = newNeedArithmeticCast;
+}
+
+bool MetaFunctional::needEnumCast() const
+{
+    return m_needEnumCast;
+}
+
+void MetaFunctional::setNeedEnumCast(bool newNeedEnumCast)
+{
+    m_needEnumCast = newNeedEnumCast;
+}
+
+bool MetaFunctional::needSmartPointerCast() const
+{
+    return m_needSmartPointerCast;
+}
+
+void MetaFunctional::setNeedSmartPointerCast(bool newNeedSmartPointerCast)
+{
+    m_needSmartPointerCast = newNeedSmartPointerCast;
+}
+
+bool MetaFunctional::needIteratorCast() const
+{
+    return m_needIteratorCast;
+}
+
+void MetaFunctional::setNeedIteratorCast(bool newNeedIteratorCast)
+{
+    m_needIteratorCast = newNeedIteratorCast;
+}
+
+bool MetaFunctional::needContainerCast() const
+{
+    return m_needContainerCast;
+}
+
+void MetaFunctional::setNeedContainerCast(bool newNeedContainerCast)
+{
+    m_needContainerCast = newNeedContainerCast;
+}
+
+bool MetaFunctional::needTemplate3Cast() const
+{
+    return m_needTemplate3Cast;
+}
+
+void MetaFunctional::setNeedTemplate3Cast(bool newNeedTemplate3Cast)
+{
+    m_needTemplate3Cast = newNeedTemplate3Cast;
+}
+
+bool MetaFunctional::needTemplate4Cast() const
+{
+    return m_needTemplate4Cast;
+}
+
+void MetaFunctional::setNeedTemplate4Cast(bool newNeedTemplate4Cast)
+{
+    m_needTemplate4Cast = newNeedTemplate4Cast;
+}
+
+bool MetaFunctional::needTemplate5Cast() const
+{
+    return m_needTemplate5Cast;
+}
+
+void MetaFunctional::setNeedTemplate5Cast(bool newNeedTemplate5Cast)
+{
+    m_needTemplate5Cast = newNeedTemplate5Cast;
+}
+
+bool MetaFunctional::needJavaAPI() const
+{
+    return m_needJavaAPI;
+}
+
+void MetaFunctional::setNeedJavaAPI(bool newNeedJavaAPI)
+{
+    m_needJavaAPI = newNeedJavaAPI;
+}
+
 bool MetaFunctional::needsCallThrough() const{
     bool needsCallThrough = typeEntry()->isNativeIdBased();
     if(!needsCallThrough){
@@ -1281,7 +1519,7 @@ QString MetaFunction::proxyCall() const {
 
 bool MetaFunction::isSelfReturningFunction() const{
     QString trepl = typeReplaced(0);
-    QString arepl = argumentReplaced(0);
+    QString arepl = replacedArgument();
     if(arepl.isEmpty()
             && trepl.isEmpty()
             && !isStatic()
@@ -1295,7 +1533,7 @@ bool MetaFunction::isSelfReturningFunction() const{
     return arepl=="this";
 }
 
-QString MetaFunction::argumentReplaced(int key) const {
+QString MetaFunction::replacedArgument() const {
     FunctionModificationList modifications = this->modifications(implementingClass());
     if(implementingClass()!=declaringClass())
         modifications << this->modifications(declaringClass());
@@ -1303,13 +1541,28 @@ QString MetaFunction::argumentReplaced(int key) const {
         for(const ArgumentModification& argument_modification : modification.argument_mods) {
             if(argument_modification.type!=ArgumentModification::Default)
                 continue;
-            if (argument_modification.index == key && !argument_modification.replace_value.isEmpty()) {
+            if (argument_modification.index == 0 && !argument_modification.replace_value.isEmpty()) {
                 return argument_modification.replace_value;
             }
         }
     }
+    return {};
+}
 
-    return "";
+QString MetaFunction::resolvedType() const {
+    FunctionModificationList modifications = this->modifications(implementingClass());
+    if(implementingClass()!=declaringClass())
+        modifications << this->modifications(declaringClass());
+    for(const FunctionModification& modification : modifications) {
+        for(const ArgumentModification& argument_modification : modification.argument_mods) {
+            if(argument_modification.type!=ArgumentModification::Default)
+                continue;
+            if (argument_modification.index == 0 && !argument_modification.resolved_type.isEmpty()) {
+                return argument_modification.resolved_type;
+            }
+        }
+    }
+    return {};
 }
 
 QPair<QMap<int,ArgumentModification>,QList<ArgumentModification>> MetaFunction::addedArguments() const
@@ -2023,6 +2276,22 @@ bool MetaFunction::useArgumentAsArray(int key) const{
     return false;
 }
 
+bool MetaFunction::useArgumentAsString(int key) const{
+    FunctionModificationList modifications = this->modifications(implementingClass());
+    if(implementingClass()!=declaringClass())
+        modifications << this->modifications(declaringClass());
+    for(const FunctionModification& modification : modifications) {
+        for(const ArgumentModification& argument_modification : modification.argument_mods) {
+            if(argument_modification.type!=ArgumentModification::Default)
+                continue;
+            if (argument_modification.index == key) {
+                return argument_modification.useAsStringType.testFlag(AsStringType::Yes);
+            }
+        }
+    }
+    return false;
+}
+
 bool MetaFunction::useArgumentAsBuffer(int key) const{
     FunctionModificationList modifications = this->modifications(implementingClass());
     if(implementingClass()!=declaringClass())
@@ -2136,6 +2405,15 @@ bool MetaFunctional::useArgumentAsArray(int key) const{
             continue;
         if (argument_modification.index == key) {
             return argument_modification.useAsArrayType.testFlag(AsArrayType::Yes);
+        }
+    }
+    return false;
+}
+
+bool MetaFunctional::useArgumentAsString(int key) const{
+    for(const ArgumentModification& argument_modification : this->typeEntry()->argumentModification()) {
+        if (argument_modification.index == key) {
+            return argument_modification.useAsStringType.testFlag(AsStringType::Yes);
         }
     }
     return false;
@@ -2502,7 +2780,7 @@ QString MetaFunction::targetLangSignature(bool minimal) const {
     return s;
 }
 
-bool MetaFunction::shouldReturnThisObject() const { return QLatin1String("this") == argumentReplaced(0); }
+bool MetaFunction::shouldReturnThisObject() const { return QStringLiteral(u"this") == replacedArgument(); }
 
 bool MetaFunction::isConstant() const { return m_constant; }
 
@@ -4063,8 +4341,9 @@ QString MetaType::minimalSignature() const {
     if (isConstant())
         minimalSignature += "const ";
     minimalSignature += typeEntry()->qualifiedCppName();
-    if (hasInstantiations() && (!typeEntry()->isContainer()
-                                || static_cast<const ContainerTypeEntry*>(typeEntry())->type()!=ContainerTypeEntry::StringListContainer)) {
+    if (hasInstantiations()
+        && !minimalSignature.contains("<")
+        && (!typeEntry()->isContainer() || static_cast<const ContainerTypeEntry*>(typeEntry())->type()!=ContainerTypeEntry::StringListContainer)) {
         const QList<const MetaType *>& instantiations = this->instantiations();
         minimalSignature += "<";
         for (int i = 0;i < instantiations.size();++i) {
@@ -4339,6 +4618,236 @@ QSet<QString> MetaClass::getAllUnimplmentablePureVirtualFunctions()const{
         }
     }
     return allPrivatePureVirtualFunctions;
+}
+
+bool MetaClass::needTemplate5Cast() const
+{
+    return m_needTemplate5Cast;
+}
+
+void MetaClass::setNeedTemplate5Cast(bool newNeedTemplate5Cast)
+{
+    m_needTemplate5Cast = newNeedTemplate5Cast;
+}
+
+bool MetaClass::needTemplate4Cast() const
+{
+    return m_needTemplate4Cast;
+}
+
+void MetaClass::setNeedTemplate4Cast(bool newNeedTemplate4Cast)
+{
+    m_needTemplate4Cast = newNeedTemplate4Cast;
+}
+
+bool MetaClass::needTemplate3Cast() const
+{
+    return m_needTemplate3Cast;
+}
+
+void MetaClass::setNeedTemplate3Cast(bool newNeedTemplate3Cast)
+{
+    m_needTemplate3Cast = newNeedTemplate3Cast;
+}
+
+bool MetaClass::needContainerCast() const
+{
+    return m_needContainerCast;
+}
+
+void MetaClass::setNeedContainerCast(bool newNeedContainerCast)
+{
+    m_needContainerCast = newNeedContainerCast;
+}
+
+bool MetaClass::needIteratorCast() const
+{
+    return m_needIteratorCast;
+}
+
+void MetaClass::setNeedIteratorCast(bool newNeedIteratorCast)
+{
+    m_needIteratorCast = newNeedIteratorCast;
+}
+
+bool MetaClass::needSmartPointerCast() const
+{
+    return m_needSmartPointerCast;
+}
+
+void MetaClass::setNeedSmartPointerCast(bool newNeedSmartPointerCast)
+{
+    m_needSmartPointerCast = newNeedSmartPointerCast;
+}
+
+bool MetaClass::needEnumCast() const
+{
+    return m_needEnumCast;
+}
+
+void MetaClass::setNeedEnumCast(bool newNeedEnumCast)
+{
+    m_needEnumCast = newNeedEnumCast;
+}
+
+bool MetaClass::needArithmeticCast() const
+{
+    return m_needArithmeticCast;
+}
+
+void MetaClass::setNeedArithmeticCast(bool newNeedArithmeticCast)
+{
+    m_needArithmeticCast = newNeedArithmeticCast;
+}
+
+bool MetaClass::needTemplate1Cast() const
+{
+    return m_needTemplate1Cast;
+}
+
+void MetaClass::setNeedTemplate1Cast(bool newNeedTemplate1Cast)
+{
+    m_needTemplate1Cast = newNeedTemplate1Cast;
+}
+
+bool MetaClass::needTemplate2Cast() const
+{
+    return m_needTemplate2Cast;
+}
+
+void MetaClass::setNeedTemplate2Cast(bool newNeedTemplate2Cast)
+{
+    m_needTemplate2Cast = newNeedTemplate2Cast;
+}
+
+bool MetaClass::needTimeCast() const
+{
+    return m_needTimeCast;
+}
+
+void MetaClass::setNeedTimeCast(bool newNeedTimeCast)
+{
+    m_needTimeCast = newNeedTimeCast;
+}
+
+bool MetaClass::needJavaAPI() const
+{
+    return m_needJavaAPI;
+}
+
+void MetaClass::setNeedJavaAPI(bool newNeedJavaAPI)
+{
+    m_needJavaAPI = newNeedJavaAPI;
+}
+
+bool MetaClass::needArrayAPI() const
+{
+    return m_needArrayAPI;
+}
+
+void MetaClass::setNeedArrayAPI(bool newNeedArrayAPI)
+{
+    m_needArrayAPI = newNeedArrayAPI;
+}
+
+bool MetaClass::needBufferAPI() const
+{
+    return m_needBufferAPI;
+}
+
+void MetaClass::setNeedBufferAPI(bool newNeedBufferAPI)
+{
+    m_needBufferAPI = newNeedBufferAPI;
+}
+
+bool MetaClass::needStringAPI() const
+{
+    return m_needStringAPI;
+}
+
+void MetaClass::setNeedStringAPI(bool newNeedStringAPI)
+{
+    m_needStringAPI = newNeedStringAPI;
+}
+
+bool MetaClass::needJObjectWrapper() const
+{
+    return m_needJObjectWrapper;
+}
+
+void MetaClass::setNeedJObjectWrapper(bool newNeedJObjectWrapper)
+{
+    m_needJObjectWrapper = newNeedJObjectWrapper;
+}
+
+bool MetaClass::needBufferCast() const
+{
+    return m_needBufferCast;
+}
+
+void MetaClass::setNeedBufferCast(bool newNeedBufferCast)
+{
+    m_needBufferCast = newNeedBufferCast;
+}
+
+bool MetaClass::needArrayCast() const
+{
+    return m_needArrayCast;
+}
+
+void MetaClass::setNeedArrayCast(bool newNeedArrayCast)
+{
+    m_needArrayCast = newNeedArrayCast;
+}
+
+bool MetaClass::needFutureCast() const
+{
+    return m_needFutureCast;
+}
+
+void MetaClass::setNeedFutureCast(bool newNeedFutureCast)
+{
+    m_needFutureCast = newNeedFutureCast;
+}
+
+bool MetaClass::needQmlCast() const
+{
+    return m_needQmlCast;
+}
+
+void MetaClass::setNeedQmlCast(bool newNeedQmlCast)
+{
+    m_needQmlCast = newNeedQmlCast;
+}
+
+bool MetaClass::needDBusCast() const
+{
+    return m_needDBusCast;
+}
+
+void MetaClass::setNeedDBusCast(bool newNeedDBusCast)
+{
+    m_needDBusCast = newNeedDBusCast;
+}
+
+bool MetaClass::needModelCast() const
+{
+    return m_needModelCast;
+}
+
+void MetaClass::setNeedModelCast(bool newNeedModelCast)
+{
+    m_needModelCast = newNeedModelCast;
+}
+
+bool MetaClass::hasDeprecation() const
+{
+    return m_hasDeprecation;
+}
+
+void MetaClass::setHasDeprecation(bool newHasDeprecation)
+{
+    m_hasDeprecation = newHasDeprecation;
 }
 
 uint MetaClass::returnScopeRequired() const

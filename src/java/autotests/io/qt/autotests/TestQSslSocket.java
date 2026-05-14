@@ -43,6 +43,7 @@ import org.junit.After;
 import org.junit.BeforeClass;
 
 import io.qt.core.QDateTime;
+import io.qt.core.QTimeZone;
 import io.qt.core.Qt;
 import io.qt.network.QAbstractSocket;
 import io.qt.network.QSslCertificate;
@@ -152,7 +153,7 @@ public class TestQSslSocket extends ApplicationInitializer {
 			QDateTime expDate = date[j];
 			// convert local time to UTC since certification exp. date is given
 			// in UTC too
-			expDate.setTimeSpec(Qt.TimeSpec.UTC);
+			expDate.setTimeZone(QTimeZone.utc());
 
 			String desc = "cert[" + Integer.valueOf(j).toString() + "]";
 			assertFalse(desc + ".isBlacklisted()", cert.isBlacklisted());

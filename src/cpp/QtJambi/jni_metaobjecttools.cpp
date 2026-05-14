@@ -50,7 +50,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_PropertyUtility_getProp
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_PropertyUtility_registerPropertyField(JNIEnv *env, jclass, QtJambiNativeID metaPropertyId, jobject reflectField){
-    QMetaProperty property = QtJambiAPI::valueReferenceFromNativeId<QMetaProperty>(metaPropertyId);
+    QMetaProperty property = qtjambi_cast<QMetaProperty>(metaPropertyId);
     if(property.isValid()){
         if(const QtJambiMetaObject* dynamicMetaObject = QtJambiMetaObject::cast(property.enclosingMetaObject())){
             jfieldID field = env->FromReflectedField(reflectField);

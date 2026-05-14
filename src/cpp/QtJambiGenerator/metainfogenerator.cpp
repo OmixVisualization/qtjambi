@@ -291,7 +291,7 @@ void MetaInfoGenerator::writeCppFile() {
                     || (cls->isFake() && !cls->enums().isEmpty())){
                 if(!writtenClasses[cls->targetTypeSystem()].contains(cls->typeEntry()->qualifiedCppName())){
                     writtenClasses[cls->targetTypeSystem()] << cls->typeEntry()->qualifiedCppName();
-                    stream << INDENT << "void initialize_meta_info_" << cls->typeEntry()->qualifiedCppName().replace("::", "_").replace("<", "_").replace(">", "_") << "();" << Qt::endl;
+                    stream << INDENT << "void initialize_meta_info_" << CppGenerator::toIdString(cls->typeEntry()->qualifiedCppName()) << "();" << Qt::endl;
                 }
             }
             for(MetaFunctional* functional : cls->functionals()){
@@ -306,7 +306,7 @@ void MetaInfoGenerator::writeCppFile() {
                     continue;
                 if(!writtenClasses[cls->targetTypeSystem()].contains(functional->typeEntry()->name())){
                     writtenClasses[cls->targetTypeSystem()] << functional->typeEntry()->name();
-                    stream << INDENT << "void initialize_meta_info_" << QString(functional->typeEntry()->name()).replace("::", "_").replace("<", "_").replace(">", "_") << "();" << Qt::endl;
+                    stream << INDENT << "void initialize_meta_info_" << CppGenerator::toIdString(functional->typeEntry()->name()) << "();" << Qt::endl;
                 }
             }
         }
@@ -323,14 +323,25 @@ void MetaInfoGenerator::writeCppFile() {
             if(typeSystemEntry)
                 generateInitializer(stream, typeSystemEntry, {}, TS::MetaInfo, CodeSnip::Position2, INDENT);
 
+            QString begin;
+            if(typeSystemEntry){
+                QTextStream stream(&begin);
+                generateInitializer(stream, typeSystemEntry, {}, TS::MetaInfo, CodeSnip::Beginning, INDENT);
+            }
             // Initialization function: Registers meta types
             stream << Qt::endl
-                      << INDENT << "extern \"C\" Q_DECL_EXPORT jint JNICALL JNI_ONLOAD(JavaVM *, void *)" << Qt::endl
+                      << INDENT << "extern \"C\" Q_DECL_EXPORT jint JNICALL JNI_ONLOAD(JavaVM *";
+            if(begin.contains("%javaVM")){
+                stream << "javaVM";
+                begin = begin.replace("%javaVM", "javaVM");
+            }
+            stream << ", void *)" << Qt::endl
                       << INDENT << "{" << Qt::endl;
             INDENTATION(INDENT);
             stream << INDENT << "QTJAMBI_LIBRARY_INITIALIZATION_METHOD_CALL(\"" << package << "\")" << Qt::endl;
-            if(typeSystemEntry)
-                generateInitializer(stream, typeSystemEntry, {}, TS::MetaInfo, CodeSnip::Beginning, INDENT);
+            if(!begin.isEmpty()){
+                stream << begin;
+            }
         }
     }
 
@@ -344,7 +355,7 @@ void MetaInfoGenerator::writeCppFile() {
                         || (cls->isFake() && !cls->enums().isEmpty())){
                     if(!writtenClasses[cls->targetTypeSystem()].contains(cls->typeEntry()->qualifiedCppName())){
                         writtenClasses[cls->targetTypeSystem()] << cls->typeEntry()->qualifiedCppName();
-                        stream << INDENT << "initialize_meta_info_" << cls->typeEntry()->qualifiedCppName().replace("::", "_").replace("<", "_").replace(">", "_") << "();" << Qt::endl;
+                        stream << INDENT << "initialize_meta_info_" << CppGenerator::toIdString(cls->typeEntry()->qualifiedCppName()) << "();" << Qt::endl;
                     }
                     for(MetaFunctional* functional : cls->functionals()){
                         if(functional->enclosingClass()){
@@ -358,7 +369,7 @@ void MetaInfoGenerator::writeCppFile() {
                             continue;
                         if(!writtenClasses[cls->targetTypeSystem()].contains(functional->typeEntry()->name())){
                             writtenClasses[cls->targetTypeSystem()] << functional->typeEntry()->name();
-                            stream << INDENT << "initialize_meta_info_" << QString(functional->typeEntry()->name()).replace("::", "_") << "();" << Qt::endl;
+                            stream << INDENT << "initialize_meta_info_" << CppGenerator::toIdString(functional->typeEntry()->name()) << "();" << Qt::endl;
                         }
                     }
                 }

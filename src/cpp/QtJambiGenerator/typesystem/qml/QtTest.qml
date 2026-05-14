@@ -35,7 +35,7 @@ TypeSystem{
     qtLibrary: "QtTest"
     module: "qtjambi.test"
     description: "Classes for unit testing Qt applications and libraries."
-    Template{
+    CodeTemplate{
         name: "test.stringsupplier.function"
         Text{content: "JObjectWrapper %in_wrapper(%env, %in);\n"+
                       "qxp::function_ref<const char*()> %out = [%in_wrapper]() -> const char* {\n"+
@@ -619,7 +619,7 @@ TypeSystem{
                     Text{content: "#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)\n"+
                                   "if(!QMetaType(%2).iface()->copyCtr\n"+
                                   "            || (!%in && !QMetaType(%2).iface()->defaultCtr)){\n"+
-                                  "    Java::Runtime::UnsupportedOperationException::throwNew(%env, QStringLiteral(\"Unable to create result of type %\"\"1.\").arg(QLatin1String(QMetaType::typeName(%2))) QTJAMBI_STACKTRACEINFO );\n"+
+                                  "    JavaException::raiseUnsupportedOperationException(%env, QStringLiteral(\"Unable to create result of type %\"\"1.\").arg(QLatin1String(QMetaType::typeName(%2))) QTJAMBI_STACKTRACEINFO );\n"+
                                   "}\n"+
                                   "#endif\n"+
                                   "QVariant variant_%in(QMetaType(%2), %in);\n"+
@@ -639,7 +639,7 @@ TypeSystem{
                     Text{content: "#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)\n"+
                                   "if(!QMetaType(%2).iface()->copyCtr\n"+
                                   "                || (!%in && !QMetaType(%2).iface()->defaultCtr)){\n"+
-                                  "    Java::Runtime::UnsupportedOperationException::throwNew(%env, QStringLiteral(\"Unable to create result of type %\"\"1.\").arg(QLatin1String(QMetaType::typeName(%2))) QTJAMBI_STACKTRACEINFO );\n"+
+                                  "    JavaException::raiseUnsupportedOperationException(%env, QStringLiteral(\"Unable to create result of type %\"\"1.\").arg(QLatin1String(QMetaType::typeName(%2))) QTJAMBI_STACKTRACEINFO );\n"+
                                   "}\n"+
                                   "#endif\n"+
                                   "QVariant variant_%in(QMetaType(%2), %in);\n"+
@@ -659,7 +659,7 @@ TypeSystem{
                     Text{content: "#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)\n"+
                                   "if(!QMetaType(%2).iface()->copyCtr\n"+
                                   "                || (!%in && !QMetaType(%2).iface()->defaultCtr)){\n"+
-                                  "    Java::Runtime::UnsupportedOperationException::throwNew(%env, QStringLiteral(\"Unable to create result of type %\"\"1.\").arg(QLatin1String(QMetaType::typeName(%2))) QTJAMBI_STACKTRACEINFO );\n"+
+                                  "    JavaException::raiseUnsupportedOperationException(%env, QStringLiteral(\"Unable to create result of type %\"\"1.\").arg(QLatin1String(QMetaType::typeName(%2))) QTJAMBI_STACKTRACEINFO );\n"+
                                   "}\n"+
                                   "#endif\n"+
                                   "QVariant variant_%in(QMetaType(%2), %in);\n"+
@@ -678,7 +678,7 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "char %out = QChar(%in).toLatin1();\n"+
                                   "if(%in!=%out)\n"+
-                                  "    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
                 }
             }
         }
@@ -693,7 +693,7 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "char %out = QChar(%in).toLatin1();\n"+
                                   "if(%in!=%out)\n"+
-                                  "    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
                 }
             }
         }
@@ -708,7 +708,7 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "char %out = QChar(%in).toLatin1();\n"+
                                   "if(%in!=%out)\n"+
-                                  "    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
                 }
             }
         }
@@ -723,7 +723,7 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "char %out = QChar(%in).toLatin1();\n"+
                                   "if(%in!=%out)\n"+
-                                  "    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
                 }
             }
         }
@@ -738,7 +738,7 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "char %out = QChar(%in).toLatin1();\n"+
                                   "if(%in!=%out)\n"+
-                                  "    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
                 }
             }
         }
@@ -753,7 +753,7 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "char %out = QChar(%in).toLatin1();\n"+
                                   "if(%in!=%out)\n"+
-                                  "    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
                 }
             }
         }
@@ -768,7 +768,7 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "char %out = QChar(%in).toLatin1();\n"+
                                   "if(%in!=%out)\n"+
-                                  "    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
                 }
             }
         }
@@ -783,7 +783,7 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "char %out = QChar(%in).toLatin1();\n"+
                                   "if(%in!=%out)\n"+
-                                  "    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
                 }
             }
         }
@@ -798,7 +798,7 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "char %out = QChar(%in).toLatin1();\n"+
                                   "if(%in!=%out)\n"+
-                                  "    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
                 }
             }
         }
@@ -813,7 +813,7 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "char %out = QChar(%in).toLatin1();\n"+
                                   "if(%in!=%out)\n"+
-                                  "    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
                 }
             }
         }
@@ -828,7 +828,7 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "char %out = QChar(%in).toLatin1();\n"+
                                   "if(%in!=%out)\n"+
-                                  "    Java::Runtime::IllegalArgumentException::throwNew(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
                 }
             }
         }

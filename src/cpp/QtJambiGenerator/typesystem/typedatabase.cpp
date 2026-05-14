@@ -175,7 +175,7 @@ FunctionalTypeEntry *TypeDatabase::findFunctionalType(const QString &name) const
 }
 
 FunctionalTypeEntry *TypeDatabase::findFunctionalTypeByUsing(const QString &containingClassName, const QString &_using) const {
-    for(QList<TypeEntry *> entries : m_entries){
+    for(QList<TypeEntry *> entries : std::as_const(m_entries)){
         for(TypeEntry *entry : entries){
             if (entry && entry->isFunctional())
             {
@@ -300,6 +300,42 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
         }
 
         {
+            StringTypeEntry *e = new StringTypeEntry("std::string");
+            e->setPreferredConversion(false);
+            addType(e);
+        }
+
+        {
+            StringTypeEntry *e = new StringTypeEntry("std::string_view");
+            e->setPreferredConversion(false);
+            addType(e);
+        }
+
+        {
+            StringTypeEntry *e = new StringTypeEntry("std::u8string");
+            e->setPreferredConversion(false);
+            addType(e);
+        }
+
+        {
+            StringTypeEntry *e = new StringTypeEntry("std::u8string_view");
+            e->setPreferredConversion(false);
+            addType(e);
+        }
+
+        {
+            StringTypeEntry *e = new StringTypeEntry("std::u16string");
+            e->setPreferredConversion(false);
+            addType(e);
+        }
+
+        {
+            StringTypeEntry *e = new StringTypeEntry("std::u16string_view");
+            e->setPreferredConversion(false);
+            addType(e);
+        }
+
+        {
             // We need the generator to perform type conversion in C++ with the
             //  construct:
             // QString qstring = QString("string"); QStringRef(&qstring)"
@@ -337,6 +373,10 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
             addType(wrapper);
 
             wrapper = new JWrapperTypeEntry(TypeEntry::QAndroidJniObjectType, "QAndroidJniObject", strings_java_lang, strings_Object);
+            wrapper->setCodeGeneration(TypeEntry::GenerateNothing);
+            addType(wrapper);
+
+            wrapper = new JWrapperTypeEntry(TypeEntry::QAndroidJniObjectType, "QJniObject", strings_java_lang, strings_Object);
             wrapper->setCodeGeneration(TypeEntry::GenerateNothing);
             addType(wrapper);
 

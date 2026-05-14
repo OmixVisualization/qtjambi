@@ -34,7 +34,8 @@
 #if defined(QT_OPENGL_ES_2)
 #include <QtOpenGL/QOpenGLFunctions_ES2>
 #endif
-#include <QtJambi/qtjambi_cast.h>
+
+#include <QtJambi/Cast>
 
 QAbstractOpenGLFunctions* qtjambi_QOpenGLVersionFunctionsFactory_get(JNIEnv *__jni_env, jclass type, QOpenGLContext* context){
     //QAbstractOpenGLFunctions* __qt_return_value = nullptr;

@@ -33,6 +33,7 @@
 #define FUTURE_P_H
 
 #include <QtJambi/CoreAPI>
+#include <QtJambi/FutureCast>
 #include <QtJambi/JObjectWrapper>
 #include "utils_p.h"
 

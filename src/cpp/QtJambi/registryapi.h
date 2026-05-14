@@ -35,16 +35,12 @@
 #endif
 #include "global.h"
 #include "typetests.h"
+#include "qtjambiapi_construct.h"
 
 class QtJambiScope;
 class AbstractContainerAccess;
 enum class jValueType;
 class QtJambiScope;
-
-namespace QtJambiAPI{
-enum ConstructorOptions : uchar;
-typedef void (*ConstructorFn)(void*, JNIEnv*, jobject, jvalue*, QtJambiAPI::ConstructorOptions);
-}
 
 namespace RegistryAPI{
 
@@ -203,7 +199,7 @@ QMetaType registerMetaTypeNoMetaObject(const char (&typeName)[N],
 {
     registerOperators<T>();
     return registerMetaType(typeid(T),
-                              typeid(typename std::remove_pointer<T>::type),
+                              typeid(std::remove_pointer_t<T>),
                               typeName,
                               defaultCtr,
                               copyCtr,
@@ -302,7 +298,7 @@ QMetaType registerMetaType(const char (&typeName)[N],
 {
     registerOperators<T>();
     return registerMetaType(typeid(T),
-                              typeid(typename std::remove_pointer<T>::type),
+                              typeid(std::remove_pointer_t<T>),
                               typeName,
                               defaultCtr,
                               copyCtr,
@@ -447,7 +443,7 @@ QMetaType registerMetaType(QByteArrayView typeName,
 {
     registerOperators<T>();
     return registerMetaType(typeid(T),
-                              typeid(typename std::remove_pointer<T>::type),
+                              typeid(std::remove_pointer_t<T>),
                               typeName,
                               defaultCtr,
                               copyCtr,
@@ -494,7 +490,7 @@ QMetaType registerMetaType(QByteArrayView typeName,
 {
     registerOperators<T>();
     return registerMetaType(typeid(T),
-                            typeid(typename std::remove_pointer<T>::type),
+                            typeid(std::remove_pointer_t<T>),
                             typeName,
                             defaultCtr,
                             copyCtr,
@@ -942,5 +938,14 @@ void registerNativeInterface(const char (&className)[N1]){
 #endif
 
 } // end of namespace RegistryAPI
+
+namespace QtJambiPrivate {
+template<typename T>
+struct container_registry{
+    static QMetaType register_container(QByteArrayView typeName, AbstractContainerAccess* access){
+        return RegistryAPI::registerMetaType<T>(typeName, access);
+    }
+};
+} // namespace QtJambiPrivate
 
 #endif // QTJAMBI_REGISTRYAPI_H

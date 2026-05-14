@@ -84,6 +84,7 @@ public abstract class UnitTestInitializer {
 					System.setProperty("io.qt.library-path-override", "");
 					System.clearProperty("io.qt.qml-imports");
 					System.clearProperty("io.qt.pluginpath");
+					System.clearProperty("io.qt.keep-temp-deployment");
 				}else {
 					return new Fail(new AssumptionViolatedException("Skip on debug mode."));
 				}

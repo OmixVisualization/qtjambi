@@ -100,6 +100,7 @@ class AbstractGenerator : public QObject {
             IsReturnType                    = 0x100000000000LL,
             IsNativeCall                    = 0x200000000000LL,
             NoSpace                         = 0x400000000000LL,
+            NoGeneric                       = 0x800000000000LL,
 
             ForceValueType                  = (ExcludeReference | ExcludeConst) & ~ForceConstReference
         };

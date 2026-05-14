@@ -31,7 +31,8 @@
 
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/RegistryAPI>
-#include <QtJambi/qtjambi_cast.h>
+
+#include <QtJambi/Cast>
 #include <QtSql/QSqlRelationalDelegate>
 
 void initialize_meta_info_QSqlRelationalDelegate(){

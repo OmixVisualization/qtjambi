@@ -97,8 +97,8 @@ AutoMultiHashAccess::AutoMultiHashAccess(
         m_chainSize += m_chainAlign - m_chainSize % m_chainAlign;
 }
 
-jint AutoMultiHashAccess::capacity(JNIEnv * env, const void* container){ return AutoHashAccess::capacity(env, container); }
-void AutoMultiHashAccess::reserve(JNIEnv * env, const ContainerInfo& container, jint capacity){ AutoHashAccess::reserve(env, container, capacity); }
+qsizetype AutoMultiHashAccess::capacity(JNIEnv * env, const void* container){ return AutoHashAccess::capacity(env, container); }
+void AutoMultiHashAccess::reserve(JNIEnv * env, const ContainerInfo& container, qsizetype capacity){ AutoHashAccess::reserve(env, container, capacity); }
 
 bool AutoMultiHashAccess::destructContainer(void* container) {
     return AutoHashAccess::destructContainer(container);
@@ -160,7 +160,7 @@ bool AutoMultiHashAccess::hasValueNestedPointers() {return AutoHashAccess::hasVa
 void AutoMultiHashAccess::clear(JNIEnv *env, const ContainerInfo& container) {AutoHashAccess::clear(env, container);}
 jboolean AutoMultiHashAccess::contains(JNIEnv *env, const void* container, jobject key) {return AutoHashAccess::contains(env, container, key);}
 bool AutoMultiHashAccess::contains(const void* container, const void* key) {return AutoHashAccess::contains(container, key);}
-jint AutoMultiHashAccess::count(JNIEnv *env, const void* container, jobject key) {return AutoHashAccess::count(env, container, key);}
+qsizetype AutoMultiHashAccess::count(JNIEnv *env, const void* container, jobject key) {return AutoHashAccess::count(env, container, key);}
 jobject AutoMultiHashAccess::begin(JNIEnv *env, const ExtendedContainerInfo& container) {return AutoHashAccess::begin(env, container);}
 jobject AutoMultiHashAccess::end(JNIEnv *env, const ExtendedContainerInfo& container) {return AutoHashAccess::end(env, container);}
 jobject AutoMultiHashAccess::find(JNIEnv *env, const ExtendedContainerInfo& container, jobject key) {return AutoHashAccess::find(env, container, key);}
@@ -210,9 +210,9 @@ jobject AutoMultiHashAccess::key(JNIEnv *env, const void* container, jobject val
 ContainerAndAccessInfo AutoMultiHashAccess::keys(JNIEnv *env, const ConstContainerInfo& container) {return AutoHashAccess::keys(env, container);}
 ContainerAndAccessInfo AutoMultiHashAccess::keys(JNIEnv *env, const ConstContainerInfo& container, jobject value) {return AutoHashAccess::keys(env, container, value);}
 jboolean AutoMultiHashAccess::equal(JNIEnv *env, const void* container, jobject other) {return AutoHashAccess::equal(env, container, other);}
-jint AutoMultiHashAccess::size(JNIEnv *env, const void* container)  {return AutoHashAccess::size(env, container);}
+qsizetype AutoMultiHashAccess::size(JNIEnv *env, const void* container)  {return AutoHashAccess::size(env, container);}
 
-jint AutoMultiHashAccess::remove(JNIEnv *env, const ContainerInfo& container, jobject key) {
+qsizetype AutoMultiHashAccess::remove(JNIEnv *env, const ContainerInfo& container, jobject key) {
     Q_UNUSED(env)
     MultiHashData * map = reinterpret_cast<MultiHashData*>(container.container);
     if (map->m_size==0) // prevents detaching shared null
@@ -288,7 +288,7 @@ ContainerAndAccessInfo AutoMultiHashAccess::uniqueKeys(JNIEnv *env, const ConstC
         result.access = listAccess;
         QHashData::iterator e = d->end(*this);
         QHashData::iterator n = d->begin(*this);
-        jint idx = listAccess->size(env, result.container);
+        qsizetype idx = listAccess->size(env, result.container);
         while (n != e) {
             if(listAccess->append(result.container, n.key())){
                 idx++;
@@ -375,7 +375,7 @@ ContainerAndAccessInfo AutoMultiHashAccess::values(JNIEnv *env, const ConstConta
             QtJambiScope scope;
             void* akey = nullptr;
             if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
-                jint idx = listAccess->size(env, result.container);
+                qsizetype idx = listAccess->size(env, result.container);
                 iterator i = d->find(*this, akey);
                 if(i.e && !i.i.isUnused()){
                     multi_iterator& it = reinterpret_cast<multi_iterator&>(i);
@@ -425,9 +425,9 @@ jboolean AutoMultiHashAccess::contains(JNIEnv *env, const void* container, jobje
     return false;
 }
 
-jint AutoMultiHashAccess::count(JNIEnv *env, const void* container, jobject key, jobject value)
+qsizetype AutoMultiHashAccess::count(JNIEnv *env, const void* container, jobject key, jobject value)
 {
-    jint c = 0;
+    qsizetype c = 0;
     QHashData *const* map = reinterpret_cast<QHashData *const*>(container);
     QHashData* d = *map;
     jvalue jv;
@@ -472,14 +472,14 @@ jobject AutoMultiHashAccess::find(JNIEnv *env, const ExtendedContainerInfo& cont
             if(m_valueExternalToInternalConverter(env, &scope, jv, avalue, jValueType::l)){
                 while(i!=e){
                     if(m_valueMetaType.equals(i.value(), avalue)){
-                        return createIterator(env, container.nativeId, new iterator(i));
+                        return createIterator(env, container.nativeId, iterator(i));
                     }
                     ++i;
                 }
             }
         }
     }
-    return createIterator(env, container.nativeId, d ? new iterator(d->end(*this)) : new iterator(*this));
+    return createIterator(env, container.nativeId, d ? iterator(d->end(*this)) : iterator(*this));
 }
 
 jobject AutoMultiHashAccess::constFind(JNIEnv *env, const ConstExtendedContainerInfo& container, jobject key, jobject value)
@@ -499,19 +499,19 @@ jobject AutoMultiHashAccess::constFind(JNIEnv *env, const ConstExtendedContainer
             if(m_valueExternalToInternalConverter(env, &scope, jv, avalue, jValueType::l)){
                 while(i!=e){
                     if(m_valueMetaType.equals(i.value(), avalue)){
-                        return createIterator(env, container.nativeId, new iterator(i));
+                        return createIterator(env, container.nativeId, iterator(i));
                     }
                     ++i;
                 }
             }
         }
     }
-    return createConstIterator(env, container.nativeId, d ? new iterator(d->end(*this)) : new iterator(*this));
+    return createConstIterator(env, container.nativeId, d ? iterator(d->end(*this)) : iterator(*this));
 }
 
-jint AutoMultiHashAccess::remove(JNIEnv *env, const ContainerInfo& container, jobject key, jobject value)
+qsizetype AutoMultiHashAccess::remove(JNIEnv *env, const ContainerInfo& container, jobject key, jobject value)
 {
-    jint c = 0;
+    qsizetype c = 0;
     QHashData ** map = reinterpret_cast<QHashData **>(container.container);
     QHashData*& d = *map;
     jvalue jv;
@@ -820,7 +820,7 @@ void KeyPointerRCAutoMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo
             break;
         }
         if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
     }
     clearRC(env, container.object);
     addAllRC(env, container.object, set);
@@ -856,16 +856,16 @@ void KeyPointerRCAutoMultiHashAccess::insert(JNIEnv * env, const ContainerInfo& 
     addRC(env, container.object, key);
 }
 
-jint KeyPointerRCAutoMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = AutoMultiHashAccess::remove(env, container, key);
+qsizetype KeyPointerRCAutoMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    qsizetype result = AutoMultiHashAccess::remove(env, container, key);
     if(result>0){
         removeRC(env, container.object, key);
     }
     return result;
 }
 
-jint KeyPointerRCAutoMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    jint result = AutoMultiHashAccess::remove(env, container, key, value);
+qsizetype KeyPointerRCAutoMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    qsizetype result = AutoMultiHashAccess::remove(env, container, key, value);
     if(result>0){
         removeRC(env, container.object, key);
     }
@@ -923,7 +923,7 @@ void ValuePointerRCAutoMultiHashAccess::updateRC(JNIEnv * env, const ContainerIn
             break;
         }
         if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
     }
     clearRC(env, container.object);
     addAllRC(env, container.object, set);
@@ -959,14 +959,14 @@ void ValuePointerRCAutoMultiHashAccess::insert(JNIEnv * env, const ContainerInfo
     addRC(env, container.object, value);
 }
 
-jint ValuePointerRCAutoMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+qsizetype ValuePointerRCAutoMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
     ContainerAndAccessInfo oldValues = AutoMultiHashAccess::values(env, container, key);
-    jint result = AutoMultiHashAccess::remove(env, container, key);
+    qsizetype result = AutoMultiHashAccess::remove(env, container, key);
     if(result>0){
-        jobject iter = Java::Runtime::Collection::iterator(env, oldValues.object);
-        while(Java::Runtime::Iterator::hasNext(env, iter)){
-            jobject value = Java::Runtime::Iterator::next(env, iter);
-            if(Java::Runtime::Collection::size(env, AutoMultiHashAccess::keys(env, container, value).object)==0){
+        jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, oldValues.object);
+        while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+            jobject value = QtJambiAPI::nextOfJavaIterator(env, iter);
+            if(QtJambiAPI::sizeOfJavaCollection(env, AutoMultiHashAccess::keys(env, container, value).object)==0){
                 removeRC(env, container.object, value);
             }
         }
@@ -976,7 +976,7 @@ jint ValuePointerRCAutoMultiHashAccess::remove(JNIEnv * env, const ContainerInfo
 
 jobject ValuePointerRCAutoMultiHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
     jobject result = AutoMultiHashAccess::take(env, container, key);
-    if(Java::Runtime::Collection::size(env, AutoMultiHashAccess::keys(env, container, result).object)==0){
+    if(QtJambiAPI::sizeOfJavaCollection(env, AutoMultiHashAccess::keys(env, container, result).object)==0){
         removeRC(env, container.object, result);
     }
     return result;
@@ -989,8 +989,8 @@ void ValuePointerRCAutoMultiHashAccess::replace(JNIEnv * env, const ContainerInf
     addRC(env, container.object, value);
 }
 
-jint ValuePointerRCAutoMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value){
-    jint result = AutoMultiHashAccess::remove(env, container, key, value);
+qsizetype ValuePointerRCAutoMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value){
+    qsizetype result = AutoMultiHashAccess::remove(env, container, key, value);
     if(result>0)
         removeRC(env, container.object, value, result);
     return result;
@@ -1102,14 +1102,14 @@ void PointersRCAutoMultiHashAccess::unite(JNIEnv * env, const ContainerInfo& con
     updateRC(env, container);
 }
 
-jint PointersRCAutoMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = AutoMultiHashAccess::remove(env, container, key);
+qsizetype PointersRCAutoMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    qsizetype result = AutoMultiHashAccess::remove(env, container, key);
     updateRC(env, container);
     return result;
 }
 
-jint PointersRCAutoMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    jint result = AutoMultiHashAccess::remove(env, container, key, value);
+qsizetype PointersRCAutoMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    qsizetype result = AutoMultiHashAccess::remove(env, container, key, value);
     updateRC(env, container);
     return result;
 }
@@ -1192,16 +1192,16 @@ void NestedPointersRCAutoMultiHashAccess::unite(JNIEnv * env, const ContainerInf
     updateRC(env, container);
 }
 
-jint NestedPointersRCAutoMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = AutoMultiHashAccess::remove(env, container, key);
+qsizetype NestedPointersRCAutoMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    qsizetype result = AutoMultiHashAccess::remove(env, container, key);
     if(result>0){
         removeRC(env, container.object, key);
     }
     return result;
 }
 
-jint NestedPointersRCAutoMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
-    jint result = AutoMultiHashAccess::remove(env, container, key, value);
+qsizetype NestedPointersRCAutoMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) {
+    qsizetype result = AutoMultiHashAccess::remove(env, container, key, value);
     if(result>0){
         updateRC(env, container);
     }

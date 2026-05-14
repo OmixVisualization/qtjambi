@@ -71,6 +71,7 @@ import io.qt.core.QEventLoop;
 import io.qt.core.QFactoryInterface;
 import io.qt.core.QList;
 import io.qt.core.QMetaObject;
+import io.qt.core.QMetaType;
 import io.qt.core.QObject;
 import io.qt.core.QPointF;
 import io.qt.core.QRectF;
@@ -813,6 +814,7 @@ public class TestInterfaces extends ApplicationInitializer {
 		functionalTest.takeTestFunction3((FunctionalTest.TestFunction3)anyTestFunction3);
 		functionalTest.takeTestFunction4((FunctionalTest.TestFunction4)anyTestFunction4);
 		functionalTest.takeTestFunction5((FunctionalTest.TestFunction5)anyTestFunction5);
+		QVariant.fromMetaType(new QMetaType(QMetaType.Type.Int), 5);
 	}
 	
 	@Test

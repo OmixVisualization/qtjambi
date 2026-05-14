@@ -446,6 +446,12 @@ TypeSystem{
     
     ObjectType{
         name: "QtCharts::QChart"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/ArrayAPI"
+                location: Include.Global
+            }
+        }
 
         EnumType{
             name: "AnimationOption"

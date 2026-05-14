@@ -30,6 +30,8 @@
 ****************************************************************************/
 
 #include "pch_p.h"
+#include "qtjambi_cast_array.h"
+#include "qtjambi_cast_template1.h"
 #if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)) && !defined(Q_OS_ANDROID)
 #include <signal.h>
 #include <stdio.h>
@@ -101,7 +103,9 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_ExceptionUtility_conver
 extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_QtUtilities_putenv(JNIEnv *env, jclass, jstring varName, jstring value){
     try{
         J2CStringBuffer _varName(env, varName);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
         J2CStringBuffer _value(env, value);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
         return qputenv(_varName.data(), _value.data());
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
@@ -203,6 +207,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_internal_ClassAnalyzerUtility_i
 extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_QtUtilities_unsetenv(JNIEnv *env, jclass, jstring varName){
     try{
         J2CStringBuffer _varName(env, varName);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
         return qunsetenv(_varName.data());
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
@@ -213,6 +218,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_QtUtilities_unsetenv(JNIEnv *en
 extern "C" JNIEXPORT jstring JNICALL Java_io_qt_QtUtilities_getenv(JNIEnv *env, jclass, jstring varName){
     try{
         J2CStringBuffer _varName(env, varName);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
         if(qEnvironmentVariableIsSet(_varName.constData())){
             QString value = qEnvironmentVariable(_varName.constData());
             return qtjambi_cast<jstring>(env, value);
@@ -226,7 +232,7 @@ extern "C" JNIEXPORT jstring JNICALL Java_io_qt_QtUtilities_getenv(JNIEnv *env, 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_QtConstructInPlace_initialize(JNIEnv *env, jclass, jlong initializer, jobject object){
     try{
         if(!initializer)
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
         QtJambiShellImpl::initializeNativeInterface(env, object, reinterpret_cast<InPlaceInitializer*>(initializer));
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
@@ -236,7 +242,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_QtConstructInPlace_initialize(JNIEn
 extern "C" JNIEXPORT void JNICALL Java_io_qt_QtConstructInPlace_initWithArguments(JNIEnv *env, jclass, jlong initializer, jobject object, jintArray indexes){
     try{
         if(!initializer){
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
             return;
         }
         QtJambiScope scope;
@@ -251,7 +257,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_QtConstructInPlace_initWithArgument
 extern "C" JNIEXPORT void JNICALL Java_io_qt_QtConstructInPlace_initFromStream(JNIEnv *env, jclass, jlong initializer, jobject object, jobject arguments){
     try{
         if(!initializer){
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
             return;
         }
         QtJambiScope scope;
@@ -265,7 +271,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_QtConstructInPlace_initFromStream(J
 extern "C" JNIEXPORT jint JNICALL Java_io_qt_QtConstructInPlace_parameterCount(JNIEnv *env, jclass, jlong ptr){
     try{
         if(!ptr)
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
         else return reinterpret_cast<InPlaceInitializer*>(ptr)->parameterCount();
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
@@ -276,7 +282,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_QtConstructInPlace_parameterCount(J
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QtConstructInPlace_argumentAt(JNIEnv *env, jclass, jlong ptr, jint index){
     try{
         if(!ptr)
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
         else return reinterpret_cast<InPlaceInitializer*>(ptr)->argumentAt(env, index);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
@@ -287,7 +293,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QtConstructInPlace_argumentAt(JN
 extern "C" JNIEXPORT jclass JNICALL Java_io_qt_QtConstructInPlace_parameterTypeAt(JNIEnv *env, jclass, jlong ptr, jint index){
     try{
         if(!ptr)
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
         else return reinterpret_cast<InPlaceInitializer*>(ptr)->parameterTypeAt(env, index);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
@@ -298,7 +304,7 @@ extern "C" JNIEXPORT jclass JNICALL Java_io_qt_QtConstructInPlace_parameterTypeA
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QtConstructInPlace_asArguments(JNIEnv *env, jclass, jlong ptr, jintArray indexes){
     try{
         if(!ptr)
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, "in-place constructor disposed" QTJAMBI_STACKTRACEINFO );
         else{
             QtJambiScope scope;
             SuperInitializer* si = reinterpret_cast<InPlaceInitializer*>(ptr)->asArguments(env, qtjambi_cast<std::initializer_list<int>>(env, scope, indexes));
@@ -318,13 +324,13 @@ extern "C" JNIEXPORT bool JNICALL Java_io_qt_QtUtilities_reinstallEventNotifyCal
 #else
             if(QThread::currentThread()!=mainThread){
 #endif
-                Java::Runtime::IllegalStateException::throwNew(env, "Unable to reinstall event notify callback from outside the main thread." QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::Runtime::IllegalStateException>(env, "Unable to reinstall event notify callback from outside the main thread." QTJAMBI_STACKTRACEINFO );
             }
             if(mainThread->loopLevel()>0){
-                Java::Runtime::IllegalStateException::throwNew(env, "Unable to reinstall event notify callback with running application event loop." QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::Runtime::IllegalStateException>(env, "Unable to reinstall event notify callback with running application event loop." QTJAMBI_STACKTRACEINFO );
             }
         }else{
-            Java::Runtime::IllegalStateException::throwNew(env, "Unable to reinstall event notify callback without main thread." QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::Runtime::IllegalStateException>(env, "Unable to reinstall event notify callback without main thread." QTJAMBI_STACKTRACEINFO );
         }
         if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-event-thread-affinity-check"))){
             QInternal::unregisterCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);

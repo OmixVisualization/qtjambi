@@ -31,6 +31,7 @@
 
 #include "pch_p.h"
 #include "utils_p.h"
+#include <QtJambi/ArrayAPI>
 #include <QtCore/qendian.h>
 
 namespace Java{
@@ -243,6 +244,33 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFuture$FutureFunction,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFutureInterfaceBase$State,
                                 )
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFutureInterfaceBase,
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVariantAnimation$Interpolator,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(compute,(Ljava/lang/Object;Ljava/lang/Object;D)Ljava/lang/Object;)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVariantAnimation$IntInterpolator,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(compute,(IID)I)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVariantAnimation$LongInterpolator,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(compute,(JJD)J)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVariantAnimation$ByteInterpolator,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(compute,(BBD)B)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVariantAnimation$ShortInterpolator,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(compute,(SSD)S)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVariantAnimation$BooleanInterpolator,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(compute,(ZZD)Z)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVariantAnimation$CharInterpolator,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(compute,(CCD)C)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVariantAnimation$DoubleInterpolator,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(compute,(DDD)D)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVariantAnimation$FloatInterpolator,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(compute,(FFD)F)
                                 )
 #if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
 #if QT_VERSION >= QT_VERSION_CHECK(6,11,0)

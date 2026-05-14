@@ -114,18 +114,18 @@ public:
         m_flags_entries[fte->flagsTemplate()] = fte;
     }
 
-    TemplateEntry *findTemplate(const QString &name) {
+    CodeTemplate *findCodeTemplate(const QString &name) {
         return m_templates[name];
     }
 
-    TemplateTypeEntry *findTemplateType(const QString &name) {
+    TypeTemplate *findTypeTemplate(const QString &name) {
         return m_templateTypes[name];
     }
 
-    void addTemplate(TemplateEntry *t) {
+    void addCodeTemplate(CodeTemplate *t) {
         m_templates[t->name()] = t;
     }
-    void addTemplateType(TemplateTypeEntry *t) {
+    void addTypeTemplate(TypeTemplate *t) {
         m_templateTypes[t->name()] = t;
     }
 
@@ -193,8 +193,8 @@ private:
     TypeEntryHash m_entries;
     QMap<QString,int> m_class_name_counter;
     SingleTypeEntryHash m_flags_entries;
-    TemplateEntryHash m_templates;
-    TemplateTypeEntryHash m_templateTypes;
+    CodeTemplateHash m_templates;
+    TypeTemplateHash m_templateTypes;
     QStringList m_suppressedWarnings;
 
     QList<TypeRejection> m_rejections;

@@ -35,39 +35,79 @@
 #include <QtCore/QVariant>
 #include <QtCore/QDebug>
 #include <QtCore/QDataStream>
+#include "global.h"
+
+QT_WARNING_DISABLE_DEPRECATED
+
+template<typename T>
+class QQmlListProperty;
+template <typename T>
+class QFutureInterface;
+template <typename T>
+class QFuture;
+template <typename T>
+class QFutureWatcher;
+template <typename T>
+class QPromise;
+template <typename PropertyType>
+class QPropertyBinding;
+template <typename PropertyType>
+class QBinding;
+template <typename PropertyType>
+class QPropertyChangeHandler;
+template <class T>
+class QQueue;
+template <class T>
+class QStack;
+template <class T>
+class QList;
+template <class T>
+class QSet;
 
 namespace QtJambiPrivate {
 
 template<class T>
 struct is_default_constructible : std::is_default_constructible<T>{};
+template<typename T>
+constexpr bool is_default_constructible_v = is_default_constructible<T>::value;
 
 template<class T>
 struct is_copy_constructible : std::is_copy_constructible<T>{};
+template<typename T>
+constexpr bool is_copy_constructible_v = is_copy_constructible<T>::value;
 
 template<class T>
 struct is_move_constructible : std::is_move_constructible<T>{};
+template<typename T>
+constexpr bool is_move_constructible_v = is_move_constructible<T>::value;
 
 template<class T>
 struct is_copy_assignable : std::is_copy_assignable<T>{};
+template<typename T>
+constexpr bool is_copy_assignable_v = is_copy_assignable<T>::value;
 
 template<class T>
 struct is_move_assignable : std::is_move_assignable<T>{};
+template<typename T>
+constexpr bool is_move_assignable_v = is_move_assignable<T>::value;
 
 template<class T>
 struct is_destructible : std::is_destructible<T>{};
+template<typename T>
+constexpr bool is_destructible_v = is_destructible<T>::value;
 
 template<class T1, class T2>
-struct is_default_constructible<std::pair<T1,T2>> : std::conditional<std::is_default_constructible<T1>::value && std::is_default_constructible<T2>::value, std::true_type, std::false_type>::type{};
+struct is_default_constructible<std::pair<T1,T2>> : std::conditional<is_default_constructible_v<T1> && is_default_constructible_v<T2>, std::true_type, std::false_type>::type{};
 template<class T1, class T2>
-struct is_copy_constructible<std::pair<T1,T2>> : std::conditional<std::is_copy_constructible<T1>::value && std::is_copy_constructible<T2>::value, std::true_type, std::false_type>::type{};
+struct is_copy_constructible<std::pair<T1,T2>> : std::conditional<is_copy_constructible_v<T1> && is_copy_constructible_v<T2>, std::true_type, std::false_type>::type{};
 template<class T1, class T2>
-struct is_move_constructible<std::pair<T1,T2>> : std::conditional<std::is_move_constructible<T1>::value && std::is_move_constructible<T2>::value, std::true_type, std::false_type>::type{};
+struct is_move_constructible<std::pair<T1,T2>> : std::conditional<is_move_constructible_v<T1> && is_move_constructible_v<T2>, std::true_type, std::false_type>::type{};
 template<class T1, class T2>
-struct is_copy_assignable<std::pair<T1,T2>> : std::conditional<std::is_copy_assignable<T1>::value && std::is_copy_assignable<T2>::value, std::true_type, std::false_type>::type{};
+struct is_copy_assignable<std::pair<T1,T2>> : std::conditional<is_copy_assignable_v<T1> && is_copy_assignable_v<T2>, std::true_type, std::false_type>::type{};
 template<class T1, class T2>
-struct is_move_assignable<std::pair<T1,T2>> : std::conditional<std::is_move_assignable<T1>::value && std::is_move_assignable<T2>::value, std::true_type, std::false_type>::type{};
+struct is_move_assignable<std::pair<T1,T2>> : std::conditional<is_move_assignable_v<T1> && is_move_assignable_v<T2>, std::true_type, std::false_type>::type{};
 template<class T1, class T2>
-struct is_destructible<std::pair<T1,T2>> : std::conditional<std::is_destructible<T1>::value && std::is_destructible<T2>::value, std::true_type, std::false_type>::type{};
+struct is_destructible<std::pair<T1,T2>> : std::conditional<is_destructible_v<T1> && is_destructible_v<T2>, std::true_type, std::false_type>::type{};
 
 template<class T, class = decltype(qobject_interface_iid<T*>())>
 std::true_type  supports_IID_test(const T&);
@@ -246,6 +286,9 @@ template<typename T, class = decltype(std::declval<T>().key() )>
 std::true_type  supports_key_test(const T&);
 std::false_type supports_key_test(...);
 template<typename T> struct supports_key : decltype(supports_key_test(std::declval<T>())){};
+
+template<typename T>
+constexpr bool supports_key_v = supports_key<T>::value;
 
 template<typename T, class = decltype(std::declval<T>().value() )>
 std::true_type  supports_value_test(const T&);
@@ -519,8 +562,7 @@ struct qtjambi_type_container1{
     using type = Container<T>;
 };
 
-#ifdef QPROPERTY_H
-template<template<typename T> class Property, typename T, int size = sizeof(T), bool isInteger = std::is_integral<T>::value, bool isFloatingPoint = std::is_floating_point<T>::value>
+template<template<typename T> class Property, typename T, int size = sizeof(T), bool isInteger = std::is_integral_v<T>, bool isFloatingPoint = std::is_floating_point_v<T>>
 struct qtjambi_type_property_decider{
     using type = Property<QVariant>;
 };
@@ -548,14 +590,6 @@ template<template<typename> class Property>
 struct qtjambi_type_property_decider<Property,double,sizeof(double),false,true>{
     using type = Property<double>;
 };
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 6, 0) || defined(QTJAMBI_CAST_DEPRECATED_TYPES)
-template<typename T>
-struct qtjambi_type_container1<QPropertyAlias,T>
-        : qtjambi_type_property_decider<QPropertyAlias,T>{
-};
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 6, 0) || defined(QTJAMBI_CAST_DEPRECATED_TYPES)
-
 template<typename T>
 struct qtjambi_type_container1<QPropertyBinding,T>
         : qtjambi_type_property_decider<QPropertyBinding,T>{
@@ -568,23 +602,7 @@ template<typename T>
 struct qtjambi_type_container1<QPropertyChangeHandler,T>{
     using type = QPropertyChangeHandler<void(*)()>;
 };
-#endif
 
-#ifdef QLIST_H
-template<typename T>
-struct qtjambi_type_container1<QList,T>{
-    using type = QList<QVariant>;
-};
-#endif
-
-#ifdef QSET_H
-template<typename T>
-struct qtjambi_type_container1<QSet,T>{
-    using type = QSet<QVariant>;
-};
-#endif
-
-#if defined(QFUTUREINTERFACE_H)
 template<typename T>
 struct qtjambi_type_container1<QFutureInterface,T>{
     using type = QFutureInterface<QVariant>;
@@ -604,9 +622,7 @@ template<>
 struct qtjambi_type_container1<QFuture,void>{
     using type = QFuture<void>;
 };
-#endif
 
-#if defined(QFUTUREWATCHER_H)
 template<typename T>
 struct qtjambi_type_container1<QFutureWatcher,T>{
     using type = QFutureWatcher<QVariant>;
@@ -615,35 +631,28 @@ template<>
 struct qtjambi_type_container1<QFutureWatcher,void>{
     using type = QFutureWatcher<void>;
 };
-#endif
 
-#ifdef QQUEUE_H
+template<typename T>
+struct qtjambi_type_container1<QList,T>{
+    using type = QList<QVariant>;
+};
+template<typename T>
+struct qtjambi_type_container1<QSet,T>{
+    using type = QSet<QVariant>;
+};
 template<typename T>
 struct qtjambi_type_container1<QQueue,T>{
     using type = QQueue<QVariant>;
 };
-#endif
-
-#ifdef QSTACK_H
 template<typename T>
 struct qtjambi_type_container1<QStack,T>{
     using type = QStack<QVariant>;
 };
-#endif
 
-#ifdef QDBUSREPLY_H
-template<typename T>
-struct qtjambi_type_container1<QDBusReply,T>{
-    using type = QDBusReply<QVariant>;
-};
-#endif
-
-#ifdef QQMLLISTPROPERTY
 template<typename T>
 struct qtjambi_type_container1<QQmlListProperty,T>{
     using type = QQmlListProperty<QObject>;
 };
-#endif
 
 template<typename T>
 struct qtjambi_type_container1<QPointer,T> : qtjambi_type<T>{
@@ -811,14 +820,14 @@ struct qtjambi_type_selector<Container<Ts...>> : qtjambi_type_container_selector
 
 template<typename T>
 struct qtjambi_type{
-    using type = typename qtjambi_type_selector<typename std::conditional<std::is_function<typename std::remove_pointer<T>::type>::value, T, typename std::remove_pointer<T>::type>::type>::type;
+    using type = typename qtjambi_type_selector<std::conditional_t<std::is_function_v<std::remove_pointer_t<T>>, T, std::remove_pointer_t<T>>>::type;
     static constexpr const std::type_info& id() {return typeid(type);}
 };
 
-template<typename O, bool = std::is_pointer<O>::value>
+template<typename O, bool = std::is_pointer_v<O>>
 struct pointer_from{
-    typedef typename std::add_lvalue_reference<typename std::add_const<O>::type>::type In;
-    typedef typename std::add_pointer<O>::type Out;
+    typedef std::add_lvalue_reference_t<std::add_const_t<O>> In;
+    typedef std::add_pointer_t<O> Out;
     static const void* from(In o){
         return &o;
     }
@@ -848,6 +857,9 @@ template<typename T>
 struct result_of{
 };
 
+template<typename T>
+using result_of_t = typename result_of<T>::type;
+
 template<typename RET, typename... ARGS>
 struct result_of<RET(*)(ARGS...)>{
     typedef RET type;
@@ -863,6 +875,338 @@ struct result_of<RET(*const)(ARGS...)>{
     typedef RET type;
 };
 
+template<typename JArray>
+struct jni_primitive_array_functions;
+
+template<>
+struct jni_primitive_array_functions<jbyteArray>{
+    static constexpr auto NewArray = &JNIEnv::NewByteArray;
+    static constexpr auto GetArrayRegion = &JNIEnv::GetByteArrayRegion;
+    static constexpr auto SetArrayRegion = &JNIEnv::SetByteArrayRegion;
+    static constexpr auto GetArrayElements = &JNIEnv::GetByteArrayElements;
+    static constexpr auto ReleaseArrayElements = &JNIEnv::ReleaseByteArrayElements;
+};
+
+template<>
+struct jni_primitive_array_functions<jshortArray>{
+    static constexpr auto NewArray = &JNIEnv::NewShortArray;
+    static constexpr auto GetArrayRegion = &JNIEnv::GetShortArrayRegion;
+    static constexpr auto SetArrayRegion = &JNIEnv::SetShortArrayRegion;
+    static constexpr auto GetArrayElements = &JNIEnv::GetShortArrayElements;
+    static constexpr auto ReleaseArrayElements = &JNIEnv::ReleaseShortArrayElements;
+};
+
+template<>
+struct jni_primitive_array_functions<jintArray>{
+    static constexpr auto NewArray = &JNIEnv::NewIntArray;
+    static constexpr auto GetArrayRegion = &JNIEnv::GetIntArrayRegion;
+    static constexpr auto SetArrayRegion = &JNIEnv::SetIntArrayRegion;
+    static constexpr auto GetArrayElements = &JNIEnv::GetIntArrayElements;
+    static constexpr auto ReleaseArrayElements = &JNIEnv::ReleaseIntArrayElements;
+};
+
+template<>
+struct jni_primitive_array_functions<jlongArray>{
+    static constexpr auto NewArray = &JNIEnv::NewLongArray;
+    static constexpr auto GetArrayRegion = &JNIEnv::GetLongArrayRegion;
+    static constexpr auto SetArrayRegion = &JNIEnv::SetLongArrayRegion;
+    static constexpr auto GetArrayElements = &JNIEnv::GetLongArrayElements;
+    static constexpr auto ReleaseArrayElements = &JNIEnv::ReleaseLongArrayElements;
+};
+
+template<>
+struct jni_primitive_array_functions<jfloatArray>{
+    static constexpr auto NewArray = &JNIEnv::NewFloatArray;
+    static constexpr auto GetArrayRegion = &JNIEnv::GetFloatArrayRegion;
+    static constexpr auto SetArrayRegion = &JNIEnv::SetFloatArrayRegion;
+    static constexpr auto GetArrayElements = &JNIEnv::GetFloatArrayElements;
+    static constexpr auto ReleaseArrayElements = &JNIEnv::ReleaseFloatArrayElements;
+};
+
+template<>
+struct jni_primitive_array_functions<jdoubleArray>{
+    static constexpr auto NewArray = &JNIEnv::NewDoubleArray;
+    static constexpr auto GetArrayRegion = &JNIEnv::GetDoubleArrayRegion;
+    static constexpr auto SetArrayRegion = &JNIEnv::SetDoubleArrayRegion;
+    static constexpr auto GetArrayElements = &JNIEnv::GetDoubleArrayElements;
+    static constexpr auto ReleaseArrayElements = &JNIEnv::ReleaseDoubleArrayElements;
+};
+
+template<>
+struct jni_primitive_array_functions<jcharArray>{
+    static constexpr auto NewArray = &JNIEnv::NewCharArray;
+    static constexpr auto GetArrayRegion = &JNIEnv::GetCharArrayRegion;
+    static constexpr auto SetArrayRegion = &JNIEnv::SetCharArrayRegion;
+    static constexpr auto GetArrayElements = &JNIEnv::GetCharArrayElements;
+    static constexpr auto ReleaseArrayElements = &JNIEnv::ReleaseCharArrayElements;
+};
+
+template<>
+struct jni_primitive_array_functions<jbooleanArray>{
+    static constexpr auto NewArray = &JNIEnv::NewBooleanArray;
+    static constexpr auto GetArrayRegion = &JNIEnv::GetBooleanArrayRegion;
+    static constexpr auto SetArrayRegion = &JNIEnv::SetBooleanArrayRegion;
+    static constexpr auto GetArrayElements = &JNIEnv::GetBooleanArrayElements;
+    static constexpr auto ReleaseArrayElements = &JNIEnv::ReleaseBooleanArrayElements;
+};
+
+template<class T>
+struct is_template : std::false_type{
+};
+
+template<template<typename...Ts> class C, typename...Ts>
+struct is_template<C<Ts...>> : std::true_type{
+};
+
+template<typename O>
+struct jni_type{
+    static constexpr bool isObject = false;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitive = false;
+    static constexpr bool isPrimitiveArray = false;
+};
+
+template<>
+struct jni_type<jint>{
+    static constexpr bool isObject = false;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitive = true;
+    static constexpr bool isPrimitiveArray = false;
+    typedef jintArray ArrayType;
+};
+
+template<>
+struct jni_type<jbyte>{
+    static constexpr bool isObject = false;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitive = true;
+    static constexpr bool isPrimitiveArray = false;
+    typedef jbyteArray ArrayType;
+};
+
+template<>
+struct jni_type<jshort>{
+    static constexpr bool isObject = false;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitive = true;
+    static constexpr bool isPrimitiveArray = false;
+    typedef jshortArray ArrayType;
+};
+
+template<>
+struct jni_type<jlong>{
+    static constexpr bool isObject = false;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitive = true;
+    static constexpr bool isPrimitiveArray = false;
+    typedef jlongArray ArrayType;
+};
+
+template<>
+struct jni_type<jchar>{
+    static constexpr bool isObject = false;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitive = true;
+    static constexpr bool isPrimitiveArray = false;
+    typedef jcharArray ArrayType;
+};
+
+template<>
+struct jni_type<jboolean>{
+    static constexpr bool isObject = false;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitive = true;
+    static constexpr bool isPrimitiveArray = false;
+    typedef jbooleanArray ArrayType;
+};
+
+template<>
+struct jni_type<jfloat>{
+    static constexpr bool isObject = false;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitive = true;
+    static constexpr bool isPrimitiveArray = false;
+    typedef jfloatArray ArrayType;
+};
+
+template<>
+struct jni_type<jdouble>{
+    static constexpr bool isObject = false;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitive = true;
+    static constexpr bool isPrimitiveArray = false;
+    typedef jdoubleArray ArrayType;
+};
+
+template<>
+struct jni_type<jobject>{
+    static constexpr bool isObject = true;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitive = false;
+    static constexpr bool isPrimitiveArray = false;
+};
+
+template<>
+struct jni_type<jthrowable>{
+    static constexpr bool isObject = true;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitive = false;
+    static constexpr bool isPrimitiveArray = false;
+};
+
+template<>
+struct jni_type<jstring>{
+    static constexpr bool isObject = true;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitive = false;
+    static constexpr bool isPrimitiveArray = false;
+};
+
+template<>
+struct jni_type<jclass>{
+    static constexpr bool isObject = true;
+    static constexpr bool isArray = false;
+    static constexpr bool isPrimitive = false;
+    static constexpr bool isPrimitiveArray = false;
+};
+
+template<>
+struct jni_type<jarray>{
+    static constexpr bool isObject = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitive = false;
+    static constexpr bool isPrimitiveArray = false;
+    static constexpr bool isIntegerArray = false;
+    static constexpr bool isFloatingPointArray = false;
+};
+
+template<>
+struct jni_type<jobjectArray>{
+    static constexpr bool isObject = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitive = false;
+    static constexpr bool isPrimitiveArray = false;
+    static constexpr bool isIntegerArray = false;
+    static constexpr bool isFloatingPointArray = false;
+    typedef jobject ElementType;
+};
+
+template<>
+struct jni_type<jintArray>{
+    static constexpr bool isObject = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitive = false;
+    static constexpr bool isPrimitiveArray = true;
+    static constexpr bool isIntegerArray = true;
+    static constexpr bool isFloatingPointArray = false;
+    static constexpr size_t primitiveSize = sizeof(jint);
+    typedef jint ElementType;
+};
+
+template<>
+struct jni_type<jbyteArray>{
+    static constexpr bool isObject = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitive = false;
+    static constexpr bool isPrimitiveArray = true;
+    static constexpr bool isIntegerArray = true;
+    static constexpr bool isFloatingPointArray = false;
+    static constexpr size_t primitiveSize = sizeof(jbyte);
+    typedef jbyte ElementType;
+};
+
+template<>
+struct jni_type<jshortArray>{
+    static constexpr bool isObject = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitive = false;
+    static constexpr bool isPrimitiveArray = true;
+    static constexpr bool isIntegerArray = true;
+    static constexpr bool isFloatingPointArray = false;
+    static constexpr size_t primitiveSize = sizeof(jshort);
+    typedef jshort ElementType;
+};
+
+template<>
+struct jni_type<jlongArray>{
+    static constexpr bool isObject = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitive = false;
+    static constexpr bool isPrimitiveArray = true;
+    static constexpr bool isIntegerArray = true;
+    static constexpr bool isFloatingPointArray = false;
+    static constexpr size_t primitiveSize = sizeof(jlong);
+    typedef jlong ElementType;
+};
+
+template<>
+struct jni_type<jcharArray>{
+    static constexpr bool isObject = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitive = false;
+    static constexpr bool isPrimitiveArray = true;
+    static constexpr bool isIntegerArray = false;
+    static constexpr bool isFloatingPointArray = false;
+    static constexpr size_t primitiveSize = sizeof(jchar);
+    typedef jchar ElementType;
+};
+
+template<>
+struct jni_type<jbooleanArray>{
+    static constexpr bool isObject = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitive = false;
+    static constexpr bool isPrimitiveArray = true;
+    static constexpr bool isIntegerArray = false;
+    static constexpr bool isFloatingPointArray = false;
+    static constexpr size_t primitiveSize = sizeof(jboolean);
+    typedef jboolean ElementType;
+};
+
+template<>
+struct jni_type<jdoubleArray>{
+    static constexpr bool isObject = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitive = false;
+    static constexpr bool isPrimitiveArray = true;
+    static constexpr bool isIntegerArray = false;
+    static constexpr bool isFloatingPointArray = true;
+    static constexpr size_t primitiveSize = sizeof(jdouble);
+    typedef jdouble ElementType;
+};
+
+template<>
+struct jni_type<jfloatArray>{
+    static constexpr bool isObject = true;
+    static constexpr bool isArray = true;
+    static constexpr bool isPrimitive = false;
+    static constexpr bool isPrimitiveArray = true;
+    static constexpr bool isIntegerArray = false;
+    static constexpr bool isFloatingPointArray = true;
+    static constexpr size_t primitiveSize = sizeof(jfloat);
+    typedef jfloat ElementType;
+};
+
+template<typename O>
+using jni_array_element_type_t = typename jni_type<O>::ElementType;
+
+template<typename O>
+constexpr bool is_jni_array_type_v = jni_type<O>::isArray;
+
+template<typename O>
+constexpr bool is_jni_primitive_array_type_v = jni_type<O>::isPrimitiveArray;
+
+template<typename O>
+constexpr bool is_jni_integer_array_type_v = jni_type<O>::isIntegerArray;
+
+template<typename O>
+constexpr bool is_jni_floatingpoint_array_type_v = jni_type<O>::isFloatingPointArray;
+
+template<typename O>
+constexpr bool is_jni_object_type_v = jni_type<O>::isObject;
+
+template<typename O>
+constexpr bool is_jni_primitive_type_v = jni_type<O>::isPrimitive;
 }
 
 #endif // QTJAMBI_TYPETESTS_H

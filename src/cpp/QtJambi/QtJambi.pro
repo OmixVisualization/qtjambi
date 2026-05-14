@@ -95,15 +95,20 @@ SOURCES += \
     utils.cpp
 
 HEADERS += \
+    QtJambiArrayAPI \
     androidapi.h \
     containeraccess.h \
+    containeraccess_associative.h \
     containeraccess_p.h \
+    containeraccess_sequential.h \
     containerapi.h \
+    containerutils.h \
     coreapi.h \
     debugapi.h \
     exception.h \
     functionalbase.h \
     functionpointer.h \
+    futureapi.h \
     global.h \
     guiapi.h \
     java_p.h \
@@ -120,24 +125,40 @@ HEADERS += \
     objectdata.h \
     paint.h \
     qmlapi.h \
-    qtjambi_cast_impl.h \
-    qtjambi_cast_impl_arithmetic.h \
-    qtjambi_cast_impl_array.h \
-    qtjambi_cast_impl_container_associative.h \
-    qtjambi_cast_impl_container_iterator.h \
-    qtjambi_cast_impl_container_sequential.h \
-    qtjambi_cast_impl_enum.h \
-    qtjambi_cast_impl_jnitype.h \
-    qtjambi_cast_impl_smartpointer.h \
-    qtjambi_cast_impl_template1.h \
-    qtjambi_cast_impl_template2.h \
-    qtjambi_cast_impl_template3.h \
-    qtjambi_cast_impl_template4.h \
-    qtjambi_cast_impl_template5.h \
-    qtjambi_cast_impl_dbus.h \
-    qtjambi_cast_impl_time.h \
-    qtjambi_cast_impl_util.h \
+    qtjambi_cast_arithmetic.h \
+    qtjambi_cast_array.h \
+    qtjambi_cast_buffer.h \
+    qtjambi_cast_container.h \
+    qtjambi_cast_enum.h \
+    qtjambi_cast_future.h \
+    qtjambi_cast_iterator.h \
+    qtjambi_cast_model.h \
+    qtjambi_cast_object.h \
+    qtjambi_cast_smartpointer.h \
+    qtjambi_cast_template1.h \
+    qtjambi_cast_template2.h \
+    qtjambi_cast_template3.h \
+    qtjambi_cast_template4.h \
+    qtjambi_cast_template5.h \
+    qtjambi_cast_time.h \
+    qtjambi_cast_util.h \
     qtjambiapi.h \
+    qtjambiapi_array.h \
+    qtjambiapi_boxed.h \
+    qtjambiapi_construct.h \
+    qtjambiapi_container.h \
+    qtjambiapi_convert.h \
+    qtjambiapi_iterator.h \
+    qtjambiapi_model.h \
+    qtjambiapi_name.h \
+    qtjambiapi_nativeid.h \
+    qtjambiapi_optional.h \
+    qtjambiapi_ownership.h \
+    qtjambiapi_smartpointer.h \
+    qtjambiapi_string.h \
+    qtjambiapi_thread.h \
+    qtjambiapi_time.h \
+    qtjambiapi_variant.h \
     qtjambimetaobject_p.h \
     qtjambilink_p.h \
     qtjambi_cast.h \
@@ -153,7 +174,6 @@ HEADERS += \
     typeentry_p.h \
     typemanager_p.h \
     typetests.h \
-    typeutils.h \
     utils.h \
     utils_p.h
 

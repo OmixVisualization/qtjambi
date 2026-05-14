@@ -30,6 +30,7 @@
 ****************************************************************************/
 
 #include "pch_p.h"
+#include "qtjambi_cast_arithmetic.h"
 
 static int MAX_NARGS = 256;
 
@@ -104,7 +105,7 @@ struct SuccessAction{
     SuccessAction() : d() {}
     SuccessAction(const SuccessAction& other) : d(other.d){}
     SuccessAction(SuccessAction&& other) : d(std::move(other.d)){}
-    template<typename Functor, typename std::enable_if<!std::is_reference<Functor>::value && !std::is_pointer<Functor>::value && !std::is_same<Functor, SuccessAction>::value, bool>::type = true>
+    template<typename Functor, std::enable_if_t<!std::is_reference_v<Functor> && !std::is_pointer_v<Functor> && !std::is_same_v<Functor, SuccessAction>, bool> = true>
     SuccessAction(Functor&& task)
         : d(new SuccessActionData(
                 new Functor(std::move(task)),
@@ -156,7 +157,7 @@ struct Cleanup{
         d = std::move(other.d);
         return *this;
     }
-    template<typename Functor, typename std::enable_if<!std::is_reference<Functor>::value && !std::is_pointer<Functor>::value && !std::is_same<Functor, Cleanup>::value, bool>::type = true>
+    template<typename Functor, std::enable_if_t<!std::is_reference_v<Functor> && !std::is_pointer_v<Functor> && !std::is_same_v<Functor, Cleanup>, bool> = true>
     Cleanup(Functor&& task)
         : d(new CleanupData(new Functor(std::move(task)), [](void* data){
         Functor* functor = reinterpret_cast<Functor*>(data);
@@ -437,7 +438,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                 size = size_t(argMetaType->sizeOf());
                                 alignment = size_t(argMetaType->alignOf());
                             }else{
-                                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                             }
                         }else{
                             typeId = &infos.first().typeId();
@@ -461,7 +462,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                 }else if(QtJambiAPI::convertJavaToNative(__jni_env, entry, ptr, *typeId)){
                                     array[i] = *reinterpret_cast<void**>(ptr);
                                 }else{
-                                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, entry)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, entry)) QTJAMBI_STACKTRACEINFO );
                                 }
                                 control << array[i];
                             }
@@ -494,7 +495,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                     }else if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(__jni_env, entry)){
                                         array[i] = link->pointer();
                                     }else if(!QtJambiAPI::convertJavaToNative(__jni_env, entry, array+i, *typeId)){
-                                        Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, entry)) QTJAMBI_STACKTRACEINFO );
+                                        JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, entry)) QTJAMBI_STACKTRACEINFO );
                                     }
                                     control << array[i];
                                 }
@@ -522,7 +523,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                             if(!argMetaType->isValid())
                                 _argMetaType.reset(argMetaType = nullptr);
                             if(!argMetaType){
-                                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                                 return;
                             }
                             char* array = length==0 ? nullptr : new char[size_t(length) * size];
@@ -541,10 +542,10 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                                     argMetaType->destruct(ptr);
                                                     argMetaType->construct(ptr, variant.data());
                                                 }else{
-                                                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, entry)) QTJAMBI_STACKTRACEINFO );
+                                                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, entry)) QTJAMBI_STACKTRACEINFO );
                                                 }
                                             }else{
-                                                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, entry)) QTJAMBI_STACKTRACEINFO );
+                                                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, entry)) QTJAMBI_STACKTRACEINFO );
                                             }
                                         }
                                     }
@@ -594,7 +595,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                     }else if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(__jni_env, entry)){
                                         array[i] = link->pointer();
                                     }else if(!typeId || !QtJambiAPI::convertJavaToNative(__jni_env, entry, array+i, *typeId)){
-                                        Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, entry)) QTJAMBI_STACKTRACEINFO );
+                                        JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, entry)) QTJAMBI_STACKTRACEINFO );
                                     }
                                     control << array[i];
                                 }
@@ -623,7 +624,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                 if(!argMetaType->isValid())
                                     _argMetaType.reset(argMetaType = nullptr);
                                 if(!argMetaType){
-                                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                                     return;
                                 }
                                 char* array = length==0 ? nullptr : new char[size_t(length) * size];
@@ -642,10 +643,10 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                                         argMetaType->destruct(ptr);
                                                         argMetaType->construct(ptr, variant.data());
                                                     }else{
-                                                        Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, entry)) QTJAMBI_STACKTRACEINFO );
+                                                        JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, entry)) QTJAMBI_STACKTRACEINFO );
                                                     }
                                                 }else{
-                                                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, entry)) QTJAMBI_STACKTRACEINFO );
+                                                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, entry)) QTJAMBI_STACKTRACEINFO );
                                                 }
                                             }
                                         }
@@ -698,7 +699,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                 }
                             }
                         }else{
-                            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                         }
                     }
                     resolved = true;
@@ -711,7 +712,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                 size = size_t(argMetaType->sizeOf());
                                 alignment = size_t(argMetaType->alignOf());
                             }else{
-                                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                             }
                         }else{
                             typeId = &infos.first().typeId();
@@ -728,7 +729,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                             if(QtJambiAPI::convertJavaToNative(__jni_env, val, &ptr, *typeId)){
                                 arg = Java::JNA::Pointer::newInstance(__jni_env, *reinterpret_cast<void**>(ptr));
                             }else{
-                                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                             }
                             resolved = true;
                             break;
@@ -744,7 +745,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                 }else if(QtJambiAPI::convertJavaToNative(__jni_env, val, &ptr, *typeId)){
                                     arg = Java::JNA::Pointer::newInstance(__jni_env, ptr);
                                 }else{
-                                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                                 }
                                 resolved = true;
                                 break;
@@ -772,7 +773,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                         arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                                     }else{
-                                        Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                        JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }else{
                                     arg = Java::JNA::Pointer::newInstance(__jni_env, ptr);
@@ -792,12 +793,12 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                                 argMetaType->construct(ptr, variant.data());
                                             }else{
                                                 argMetaType->destroy(ptr);
-                                                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, val)) QTJAMBI_STACKTRACEINFO );
+                                                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, val)) QTJAMBI_STACKTRACEINFO );
                                                 return;
                                             }
                                         }else{
                                             argMetaType->destroy(ptr);
-                                            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, val)) QTJAMBI_STACKTRACEINFO );
+                                            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, val)) QTJAMBI_STACKTRACEINFO );
                                             return;
                                         }
                                     }
@@ -809,7 +810,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                         cleaners.append(Cleanup{[argMetaType, ptr](){ argMetaType->destroy(ptr); }});
                                     }
                                 }else{
-                                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, val)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, val)) QTJAMBI_STACKTRACEINFO );
                                 }
                             }
                             resolved = true;
@@ -838,10 +839,10 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                             arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
                                             cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                                         }else{
-                                            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                                         }
                                     }else{
-                                        Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                        JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }else if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(__jni_env, val)){
                                     arg = Java::JNA::Pointer::newInstance(__jni_env, link->pointer());
@@ -871,7 +872,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                                     }
                                                 }
                                             }else{
-                                                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                                             }
                                         }else{
                                             if(PtrDeleterFunction dlt = deleter(*typeId)){
@@ -883,14 +884,14 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                                     arg = Java::JNA::Pointer::newInstance(__jni_env, ptr);
                                                     cleaners.append(Cleanup{[dlt, ptr](){ dlt(ptr,false); }});
                                                 }else{
-                                                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                                                 }
                                             }else{
-                                                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                                             }
                                         }
                                     }else{
-                                        Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                        JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }
                                 resolved = true;
@@ -914,7 +915,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                 }else if(typeId && QtJambiAPI::convertJavaToNative(__jni_env, arg, &ptr, *typeId)){
                                     arg = Java::JNA::Pointer::newInstance(__jni_env, ptr);
                                 }else{
-                                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                                 }
                             }else{
                                 if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(__jni_env, val)){
@@ -936,12 +937,12 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                                 argMetaType->construct(ptr, variant.data());
                                             }else{
                                                 argMetaType->destroy(ptr);
-                                                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, val)) QTJAMBI_STACKTRACEINFO );
+                                                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, val)) QTJAMBI_STACKTRACEINFO );
                                                 return;
                                             }
                                         }else{
                                             argMetaType->destroy(ptr);
-                                            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, val)) QTJAMBI_STACKTRACEINFO );
+                                            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, val)) QTJAMBI_STACKTRACEINFO );
                                             return;
                                         }
                                     }
@@ -963,11 +964,11 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                         arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(Cleanup{[ptr](){ operator delete (ptr); }});
                                     }else{
-                                        Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                        JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }
                             }else{
-                                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                             }
                         }
                     }
@@ -1603,7 +1604,7 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
             case EntryTypes::StdFunctionTypeInfo:
                 if(returnPointerOrReference==0 && !isReferenceMetaType){
                     if(size==0)
-                        Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
                     __ffi_type.size = size;
                     __ffi_type.alignment = short(alignment);
                     if(!returnMetaType){
@@ -1628,7 +1629,7 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
             case EntryTypes::PrimitiveTypeInfo:
                 if(returnPointerOrReference==0 && !isReferenceMetaType){
                     if(size==0)
-                        Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
                     __ffi_type.size = size;
                     __ffi_type.alignment = short(alignment);
                     if(!returnMetaType){
@@ -1654,7 +1655,7 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
                         __ffi_type.alignment = short(alignment);
                     }
                 }else{
-                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
                     return nullptr;
                 }
                 break;
@@ -1669,7 +1670,7 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
                 __ffi_type.alignment = short(alignment);
             }
         }else{
-            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
             return nullptr;
         }
     }
@@ -1716,9 +1717,9 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
             break;
         default:
             if(returnMetaType){
-                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported as return type.").arg(QLatin1String(returnMetaType->name())) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported as return type.").arg(QLatin1String(returnMetaType->name())) QTJAMBI_STACKTRACEINFO );
             }else{
-                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported as return type.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported as return type.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
             }
             if (__ffi_type.alignment > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
                 ptr = operator new(__ffi_type.size, std::align_val_t(__ffi_type.alignment));
@@ -1982,7 +1983,7 @@ jclass CoreAPI::getFunctionPointerReturnType(JNIEnv * __jni_env, jobject returnT
                 case sizeof(jlong):
                     return Java::Runtime::Long::primitiveType(__jni_env);
                 default:
-                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
                     return nullptr;
                 }
             }else{
@@ -2009,7 +2010,7 @@ jclass CoreAPI::getFunctionPointerReturnType(JNIEnv * __jni_env, jobject returnT
                 case sizeof(jlong):
                     return Java::Runtime::Long::primitiveType(__jni_env);
                 default:
-                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
                     return nullptr;
                 }
             }else{
@@ -2030,12 +2031,12 @@ jclass CoreAPI::getFunctionPointerReturnType(JNIEnv * __jni_env, jobject returnT
                     case sizeof(jlong):
                         return Java::Runtime::Long::primitiveType(__jni_env);
                     default:
-                        Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
                         return nullptr;
                     }
                 }
             }else{
-                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
                 return nullptr;
             }
         }
@@ -2055,12 +2056,12 @@ jclass CoreAPI::getFunctionPointerReturnType(JNIEnv * __jni_env, jobject returnT
             case sizeof(jlong):
                 return Java::Runtime::Long::primitiveType(__jni_env);
             default:
-                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
                 return nullptr;
             }
         }
     }else{
-        Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
         return nullptr;
     }
 }
@@ -2209,7 +2210,7 @@ jobject CoreAPI::convertFunctionPointerReturn(JNIEnv * __jni_env, jobject return
             if(QtJambiAPI::convertJavaToNative(__jni_env, result, &ptr, *returnTypeId)){
                 return Java::JNA::Pointer::newInstance(__jni_env, *reinterpret_cast<void**>(ptr));
             }else{
-                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
                 return nullptr;
             }
         case EntryTypes::StdFunctionTypeInfo:
@@ -2224,7 +2225,7 @@ jobject CoreAPI::convertFunctionPointerReturn(JNIEnv * __jni_env, jobject return
                 }else if(QtJambiAPI::convertJavaToNative(__jni_env, result, &ptr, *returnTypeId)){
                     return Java::JNA::Pointer::newInstance(__jni_env, ptr);
                 }else{
-                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
                     return nullptr;
                 }
             }
@@ -2272,10 +2273,10 @@ jobject CoreAPI::convertFunctionPointerReturn(JNIEnv * __jni_env, jobject return
                                 return Java::Runtime::Long::valueOf(__jni_env, data);
                             }
                         default:
-                            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
                         }
                     }else{
-                        Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
                     }
                 }else{
                     return Java::JNA::Pointer::newInstance(__jni_env, ptr);
@@ -2295,12 +2296,12 @@ jobject CoreAPI::convertFunctionPointerReturn(JNIEnv * __jni_env, jobject return
                                 returnMetaType->construct(ptr, variant.data());
                             }else{
                                 returnMetaType->destroy(ptr);
-                                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, result)) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, result)) QTJAMBI_STACKTRACEINFO );
                                 return nullptr;
                             }
                         }else{
                             returnMetaType->destroy(ptr);
-                            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, result)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, result)) QTJAMBI_STACKTRACEINFO );
                             return nullptr;
                         }
                     }
@@ -2332,14 +2333,14 @@ jobject CoreAPI::convertFunctionPointerReturn(JNIEnv * __jni_env, jobject return
                             }
                         default:
                             returnMetaType->destroy(ptr);
-                            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
                         }
                     }else{
                         return Java::JNA::Pointer::newInstance(__jni_env, ptr);
                         //cleaners.append(Cleanup{[returnMetaType, ptr](){ returnMetaType->destroy(ptr); }});
                     }
                 }else{
-                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, result)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, result)) QTJAMBI_STACKTRACEINFO );
                 }
             }
             return nullptr;
@@ -2379,7 +2380,7 @@ jobject CoreAPI::convertFunctionPointerReturn(JNIEnv * __jni_env, jobject return
                     }
                 default:
                     returnMetaType->destroy(ptr);
-                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
                 }
             }else{
                 return Java::JNA::Pointer::newInstance(__jni_env, ptr);
@@ -2394,12 +2395,12 @@ jobject CoreAPI::convertFunctionPointerReturn(JNIEnv * __jni_env, jobject return
                         returnMetaType->construct(ptr, variant.data());
                     }else{
                         returnMetaType->destroy(ptr);
-                        Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, result)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, result)) QTJAMBI_STACKTRACEINFO );
                         return nullptr;
                     }
                 }else{
                     returnMetaType->destroy(ptr);
-                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, result)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, result)) QTJAMBI_STACKTRACEINFO );
                     return nullptr;
                 }
             }
@@ -2431,7 +2432,7 @@ jobject CoreAPI::convertFunctionPointerReturn(JNIEnv * __jni_env, jobject return
                     }
                 default:
                     returnMetaType->destroy(ptr);
-                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
                 }
             }else{
                 return Java::JNA::Pointer::newInstance(__jni_env, ptr);
@@ -2465,14 +2466,14 @@ jobject CoreAPI::convertFunctionPointerReturn(JNIEnv * __jni_env, jobject return
                             return Java::Runtime::Long::valueOf(__jni_env, data);
                         }
                     default:
-                        Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
                     }
                 }else{
-                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
                 }
             }
         }else{
-            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, returnClassType)) QTJAMBI_STACKTRACEINFO );
         }
     }
     return result;
@@ -2511,7 +2512,7 @@ void CoreAPI::getFunctionPointerParameterTypes(JNIEnv * __jni_env, jobjectArray 
                 }
             }
             if(argPointerOrReference==0){
-                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported without pointer or reference arithmetic.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported without pointer or reference arithmetic.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
             }else{
                 __jni_env->SetObjectArrayElement(parameterTypes, i, Java::JNA::Pointer::getClass(__jni_env));
             }
@@ -2584,7 +2585,7 @@ void CoreAPI::getFunctionPointerParameterTypes(JNIEnv * __jni_env, jobjectArray 
                         if(argMetaType){
                             typeId = getTypeByMetaType(*argMetaType);
                         }else{
-                            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                         }
                     }else{
                         typeId = &infos.first().typeId();
@@ -2618,7 +2619,7 @@ void CoreAPI::getFunctionPointerParameterTypes(JNIEnv * __jni_env, jobjectArray 
                         if(!argMetaType->isValid())
                             _argMetaType.reset(argMetaType = nullptr);
                         if(!argMetaType)
-                            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                         __jni_env->SetObjectArrayElement(parameterTypes, i, Java::JNA::Pointer::getClass(__jni_env));
                         continue;
                     default:
@@ -2634,12 +2635,12 @@ void CoreAPI::getFunctionPointerParameterTypes(JNIEnv * __jni_env, jobjectArray 
                         if(!argMetaType->isValid())
                             _argMetaType.reset(argMetaType = nullptr);
                         if(!argMetaType)
-                            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                         __jni_env->SetObjectArrayElement(parameterTypes, i, Java::JNA::Pointer::getClass(__jni_env));
                     }
                     continue;
                 }else{
-                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                 }
             }else{
                 size_t size = 0;
@@ -2694,7 +2695,7 @@ void CoreAPI::getFunctionPointerParameterTypes(JNIEnv * __jni_env, jobjectArray 
                                     __jni_env->SetObjectArrayElement(parameterTypes, i, Java::Runtime::Long::primitiveType(__jni_env));
                                     break;
                                 default:
-                                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported without pointer or reference arithmetic.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported without pointer or reference arithmetic.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                                     break;
                                 }
                                 continue;
@@ -2703,7 +2704,7 @@ void CoreAPI::getFunctionPointerParameterTypes(JNIEnv * __jni_env, jobjectArray 
                                 continue;
                             }
                         }else{
-                            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                         }
                     break;
                     case EntryTypes::FlagsTypeInfo:
@@ -2730,7 +2731,7 @@ void CoreAPI::getFunctionPointerParameterTypes(JNIEnv * __jni_env, jobjectArray 
                                     __jni_env->SetObjectArrayElement(parameterTypes, i, Java::Runtime::Long::primitiveType(__jni_env));
                                     break;
                                 default:
-                                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported without pointer or reference arithmetic.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported without pointer or reference arithmetic.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                                     break;
                                 }
                                 continue;
@@ -2744,11 +2745,11 @@ void CoreAPI::getFunctionPointerParameterTypes(JNIEnv * __jni_env, jobjectArray 
                                             __jni_env->SetObjectArrayElement(parameterTypes, i, Java::JNA::Pointer::getClass(__jni_env));
                                             continue;
                                         }else{
-                                            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                                         }
                                     }
                                 }else{
-                                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                                 }
                             }
                         }
@@ -2776,7 +2777,7 @@ void CoreAPI::getFunctionPointerParameterTypes(JNIEnv * __jni_env, jobjectArray 
                                 __jni_env->SetObjectArrayElement(parameterTypes, i, Java::Runtime::Long::primitiveType(__jni_env));
                                 break;
                             default:
-                                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported without pointer or reference arithmetic.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported without pointer or reference arithmetic.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                                 break;
                             }
                         }else{
@@ -2786,7 +2787,7 @@ void CoreAPI::getFunctionPointerParameterTypes(JNIEnv * __jni_env, jobjectArray 
                 }else if(argPointerOrReference!=0 || isReferenceMetaType){
                     __jni_env->SetObjectArrayElement(parameterTypes, i, Java::JNA::Pointer::getClass(__jni_env));
                 }else{
-                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported without pointer or reference arithmetic.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported without pointer or reference arithmetic.").arg(QtJambiAPI::getClassNamePrintable(__jni_env, argClassType)) QTJAMBI_STACKTRACEINFO );
                 }
                 continue;
             }// all others are allowed
@@ -3005,7 +3006,7 @@ void CoreAPI::convertFunctionPointerParameters(JNIEnv * __jni_env, jobjectArray 
                                 break;
                             }
                         default:
-                            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, oldValue)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, oldValue)) QTJAMBI_STACKTRACEINFO );
                         }
                     }else{
                         QVariant variant = CoreAPI::convertCheckedObjectToQVariant(__jni_env, oldValue, *argMetaType);
@@ -3036,10 +3037,10 @@ void CoreAPI::convertFunctionPointerParameters(JNIEnv * __jni_env, jobjectArray 
                                     break;
                                 }
                             default:
-                                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, oldValue)) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, oldValue)) QTJAMBI_STACKTRACEINFO );
                             }
                         }else{
-                            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, oldValue)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, oldValue)) QTJAMBI_STACKTRACEINFO );
                         }
                     }
                 }else{
@@ -3110,11 +3111,11 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                         storage->objectsByFunctionPointers()[quintptr(ptr)] << std::move(wrapper);
                         return result;
                     }else{
-                        Java::Runtime::ClassCastException::throwNew(env, QStringLiteral("Unable to convert java object of type '%1' to function pointer '%2'.").arg(QtJambiAPI::getObjectClassNamePrintable(env, function), QtJambiAPI::typeName(*sourceTypeId)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::Runtime::ClassCastException>(env, QStringLiteral("Unable to convert java object of type '%1' to function pointer '%2'.").arg(QtJambiAPI::getObjectClassNamePrintable(env, function), QtJambiAPI::typeName(*sourceTypeId)) QTJAMBI_STACKTRACEINFO );
                         return nullptr;
                     }
                 }else{
-                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, sourceClass)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, sourceClass)) QTJAMBI_STACKTRACEINFO );
                 }
             }
         }
@@ -3166,12 +3167,12 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                                 return result;
                             }
                         }else{
-                            Java::Runtime::ClassCastException::throwNew(env, QStringLiteral("Unable to convert java object of type '%1' to function pointer '%2'.").arg(QtJambiAPI::getObjectClassNamePrintable(env, function), QtJambiAPI::typeName(*sourceTypeId)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raise<Java::Runtime::ClassCastException>(env, QStringLiteral("Unable to convert java object of type '%1' to function pointer '%2'.").arg(QtJambiAPI::getObjectClassNamePrintable(env, function), QtJambiAPI::typeName(*sourceTypeId)) QTJAMBI_STACKTRACEINFO );
                             return nullptr;
                         }
                     }
                 }else{
-                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, sourceClass)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, sourceClass)) QTJAMBI_STACKTRACEINFO );
                 }
             }
         }
@@ -3220,13 +3221,13 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                         }
                     }
                 }else{
-                    Java::Runtime::ClassCastException::throwNew(env, QStringLiteral("Unable to convert java object of type '%1' to function pointer.").arg(QtJambiAPI::getObjectClassNamePrintable(env, function)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::Runtime::ClassCastException>(env, QStringLiteral("Unable to convert java object of type '%1' to function pointer.").arg(QtJambiAPI::getObjectClassNamePrintable(env, function)) QTJAMBI_STACKTRACEINFO );
                     return nullptr;
                 }
             }
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Object of type %1 is not a function pointer type.").arg(QtJambiAPI::getClassNamePrintable(env, sourceClass)) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Object of type %1 is not a function pointer type.").arg(QtJambiAPI::getClassNamePrintable(env, sourceClass)) QTJAMBI_STACKTRACEINFO );
         }else{
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, sourceClass)) QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassNamePrintable(env, sourceClass)) QTJAMBI_STACKTRACEINFO );
         }
     }
     return nullptr;
@@ -3309,7 +3310,7 @@ void ffi_funtion_dispatch(JNIEnv *env, void* func, jobjectArray args, ffi_type *
                 arg_values[i] = &c_args[i].i;
             }
             else {
-                Java::Runtime::UnsupportedOperationException::throwNew(env, QString("Unsupported wchar_t size (%1)").arg(sizeof(wchar_t)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseUnsupportedOperationException(env, QString("Unsupported wchar_t size (%1)").arg(sizeof(wchar_t)) QTJAMBI_STACKTRACEINFO );
                 return;
             }
         }
@@ -3421,7 +3422,7 @@ void ffi_funtion_dispatch(JNIEnv *env, void* func, jobjectArray args, ffi_type *
 
     jlong cif = Java::JNA::Native::ffi_prep_cif(env, 0, nargs, return_type, arg_types.get());
     if(cif==0){
-        Java::Runtime::RuntimeException::throwNew(env, "Error during native call setup." QTJAMBI_STACKTRACEINFO );
+        JavaException::raiseRuntimeException(env, "Error during native call setup." QTJAMBI_STACKTRACEINFO );
     }else{
         Java::JNA::Native::ffi_call(env, cif, func, presult, arg_values.get());
         Java::JNA::Native::free(env, cif);

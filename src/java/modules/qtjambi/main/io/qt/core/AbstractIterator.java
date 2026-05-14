@@ -74,6 +74,7 @@ abstract class AbstractIterator<T> extends QtObject{
 	private final QtObject owner;
 	private final Function<QtObject,AbstractIterator<T>> beginSupplier;
 	private final Function<QtObject,AbstractIterator<T>> endSupplier;
+	private final Function<QtObject,QtObject> ownerCloner;
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	AbstractIterator(QPrivateConstructor c, QtObject owner) {
@@ -81,7 +82,8 @@ abstract class AbstractIterator<T> extends QtObject{
 		this.owner = owner;
 		if(owner==null) {
 			endSupplier = null;
-			beginSupplier = null;			
+			beginSupplier = null;
+			ownerCloner = null;
 		}else if(owner instanceof AbstractSpan) {
 			AbstractSpan span = (AbstractSpan)owner;
 			if(span.isConstSpan() || isConstant()) {
@@ -91,6 +93,7 @@ abstract class AbstractIterator<T> extends QtObject{
 				endSupplier = (Function)(Function<AbstractSpan,AbstractIterator<?>>)AbstractSpan::end;
 				beginSupplier = (Function)(Function<AbstractSpan,AbstractIterator<?>>)AbstractSpan::begin;
 			}
+			ownerCloner = (Function)(Function<AbstractSpan<?>,AbstractSpan<?>>)AbstractSpan::clone;
 		}else if(owner instanceof AbstractSequentialContainer) {
 			if(isConstant()) {
 				endSupplier = (Function)(Function<AbstractSequentialContainer,AbstractIterator<?>>)AbstractSequentialContainer::constEnd;
@@ -102,6 +105,7 @@ abstract class AbstractIterator<T> extends QtObject{
 				endSupplier = null;
 				beginSupplier = null;
 			}
+			ownerCloner = (Function)(Function<AbstractSequentialContainer<?>,AbstractSequentialContainer<?>>)AbstractSequentialContainer::clone;
 		}else if(owner instanceof AbstractAssociativeContainer) {
 			if(isConstant()) {
 				endSupplier = (Function)(Function<AbstractAssociativeContainer,AbstractIterator<?>>)AbstractAssociativeContainer::constEnd;
@@ -110,6 +114,7 @@ abstract class AbstractIterator<T> extends QtObject{
 				endSupplier = (Function)(Function<AbstractAssociativeContainer,AbstractIterator<?>>)AbstractAssociativeContainer::end;
 				beginSupplier = (Function)(Function<AbstractAssociativeContainer,AbstractIterator<?>>)AbstractAssociativeContainer::begin;
 			}
+			ownerCloner = (Function)(Function<AbstractAssociativeContainer<?,?>,AbstractAssociativeContainer<?,?>>)AbstractAssociativeContainer::clone;
 		}else if(owner instanceof AbstractMultiAssociativeContainer) {
 			if(isConstant()) {
 				endSupplier = (Function)(Function<AbstractMultiAssociativeContainer,AbstractIterator<?>>)AbstractMultiAssociativeContainer::constEnd;
@@ -118,10 +123,12 @@ abstract class AbstractIterator<T> extends QtObject{
 				endSupplier = (Function)(Function<AbstractMultiAssociativeContainer,AbstractIterator<?>>)AbstractMultiAssociativeContainer::end;
 				beginSupplier = (Function)(Function<AbstractMultiAssociativeContainer,AbstractIterator<?>>)AbstractMultiAssociativeContainer::begin;
 			}
+			ownerCloner = (Function)(Function<AbstractMultiAssociativeContainer<?,?>,AbstractMultiAssociativeContainer<?,?>>)AbstractMultiAssociativeContainer::clone;
 		}else {
 			BeginEndFunctions functions = findBeginEndSuppliers(owner);
 			beginSupplier = (Function)(isConstant() ? functions.constBegin : functions.begin);
 			endSupplier = (Function)(isConstant() ? functions.constEnd : functions.end);
+			ownerCloner = (Function)functions.ownerCloner;
 		}
 	}
 	
@@ -147,6 +154,11 @@ abstract class AbstractIterator<T> extends QtObject{
 	final AbstractIterator<T> begin(){
 		return beginSupplier==null ? null : beginSupplier.apply(owner);
 	}
+    
+    @QtUninvokable
+	final QtObject cloneOwner() {
+    	return ownerCloner==null || owner==null ? null : ownerCloner.apply(owner);
+    }
 	
     /**
      * Compares this iterator with other object.
@@ -166,12 +178,15 @@ abstract class AbstractIterator<T> extends QtObject{
     	final AbstractIterator<E> current;
 		final AbstractIterator<E> end;
     	private boolean hasNext;
+    	@SuppressWarnings("unused")
+		private final QtObject clone;
 
     	DefaultIterator(AbstractIterator<E> current) {
 			super();
 			this.current = current;
 			end = current.end();
 			hasNext = end!=null && !current.equals(end);
+			clone = current.cloneOwner();
 		}
 
 		@Override
@@ -210,12 +225,15 @@ abstract class AbstractIterator<T> extends QtObject{
     	final AbstractIterator<E> current;
     	final AbstractIterator<E> begin;
     	private boolean hasNext;
+    	@SuppressWarnings("unused")
+		private final QtObject clone;
 
 		public DefaultDescendingIterator(AbstractIterator<E> nativeIterator) {
 			super();
 			this.current = nativeIterator;
 			begin = nativeIterator.begin();
 			hasNext = begin!=null && !nativeIterator.equals(begin);
+			clone = nativeIterator.cloneOwner();
 		}
 
 		@Override
@@ -257,6 +275,8 @@ abstract class AbstractIterator<T> extends QtObject{
     	private int icursor;
     	private boolean hasNext;
     	private boolean hasPrevious;
+    	@SuppressWarnings("unused")
+		private final QtObject clone;
     	
     	MutableIterator(AbstractIterator<T> current){
     		if(current.isConstant())
@@ -266,6 +286,7 @@ abstract class AbstractIterator<T> extends QtObject{
     		end = current.end();
         	hasNext = end!=null && !current.equals(end);
         	hasPrevious = begin!=null && !current.equals(begin);
+        	clone = current.cloneOwner();
     	}
     	
         @Override
@@ -481,18 +502,21 @@ abstract class AbstractIterator<T> extends QtObject{
 				Function<QtObject, AbstractIterator<?>> constBegin,
 				Function<QtObject, AbstractIterator<?>> constEnd,
 				Function<QtObject, AbstractIterator<?>> begin,
-				Function<QtObject, AbstractIterator<?>> end) {
+				Function<QtObject, AbstractIterator<?>> end,
+				Function<QtObject,QtObject> ownerCloner) {
 			super();
 			this.begin = begin;
 			this.end = end;
 			this.constBegin = constBegin;
 			this.constEnd = constEnd;
+			this.ownerCloner = ownerCloner;
 		}
 		
 		final Function<QtObject,AbstractIterator<?>> begin;
 		final Function<QtObject,AbstractIterator<?>> end;
 		final Function<QtObject,AbstractIterator<?>> constBegin;
 		final Function<QtObject,AbstractIterator<?>> constEnd;
+		final Function<QtObject,QtObject> ownerCloner;
 	}
 	
 	private static final Map<Class<?>, BeginEndFunctions> endMethodHandles = Collections.synchronizedMap(new HashMap<>());
@@ -503,25 +527,32 @@ abstract class AbstractIterator<T> extends QtObject{
 			Method constBeginMethod = null;
 			Method endMethod = null;
 			Method constEndMethod = null;
-			while ((endMethod == null && constEndMethod == null
-				 && beginMethod == null && constBeginMethod == null) 
+			Method ownerClonerMethod = null;
+			while ((ownerClonerMethod == null 
+					&& endMethod == null && constEndMethod == null
+					&& beginMethod == null && constBeginMethod == null) 
 					&& cls!=null && cls != QtObject.class) {
 				Method methods[] = cls.getDeclaredMethods();
 				for (Method method : methods) {
-					if (method.getParameterCount() == 0
-							&& AbstractIterator.class.isAssignableFrom(method.getReturnType())) {
-						if(method.getName().equals("begin")) {
-							beginMethod = method;
-						}else if(method.getName().equals("end")) {
-							endMethod = method;
-						}else if(method.getName().equals("constEnd")) {
-							constEndMethod = method;
-						}else if(method.getName().equals("constBegin")) {
-							constBeginMethod = method;
+					if (method.getParameterCount() == 0) {
+						if(AbstractIterator.class.isAssignableFrom(method.getReturnType())) {
+							if(method.getName().equals("begin")) {
+								beginMethod = method;
+							}else if(method.getName().equals("end")) {
+								endMethod = method;
+							}else if(method.getName().equals("constEnd")) {
+								constEndMethod = method;
+							}else if(method.getName().equals("constBegin")) {
+								constBeginMethod = method;
+							}
+						}else if(method.getName().equals("clone") 
+								&& cls.isAssignableFrom(method.getReturnType())) {
+							ownerClonerMethod = method;
 						}
 					}
 					if(endMethod != null && constEndMethod != null
-							 && beginMethod != null && constBeginMethod != null) {
+							 && beginMethod != null && constBeginMethod != null
+							 && ownerClonerMethod != null) {
 						break;
 					}
 				}
@@ -545,8 +576,9 @@ abstract class AbstractIterator<T> extends QtObject{
 				return new BeginEndFunctions(CoreUtility.functionFromMethod(constBeginMethod), 
 											CoreUtility.functionFromMethod(constEndMethod), 
 											CoreUtility.functionFromMethod(beginMethod), 
-											CoreUtility.functionFromMethod(endMethod));
-			else return new BeginEndFunctions(null,null,null,null);
+											CoreUtility.functionFromMethod(endMethod), 
+											CoreUtility.functionFromMethod(ownerClonerMethod));
+			else return new BeginEndFunctions(null,null,null,null,null);
 		});
 	}
 	

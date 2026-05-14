@@ -250,7 +250,7 @@ TypeSystem{
                                   "        if(%in && !Java::Runtime::Boolean::isInstanceOf(%env, %in)){\n"+
                                   "            JavaException::raiseIllegalArgumentException(%env, \"Boolean value expected.\" QTJAMBI_STACKTRACEINFO);\n"+
                                   "        }\n"+
-                                  "        %out.boolValue = QtJambiAPI::fromJavaBooleanObject(%env, %in);\n"+
+                                  "        %out.boolValue = qtjambi_cast<bool>(%env, %in);\n"+
                                   "    }\n"+
                                   "break;\n"+
                                   "case QQuick3DObject::ItemOpacityHasChanged:     // value.realValue\n"+
@@ -260,7 +260,7 @@ TypeSystem{
                                   "        if(%in && !Java::Runtime::Number::isInstanceOf(%env, %in)){\n"+
                                   "            JavaException::raiseIllegalArgumentException(%env, \"Number value expected.\" QTJAMBI_STACKTRACEINFO);\n"+
                                   "        }\n"+
-                                  "        %out.realValue = QtJambiAPI::fromJavaDoubleObject(%env, %in);\n"+
+                                  "        %out.realValue = qtjambi_cast<double>(%env, %in);\n"+
                                   "    }\n"+
                                   "    break;\n"+
                                   "default:\n"+

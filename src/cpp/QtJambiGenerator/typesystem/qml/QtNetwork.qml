@@ -36,7 +36,7 @@ TypeSystem{
     module: "qtjambi.network"
     precompiledHeader: "pch_p.h"
     description: "Classes to make network programming easier and more portable."
-    Template{
+    CodeTemplate{
         name: "network.read_char*_long_long"
         Text{content: "public final int read(byte data[]) {\n"+
                       "    if (data.length == 0) return 0;\n"+
@@ -414,7 +414,7 @@ TypeSystem{
                 target: CodeClass.Native
                 position: Position.End
                 Text{content: "if(!ok)\n"+
-                              "    Java::QtNetwork::QTimeoutException::throwNew(%env, \"Connection timed out\" QTJAMBI_STACKTRACEINFO );"}
+                              "    JavaException::raise<Java::QtNetwork::QTimeoutException>(%env, \"Connection timed out\" QTJAMBI_STACKTRACEINFO );"}
             }
         }
         InjectCode{
@@ -612,7 +612,7 @@ TypeSystem{
                 target: CodeClass.Native
                 position: Position.End
                 Text{content: "if(!ok)\n"+
-                              "    Java::QtNetwork::QTimeoutException::throwNew(%env, \"Connection timed out\" QTJAMBI_STACKTRACEINFO );"}
+                              "    JavaException::raise<Java::QtNetwork::QTimeoutException>(%env, \"Connection timed out\" QTJAMBI_STACKTRACEINFO );"}
             }
         }
         ModifyFunction{
@@ -2140,7 +2140,7 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
     }
 
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: template baseclass 'QtPrivate::ContextTypeForFunctor::ContextType<Functor>' of '' is not known"}
-    Template{
+    CodeTemplate{
         name: "rest.comsumer.function"
         Text{content: "auto %out = [wrapper = JObjectWrapper(%env, %in)](QRestReply* reply){\n"+
                       "                    if(JniEnvironment env{200}){\n"+

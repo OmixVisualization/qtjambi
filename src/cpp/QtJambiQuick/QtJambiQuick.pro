@@ -44,3 +44,4 @@ HEADERS += \
 greaterThan(QT_MAJOR_VERSION, 5):{
     OBJECTIVE_SOURCES += QSGMetalTexture.mm
 }
+

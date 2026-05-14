@@ -35,7 +35,7 @@ DLLDESTDIR = ../bin
 
 include(../QtJambi/configure.pri)
 
-GENERATOR_PRI = $$clean_path($$PWD/../../../$$VERSION/build/tests/cpp/$$QTJAMBI_PROJECT/generated.pri)
+GENERATOR_PRI = $$clean_path($$PWD/../../../$$VERSION/generate/tests/cpp/$$QTJAMBI_PROJECT/generated.pri)
 exists($$GENERATOR_PRI): include($$GENERATOR_PRI)
 
 QT = core gui concurrent widgets sql qml network xml quick

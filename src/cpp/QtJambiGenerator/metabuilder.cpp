@@ -39,6 +39,7 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include <QVariant>
+#include <QtConcurrent/QtConcurrent>
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
 #define qAsConst std::as_const
@@ -81,19 +82,24 @@ void applyOnType(ComplexTypeEntry* type, Functor&& functor, bool inclInstantiati
     functor(type);
     if(inclInstantiation){
         for(const ComplexTypeEntry* ins : type->instantiations()){
-            functor(const_cast<ComplexTypeEntry*>(ins));
+            if(ins)
+                functor(const_cast<ComplexTypeEntry*>(ins));
         }
     }
     if(type->designatedInterface()){
         functor(type->designatedInterface());
         for(const ComplexTypeEntry* ins : type->designatedInterface()->instantiations()){
-            functor(const_cast<ComplexTypeEntry*>(ins));
+            if(ins)
+                functor(const_cast<ComplexTypeEntry*>(ins));
         }
     }else if(type->isInterface()){
         InterfaceTypeEntry* itype = dynamic_cast<InterfaceTypeEntry*>(type);
-        functor(itype->origin());
-        for(const ComplexTypeEntry* ins : itype->origin()->instantiations()){
-            functor(const_cast<ComplexTypeEntry*>(ins));
+        if(itype->origin()){
+            functor(itype->origin());
+            for(const ComplexTypeEntry* ins : itype->origin()->instantiations()){
+                if(ins)
+                    functor(const_cast<ComplexTypeEntry*>(ins));
+            }
         }
     }
 }
@@ -841,7 +847,7 @@ bool MetaBuilder::build(FileModelItem&& dom) {
             bool hasCopyConstructor = cls->typeEntry()->hasPrivateCopyConstructor() || cls->typeEntry()->hasProtectedCopyConstructor();
             if(!hasCopyConstructor){
                 MetaFunctionList functions = cls->queryFunctions(MetaClass::Constructors);
-                for(MetaFunction *f : functions) {
+                for(MetaFunction *f : std::as_const(functions)) {
                     if (!f->isInvalid()
                         && !f->isEmptyFunction()
                         && !f->isFake()
@@ -910,8 +916,6 @@ bool MetaBuilder::build(FileModelItem&& dom) {
     }
     checkHashAndSwapFunctions();
     checkFunctionModifications();
-    dumpLog();
-    sortLists();
     for(const QList<TypeEntry *>& entries : m_database->allEntries().values()){
         for(const TypeEntry* te : entries){
             if(te->isComplex()){
@@ -937,15 +941,15 @@ bool MetaBuilder::build(FileModelItem&& dom) {
             MetaArgument *meta_arg = meta_arguments[i];
 
             QString expr = meta_arg->originalDefaultValueExpression();
-            if (!expr.isEmpty() && meta_arg->defaultValueExpression().isEmpty()) {
+            if (!expr.isEmpty()) {
                 expr = translateDefaultValue(expr, meta_arg->type(), function, m_current_class, i);
                 if (expr.isEmpty()) {
                     first_default_argument = i;
                 } else {
                     meta_arg->setDefaultValueExpression(expr);
                 }
-            }else if(meta_arg->defaultValueExpression().isEmpty()){
-                first_default_argument = i;
+            }else{
+                meta_arg->setDefaultValueExpression(function->replacedDefaultExpression(m_current_class, meta_arg->argumentIndex() + 1));
             }
         }
 
@@ -955,7 +959,644 @@ bool MetaBuilder::build(FileModelItem&& dom) {
             meta_arguments[i]->setDefaultValueExpression(QString());
         m_current_class = nullptr;
     }
+    QFuture<void> f1 = QtConcurrent::map(m_meta_classes, [](MetaClass* meta_class){
+            MetaBuilder::analyzeClass(meta_class);
+        });
+    QFuture<void> f2 = QtConcurrent::map(m_meta_functionals, [](MetaFunctional* meta_class){
+            MetaBuilder::analyzeFunctional(meta_class);
+        });
+    f2.waitForFinished();
+    f1.waitForFinished();
+
+    dumpLog();
+    sortLists();
     return true;
+}
+
+void analyzeType(const MetaType* type,
+                 bool &hasDeprecation,
+                 bool &needModelCast,
+                 bool &needDBusCast,
+                 bool &needQmlCast,
+                 bool &needFutureCast,
+                 bool &needArrayCast,
+                 bool &needBufferCast,
+                 bool &needEnumCast,
+                 bool &needArithmeticCast,
+                 bool &needTemplate1Cast,
+                 bool &needTemplate2Cast,
+                 bool &needTemplate3Cast,
+                 bool &needTemplate4Cast,
+                 bool &needTemplate5Cast,
+                 bool &needIteratorCast,
+                 bool &needContainerCast,
+                 bool &needSmartPointerCast,
+                 bool &needTimeCast,
+                 bool &needJObjectWrapper,
+                 bool &needStringAPI,
+                 bool &needBufferAPI,
+                 bool &needJavaAPI,
+                 bool &needArrayAPI,
+                 bool requiresBoxedPrimitives = false){
+    if(type){
+        hasDeprecation |= type->typeEntry()->isDeclDeprecated();
+        if(type->isCharString()){
+            needStringAPI = true;
+            needArithmeticCast = true;
+        }else if(type->isQLatin1String()
+                || type->isQLatin1StringView()
+                || type->isQStringView()
+                || type->isQAnyStringView()
+                || type->isQUtf8StringView()){
+            needStringAPI = true;
+        }else if(type->typeEntry()->isStdStringBased()){
+            needTemplate3Cast = true;
+            needStringAPI = true;
+        }else if(type->typeEntry()->isStdStringViewBased()){
+            needTemplate2Cast = true;
+            needStringAPI = true;
+        }else if(type->typeEntry()->isContainer()){
+            switch(static_cast<const TS::ContainerTypeEntry*>(type->typeEntry())->type()){
+            case TS::ContainerTypeEntry::QQmlListPropertyContainer:
+                needQmlCast = true;
+                needTemplate1Cast = true;
+                break;
+            case TS::ContainerTypeEntry::QDBusReplyContainer:
+                needDBusCast = true;
+                needTemplate1Cast = true;
+                break;
+            case TS::ContainerTypeEntry::QModelRoleDataSpanContainer:
+                needModelCast = true;
+                needTemplate2Cast = true;
+                break;
+            case TS::ContainerTypeEntry::std_array:
+                needArrayCast = true;
+                break;
+            case TS::ContainerTypeEntry::StringListContainer:
+            case TS::ContainerTypeEntry::ByteArrayListContainer:
+                needTemplate1Cast = true;
+                needContainerCast = true;
+                break;
+            case TS::ContainerTypeEntry::std_chrono:
+            case TS::ContainerTypeEntry::std_chrono_template:
+                needTimeCast = true;
+                needTemplate2Cast = true;
+                break;
+            case TS::ContainerTypeEntry::PairContainer:
+            case TS::ContainerTypeEntry::std_vector:
+                needTemplate2Cast = true;
+                break;
+            case TS::ContainerTypeEntry::ListContainer:
+            case TS::ContainerTypeEntry::LinkedListContainer:
+            case TS::ContainerTypeEntry::VectorContainer:
+            case TS::ContainerTypeEntry::StackContainer:
+            case TS::ContainerTypeEntry::QueueContainer:
+            case TS::ContainerTypeEntry::SetContainer:
+            case TS::ContainerTypeEntry::QArrayDataContainer:
+            case TS::ContainerTypeEntry::QTypedArrayDataContainer:
+                needTemplate1Cast = true;
+                needContainerCast = true;
+                break;
+            case TS::ContainerTypeEntry::MapContainer:
+            case TS::ContainerTypeEntry::MultiMapContainer:
+            case TS::ContainerTypeEntry::HashContainer:
+            case TS::ContainerTypeEntry::MultiHashContainer:
+                needTemplate2Cast = true;
+                needContainerCast = true;
+                break;
+            default:
+                switch(type->instantiations().size()){
+                case 1:
+                    needTemplate1Cast = true;
+                    break;
+                case 2:
+                    needTemplate2Cast = true;
+                    break;
+                case 3:
+                    needTemplate3Cast = true;
+                    break;
+                case 4:
+                    needTemplate4Cast = true;
+                    break;
+                case 5:
+                    needTemplate5Cast = true;
+                    break;
+                default:
+                    break;
+                }
+                break;
+            }
+        }else if(type->typeEntry()->isIterator()){
+            needIteratorCast = true;
+        }else if(type->typeEntry()->isSmartPointer()){
+            auto stype = static_cast<const TS::SmartPointerTypeEntry*>(type->typeEntry());
+            switch(stype->type()){
+            case TS::SmartPointerTypeEntry::Type::QSharedPointer:
+            case TS::SmartPointerTypeEntry::Type::QWeakPointer:
+            case TS::SmartPointerTypeEntry::Type::shared_ptr:
+            case TS::SmartPointerTypeEntry::Type::weak_ptr:
+                needSmartPointerCast = true;
+                needTemplate1Cast = true;
+            break;
+            case TS::SmartPointerTypeEntry::Type::QScopedPointer:
+            case TS::SmartPointerTypeEntry::Type::unique_ptr:
+                needTemplate2Cast = true;
+            break;
+            default: break;
+            }
+        }else if(type->typeEntry()->isFunctional()
+                 && (type->typeEntry()->qualifiedCppName().startsWith("std::function<")
+                     || reinterpret_cast<const FunctionalTypeEntry *>(type->typeEntry())->isFunctionPointer())){
+            needTemplate1Cast = true;
+        }else if(type->typeEntry()->isArray()){
+            needArrayCast = true;
+        }else if(type->typeEntry()->isEnum()){
+            needEnumCast = true;
+            needArithmeticCast = true;
+        }else if(type->typeEntry()->isFlags()){
+            needArithmeticCast = true;
+            needTemplate1Cast = true;
+        }else if(type->typeEntry()->isInitializerList()){
+            needArrayCast = true;
+            needTemplate1Cast = true;
+        }else if(type->typeEntry()->isQSpan()){
+            needArrayCast = true;
+            needTemplate1Cast = true;
+        }else if(type->typeEntry()->isJObjectWrapper() || type->typeEntry()->isJMapWrapper() || type->typeEntry()->isJCollectionWrapper()){
+            needJObjectWrapper = true;
+        }else if(type->typeEntry()->isComplex()){
+            auto ctype = static_cast<const TS::ContainerTypeEntry*>(type->typeEntry());
+            needModelCast |= ctype->isQModelIndex();
+            needFutureCast |= ctype->isQFuturing();
+            needTemplate1Cast |= ctype->isQFuturing();
+        }else if(requiresBoxedPrimitives && (type->typeEntry()->isPrimitive() || type->typeEntry()->isQChar())){
+            needArithmeticCast = true;
+        }
+
+        QList<const MetaType *> types = type->instantiations();
+        types << type->iteratorInstantiations();
+        types << type->arrayElementType();
+        types << type->originalTemplateType();
+        for(const MetaType * itype : std::as_const(types)){
+            analyzeType(itype,
+                         hasDeprecation,
+                         needModelCast,
+                         needDBusCast,
+                         needQmlCast,
+                         needFutureCast,
+                         needArrayCast,
+                         needBufferCast,
+                         needEnumCast,
+                         needArithmeticCast,
+                         needTemplate1Cast,
+                         needTemplate2Cast,
+                         needTemplate3Cast,
+                         needTemplate4Cast,
+                         needTemplate5Cast,
+                         needIteratorCast,
+                         needContainerCast,
+                         needSmartPointerCast,
+                         needTimeCast,
+                         needJObjectWrapper,
+                         needStringAPI,
+                         needBufferAPI,
+                         needJavaAPI,
+                         needArrayAPI, true);
+        }
+    }
+}
+
+void MetaBuilder::analyzeClass(MetaClass* java_class){
+    bool hasDeprecation = java_class->isDeclDeprecated();
+    bool needModelCast = java_class->typeEntry()->isQAbstractItemModel()
+            || java_class->typeEntry()->isQModelIndex();
+    bool needDBusCast = false;
+    bool needQmlCast = false;
+    bool needFutureCast = java_class->typeEntry()->isQFuturing();
+    bool needArrayCast = false;
+    bool needBufferCast = false;
+    bool needEnumCast = false;
+    bool needArithmeticCast = false;
+    bool needTemplate1Cast = false;
+    bool needTemplate2Cast = false;
+    bool needTemplate3Cast = false;
+    bool needTemplate4Cast = false;
+    bool needTemplate5Cast = false;
+    bool needIteratorCast = false;
+    bool needContainerCast = false;
+    bool needSmartPointerCast = false;
+    bool needTimeCast = false;
+    bool needJObjectWrapper = false;
+    bool needStringAPI = false;
+    bool needBufferAPI = false;
+    bool needJavaAPI = false;
+    bool needArrayAPI = false;
+    if(java_class->templateBaseClass()){
+        if(java_class->templateBaseClass()->typeEntry()->isContainer()){
+            switch(static_cast<const TS::ContainerTypeEntry*>(java_class->templateBaseClass()->typeEntry())->type()){
+            case TS::ContainerTypeEntry::QQmlListPropertyContainer:
+                needQmlCast = true;
+                needTemplate1Cast = true;
+                break;
+            case TS::ContainerTypeEntry::QDBusReplyContainer:
+                needDBusCast = true;
+                needTemplate1Cast = true;
+                break;
+            case TS::ContainerTypeEntry::QModelRoleDataSpanContainer:
+                needModelCast = true;
+                needTemplate2Cast = true;
+                break;
+            case TS::ContainerTypeEntry::std_array:
+                needArrayCast = true;
+                break;
+            case TS::ContainerTypeEntry::StringListContainer:
+            case TS::ContainerTypeEntry::ByteArrayListContainer:
+                needTemplate1Cast = true;
+                needContainerCast = true;
+                break;
+            case TS::ContainerTypeEntry::std_chrono:
+            case TS::ContainerTypeEntry::std_chrono_template:
+                needTimeCast = true;
+                needTemplate2Cast = true;
+                break;
+            case TS::ContainerTypeEntry::PairContainer:
+            case TS::ContainerTypeEntry::std_vector:
+                needTemplate2Cast = true;
+                break;
+            case TS::ContainerTypeEntry::ListContainer:
+            case TS::ContainerTypeEntry::LinkedListContainer:
+            case TS::ContainerTypeEntry::VectorContainer:
+            case TS::ContainerTypeEntry::StackContainer:
+            case TS::ContainerTypeEntry::QueueContainer:
+            case TS::ContainerTypeEntry::SetContainer:
+            case TS::ContainerTypeEntry::QArrayDataContainer:
+            case TS::ContainerTypeEntry::QTypedArrayDataContainer:
+                needTemplate1Cast = true;
+                needContainerCast = true;
+                break;
+            case TS::ContainerTypeEntry::MapContainer:
+            case TS::ContainerTypeEntry::MultiMapContainer:
+            case TS::ContainerTypeEntry::HashContainer:
+            case TS::ContainerTypeEntry::MultiHashContainer:
+                needTemplate2Cast = true;
+                needContainerCast = true;
+                break;
+            default:
+                break;
+            }
+        }
+        switch(java_class->templateBaseClassInstantiations().size()){
+        case 1:
+            needTemplate1Cast = true;
+            break;
+        case 2:
+            needTemplate2Cast = true;
+            break;
+        case 3:
+            needTemplate3Cast = true;
+            break;
+        case 4:
+            needTemplate4Cast = true;
+            break;
+        case 5:
+            needTemplate5Cast = true;
+            break;
+        default:
+            break;
+        }
+        for(const MetaType * type : std::as_const(java_class->templateBaseClassInstantiations())){
+            analyzeType(type,
+                         hasDeprecation,
+                         needModelCast,
+                         needDBusCast,
+                         needQmlCast,
+                         needFutureCast,
+                         needArrayCast,
+                         needBufferCast,
+                         needEnumCast,
+                         needArithmeticCast,
+                         needTemplate1Cast,
+                         needTemplate2Cast,
+                         needTemplate3Cast,
+                         needTemplate4Cast,
+                         needTemplate5Cast,
+                         needIteratorCast,
+                         needContainerCast,
+                         needSmartPointerCast,
+                         needTimeCast,
+                         needJObjectWrapper,
+                         needStringAPI,
+                         needBufferAPI,
+                         needJavaAPI,
+                         needArrayAPI, true);
+        }
+    }
+    if(java_class->baseClass() && java_class->baseClass()->typeEntry()->isContainer()){
+        switch(static_cast<const TS::ContainerTypeEntry*>(java_class->baseClass()->typeEntry())->type()){
+        case TS::ContainerTypeEntry::QQmlListPropertyContainer:
+            needQmlCast = true;
+            needTemplate1Cast = true;
+            break;
+        case TS::ContainerTypeEntry::QDBusReplyContainer:
+            needDBusCast = true;
+            needTemplate1Cast = true;
+            break;
+        case TS::ContainerTypeEntry::QModelRoleDataSpanContainer:
+            needModelCast = true;
+            needTemplate2Cast = true;
+            break;
+        case TS::ContainerTypeEntry::std_array:
+            needArrayCast = true;
+            break;
+        case TS::ContainerTypeEntry::StringListContainer:
+        case TS::ContainerTypeEntry::ByteArrayListContainer:
+            needTemplate1Cast = true;
+            needContainerCast = true;
+            break;
+        case TS::ContainerTypeEntry::std_chrono:
+        case TS::ContainerTypeEntry::std_chrono_template:
+            needTimeCast = true;
+            needTemplate2Cast = true;
+            break;
+        case TS::ContainerTypeEntry::PairContainer:
+        case TS::ContainerTypeEntry::std_vector:
+            needTemplate2Cast = true;
+            break;
+        case TS::ContainerTypeEntry::ListContainer:
+        case TS::ContainerTypeEntry::LinkedListContainer:
+        case TS::ContainerTypeEntry::VectorContainer:
+        case TS::ContainerTypeEntry::StackContainer:
+        case TS::ContainerTypeEntry::QueueContainer:
+        case TS::ContainerTypeEntry::SetContainer:
+        case TS::ContainerTypeEntry::QArrayDataContainer:
+        case TS::ContainerTypeEntry::QTypedArrayDataContainer:
+            needTemplate1Cast = true;
+            needContainerCast = true;
+            break;
+        case TS::ContainerTypeEntry::MapContainer:
+        case TS::ContainerTypeEntry::MultiMapContainer:
+        case TS::ContainerTypeEntry::HashContainer:
+        case TS::ContainerTypeEntry::MultiHashContainer:
+            needTemplate2Cast = true;
+            needContainerCast = true;
+            break;
+        default:
+            break;
+        }
+    }
+    for(const MetaFunction* f : java_class->functions()){
+        if(!f->wasPrivate()){
+            hasDeprecation |= f->isDeclDeprecated();
+            if(f->operatorType()==OperatorType::Div || f->operatorType()==OperatorType::DivAssign)
+                needJavaAPI = true;
+            if(f->useArgumentAsBuffer(0)){
+                needBufferCast = true;
+            }else if(f->useArgumentAsArray(0)){
+                needArrayCast = true;
+            }else if(f->useArgumentAsString(0)){
+                needStringAPI = true;
+                needArithmeticCast = true;
+            }
+            analyzeType(f->type(),
+                         hasDeprecation,
+                         needModelCast,
+                         needDBusCast,
+                         needQmlCast,
+                         needFutureCast,
+                         needArrayCast,
+                         needBufferCast,
+                         needEnumCast,
+                         needArithmeticCast,
+                         needTemplate1Cast,
+                         needTemplate2Cast,
+                         needTemplate3Cast,
+                         needTemplate4Cast,
+                         needTemplate5Cast,
+                         needIteratorCast,
+                         needContainerCast,
+                         needSmartPointerCast,
+                         needTimeCast,
+                         needJObjectWrapper,
+                         needStringAPI,
+                         needBufferAPI,
+                         needJavaAPI,
+                         needArrayAPI);
+            for(const MetaArgument* arg : f->arguments()){
+                if(f->useArgumentAsBuffer(arg->argumentIndex()+1)){
+                    needBufferCast = true;
+                }else if(f->useArgumentAsArray(arg->argumentIndex()+1)){
+                    needArrayCast = true;
+                }else if(f->useArgumentAsString(arg->argumentIndex()+1)){
+                    needStringAPI = true;
+                    needArithmeticCast = true;
+                }
+                analyzeType(arg->type(),
+                             hasDeprecation,
+                             needModelCast,
+                             needDBusCast,
+                             needQmlCast,
+                             needFutureCast,
+                             needArrayCast,
+                             needBufferCast,
+                             needEnumCast,
+                             needArithmeticCast,
+                             needTemplate1Cast,
+                             needTemplate2Cast,
+                             needTemplate3Cast,
+                             needTemplate4Cast,
+                             needTemplate5Cast,
+                             needIteratorCast,
+                             needContainerCast,
+                             needSmartPointerCast,
+                             needTimeCast,
+                             needJObjectWrapper,
+                             needStringAPI,
+                             needBufferAPI,
+                             needJavaAPI,
+                             needArrayAPI);
+            }
+        }
+    }
+    for(const MetaField* f : java_class->fields()){
+        if(!f->wasPrivate()){
+            hasDeprecation |= f->isDeclDeprecated();
+            analyzeType(f->type(),
+                         hasDeprecation,
+                         needModelCast,
+                         needDBusCast,
+                         needQmlCast,
+                         needFutureCast,
+                         needArrayCast,
+                         needBufferCast,
+                         needEnumCast,
+                         needArithmeticCast,
+                         needTemplate1Cast,
+                         needTemplate2Cast,
+                         needTemplate3Cast,
+                         needTemplate4Cast,
+                         needTemplate5Cast,
+                         needIteratorCast,
+                         needContainerCast,
+                         needSmartPointerCast,
+                         needTimeCast,
+                         needJObjectWrapper,
+                         needStringAPI,
+                         needBufferAPI,
+                         needJavaAPI,
+                         needArrayAPI);
+        }
+    }
+
+    if(!hasDeprecation){
+        for(const MetaEnum* e : java_class->enums()){
+            if(e->isDeclDeprecated()){
+                hasDeprecation = true;
+                break;
+            }
+        }
+    }
+
+    java_class->setHasDeprecation(hasDeprecation);
+    java_class->setNeedModelCast(needModelCast);
+    java_class->setNeedDBusCast(needDBusCast);
+    java_class->setNeedQmlCast(needQmlCast);
+    java_class->setNeedFutureCast(needFutureCast);
+    java_class->setNeedArrayCast(needArrayCast);
+    java_class->setNeedBufferCast(needBufferCast);
+    java_class->setNeedEnumCast(needEnumCast);
+    java_class->setNeedArithmeticCast(needArithmeticCast);
+    java_class->setNeedTemplate1Cast(needTemplate1Cast);
+    java_class->setNeedTemplate2Cast(needTemplate2Cast);
+    java_class->setNeedTemplate3Cast(needTemplate3Cast);
+    java_class->setNeedTemplate4Cast(needTemplate4Cast);
+    java_class->setNeedTemplate5Cast(needTemplate5Cast);
+    java_class->setNeedSmartPointerCast(needSmartPointerCast);
+    java_class->setNeedIteratorCast(needIteratorCast);
+    java_class->setNeedContainerCast(needContainerCast);
+    java_class->setNeedTimeCast(needTimeCast);
+    java_class->setNeedJObjectWrapper(needJObjectWrapper);
+    java_class->setNeedBufferAPI(needBufferAPI);
+    java_class->setNeedArrayAPI(needArrayAPI);
+    java_class->setNeedStringAPI(needStringAPI);
+    java_class->setNeedJavaAPI(needJavaAPI);
+    for(MetaFunctional* java_functional : java_class->functionals()){
+        analyzeFunctional(java_functional);
+    }
+}
+
+void MetaBuilder::analyzeFunctional(MetaFunctional* java_functional){
+    bool hasDeprecation = java_functional->isDeclDeprecated() || java_functional->typeEntry()->isContainer();
+    bool needModelCast = false;
+    bool needDBusCast = false;
+    bool needQmlCast = false;
+    bool needFutureCast = false;
+    bool needArrayCast = false;
+    bool needBufferCast = false;
+    bool needEnumCast = false;
+    bool needArithmeticCast = false;
+    bool needTemplate1Cast = false;
+    bool needTemplate2Cast = false;
+    bool needTemplate3Cast = false;
+    bool needTemplate4Cast = false;
+    bool needTemplate5Cast = false;
+    bool needIteratorCast = false;
+    bool needContainerCast = false;
+    bool needSmartPointerCast = false;
+    bool needTimeCast = false;
+    bool needJObjectWrapper = false;
+    bool needStringAPI = false;
+    bool needBufferAPI = false;
+    bool needArrayAPI = false;
+    bool needJavaAPI = false;
+    if(java_functional->useArgumentAsBuffer(0)){
+        needBufferCast = true;
+    }else if(java_functional->useArgumentAsString(0)){
+        needStringAPI = true;
+        needArithmeticCast = true;
+    }else if(java_functional->useArgumentAsArray(0)){
+        needArrayCast = true;
+    }
+    analyzeType(java_functional->type(),
+                 hasDeprecation,
+                 needModelCast,
+                 needDBusCast,
+                 needQmlCast,
+                 needFutureCast,
+                 needArrayCast,
+                 needBufferCast,
+                 needEnumCast,
+                 needArithmeticCast,
+                 needTemplate1Cast,
+                 needTemplate2Cast,
+                 needTemplate3Cast,
+                 needTemplate4Cast,
+                 needTemplate5Cast,
+                 needIteratorCast,
+                 needContainerCast,
+                 needSmartPointerCast,
+                 needTimeCast,
+                 needJObjectWrapper,
+                 needStringAPI,
+                 needBufferAPI,
+                 needJavaAPI,
+                 needArrayAPI);
+    for(const MetaArgument* arg : java_functional->arguments()){
+        if(java_functional->useArgumentAsBuffer(arg->argumentIndex()+1)){
+            needBufferCast = true;
+        }else if(java_functional->useArgumentAsArray(arg->argumentIndex()+1)){
+            needArrayCast = true;
+        }else if(java_functional->useArgumentAsString(arg->argumentIndex()+1)){
+            needStringAPI = true;
+            needArithmeticCast = true;
+        }
+        analyzeType(arg->type(),
+                     hasDeprecation,
+                     needModelCast,
+                     needDBusCast,
+                     needQmlCast,
+                     needFutureCast,
+                     needArrayCast,
+                     needBufferCast,
+                     needEnumCast,
+                     needArithmeticCast,
+                     needTemplate1Cast,
+                     needTemplate2Cast,
+                     needTemplate3Cast,
+                     needTemplate4Cast,
+                     needTemplate5Cast,
+                     needIteratorCast,
+                     needContainerCast,
+                     needSmartPointerCast,
+                     needTimeCast,
+                     needJObjectWrapper,
+                     needStringAPI,
+                     needBufferAPI,
+                     needJavaAPI,
+                     needArrayAPI);
+    }
+    java_functional->setHasDeprecation(hasDeprecation);
+    java_functional->setNeedModelCast(needModelCast);
+    java_functional->setNeedDBusCast(needDBusCast);
+    java_functional->setNeedQmlCast(needQmlCast);
+    java_functional->setNeedFutureCast(needFutureCast);
+    java_functional->setNeedArrayCast(needArrayCast);
+    java_functional->setNeedBufferCast(needBufferCast);
+    java_functional->setNeedEnumCast(needEnumCast);
+    java_functional->setNeedArithmeticCast(needArithmeticCast);
+    java_functional->setNeedTemplate1Cast(needTemplate1Cast);
+    java_functional->setNeedTemplate2Cast(needTemplate2Cast);
+    java_functional->setNeedTemplate3Cast(needTemplate3Cast);
+    java_functional->setNeedTemplate4Cast(needTemplate4Cast);
+    java_functional->setNeedTemplate5Cast(needTemplate5Cast);
+    java_functional->setNeedSmartPointerCast(needSmartPointerCast);
+    java_functional->setNeedIteratorCast(needIteratorCast);
+    java_functional->setNeedContainerCast(needContainerCast);
+    java_functional->setNeedTimeCast(needTimeCast);
+    java_functional->setNeedJObjectWrapper(needJObjectWrapper);
+    java_functional->setNeedBufferAPI(needBufferAPI);
+    java_functional->setNeedArrayAPI(needArrayAPI);
+    java_functional->setNeedStringAPI(needStringAPI);
+    java_functional->setNeedJavaAPI(needJavaAPI);
 }
 
 void MetaBuilder::applyDocs(const DocModel* docModel){
@@ -2710,9 +3351,28 @@ MetaClass *MetaBuilder::traverseNamespace(NamespaceModelItem namespace_item, QLi
         // the classes inside of a namespace are realized as static member classes
         // of the namespace representing java interface.
         if (mjc) {
-            bool isEnclosedClass = mjc->typeEntry()->targetLangName().startsWith(meta_class->typeEntry()->targetLangName()+"$");
-            if(isEnclosedClass){
-                meta_class->addEnclosedClass(mjc);
+            QStringList targetLangNames = mjc->typeEntry()->targetLangName().split('$');
+            QStringList base = targetLangNames;
+            base.removeLast();
+            if(!base.isEmpty()){
+                QString baseName = base.join(QStringLiteral(u"$"));
+                if(baseName==meta_class->typeEntry()->targetLangName()){
+                    meta_class->addEnclosedClass(mjc);
+                }else{
+                    MetaClass* targetClass{nullptr};
+                    for(MetaClass* cls : this->m_meta_classes){
+                        if(baseName==cls->typeEntry()->targetLangName()){
+                            targetClass = cls;
+                            break;
+                        }
+                    }
+                    if(targetClass){
+                        targetClass->addEnclosedClass(mjc);
+                    }else{
+                        ReportHandler::warning(QString("Cannot find base class '%1' for '%2'")
+                                        .arg(baseName, mjc->typeEntry()->name()));
+                    }
+                }
             }
             addClass(mjc);
 //            m_meta_classes << mjc;
@@ -2741,9 +3401,29 @@ MetaClass *MetaBuilder::traverseNamespace(NamespaceModelItem namespace_item, QLi
             // the classes inside of a namespace are realized as static member classes
             // of the namespace representing java interface.
             if (cls) {
-                bool isEnclosedClass = cls->typeEntry()->targetLangName().startsWith(meta_class->typeEntry()->targetLangName()+"$");
-                if(isEnclosedClass){
-                    meta_class->addEnclosedClass(cls);
+                QStringList targetLangNames = cls->typeEntry()->targetLangName().split('$');
+                QStringList base = targetLangNames;
+                base.removeLast();
+                if(!base.isEmpty()){
+                    QString baseName = base.join(QStringLiteral(u"$"));
+                    bool isEnclosedClass = baseName==meta_class->typeEntry()->targetLangName();
+                    if(isEnclosedClass){
+                        meta_class->addEnclosedClass(cls);
+                    }else{
+                        MetaClass* targetClass{nullptr};
+                        for(MetaClass* cls : this->m_meta_classes){
+                            if(baseName==cls->typeEntry()->targetLangName()){
+                                targetClass = cls;
+                                break;
+                            }
+                        }
+                        if(targetClass){
+                            targetClass->addEnclosedClass(cls);
+                        }else{
+                            ReportHandler::warning(QString("Cannot find base class '%1' for '%2'")
+                                            .arg(baseName, cls->typeEntry()->name()));
+                        }
+                    }
                 }
                 m_meta_classes << cls;
                 if(!cls->typeEntry()->isString())
@@ -2766,9 +3446,29 @@ MetaClass *MetaBuilder::traverseNamespace(NamespaceModelItem namespace_item, QLi
         // the namespace inside of a namespace are realized as static member interfaces
         // of the namespace representing java interface.
         if (mjc) {
-            bool isEnclosedClass = mjc->typeEntry()->targetLangName().startsWith(meta_class->typeEntry()->targetLangName()+"$");
-            if(isEnclosedClass){
-                meta_class->addEnclosedClass(mjc);
+            QStringList targetLangNames = mjc->typeEntry()->targetLangName().split('$');
+            QStringList base = targetLangNames;
+            base.removeLast();
+            if(!base.isEmpty()){
+                QString baseName = base.join(QStringLiteral(u"$"));
+                bool isEnclosedClass = baseName==meta_class->typeEntry()->targetLangName();
+                if(isEnclosedClass){
+                    meta_class->addEnclosedClass(mjc);
+                }else{
+                    MetaClass* targetClass{nullptr};
+                    for(MetaClass* cls : this->m_meta_classes){
+                        if(baseName==cls->typeEntry()->targetLangName()){
+                            targetClass = cls;
+                            break;
+                        }
+                    }
+                    if(targetClass){
+                        targetClass->addEnclosedClass(mjc);
+                    }else{
+                        ReportHandler::warning(QString("Cannot find base class '%1' for '%2'")
+                                        .arg(baseName, mjc->typeEntry()->name()));
+                    }
+                }
             }
             m_meta_classes << mjc;
             if(!mjc->typeEntry()->isString())
@@ -4606,6 +5306,17 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
             type->setQModelIndex(true);
         }else if(full_class_name==QLatin1String("QByteArrayView")){
             type->setQByteArrayView(true);
+        }else if(full_class_name==QLatin1String("QFuture")
+                 || full_class_name==QLatin1String("QFutureInterface")
+                 || full_class_name==QLatin1String("QFutureSynchronizer")
+                 || full_class_name==QLatin1String("QFutureWatcher")
+                 || full_class_name==QLatin1String("QPromise")
+                 || full_class_name.startsWith(QLatin1String("QFuture<"))
+                 || full_class_name.startsWith(QLatin1String("QFutureSynchronizer<"))
+                 || full_class_name.startsWith(QLatin1String("QFutureInterface<"))
+                 || full_class_name.startsWith(QLatin1String("QFutureWatcher<"))
+                 || full_class_name.startsWith(QLatin1String("QPromise<"))){
+            type->setQFuturing(true);
         }
     }
 
@@ -4735,7 +5446,7 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
 
     if(meta_class->typeEntry()->isTemplate()){
         const QHash<QStringList,const ComplexTypeEntry*>& instantiations = meta_class->typeEntry()->instantiations();
-        for(const QStringList& args : instantiations.keys()){
+        for(const QStringList& args : meta_class->typeEntry()->instantiationDefinitions()){
             if(ComplexTypeEntry* instantiation = const_cast<ComplexTypeEntry*>(instantiations[args])){
                 if (meta_class->typeEntry()->isQEvent()) {
                     instantiation->setQEvent(true);
@@ -4785,10 +5496,30 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
                 instantiation_meta_class->setTemplateBaseClass(meta_class);
                 instantiation_meta_class->setAttributes(meta_class->attributes());
                 instantiation_meta_class->setOriginalAttributes(meta_class->originalAttributes());
-                if(m_current_class){
-                    bool isEnclosedClass = instantiation->targetLangName().startsWith(m_current_class->typeEntry()->targetLangName()+"$");
-                    if(isEnclosedClass)
-                        m_current_class->addEnclosedClass(instantiation_meta_class);
+                {
+                    QStringList targetLangNames = instantiation->targetLangName().split('$');
+                    QStringList base = targetLangNames;
+                    base.removeLast();
+                    if(!base.isEmpty()){
+                        QString baseName = base.join(QStringLiteral(u"$"));
+                        if(m_current_class && baseName==m_current_class->typeEntry()->targetLangName()){
+                            m_current_class->addEnclosedClass(instantiation_meta_class);
+                        }else{
+                            MetaClass* targetClass{nullptr};
+                            for(MetaClass* cls : this->m_meta_classes){
+                                if(baseName==cls->typeEntry()->targetLangName()){
+                                    targetClass = cls;
+                                    break;
+                                }
+                            }
+                            if(targetClass){
+                                targetClass->addEnclosedClass(instantiation_meta_class);
+                            }else{
+                                ReportHandler::warning(QString("Cannot find base class '%1' for '%2'")
+                                                .arg(baseName, instantiation->name()));
+                            }
+                        }
+                    }
                 }
                 addClass(instantiation_meta_class);
             }
@@ -6633,7 +7364,22 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
                 }
             }
         }
-        if(!templateParameters.isEmpty() || (func->type() && func->type()->typeUsagePattern()==MetaType::AutoPattern)){
+        if(func->type() && func->type()->typeUsagePattern()==MetaType::AutoPattern){
+            QString arg = func->resolvedType();
+            if(!arg.isEmpty()){
+                TypeInfo info = analyzeTypeInfo(meta_class, arg);
+                MetaClass * tmp_current_class = m_current_class;
+                m_current_class = meta_class;
+                bool ok = false;
+                MetaType* ttype = translateType(info, &ok, QString("%1::%2 return type").arg(m_current_class ? m_current_class->qualifiedCppName() : QString{}, func->originalSignature()), true, true, false);
+                m_current_class = tmp_current_class;
+                if(ok && ttype){
+                    decideUsagePattern(ttype);
+                    func->setType(ttype);
+                }
+            }
+        }
+        if(!templateParameters.isEmpty()){
             QList<QPair<const TemplateInstantiation*,const FunctionModification*>> templateInstantiations;
             FunctionModificationList mods = func->modifications(meta_class);
             for(const FunctionModification& mod : qAsConst(mods)) {
@@ -6676,7 +7422,7 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
                                     MetaClass * tmp_current_class = m_current_class;
                                     m_current_class = meta_class;
                                     bool ok = false;
-                                    MetaType* ttype = translateType(info, &ok, QString("%1::%2 template argument %3").arg(tmp_current_class ? tmp_current_class->qualifiedCppName() : QString{}, func->originalSignature(), arg), true, true, false);
+                                    MetaType* ttype = translateType(info, &ok, QString("%1::%2 template argument %3").arg(m_current_class ? m_current_class->qualifiedCppName() : QString{}, func->originalSignature(), arg), true, true, false);
                                     m_current_class = tmp_current_class;
                                     if(ok && ttype){
                                         decideUsagePattern(ttype);
@@ -6706,24 +7452,31 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
                                                     tmp_current_class = m_current_class;
                                                     m_current_class = meta_class;
                                                     ok = false;
-                                                    ttype = translateType(info, &ok, QString("%1::%2 template argument %3").arg(tmp_current_class ? tmp_current_class->qualifiedCppName() : QString{}, func->originalSignature(), arg), true, true, false);
+                                                    ttype = translateType(info, &ok, QString("%1::%2 template argument %3").arg(m_current_class ? m_current_class->qualifiedCppName() : QString{}, func->originalSignature(), arg), true, true, false);
                                                     m_current_class = tmp_current_class;
                                                     if(ok && ttype){
-                                                        decideUsagePattern(ttype);
                                                         if(ttype->typeEntry()->isQSpan() || ttype->typeEntry()->isInitializerList()){
                                                             Q_ASSERT(ttype->instantiations().size()>=1);
                                                         }
                                                         //templateTypes[tparam->name()] = {ttype,{}};
                                                         tparam->setInstantiation(parameter.implicit || func->isConstructor(), arg, ttype);
                                                         if(targetIndex>=0){
+                                                            ttype = ttype->copy();
+                                                            decideUsagePattern(ttype);
                                                             MetaArgument* newArg = new MetaArgument();
-                                                               newArg->setType(ttype->copy());
+                                                            newArg->setType(ttype);
                                                             if(varArg){
                                                                 if(!varArg->modifiedArgumentName().isEmpty()){
                                                                     newArg->setModifiedName(QString("%1_%2").arg(varArg->modifiedArgumentName(), QString::number(added+2)));
                                                                 }
                                                                 if(!varArg->MetaVariable::name().isEmpty()){
                                                                     newArg->setName(QString("%1_%2").arg(varArg->MetaVariable::name(), QString::number(added+2)));
+                                                                }
+                                                                if(ttype->getReferenceType()==MetaType::NoReference && ttype->indirections().isEmpty()){
+                                                                    if(varArg->type()->getReferenceType()!=MetaType::NoReference){
+                                                                        ttype->setConstant(varArg->type()->isConstant());
+                                                                        ttype->setReferenceType(varArg->type()->getReferenceType());
+                                                                    }
                                                                 }
                                                             }
                                                             if(targetIndex+1==args.size())
@@ -6782,13 +7535,19 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
                     // exchange template types
                     if(func2->type()){
                         if(func2->type()->typeUsagePattern()==MetaType::AutoPattern){
-                            if(template_instantiation.arguments.size() > func2->templateParameters().size()){
-                                QString arg = template_instantiation.arguments[func2->templateParameters().size()].type;
+                            QString arg;
+                            for(const auto& mod : std::as_const(template_instantiation.argument_mods)){
+                                if(mod.index==0){
+                                    arg = mod.resolved_type;
+                                    break;
+                                }
+                            }
+                            if(!arg.isEmpty()){
                                 TypeInfo info = analyzeTypeInfo(meta_class, arg);
                                 MetaClass * tmp_current_class = m_current_class;
                                 m_current_class = meta_class;
                                 bool ok = false;
-                                MetaType* ttype = translateType(info, &ok, QString("%1::%2 return type").arg(tmp_current_class ? tmp_current_class->qualifiedCppName() : QString{}, func->originalSignature()), true, true, false);
+                                MetaType* ttype = translateType(info, &ok, QString("%1::%2 return type").arg(m_current_class ? m_current_class->qualifiedCppName() : QString{}, func->originalSignature()), true, true, false);
                                 m_current_class = tmp_current_class;
                                 if(ok && ttype){
                                     decideUsagePattern(ttype);
@@ -6924,6 +7683,8 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
                                 //exp = exp.replace(ttype->typeEntry()->qualifiedCppName(), rtype->typeEntry()->qualifiedCppName());
                                 exp = translateDefaultValue(exp, arg->type(), func2.get(), meta_class, int(arg->argumentIndex()));
                                 arg->setDefaultValueExpression(exp);
+                            }else{
+                                arg->setDefaultValueExpression(func->replacedDefaultExpression(meta_class, arg->argumentIndex() + 1));
                             }
                         }
                         //if(!meta_class->hasFunction(func2.get()))
@@ -6959,7 +7720,7 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
                         bool ok = false;
                         MetaClass * tmp_current_class = m_current_class;
                         m_current_class = meta_class;
-                        MetaType* ttype = translateType(info, &ok, QString("%1::%2 template argument %3 default %4").arg(tmp_current_class ? tmp_current_class->qualifiedCppName() : QString{}, func->originalSignature(), QString::number(k+1), tparam->defaultType()), true, true, false);
+                        MetaType* ttype = translateType(info, &ok, QString("%1::%2 template argument %3 default %4").arg(m_current_class ? m_current_class->qualifiedCppName() : QString{}, func->originalSignature(), QString::number(k+1), tparam->defaultType()), true, true, false);
                         m_current_class = tmp_current_class;
                         tparam->setDefaultType({});
                         if(ok && ttype){
@@ -6983,6 +7744,8 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
                             exp = exp.replace(ttype->typeEntry()->qualifiedCppName(), rtype->typeEntry()->qualifiedCppName());
                             exp = translateDefaultValue(exp, rtype, func2.get(), meta_class, int(func2->arguments().size()));
                             arg->setDefaultValueExpression(exp);
+                        }else{
+                            arg->setDefaultValueExpression(func->replacedDefaultExpression(meta_class, arg->argumentIndex() + 1));
                         }
                     }
                 }
@@ -8706,32 +9469,50 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
                 QString expr = arg->defaultValueExpression();
                 if (!expr.isEmpty())
                     meta_arg->setOriginalDefaultValueExpression(expr);
-                bool ok = true;
-                expr = translateDefaultValue(arg->defaultValueExpression(), meta_arg->type(), meta_function.get(), m_current_class, i, &ok);
-                if(ok){
-                    if (expr.isEmpty()) {
-                        first_default_argument = i;
-                    } else {
-                        meta_arg->setDefaultValueExpression(expr);
-                    }
-                }else{
-                    m_defaultValueFunctions.insert(meta_function.get());
-                }
-            /*}else{
-                QString inserted_default_expression = meta_function->replacedDefaultExpression(m_current_class, meta_arg->argumentIndex() + 1);
-                if(!inserted_default_expression.isEmpty()){
-                    meta_arg->setDefaultValueExpression(inserted_default_expression);
-                }*/
-            //}
         }
     }
 
-    // If we where not able to translate the default argument make it
-    // reset all default arguments before this one too.
-    for (int i = 0; i < first_default_argument; ++i)
-        meta_arguments[i]->setDefaultValueExpression(QString());
+    bool deferred = false;
+    for (int i = 0; i < meta_arguments.size(); ++i) {
+        MetaArgument *meta_arg = meta_arguments[i];
+        if(!meta_arg->originalDefaultValueExpression().isEmpty()){
+            bool ok = true;
+            QString expr = translateDefaultValue(meta_arg->originalDefaultValueExpression(), meta_arg->type(), meta_function.get(), m_current_class, i, &ok);
+            if(ok){
+                if (expr.isEmpty()) {
+                    first_default_argument = i;
+                } else {
+                    meta_arg->setDefaultValueExpression(expr);
+                }
+            }else{
+                for (int j = 0; j < i; ++j) {
+                    meta_arg->setDefaultValueExpression({});
+                }
+                deferred = true;
+                m_defaultValueFunctions.insert(meta_function.get());
+                break;
+            }
+        }
+    }
+
+    if(!deferred){
+        // If we where not able to translate the default argument make it
+        // reset all default arguments before this one too.
+        for (int i = 0; i < first_default_argument; ++i)
+            meta_arguments[i]->setDefaultValueExpression(QString());
+        for (int i = 0; i < meta_arguments.size(); ++i) {
+            MetaArgument *meta_arg = meta_arguments[i];
+            if(meta_arg->originalDefaultValueExpression().isEmpty()){
+                if(m_current_class){
+                    QString expr = meta_function->replacedDefaultExpression(m_current_class, meta_arg->argumentIndex() + 1);
+                    meta_arg->setOriginalDefaultValueExpression(expr);
+                    meta_arg->setDefaultValueExpression(expr);
+                }
+            }
+        }
+    }
     if (ReportHandler::debugLevel() == ReportHandler::FullDebug) {
-        for(MetaArgument *arg : meta_arguments)
+        for(MetaArgument *arg : meta_function->arguments())
             ReportHandler::debugFull("   - " + arg->toString());
     }
     return meta_function.release();
@@ -9601,9 +10382,7 @@ void MetaBuilder::decideUsagePattern(MetaType *meta_type) {
                    || type->isJMapWrapper()
                    || type->isJCollectionWrapper()
                 )
-               && meta_type->indirections().size() == 0
-               && ((meta_type->getReferenceType()==MetaType::Reference && meta_type->isConstant())
-                   || meta_type->getReferenceType()==MetaType::NoReference)) {
+               && meta_type->indirections().size() == 0) {
         meta_type->setTypeUsagePattern(MetaType::JObjectWrapperPattern);
     } else if (type->isQVariant()
                && meta_type->indirections().size() == 0

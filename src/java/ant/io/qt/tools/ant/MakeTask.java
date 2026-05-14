@@ -84,12 +84,14 @@ public class MakeTask extends Task {
     	            		|| FindCompiler.Compiler.MinGW_W64.toString().equals(compiler)
     	            		|| FindCompiler.Compiler.LLVM_MinGW_W64.toString().equals(compiler))
     	                return "mingw32-make";
-    	            String qtdir = (String)PropertyHelper.getProperty(getProject(), "qtjambi.qtdir");
-    	            if(qtdir!=null) {
-    	            	File jom = new File(qtdir);
-    	            	jom = new File(jom.getParentFile().getParentFile(), "Tools\\QtCreator\\bin\\jom\\jom.exe");
-    	            	if(jom.exists())
-    	            		return jom.getAbsolutePath();
+    	            if(!"false".equalsIgnoreCase((String)PropertyHelper.getProperty(getProject(), "parallel"))) {
+	    	            String qtdir = (String)PropertyHelper.getProperty(getProject(), "qtjambi.qtdir");
+	    	            if(qtdir!=null) {
+	    	            	File jom = new File(qtdir);
+	    	            	jom = new File(jom.getParentFile().getParentFile(), "Tools\\QtCreator\\bin\\jom\\jom.exe");
+	    	            	if(jom.exists())
+	    	            		return jom.getAbsolutePath();
+	    	            }
     	            }
     	            return "nmake";
     			default:
@@ -186,7 +188,7 @@ public class MakeTask extends Task {
         			break;
         		}
         	}
-        	if(!hasJArg && Runtime.getRuntime().availableProcessors()>1) {
+        	if(!hasJArg&& !makeName.endsWith("nmake.exe") && Runtime.getRuntime().availableProcessors()>1) {
         		commandArray.add("-j"+Runtime.getRuntime().availableProcessors());
         	}
         }

@@ -150,6 +150,11 @@ struct InvalidateObjectAfterUsePrivate : InvalidateAfterUsePrivate{
           m_object(object)
     {}
     ~InvalidateObjectAfterUsePrivate() override {
+        jthrowable exn = nullptr;
+        if(m_env->ExceptionCheck()){
+            exn = m_env->ExceptionOccurred();
+            m_env->ExceptionClear();
+        }
         QtJambiExceptionInhibitor __exnHandler;
         try{
             INVALIDATE(m_env, m_object);
@@ -159,6 +164,9 @@ struct InvalidateObjectAfterUsePrivate : InvalidateAfterUsePrivate{
         } catch (const std::exception& e) {
             qCWarning(DebugAPI::internalCategory, "%s", e.what());
         } catch (...) {
+        }
+        if(exn){
+            m_env->Throw(exn);
         }
     }
 

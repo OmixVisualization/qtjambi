@@ -36,7 +36,7 @@ TypeSystem{
     module: "qtjambi.scxml"
     description: "Provides classes and tools for creating state machines from SCXML files and embedding them in applications."
 
-    Template{
+    CodeTemplate{
         name: "scxml.AtomicBoolean_to_bool_ptr"
         Text{content: "bool* %out = nullptr;\n"+
                       "if(%in){\n"+
@@ -51,7 +51,7 @@ TypeSystem{
                       "}"}
     }
     
-    Template{
+    CodeTemplate{
         name: "scxml.bool_ptr_to_AtomicBoolean"
         Text{content: "if(%in){\n"+
                       "    %out = Java::Runtime::AtomicBoolean::newInstance(%env, *%in);\n"+
@@ -106,6 +106,10 @@ TypeSystem{
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/BufferAPI"
                 location: Include.Global
             }
         }
@@ -179,14 +183,10 @@ TypeSystem{
     
     ObjectType{
         name: "QScxmlCppDataModel"
-        ModifyFunction{
-            signature: "setScxmlEvent(const QScxmlEvent & )"
-        }
     }
     
     ObjectType{
         name: "QScxmlDataModel"
-
         InterfaceType{
             name: "ForeachLoopBody"
             ExtraIncludes{
@@ -250,17 +250,8 @@ TypeSystem{
             signature: "evaluateToString(qint32, bool *)"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "boolean @Nullable[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "BoolPointerArray %inArray(%env, %in, %in ? 1 : 0);\n"+
-                                  "jbooleanArray %out = %inArray.array();"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBooleanArrayPointer %out(%env, %in);"}
+                AsArray{
+                    //lengthExpression: "1"
                 }
             }
         }
@@ -268,17 +259,8 @@ TypeSystem{
             signature: "evaluateToBool(qint32, bool *)"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "boolean @Nullable[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "BoolPointerArray %inArray(%env, %in, %in ? 1 : 0);\n"+
-                                  "jbooleanArray %out = %inArray.array();"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBooleanArrayPointer %out(%env, %in);"}
+                AsArray{
+                    //lengthExpression: "1"
                 }
             }
         }
@@ -286,17 +268,8 @@ TypeSystem{
             signature: "evaluateToVariant(qint32, bool *)"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "boolean @Nullable[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "BoolPointerArray %inArray(%env, %in, %in ? 1 : 0);\n"+
-                                  "jbooleanArray %out = %inArray.array();"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBooleanArrayPointer %out(%env, %in);"}
+                AsArray{
+                    //lengthExpression: "1"
                 }
             }
         }
@@ -304,17 +277,8 @@ TypeSystem{
             signature: "evaluateToVoid(qint32, bool *)"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "boolean @Nullable[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "BoolPointerArray %inArray(%env, %in, %in ? 1 : 0);\n"+
-                                  "jbooleanArray %out = %inArray.array();"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBooleanArrayPointer %out(%env, %in);"}
+                AsArray{
+                    //lengthExpression: "1"
                 }
             }
         }
@@ -322,17 +286,8 @@ TypeSystem{
             signature: "evaluateAssignment(qint32, bool *)"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "boolean @Nullable[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "BoolPointerArray %inArray(%env, %in, %in ? 1 : 0);\n"+
-                                  "jbooleanArray %out = %inArray.array();"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBooleanArrayPointer %out(%env, %in);"}
+                AsArray{
+                    //lengthExpression: "1"
                 }
             }
         }
@@ -340,17 +295,8 @@ TypeSystem{
             signature: "evaluateInitialization(qint32, bool *)"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "boolean @Nullable[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "BoolPointerArray %inArray(%env, %in, %in ? 1 : 0);\n"+
-                                  "jbooleanArray %out = %inArray.array();"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBooleanArrayPointer %out(%env, %in);"}
+                AsArray{
+                    //lengthExpression: "1"
                 }
             }
         }
@@ -358,17 +304,8 @@ TypeSystem{
             signature: "evaluateForeach(qint32,bool*,QScxmlDataModel::ForeachLoopBody*)"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "boolean @Nullable[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "BoolPointerArray %inArray(%env, %in, %in ? 1 : 0);\n"+
-                                  "jbooleanArray %out = %inArray.array();"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBooleanArrayPointer %out(%env, %in);"}
+                AsArray{
+                    //lengthExpression: "1"
                 }
             }
             ModifyArgument{
@@ -396,23 +333,6 @@ TypeSystem{
     
     ObjectType{
         name: "QScxmlInvokableService"
-        ModifyFunction{
-            signature: "postEvent(QScxmlEvent *)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.scxml.@Nullable QScxmlEvent"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QScxmlEvent *%out = qtjambi_cast<QScxmlEvent *>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
@@ -428,6 +348,10 @@ TypeSystem{
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/ArrayAPI"
                 location: Include.Global
             }
             Include{

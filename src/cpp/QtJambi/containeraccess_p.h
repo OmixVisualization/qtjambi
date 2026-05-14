@@ -96,41 +96,41 @@ public:
     const QObject* getOwner(const void* container) override;
     bool hasOwnerFunction() override;
     void appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) override;
-    jobject at(JNIEnv * env, const void* container, jint index) override;
+    jobject at(JNIEnv * env, const void* container, qsizetype index) override;
     const void* at(const void* container, qsizetype index) override;
     void* at(void* container, qsizetype index) override;
-    jobject value(JNIEnv * env, const void* container, jint index) override;
-    jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) override;
-    void swapItemsAt(JNIEnv * env, const ContainerInfo& container, jint index1, jint index2) override;
+    jobject value(JNIEnv * env, const void* container, qsizetype index) override;
+    jobject value(JNIEnv * env, const void* container, qsizetype index, jobject defaultValue) override;
+    void swapItemsAt(JNIEnv * env, const ContainerInfo& container, qsizetype index1, qsizetype index2) override;
     jboolean startsWith(JNIEnv * env, const void* container, jobject value) override;
-    jint size(JNIEnv * env, const void* container) override;
+    qsizetype size(JNIEnv * env, const void* container) override;
     qsizetype size(const void* container)override;
-    void reserve(JNIEnv * env, const ContainerInfo& container, jint size) override;
-    void replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) override;
+    void reserve(JNIEnv * env, const ContainerInfo& container, qsizetype size) override;
+    void replace(JNIEnv * env, const ContainerInfo& container, qsizetype index, jobject value) override;
     void replace(void* container, qsizetype index, const void* value) override;
-    jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
+    qsizetype removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
     jboolean equal(JNIEnv * env, const void* container, jobject other) override;
-    void move(JNIEnv * env, const ContainerInfo& container, jint index1, jint index2) override;
-    ContainerAndAccessInfo mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint index1, jint index2) override;
-    jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) override;
-    jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) override;
+    void move(JNIEnv * env, const ContainerInfo& container, qsizetype index1, qsizetype index2) override;
+    ContainerAndAccessInfo mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, qsizetype index1, qsizetype index2) override;
+    qsizetype lastIndexOf(JNIEnv * env, const void* container, jobject value, qsizetype index) override;
+    qsizetype indexOf(JNIEnv * env, const void* container, jobject value, qsizetype index) override;
     jboolean endsWith(JNIEnv * env, const void* container, jobject value) override;
     jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
-    jint count(JNIEnv * env, const void* container, jobject value) override;
+    qsizetype count(JNIEnv * env, const void* container, jobject value) override;
     jboolean contains(JNIEnv * env, const void* container, jobject value) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) override;
+    void remove(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n) override;
     void remove(void* container, qsizetype pos, qsizetype n) override;
-    void insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) override;
+    void insert(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n, jobject value) override;
     void insert(void* container, qsizetype index, qsizetype n, const void* entry) override;
 
     void resize(void* container, qsizetype newSize) override;
-    jint capacity(JNIEnv * env, const void* container) override;
-    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size) override;
-    void resize(JNIEnv * env, const ContainerInfo& container, jint newSize) override;
+    qsizetype capacity(JNIEnv * env, const void* container) override;
+    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, qsizetype size) override;
+    void resize(JNIEnv * env, const ContainerInfo& container, qsizetype newSize) override;
     void squeeze(JNIEnv * env, const ContainerInfo& container) override;
     std::unique_ptr<ElementIterator> elementIterator(const void* container) final override;
     std::unique_ptr<ElementIterator> elementIterator(void* container) final override;
@@ -169,7 +169,7 @@ public:
     bool hasNestedPointers() override;
     const QObject* getOwner(const void* container) override;
     bool hasOwnerFunction() override;
-    jint capacity(JNIEnv * env, const void* container) override;
+    qsizetype capacity(JNIEnv * env, const void* container) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     jboolean contains(JNIEnv * env, const void* container, jobject value) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
@@ -179,8 +179,8 @@ public:
     jboolean intersects(JNIEnv * env, const void* container, jobject other) override;
     jboolean equal(JNIEnv * env, const void* container, jobject other) override;
     jboolean remove(JNIEnv * env, const ContainerInfo& container, jobject value) override;
-    void reserve(JNIEnv * env, const ContainerInfo& container, jint newSize) override;
-    jint size(JNIEnv * env, const void* container) override;
+    void reserve(JNIEnv * env, const ContainerInfo& container, qsizetype newSize) override;
+    qsizetype size(JNIEnv * env, const void* container) override;
     qsizetype size(const void* container) override;
     void subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
@@ -229,7 +229,7 @@ public:
     bool hasOwnerFunction() override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     jboolean contains(JNIEnv * env, const void* container, jobject value) override;
-    jint count(JNIEnv * env, const void* container, jobject key) override;
+    qsizetype count(JNIEnv * env, const void* container, jobject key) override;
     jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
@@ -246,8 +246,8 @@ public:
     jobject lastKey(JNIEnv * env, const void* container) override;
     jobject constLowerBound(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
     jboolean equal(JNIEnv * env, const void* container, jobject other) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    jint size(JNIEnv * env, const void* container) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype size(JNIEnv * env, const void* container) override;
     qsizetype size(const void* container)override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     jobject constUpperBound(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
@@ -301,7 +301,7 @@ public:
     bool hasOwnerFunction() override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     jboolean contains(JNIEnv * env, const void* container, jobject value) override;
-    jint count(JNIEnv * env,const void* container, jobject key) override;
+    qsizetype count(JNIEnv * env,const void* container, jobject key) override;
     jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
@@ -318,8 +318,8 @@ public:
     jobject lastKey(JNIEnv * env, const void* container) override;
     jobject constLowerBound(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
     jboolean equal(JNIEnv * env, const void* container, jobject other) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
-    jint size(JNIEnv * env, const void* container) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype size(JNIEnv * env, const void* container) override;
     qsizetype size(const void* container)override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     jobject constUpperBound(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
@@ -330,10 +330,10 @@ public:
     void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container, jobject key) override;
     jboolean contains(JNIEnv * env, const void* container, jobject key, jobject value) override;
-    jint count(JNIEnv *env, const void* container, jobject key, jobject value) override;
+    qsizetype count(JNIEnv *env, const void* container, jobject key, jobject value) override;
     jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key, jobject value) override;
     jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key, jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
     std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(const void* container) override;
     std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(void* container) override;
@@ -380,10 +380,10 @@ public:
     bool hasValueNestedPointers() override;
     const QObject* getOwner(const void* container) override;
     bool hasOwnerFunction() override;
-    jint capacity(JNIEnv * env,const void* container) override;
+    qsizetype capacity(JNIEnv * env,const void* container) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     jboolean contains(JNIEnv * env, const void* container, jobject value) override;
-    jint count(JNIEnv * env, const void* container, jobject key) override;
+    qsizetype count(JNIEnv * env, const void* container, jobject key) override;
     jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
@@ -395,9 +395,9 @@ public:
     ContainerAndAccessInfo keys(JNIEnv * env, const ConstContainerInfo& container) override;
     ContainerAndAccessInfo keys(JNIEnv * env, const ConstContainerInfo& container, jobject value) override;
     jboolean equal(JNIEnv * env, const void* container, jobject other) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    void reserve(JNIEnv * env, const ContainerInfo& container, jint newSize) override;
-    jint size(JNIEnv * env, const void* container) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    void reserve(JNIEnv * env, const ContainerInfo& container, qsizetype newSize) override;
+    qsizetype size(JNIEnv * env, const void* container) override;
     qsizetype size(const void* container)override;
     jobject take(JNIEnv *env, const ContainerInfo& container, jobject key) override;
     jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override;
@@ -447,10 +447,10 @@ public:
     bool hasValueNestedPointers() override;
     const QObject* getOwner(const void* container) override;
     bool hasOwnerFunction() override;
-    jint capacity(JNIEnv * env,const void* container) override;
+    qsizetype capacity(JNIEnv * env,const void* container) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     jboolean contains(JNIEnv * env, const void* container, jobject value) override;
-    jint count(JNIEnv * env, const void* container, jobject key) override;
+    qsizetype count(JNIEnv * env, const void* container, jobject key) override;
     jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
@@ -462,9 +462,9 @@ public:
     ContainerAndAccessInfo keys(JNIEnv * env, const ConstContainerInfo& container) override;
     ContainerAndAccessInfo keys(JNIEnv * env, const ConstContainerInfo& container, jobject value) override;
     jboolean equal(JNIEnv * env, const void* container, jobject other) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    void reserve(JNIEnv * env, const ContainerInfo& container, jint newSize) override;
-    jint size(JNIEnv * env, const void* container) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    void reserve(JNIEnv * env, const ContainerInfo& container, qsizetype newSize) override;
+    qsizetype size(JNIEnv * env, const void* container) override;
     qsizetype size(const void* container)override;
     bool contains(const void*,const void*) override;
     void insert(void* container,const void* key, const void* value) override;
@@ -474,10 +474,10 @@ public:
     ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override;
     ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container, jobject key) override;
     jboolean contains(JNIEnv * env, const void* container, jobject key, jobject value) override;
-    jint count(JNIEnv *env, const void* container, jobject key, jobject value) override;
+    qsizetype count(JNIEnv *env, const void* container, jobject key, jobject value) override;
     jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key, jobject value) override;
     jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key, jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     void replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     ContainerAndAccessInfo uniqueKeys(JNIEnv * env, const ConstContainerInfo& container) override;
     void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
@@ -500,12 +500,12 @@ public:
     void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) override;
-    void replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) override;
-    jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
+    void replace(JNIEnv * env, const ContainerInfo& container, qsizetype index, jobject value) override;
+    qsizetype removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) override;
-    void insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) override;
-    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size) override;
+    void remove(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n) override;
+    void insert(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n, jobject value) override;
+    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, qsizetype size) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
     AbstractReferenceCountingContainer* asRC() override;
 };
@@ -541,7 +541,7 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
 };
@@ -558,9 +558,9 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
@@ -578,7 +578,7 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
 };
@@ -595,9 +595,9 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
@@ -615,7 +615,7 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
 };
@@ -632,9 +632,9 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
@@ -652,7 +652,7 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
 };
@@ -670,9 +670,9 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
 };
@@ -689,7 +689,7 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     AbstractReferenceCountingContainer* asRC() override;
 };
@@ -706,9 +706,9 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
     AbstractReferenceCountingContainer* asRC() override;
@@ -726,7 +726,7 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     AbstractReferenceCountingContainer* asRC() override;
 };
@@ -743,9 +743,9 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
     AbstractReferenceCountingContainer* asRC() override;
@@ -762,13 +762,13 @@ public:
     void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) override;
-    void replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) override;
-    jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
-    ContainerAndAccessInfo mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint index1, jint index2) override;
+    void replace(JNIEnv * env, const ContainerInfo& container, qsizetype index, jobject value) override;
+    qsizetype removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
+    ContainerAndAccessInfo mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, qsizetype index1, qsizetype index2) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) override;
-    void insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) override;
-    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size) override;
+    void remove(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n) override;
+    void insert(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n, jobject value) override;
+    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, qsizetype size) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
 };
 
@@ -804,7 +804,7 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
 };
 
@@ -821,9 +821,9 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
 };
@@ -841,7 +841,7 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
 };
 
@@ -858,9 +858,9 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
 };
@@ -1499,6 +1499,7 @@ class AutoSpanAccess : public AbstractSpanAccess, public AbstractNestedSequentia
         using reference       = char&;
 
         iterator(size_t _offset, char* _ptr = nullptr);
+        iterator(iterator&&) = default;
         iterator(const iterator&) = default;
         iterator& operator++();
         iterator operator++(int);
@@ -1558,17 +1559,17 @@ private:
     static void debugStreamFn(const QtPrivate::QMetaTypeInterface *iface, QDebug &s, const void *ptr);
     static QtMetaContainerPrivate::QMetaSequenceInterface* createMetaSequenceInterface(QMetaType newMetaType);
     qsizetype size(const void* container) override;
-    jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
-    jobject createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
+    jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iter);
+    jobject createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iter);
 public:
     void assign(void*, const void* ) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     QMetaType registerContainer(QByteArrayView typeName) override;
     bool isConst() override;
-    jint size(JNIEnv * env, const void* container) override;
-    jint size_bytes(JNIEnv * env, const void* container) override;
-    jobject get(JNIEnv *,const void*,jint) override;
-    bool set(JNIEnv *,const ContainerInfo&,jint,jobject) override;
+    qsizetype size(JNIEnv * env, const void* container) override;
+    qsizetype size_bytes(JNIEnv * env, const void* container) override;
+    jobject get(JNIEnv *,const void*,qsizetype) override;
+    bool set(JNIEnv *,const ContainerInfo&,qsizetype,jobject) override;
     const void* get(const void*,qsizetype) override;
     bool set(void*,qsizetype,const void*) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
@@ -1593,7 +1594,7 @@ public:
     using AutoSpanAccess::AutoSpanAccess;
     PointerRCAutoSpanAccess* clone() override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    bool set(JNIEnv *,const ContainerInfo&,jint,jobject) override;
+    bool set(JNIEnv *,const ContainerInfo&,qsizetype,jobject) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
     AbstractReferenceCountingContainer* asRC() override;
 };
@@ -1605,7 +1606,7 @@ public:
     using AutoSpanAccess::AutoSpanAccess;
     NestedPointersRCAutoSpanAccess* clone() override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    bool set(JNIEnv *,const ContainerInfo&,jint,jobject) override;
+    bool set(JNIEnv *,const ContainerInfo&,qsizetype,jobject) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
     AbstractReferenceCountingContainer* asRC() override;
 };
@@ -1717,31 +1718,31 @@ public:
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     void appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) override;
-    jobject at(JNIEnv * env, const void* container, jint index) override;
+    jobject at(JNIEnv * env, const void* container, qsizetype index) override;
     const void* at(const void* container, qsizetype index) override;
     void* at(void* container, qsizetype index) override;
-    jobject value(JNIEnv * env, const void* container, jint index) override;
-    jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) override;
-    void swapItemsAt(JNIEnv *, const ContainerInfo& container, jint index1, jint index2) override;
+    jobject value(JNIEnv * env, const void* container, qsizetype index) override;
+    jobject value(JNIEnv * env, const void* container, qsizetype index, jobject defaultValue) override;
+    void swapItemsAt(JNIEnv *, const ContainerInfo& container, qsizetype index1, qsizetype index2) override;
     jboolean startsWith(JNIEnv * env, const void* container, jobject value) override;
-    jint size(JNIEnv *, const void* container) override;
-    void reserve(JNIEnv *, const ContainerInfo& container, jint size) override;
-    void replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) override;
+    qsizetype size(JNIEnv *, const void* container) override;
+    void reserve(JNIEnv *, const ContainerInfo& container, qsizetype size) override;
+    void replace(JNIEnv * env, const ContainerInfo& container, qsizetype index, jobject value) override;
     void replace(void* container, qsizetype index, const void* value) override;
-    void remove(JNIEnv *, const ContainerInfo& container, jint index, jint n) override;
+    void remove(JNIEnv *, const ContainerInfo& container, qsizetype index, qsizetype n) override;
     void remove(void* container, qsizetype index, qsizetype n) override;
-    jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
+    qsizetype removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
     jboolean equal(JNIEnv * env, const void* container, jobject other) override;
-    void move(JNIEnv *, const ContainerInfo& container, jint index1, jint index2) override;
-    ContainerAndAccessInfo mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint index1, jint index2) override;
-    jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) override;
-    jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) override;
+    void move(JNIEnv *, const ContainerInfo& container, qsizetype index1, qsizetype index2) override;
+    ContainerAndAccessInfo mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, qsizetype index1, qsizetype index2) override;
+    qsizetype lastIndexOf(JNIEnv * env, const void* container, jobject value, qsizetype index) override;
+    qsizetype indexOf(JNIEnv * env, const void* container, jobject value, qsizetype index) override;
     jboolean endsWith(JNIEnv * env, const void* container, jobject value) override;
-    jint count(JNIEnv * env, const void* container, jobject value) override;
+    qsizetype count(JNIEnv * env, const void* container, jobject value) override;
     jboolean contains(JNIEnv * env, const void* container, jobject value) override;
     void clear(JNIEnv *, const ContainerInfo& container) override;
     void clear(void* container);
-    void insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) override;
+    void insert(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n, jobject value) override;
     void insert(void* container, qsizetype index, qsizetype n, const void* entry) override;
     bool append(void* container, const void* value) override;
     inline void insert(void* container, const void* value){
@@ -1749,15 +1750,15 @@ public:
     }
     qsizetype size(const void* container) override;
     void resize(void* container, qsizetype newSize) override;
-    jint capacity(JNIEnv *, const void* container) override;
-    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size) override;
-    void resize(JNIEnv *, const ContainerInfo& container, jint newSize) override;
+    qsizetype capacity(JNIEnv *, const void* container) override;
+    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, qsizetype size) override;
+    void resize(JNIEnv *, const ContainerInfo& container, qsizetype newSize) override;
     void squeeze(JNIEnv *, const ContainerInfo& container) override;
     std::unique_ptr<AbstractListAccess::ElementIterator> elementIterator(const void* container) override;
     std::unique_ptr<AbstractListAccess::ElementIterator> elementIterator(void* container) override;
 private:
     static QtMetaContainerPrivate::QMetaSequenceInterface* createMetaSequenceInterface(QMetaType newMetaType);
-    void emplace(QListData* p, JNIEnv * env, jint index, jobject value, jint n);
+    void emplace(QListData* p, JNIEnv * env, qsizetype index, jobject value, qsizetype n);
     void emplace(QListData* p, qsizetype index, const void* value, qsizetype n);
     void *createHole(QListData *p, QArrayData::GrowthPosition pos, qsizetype where, qsizetype n);
     qsizetype freeSpaceAtBegin(const QListData* p);
@@ -1847,7 +1848,7 @@ public:
     void insert(void* container,const void* key, const void* value) override;
     const void* value(const void*, const void*, const void*) override;
     jboolean contains(JNIEnv *,const void*,jobject) override;
-    jint count(JNIEnv *,const void*,jobject) override;
+    qsizetype count(JNIEnv *,const void*,jobject) override;
     jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
@@ -1864,8 +1865,8 @@ public:
     jobject lastKey(JNIEnv *,const void*) override;
     jobject constLowerBound(JNIEnv *,const ConstExtendedContainerInfo& container,jobject) override;
     jboolean equal(JNIEnv *,const void*,jobject) override;
-    jint remove(JNIEnv *,const ContainerInfo&,jobject) override;
-    jint size(JNIEnv *,const void*) override;
+    qsizetype remove(JNIEnv *,const ContainerInfo&,jobject) override;
+    qsizetype size(JNIEnv *,const void*) override;
     qsizetype size(const void* container) override;
     jobject take(JNIEnv *,const ContainerInfo&,jobject) override;
     jobject constUpperBound(JNIEnv *,const ConstExtendedContainerInfo& container,jobject) override;
@@ -2037,8 +2038,8 @@ private:
     TreeNode* extract(MapData& data, node_iterator iter);
     void insertOrAssign(MapData&,const void*,JNIEnv *,jobject value);
     void insertOrAssign(MapData&,const void*,const void* value);
-    jint copyIfNotEquivalentTo(MapData& data, const MapData& copyFrom, const void* key);
-    jint copyIfNotEquivalentTo(MapData& data, const MapData& copyFrom, const void* key, const void* value);
+    qsizetype copyIfNotEquivalentTo(MapData& data, const MapData& copyFrom, const void* key);
+    qsizetype copyIfNotEquivalentTo(MapData& data, const MapData& copyFrom, const void* key, const void* value);
     node_iterator erase(MapData& data, node_iterator iter);
     TreeNode* erase(MapData& data, node_iterator first, node_iterator last);
     QPair<TreeNode*,TreeNode*> eqrange(const MapData& data, const void* key);
@@ -2083,8 +2084,8 @@ private:
 #endif // defined(Q_CC_MSVC) || defined(_LIBCPP_VERSION)
     TreeNode* findUpperBound(const MapData& data, const void* key);
 
-    jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
-    jobject createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
+    jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iter);
+    jobject createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iter);
     friend class AutoMultiMapAccess;
 public:
     std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(const void* container) override;
@@ -2134,7 +2135,7 @@ public:
     bool hasValueNestedPointers() override;
     void clear(JNIEnv *,const ContainerInfo&) override;
     jboolean contains(JNIEnv *,const void*,jobject) override;
-    jint count(JNIEnv *,const void*,jobject) override;
+    qsizetype count(JNIEnv *,const void*,jobject) override;
     jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
@@ -2151,8 +2152,8 @@ public:
     jobject lastKey(JNIEnv *,const void*) override;
     jobject constLowerBound(JNIEnv *,const ConstExtendedContainerInfo& container,jobject) override;
     jboolean equal(JNIEnv *,const void*,jobject) override;
-    jint remove(JNIEnv *,const ContainerInfo&,jobject) override;
-    jint size(JNIEnv *,const void*) override;
+    qsizetype remove(JNIEnv *,const ContainerInfo&,jobject) override;
+    qsizetype size(JNIEnv *,const void*) override;
     qsizetype size(const void* container) override;
     jobject take(JNIEnv *,const ContainerInfo&,jobject) override;
     jobject constUpperBound(JNIEnv *,const ConstExtendedContainerInfo& container,jobject) override;
@@ -2166,10 +2167,10 @@ public:
     void unite(JNIEnv *,const ContainerInfo&,ContainerAndAccessInfo&) override;
     ContainerAndAccessInfo values(JNIEnv *,const ConstContainerInfo&,jobject) override;
     jboolean contains(JNIEnv *,const void*,jobject,jobject) override;
-    jint count(JNIEnv *,const void*,jobject,jobject) override;
+    qsizetype count(JNIEnv *,const void*,jobject,jobject) override;
     jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key, jobject value) override;
     jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key, jobject value) override;
-    jint remove(JNIEnv *,const ContainerInfo&,jobject,jobject) override;
+    qsizetype remove(JNIEnv *,const ContainerInfo&,jobject,jobject) override;
     void replace(JNIEnv *,const ContainerInfo&,jobject,jobject) override;
     bool contains(const void*,const void*) override;
     void insert(void* container,const void* key, const void* value) override;
@@ -2252,11 +2253,11 @@ public:
     bool hasValueNestedContainerAccess() override;
     bool hasKeyNestedPointers() override;
     bool hasValueNestedPointers() override;
-    jint capacity(JNIEnv *,const void*) override;
+    qsizetype capacity(JNIEnv *,const void*) override;
     void clear(JNIEnv *,const ContainerInfo&) override;
     void clear(void*);
     jboolean contains(JNIEnv *,const void*,jobject) override;
-    jint count(JNIEnv *,const void*,jobject) override;
+    qsizetype count(JNIEnv *,const void*,jobject) override;
     jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
@@ -2268,9 +2269,9 @@ public:
     ContainerAndAccessInfo keys(JNIEnv *,const ConstContainerInfo&) override;
     ContainerAndAccessInfo keys(JNIEnv *,const ConstContainerInfo&,jobject) override;
     jboolean equal(JNIEnv *,const void*,jobject) override;
-    jint remove(JNIEnv *,const ContainerInfo&,jobject) override;
-    void reserve(JNIEnv *,const ContainerInfo&,jint) override;
-    jint size(JNIEnv *,const void*) override;
+    qsizetype remove(JNIEnv *,const ContainerInfo&,jobject) override;
+    void reserve(JNIEnv *,const ContainerInfo&,qsizetype) override;
+    qsizetype size(JNIEnv *,const void*) override;
     qsizetype size(const void*) override;
     jobject take(JNIEnv *,const ContainerInfo&,jobject) override;
     jobject value(JNIEnv *,const void*,jobject,jobject) override;
@@ -2292,8 +2293,6 @@ public:
 private:
     AbstractNestedAssociativeAccess* asNested() override;
     virtual IsBiContainerFunction getIsBiContainerFunction();
-    jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
-    jobject createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
     static QtMetaContainerPrivate::QMetaAssociationInterface* createMetaAssociationInterface(QMetaType newMetaType);
     virtual void debugStream(QDebug &s, const void *ptr);
     virtual void dataStreamOut(QDataStream &s, const void *ptr);
@@ -2416,6 +2415,7 @@ private:
     public:
         iterator(const QHashData::iterator& _i);
 
+        iterator(iterator&& iter) : i(std::move(iter.i)), e(std::move(iter.e)) {}
         iterator(const iterator& iter) : i(iter.i), e(iter.e) {}
 
         iterator& operator=(const iterator& iter) {
@@ -2438,6 +2438,9 @@ private:
     using Container = QtJambiPrivate::AssociativeContainer<AutoHashAccess>;
     using SetConstContainer = QtJambiPrivate::ConstSequentialContainer<AutoHashAccess>;
     using SetContainer = QtJambiPrivate::SequentialContainer<AutoHashAccess>;
+
+    jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iterator);
+    jobject createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iterator);
 
     iterator begin(const void* container);
     iterator end(const void* container);
@@ -2521,10 +2524,10 @@ public:
     bool hasValueNestedContainerAccess() override;
     bool hasKeyNestedPointers() override;
     bool hasValueNestedPointers() override;
-    jint capacity(JNIEnv *,const void*) override;
+    qsizetype capacity(JNIEnv *,const void*) override;
     void clear(JNIEnv *,const ContainerInfo&) override;
     jboolean contains(JNIEnv *,const void*,jobject) override;
-    jint count(JNIEnv *,const void*,jobject) override;
+    qsizetype count(JNIEnv *,const void*,jobject) override;
     jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
@@ -2536,10 +2539,10 @@ public:
     ContainerAndAccessInfo keys(JNIEnv *,const ConstContainerInfo&) override;
     ContainerAndAccessInfo keys(JNIEnv *,const ConstContainerInfo&,jobject) override;
     jboolean equal(JNIEnv *,const void*,jobject) override;
-    jint remove(JNIEnv *,const ContainerInfo&,jobject) override;
-    void reserve(JNIEnv *,const ContainerInfo&,jint) override;
+    qsizetype remove(JNIEnv *,const ContainerInfo&,jobject) override;
+    void reserve(JNIEnv *,const ContainerInfo&,qsizetype) override;
     qsizetype size(const void*) override;
-    jint size(JNIEnv *,const void*) override;
+    qsizetype size(JNIEnv *,const void*) override;
     jobject take(JNIEnv *,const ContainerInfo&,jobject) override;
     jobject value(JNIEnv *,const void*,jobject,jobject) override;
     ContainerAndAccessInfo values(JNIEnv *,const ConstContainerInfo&) override;
@@ -2548,10 +2551,10 @@ public:
     bool contains(const void*,const void*) override;
     void insert(void* container,const void* key, const void* value) override;
     const void* value(const void*, const void*, const void*) override;
-    jint count(JNIEnv *,const void*,jobject,jobject) override;
+    qsizetype count(JNIEnv *,const void*,jobject,jobject) override;
     jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key, jobject value) override;
     jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key, jobject value) override;
-    jint remove(JNIEnv *,const ContainerInfo&,jobject,jobject) override;
+    qsizetype remove(JNIEnv *,const ContainerInfo&,jobject,jobject) override;
     void replace(JNIEnv *,const ContainerInfo&,jobject,jobject) override;
     bool destructContainer(void* container) override;
     void* constructContainer(void* placement) override;
@@ -2633,7 +2636,7 @@ public:
     const QSharedPointer<AbstractContainerAccess>& sharedElementNestedContainerAccess() override;
     bool hasNestedContainerAccess() override;
     bool hasNestedPointers() override;
-    jint capacity(JNIEnv * env, const void* container) override;
+    qsizetype capacity(JNIEnv * env, const void* container) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     jboolean contains(JNIEnv * env, const void* container, jobject value) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
@@ -2643,8 +2646,8 @@ public:
     jboolean intersects(JNIEnv * env, const void* container, jobject other) override;
     jboolean equal(JNIEnv * env, const void* container, jobject other) override;
     jboolean remove(JNIEnv * env, const ContainerInfo& container, jobject value) override;
-    void reserve(JNIEnv * env, const ContainerInfo& container, jint newSize) override;
-    jint size(JNIEnv * env, const void* container) override;
+    void reserve(JNIEnv * env, const ContainerInfo& container, qsizetype newSize) override;
+    qsizetype size(JNIEnv * env, const void* container) override;
     qsizetype size(const void* container) override;
     void subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
@@ -2678,12 +2681,12 @@ public:
     void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) override;
-    void replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) override;
-    jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
+    void replace(JNIEnv * env, const ContainerInfo& container, qsizetype index, jobject value) override;
+    qsizetype removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) override;
-    void insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) override;
-    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size) override;
+    void remove(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n) override;
+    void insert(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n, jobject value) override;
+    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, qsizetype size) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
     AbstractReferenceCountingContainer* asRC() override;
 };
@@ -2700,13 +2703,13 @@ public:
     void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) override;
-    void replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) override;
-    jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
-    ContainerAndAccessInfo mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint index1, jint index2) override;
+    void replace(JNIEnv * env, const ContainerInfo& container, qsizetype index, jobject value) override;
+    qsizetype removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
+    ContainerAndAccessInfo mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, qsizetype index1, qsizetype index2) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) override;
-    void insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) override;
-    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size) override;
+    void remove(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n) override;
+    void insert(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n, jobject value) override;
+    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, qsizetype size) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
     AbstractReferenceCountingContainer* asRC() override;
 };
@@ -2739,7 +2742,7 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
     AbstractReferenceCountingContainer* asRC() override;
@@ -2755,9 +2758,9 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
@@ -2774,7 +2777,7 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
     AbstractReferenceCountingContainer* asRC() override;
@@ -2790,9 +2793,9 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
@@ -2809,7 +2812,7 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
     AbstractReferenceCountingContainer* asRC() override;
@@ -2825,9 +2828,9 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
@@ -2844,7 +2847,7 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
     AbstractReferenceCountingContainer* asRC() override;
@@ -2861,9 +2864,9 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
     AbstractReferenceCountingContainer* asRC() override;
@@ -2880,7 +2883,7 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     AbstractReferenceCountingContainer* asRC() override;
 };
@@ -2896,9 +2899,9 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
     AbstractReferenceCountingContainer* asRC() override;
@@ -2915,7 +2918,7 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     AbstractReferenceCountingContainer* asRC() override;
 };
@@ -2931,9 +2934,9 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
     AbstractReferenceCountingContainer* asRC() override;
@@ -2968,7 +2971,7 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     AbstractReferenceCountingContainer* asRC() override;
 };
@@ -2984,9 +2987,9 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
     AbstractReferenceCountingContainer* asRC() override;
@@ -3003,7 +3006,7 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
     AbstractReferenceCountingContainer* asRC() override;
 };
@@ -3019,9 +3022,9 @@ public:
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void clear(JNIEnv * env, const ContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
     jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jint remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
     void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
     AbstractReferenceCountingContainer* asRC() override;

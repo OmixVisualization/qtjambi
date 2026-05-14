@@ -278,7 +278,7 @@ public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language 
                     metaName: "%3"
                 }
                 Text{content: "if(!%0 && !%3.isEmpty()){\n"+
-                              "    Java::QtTextToSpeech::QTextToSpeechPlugin$CreateException::throwNew(%env, %3 QTJAMBI_STACKTRACEINFO );\n"+
+                              "    JavaException::raise<Java::QtTextToSpeech::QTextToSpeechPlugin$CreateException>(%env, %3 QTJAMBI_STACKTRACEINFO );\n"+
                               "}"}
             }
             InjectCode{

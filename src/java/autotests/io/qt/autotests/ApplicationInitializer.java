@@ -342,17 +342,17 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
         	}
     	}
     	String macosPrefix = "";
-    	File utilitiesDir = new File(macosPrefix + "../../../../deployment/platforms/" + TestUtility.osArchName() + (isDebug ? "/debug/utilities" : "/release/utilities"));
+    	File utilitiesDir = new File(macosPrefix + "../../../build/" + TestUtility.osArchName() + (isDebug ? "/debug/utilities" : "/release/utilities"));
 		final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
 		String processName = "";
     	File jambiDeploymentDir = null;
     	final QProcess process = new QProcess();
     	try {
 	    	if(java8) {
-	    		classPath = macosPrefix+"../qtjambi-autotests-"+version+".jar";
-	    		classPath += File.pathSeparator+macosPrefix+"../../../../deployment/qtjambi-"+version+".jar";
+	    		classPath = macosPrefix+"../../../distribute/qtjambi-autotests-"+version+".jar";
+	    		classPath += File.pathSeparator+macosPrefix+"../../../distribute/qtjambi-"+version+".jar";
 	    		for(String mod : modules) {
-		    		classPath += File.pathSeparator+macosPrefix+"../../../../deployment/qtjambi-"+mod+"-"+version+".jar";
+		    		classPath += File.pathSeparator+macosPrefix+"../../../distribute/qtjambi-"+mod+"-"+version+".jar";
 		    		if("sql".equals(mod) && !System.getProperty("qtjambi.deployer.test.jdbc", "").isEmpty()) {
 		    			String jdbcPath = targetDir.toPath().toAbsolutePath().relativize(new File(System.getProperty("qtjambi.deployer.test.jdbc")).toPath().toAbsolutePath()).toString();
 			    		classPath += File.pathSeparator+macosPrefix+jdbcPath;
@@ -374,10 +374,10 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	        			"-Dio.qt.log-messages="+System.getProperty("io.qt.log-messages", "ALL")
 	            	});
 	    	}else {
-	    		classPath = macosPrefix+"../qtjambi-autotests-"+version+".jar";
-	    		modulePath = "../"+macosPrefix+"../../../deployment/qtjambi-"+version+".jar";
+	    		classPath = "../"+macosPrefix+"../../distribute/qtjambi-autotests-"+version+".jar";
+	    		modulePath = "../"+macosPrefix+"../../distribute/qtjambi-"+version+".jar";
 	    		for(String mod : modules) {
-		    		modulePath += File.pathSeparator+macosPrefix+"../../../../deployment/qtjambi-"+mod+"-"+version+".jar";
+		    		modulePath += File.pathSeparator+macosPrefix+"../../../distribute/qtjambi-"+mod+"-"+version+".jar";
 		    		if("sql".equals(mod) && !System.getProperty("qtjambi.deployer.test.jdbc", "").isEmpty()) {
 		    			String jdbcPath = targetDir.toPath().toAbsolutePath().relativize(new File(System.getProperty("qtjambi.deployer.test.jdbc")).toPath().toAbsolutePath()).toString();
 			    		classPath += File.pathSeparator+macosPrefix+jdbcPath;

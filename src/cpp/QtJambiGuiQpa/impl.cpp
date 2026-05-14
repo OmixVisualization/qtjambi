@@ -32,7 +32,8 @@
 #include <QtJambi/QtJambiAPI>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
-#include <QtJambi/qtjambi_cast.h>
+
+#include <QtJambi/Cast>
 
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_gui_qpa_QPlatformIntegration_instance(JNIEnv *env, jclass){
     jobject result{nullptr};

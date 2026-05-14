@@ -215,11 +215,11 @@ jobject invokeMetaMethodImpl(JNIEnv * env, const QMetaMethod& method,
             && object->thread()==QThread::currentThread()
 #endif
         ) {
-            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(env, QLatin1String("Blocking-queued invocation on object whose thread is the current thread is not allowed.") QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(env, QLatin1String("Blocking-queued invocation on object whose thread is the current thread is not allowed.") QTJAMBI_STACKTRACEINFO );
         }
         if(method.returnType()!=QMetaType::UnknownType && method.returnType()!=QMetaType::Void) {
             if(connection==Qt::QueuedConnection) {
-                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(env, QLatin1String("Unable to invoke method with return value in queued connections.") QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(env, QLatin1String("Unable to invoke method with return value in queued connections.") QTJAMBI_STACKTRACEINFO );
             }else if(connection==Qt::AutoConnection) {
                 if(object->thread()
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
@@ -228,7 +228,7 @@ jobject invokeMetaMethodImpl(JNIEnv * env, const QMetaMethod& method,
                     && object->thread()!=QThread::currentThread()
 #endif
                 ) {
-                    Java::QtJambi::QUnsuccessfulInvocationException::throwNew(env, QLatin1String("Unable to invoke method with return value in queued connections (auto connection with different threads).") QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(env, QLatin1String("Unable to invoke method with return value in queued connections (auto connection with different threads).") QTJAMBI_STACKTRACEINFO );
                 }
             }
         }
@@ -306,13 +306,13 @@ jobject invokeMetaMethodImpl(JNIEnv * env, const QMetaMethod& method,
                 }
             }
         }else if(parameterCount!=argsCount){
-            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong number of arguments. expected: %1, given: %2").arg(parameterCount).arg(argsCount) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QString("Wrong number of arguments. expected: %1, given: %2").arg(parameterCount).arg(argsCount) QTJAMBI_STACKTRACEINFO );
         }
         if(!ok){
-            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(env, QLatin1String(method.methodSignature()) QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(env, QLatin1String(method.methodSignature()) QTJAMBI_STACKTRACEINFO );
         }
     }else{
-        Java::QtJambi::QUnsuccessfulInvocationException::throwNew(env, QLatin1String("Cannot invoke an invalid QMetaMethod.") QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(env, QLatin1String("Cannot invoke an invalid QMetaMethod.") QTJAMBI_STACKTRACEINFO );
     }
     return result.l;
 }
@@ -321,13 +321,13 @@ jobject CoreAPI::invokeMetaMethod(JNIEnv * env, QtJambiNativeID _metaMethod,
                                    QtJambiNativeID _qobject,
                                    jint connection, jobjectArray args)
 {
-    QObject* object = QtJambiAPI::objectFromNativeId<QObject>(_qobject);
+    QObject* object = qtjambi_cast<QObject*>(_qobject);
     QtJambiAPI::checkNullPointer(env, object);
-    QMetaMethod method = QtJambiAPI::valueFromNativeId<QMetaMethod>(_metaMethod);
+    QMetaMethod method = qtjambi_cast<QMetaMethod>(_metaMethod);
     const QMetaObject* enclosingMetaObject = method.enclosingMetaObject();
     const QMetaObject* objectMO = object->metaObject();
     if(objectMO!=enclosingMetaObject && method.isValid() && !objectMO->inherits(enclosingMetaObject)) {
-        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Given object is not an instance of %1").arg(enclosingMetaObject->className()) QTJAMBI_STACKTRACEINFO );
+        JavaException::raiseIllegalArgumentException(env, QString("Given object is not an instance of %1").arg(enclosingMetaObject->className()) QTJAMBI_STACKTRACEINFO );
     }
     return invokeMetaMethodImpl(env, method, _qobject, object, connection, args);
 }
@@ -337,7 +337,7 @@ jobject CoreAPI::invokeMetaMethod(JNIEnv * env,
                                   jint connection, jobjectArray args)
 {
     const QMetaObject *metaObject = reinterpret_cast<const QMetaObject *>(metaObjectPointer);
-    QObject* object = QtJambiAPI::objectFromNativeId<QObject>(qobject_id);
+    QObject* object = qtjambi_cast<QObject*>(qobject_id);
     QtJambiAPI::checkNullPointer(env, object);
     if(!metaObject)
         metaObject = object->metaObject();
@@ -387,7 +387,7 @@ jobject CoreAPI::invokeMetaMethodOnGadget(JNIEnv * env, QtJambiNativeID _metaMet
     jvalue result;
     result.l = nullptr;
     JObjectWrapper wrapper;
-    QMetaMethod method = QtJambiAPI::valueFromNativeId<QMetaMethod>(_metaMethod);
+    QMetaMethod method = qtjambi_cast<QMetaMethod>(_metaMethod);
     if(method.isValid()){
         QtJambiScope scope;
         void* ptr = nullptr;
@@ -409,7 +409,7 @@ jobject CoreAPI::invokeMetaMethodOnGadget(JNIEnv * env, QtJambiNativeID _metaMet
                 }
                 QtJambiAPI::checkNullPointer(env, ptr, *typeId);
             }else{
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, object)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, object)) QTJAMBI_STACKTRACEINFO );
             }
         }else{
             wrapper = JObjectWrapper(env, object);
@@ -486,13 +486,13 @@ jobject CoreAPI::invokeMetaMethodOnGadget(JNIEnv * env, QtJambiNativeID _metaMet
                     }
                 }
             }else if(parameterCount!=argsCount){
-                Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong number of arguments. expected: %1, given: %2").arg(parameterCount).arg(argsCount) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseIllegalArgumentException(env, QString("Wrong number of arguments. expected: %1, given: %2").arg(parameterCount).arg(argsCount) QTJAMBI_STACKTRACEINFO );
             }
             if(!ok){
-                Java::QtJambi::QUnsuccessfulInvocationException::throwNew(env, QLatin1String(method.methodSignature()) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(env, QLatin1String(method.methodSignature()) QTJAMBI_STACKTRACEINFO );
             }
         }else{
-            Java::QtJambi::QUnsuccessfulInvocationException::throwNew(env, QLatin1String("Cannot invoke an invalid QMetaMethod.") QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QUnsuccessfulInvocationException>(env, QLatin1String("Cannot invoke an invalid QMetaMethod.") QTJAMBI_STACKTRACEINFO );
         }
     }
     return result.l;
@@ -715,10 +715,8 @@ void CoreAPI::unexit(){
 void CoreAPI::registerQProperty(JNIEnv *env, QtJambiNativeID __object_nativeId, QtJambiNativeID property_nativeId){
     QSharedPointer<QtJambiLink> objectLink = QtJambiLink::fromNativeId(__object_nativeId);
     QSharedPointer<QtJambiLink> propertyLink = QtJambiLink::fromNativeId(property_nativeId);
-    QObject *object = QtJambiAPI::objectFromNativeId<QObject>(__object_nativeId);
+    QObject *object = qtjambi_cast<QObject*>(__object_nativeId);
     QtJambiAPI::checkNullPointer(env, object);
-    QUntypedPropertyData *property = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(property_nativeId);
-    QtJambiAPI::checkNullPointer(env, property);
     QtJambiLink::registerConDestroyedObject(env, object, propertyLink);
 }
 
@@ -766,7 +764,7 @@ void CoreAPI::ckeckLinkExtension(JNIEnv *env, QtJambiNativeID nativeId){
     QtJambiLink * link = reinterpret_cast<QtJambiLink *>(nativeId);
     if(ExtendedLinkInterface* elink = dynamic_cast<ExtendedLinkInterface*>(link)){
         if(!elink->hasExtension())
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, "Dependent object has been deleted." QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, "Dependent object has been deleted." QTJAMBI_STACKTRACEINFO );
     }
 }
 
@@ -844,7 +842,7 @@ QMetaMethod CoreAPI::findMetaMethod(const QMetaObject *metaObject, const QString
                                 break;
                             }
                         }else{
-                            if(_method.parameterType(p) != QMetaType::type(qPrintable(arguments.at(p+1)))){
+                            if(_method.parameterMetaType(p) != QMetaType::fromName(qPrintable(arguments.at(p+1)))){
                                 found = false;
                                 break;
                             }
@@ -863,7 +861,7 @@ QMetaMethod CoreAPI::findMetaMethod(const QMetaObject *metaObject, const QString
 
 jobject CoreAPI::newInstanceForMetaObject(JNIEnv *env, QtJambiNativeID constructorId, jobjectArray args){
     env->EnsureLocalCapacity(64);
-    const QMetaMethod& constructor = QtJambiAPI::objectReferenceFromNativeId<QMetaMethod>(env, constructorId);
+    const QMetaMethod& constructor = qtjambi_cast<const QMetaMethod&>(env, constructorId);
     QtJambiScope scope(nullptr);
     if(constructor.isValid()){
         const QVector<ParameterTypeInfo> parameterTypeInfos = QtJambiMetaObject::methodParameterInfo(env, constructor);
@@ -2900,6 +2898,7 @@ QMetaType qtjambiMetaType(JNIEnv *env, jclass clazz, jobjectArray instantiations
         if(jobject result = Java::QtJambi::MetaTypeUtility::analyzeExpectedTemplateName(env, clazz, instantiations)){
             if(Java::Runtime::String::isInstanceOf(env, result)){
                 J2CStringBuffer buffer(env, jstring(result));
+                JavaException::check(env QTJAMBI_STACKTRACEINFO );
                 QByteArrayView templName = buffer.toByteArrayView();
                 metaType = QMetaType::fromName(templName);
                 if(templateName)
@@ -3060,7 +3059,7 @@ QVariant CoreAPI::convertCheckedObjectToQVariant(JNIEnv *env, jobject object, co
         QByteArray internalTypeName = metaType.name();
 #if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
         if(!META_TYPE_ACCESS(metaType).iface()->copyCtr){
-            Java::Runtime::UnsupportedOperationException::throwNew(env, QStringLiteral("Unable to create value of meta type %1 due to missing copy constructor.").arg(QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseUnsupportedOperationException(env, QStringLiteral("Unable to create value of meta type %1 due to missing copy constructor.").arg(QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
         }
 #endif
         if(metaType.flags() & QMetaType::IsPointer){
@@ -3071,7 +3070,7 @@ QVariant CoreAPI::convertCheckedObjectToQVariant(JNIEnv *env, jobject object, co
                 void* ptr = t ? link->typedPointer(*t) : link->pointer();
                 return QVariant(metaType, &ptr);
             }else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, object))
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, object)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, object)) QTJAMBI_STACKTRACEINFO );
         }else{
             if ((internalTypeName.startsWith("QSharedPointer<")
                  || internalTypeName.startsWith("QWeakPointer<")
@@ -3124,28 +3123,25 @@ QVariant CoreAPI::convertCheckedObjectToQVariant(JNIEnv *env, jobject object, co
                     return QVariant(metaType);
                 }else if (internalTypeName.startsWith("QScopedPointer<")) {
                     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object)){
-                        void* ptr = t ? link->typedPointer(*t) : link->pointer();
-                        if(link->isSmartPointer())
+                        if(!link->isShell() || !link->isQObject() || link->isSmartPointer())
                             return QVariant(metaType);
-                        QScopedPointer<char> sptr;
-                        sptr.reset(reinterpret_cast<char*>(ptr));
-                        QVariant v(VariantUtility::createVariant(metaType, &sptr));
-                        (void)sptr.take();
+                        void* ptr = t ? link->typedPointer(*t) : link->pointer();
+                        QVariant v(VariantUtility::createVariant(metaType, &ptr));
                         return v;
                     }else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, object))
-                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, object)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, object)) QTJAMBI_STACKTRACEINFO );
                 }else if (internalTypeName.startsWith("std::unique_ptr<")) {
                     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object)){
-                        void* ptr = t ? link->typedPointer(*t) : link->pointer();
-                        if(link->isSmartPointer())
+                        if(!link->isShell() || !link->isQObject() || link->isSmartPointer())
                             return QVariant(metaType);
+                        void* ptr = t ? link->typedPointer(*t) : link->pointer();
                         std::unique_ptr<char> sptr;
                         sptr.reset(reinterpret_cast<char*>(ptr));
                         QVariant v(VariantUtility::createVariant(metaType, &sptr));
                         (void)sptr.release();
                         return v;
                     }else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, object))
-                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, object)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, object)) QTJAMBI_STACKTRACEINFO );
                 }
                 return QVariant(metaType);
             }
@@ -3154,7 +3150,7 @@ QVariant CoreAPI::convertCheckedObjectToQVariant(JNIEnv *env, jobject object, co
                 void* ptr = t ? link->typedPointer(*t) : link->pointer();
                 return QVariant(metaType, ptr);
             }else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, object))
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, object)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, object)) QTJAMBI_STACKTRACEINFO );
         }
     }
     QVariant variant = QtJambiAPI::convertJavaObjectToQVariant(env, object);
@@ -3162,7 +3158,7 @@ QVariant CoreAPI::convertCheckedObjectToQVariant(JNIEnv *env, jobject object, co
         if(variant.convert(metaType)){
             return variant;
         }
-        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Object of type %1 incompatible with meta type %2.").arg(QtJambiAPI::getObjectClassNamePrintable(env, object), QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
+        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Object of type %1 incompatible with meta type %2.").arg(QtJambiAPI::getObjectClassNamePrintable(env, object), QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
         return QVariant();
     }else{
         return variant;
@@ -3183,7 +3179,7 @@ jobject CoreAPI::getExtraSignal(JNIEnv *env, QtJambiNativeID sender__id, QtJambi
 {
     try{
         if(QSharedPointer<QtJambiLink> sender = QtJambiLink::fromNativeId(sender__id)){
-            if(const QMetaMethod *method = QtJambiAPI::objectFromNativeId<QMetaMethod>(method__id)){
+            if(const QMetaMethod *method = qtjambi_cast<const QMetaMethod*>(method__id)){
                 return sender->getExtraSignal(env, *method);
             }
         }

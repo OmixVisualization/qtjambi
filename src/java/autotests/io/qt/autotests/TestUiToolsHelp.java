@@ -7,6 +7,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QCoreApplication;
+import io.qt.core.QDir;
 import io.qt.core.QFile;
 import io.qt.core.QIODevice;
 import io.qt.core.QLibraryInfo;
@@ -34,6 +35,7 @@ public class TestUiToolsHelp extends ApplicationInitializer {
     	QWidget widget;
     	{
 	    	QUiLoader loader = new QUiLoader();
+	    	loader.addPluginPath(QDir.fromNativeSeparators(System.getProperty("testPlujginPath", ""))+"/designer");
 	    	for(String path : QCoreApplication.libraryPaths()) {
 				loader.addPluginPath(path);
 			}

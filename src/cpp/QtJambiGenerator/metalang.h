@@ -707,6 +707,7 @@ class MetaFunction : public MetaAttributes {
     bool useArgumentAsSlot(int key) const;
     bool useArgumentAsArray(int key) const;
     bool useArgumentAsBuffer(int key) const;
+    bool useArgumentAsString(int key) const;
     bool useArgumentAsVarArgs(int key) const;
     bool insertUtilArgument(int key) const;
     bool implementPlainDelegate(int key) const;
@@ -731,7 +732,8 @@ class MetaFunction : public MetaAttributes {
     QPair<QMap<int,ArgumentModification>,QList<ArgumentModification>> addedArguments() const;
 
     QString proxyCall() const;
-    QString argumentReplaced(int key) const;
+    QString replacedArgument() const;
+    QString resolvedType() const;
     bool isSelfReturningFunction() const;
     bool needsSuppressUncheckedWarning() const;
     bool needsSuppressRawTypeWarning() const;
@@ -958,6 +960,7 @@ class MetaFunctional : public MetaAttributes {
         bool useArgumentAsSlot(int key) const;
         bool useArgumentAsArray(int key) const;
         bool useArgumentAsBuffer(int key) const;
+        bool useArgumentAsString(int key) const;
         bool useArgumentAsVarArgs(int key) const;
         bool insertUtilArgument(int key) const;
         bool implementPlainDelegate(int key) const;
@@ -972,6 +975,75 @@ class MetaFunctional : public MetaAttributes {
         bool needsCallThrough() const;
         bool needsReturnScope() const;
 
+        bool hasDeprecation() const;
+        void setHasDeprecation(bool newHasDeprecation);
+
+        bool needModelCast() const;
+        void setNeedModelCast(bool newNeedModelCast);
+
+        bool needDBusCast() const;
+        void setNeedDBusCast(bool newNeedDBusCast);
+
+        bool needQmlCast() const;
+        void setNeedQmlCast(bool newNeedQmlCast);
+
+        bool needFutureCast() const;
+        void setNeedFutureCast(bool newNeedFutureCast);
+
+        bool needArrayCast() const;
+        void setNeedArrayCast(bool newNeedArrayCast);
+
+        bool needBufferCast() const;
+        void setNeedBufferCast(bool newNeedBufferCast);
+
+        bool needJObjectWrapper() const;
+        void setNeedJObjectWrapper(bool newNeedJObjectWrapper);
+
+        bool needStringAPI() const;
+        void setNeedStringAPI(bool newNeedStringAPI);
+
+        bool needBufferAPI() const;
+        void setNeedBufferAPI(bool newNeedBufferAPI);
+
+        bool needArrayAPI() const;
+        void setNeedArrayAPI(bool newNeedArrayAPI);
+
+        bool needTimeCast() const;
+        void setNeedTimeCast(bool newNeedTimeCast);
+
+        bool needTemplate2Cast() const;
+        void setNeedTemplate2Cast(bool newNeedTemplate2Cast);
+
+        bool needTemplate1Cast() const;
+        void setNeedTemplate1Cast(bool newNeedTemplate1Cast);
+
+        bool needArithmeticCast() const;
+        void setNeedArithmeticCast(bool newNeedArithmeticCast);
+
+        bool needEnumCast() const;
+        void setNeedEnumCast(bool newNeedEnumCast);
+
+        bool needSmartPointerCast() const;
+        void setNeedSmartPointerCast(bool newNeedSmartPointerCast);
+
+        bool needIteratorCast() const;
+        void setNeedIteratorCast(bool newNeedIteratorCast);
+
+        bool needContainerCast() const;
+        void setNeedContainerCast(bool newNeedContainerCast);
+
+        bool needTemplate3Cast() const;
+        void setNeedTemplate3Cast(bool newNeedTemplate3Cast);
+
+        bool needTemplate4Cast() const;
+        void setNeedTemplate4Cast(bool newNeedTemplate4Cast);
+
+        bool needTemplate5Cast() const;
+        void setNeedTemplate5Cast(bool newNeedTemplate5Cast);
+
+        bool needJavaAPI() const;
+        void setNeedJavaAPI(bool newNeedJavaAPI);
+
     private:
         QString m_base_type_name;
         FunctionalTypeEntry *m_type_entry;
@@ -981,6 +1053,29 @@ class MetaFunctional : public MetaAttributes {
         QString m_typeSignature;
         QString m_javaFunctionalInterface;
         QList<uint> m_javaFunctionalInterfaceParameterTypes;
+        bool m_hasDeprecation = false;
+        bool m_needModelCast = false;
+        bool m_needDBusCast = false;
+        bool m_needQmlCast = false;
+        bool m_needFutureCast = false;
+        bool m_needArrayCast = false;
+        bool m_needBufferCast = false;
+        bool m_needEnumCast = false;
+        bool m_needIteratorCast = false;
+        bool m_needContainerCast = false;
+        bool m_needArithmeticCast = false;
+        bool m_needTemplate1Cast = false;
+        bool m_needTemplate2Cast = false;
+        bool m_needTemplate3Cast = false;
+        bool m_needTemplate4Cast = false;
+        bool m_needTemplate5Cast = false;
+        bool m_needTimeCast = false;
+        bool m_needSmartPointerCast = false;
+        bool m_needJObjectWrapper = false;
+        bool m_needStringAPI = false;
+        bool m_needBufferAPI = false;
+        bool m_needArrayAPI = false;
+        bool m_needJavaAPI = false;
 };
 
 typedef QList<MetaEnum *> MetaEnumList;
@@ -1298,6 +1393,75 @@ class MetaClass : public MetaAttributes {
         const MetaFunction* javaFunctional() const { return m_javaFunctional; }
         void setJavaFunctional(const MetaFunction* javaFunctional) { m_javaFunctional = javaFunctional; }
 
+        bool hasDeprecation() const;
+        void setHasDeprecation(bool newHasDeprecation);
+
+        bool needModelCast() const;
+        void setNeedModelCast(bool newNeedModelCast);
+
+        bool needDBusCast() const;
+        void setNeedDBusCast(bool newNeedDBusCast);
+
+        bool needQmlCast() const;
+        void setNeedQmlCast(bool newNeedQmlCast);
+
+        bool needFutureCast() const;
+        void setNeedFutureCast(bool newNeedFutureCast);
+
+        bool needArrayCast() const;
+        void setNeedArrayCast(bool newNeedArrayCast);
+
+        bool needBufferCast() const;
+        void setNeedBufferCast(bool newNeedBufferCast);
+
+        bool needJObjectWrapper() const;
+        void setNeedJObjectWrapper(bool newNeedJObjectWrapper);
+
+        bool needStringAPI() const;
+        void setNeedStringAPI(bool newNeedStringAPI);
+
+        bool needBufferAPI() const;
+        void setNeedBufferAPI(bool newNeedBufferAPI);
+
+        bool needArrayAPI() const;
+        void setNeedArrayAPI(bool newNeedArrayAPI);
+
+        bool needJavaAPI() const;
+        void setNeedJavaAPI(bool newNeedJavaAPI);
+
+        bool needTimeCast() const;
+        void setNeedTimeCast(bool newNeedTimeCast);
+
+        bool needTemplate2Cast() const;
+        void setNeedTemplate2Cast(bool newNeedTemplate2Cast);
+
+        bool needTemplate1Cast() const;
+        void setNeedTemplate1Cast(bool newNeedTemplate1Cast);
+
+        bool needArithmeticCast() const;
+        void setNeedArithmeticCast(bool newNeedArithmeticCast);
+
+        bool needEnumCast() const;
+        void setNeedEnumCast(bool newNeedEnumCast);
+
+        bool needSmartPointerCast() const;
+        void setNeedSmartPointerCast(bool newNeedSmartPointerCast);
+
+        bool needIteratorCast() const;
+        void setNeedIteratorCast(bool newNeedIteratorCast);
+
+        bool needContainerCast() const;
+        void setNeedContainerCast(bool newNeedContainerCast);
+
+        bool needTemplate3Cast() const;
+        void setNeedTemplate3Cast(bool newNeedTemplate3Cast);
+
+        bool needTemplate4Cast() const;
+        void setNeedTemplate4Cast(bool newNeedTemplate4Cast);
+
+        bool needTemplate5Cast() const;
+        void setNeedTemplate5Cast(bool newNeedTemplate5Cast);
+
     private:
         QSet<QString> getAllUnimplmentablePureVirtualFunctions() const;
 
@@ -1377,6 +1541,29 @@ class MetaClass : public MetaAttributes {
         QString m_javaFunctionalInterface;
         QList<uint> m_javaFunctionalInterfaceParameterTypes;
         const MetaFunction* m_javaFunctional = nullptr;
+        bool m_hasDeprecation = false;
+        bool m_needModelCast = false;
+        bool m_needDBusCast = false;
+        bool m_needQmlCast = false;
+        bool m_needFutureCast = false;
+        bool m_needArrayCast = false;
+        bool m_needBufferCast = false;
+        bool m_needEnumCast = false;
+        bool m_needArithmeticCast = false;
+        bool m_needIteratorCast = false;
+        bool m_needContainerCast = false;
+        bool m_needTemplate1Cast = false;
+        bool m_needTemplate2Cast = false;
+        bool m_needTemplate3Cast = false;
+        bool m_needTemplate4Cast = false;
+        bool m_needTemplate5Cast = false;
+        bool m_needSmartPointerCast = false;
+        bool m_needTimeCast = false;
+        bool m_needJObjectWrapper = false;
+        bool m_needStringAPI = false;
+        bool m_needBufferAPI = false;
+        bool m_needArrayAPI = false;
+        bool m_needJavaAPI = false;
 };
 
 class QPropertySpec {

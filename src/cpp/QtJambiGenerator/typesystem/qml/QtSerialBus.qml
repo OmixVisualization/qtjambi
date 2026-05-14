@@ -127,7 +127,7 @@ TypeSystem{
                     metaName: "%3"
                 }
                 Text{content: "if(!%0 && !%3.isEmpty()){\n"+
-                              "    Java::QtSerialBus::QCanBusException::throwNew(%env, %3 QTJAMBI_STACKTRACEINFO );\n"+
+                              "    JavaException::raise<Java::QtSerialBus::QCanBusException>(%env, %3 QTJAMBI_STACKTRACEINFO );\n"+
                               "}"}
             }
             InjectCode{
@@ -175,7 +175,7 @@ TypeSystem{
                     metaName: "%2"
                 }
                 Text{content: "if(!%2.isEmpty()){\n"+
-                              "    Java::QtSerialBus::QCanBusException::throwNew(%env, %2 QTJAMBI_STACKTRACEINFO );\n"+
+                              "    JavaException::raise<Java::QtSerialBus::QCanBusException>(%env, %2 QTJAMBI_STACKTRACEINFO );\n"+
                               "}"}
             }
             InjectCode{
@@ -341,7 +341,7 @@ TypeSystem{
                     metaName: "%2"
                 }
                 Text{content: "if(!%0 && !%2.isEmpty()){\n"+
-                              "    Java::QtSerialBus::QCanBusException::throwNew(%env, %2 QTJAMBI_STACKTRACEINFO );\n"+
+                              "    JavaException::raise<Java::QtSerialBus::QCanBusException>(%env, %2 QTJAMBI_STACKTRACEINFO );\n"+
                               "}"}
             }
             InjectCode{
@@ -389,7 +389,7 @@ TypeSystem{
                     metaName: "%1"
                 }
                 Text{content: "if(!%1.isEmpty()){\n"+
-                              "    Java::QtSerialBus::QCanBusException::throwNew(%env, %1 QTJAMBI_STACKTRACEINFO );\n"+
+                              "    JavaException::raise<Java::QtSerialBus::QCanBusException>(%env, %1 QTJAMBI_STACKTRACEINFO );\n"+
                               "}"}
             }
             InjectCode{

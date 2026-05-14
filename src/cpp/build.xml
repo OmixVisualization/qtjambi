@@ -84,7 +84,7 @@
 					<then>
 						<java fork="true" jvm="${tools.jvm}" module="qtjambi.deployer" failonerror="true">
 							<jvmarg value="-Djava.library.path=${librarypath}"/>
-							<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/tmp"/>
+							<jvmarg value="-Dio.qt.deploymentdir=${buildDir}/tmp"/>
 							<!--jvmarg value="-Dio.qt.verbose-loading=true"/-->
 							<jvmarg value="${XstartOnFirstThread}"/>
 							<jvmarg value="${JVMArg.enable.native.access}"/>
@@ -103,7 +103,7 @@
 					<else>
 						<java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
 							<jvmarg value="-Djava.library.path=${librarypath}"/>
-							<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/tmp"/>
+							<jvmarg value="-Dio.qt.deploymentdir=${buildDir}/tmp"/>
 							<!--jvmarg value="-Dio.qt.verbose-loading=true"/-->
 							<jvmarg value="${XstartOnFirstThread}"/>
 							<!--jvmarg value="-Xint"/>
@@ -121,7 +121,7 @@
 				</if>
 			</try>
 			<finally>
-				<delete dir="${outputDir}/tmp"/>
+				<delete dir="${buildDir}/tmp"/>
 			</finally>
 		</trycatch>
 		<if>
@@ -240,13 +240,13 @@
 	<if>
 		<equals arg1="${qtjambi.osname}" arg2="android"/>
 		<then>
-			<mkdir dir="${deploymentdir}/platforms/android-arm/release"/>
-			<mkdir dir="${deploymentdir}/platforms/android-arm64/release"/>
-			<mkdir dir="${deploymentdir}/platforms/android-x86/release"/>
-			<mkdir dir="${deploymentdir}/platforms/android-x64/release"/>
+			<mkdir dir="${buildDir}/android-arm/release"/>
+			<mkdir dir="${buildDir}/android-arm64/release"/>
+			<mkdir dir="${buildDir}/android-x86/release"/>
+			<mkdir dir="${buildDir}/android-x64/release"/>
 		</then>
 		<else>
-			<mkdir dir="${deploymentdir}/platforms/${qtjambi.osname}/release"/>
+			<mkdir dir="${platformBuildDir}/release"/>
 		</else>
 	</if>
 	<ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
@@ -336,13 +336,13 @@
 	<if>
 		<equals arg1="${qtjambi.osname}" arg2="android"/>
 		<then>
-			<mkdir dir="${deploymentdir}/platforms/android-arm/debug"/>
-			<mkdir dir="${deploymentdir}/platforms/android-arm64/debug"/>
-			<mkdir dir="${deploymentdir}/platforms/android-x86/debug"/>
-			<mkdir dir="${deploymentdir}/platforms/android-x64/debug"/>
+			<mkdir dir="${buildDir}/android-arm/debug"/>
+			<mkdir dir="${buildDir}/android-arm64/debug"/>
+			<mkdir dir="${buildDir}/android-x86/debug"/>
+			<mkdir dir="${buildDir}/android-x64/debug"/>
 		</then>
 		<else>
-			<mkdir dir="${deploymentdir}/platforms/${qtjambi.osname}/debug"/>
+			<mkdir dir="${platformBuildDir}/debug"/>
 		</else>
 	</if>
 	<ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
@@ -427,7 +427,7 @@
 			</or>
 		</and>
         <then>
-			<create-native-deployment outputDirectory="${deploymentdir}/platforms/${qtjambi.osname}/${platformjar.configuration}" debug="${platformjar.debug}" module="containeraccess" plugin="true" forcedebuginfo="false"/>
+			<create-native-deployment outputDirectory="${platformBuildDir}/${platformjar.configuration}" debug="${platformjar.debug}" module="containeraccess" plugin="true" forcedebuginfo="false"/>
 			<jar destfile="${deploymentdir}/qtjambi-plugin-containeraccess-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
 				<manifest>
 					<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
@@ -437,7 +437,7 @@
 					<attribute name="Bundle-Version"         value="${qtjambi.jar.version}"/>
 					<attribute name="Bundle-ManifestVersion" value="2"/>
 				</manifest>
-				<fileset dir="${deploymentdir}/platforms/${qtjambi.osname}/${platformjar.configuration}" includes="${library.includes}"/>
+				<fileset dir="${platformBuildDir}/${platformjar.configuration}" includes="${library.includes}"/>
 			</jar>
         </then>
     </if>
@@ -490,7 +490,7 @@
 							<then>
 								<java fork="true" jvm="${tools.jvm}" module="qtjambi.deployer" failonerror="true">
 									<jvmarg value="-Djava.library.path=${librarypath}"/>
-									<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
+									<jvmarg value="-Dio.qt.deploymentdir=${buildDir}/${qtjambi.osname}/tmp"/>
 									<jvmarg value="${XstartOnFirstThread}"/>
 									<jvmarg value="${JVMArg.enable.native.access}"/>
 									<jvmarg value="-Dqtjambi.verbose-loading=false"/>
@@ -518,7 +518,7 @@
 							<else>
 								<java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
 									<jvmarg value="-Djava.library.path=${librarypath}"/>
-																<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
+										<jvmarg value="-Dio.qt.deploymentdir=${buildDir}/${qtjambi.osname}/tmp"/>
 									<jvmarg value="${XstartOnFirstThread}"/>
 									<jvmarg value="${JVMArg.enable.native.access}"/>
 									<!--jvmarg value="-Xint"/>
@@ -553,7 +553,7 @@
 						</if>
 					</try>
 					<finally>
-                                                <delete dir="${outputDir}/${qtjambi.osname}/tmp" failonerror="false"/>
+                        <delete dir="${buildDir}/${qtjambi.osname}/tmp" failonerror="false"/>
 					</finally>
 				</trycatch>
 			</then>

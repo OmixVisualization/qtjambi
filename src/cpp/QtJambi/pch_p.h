@@ -33,6 +33,21 @@
 
 #include <QtCore/QtCore>
 #include "qtjambiapi.h"
+#include "qtjambiapi_array.h"
+#include "qtjambiapi_convert.h"
+#include "qtjambiapi_model.h"
+#include "qtjambiapi_smartpointer.h"
+#include "qtjambiapi_string.h"
+#include "qtjambiapi_time.h"
+#include "qtjambiapi_variant.h"
+#include "qtjambiapi_iterator.h"
+#include "qtjambiapi_container.h"
+#include "qtjambiapi_construct.h"
+#include "qtjambiapi_optional.h"
+#include "qtjambiapi_boxed.h"
+#include "qtjambiapi_nativeid.h"
+#include "qtjambiapi_ownership.h"
+#include "qtjambiapi_name.h"
 #ifdef Q_OS_ANDROID
 #include "androidapi.h"
 #endif
@@ -49,8 +64,8 @@
 #include "javaapi.h"
 #include "javaarrays.h"
 #include "javabuffers.h"
-#include "javainvalidate.h"
 #include "javastrings.h"
+#include "javainvalidate.h"
 #include "javautils.h"
 #include "jnienvironment.h"
 #include "jobjectwrapper.h"
@@ -73,9 +88,10 @@
 #include "typeentry_p.h"
 #include "typemanager_p.h"
 #include "typetests.h"
-#include "typeutils.h"
+#include "containerutils.h"
 #include "utils.h"
 #include "utils_p.h"
+#include "futureapi.h"
 #include <stdlib.h>
 #include <unordered_set>
 #include <unordered_map>

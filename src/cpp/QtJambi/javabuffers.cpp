@@ -309,6 +309,11 @@ void* JBufferConstData::take(){
 }
 
 JBufferConstData::~JBufferConstData(){
+    jthrowable exn = nullptr;
+    if(m_env->ExceptionCheck()){
+        exn = m_env->ExceptionOccurred();
+        m_env->ExceptionClear();
+    }
     try{
         if(m_buffer_object){
             if(m_data && !m_isdirect && m_capacity>0){
@@ -359,6 +364,9 @@ JBufferConstData::~JBufferConstData(){
         qCWarning(DebugAPI::internalCategory, "%s", e.what());
     } catch (...) {
     }
+    if(exn){
+        m_env->Throw(exn);
+    }
 }
 
 qsizetype JBufferConstData::size() const{
@@ -397,6 +405,11 @@ JBufferData::JBufferData(JNIEnv *env, jobject buffer_object) :
 }
 
 JBufferData::~JBufferData(){
+    jthrowable exn = nullptr;
+    if(m_env->ExceptionCheck()){
+        exn = m_env->ExceptionOccurred();
+        m_env->ExceptionClear();
+    }
     try{
         if(m_buffer_object && !m_isdirect && m_capacity>0){
             jobject bufferArray = nullptr;
@@ -514,6 +527,9 @@ JBufferData::~JBufferData(){
     } catch (const std::exception& e) {
         qCWarning(DebugAPI::internalCategory, "%s", e.what());
     } catch (...) {
+    }
+    if(exn){
+        m_env->Throw(exn);
     }
 }
 
@@ -803,7 +819,15 @@ PersistentJBufferConstData::~PersistentJBufferConstData(){
     try{
         if(m_data && m_data->m_buffer_object){
             if(DefaultJniEnvironment env{500}){
+                jthrowable exn = nullptr;
+                if(env->ExceptionCheck()){
+                    exn = env->ExceptionOccurred();
+                    env->ExceptionClear();
+                }
                 clear(env);
+                if(exn){
+                    env->Throw(exn);
+                }
             }
         }
     } catch (const std::exception& e) {
@@ -906,7 +930,15 @@ PersistentJBufferData::~PersistentJBufferData(){
     try{
         if(m_data && m_data->m_buffer_object && m_data->m_capacity>0){
             if(DefaultJniEnvironment env{500}){
+                jthrowable exn = nullptr;
+                if(env->ExceptionCheck()){
+                    exn = env->ExceptionOccurred();
+                    env->ExceptionClear();
+                }
                 clear(env);
+                if(exn){
+                    env->Throw(exn);
+                }
             }
         }
     } catch (const std::exception& e) {
@@ -1453,6 +1485,11 @@ DataJBuffer::DataJBuffer(JNIEnv *env, const char32_t* data, qsizetype capacity)
 }
 
 DataJBuffer::~DataJBuffer(){
+    jthrowable exn = nullptr;
+    if(m_env->ExceptionCheck()){
+        exn = m_env->ExceptionOccurred();
+        m_env->ExceptionClear();
+    }
     try{
         if(m_buffer_object)
             truncateBuffer(m_env, m_buffer_object);
@@ -1461,6 +1498,9 @@ DataJBuffer::~DataJBuffer(){
     } catch (const std::exception& e) {
         qCWarning(DebugAPI::internalCategory, "%s", e.what());
     } catch (...) {
+    }
+    if(exn){
+        m_env->Throw(exn);
     }
 }
 
@@ -1621,6 +1661,11 @@ PersistentDataJBuffer::PersistentDataJBuffer(JNIEnv *env, const char32_t* data, 
 PersistentDataJBuffer::~PersistentDataJBuffer(){
     if(Q_LIKELY(m_data) && m_data->m_buffer){
         if(DefaultJniEnvironment env{100}){
+            jthrowable exn = nullptr;
+            if(env->ExceptionCheck()){
+                exn = env->ExceptionOccurred();
+                env->ExceptionClear();
+            }
             try{
                 truncateBuffer(env, m_data->m_buffer.object(env));
                 m_data->m_buffer.clear(env);
@@ -1629,6 +1674,9 @@ PersistentDataJBuffer::~PersistentDataJBuffer(){
             } catch (const std::exception& e) {
                 qCWarning(DebugAPI::internalCategory, "%s", e.what());
             } catch (...) {
+            }
+            if(exn){
+                env->Throw(exn);
             }
         }
     }

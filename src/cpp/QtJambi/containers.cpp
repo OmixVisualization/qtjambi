@@ -31,6 +31,8 @@
 QT_WARNING_DISABLE_DEPRECATED
 
 #include "pch_p.h"
+#include "containeraccess_associative.h"
+#include "qtjambi_cast_arithmetic.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
 jobject QtJambiAPI::convertQSpanToJavaObject(JNIEnv *env,
@@ -263,7 +265,7 @@ jobject ContainerAPI::objectFromQList(JNIEnv *env,
     jobject returned = nullptr;
     if(containerAccess->elementMetaType().id()==QMetaType::QString){
         containerAccess->dispose();
-        containerAccess = QtJambiPrivate::QListAccess<QString>::newInstance();
+        containerAccess = QListAccess<QString>::newInstance();
         returned = Java::QtCore::QStringList::newInstance(env, nullptr);
         link = QtJambiLink::createLinkForNativeObject(env, returned, const_cast<void*>(listPtr),
                                                       LINK_NAME_ARG("QStringList")
@@ -476,7 +478,7 @@ jobject QtJambiAPI::convertQStringListToJavaObject(JNIEnv *env,
         }
     }
     jobject returned = nullptr;
-    AbstractListAccess* containerAccess = QtJambiPrivate::QListAccess<QString>::newInstance();
+    AbstractListAccess* containerAccess = QListAccess<QString>::newInstance();
     returned = Java::QtCore::QStringList::newInstance(env, nullptr);
 
     QSharedPointer<QtJambiLink> link;
@@ -528,7 +530,7 @@ jobject convertQStringListToJavaObject(JNIEnv *env,
         }
     }
 
-    AbstractListAccess* containerAccess = QtJambiPrivate::QListAccess<QString>::newInstance();
+    AbstractListAccess* containerAccess = QListAccess<QString>::newInstance();
 
     jobject returned = nullptr;
     returned = Java::QtCore::QStringList::newInstance(env, nullptr);
@@ -1184,18 +1186,18 @@ void CoreAPI::initializeQList(JNIEnv *env, jobject object, jclass elementType, Q
                 isNativeContainer = true;
             }
         }else{
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
         }
     }
     if(!containerAccess || elementMetaTypeId!=InvalidNativeID){
-        const QMetaType& elementMetaType = QtJambiAPI::objectReferenceFromNativeId<QMetaType>(env, elementMetaTypeId);
+        const QMetaType& elementMetaType = ::qtjambi_cast<const QMetaType&>(elementMetaTypeId);
         if(elementMetaType.id()==QMetaType::UnknownType)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be type of %1.").arg("QList") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("QMetaType::UnknownType cannot be type of %1.").arg("QList") QTJAMBI_STACKTRACEINFO );
         if(elementMetaType.id()==QMetaType::Void)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be type of %1.").arg("QList") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("void cannot be type of %1.").arg("QList") QTJAMBI_STACKTRACEINFO );
         const SuperTypeInfos superTypeInfos = SuperTypeInfos::fromClass(env, env->GetObjectClass(object));
         if(superTypeInfos.size()>1)
-            Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QList") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseError(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QList") QTJAMBI_STACKTRACEINFO );
         if(!containerAccess){
             {
                 auto _containerAccess = createContainerAccess(SequentialContainerType::QList, elementMetaType);
@@ -1254,7 +1256,7 @@ void CoreAPI::initializeQList(JNIEnv *env, jobject object, jclass elementType, Q
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
             }
             listPtr = containerAccess->createContainer();
         }
@@ -1300,20 +1302,20 @@ void CoreAPI::initializeQSet(JNIEnv *env, jobject object, jclass elementType, Qt
                 isNativeContainer = true;
             }
         }else{
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
         }
     }
     if(!containerAccess || elementMetaTypeId!=InvalidNativeID){
-        const QMetaType& elementMetaType = QtJambiAPI::objectReferenceFromNativeId<QMetaType>(env, elementMetaTypeId);
+        const QMetaType& elementMetaType = ::qtjambi_cast<const QMetaType&>(elementMetaTypeId);
         if(elementMetaType.id()==QMetaType::UnknownType)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be type of %1.").arg("QSet") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("QMetaType::UnknownType cannot be type of %1.").arg("QSet") QTJAMBI_STACKTRACEINFO );
         if(elementMetaType.id()==QMetaType::QVariant)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QVariant cannot be type of %1.").arg("QSet") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("QVariant cannot be type of %1.").arg("QSet") QTJAMBI_STACKTRACEINFO );
         if(elementMetaType.id()==QMetaType::Void)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be type of %1.").arg("QSet") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("void cannot be type of %1.").arg("QSet") QTJAMBI_STACKTRACEINFO );
         const SuperTypeInfos superTypeInfos = SuperTypeInfos::fromClass(env, env->GetObjectClass(object));
         if(superTypeInfos.size()>1)
-            Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QSet") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseError(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QSet") QTJAMBI_STACKTRACEINFO );
         if(!containerAccess){
             switch(elementMetaType.id()){
                 case QMetaType::VoidStar:
@@ -1382,7 +1384,7 @@ void CoreAPI::initializeQSet(JNIEnv *env, jobject object, jclass elementType, Qt
                                                                                                                         );
                         QtJambiUtils::QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, elementMetaType);
                         if(!hashFunction){
-                            Java::QtJambi::QNoImplementationException::throwNew(env, QString("Unable to create QSet of %1 because of missing hash function.").arg(QtJambiAPI::getClassNamePrintable(env, elementType)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseQNoImplementationException(env, QString("Unable to create QSet of %1 because of missing hash function.").arg(QtJambiAPI::getClassNamePrintable(env, elementType)) QTJAMBI_STACKTRACEINFO );
                         }
                         const std::type_info* typeId = getTypeByQtName(elementMetaType.name());
                         if(!typeId){
@@ -1418,7 +1420,7 @@ void CoreAPI::initializeQSet(JNIEnv *env, jobject object, jclass elementType, Qt
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
             }
             listPtr = containerAccess->createContainer();
         }
@@ -1461,23 +1463,23 @@ void CoreAPI::initializeQHash(JNIEnv *env, jobject object, jclass keyType, QtJam
                 isNativeContainer = true;
             }
         }else{
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
         }
     }
     if(!containerAccess || keyMetaTypeId!=InvalidNativeID || valueMetaTypeId!=InvalidNativeID){
-        const QMetaType& keyMetaType = QtJambiAPI::objectReferenceFromNativeId<QMetaType>(env, keyMetaTypeId);
-        const QMetaType& valueMetaType = QtJambiAPI::objectReferenceFromNativeId<QMetaType>(env, valueMetaTypeId);
+        const QMetaType& keyMetaType = ::qtjambi_cast<const QMetaType&>(keyMetaTypeId);
+        const QMetaType& valueMetaType = ::qtjambi_cast<const QMetaType&>(valueMetaTypeId);
         if(keyMetaType.id()==QMetaType::UnknownType)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be key type of %1.").arg("QHash") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("QMetaType::UnknownType cannot be key type of %1.").arg("QHash") QTJAMBI_STACKTRACEINFO );
         if(keyMetaType.id()==QMetaType::Void)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be key type of %1.").arg("QHash") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("void cannot be key type of %1.").arg("QHash") QTJAMBI_STACKTRACEINFO );
         if(valueMetaType.id()==QMetaType::UnknownType)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be value type of %1.").arg("QHash") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("QMetaType::UnknownType cannot be value type of %1.").arg("QHash") QTJAMBI_STACKTRACEINFO );
         if(valueMetaType.id()==QMetaType::Void)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be value type of %1.").arg("QHash") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("void cannot be value type of %1.").arg("QHash") QTJAMBI_STACKTRACEINFO );
         const SuperTypeInfos superTypeInfos = SuperTypeInfos::fromClass(env, env->GetObjectClass(object));
         if(superTypeInfos.size()>1)
-            Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QHash") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseError(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QHash") QTJAMBI_STACKTRACEINFO );
         keyType = getGlobalClassRef(env, keyType);
         valueType = getGlobalClassRef(env, valueType);
         if(!containerAccess){
@@ -1523,7 +1525,7 @@ void CoreAPI::initializeQHash(JNIEnv *env, jobject object, jclass keyType, QtJam
             QtJambiUtils::QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, keyMetaType);
             QtJambiUtils::QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, valueMetaType);
             if(!hashFunction1){
-                Java::QtJambi::QNoImplementationException::throwNew(env, QString("Unable to create QHash for %1 because of missing hash function.").arg(QtJambiAPI::getClassNamePrintable(env, keyType)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseQNoImplementationException(env, QString("Unable to create QHash for %1 because of missing hash function.").arg(QtJambiAPI::getClassNamePrintable(env, keyType)) QTJAMBI_STACKTRACEINFO );
             }
             QSharedPointer<AbstractContainerAccess> keyNestedContainerAccess = findContainerAccess(keyMetaType);
             QSharedPointer<AbstractContainerAccess> valueNestedContainerAccess = findContainerAccess(valueMetaType);
@@ -1572,7 +1574,7 @@ void CoreAPI::initializeQHash(JNIEnv *env, jobject object, jclass keyType, QtJam
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
             }
             listPtr = containerAccess->createContainer();
         }
@@ -1618,23 +1620,23 @@ void CoreAPI::initializeQMultiHash(JNIEnv *env, jobject object, jclass keyType, 
                 isNativeContainer = true;
             }
         }else{
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
         }
     }
     if(!containerAccess || keyMetaTypeId!=InvalidNativeID || valueMetaTypeId!=InvalidNativeID){
-        const QMetaType& keyMetaType = QtJambiAPI::objectReferenceFromNativeId<QMetaType>(env, keyMetaTypeId);
-        const QMetaType& valueMetaType = QtJambiAPI::objectReferenceFromNativeId<QMetaType>(env, valueMetaTypeId);
+        const QMetaType& keyMetaType = ::qtjambi_cast<const QMetaType&>(keyMetaTypeId);
+        const QMetaType& valueMetaType = ::qtjambi_cast<const QMetaType&>(valueMetaTypeId);
         if(keyMetaType.id()==QMetaType::UnknownType)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be key type of %1.").arg("QMultiHash") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("QMetaType::UnknownType cannot be key type of %1.").arg("QMultiHash") QTJAMBI_STACKTRACEINFO );
         if(keyMetaType.id()==QMetaType::Void)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be key type of %1.").arg("QMultiHash") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("void cannot be key type of %1.").arg("QMultiHash") QTJAMBI_STACKTRACEINFO );
         if(valueMetaType.id()==QMetaType::UnknownType)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be value type of %1.").arg("QMultiHash") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("QMetaType::UnknownType cannot be value type of %1.").arg("QMultiHash") QTJAMBI_STACKTRACEINFO );
         if(valueMetaType.id()==QMetaType::Void)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be value type of %1.").arg("QMultiHash") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("void cannot be value type of %1.").arg("QMultiHash") QTJAMBI_STACKTRACEINFO );
         const SuperTypeInfos superTypeInfos = SuperTypeInfos::fromClass(env, env->GetObjectClass(object));
         if(superTypeInfos.size()>1)
-            Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMultiHash") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseError(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMultiHash") QTJAMBI_STACKTRACEINFO );
         keyType = getGlobalClassRef(env, keyType);
         valueType = getGlobalClassRef(env, valueType);
         if(!containerAccess){
@@ -1728,7 +1730,7 @@ void CoreAPI::initializeQMultiHash(JNIEnv *env, jobject object, jclass keyType, 
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
             }
             listPtr = containerAccess->createContainer();
         }
@@ -1778,23 +1780,23 @@ void CoreAPI::initializeQMap(JNIEnv *env, jobject object, jclass keyType, QtJamb
                 isNativeContainer = true;
             }
         }else{
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
         }
     }
     if(!containerAccess || keyMetaTypeId!=InvalidNativeID || valueMetaTypeId!=InvalidNativeID){
-        const QMetaType& keyMetaType = QtJambiAPI::objectReferenceFromNativeId<QMetaType>(env, keyMetaTypeId);
-        const QMetaType& valueMetaType = QtJambiAPI::objectReferenceFromNativeId<QMetaType>(env, valueMetaTypeId);
+        const QMetaType& keyMetaType = ::qtjambi_cast<const QMetaType&>(keyMetaTypeId);
+        const QMetaType& valueMetaType = ::qtjambi_cast<const QMetaType&>(valueMetaTypeId);
         if(keyMetaType.id()==QMetaType::UnknownType)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be key type of %1.").arg("QMap") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("QMetaType::UnknownType cannot be key type of %1.").arg("QMap") QTJAMBI_STACKTRACEINFO );
         if(keyMetaType.id()==QMetaType::Void)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be key type of %1.").arg("QMap") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("void cannot be key type of %1.").arg("QMap") QTJAMBI_STACKTRACEINFO );
         if(valueMetaType.id()==QMetaType::UnknownType)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be value type of %1.").arg("QMap") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("QMetaType::UnknownType cannot be value type of %1.").arg("QMap") QTJAMBI_STACKTRACEINFO );
         if(valueMetaType.id()==QMetaType::Void)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be value type of %1.").arg("QMap") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("void cannot be value type of %1.").arg("QMap") QTJAMBI_STACKTRACEINFO );
         const SuperTypeInfos superTypeInfos = SuperTypeInfos::fromClass(env, env->GetObjectClass(object));
         if(superTypeInfos.size()>1)
-            Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMap") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseError(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMap") QTJAMBI_STACKTRACEINFO );
         keyType = getGlobalClassRef(env, keyType);
         valueType = getGlobalClassRef(env, valueType);
         if(!containerAccess){
@@ -1887,7 +1889,7 @@ void CoreAPI::initializeQMap(JNIEnv *env, jobject object, jclass keyType, QtJamb
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
             }
             listPtr = containerAccess->createContainer();
         }
@@ -1931,23 +1933,23 @@ void CoreAPI::initializeQMultiMap(JNIEnv *env, jobject object, jclass keyType, Q
                 isNativeContainer = true;
             }
         }else{
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
         }
     }
     if(!containerAccess || keyMetaTypeId!=InvalidNativeID || valueMetaTypeId!=InvalidNativeID){
-        const QMetaType& keyMetaType = QtJambiAPI::objectReferenceFromNativeId<QMetaType>(env, keyMetaTypeId);
-        const QMetaType& valueMetaType = QtJambiAPI::objectReferenceFromNativeId<QMetaType>(env, valueMetaTypeId);
+        const QMetaType& keyMetaType = ::qtjambi_cast<const QMetaType&>(keyMetaTypeId);
+        const QMetaType& valueMetaType = ::qtjambi_cast<const QMetaType&>(valueMetaTypeId);
         if(keyMetaType.id()==QMetaType::UnknownType)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be key type of %1.").arg("QMultiMap") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("QMetaType::UnknownType cannot be key type of %1.").arg("QMultiMap") QTJAMBI_STACKTRACEINFO );
         if(keyMetaType.id()==QMetaType::Void)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be key type of %1.").arg("QMultiMap") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("void cannot be key type of %1.").arg("QMultiMap") QTJAMBI_STACKTRACEINFO );
         if(valueMetaType.id()==QMetaType::UnknownType)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be value type of %1.").arg("QMultiMap") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("QMetaType::UnknownType cannot be value type of %1.").arg("QMultiMap") QTJAMBI_STACKTRACEINFO );
         if(valueMetaType.id()==QMetaType::Void)
-            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be value type of %1.").arg("QMultiMap") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("void cannot be value type of %1.").arg("QMultiMap") QTJAMBI_STACKTRACEINFO );
         const SuperTypeInfos superTypeInfos = SuperTypeInfos::fromClass(env, env->GetObjectClass(object));
         if(superTypeInfos.size()>1)
-            Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMultiMap") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseError(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMultiMap") QTJAMBI_STACKTRACEINFO );
         keyType = getGlobalClassRef(env, keyType);
         valueType = getGlobalClassRef(env, valueType);
         if(!containerAccess){
@@ -2040,7 +2042,7 @@ void CoreAPI::initializeQMultiMap(JNIEnv *env, jobject object, jclass keyType, Q
         }else{
             if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
                 containerAccess->dispose();
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, other)) QTJAMBI_STACKTRACEINFO );
             }
             listPtr = containerAccess->createContainer();
         }
@@ -2131,9 +2133,9 @@ bool ContainerAPI::testQ##NAME(JNIEnv *env, jobject collection, const QMetaType&
                     return compareMetaTypes(containerAccess->elementMetaType(), expectedElementMetaType);\
                 }\
             }else\
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, collection)) QTJAMBI_STACKTRACEINFO );\
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, collection)) QTJAMBI_STACKTRACEINFO );\
         }else if(!env->IsInstanceOf(collection, Java::Runtime::Collection::getClass(env)))\
-            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, collection), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Collection::getClass(env))) QTJAMBI_STACKTRACEINFO );\
+            JavaException::raiseIllegalArgumentException(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, collection), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Collection::getClass(env))) QTJAMBI_STACKTRACEINFO );\
     }\
     return false;\
 }
@@ -2153,9 +2155,9 @@ bool ContainerAPI::testQ##NAME(JNIEnv *env, jobject mapObject, const QMetaType& 
                     return compareMetaTypes(containerAccess->keyMetaType(), expectedKeyMetaType) && compareMetaTypes(containerAccess->valueMetaType(), expectedValueMetaType);\
                 }\
             }else\
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject)) QTJAMBI_STACKTRACEINFO );\
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject)) QTJAMBI_STACKTRACEINFO );\
         }else if(!env->IsInstanceOf(mapObject, Java::Runtime::Map::getClass(env)))\
-            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );\
+            JavaException::raiseIllegalArgumentException(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );\
     }\
     return false;\
 }
@@ -2175,9 +2177,9 @@ bool ContainerAPI::testQ##NAME(JNIEnv *env, jobject mapObject, const QMetaType& 
                     return compareMetaTypes(containerAccess->keyMetaType(), expectedKeyMetaType) && compareMetaTypes(containerAccess->valueMetaType(), expectedValueMetaType);\
                 }\
             }else\
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject)) QTJAMBI_STACKTRACEINFO );\
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject)) QTJAMBI_STACKTRACEINFO );\
         }else if(!env->IsInstanceOf(mapObject, Java::Runtime::Map::getClass(env)))\
-            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );\
+            JavaException::raiseIllegalArgumentException(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );\
     }\
     return false;\
 }
@@ -2200,9 +2202,9 @@ bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject collection, const QMetaType
                     }\
                 }\
             }else\
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, collection)) QTJAMBI_STACKTRACEINFO );\
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, collection)) QTJAMBI_STACKTRACEINFO );\
         }else if(!env->IsInstanceOf(collection, Java::Runtime::Collection::getClass(env)))\
-            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, collection), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Collection::getClass(env))) QTJAMBI_STACKTRACEINFO );\
+            JavaException::raiseIllegalArgumentException(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, collection), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Collection::getClass(env))) QTJAMBI_STACKTRACEINFO );\
     }\
     return false;\
 } \
@@ -2219,9 +2221,9 @@ bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject collection, const QMetaType
                 }\
             }\
         }else\
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, collection)) QTJAMBI_STACKTRACEINFO );\
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, collection)) QTJAMBI_STACKTRACEINFO );\
     }else if(!env->IsInstanceOf(collection, Java::Runtime::Collection::getClass(env)))\
-        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, collection), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Collection::getClass(env))) QTJAMBI_STACKTRACEINFO );\
+        JavaException::raiseIllegalArgumentException(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, collection), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Collection::getClass(env))) QTJAMBI_STACKTRACEINFO );\
     }\
     return false;\
 }
@@ -2244,9 +2246,9 @@ bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject mapObject, const QMetaType&
                     }\
                 }\
             }else\
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject)) QTJAMBI_STACKTRACEINFO );\
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject)) QTJAMBI_STACKTRACEINFO );\
         }else if(!env->IsInstanceOf(mapObject, Java::Runtime::Map::getClass(env)))\
-            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );\
+            JavaException::raiseIllegalArgumentException(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );\
     }\
     return false;\
 }\
@@ -2263,9 +2265,9 @@ bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject mapObject, const QMetaType&
                 }\
             }\
         }else\
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject)) QTJAMBI_STACKTRACEINFO );\
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject)) QTJAMBI_STACKTRACEINFO );\
     }else if(!env->IsInstanceOf(mapObject, Java::Runtime::Map::getClass(env)))\
-        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );\
+        JavaException::raiseIllegalArgumentException(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );\
     }\
     return false;\
 }
@@ -2288,9 +2290,9 @@ bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject mapObject, const QMetaType&
                     }\
                 }\
             }else\
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject)) QTJAMBI_STACKTRACEINFO );\
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject)) QTJAMBI_STACKTRACEINFO );\
         }else if(!env->IsInstanceOf(mapObject, Java::Runtime::Map::getClass(env)))\
-            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );\
+            JavaException::raiseIllegalArgumentException(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );\
     }\
     return false;\
 }\
@@ -2307,9 +2309,9 @@ bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject mapObject, const QMetaType&
                 }\
             }\
         }else\
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject)) QTJAMBI_STACKTRACEINFO );\
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject)) QTJAMBI_STACKTRACEINFO );\
     }else if(!env->IsInstanceOf(mapObject, Java::Runtime::Map::getClass(env)))\
-        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );\
+        JavaException::raiseIllegalArgumentException(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, mapObject), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );\
     }\
     return false;\
 }

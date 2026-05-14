@@ -33,6 +33,7 @@
 
 #include <QtCore/QMultiHash>
 #include "containeraccess.h"
+#include "qtjambiapi_iterator.h"
 
 #if defined(QTJAMBI_GENERIC_ACCESS)
 
@@ -40,8 +41,8 @@ namespace ContainerAccessAPI {
 
 template<size_t align1, size_t size1, size_t align2, size_t size2>
 class GenericMultiHashAccess : public AbstractMultiHashAccess, public AbstractNestedAssociativeAccess {
-    typedef typename std::conditional<size1==0, void*, ContainerElement<size1, 0, false, align1>>::type K;
-    typedef typename std::conditional<size2==0, void*, ContainerElement<size2, 1, false, align2>>::type T;
+    typedef std::conditional_t<size1==0, void*, ContainerElement<size1, 0, false, align1>> K;
+    typedef std::conditional_t<size2==0, void*, ContainerElement<size2, 1, false, align2>> T;
     MetaTypeInfo<0,size1==0> m_keyMetaTypeInfo;
     QtJambiUtils::InternalToExternalConverter m_keyInternalToExternalConverter;
     QtJambiUtils::ExternalToInternalConverter m_keyExternalToInternalConverter;
@@ -263,16 +264,16 @@ public:
         return result;
     }
 
-    jint count(JNIEnv * env, const void* container, jobject key) override {
+    qsizetype count(JNIEnv * env, const void* container, jobject key) override {
         QTJAMBI_KEY_VALUE_LOCKER(this);
-        jint result = 0;
+        qsizetype result = 0;
         {
             jvalue _key;
             _key.l = key;
             K _qkey;
             void *_qkeyPtr = &_qkey;
             if(m_keyExternalToInternalConverter(env, nullptr, _key, _qkeyPtr, jValueType::l))
-                result = jint(reinterpret_cast<const QMultiHash<K,T> *>(container)->count(_qkey));
+                result = qsizetype(reinterpret_cast<const QMultiHash<K,T> *>(container)->count(_qkey));
         }
         return result;
     }
@@ -417,9 +418,9 @@ public:
         return false;
     }
 
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key) override {
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override {
         QTJAMBI_KEY_VALUE_LOCKER(this);
-        jint result = 0;
+        qsizetype result = 0;
         {
             jvalue _key;
             _key.l = key;
@@ -432,8 +433,8 @@ public:
         return result;
     }
 
-    jint size(JNIEnv *, const void* container) override {
-        jint result = 0;
+    qsizetype size(JNIEnv *, const void* container) override {
+        qsizetype result = 0;
         QTJAMBI_KEY_VALUE_LOCKER(this);
         result = reinterpret_cast<const QMultiHash<K,T> *>(container)->size();
         return result;
@@ -441,14 +442,14 @@ public:
 
 
 
-    jint capacity(JNIEnv *, const void* container) override {
-        jint result = 0;
+    qsizetype capacity(JNIEnv *, const void* container) override {
+        qsizetype result = 0;
         QTJAMBI_KEY_VALUE_LOCKER(this);
         result = reinterpret_cast<const QMultiHash<K,T> *>(container)->capacity();
         return result;
     }
 
-    void reserve(JNIEnv *, const ContainerInfo& container, jint size) override {
+    void reserve(JNIEnv *, const ContainerInfo& container, qsizetype size) override {
         QTJAMBI_KEY_VALUE_LOCKER(this);
         reinterpret_cast<QMultiHash<K,T> *>(container.container)->reserve(size);
     }
@@ -588,9 +589,9 @@ public:
         return result;
     }
 
-    jint count(JNIEnv *env, const void* container, jobject key, jobject value) override {
+    qsizetype count(JNIEnv *env, const void* container, jobject key, jobject value) override {
         QTJAMBI_KEY_VALUE_LOCKER(this);
-        jint result = 0;
+        qsizetype result = 0;
         {
             jvalue jv;
             jv.l = key;
@@ -601,7 +602,7 @@ public:
                 T _qvalue;
                 void *_qvaluePtr = &_qvalue;
                 if(m_valueExternalToInternalConverter(env, nullptr, jv, _qvaluePtr, jValueType::l)){
-                    result = jint(reinterpret_cast<const QMultiHash<K,T> *>(container)->count(_qkey, _qvalue));
+                    result = qsizetype(reinterpret_cast<const QMultiHash<K,T> *>(container)->count(_qkey, _qvalue));
                 }
             }
         }
@@ -792,9 +793,9 @@ public:
         return result;
     }
 
-    jint remove(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override {
+    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override {
         QTJAMBI_KEY_VALUE_LOCKER(this);
-        jint result = 0;
+        qsizetype result = 0;
         {
             jvalue jv;
             jv.l = key;
@@ -805,7 +806,7 @@ public:
                 T _qvalue;
                 void *_qvaluePtr = &_qvalue;
                 if(m_valueExternalToInternalConverter(env, nullptr, jv, _qvaluePtr, jValueType::l)){
-                    result = jint(reinterpret_cast<QMultiHash<K,T> *>(container.container)->remove(_qkey, _qvalue));
+                    result = qsizetype(reinterpret_cast<QMultiHash<K,T> *>(container.container)->remove(_qkey, _qvalue));
                 }
             }
         }

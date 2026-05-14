@@ -31,6 +31,7 @@
 #define QTJAMBI_THREADAPI_H
 
 #include "global.h"
+#include "qtjambiapi_construct.h"
 
 class QThread;
 
@@ -60,11 +61,6 @@ QTJAMBI_EXPORT void setContextClassLoader(JNIEnv *__jni_env, QtJambiNativeID thr
 
 QTJAMBI_EXPORT jobject getContextClassLoader(JNIEnv *__jni_env, QtJambiNativeID thread_nid);
 
-}
-
-namespace QtJambiAPI{
-enum ConstructorOptions : uchar;
-typedef void (*ConstructorFn)(void*, JNIEnv*, jobject, jvalue*, QtJambiAPI::ConstructorOptions);
 }
 
 class QtJambiThreadShell{

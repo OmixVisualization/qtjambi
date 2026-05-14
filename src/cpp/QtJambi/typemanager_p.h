@@ -38,7 +38,7 @@
 #include <QtCore/QString>
 #include <QtCore/QReadWriteLock>
 #include <functional>
-#include "typeutils.h"
+#include "containerutils.h"
 #include "utils_p.h"
 
 class QtJambiTypeManager {

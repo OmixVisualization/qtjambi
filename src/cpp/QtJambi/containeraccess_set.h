@@ -33,6 +33,7 @@
 
 #include <QtCore/QSet>
 #include "containeraccess.h"
+#include "qtjambiapi_iterator.h"
 
 #if defined(QTJAMBI_GENERIC_ACCESS)
 
@@ -40,7 +41,7 @@ namespace ContainerAccessAPI {
 
 template<size_t _align, size_t _size>
 class GenericSetAccess : public AbstractSetAccess, public AbstractNestedSequentialAccess {
-    typedef typename std::conditional<_size==0, void*, ContainerElement<_size, 0, false, _align>>::type T;
+    typedef std::conditional_t<_size==0, void*, ContainerElement<_size, 0, false, _align>> T;
     MetaTypeInfo<0,_size==0> m_elementMetaTypeInfo;
     QtJambiUtils::InternalToExternalConverter m_internalToExternalConverter;
     QtJambiUtils::ExternalToInternalConverter m_externalToInternalConverter;

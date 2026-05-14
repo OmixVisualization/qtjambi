@@ -746,165 +746,65 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
             signature: "callAttributes(AccessibleTextInterfaceSubclass *, int, int *, int *)"
             ModifyArgument{
                 index: 3
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
             ModifyArgument{
                 index: 4
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
         }
         ModifyFunction{
             signature: "callSelection(AccessibleTextInterfaceSubclass *, int, int *, int *)"
             ModifyArgument{
                 index: 3
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
             ModifyArgument{
                 index: 4
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
         }
         ModifyFunction{
             signature: "callTextAfterOffset(AccessibleTextInterfaceSubclass *, int, QAccessible::TextBoundaryType, int *, int *)"
             ModifyArgument{
                 index: 4
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
             ModifyArgument{
                 index: 5
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
         }
         ModifyFunction{
             signature: "callTextAtOffset(AccessibleTextInterfaceSubclass *, int, QAccessible::TextBoundaryType, int *, int *)"
             ModifyArgument{
                 index: 4
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
             ModifyArgument{
                 index: 5
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
         }
         ModifyFunction{
             signature: "callTextBeforeOffset(AccessibleTextInterfaceSubclass *, int, QAccessible::TextBoundaryType, int *, int *)"
             ModifyArgument{
                 index: 4
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
             ModifyArgument{
                 index: 5
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
         }
     }

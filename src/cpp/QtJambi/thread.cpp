@@ -955,7 +955,7 @@ void ThreadAPI::setDaemon(JNIEnv *env, QtJambiNativeID thread_nid, bool daemon)
 
 bool ThreadAPI::isDaemon(JNIEnv *__jni_env, QtJambiNativeID thread_nid)
 {
-    QThread* thread = QtJambiAPI::objectFromNativeId<QThread>(thread_nid);
+    QThread* thread = qtjambi_cast<QThread*>(thread_nid);
     QtJambiAPI::checkNullPointer(__jni_env, thread);
     QThreadInitializationObjectData* threadInitializationData;
     {
@@ -994,7 +994,7 @@ void ThreadAPI::setName(JNIEnv *__jni_env, QtJambiNativeID thread_nid, jstring n
 
 jstring ThreadAPI::getName(JNIEnv *__jni_env, QtJambiNativeID thread_nid)
 {
-    QThread* thread = QtJambiAPI::objectFromNativeId<QThread>(thread_nid);
+    QThread* thread = qtjambi_cast<QThread*>(thread_nid);
     QtJambiAPI::checkNullPointer(__jni_env, thread);
     QThreadInitializationObjectData* threadInitializationData;
     {
@@ -1009,7 +1009,7 @@ jstring ThreadAPI::getName(JNIEnv *__jni_env, QtJambiNativeID thread_nid)
 
 jobject ThreadAPI::getThreadGroup(JNIEnv *__jni_env, QtJambiNativeID thread_nid)
 {
-    QThread* thread = QtJambiAPI::objectFromNativeId<QThread>(thread_nid);
+    QThread* thread = qtjambi_cast<QThread*>(thread_nid);
     QtJambiAPI::checkNullPointer(__jni_env, thread);
     QThreadInitializationObjectData* threadInitializationData;
     {
@@ -1047,7 +1047,7 @@ void ThreadAPI::setUncaughtExceptionHandler(JNIEnv *__jni_env, QtJambiNativeID t
 
 jobject ThreadAPI::getUncaughtExceptionHandler(JNIEnv *__jni_env, QtJambiNativeID thread_nid)
 {
-    QThread* thread = QtJambiAPI::objectFromNativeId<QThread>(thread_nid);
+    QThread* thread = qtjambi_cast<QThread*>(thread_nid);
     QtJambiAPI::checkNullPointer(__jni_env, thread);
     QThreadInitializationObjectData* threadInitializationData;
     {
@@ -1085,7 +1085,7 @@ void ThreadAPI::setContextClassLoader(JNIEnv *__jni_env, QtJambiNativeID thread_
 
 jobject ThreadAPI::getContextClassLoader(JNIEnv *__jni_env, QtJambiNativeID thread_nid)
 {
-    QThread* thread = QtJambiAPI::objectFromNativeId<QThread>(thread_nid);
+    QThread* thread = qtjambi_cast<QThread*>(thread_nid);
     QtJambiAPI::checkNullPointer(__jni_env, thread);
     QThreadInitializationObjectData* threadInitializationData;
     {
@@ -1136,7 +1136,7 @@ void ThreadPrivate::initializeMainThread(JNIEnv *__jni_env)
 #else
         QThreadObjectData::theMainThreadId.storeRelaxed(QThreadData::get2(currentQThread)->threadId.loadRelaxed());
 #endif
-        qtjambi_cast<jobject>(__jni_env, currentQThread);
+        (void)qtjambi_cast<jobject>(__jni_env, currentQThread);
     }
 }
 

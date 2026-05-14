@@ -673,97 +673,97 @@ bool AutoSpanAccess::hasOwnerFunction(){
     return false;
 }
 
-jobject AutoSpanAccess::createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr)
+jobject AutoSpanAccess::createIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iter)
 {
-    AbstractSequentialIteratorAccess* containerAccess = new AutoSequentialIteratorAccess(m_internalToExternalConverter,
-            [](AutoSequentialIteratorAccess* containerAccess, void*ptr){
-                char* cursor = *reinterpret_cast<char**>(ptr);
-                *reinterpret_cast<char**>(ptr) = cursor+containerAccess->offset();
+    auto* containerAccess = new AutoSequentialIteratorAccess(m_internalToExternalConverter,
+            [](auto*, void*ptr){
+                iterator& cursor = *reinterpret_cast<iterator*>(ptr);
+                ++cursor;
             },
-            [](AutoSequentialIteratorAccess* containerAccess, void*ptr){
-                char* cursor = *reinterpret_cast<char**>(ptr);
-                *reinterpret_cast<char**>(ptr) = cursor-containerAccess->offset();
+            [](auto*, void*ptr){
+                iterator& cursor = *reinterpret_cast<iterator*>(ptr);
+                --cursor;
             },
-            [](AutoSequentialIteratorAccess*,const void*ptr)->const void*{
-                return *reinterpret_cast<char*const*>(ptr);
+            [](auto*,const void*ptr)->const void*{
+                return reinterpret_cast<const iterator*>(ptr)->data();
             },
-            [](AutoSequentialIteratorAccess*,const void*ptr1,const void*ptr2)->bool{
-                return *reinterpret_cast<char*const*>(ptr1)<*reinterpret_cast<char*const*>(ptr2);
+            [](auto*,const void*ptr1,const void*ptr2)->bool{
+                const iterator* cursor1 = reinterpret_cast<const iterator*>(ptr1);
+                const iterator* cursor2 = reinterpret_cast<const iterator*>(ptr2);
+                return cursor1->data()<cursor2->data();
             },
-            [](AutoSequentialIteratorAccess*,const void*ptr1, const void*ptr2)->bool{
-                return *reinterpret_cast<char*const*>(ptr1)==*reinterpret_cast<char*const*>(ptr2);
+            [](auto*,const void*ptr1, const void*ptr2)->bool{
+                const iterator* cursor1 = reinterpret_cast<const iterator*>(ptr1);
+                const iterator* cursor2 = reinterpret_cast<const iterator*>(ptr2);
+                return cursor1->data()==cursor2->data();
             },
             m_externalToInternalConverter,
-            [](AutoSequentialIteratorAccess*,void*ptr)->void*{
-                return *reinterpret_cast<void**>(ptr);
+            [](auto*,void*ptr)->void*{
+                return reinterpret_cast<iterator*>(ptr)->data();
             },
             m_elementMetaType,
             m_offset
         );
-    return QtJambiAPI::convertQSequentialIteratorToJavaObject(env, ownerId, iteratorPtr, [](void* ptr,bool){
-            delete reinterpret_cast<void**>(ptr);
+    return QtJambiAPI::convertQSequentialIteratorToJavaObject(env, ownerId, new iterator(std::move(iter)), [](void* ptr,bool){
+            delete reinterpret_cast<iterator*>(ptr);
         }, containerAccess);
 }
 
-jobject AutoSpanAccess::createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr)
+jobject AutoSpanAccess::createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iter)
 {
-    AutoSequentialConstIteratorAccess<AbstractSequentialConstIteratorAccess>* containerAccess = createAutoSequentialConstIteratorAccess(m_internalToExternalConverter,
-            [](auto* containerAccess, void*ptr){
-                char* cursor = *reinterpret_cast<char**>(ptr);
-                *reinterpret_cast<char**>(ptr) = cursor+containerAccess->offset();
+    auto* containerAccess = createAutoSequentialConstIteratorAccess(m_internalToExternalConverter,
+            [](auto*, void*ptr){
+                iterator& cursor = *reinterpret_cast<iterator*>(ptr);
+                ++cursor;
             },
-            [](auto* containerAccess, void*ptr){
-                char* cursor = *reinterpret_cast<char**>(ptr);
-                *reinterpret_cast<char**>(ptr) = cursor-containerAccess->offset();
+            [](auto*, void*ptr){
+                iterator& cursor = *reinterpret_cast<iterator*>(ptr);
+                --cursor;
             },
             [](auto*,const void*ptr)->const void*{
-                return *reinterpret_cast<char*const*>(ptr);
+                return reinterpret_cast<const iterator*>(ptr)->data();
             },
             [](auto*,const void*ptr1, const void*ptr2)->bool{
-                return *reinterpret_cast<char*const*>(ptr1)<*reinterpret_cast<char*const*>(ptr2);
+                const iterator* cursor1 = reinterpret_cast<const iterator*>(ptr1);
+                const iterator* cursor2 = reinterpret_cast<const iterator*>(ptr2);
+                return cursor1->data()<cursor2->data();
             },
             [](auto*,const void*ptr1, const void*ptr2)->bool{
-                return *reinterpret_cast<char*const*>(ptr1)==*reinterpret_cast<char*const*>(ptr2);
+                const iterator* cursor1 = reinterpret_cast<const iterator*>(ptr1);
+                const iterator* cursor2 = reinterpret_cast<const iterator*>(ptr2);
+                return cursor1->data()==cursor2->data();
             },
             m_elementMetaType,
             m_offset
         );
-    return QtJambiAPI::convertQSequentialIteratorToJavaObject(env, ownerId, iteratorPtr, [](void* ptr,bool){
-            delete reinterpret_cast<void**>(ptr);
+    return QtJambiAPI::convertQSequentialIteratorToJavaObject(env, ownerId, new iterator(std::move(iter)), [](void* ptr,bool){
+            delete reinterpret_cast<iterator*>(ptr);
         }, containerAccess);
 }
 
 jobject AutoSpanAccess::end(JNIEnv * env, const ExtendedContainerInfo& container)
 {
-    QtJambiSpan* p = reinterpret_cast<QtJambiSpan*>(container.container);
-    void* iteratorPtr = new const char*(reinterpret_cast<const char*>(p->begin) + p->size * m_offset);
-    return createIterator(env, container.nativeId, iteratorPtr);
+    return createIterator(env, container.nativeId, end(container.container));
 }
 
 jobject AutoSpanAccess::begin(JNIEnv * env, const ExtendedContainerInfo& container)
 {
     if(m_isConst)
         return end(env, container);
-    QtJambiSpan* p = reinterpret_cast<QtJambiSpan*>(container.container);
-    void* iteratorPtr = new const char*(reinterpret_cast<const char*>(p->begin));
-    return createIterator(env, container.nativeId, iteratorPtr);
+    return createIterator(env, container.nativeId, begin(container.container));
 }
 
 jobject AutoSpanAccess::constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container)
 {
-    const QtJambiSpan* p = reinterpret_cast<const QtJambiSpan*>(container.container);
-    void* iteratorPtr = new const char*(reinterpret_cast<const char*>(p->begin) + p->size * m_offset);
-    return createConstIterator(env, container.nativeId, iteratorPtr);
+    return createConstIterator(env, container.nativeId, end(container.container));
 }
 
 jobject AutoSpanAccess::constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container)
 {
-    const QtJambiSpan* p = reinterpret_cast<const QtJambiSpan*>(container.container);
-    void* iteratorPtr = new const char*(reinterpret_cast<const char*>(p->begin));
-    return createConstIterator(env, container.nativeId, iteratorPtr);
+    return createConstIterator(env, container.nativeId, begin(container.container));
 }
 
-jobject AutoSpanAccess::get(JNIEnv * env, const void* container, jint index)
+jobject AutoSpanAccess::get(JNIEnv * env, const void* container, qsizetype index)
 {
     jvalue _value;
     _value.l = nullptr;
@@ -783,24 +783,24 @@ const void* AutoSpanAccess::get(const void* container, qsizetype index)
     return reinterpret_cast<const char*>(p->begin)+index*m_offset;
 }
 
-jint AutoSpanAccess::size(JNIEnv *, const void* container)
+qsizetype AutoSpanAccess::size(JNIEnv *, const void* container)
 {
     const QtJambiSpan* p = reinterpret_cast<const QtJambiSpan*>(container);
-    return jint(p->size);
+    return p->size;
 }
 
-jint AutoSpanAccess::size_bytes(JNIEnv *, const void* container)
+qsizetype AutoSpanAccess::size_bytes(JNIEnv *, const void* container)
 {
     const QtJambiSpan* p = reinterpret_cast<const QtJambiSpan*>(container);
-    return jint(p->size * m_elementMetaType.sizeOf());
+    return p->size * m_elementMetaType.sizeOf();
 }
 
-bool AutoSpanAccess::set(JNIEnv * env, const ContainerInfo& container, jint index, jobject value)
+bool AutoSpanAccess::set(JNIEnv * env, const ContainerInfo& container, qsizetype index, jobject value)
 {
     if(isConst())
         return false;
     QtJambiSpan* p = reinterpret_cast<QtJambiSpan*>(container.container);
-    Q_ASSERT_X(index >= 0 && index < size_t(p->size), "QSpan<T>::operator[index]", "index out of range");
+    Q_ASSERT_X(index >= 0 && index < p->size, "QSpan<T>::operator[index]", "index out of range");
     void* target = reinterpret_cast<char*>(const_cast<void*>(p->begin))+index*m_offset;
     jvalue _value;
     _value.l = value;
@@ -831,7 +831,7 @@ PointerRCAutoSpanAccess* PointerRCAutoSpanAccess::clone(){
 
 void PointerRCAutoSpanAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
-    jobject set = Java::Runtime::ArrayList::newInstance(env);
+    jobject set = QtJambiAPI::newJavaArrayList(env);
     auto iterator = elementIterator(container.container);
     while(iterator->hasNext()){
         const void* content = iterator->next();
@@ -861,7 +861,7 @@ void PointerRCAutoSpanAccess::updateRC(JNIEnv * env, const ContainerInfo& contai
             break;
         }
         if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
     }
     clearRC(env, container.object);
     addAllRC(env, container.object, set);
@@ -877,7 +877,7 @@ void PointerRCAutoSpanAccess::assign(JNIEnv * env, const ContainerInfo& containe
     }
 }
 
-bool PointerRCAutoSpanAccess::set(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) {
+bool PointerRCAutoSpanAccess::set(JNIEnv * env, const ContainerInfo& container, qsizetype index, jobject value) {
     jobject oldValue = AutoSpanAccess::get(env, container.container, index);
     if(AutoSpanAccess::set(env, container, index, value)){
         removeRC(env, container.object, oldValue);
@@ -918,7 +918,7 @@ void NestedPointersRCAutoSpanAccess::updateRC(JNIEnv * env, const ContainerInfo&
     }
 }
 
-bool NestedPointersRCAutoSpanAccess::set(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) {
+bool NestedPointersRCAutoSpanAccess::set(JNIEnv * env, const ContainerInfo& container, qsizetype index, jobject value) {
     if(AutoSpanAccess::set(env, container, index, value)){
         updateRC(env, container);
         return true;

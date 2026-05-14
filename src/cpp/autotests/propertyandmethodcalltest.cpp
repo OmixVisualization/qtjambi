@@ -33,6 +33,7 @@
 #include <QtJambi/CoreAPI>
 #include <QtJambi/TestAPI>
 #include <QtJambi/QtJambiAPI>
+#include <QtJambi/JavaAPI>
 
 #define QTJAMBI_ARG(Type, MetaType, arg) QArgument<Type >(#MetaType, arg)
 #define QTJAMBI_RETURN_ARG(Type, MetaType, arg) QReturnArgument<Type >(#MetaType, arg)
@@ -336,7 +337,7 @@ QVariant PropertyAndMethodCallTest::instantiateInPlace(const QMetaMethod& constr
         const QMetaObject* metaObject = constructor.enclosingMetaObject();
         QMetaType metaType = metaObject->metaType();
         if(constructor.parameterCount()!=int(args.size()))
-            Java::Runtime::IllegalArgumentException::throwNew(env, "Mismatching number of arguments." QTJAMBI_STACKTRACEINFO);
+            JavaException::raise<Java::Runtime::IllegalArgumentException>(env, "Mismatching number of arguments." QTJAMBI_STACKTRACEINFO);
         int index = -1;
         for(int i=0; i<metaObject->constructorCount(); ++i){
             if(metaObject->constructor(i)==constructor){

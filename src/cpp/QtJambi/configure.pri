@@ -193,7 +193,7 @@ android:{
     QMAKE_LFLAGS += -Wl,--export-dynamic -Wl,--exclude-libs,libgcc_real.a -Wl,--exclude-libs,libunwind.a -Wl,--exclude-libs,libgcc.a -lunwind
 }
 
-GENERATED_SOURCES_BASE = $$clean_path($$PWD/../../../$$VERSION/build/generator/cpp)
+GENERATED_SOURCES_BASE = $$clean_path($$PWD/../../../$$VERSION/generate/qtjambi/cpp)
 SOURCES_BASE = $$clean_path($$dirname(_PRO_FILE_)/..)
 
 # gcc reports some functions as unused when they are not.
@@ -207,7 +207,7 @@ linux-clang* | linux-g++* | freebsd-clang* | freebsd-g++* | netbsd-clang* | netb
 
     PREFIXMAP += -fdebug-prefix-map=$$SOURCES_BASE/=
     PREFIXMAP += -fdebug-prefix-map=$$QTJAMBI_PLATFORM_BUILDDIR/$$QTJAMBI_PROJECT=../sources/
-    PREFIXMAP += -fdebug-prefix-map=../../../generator/cpp/=
+    PREFIXMAP += -fdebug-prefix-map=../../../qtjambi/cpp/=
     QMAKE_CXXFLAGS_DEBUG += $$PREFIXMAP
     QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO += $$PREFIXMAP
     lessThan(QT_MAJOR_VERSION, 6):{
@@ -223,7 +223,7 @@ linux-* {
 macx{
     PREFIXMAP += -fdebug-prefix-map=$$SOURCES_BASE/=
     PREFIXMAP += -fdebug-prefix-map=$$QTJAMBI_PLATFORM_BUILDDIR/$$QTJAMBI_PROJECT=../../../../../sources/
-    PREFIXMAP += -fdebug-prefix-map=../../../generator/cpp/=
+    PREFIXMAP += -fdebug-prefix-map=../../../qtjambi/cpp/=
     QMAKE_CXXFLAGS_DEBUG += $$PREFIXMAP
     QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO += $$PREFIXMAP
 }

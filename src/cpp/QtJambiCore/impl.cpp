@@ -48,6 +48,13 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtJambi/ThreadAPI>
 #include <QtJambi/JObjectWrapper>
 #include <QtJambi/FunctionPointer>
+#include <QtJambi/StringAPI>
+#include <QtJambi/BufferAPI>
+#include <QtJambi/ArrayAPI>
+#include <QtJambi/ArithmeticCast>
+#include <QtJambi/Template1Cast>
+#include <QtJambi/ContainerCast>
+#include <QtJambi/Template2Cast>
 #include "future_p.h"
 #include "utils_p.h"
 #include "utils.h"
@@ -71,10 +78,47 @@ QT_WARNING_DISABLE_DEPRECATED
 #endif
 #endif
 
-#include <QtJambi/qtjambi_cast.h>
+
+#include <QtJambi/Cast>
 
 QT_WARNING_DISABLE_GCC("-Wfloat-equal")
 QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
+
+namespace QtJambiPrivate {
+
+template<typename T>
+struct qtjambi_type_container1<QPropertyAlias,T>
+        : qtjambi_type_property_decider<QPropertyAlias,T>{
+};
+
+template<bool forward,
+         bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
+         typename T, typename... Args>
+struct qtjambi_jobject_template1_cast<forward,
+                                      jobject,
+                                      QPropertyAlias, is_pointer, is_const, is_reference, is_rvalue,
+                                      T, Args...>{
+    typedef QPropertyAlias<T> NativeType;
+    typedef std::conditional_t<is_const, std::add_const_t<NativeType>, NativeType> NativeType_c;
+    typedef std::conditional_t<is_reference, std::conditional_t<is_rvalue, std::add_rvalue_reference_t<NativeType_c>, std::add_lvalue_reference_t<NativeType_c>>, NativeType_c> NativeType_cr;
+    typedef std::conditional_t<is_pointer, std::add_pointer_t<NativeType_c>, NativeType_cr> NativeType_in;
+    typedef std::conditional_t<is_pointer, std::add_pointer_t<NativeType_c>, NativeType_cr> NativeType_out;
+    typedef std::conditional_t<forward, NativeType_in, jobject> In;
+    typedef std::conditional_t<forward, jobject, NativeType_out> Out;
+
+    static Out cast(In in, Args...args){
+        auto env = cast_var_args<Args...>::env(args...);
+        if constexpr(forward){
+            Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasJNIEnv, "Cannot cast to jobject without JNIEnv.");
+            NativeType_c* _in = ref_ptr<is_pointer, NativeType_c>::ref(in);
+            return QtJambiAPI::convertNativeToJavaObjectAsCopy(env, _in, qtjambi_type<NativeType>::id());
+        }else{
+            return QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in);
+        }
+    }
+};
+
+} // namespace QtJambiPrivate
 
 extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QCalendar_unspecified__(JNIEnv *, jclass){
     return jint(QCalendar::Unspecified);
@@ -92,7 +136,7 @@ inline size_t qHash(const QVariant& v, size_t seed = 0){
 }
 
 extern "C" JNIEXPORT size_t JNICALL Java_io_qt_core_QtGlobal_qHash(JNIEnv * env, jclass, jobject object, size_t seed){
-    QVariant v = QtJambiAPI::convertJavaObjectToQVariant(env, object);
+    QVariant v = qtjambi_cast<QVariant>(env, object);
     size_t result = 0;
     try{
         result = qHash(v, seed);
@@ -111,7 +155,7 @@ extern "C" JNIEXPORT size_t JNICALL Java_io_qt_core_QtGlobal_qHashMulti(JNIEnv *
     jobject object;
     for(jsize i=0, length = env->GetArrayLength(objects); i<length;  ++i){
         object = env->GetObjectArrayElement(objects, i);
-        QVariant v = QtJambiAPI::convertJavaObjectToQVariant(env, object);
+        QVariant v = qtjambi_cast<QVariant>(env, object);
         try{
             seed = hash(seed, v);
         }catch(const std::invalid_argument&){
@@ -130,7 +174,7 @@ extern "C" JNIEXPORT size_t JNICALL Java_io_qt_core_QtGlobal_qHashMultiCommutati
     jobject object;
     for(jsize i=0, length = env->GetArrayLength(objects); i<length;  ++i){
         object = env->GetObjectArrayElement(objects, i);
-        QVariant v = QtJambiAPI::convertJavaObjectToQVariant(env, object);
+        QVariant v = qtjambi_cast<QVariant>(env, object);
         try{
             seed = hash(seed, v);
         }catch(const std::invalid_argument&){
@@ -180,8 +224,8 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QString_toLocal8Bit(JNIEnv 
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QDebug_debugStream(JNIEnv *env, jobject, QtJambiNativeID debugId, QtJambiNativeID metaTypeId, jobject value){
-    QDebug& debug = QtJambiAPI::objectReferenceFromNativeId<QDebug>(env, debugId);
-    const QMetaType& metaType = QtJambiAPI::valueReferenceFromNativeId<QMetaType>(metaTypeId);
+    QDebug& debug = qtjambi_cast<QDebug&>(env, debugId);
+    const QMetaType& metaType = qtjambi_cast<const QMetaType&>(metaTypeId);
     QTJAMBI_TRY{
         bool success = false;
         if(metaType==QMetaType::fromType<JObjectWrapper>()
@@ -233,11 +277,12 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showCMessageFromSuppl
 {
 #if !defined(QT_NO_DEBUG_OUTPUT)
     QTJAMBI_TRY{
-        const QLoggingCategory& category = QtJambiAPI::objectReferenceFromNativeId<QLoggingCategory>(env, categoryId);
+        const QLoggingCategory& category = qtjambi_cast<const QLoggingCategory&>(env, categoryId);
         if (messageType != QtMsgType::QtFatalMsg && !category.isEnabled(QtMsgType(messageType)))
             return;
         jstring message = Java::Runtime::Object::toString(env, Java::Runtime::Supplier::get(env, messageSupplier));
         J2CStringBuffer _message(env, message);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
         int line = 0;
 #if !defined (QT_NO_DEBUG)
         jobject invocationInfoProvider = Java::QtJambi::ReflectionUtility::invocationInfoProvider(env);
@@ -252,7 +297,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showCMessageFromSuppl
         line = Java::QtJambi::InternalAccess$CallerContext::lineNumber(env, invocationInfo);
         jstring className = Java::Runtime::Class::getName(env, declaringClass);
         J2CStringBuffer _method(env, method);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
         J2CStringBuffer _className(env, className);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
 #else
         const char* _method = nullptr;
         const char* _className = nullptr;
@@ -334,7 +381,9 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QLogging_getDebug(JNIEnv *e
             QByteArray* data = qtjambi_cast<QByteArray*>(env, _data);
             jstring className = Java::Runtime::Class::getName(env, declaringClass);
             J2CStringBuffer methodBf(env, method);
+            JavaException::check(env QTJAMBI_STACKTRACEINFO );
             J2CStringBuffer classNameBf(env, className);
+            JavaException::check(env QTJAMBI_STACKTRACEINFO );
             data->append(methodBf.constData());
             data->append('\0');
             auto size = data->size();
@@ -387,7 +436,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QLogging_getCDebug(JNIEnv *
     jobject result = nullptr;
 #if !defined(QT_NO_DEBUG_OUTPUT)
     QTJAMBI_TRY{
-        const QLoggingCategory& category = QtJambiAPI::objectReferenceFromNativeId<QLoggingCategory>(env, categoryId);
+        const QLoggingCategory& category = qtjambi_cast<const QLoggingCategory&>(env, categoryId);
         if(messageType != QtMsgType::QtFatalMsg && category.isEnabled(QtMsgType(messageType))){
             int line = 0;
 #if !defined (QT_NO_DEBUG)
@@ -405,7 +454,9 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QLogging_getCDebug(JNIEnv *
             jstring method = Java::QtJambi::InternalAccess$CallerContext::methodName(env, invocationInfo);
             jstring className = Java::Runtime::Class::getName(env, declaringClass);
             J2CStringBuffer methodBf(env, method);
+            JavaException::check(env QTJAMBI_STACKTRACEINFO );
             J2CStringBuffer classNameBf(env, className);
+            JavaException::check(env QTJAMBI_STACKTRACEINFO );
             data->append(methodBf.constData());
             data->append('\0');
             auto size = data->size();
@@ -457,10 +508,11 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QLogging_getCDebug(JNIEnv *
 extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showCMessage(JNIEnv *env, jclass loggingClass, jint messageType, QtJambiNativeID categoryId, jstring message){
 #if !defined(QT_NO_DEBUG_OUTPUT)
     QTJAMBI_TRY{
-        const QLoggingCategory& category = QtJambiAPI::objectReferenceFromNativeId<QLoggingCategory>(env, categoryId);
+        const QLoggingCategory& category = qtjambi_cast<const QLoggingCategory&>(env, categoryId);
         if (messageType != QtMsgType::QtFatalMsg && !category.isEnabled(QtMsgType(messageType)))
             return;
         J2CStringBuffer _message(env, message);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
         int line = 0;
 #if !defined (QT_NO_DEBUG)
         jobject invocationInfoProvider = Java::QtJambi::ReflectionUtility::invocationInfoProvider(env);
@@ -475,7 +527,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showCMessage(JNIEnv *
         line = Java::QtJambi::InternalAccess$CallerContext::lineNumber(env, invocationInfo);
         jstring className = Java::Runtime::Class::getName(env, declaringClass);
         J2CStringBuffer _method(env, method);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
         J2CStringBuffer _className(env, className);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
 #else
         const char* _method = nullptr;
         const char* _className = nullptr;
@@ -524,6 +578,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showMessageFromSuppli
     QTJAMBI_TRY{
         jstring message = Java::Runtime::Object::toString(env, Java::Runtime::Supplier::get(env, messageSupplier));
         J2CStringBuffer _message(env, message);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
         int line = 0;
 #if !defined (QT_NO_DEBUG)
         jobject invocationInfoProvider = Java::QtJambi::ReflectionUtility::invocationInfoProvider(env);
@@ -538,7 +593,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showMessageFromSuppli
         line = Java::QtJambi::InternalAccess$CallerContext::lineNumber(env, invocationInfo);
         jstring className = Java::Runtime::Class::getName(env, declaringClass);
         J2CStringBuffer _method(env, method);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
         J2CStringBuffer _className(env, className);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
 #else
         const char* _method = nullptr;
         const char* _className = nullptr;
@@ -586,6 +643,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showMessage(JNIEnv *e
     }
     QTJAMBI_TRY{
         J2CStringBuffer _message(env, message);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
         int line = 0;
 #if !defined (QT_NO_DEBUG)
         jobject invocationInfoProvider = Java::QtJambi::ReflectionUtility::invocationInfoProvider(env);
@@ -599,8 +657,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showMessage(JNIEnv *e
         jstring method = Java::QtJambi::InternalAccess$CallerContext::methodName(env, invocationInfo);
         line = Java::QtJambi::InternalAccess$CallerContext::lineNumber(env, invocationInfo);
         J2CStringBuffer _method(env, method);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
         jstring className = Java::Runtime::Class::getName(env, declaringClass);
         J2CStringBuffer _className(env, className);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
 #else
         const char* _method = nullptr;
         const char* _className = nullptr;
@@ -641,6 +701,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_showMessage(JNIEnv *e
 extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_qErrnoWarning(JNIEnv *env, jclass, jint code, jstring message){
     QTJAMBI_TRY{
         J2CStringBuffer _message(env, message);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
         qErrnoWarning(code, _message);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -685,7 +746,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util/logging,LogRecord,
 extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_00024Handler_log(JNIEnv *env, jclass, jint msgType, QtJambiNativeID loggingCategoryId, jobject formatter, jobject record){
     QLoggingCategory * loggingCategory;
     if(!!loggingCategoryId){
-        loggingCategory = QtJambiAPI::objectFromNativeId<QLoggingCategory>(loggingCategoryId);
+        loggingCategory = qtjambi_cast<QLoggingCategory*>(loggingCategoryId);
     }else{
         loggingCategory = QLoggingCategory::defaultCategory();
     }
@@ -696,10 +757,13 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLogging_00024Handler_log(JNIE
         }
     }
     J2CStringBuffer _className(env, Java::Runtime::LogRecord::getSourceClassName(env, record));
+    JavaException::check(env QTJAMBI_STACKTRACEINFO );
     J2CStringBuffer _method(env, Java::Runtime::LogRecord::getSourceMethodName(env, record));
+    JavaException::check(env QTJAMBI_STACKTRACEINFO );
     int line = 0;
     QMessageLogger logger(_className, line, _method);
     J2CStringBuffer _message(env, Java::Runtime::Formatter::format(env, formatter, record));
+    JavaException::check(env QTJAMBI_STACKTRACEINFO );
     switch(msgType){
     case QtMsgType::QtWarningMsg:
         logger.warning("%s", _message.constData());
@@ -808,7 +872,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QIODevice_fromBuffer(JNIEnv
 extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QObject_isObjectsThread(JNIEnv * env, jclass, QtJambiNativeID __this_nativeId){
     jboolean _result{false};
     QTJAMBI_TRY{
-        QObject *__qt_this = QtJambiAPI::objectFromNativeId<QObject>(__this_nativeId);
+        QObject *__qt_this = qtjambi_cast<QObject*>(__this_nativeId);
         Q_ASSERT(__qt_this);
         if(QThreadData* objectThreadData = QObjectPrivate::get(__qt_this)->threadData.loadRelaxed()){
             _result = objectThreadData->threadId.loadRelaxed() == QThread::currentThreadId();
@@ -825,7 +889,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QObject_isObjectsThread(JN
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QObject_metaObject(JNIEnv * env, jclass, QtJambiNativeID __this_nativeId){
     jobject _result{nullptr};
     QTJAMBI_TRY{
-        QObject *__qt_this = QtJambiAPI::objectFromNativeId<QObject>(__this_nativeId);
+        QObject *__qt_this = qtjambi_cast<QObject*>(__this_nativeId);
         QtJambiAPI::checkNullPointer(env, __qt_this);
         _result = qtjambi_cast<jobject>(env, __qt_this->metaObject());
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -1096,7 +1160,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_internal_QAbstractFileEngin
     jobject result{nullptr};
     QTJAMBI_TRY{
         QAbstractFileEngineHandler* handler = new FileEngineHandler(env, _factory,
-                                                                    [regexp = QtJambiAPI::valueFromNativeId<QRegularExpression>(_regexp),
+                                                                    [regexp = qtjambi_cast<QRegularExpression>(_regexp),
                                                                      offset = qsizetype(_offset),
                                                                      matchType = QRegularExpression::MatchType(_matchType),
                                                                      matchOptions = QRegularExpression::MatchOptions(_matchOptions)](const QString &fileName) -> bool {
@@ -1155,7 +1219,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QCoreApplication_asSelectiv
     (JNIEnv *env, jclass, QtJambiNativeID objectId, jobject firstType, jobjectArray types)
 {
     try{
-        QObject* eventFilter = QtJambiAPI::objectFromNativeId<QObject>(objectId);
+        QObject* eventFilter = qtjambi_cast<QObject*>(objectId);
         QtJambiAPI::checkThread(env, eventFilter);
         QSet<QEvent::Type> typeSet;
         typeSet.insert(qtjambi_cast<QEvent::Type>(env, firstType));
@@ -1178,7 +1242,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QCoreApplication_asSelectiv
     (JNIEnv *env, jclass, QtJambiNativeID objectId, jint stringComparisonType, jint caseSensitivity, jstring objectName, jobjectArray objectNames)
 {
     try{
-        QObject* eventFilter = QtJambiAPI::objectFromNativeId<QObject>(objectId);
+        QObject* eventFilter = qtjambi_cast<QObject*>(objectId);
         QtJambiAPI::checkThread(env, eventFilter);
         QList<QString> objectNameList;
         objectNameList << qtjambi_cast<QString>(env, objectName);
@@ -1335,7 +1399,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QCoreApplication_asSelectiv
     (JNIEnv *env, jclass, QtJambiNativeID objectId, jobject firstMetaObject, jobjectArray metaObjects)
 {
     try{
-        QObject* eventFilter = QtJambiAPI::objectFromNativeId<QObject>(objectId);
+        QObject* eventFilter = qtjambi_cast<QObject*>(objectId);
         QtJambiAPI::checkThread(env, eventFilter);
         QList<const QMetaObject*> metaObjectList;
         metaObjectList << &qtjambi_cast<const QMetaObject&>(env, firstMetaObject);
@@ -1363,9 +1427,9 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QCoreApplication_asSelectiv
     (JNIEnv *env, jclass, QtJambiNativeID objectId, QtJambiNativeID regexpId, jlong _offset, jint _matchType, jint _matchOptions)
 {
     try{
-        QObject* eventFilter = QtJambiAPI::objectFromNativeId<QObject>(objectId);
+        QObject* eventFilter = qtjambi_cast<QObject*>(objectId);
         QtJambiAPI::checkThread(env, eventFilter);
-        eventFilter = new SelectiveEventFilter(eventFilter, [regexp = QtJambiAPI::valueFromNativeId<QRegularExpression>(regexpId),
+        eventFilter = new SelectiveEventFilter(eventFilter, [regexp = qtjambi_cast<QRegularExpression>(regexpId),
                                                              offset = qsizetype(_offset),
                                                              matchType = QRegularExpression::MatchType(_matchType),
                                                              matchOptions = QRegularExpression::MatchOptions(_matchOptions)](QObject *watched, QEvent *){
@@ -1387,7 +1451,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QCoreApplication_asSelectiv
 extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QThread_isCurrentThread(JNIEnv *__jni_env, jclass, QtJambiNativeID thread_nid){
     jboolean _result{false};
     QTJAMBI_TRY{
-        QThread* __qt_this = QtJambiAPI::objectFromNativeId<QThread>(thread_nid);
+        QThread* __qt_this = qtjambi_cast<QThread*>(thread_nid);
         Q_ASSERT(__qt_this);
         _result = QThread::currentThreadId() == QThreadData::get2(__qt_this)->threadId.loadRelaxed();
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -1501,7 +1565,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QThread_initializeQThread(JNIE
 extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QtJambi_1LibraryUtilities_initializeCurrentThread(JNIEnv *env, jclass){
     QTJAMBI_TRY{
         const QMessageLogContext context;
-        qtjambi_cast<jobject>(env, &context);
+        (void)qtjambi_cast<jobject>(env, &context);
         ThreadAPI::initializeCurrentThread(env);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
@@ -1513,9 +1577,8 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QStaticPlugin_instance(JNIE
     jobject _result{nullptr};
     QTJAMBI_NATIVE_METHOD_CALL("QStaticPlugin::instance()")
     QTJAMBI_TRY{
-        const QStaticPlugin *__qt_this = QtJambiAPI::objectFromNativeId<QStaticPlugin>(__this_nativeId);
-        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
-        _result = qtjambi_cast<jobject>(__jni_env, __qt_this->instance());
+        const QStaticPlugin &__qt_this = qtjambi_cast<QStaticPlugin&>(__jni_env, __this_nativeId);
+        _result = qtjambi_cast<jobject>(__jni_env, __qt_this.instance());
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -1533,7 +1596,7 @@ extern "C" JNIEXPORT jclass JNICALL Java_io_qt_core_QMetaType_javaType__I(JNIEnv
 
 extern "C" JNIEXPORT jclass JNICALL Java_io_qt_core_QMetaType_javaType__J(JNIEnv *env, jclass, QtJambiNativeID __this_nativeId){
     try{
-        QMetaType *__qt_this = QtJambiAPI::objectFromNativeId<QMetaType>(__this_nativeId);
+        QMetaType *__qt_this = qtjambi_cast<QMetaType*>(__this_nativeId);
         QtJambiAPI::checkNullPointer(env, __qt_this);
         return CoreAPI::getClassForMetaType(env, *__qt_this);
     }catch(const JavaException& exn){
@@ -2148,7 +2211,7 @@ void JavaMetaCallEvent::placeMetaCall(QObject *){
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMetaObject_invokeMethod(JNIEnv * env, jclass, QtJambiNativeID context1, jobject runnable, jboolean blocking){
     QTJAMBI_TRY{
-        QObject *context = QtJambiAPI::objectFromNativeId<QObject>(context1);
+        QObject *context = qtjambi_cast<QObject*>(context1);
         QtJambiAPI::checkNullPointer(env, context);
         if(blocking){
 #if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
@@ -2171,7 +2234,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMetaObject_invokeMethod(JNIEn
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QFuture_futureInterface(JNIEnv *__jni_env, jobject, QtJambiNativeID __this_nativeId){
     jobject result = nullptr;
     QTJAMBI_TRY{
-        QFuture<QVariant> *__qt_this = QtJambiAPI::objectFromNativeId<QFuture<QVariant>>(__this_nativeId);
+        QFuture<QVariant> *__qt_this = qtjambi_cast<QFuture<QVariant>*>(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         result = qtjambi_cast<jobject>(__jni_env, reinterpret_cast<QFutureInterface<QVariant>*>(__qt_this));
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -2245,7 +2308,7 @@ public:
                                                  QPropertyData<void*> *propertyPtr = static_cast<QPropertyData<void*> *>(dataPtr);
                                                  void* _result = nullptr;
                                                  if(result){
-                                                     QVariant variant = QtJambiAPI::convertJavaObjectToQVariant(env, result);
+                                                     QVariant variant = qtjambi_cast<QVariant>(env, result);
                                                      if(variant.metaType()!=metaType && !variant.convert(metaType))
                                                          setIt = false;
                                                      else
@@ -2315,7 +2378,7 @@ public:
                                                  }
                                                  break;
                                              default: if(!boolOut){
-                                                    QVariant variant = result ? QtJambiAPI::convertJavaObjectToQVariant(env, result) : QVariant(metaType);
+                                                    QVariant variant = result ? qtjambi_cast<QVariant>(env, result) : QVariant(metaType);
                                                     if(variant.metaType()!=metaType && !variant.convert(metaType)){
                                                          boolOut = false;
                                                     }else if(metaType.isEqualityComparable() && metaType.equals(dataPtr, variant.constData())){
@@ -2776,8 +2839,8 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QUntypedBindable_overrideBi
 extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QIntBindable_value(JNIEnv *__jni_env, jobject, QtJambiNativeID ifaceId, QtJambiNativeID dataId){
     jint result = 0;
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->getter) {
             if(iface->metaType && iface->metaType().id()==QMetaType::QVariant){
                 QVariant variant;
@@ -2796,8 +2859,8 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QIntBindable_value(JNIEnv *__j
 extern "C" JNIEXPORT jshort JNICALL Java_io_qt_core_QShortBindable_value(JNIEnv *__jni_env, jobject, QtJambiNativeID ifaceId, QtJambiNativeID dataId){
     jshort result = 0;
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->getter) {
             if(iface->metaType && iface->metaType().id()==QMetaType::QVariant){
                 QVariant variant;
@@ -2816,8 +2879,8 @@ extern "C" JNIEXPORT jshort JNICALL Java_io_qt_core_QShortBindable_value(JNIEnv 
 extern "C" JNIEXPORT jbyte JNICALL Java_io_qt_core_QByteBindable_value(JNIEnv *__jni_env, jobject, QtJambiNativeID ifaceId, QtJambiNativeID dataId){
     jbyte result = 0;
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->getter) {
             if(iface->metaType && iface->metaType().id()==QMetaType::QVariant){
                 QVariant variant;
@@ -2836,8 +2899,8 @@ extern "C" JNIEXPORT jbyte JNICALL Java_io_qt_core_QByteBindable_value(JNIEnv *_
 extern "C" JNIEXPORT jlong JNICALL Java_io_qt_core_QLongBindable_value(JNIEnv *__jni_env, jobject, QtJambiNativeID ifaceId, QtJambiNativeID dataId){
     jlong result = 0;
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->getter) {
             if(iface->metaType && iface->metaType().id()==QMetaType::QVariant){
                 QVariant variant;
@@ -2856,8 +2919,8 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_qt_core_QLongBindable_value(JNIEnv *_
 extern "C" JNIEXPORT double JNICALL Java_io_qt_core_QDoubleBindable_value(JNIEnv *__jni_env, jobject, QtJambiNativeID ifaceId, QtJambiNativeID dataId){
     double result = 0;
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->getter) {
             if(iface->metaType && iface->metaType().id()==QMetaType::QVariant){
                 QVariant variant;
@@ -2876,8 +2939,8 @@ extern "C" JNIEXPORT double JNICALL Java_io_qt_core_QDoubleBindable_value(JNIEnv
 extern "C" JNIEXPORT float JNICALL Java_io_qt_core_QFloatBindable_value(JNIEnv *__jni_env, jobject, QtJambiNativeID ifaceId, QtJambiNativeID dataId){
     float result = 0;
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->getter) {
             if(iface->metaType && iface->metaType().id()==QMetaType::QVariant){
                 QVariant variant;
@@ -2896,8 +2959,8 @@ extern "C" JNIEXPORT float JNICALL Java_io_qt_core_QFloatBindable_value(JNIEnv *
 extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QBooleanBindable_value(JNIEnv *__jni_env, jobject, QtJambiNativeID ifaceId, QtJambiNativeID dataId){
     bool result = 0;
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->getter) {
             if(iface->metaType && iface->metaType().id()==QMetaType::QVariant){
                 QVariant variant;
@@ -2916,8 +2979,8 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QBooleanBindable_value(JNI
 extern "C" JNIEXPORT jchar JNICALL Java_io_qt_core_QCharBindable_value(JNIEnv *__jni_env, jobject, QtJambiNativeID ifaceId, QtJambiNativeID dataId){
     QChar result;
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->getter) {
             if(iface->metaType && iface->metaType().id()==QMetaType::QVariant){
                 QVariant variant;
@@ -2942,8 +3005,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QIntBindable_setValue
  )
 {
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->setter) {
             if(iface->metaType && iface->metaType().id()==QMetaType::QVariant){
                 QVariant variant = QVariant::fromValue(value);
@@ -2966,8 +3029,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QByteBindable_setValue
  )
 {
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->setter) {
             if(iface->metaType && iface->metaType().id()==QMetaType::QVariant){
                 QVariant variant = QVariant::fromValue(value);
@@ -2990,8 +3053,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QShortBindable_setValue
  )
 {
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->setter) {
             if(iface->metaType && iface->metaType().id()==QMetaType::QVariant){
                 QVariant variant = QVariant::fromValue(value);
@@ -3014,8 +3077,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QLongBindable_setValue
  )
 {
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->setter) {
             if(iface->metaType && iface->metaType().id()==QMetaType::QVariant){
                 QVariant variant = QVariant::fromValue(value);
@@ -3038,8 +3101,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QDoubleBindable_setValue
  )
 {
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->setter) {
             if(iface->metaType && iface->metaType().id()==QMetaType::QVariant){
                 QVariant variant = QVariant::fromValue(value);
@@ -3062,8 +3125,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QFloatBindable_setValue
  )
 {
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->setter) {
             if(iface->metaType && iface->metaType().id()==QMetaType::QVariant){
                 QVariant variant = QVariant::fromValue(value);
@@ -3086,8 +3149,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QCharBindable_setValue
  )
 {
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->setter) {
             if(iface->metaType && iface->metaType().id()==QMetaType::QVariant){
                 QVariant variant = QVariant::fromValue(value);
@@ -3110,8 +3173,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QBooleanBindable_setValue
  )
 {
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->setter) {
             bool b = value;
             if(iface->metaType && iface->metaType().id()==QMetaType::QVariant){
@@ -3135,12 +3198,12 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QBindable_value
 {
     jobject _result = nullptr;
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->getter) {
             QMetaType metaType;
             if(!!metaTypeId)
-                metaType = QtJambiAPI::valueReferenceFromNativeId<QMetaType>(metaTypeId);
+                metaType = qtjambi_cast<QMetaType>(metaTypeId);
             else if(iface->metaType)
                 metaType = iface->metaType();
             if(metaType.isValid()){
@@ -3166,16 +3229,16 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QBindable_setValue
 {
     jboolean _result = false;
     QTJAMBI_TRY{
-        const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<const QtPrivate::QBindableInterface>(ifaceId);
-        QUntypedPropertyData *data = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(dataId);
+        const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
+        QUntypedPropertyData *data = qtjambi_cast<QUntypedPropertyData*>(dataId);
         if (iface && iface->setter) {
             QMetaType metaType;
             if(!!metaTypeId)
-                metaType = QtJambiAPI::valueReferenceFromNativeId<QMetaType>(metaTypeId);
+                metaType = qtjambi_cast<QMetaType>(metaTypeId);
             else if(iface->metaType)
                 metaType = iface->metaType();
             if(metaType.isValid()){
-                QVariant variant = value ? QtJambiAPI::convertJavaObjectToQVariant(__jni_env, value) : QVariant(metaType);
+                QVariant variant = value ? qtjambi_cast<QVariant>(__jni_env, value) : QVariant(metaType);
                 if(variant.metaType()!=metaType && !variant.convert(metaType))
                     _result = false;
                 else{
@@ -3885,9 +3948,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QAbstractPropertyAlias_setObse
  QtJambiNativeID aliasedPropertyId,
  QtJambiNativeID ifaceId)
 {
-    QPropertyObserver *__qt_this = QtJambiAPI::objectFromNativeId<QPropertyObserver>(thisId);
-    const QUntypedPropertyData *aliasedProperty = QtJambiAPI::objectFromNativeId<QUntypedPropertyData>(aliasedPropertyId);
-    const QtPrivate::QBindableInterface *iface = QtJambiAPI::objectFromNativeId<QtPrivate::QBindableInterface>(ifaceId);
+    QPropertyObserver *__qt_this = qtjambi_cast<QPropertyObserver*>(thisId);
+    const QUntypedPropertyData *aliasedProperty = qtjambi_cast<QUntypedPropertyData*>(aliasedPropertyId);
+    const QtPrivate::QBindableInterface *iface = qtjambi_cast<const QtPrivate::QBindableInterface*>(ifaceId);
     if (iface && iface->setObserver)
         iface->setObserver(aliasedProperty, __qt_this);
 }
@@ -3945,7 +4008,7 @@ void __qt_destruct_QPropertyObserver(void* ptr);
 size_t alignof_QPropertyObserver_shell();
 void __qt_construct_QPropertyObserver_with_ChangeHandler(void* __qtjambi_ptr, void (*changeHandler)(QPropertyObserver*, QUntypedPropertyData *));
 void __qt_construct_QPropertyObserver_QUntypedPropertyData_ptr(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, QtJambiAPI::ConstructorOptions);
-void deleter_QPropertyObserver(void *ptr, bool);
+void __qt_delete_QPropertyObserver(void *ptr, bool);
 
 void __qt_construct_QPropertyChangeHandler(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*, QtJambiAPI::ConstructorOptions)
 {
@@ -4029,7 +4092,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QAbstractPropertyAlias_initial
         }else{
             typeId = &typeid(QPropertyObserver);
         }
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QPropertyObserver_QUntypedPropertyData_ptr, sizeof_QPropertyObserver_shell(), alignof_QPropertyObserver_shell(), *typeId, 0, true, &deleter_QPropertyObserver, nullptr, &arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QPropertyObserver_QUntypedPropertyData_ptr, sizeof_QPropertyObserver_shell(), alignof_QPropertyObserver_shell(), *typeId, 0, true, &__qt_delete_QPropertyObserver, nullptr, &arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -4039,7 +4102,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QAbstractPropertyAlias_initial
 extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QPropertyChangeHandler_initialize_1native__Lio_qt_core_QPropertyChangeHandler_2(JNIEnv *__jni_env, jclass __jni_class, jobject __jni_object){
     QTJAMBI_NATIVE_METHOD_CALL("QPropertyChangeHandler::QPropertyChangeHandler()")
     QTJAMBI_TRY{
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QPropertyChangeHandler, sizeof_QPropertyObserver_shell(), alignof_QPropertyObserver_shell(), typeid(QPropertyChangeHandler<void(*)()>), 0, true, &deleter_QPropertyObserver, nullptr, nullptr);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QPropertyChangeHandler, sizeof_QPropertyObserver_shell(), alignof_QPropertyObserver_shell(), typeid(QPropertyChangeHandler<void(*)()>), 0, true, &__qt_delete_QPropertyObserver, nullptr, nullptr);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -4049,7 +4112,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QPropertyNotifier_initialize_1
     QTJAMBI_NATIVE_METHOD_CALL("QPropertyNotifier::QPropertyNotifier()")
     QTJAMBI_TRY{
 #if QT_VERSION >= QT_VERSION_CHECK(6,2,0)
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QPropertyNotifier, sizeof_QPropertyObserver_shell(), alignof_QPropertyObserver_shell(), typeid(QPropertyNotifier), 0, true, &deleter_QPropertyObserver, nullptr, nullptr);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QPropertyNotifier, sizeof_QPropertyObserver_shell(), alignof_QPropertyObserver_shell(), typeid(QPropertyNotifier), 0, true, &__qt_delete_QPropertyObserver, nullptr, nullptr);
 #else
         Q_UNUSED(__jni_class)
         Q_UNUSED(__jni_object)
@@ -4092,7 +4155,7 @@ extern "C" JNIEXPORT jprimitive JNICALL Java_io_qt_core_Q##Boxed##PropertyData_g
     QTJAMBI_NATIVE_METHOD_CALL("Q" #Boxed "PropertyData::getValueBypassingBindings()")\
     jprimitive _result{0};\
     QTJAMBI_TRY{\
-        QPropertyData<primitive> *__qt_this = QtJambiAPI::objectFromNativeId<QPropertyData<primitive>>(thisId);\
+        QPropertyData<primitive> *__qt_this = qtjambi_cast<QPropertyData<primitive>*>(thisId);\
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);\
         _result = __qt_this->valueBypassingBindings();\
     }QTJAMBI_CATCH(const JavaException& exn){\
@@ -4110,7 +4173,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_Q##Boxed##PropertyData_set
     QTJAMBI_NATIVE_METHOD_CALL("Q" #Boxed "PropertyData::setValueBypassingBindings(value)")\
     jboolean result = false;\
     QTJAMBI_TRY{\
-        QPropertyData<primitive> *__qt_this = QtJambiAPI::objectFromNativeId<QPropertyData<primitive>>(thisId);\
+        QPropertyData<primitive> *__qt_this = qtjambi_cast<QPropertyData<primitive>*>(thisId);\
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);\
         if(primitive(val)!=__qt_this->valueBypassingBindings()){\
             __qt_this->setValueBypassingBindings(val);\
@@ -4152,7 +4215,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QProperty_initialize_1native
                                                 void* _result;
                                                 if(__java_arguments[1].l){
                                                     QMetaType metaType = qtjambi_cast<QMetaType>(env, __java_arguments[0].l);
-                                                    QVariant variant = QtJambiAPI::convertJavaObjectToQVariant(env, __java_arguments[1].l);
+                                                    QVariant variant = qtjambi_cast<QVariant>(env, __java_arguments[1].l);
                                                     if(variant.metaType()!=metaType && !variant.convert(metaType)){
                                                         _result = nullptr;
                                                     } else {
@@ -4218,7 +4281,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QProperty_getValueBypassing
         void *__qt_this = QtJambiAPI::fromNativeId(thisId);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QProperty::getValueBypassingBindings()const", __qt_this)
-        QMetaType metaType = QtJambiAPI::valueReferenceFromNativeId<QMetaType>(metaTypeId);
+        const QMetaType& metaType = qtjambi_cast<const QMetaType&>(metaTypeId);
         if(metaType.flags() & QMetaType::IsPointer){
             void* value = static_cast<QPropertyData<void*> *>(__qt_this)->valueBypassingBindings();
             _result = qtjambi_cast<jobject>(__jni_env, QVariant(metaType, &value));
@@ -4258,15 +4321,15 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QProperty_setValueBypassin
         void *__qt_this = QtJambiAPI::fromNativeId(thisId);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QProperty::setValueBypassingBindings(value)", __qt_this)
-        QMetaType metaType = QtJambiAPI::valueReferenceFromNativeId<QMetaType>(metaTypeId);
+        const QMetaType& metaType = qtjambi_cast<const QMetaType&>(metaTypeId);
         if(metaType.flags() & QMetaType::IsPointer){
             QPropertyData<void*> *propertyPtr = static_cast<QPropertyData<void*> *>(__qt_this);
             void* _val = nullptr;
             bool compare = true;
             if(val){
-                QVariant variant = QtJambiAPI::convertJavaObjectToQVariant(__jni_env, val);
+                QVariant variant = qtjambi_cast<QVariant>(__jni_env, val);
                 if(variant.metaType()!=metaType && !variant.convert(metaType)){
-                    Java::Runtime::ClassCastException::throwNew(__jni_env, QStringLiteral("Unable to convert java object of type '%1' to '%2'.").arg(QtJambiAPI::getObjectClassName(__jni_env, val).replace('$', '.'), QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::Runtime::ClassCastException>(__jni_env, QStringLiteral("Unable to convert java object of type '%1' to '%2'.").arg(QtJambiAPI::getObjectClassName(__jni_env, val).replace('$', '.'), QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
                     compare = false;
                 }else
                     _val = *reinterpret_cast<void*const*>(variant.constData());
@@ -4325,9 +4388,9 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QProperty_setValueBypassin
                    _result = true;
                }break;
             default: {
-                   QVariant variant = val ? QtJambiAPI::convertJavaObjectToQVariant(__jni_env, val) : QVariant(metaType);
+                   QVariant variant = val ? qtjambi_cast<QVariant>(__jni_env, val) : QVariant(metaType);
                    if(variant.metaType()!=metaType && !variant.convert(metaType)){
-                       Java::Runtime::ClassCastException::throwNew(__jni_env, QStringLiteral("Unable to convert java object of type '%1' to '%2'.").arg(QtJambiAPI::getObjectClassName(__jni_env, val).replace('$', '.'), QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
+                       JavaException::raise<Java::Runtime::ClassCastException>(__jni_env, QStringLiteral("Unable to convert java object of type '%1' to '%2'.").arg(QtJambiAPI::getObjectClassName(__jni_env, val).replace('$', '.'), QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
                         _result = false;
                    }else if(metaType.isEqualityComparable() && metaType.equals(__qt_this, variant.constData())){
                         _result = false;
@@ -4429,7 +4492,7 @@ void __qt_construct_QByteArrayView_Buffer_qsizetype(void* __qtjambi_ptr, JNIEnv*
     QTJAMBI_NATIVE_METHOD_CALL("construct QByteArrayView(Buffer)")
     PersistentJBufferConstData* bufferData = new PersistentJBufferConstData(__jni_env, __java_arguments[0].l);
     if(bufferData->size<char>()>0){
-        jobject address = QtJambiAPI::toJavaLongObject(__jni_env, qintptr(bufferData));
+        jobject address = qtjambi_cast<jobject>(__jni_env, jlong(bufferData));
         __jni_env->SetObjectArrayElement(jobjectArray(__java_arguments[1].l), 0, address);
         JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
         new(__qtjambi_ptr) QByteArrayView(bufferData->data<char>(), bufferData->size<char>());
@@ -4472,8 +4535,9 @@ void __qt_construct_QByteArrayView_String(void* __qtjambi_ptr, JNIEnv* __jni_env
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QByteArrayView(String)")
     PersistentJ2CStringBuffer* bufferData = new PersistentJ2CStringBuffer(__jni_env, jstring(__java_arguments[0].l));
+    JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
     if(bufferData->length()>0){
-        jobject address = QtJambiAPI::toJavaLongObject(__jni_env, qintptr(bufferData));
+        jobject address = qtjambi_cast<jobject>(__jni_env, jlong(bufferData));
         __jni_env->SetObjectArrayElement(jobjectArray(__java_arguments[1].l), 0, address);
         JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
         new(__qtjambi_ptr) QByteArrayView(reinterpret_cast<const char*>(bufferData->data()), bufferData->length());
@@ -4517,7 +4581,7 @@ void __qt_construct_QByteArrayView_byte_array_int(void* __qtjambi_ptr, JNIEnv* _
     QTJAMBI_NATIVE_METHOD_CALL("construct QByteArrayView(byte[])")
     PersistentJConstByteArrayPointer* bufferData = new PersistentJConstByteArrayPointer(__jni_env, jbyteArray(__java_arguments[0].l));
     if(bufferData->size()>0){
-        jobject address = QtJambiAPI::toJavaLongObject(__jni_env, qintptr(bufferData));
+        jobject address = qtjambi_cast<jobject>(__jni_env, jlong(bufferData));
         __jni_env->SetObjectArrayElement(jobjectArray(__java_arguments[3].l), 0, address);
         JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
         new(__qtjambi_ptr) QByteArrayView(bufferData->pointer()+__java_arguments[1].i, __java_arguments[2].i<0 ? bufferData->size()-__java_arguments[1].i : qMin<jsize>(bufferData->size()-__java_arguments[1].i, __java_arguments[2].i));
@@ -4729,11 +4793,11 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QCoreApplication_requestPermis
 (JNIEnv * __jni_env, jclass, QtJambiNativeID this_id, jobject permission_obj, QtJambiNativeID context_id, jobject slot)
 {
     QTJAMBI_TRY{
-        QCoreApplication *__qt_this = QtJambiAPI::objectFromNativeId<QCoreApplication>(this_id);
+        QCoreApplication *__qt_this = qtjambi_cast<QCoreApplication*>(this_id);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         Permission pm;
         pm.data = qtjambi_cast<QVariant>(__jni_env, permission_obj);
-        QObject *context = QtJambiAPI::objectFromNativeId<QObject>(context_id);
+        QObject *context = qtjambi_cast<QObject*>(context_id);
         auto functor = [_slot = JObjectWrapper(__jni_env, slot)](const QPermission & perm){
             if(JniEnvironment env{200}){
                 QTJAMBI_TRY{
@@ -4757,11 +4821,11 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QCoreApplication_requestPermis
 (JNIEnv * __jni_env, jclass, QtJambiNativeID this_id, jobject permission_obj, QtJambiNativeID context_id, jobject slot)
 {
     QTJAMBI_TRY{
-        QCoreApplication *__qt_this = QtJambiAPI::objectFromNativeId<QCoreApplication>(this_id);
+        QCoreApplication *__qt_this = qtjambi_cast<QCoreApplication*>(this_id);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         Permission pm;
         pm.data = qtjambi_cast<QVariant>(__jni_env, permission_obj);
-        QObject *context = QtJambiAPI::objectFromNativeId<QObject>(context_id);
+        QObject *context = qtjambi_cast<QObject*>(context_id);
         auto functor = [_slot = JObjectWrapper(__jni_env, slot)](const QPermission & perm){
             if(JniEnvironment env{200}){
                 QTJAMBI_TRY{
@@ -4783,11 +4847,101 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QCoreApplication_requestPermis
 #endif
 #endif
 
+struct Dummy{
+    QVariantAnimation::Interpolator func;
+    int interpolationType;
+};
+
+using DummyFunction = QVariant (*)(const Dummy &from, const Dummy &to, qreal progress);
+
+union DummyU{
+    DummyU(DummyFunction _func) : func(_func) {}
+    DummyU(Dummy* _dummy) : dummy(_dummy) {}
+    operator QVariantAnimation::Interpolator() { return dummy->func; }
+    operator int() { return dummy->interpolationType; }
+    operator DummyFunction() { return func; };
+private:
+    DummyFunction func;
+    Dummy* dummy;
+};
+
+template <>
+void qRegisterAnimationInterpolator<Dummy>(DummyFunction func) {
+    DummyU u(func);
+    QVariantAnimation::registerInterpolator(u, u);
+}
+
+void qRegisterAnimationInterpolator(QVariantAnimation::Interpolator interpolator, int interpolationType){
+    Dummy d{interpolator, interpolationType};
+    DummyU u{&d};
+    qRegisterAnimationInterpolator<Dummy>(u);
+}
+
+QVariantAnimation::Interpolator createInterpolator(std::function<QVariant(const void*, const void*, qreal)> &&fun, int metaType){
+    return qtjambi_function_pointer<14,QVariant(const void*, const void*, qreal)>(std::move(fun), metaType);
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVariantAnimation_registerAnimationInterpolator
+(JNIEnv *__jni_env, jclass, jobject functor, int metaType)
+{
+    QTJAMBI_NATIVE_METHOD_CALL("qRegisterAnimationInterpolator(QVariantAnimation::Interpolator,int)")
+    QTJAMBI_TRY {
+        QVariantAnimation::Interpolator interpolator = createInterpolator([metaType = QMetaType(metaType), functor = JObjectWrapper(__jni_env, functor)](const void* from, const void* to, qreal progress) -> QVariant{
+            if(JniEnvironmentExceptionHandler env{256}){
+                QTJAMBI_TRY {
+                    jobject _from = CoreAPI::convertToJavaObject(env, metaType, from);
+                    jobject _to = CoreAPI::convertToJavaObject(env, metaType, to);
+                    jobject result = Java::QtCore::QVariantAnimation$Interpolator::compute(env, functor.object(env), _from, _to, progress);
+                    return qtjambi_cast<QVariant>(env, result);
+                }QTJAMBI_CATCH(const JavaException& exn){
+                    env.handleException(exn, "qRegisterAnimationInterpolator(QVariantAnimation::Interpolator,int)");
+                }QTJAMBI_TRY_END
+            }
+            return {};
+        }, metaType);
+        qRegisterAnimationInterpolator(interpolator, metaType);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+}
+
+#define PRIMITIVE_TYPED_REGISTER_ANIMATION_INTERPOLATOR(P,Ptype,ptype)\
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QVariantAnimation_registerAnimationInterpolator##P\
+(JNIEnv *__jni_env, jclass, jobject functor)\
+{\
+    QTJAMBI_NATIVE_METHOD_CALL("qRegisterAnimationInterpolator(QVariantAnimation::Interpolator,int)")\
+    int metaType = qMetaTypeId<ptype>();\
+    QTJAMBI_TRY {\
+        QVariantAnimation::Interpolator interpolator = createInterpolator([functor = JObjectWrapper(__jni_env, functor)](const void* from, const void* to, qreal progress) -> QVariant{\
+            if(JniEnvironmentExceptionHandler env{256}){\
+                QTJAMBI_TRY {\
+                    return QVariant::fromValue<ptype>(Java::QtCore::QVariantAnimation$##Ptype##Interpolator::compute(env, functor.object(env), reinterpret_value_cast<ptype>(from), reinterpret_value_cast<ptype>(to), progress));\
+                }QTJAMBI_CATCH(const JavaException& exn){\
+                    env.handleException(exn, "qRegisterAnimationInterpolator(QVariantAnimation::Interpolator,int)");\
+                }QTJAMBI_TRY_END\
+            }\
+            return {};\
+        }, metaType);\
+        qRegisterAnimationInterpolator(interpolator, metaType);\
+    }QTJAMBI_CATCH(const JavaException& exn){\
+        exn.raiseInJava(__jni_env);\
+    }QTJAMBI_TRY_END\
+}
+
+PRIMITIVE_TYPED_REGISTER_ANIMATION_INTERPOLATOR(I,Int,int)
+PRIMITIVE_TYPED_REGISTER_ANIMATION_INTERPOLATOR(L,Long,qlonglong)
+PRIMITIVE_TYPED_REGISTER_ANIMATION_INTERPOLATOR(B,Byte,char)
+PRIMITIVE_TYPED_REGISTER_ANIMATION_INTERPOLATOR(S,Short,short)
+PRIMITIVE_TYPED_REGISTER_ANIMATION_INTERPOLATOR(Z,Boolean,bool)
+PRIMITIVE_TYPED_REGISTER_ANIMATION_INTERPOLATOR(C,Char,char16_t)
+PRIMITIVE_TYPED_REGISTER_ANIMATION_INTERPOLATOR(F,Float,float)
+PRIMITIVE_TYPED_REGISTER_ANIMATION_INTERPOLATOR(D,Double,double)
+
 void initialize_meta_info_QFutureInterface();
 
-void deleter_QUntypedPropertyBinding(void *ptr, bool isShell);
-void deleter_QUntypedBindable(void *ptr, bool isShell);
-void deleter_QPropertyObserver(void *ptr, bool isShell);
+void __qt_delete_QUntypedPropertyBinding(void *ptr, bool isShell);
+void __qt_delete_QUntypedBindable(void *ptr, bool isShell);
+void __qt_delete_QPropertyObserver(void *ptr, bool isShell);
 
 void initialize_meta_info_QtCore(){
     using namespace RegistryAPI;
@@ -4991,17 +5145,17 @@ void initialize_meta_info_QtCore(){
         registerValueTypeInfo<QBindable<char32_t>>("QBindable<char32_t>", "io/qt/core/QIntBindable");
         registerValueTypeInfo<QBindable<char16_t>>("QBindable<char16_t>", "io/qt/core/QCharBindable");
         registerValueTypeInfo<QBindable<QVariant>>("QBindable<QVariant>", "io/qt/core/QBindable");
-        registerDeleter(typeid(QBindable<bool>), &deleter_QUntypedBindable);
-        registerDeleter(typeid(QBindable<qint8>), &deleter_QUntypedBindable);
-        registerDeleter(typeid(QBindable<qint16>), &deleter_QUntypedBindable);
-        registerDeleter(typeid(QBindable<qint32>), &deleter_QUntypedBindable);
-        registerDeleter(typeid(QBindable<qint64>), &deleter_QUntypedBindable);
-        registerDeleter(typeid(QBindable<float>), &deleter_QUntypedBindable);
-        registerDeleter(typeid(QBindable<double>), &deleter_QUntypedBindable);
-        registerDeleter(typeid(QBindable<QChar>), &deleter_QUntypedBindable);
-        registerDeleter(typeid(QBindable<char32_t>), &deleter_QUntypedBindable);
-        registerDeleter(typeid(QBindable<char16_t>), &deleter_QUntypedBindable);
-        registerDeleter(typeid(QBindable<QVariant>), &deleter_QUntypedBindable);
+        registerDeleter(typeid(QBindable<bool>), &__qt_delete_QUntypedBindable);
+        registerDeleter(typeid(QBindable<qint8>), &__qt_delete_QUntypedBindable);
+        registerDeleter(typeid(QBindable<qint16>), &__qt_delete_QUntypedBindable);
+        registerDeleter(typeid(QBindable<qint32>), &__qt_delete_QUntypedBindable);
+        registerDeleter(typeid(QBindable<qint64>), &__qt_delete_QUntypedBindable);
+        registerDeleter(typeid(QBindable<float>), &__qt_delete_QUntypedBindable);
+        registerDeleter(typeid(QBindable<double>), &__qt_delete_QUntypedBindable);
+        registerDeleter(typeid(QBindable<QChar>), &__qt_delete_QUntypedBindable);
+        registerDeleter(typeid(QBindable<char32_t>), &__qt_delete_QUntypedBindable);
+        registerDeleter(typeid(QBindable<char16_t>), &__qt_delete_QUntypedBindable);
+        registerDeleter(typeid(QBindable<QVariant>), &__qt_delete_QUntypedBindable);
     }
 
     {
@@ -5137,17 +5291,17 @@ void initialize_meta_info_QtCore(){
         registerValueTypeInfo<QPropertyBinding<char32_t>>("QPropertyBinding<char32_t>", "io/qt/core/QIntPropertyBinding");
         registerValueTypeInfo<QPropertyBinding<char16_t>>("QPropertyBinding<char16_t>", "io/qt/core/QCharPropertyBinding");
         registerValueTypeInfo<QPropertyBinding<QVariant>>("QPropertyBinding<QVariant>", "io/qt/core/QPropertyBinding");
-        registerDeleter(typeid(QPropertyBinding<bool>), &deleter_QUntypedPropertyBinding);
-        registerDeleter(typeid(QPropertyBinding<qint8>), &deleter_QUntypedPropertyBinding);
-        registerDeleter(typeid(QPropertyBinding<QChar>), &deleter_QUntypedPropertyBinding);
-        registerDeleter(typeid(QPropertyBinding<qint16>), &deleter_QUntypedPropertyBinding);
-        registerDeleter(typeid(QPropertyBinding<qint32>), &deleter_QUntypedPropertyBinding);
-        registerDeleter(typeid(QPropertyBinding<qint64>), &deleter_QUntypedPropertyBinding);
-        registerDeleter(typeid(QPropertyBinding<float>), &deleter_QUntypedPropertyBinding);
-        registerDeleter(typeid(QPropertyBinding<double>), &deleter_QUntypedPropertyBinding);
-        registerDeleter(typeid(QPropertyBinding<char32_t>), &deleter_QUntypedPropertyBinding);
-        registerDeleter(typeid(QPropertyBinding<char16_t>), &deleter_QUntypedPropertyBinding);
-        registerDeleter(typeid(QPropertyBinding<QVariant>), &deleter_QUntypedPropertyBinding);
+        registerDeleter(typeid(QPropertyBinding<bool>), &__qt_delete_QUntypedPropertyBinding);
+        registerDeleter(typeid(QPropertyBinding<qint8>), &__qt_delete_QUntypedPropertyBinding);
+        registerDeleter(typeid(QPropertyBinding<QChar>), &__qt_delete_QUntypedPropertyBinding);
+        registerDeleter(typeid(QPropertyBinding<qint16>), &__qt_delete_QUntypedPropertyBinding);
+        registerDeleter(typeid(QPropertyBinding<qint32>), &__qt_delete_QUntypedPropertyBinding);
+        registerDeleter(typeid(QPropertyBinding<qint64>), &__qt_delete_QUntypedPropertyBinding);
+        registerDeleter(typeid(QPropertyBinding<float>), &__qt_delete_QUntypedPropertyBinding);
+        registerDeleter(typeid(QPropertyBinding<double>), &__qt_delete_QUntypedPropertyBinding);
+        registerDeleter(typeid(QPropertyBinding<char32_t>), &__qt_delete_QUntypedPropertyBinding);
+        registerDeleter(typeid(QPropertyBinding<char16_t>), &__qt_delete_QUntypedPropertyBinding);
+        registerDeleter(typeid(QPropertyBinding<QVariant>), &__qt_delete_QUntypedPropertyBinding);
     }
 
     {
@@ -5173,24 +5327,24 @@ void initialize_meta_info_QtCore(){
         registerValueTypeInfo<QPropertyAlias<QChar>>("QPropertyAlias<QChar>", "io/qt/core/QCharPropertyAlias");
         registerValueTypeInfo<QPropertyAlias<char16_t>>("QPropertyAlias<char16_t>", "io/qt/core/QCharPropertyAlias");
         registerValueTypeInfo<QPropertyAlias<QVariant>>("QPropertyAlias<QVariant>", "io/qt/core/QPropertyAlias");
-        registerDeleter(typeid(QPropertyAlias<bool>), &deleter_QPropertyObserver);
-        registerDeleter(typeid(QPropertyAlias<qint8>), &deleter_QPropertyObserver);
-        registerDeleter(typeid(QPropertyAlias<qint16>), &deleter_QPropertyObserver);
-        registerDeleter(typeid(QPropertyAlias<qint32>), &deleter_QPropertyObserver);
-        registerDeleter(typeid(QPropertyAlias<qint64>), &deleter_QPropertyObserver);
-        registerDeleter(typeid(QPropertyAlias<float>), &deleter_QPropertyObserver);
-        registerDeleter(typeid(QPropertyAlias<double>), &deleter_QPropertyObserver);
-        registerDeleter(typeid(QPropertyAlias<QChar>), &deleter_QPropertyObserver);
-        registerDeleter(typeid(QPropertyAlias<char32_t>), &deleter_QPropertyObserver);
-        registerDeleter(typeid(QPropertyAlias<char16_t>), &deleter_QPropertyObserver);
-        registerDeleter(typeid(QPropertyAlias<QVariant>), &deleter_QPropertyObserver);
+        registerDeleter(typeid(QPropertyAlias<bool>), &__qt_delete_QPropertyObserver);
+        registerDeleter(typeid(QPropertyAlias<qint8>), &__qt_delete_QPropertyObserver);
+        registerDeleter(typeid(QPropertyAlias<qint16>), &__qt_delete_QPropertyObserver);
+        registerDeleter(typeid(QPropertyAlias<qint32>), &__qt_delete_QPropertyObserver);
+        registerDeleter(typeid(QPropertyAlias<qint64>), &__qt_delete_QPropertyObserver);
+        registerDeleter(typeid(QPropertyAlias<float>), &__qt_delete_QPropertyObserver);
+        registerDeleter(typeid(QPropertyAlias<double>), &__qt_delete_QPropertyObserver);
+        registerDeleter(typeid(QPropertyAlias<QChar>), &__qt_delete_QPropertyObserver);
+        registerDeleter(typeid(QPropertyAlias<char32_t>), &__qt_delete_QPropertyObserver);
+        registerDeleter(typeid(QPropertyAlias<char16_t>), &__qt_delete_QPropertyObserver);
+        registerDeleter(typeid(QPropertyAlias<QVariant>), &__qt_delete_QPropertyObserver);
     }
     {
         const std::type_info& typeId = registerObjectTypeInfo<QPropertyChangeHandler<void(*)()>>("QPropertyChangeHandler", "io/qt/core/QPropertyChangeHandler");
         registerConstructorInfos(typeId, 0, &__qt_destruct_QPropertyObserver, {
             {&__qt_construct_QPropertyChangeHandler, nullptr}
         });
-        registerDeleter(typeId, &deleter_QPropertyObserver);
+        registerDeleter(typeId, &__qt_delete_QPropertyObserver);
         registerSizeOfShell(typeId, sizeof_QPropertyObserver_shell(), alignof_QPropertyObserver_shell());
     }
 #if QT_VERSION >= QT_VERSION_CHECK(6,2,0)
@@ -5199,7 +5353,7 @@ void initialize_meta_info_QtCore(){
         registerConstructorInfos(typeId, 0, &__qt_destruct_QPropertyObserver, {
             {&__qt_construct_QPropertyNotifier, nullptr}
         });
-        registerDeleter(typeId, &deleter_QPropertyObserver);
+        registerDeleter(typeId, &__qt_delete_QPropertyObserver);
         registerSizeOfShell(typeId, sizeof_QPropertyObserver_shell(), alignof_QPropertyObserver_shell());
     }
 #if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)

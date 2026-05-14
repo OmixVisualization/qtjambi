@@ -106,6 +106,13 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 		public Class<?> accessClass(MethodHandles.Lookup lookup, Class<?> targetClass) throws IllegalAccessException;
 	}
 	private final AccessClass lookupAccessClass;
+	
+	private static class MetafactoryHandle{
+		private static final MetaFactory metafactory() {return java.lang.invoke.LambdaMetafactory::metafactory;}
+	}
+	private static class AccessClassHandle{
+		private static final AccessClass accessClass() {return MethodHandles.Lookup::accessClass;}
+	}
 
 	JavaMethodHandles() {
 		MetaFactory _resolvedMetaFactory = null;
@@ -113,20 +120,26 @@ final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandl
 		if(!Boolean.getBoolean("io.qt.internal.disable-metalambdas")) {
 			try {
 				if(LibraryUtility.operatingSystem==OperatingSystem.Android) {
-					java.lang.invoke.LambdaMetafactory.class.getMethod("metafactory",   MethodHandles.Lookup.class,
-																	                    String.class,
-																	                    MethodType.class,
-																	                    MethodType.class,
-																	                    MethodHandle.class,
-																	                    MethodType.class);
+					java.lang.reflect.Method[] methods = java.lang.invoke.LambdaMetafactory.class.getDeclaredMethods();
+					if(methods.length>0) {
+						java.lang.invoke.LambdaMetafactory.class.getMethod("metafactory",   MethodHandles.Lookup.class,
+																		                    String.class,
+																		                    MethodType.class,
+																		                    MethodType.class,
+																		                    MethodHandle.class,
+																		                    MethodType.class);
+						_resolvedMetaFactory = MetafactoryHandle.metafactory();
+					}
+				}else {
+					_resolvedMetaFactory = MetafactoryHandle.metafactory();
 				}
-				_resolvedMetaFactory = java.lang.invoke.LambdaMetafactory::metafactory;
-			}catch(Throwable t) {}
+			}catch(Throwable t) {
+			}
 			try {
 				if(LibraryUtility.operatingSystem==OperatingSystem.Android) {
 					MethodHandles.Lookup.class.getMethod("accessClass", Class.class);
 				}
-				_lookupAccessClass = MethodHandles.Lookup::accessClass;
+				_lookupAccessClass = AccessClassHandle.accessClass();
 			}catch(Throwable e) {
 				_lookupAccessClass = (_lookup,_cls)->_cls;
 			}

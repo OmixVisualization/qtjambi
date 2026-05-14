@@ -1504,8 +1504,8 @@ void AutoMapAccess::insertOrAssign(MapData& data, const void* key, JNIEnv *env, 
 #endif
 }
 
-jint AutoMapAccess::copyIfNotEquivalentTo(MapData& data, const MapData& copyFrom, const void* key){
-    jint result = 0;
+qsizetype AutoMapAccess::copyIfNotEquivalentTo(MapData& data, const MapData& copyFrom, const void* key){
+    qsizetype result = 0;
     node_iterator iter(begin(copyFrom));
     node_iterator cend(end(copyFrom));
     while(iter != cend){
@@ -1521,8 +1521,8 @@ jint AutoMapAccess::copyIfNotEquivalentTo(MapData& data, const MapData& copyFrom
     return result;
 }
 
-jint AutoMapAccess::copyIfNotEquivalentTo(MapData& data, const MapData& copyFrom, const void* key, const void* value){
-    jint result = 0;
+qsizetype AutoMapAccess::copyIfNotEquivalentTo(MapData& data, const MapData& copyFrom, const void* key, const void* value){
+    qsizetype result = 0;
     node_iterator iter(begin(copyFrom));
     node_iterator cend(end(copyFrom));
     while(iter != cend){
@@ -1967,8 +1967,8 @@ bool AutoMapAccess::hasOwnerFunction(){
     return false;
 }
 
-jint AutoMapAccess::size(JNIEnv *,const void* container){
-    return jint(size(container));
+qsizetype AutoMapAccess::size(JNIEnv *,const void* container){
+    return size(container);
 }
 
 qsizetype AutoMapAccess::size(const void* container){
@@ -2018,12 +2018,12 @@ bool AutoMapAccess::contains(const void* container, const void* key)
 
 jobject AutoMapAccess::begin(JNIEnv * env, const ExtendedContainerInfo& container)
 {
-    return createIterator(env, container.nativeId, new iterator(begin(detach(*reinterpret_cast<MapDataPointer*>(container.container))), m_offset1, m_offset2));
+    return createIterator(env, container.nativeId, iterator(begin(detach(*reinterpret_cast<MapDataPointer*>(container.container))), m_offset1, m_offset2));
 }
 
 jobject AutoMapAccess::end(JNIEnv * env, const ExtendedContainerInfo& container)
 {
-    return createIterator(env, container.nativeId, new iterator(end(detach(*reinterpret_cast<MapDataPointer*>(container.container))), m_offset1, m_offset2));
+    return createIterator(env, container.nativeId, iterator(end(detach(*reinterpret_cast<MapDataPointer*>(container.container))), m_offset1, m_offset2));
 }
 
 jobject AutoMapAccess::find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key)
@@ -2034,7 +2034,7 @@ jobject AutoMapAccess::find(JNIEnv * env, const ExtendedContainerInfo& container
         QtJambiScope scope;
         void* akey = nullptr;
         if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
-            return createIterator(env, container.nativeId, new iterator(find(*d, akey), m_offset1, m_offset2));
+            return createIterator(env, container.nativeId, iterator(find(*d, akey), m_offset1, m_offset2));
         }
     }
     return end(env, container);
@@ -2043,7 +2043,7 @@ jobject AutoMapAccess::find(JNIEnv * env, const ExtendedContainerInfo& container
 jobject AutoMapAccess::constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container)
 {
     if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
-        return createConstIterator(env, container.nativeId, new iterator(begin(*d), m_offset1, m_offset2));
+        return createConstIterator(env, container.nativeId, iterator(begin(*d), m_offset1, m_offset2));
     }else{
         return constEnd(env, container);
     }
@@ -2052,9 +2052,9 @@ jobject AutoMapAccess::constBegin(JNIEnv * env, const ConstExtendedContainerInfo
 jobject AutoMapAccess::constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container)
 {
     if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
-        return createConstIterator(env, container.nativeId, new iterator(end(*d), m_offset1, m_offset2));
+        return createConstIterator(env, container.nativeId, iterator(end(*d), m_offset1, m_offset2));
     }else{
-        return createConstIterator(env, container.nativeId, new iterator());
+        return createConstIterator(env, container.nativeId, iterator());
     }
 }
 
@@ -2066,7 +2066,7 @@ jobject AutoMapAccess::constFind(JNIEnv * env, const ConstExtendedContainerInfo&
         QtJambiScope scope;
         void* akey = nullptr;
         if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
-            return createConstIterator(env, container.nativeId, new iterator(find(*d, akey), m_offset1, m_offset2));
+            return createConstIterator(env, container.nativeId, iterator(find(*d, akey), m_offset1, m_offset2));
         }
     }
     return constEnd(env, container);
@@ -2080,7 +2080,7 @@ jobject AutoMapAccess::constLowerBound(JNIEnv * env, const ConstExtendedContaine
         QtJambiScope scope;
         void* akey = nullptr;
         if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
-            return createConstIterator(env, container.nativeId, new iterator(node_iterator(findLowerBound(*d, akey)), m_offset1, m_offset2));
+            return createConstIterator(env, container.nativeId, iterator(node_iterator(findLowerBound(*d, akey)), m_offset1, m_offset2));
         }
     }
     return constEnd(env, container);
@@ -2094,7 +2094,7 @@ jobject AutoMapAccess::constUpperBound(JNIEnv * env, const ConstExtendedContaine
         QtJambiScope scope;
         void* akey = nullptr;
         if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
-            return createConstIterator(env, container.nativeId, new iterator(findUpperBound(*d, akey), m_offset1, m_offset2));
+            return createConstIterator(env, container.nativeId, iterator(findUpperBound(*d, akey), m_offset1, m_offset2));
         }
     }
     return constEnd(env, container);
@@ -2165,9 +2165,9 @@ bool AutoMapAccess::destructContainer(void* container){
     return true;
 }
 
-jint AutoMapAccess::count(JNIEnv *env, const void* container, jobject key)
+qsizetype AutoMapAccess::count(JNIEnv *env, const void* container, jobject key)
 {
-    jint result = 0;
+    qsizetype result = 0;
     if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container)){
         jvalue jv;
         jv.l = key;
@@ -2738,7 +2738,7 @@ ContainerAndAccessInfo AutoMapAccess::keys(JNIEnv *env, const ConstContainerInfo
         result.container = listAccess->createContainer();
         result.object = ContainerAPI::objectFromQList(env, result.container, listAccess);
         result.access = listAccess;
-        jint idx = listAccess->size(env, result.container);
+        qsizetype idx = listAccess->size(env, result.container);
         if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
             listAccess->reserve(env, result, d->size);
             node_iterator end1 = end(*d);
@@ -2798,7 +2798,7 @@ ContainerAndAccessInfo AutoMapAccess::keys(JNIEnv *env, const ConstContainerInfo
         void *_qvaluePtr;
         _value.l = value;
         _qvaluePtr = nullptr;
-        jint idx = listAccess->size(env, result.container);
+        qsizetype idx = listAccess->size(env, result.container);
         if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
             if(m_valueExternalToInternalConverter(env, &scope, _value, _qvaluePtr, jValueType::l)){
                 listAccess->reserve(env, result, d->size);
@@ -2823,9 +2823,9 @@ ContainerAndAccessInfo AutoMapAccess::keys(JNIEnv *env, const ConstContainerInfo
     return result;
 }
 
-jint AutoMapAccess::remove(JNIEnv *env, const ContainerInfo& container, jobject key)
+qsizetype AutoMapAccess::remove(JNIEnv *env, const ContainerInfo& container, jobject key)
 {
-    int n = 0;
+    qsizetype n = 0;
     jvalue jv;
     jv.l = key;
     QtJambiScope scope;
@@ -2833,7 +2833,7 @@ jint AutoMapAccess::remove(JNIEnv *env, const ContainerInfo& container, jobject 
     if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
         if(MapDataPointer& d = *reinterpret_cast<MapDataPointer*>(container.container)){
             if(!d.isShared()){
-                n = jint(erase(*d, akey));
+                n = erase(*d, akey);
             }else{
                 MapData *newData = createMapData();
                 n = copyIfNotEquivalentTo(*newData, *d, akey);
@@ -2902,7 +2902,7 @@ ContainerAndAccessInfo AutoMapAccess::values(JNIEnv *env, const ConstContainerIn
         result.container = listAccess->createContainer();
         result.object = ContainerAPI::objectFromQList(env, result.container, listAccess);
         result.access = listAccess;
-        jint idx = listAccess->size(env, result.container);
+        qsizetype idx = listAccess->size(env, result.container);
         if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
             node_iterator end1 = end(*d);
             node_iterator iter1 = begin(*d);
@@ -2922,7 +2922,7 @@ ContainerAndAccessInfo AutoMapAccess::values(JNIEnv *env, const ConstContainerIn
     return result;
 }
 
-jobject AutoMapAccess::createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr)
+jobject AutoMapAccess::createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iter)
 {
     AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>* containerAccess = createAutoAssociativeConstIteratorAccess(m_valueInternalToExternalConverter,
             [](auto*,void*ptr){
@@ -2952,12 +2952,12 @@ jobject AutoMapAccess::createConstIterator(JNIEnv * env, QtJambiNativeID ownerId
             m_valueMetaType,
             /*offsets not required*/ 0, 0
         );
-    return QtJambiAPI::convertQAssociativeIteratorToJavaObject(env, ownerId, iteratorPtr, [](void* ptr,bool){
+    return QtJambiAPI::convertQAssociativeIteratorToJavaObject(env, ownerId, new iterator(std::move(iter)), [](void* ptr,bool){
             delete reinterpret_cast<iterator*>(ptr);
         }, containerAccess);
 }
 
-jobject AutoMapAccess::createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr)
+jobject AutoMapAccess::createIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iter)
 {
     AbstractAssociativeIteratorAccess* containerAccess = new AutoAssociativeIteratorAccess(m_valueInternalToExternalConverter,
             [](AutoAssociativeIteratorAccess*, void*ptr){
@@ -2992,7 +2992,7 @@ jobject AutoMapAccess::createIterator(JNIEnv * env, QtJambiNativeID ownerId, voi
             m_valueMetaType,
             /*offsets not required*/ 0, 0
         );
-    return QtJambiAPI::convertQAssociativeIteratorToJavaObject(env, ownerId, iteratorPtr, [](void* ptr,bool){
+    return QtJambiAPI::convertQAssociativeIteratorToJavaObject(env, ownerId, new iterator(std::move(iter)), [](void* ptr,bool){
             delete reinterpret_cast<iterator*>(ptr);
         }, containerAccess);
 }
@@ -3074,7 +3074,7 @@ void KeyPointerRCAutoMapAccess::updateRC(JNIEnv * env, const ContainerInfo& cont
             break;
         }
         if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
     }
     clearRC(env, container.object);
     addAllRC(env, container.object, set);
@@ -3110,8 +3110,8 @@ void KeyPointerRCAutoMapAccess::insert(JNIEnv * env, const ContainerInfo& contai
     addUniqueRC(env, container.object, key);
 }
 
-jint KeyPointerRCAutoMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = AutoMapAccess::remove(env, container, key);
+qsizetype KeyPointerRCAutoMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    qsizetype result = AutoMapAccess::remove(env, container, key);
     if(result>0){
         removeRC(env, container.object, key);
     }
@@ -3165,7 +3165,7 @@ void ValuePointerRCAutoMapAccess::updateRC(JNIEnv * env, const ContainerInfo& co
             break;
         }
         if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
     }
     clearRC(env, container.object);
     addAllRC(env, container.object, set);
@@ -3203,9 +3203,9 @@ void ValuePointerRCAutoMapAccess::insert(JNIEnv * env, const ContainerInfo& cont
     addRC(env, container.object, value);
 }
 
-jint ValuePointerRCAutoMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+qsizetype ValuePointerRCAutoMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
     jobject oldValue = AutoMapAccess::value(env, container.container, key, nullptr);
-    jint result = AutoMapAccess::remove(env, container, key);
+    qsizetype result = AutoMapAccess::remove(env, container, key);
     if(result>0){
         removeRC(env, container.object, oldValue);
     }
@@ -3319,8 +3319,8 @@ void PointersRCAutoMapAccess::insert(JNIEnv * env, const ContainerInfo& containe
     putRC(env, container.object, key, value);
 }
 
-jint PointersRCAutoMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = AutoMapAccess::remove(env, container, key);
+qsizetype PointersRCAutoMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    qsizetype result = AutoMapAccess::remove(env, container, key);
     removeRC(env, container.object, key, result);
     return result;
 }
@@ -3393,8 +3393,8 @@ void NestedPointersRCAutoMapAccess::insert(JNIEnv * env, const ContainerInfo& co
     addNestedValueRC(env, container.object, valueType(), hasValueNestedPointers(), value);
 }
 
-jint NestedPointersRCAutoMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
-    jint result = AutoMapAccess::remove(env, container, key);
+qsizetype NestedPointersRCAutoMapAccess::remove(JNIEnv * env, const ContainerInfo& container, jobject key) {
+    qsizetype result = AutoMapAccess::remove(env, container, key);
     if(result>0){
         updateRC(env, container);
     }

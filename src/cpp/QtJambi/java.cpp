@@ -980,7 +980,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util,Collection,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(clear,()V)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(remove,(Ljava/lang/Object;)Z)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(contains,(Ljava/lang/Object;)Z)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(iterator,()Ljava/util/Iterator;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Iterable,
@@ -1358,6 +1357,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,MetaObjectData$MetaTypeInfo,
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,MetaObjectData,
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(classLoader,Ljava/lang/ClassLoader;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(intData,Lio/qt/internal/MetaObjectData$IntArray;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(stringData,Ljava/util/List;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(signalInfos,Ljava/util/List;)
@@ -1380,6 +1380,9 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,MetaObjectData,
     QTJAMBI_REPOSITORY_DEFINE_FIELD(privateConstructor,Ljava/lang/reflect/Constructor;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(inPlaceConstructor,Ljava/lang/reflect/Constructor;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(hasStaticMembers,Z)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(hasExplicitMembers,Z)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(hasClassInfo,Z)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(hasQmlClassInfo,Z)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QThreadAffinityException,

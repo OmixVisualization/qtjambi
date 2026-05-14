@@ -30,14 +30,17 @@
 #include <QtQuickTest/QtQuickTest>
 
 #include <QtJambi/QtJambiAPI>
-#include <QtJambi/qtjambi_cast.h>
+#include <QtJambi/StringAPI>
+#include <QtJambi/Cast>
 #include <QtCore/private/qcoreapplication_p.h>
 
 extern "C" JNIEXPORT jint JNICALL Java_io_qt_quick_test_QQuickTest_quickTestMainWithSetup
 (JNIEnv *env, jclass, jobjectArray args, jstring name, jstring sourceDir, QtJambiNativeID setup)
 {
     J2CStringBuffer _name(env, name);
+    JavaException::check(env QTJAMBI_STACKTRACEINFO );
     J2CStringBuffer _sourceDir(env, sourceDir);
+    JavaException::check(env QTJAMBI_STACKTRACEINFO );
     int argc;
     char** argv;
     QByteArray appName;
@@ -63,6 +66,6 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_quick_test_QQuickTest_quickTestMain
                 env->ReleaseStringUTFChars(strg, data);
         }
     }
-    QObject* _setup = QtJambiAPI::objectFromNativeId<QObject>(setup);
+    QObject* _setup = qtjambi_cast<QObject*>(setup);
     return quick_test_main_with_setup(argc, argv, _name.data(), _sourceDir.data(), _setup);
 }

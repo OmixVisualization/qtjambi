@@ -32,15 +32,13 @@
     <target name="build">
         <dirname property="antfile.dir" file="${ant.file}"/>
         <basename property="module" file="${antfile.dir}"/>
-        <propertycopy name="module.available" from="${module}.any.true"/>
         <if>
             <and>
-                <istrue value="${module.available}"/>
-                <available file="${generator.outputdir}/java/${module}" type="dir"/>
+                <available file="${qtjambi.generator.outputdir}/java/${module}" type="dir"/>
             </and>
             <then>
                 <path id="sourcedirs">
-                    <pathelement location="${generator.outputdir}/java/${module}"/>
+                    <pathelement location="${qtjambi.generator.outputdir}/java/${module}"/>
                     <pathelement location="${antfile.dir}"/>
                 </path>
                 <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build-impl">

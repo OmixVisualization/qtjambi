@@ -667,7 +667,12 @@ auto %out = [slot = JObjectWrapper(%env, %in)](const QHttpServerRequest & reques
     
     ObjectType{
         name: "QHttpServerRouter"
-
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/StringAPI"
+                location: Include.Global
+            }
+        }
         Rejection{functionName: "bind_front"}
         ModifyFunction{
             signature: "addConverter<Type>(QAnyStringView)"
@@ -955,7 +960,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServerRouterRule_in
         arguments[0].l = pathPattern0;
         arguments[1].l = context1;
         arguments[2].l = func2;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler, sizeof(QHttpServerRouterRule_shell), alignof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &deleter_QHttpServerRouterRule, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler, sizeof(QHttpServerRouterRule_shell), alignof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &__qt_delete_QHttpServerRouterRule, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -978,7 +983,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServerRouterRule_in
         arguments[1].l = methods1;
         arguments[2].l = context2;
         arguments[3].l = func3;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler, sizeof(QHttpServerRouterRule_shell), alignof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &deleter_QHttpServerRouterRule, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler, sizeof(QHttpServerRouterRule_shell), alignof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &__qt_delete_QHttpServerRouterRule, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -999,7 +1004,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServerRouterRule_in
         arguments[0].l = pathPattern0;
         arguments[1].l = context2;
         arguments[2].l = func3;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler_3, sizeof(QHttpServerRouterRule_shell), alignof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &deleter_QHttpServerRouterRule, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler_3, sizeof(QHttpServerRouterRule_shell), alignof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &__qt_delete_QHttpServerRouterRule, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -1022,7 +1027,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServerRouterRule_in
         arguments[1].l = methods1;
         arguments[2].l = context2;
         arguments[3].l = func3;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler_4, sizeof(QHttpServerRouterRule_shell), alignof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &deleter_QHttpServerRouterRule, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QHttpServerRouterRule_cref_QString_const_QHttpServerRequest_Methods_const_QtPrivate_ContextTypeForFunctor_ContextType_Handler__ptr_rval_Handler_4, sizeof(QHttpServerRouterRule_shell), alignof(QHttpServerRouterRule_shell), typeid(QHttpServerRouterRule), 0, true, &__qt_delete_QHttpServerRouterRule, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END

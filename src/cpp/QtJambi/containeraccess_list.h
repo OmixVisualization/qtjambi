@@ -35,6 +35,7 @@
 #include <QtCore/QStack>
 #include <QtCore/QQueue>
 #include "containeraccess.h"
+#include "qtjambiapi_iterator.h"
 
 #if defined(QTJAMBI_GENERIC_ACCESS)
 
@@ -42,7 +43,7 @@ namespace ContainerAccessAPI {
 
 template<size_t _align, size_t _size, bool _isStatic>
 class GenericListAccess : public AbstractListAccess, public AbstractNestedSequentialAccess {
-    typedef typename std::conditional<_size==0, void*, ContainerElement<_size, 0, _isStatic, _align>>::type T;
+    typedef std::conditional_t<_size==0, void*, ContainerElement<_size, 0, _isStatic, _align>> T;
     MetaTypeInfo<0,_size==0> m_elementMetaTypeInfo;
     QtJambiUtils::InternalToExternalConverter m_internalToExternalConverter;
     QtJambiUtils::ExternalToInternalConverter m_externalToInternalConverter;
@@ -219,7 +220,7 @@ public:
             QTJAMBI_ELEMENT_LOCKER(this);
             reinterpret_cast<QList<T> *>(container.container)->append(*reinterpret_cast<QList<T> *>(containerInfo.container));
         }else{
-            jint idx = size(env, container.container);
+            qsizetype idx = size(env, container.container);
             jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, containerInfo.object);
             while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
                 insert(env, container, idx++, 1, QtJambiAPI::nextOfJavaIterator(env, iter));
@@ -227,7 +228,7 @@ public:
         }
     }
 
-    jobject at(JNIEnv * env, const void* container, jint index) override {
+    jobject at(JNIEnv * env, const void* container, qsizetype index) override {
 
         QTJAMBI_ELEMENT_LOCKER(this);
         const T& result = reinterpret_cast<const QList<T> *>(container)->at(index);
@@ -252,7 +253,7 @@ public:
         return &reinterpret_cast<QList<T> *>(container)->at(index);
     }
 
-    jobject value(JNIEnv * env, const void* container, jint index) override {
+    jobject value(JNIEnv * env, const void* container, qsizetype index) override {
         jvalue _result;
         _result.l = nullptr;
         bool success = false;
@@ -269,7 +270,7 @@ public:
         return nullptr;
     }
 
-    jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) override {
+    jobject value(JNIEnv * env, const void* container, qsizetype index, jobject defaultValue) override {
         jvalue _result;
         _result.l = nullptr;
         bool success = false;
@@ -292,7 +293,7 @@ public:
         return nullptr;
     }
 
-    void swapItemsAt(JNIEnv *, const ContainerInfo& container, jint index1, jint index2) override {
+    void swapItemsAt(JNIEnv *, const ContainerInfo& container, qsizetype index1, qsizetype index2) override {
 
         QTJAMBI_ELEMENT_LOCKER(this);
         reinterpret_cast<QList<T> *>(container.container)->swapItemsAt(index1, index2);
@@ -315,10 +316,10 @@ public:
         return result;
     }
 
-    jint size(JNIEnv *, const void* container) override {
+    qsizetype size(JNIEnv *, const void* container) override {
 
         QTJAMBI_ELEMENT_LOCKER(this);
-        jint result = reinterpret_cast<const QList<T> *>(container)->size();
+        qsizetype result = reinterpret_cast<const QList<T> *>(container)->size();
 
         return result;
     }
@@ -326,19 +327,19 @@ public:
     qsizetype size(const void* container) override {
 
         QTJAMBI_ELEMENT_LOCKER(this);
-        jint result = reinterpret_cast<const QList<T> *>(container)->size();
+        qsizetype result = reinterpret_cast<const QList<T> *>(container)->size();
 
         return result;
     }
 
-    void reserve(JNIEnv *, const ContainerInfo& container, jint size) override {
+    void reserve(JNIEnv *, const ContainerInfo& container, qsizetype size) override {
 
         QTJAMBI_ELEMENT_LOCKER(this);
         reinterpret_cast<QList<T> *>(container.container)->reserve(size);
 
     }
 
-    void replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) override {
+    void replace(JNIEnv * env, const ContainerInfo& container, qsizetype index, jobject value) override {
         jvalue _value;
         _value.l = value;
 
@@ -358,16 +359,16 @@ public:
         }
     }
 
-    void remove(JNIEnv *, const ContainerInfo& container, jint index, jint n) override {
+    void remove(JNIEnv *, const ContainerInfo& container, qsizetype index, qsizetype n) override {
 
         QTJAMBI_ELEMENT_LOCKER(this);
         reinterpret_cast<QList<T> *>(container.container)->remove(index, n);
     }
 
-    jint removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override {
+    qsizetype removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override {
         jvalue _value;
         _value.l = value;
-        jint count = 0;
+        qsizetype count = 0;
 
         QTJAMBI_ELEMENT_LOCKER(this);
         {
@@ -402,14 +403,14 @@ public:
         return false;
     }
 
-    void move(JNIEnv *, const ContainerInfo& container, jint index1, jint index2) override {
+    void move(JNIEnv *, const ContainerInfo& container, qsizetype index1, qsizetype index2) override {
 
         QTJAMBI_ELEMENT_LOCKER(this);
         reinterpret_cast<QList<T> *>(container.container)->move(index1, index2);
 
     }
 
-    ContainerAndAccessInfo mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint index1, jint index2) override {
+    ContainerAndAccessInfo mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, qsizetype index1, qsizetype index2) override {
         QTJAMBI_ELEMENT_LOCKER(this);
         ContainerAndAccessInfo result;
         {
@@ -421,7 +422,7 @@ public:
         return result;
     }
 
-    jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) override {
+    qsizetype lastIndexOf(JNIEnv * env, const void* container, jobject value, qsizetype index) override {
         int idx = -1;
 
         QTJAMBI_ELEMENT_LOCKER(this);
@@ -437,7 +438,7 @@ public:
         return idx;
     }
 
-    jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) override {
+    qsizetype indexOf(JNIEnv * env, const void* container, jobject value, qsizetype index) override {
         int idx = -1;
 
         QTJAMBI_ELEMENT_LOCKER(this);
@@ -469,7 +470,7 @@ public:
         return result;
     }
 
-    jint count(JNIEnv * env, const void* container, jobject value) override {
+    qsizetype count(JNIEnv * env, const void* container, jobject value) override {
         jvalue _value;
         _value.l = value;
         int result = 0;
@@ -508,7 +509,7 @@ public:
 
     }
 
-    void insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) override {
+    void insert(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n, jobject value) override {
         jvalue _value;
         _value.l = value;
 
@@ -549,14 +550,14 @@ public:
         return true;
     }
 
-    jint capacity(JNIEnv *, const void* container) override {
+    qsizetype capacity(JNIEnv *, const void* container) override {
 
         QTJAMBI_ELEMENT_LOCKER(this);
         return reinterpret_cast<const QList<T> *>(container)->capacity();
 
     }
 
-    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size) override {
+    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, qsizetype size) override {
         jvalue _value;
         _value.l = value;
 
@@ -570,7 +571,7 @@ public:
 
     }
 
-    void resize(JNIEnv *, const ContainerInfo& container, jint newSize) override {
+    void resize(JNIEnv *, const ContainerInfo& container, qsizetype newSize) override {
 
         QTJAMBI_ELEMENT_LOCKER(this);
         reinterpret_cast<QList<T> *>(container.container)->resize(newSize);
@@ -596,7 +597,7 @@ public:
             current(other.current),
             end(other.end) {}
     public:
-        ElementIterator(GenericListAccess* _access, typename std::conditional_t<is_const, const void*, void*> container)
+        ElementIterator(GenericListAccess* _access, std::conditional_t<is_const, const void*, void*> container)
             : access(_access){
             QTJAMBI_ELEMENT_LOCKER(access);
             current = reinterpret_cast<Container*>(container)->begin();

@@ -39,6 +39,7 @@
 #include <QtJambi/JavaAPI>
 #include <QtJambi/JObjectWrapper>
 #include <QtJambi/FunctionPointer>
+#include <QtJambi/StringAPI>
 #include <QtJambi/Cast>
 
 void registerPlugin(QtPluginInstanceFunction instanceFunction, const QString& className, const QJsonObject& metaData, const QList<const char*>& iids, QJsonObject pluginInfo = {}){
@@ -89,7 +90,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QPluginLoader_qRegisterStaticP
         if(iids.isEmpty()){
             iids << nullptr;
         }
-        QJsonObject json = QtJambiAPI::valueReferenceFromNativeId<QJsonObject>(metaData1);
+        const QJsonObject& json = qtjambi_cast<const QJsonObject&>(metaData1);
         QtPluginInstanceFunction instanceFunction = qtjambi_function_pointer<16,QObject*()>(
                     [pointer = QPointer<QObject>(instance)]() -> QObject*{
                         return pointer.data();
@@ -113,7 +114,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QPluginLoader_qRegisterStaticP
         jmethodID constructorHandle = __jni_env->GetMethodID(cls, "<init>", "()V");
         JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO);
         if(constructorHandle){
-            QJsonObject json = QtJambiAPI::valueReferenceFromNativeId<QJsonObject>(metaData1);
+            const QJsonObject& json = qtjambi_cast<const QJsonObject&>(metaData1);
             QtPluginInstanceFunction instanceFunction = qtjambi_function_pointer<16,QObject*()>(
                         [cls, constructorHandle, pointer = QPointer<QObject>()]() mutable -> QObject* {
                             if(JniEnvironment env{500}){
@@ -152,8 +153,8 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QPluginLoader_qRegisterStaticP
     try{
         QString className = qtjambi_cast<QString>(__jni_env, _className);
         QByteArray iid = qtjambi_cast<QByteArray>(__jni_env, jiid);
-        QJsonObject metaData = QtJambiAPI::valueReferenceFromNativeId<QJsonObject>(metaData1);
-        QJsonObject pluginInfo = QtJambiAPI::valueReferenceFromNativeId<QJsonObject>(pluginInfo1);
+        const QJsonObject& metaData = qtjambi_cast<const QJsonObject&>(metaData1);
+        const QJsonObject& pluginInfo = qtjambi_cast<const QJsonObject&>(pluginInfo1);
 
         struct Functor{
             JObjectWrapper m_classOrSupplier;
@@ -217,6 +218,7 @@ extern "C" JNIEXPORT jclass JNICALL Java_io_qt_core_internal_QFactoryLoader_regi
     QTJAMBI_NATIVE_METHOD_CALL("registeredPluginInterface(String)")
     try{
         J2CStringBuffer buffer(__jni_env, iid);
+        JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
         return CoreAPI::getInterfaceByIID(__jni_env, buffer.constData());
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);

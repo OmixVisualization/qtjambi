@@ -38,6 +38,7 @@
 #include <QtJambi/JObjectWrapper>
 #include <QtJambi/CoreAPI>
 #include <QtJambi/JavaAPI>
+#include <QtJambi/ContainerAPI>
 
 #include <QtCore/qrangemodel.h>
 

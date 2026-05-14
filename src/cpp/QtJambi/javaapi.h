@@ -30,7 +30,6 @@
 #if !defined(QTJAMBI_JAVAAPI_H) && !defined(QTJAMBI_GENERATOR_RUNNING)
 #define QTJAMBI_JAVAAPI_H
 
-#include "global.h"
 #include "javautils.h"
 
 namespace JavaAPI{
@@ -43,15 +42,7 @@ QTJAMBI_EXPORT jclass resolveClosestQtSuperclass(JNIEnv *env, jclass clazz, jobj
 }
 
 namespace QtJambiPrivate{
-
-Q_NORETURN QTJAMBI_EXPORT void raiseJavaException(JNIEnv* env, jthrowable newInstance);
-
-#ifdef QTJAMBI_STACKTRACE
-Q_NORETURN QTJAMBI_EXPORT void raiseJavaException(JNIEnv* env, jthrowable newInstance, const char *methodName, const char *fileName, int lineNumber);
-#endif
-
 QTJAMBI_EXPORT jstring convertString(JNIEnv *env, QAnyStringView s);
-
 }
 
 #define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_BASE\
@@ -68,24 +59,11 @@ QTJAMBI_EXPORT jstring convertString(JNIEnv *env, QAnyStringView s);
         return jthrowable(result);\
     }
 
-#ifdef QTJAMBI_STACKTRACE
-#define QTJAMBI_REPOSITORY_DECLARE_THROW_NEW\
-    public: Q_NORETURN static inline void throwNew(JNIEnv* env, ::QAnyStringView message, const char *methodName, const char *fileName, int lineNumber){\
-        ::QtJambiPrivate::raiseJavaException(env, newInstanceWithMessage(env, message), methodName, fileName, lineNumber);\
-    }
-#else
-#define QTJAMBI_REPOSITORY_DECLARE_THROW_NEW\
-    public: Q_NORETURN static inline void throwNew(JNIEnv* env, ::QAnyStringView message){\
-        ::QtJambiPrivate::raiseJavaException(env, newInstanceWithMessage(env, message));\
-    }
-#endif
-
 #define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()\
     QTJAMBI_REPOSITORY_DECLARE_THROWABLE_BASE\
     public: static inline jthrowable newInstanceWithMessage(JNIEnv* env, ::QAnyStringView message){\
         return newInstance(env, ::QtJambiPrivate::convertString(env, message));\
-    }\
-    QTJAMBI_REPOSITORY_DECLARE_THROW_NEW
+    }
 
 QT_WARNING_DISABLE_CLANG("-Wdollar-in-identifier-extension")
 
@@ -446,7 +424,6 @@ namespace Runtime
         QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(remove)
         QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(contains)
         QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(size)
-        QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(iterator)
         QTJAMBI_REPOSITORY_DECLARE_OBJECTARRAY_METHOD(toArray)
         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(clear)
     )
@@ -753,14 +730,6 @@ QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QtObject)
 QTJAMBI_REPOSITORY_DECLARE_CLASS(QtObjectInterface,
               QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(dispose)
               QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isDisposed))
-
-QTJAMBI_REPOSITORY_DECLARE_CLASS(ReferenceUtility,
-                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(setReferenceCount)
-                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(addAllReferenceCount)
-                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(addReferenceCount)
-                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(putReferenceCount)
-                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(copyReferenceCount)
-                                 )
 }
 }
 

@@ -34,6 +34,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QNativePointer;
+import io.qt.QtClassInfo;
+import io.qt.QtInvokable;
+import io.qt.QtPropertyReader;
 import io.qt.activex.QAxObject;
 import io.qt.activex.QAxScriptEngine;
 import io.qt.activex.QAxSelect;
@@ -43,6 +46,7 @@ import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaType;
 import io.qt.core.QTimer;
+import io.qt.qml.util.QmlElement;
 
 public class TestActiveX extends ApplicationInitializer {
 	
@@ -53,12 +57,31 @@ public class TestActiveX extends ApplicationInitializer {
     }
 	
 	private static class AxWidgetSubclass1 extends QAxWidget{
-		
+		@SuppressWarnings("unused")
+		public void implicitlyInvokable() {}
 	}
 	
 	private static class AxWidgetSubclass2 extends QAxWidget{
 		@SuppressWarnings("unused")
 		public final Signal0 testSignal = new Signal0();
+	}
+	
+	private static class AxWidgetSubclass3 extends QAxWidget{
+		@QtInvokable
+		public void explicitlyInvokable() {}
+	}
+	
+	private static class AxWidgetSubclass4 extends QAxWidget{
+		@QtPropertyReader
+		public int number() {return 0;}
+	}
+	
+	@QtClassInfo(key="key", value="value")
+	private static class AxWidgetSubclass5 extends QAxWidget{
+	}
+	
+	@QmlElement
+	private static class AxWidgetSubclass6 extends QAxWidget{
 	}
 	
 	@Test
@@ -71,11 +94,63 @@ public class TestActiveX extends ApplicationInitializer {
 		try {
 			QMetaObject.forType(AxWidgetSubclass2.class);
 			Assert.fail("UnsupportedOperationException expected to be thrown");
-		}catch(UnsupportedOperationException e) {}
+		}catch(UnsupportedOperationException e) {
+			Assert.assertEquals("Cannot define signals in class io.qt.autotests.TestActiveX.AxWidgetSubclass2 because it extends type with dynamic meta object.", e.getMessage());
+		}
 		try {
 			new AxWidgetSubclass2();
 			Assert.fail("UnsupportedOperationException expected to be thrown");
-		}catch(UnsupportedOperationException e) {}
+		}catch(UnsupportedOperationException e) {
+			Assert.assertEquals("Cannot define signals in class io.qt.autotests.TestActiveX.AxWidgetSubclass2 because it extends type with dynamic meta object.", e.getMessage());
+		}
+		try {
+			QMetaObject.forType(AxWidgetSubclass3.class);
+			Assert.fail("UnsupportedOperationException expected to be thrown");
+		}catch(UnsupportedOperationException e) {
+			Assert.assertEquals("Cannot define properties and invokable methods in class io.qt.autotests.TestActiveX.AxWidgetSubclass3 because it extends type with dynamic meta object.", e.getMessage());
+		}
+		try {
+			new AxWidgetSubclass3();
+			Assert.fail("UnsupportedOperationException expected to be thrown");
+		}catch(UnsupportedOperationException e) {
+			Assert.assertEquals("Cannot define properties and invokable methods in class io.qt.autotests.TestActiveX.AxWidgetSubclass3 because it extends type with dynamic meta object.", e.getMessage());
+		}
+		try {
+			QMetaObject.forType(AxWidgetSubclass4.class);
+			Assert.fail("UnsupportedOperationException expected to be thrown");
+		}catch(UnsupportedOperationException e) {
+			Assert.assertEquals("Cannot define properties and invokable methods in class io.qt.autotests.TestActiveX.AxWidgetSubclass4 because it extends type with dynamic meta object.", e.getMessage());
+		}
+		try {
+			new AxWidgetSubclass4();
+			Assert.fail("UnsupportedOperationException expected to be thrown");
+		}catch(UnsupportedOperationException e) {
+			Assert.assertEquals("Cannot define properties and invokable methods in class io.qt.autotests.TestActiveX.AxWidgetSubclass4 because it extends type with dynamic meta object.", e.getMessage());
+		}
+		try {
+			QMetaObject.forType(AxWidgetSubclass5.class);
+			Assert.fail("UnsupportedOperationException expected to be thrown");
+		}catch(UnsupportedOperationException e) {
+			Assert.assertEquals("Cannot add @QtClassInfo to class io.qt.autotests.TestActiveX.AxWidgetSubclass5 because it extends type with dynamic meta object.", e.getMessage());
+		}
+		try {
+			new AxWidgetSubclass5();
+			Assert.fail("UnsupportedOperationException expected to be thrown");
+		}catch(UnsupportedOperationException e) {
+			Assert.assertEquals("Cannot add @QtClassInfo to class io.qt.autotests.TestActiveX.AxWidgetSubclass5 because it extends type with dynamic meta object.", e.getMessage());
+		}
+		try {
+			QMetaObject.forType(AxWidgetSubclass6.class);
+			Assert.fail("UnsupportedOperationException expected to be thrown");
+		}catch(UnsupportedOperationException e) {
+			Assert.assertEquals("Cannot add @QmlElement to class io.qt.autotests.TestActiveX.AxWidgetSubclass6 because it extends type with dynamic meta object.", e.getMessage());
+		}
+		try {
+			new AxWidgetSubclass6();
+			Assert.fail("UnsupportedOperationException expected to be thrown");
+		}catch(UnsupportedOperationException e) {
+			Assert.assertEquals("Cannot add @QmlElement to class io.qt.autotests.TestActiveX.AxWidgetSubclass6 because it extends type with dynamic meta object.", e.getMessage());
+		}
 	}
 	
 	@Test

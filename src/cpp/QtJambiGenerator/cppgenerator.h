@@ -46,6 +46,7 @@
 class CppGenerator : public AbstractGenerator {
 public:
     CppGenerator(PriGenerator *_priGenerator);
+    static QString toIdString(QString name);
     QString resolveOutputDirectory() const override;
 
     QString cppOutputDirectory() const;

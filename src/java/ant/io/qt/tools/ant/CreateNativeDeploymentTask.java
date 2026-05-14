@@ -110,7 +110,7 @@ public class CreateNativeDeploymentTask extends Task {
 			java.io.File builddir = new java.io.File(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.builddir"));
 			java.io.File cppsourcedir = new java.io.File(AntUtil.getPropertyAsString(propertyHelper, "native.srcdir"));
 			java.io.File sourcestargetdir = new java.io.File(directory, "sources");
-			java.io.File cppoutputdir = new java.io.File(new java.io.File(AntUtil.getPropertyAsString(propertyHelper, "generator.outputdir")), "cpp");
+			java.io.File cppoutputdir = new java.io.File(new java.io.File(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.generator.outputdir")), "cpp");
 			doc.getDocumentElement().setAttribute("module", moduleName);
 			doc.getDocumentElement().setAttribute("system", AntUtil.getPropertyAsString(propertyHelper, Constants.OSNAME));
 			doc.getDocumentElement().setAttribute("version", String.format("%1$s.%2$s.%3$s", qtMajorVersion, qtMinorVersion, qtjambiPatchlevelVersion));
@@ -361,11 +361,13 @@ public class CreateNativeDeploymentTask extends Task {
 				default:
 					if(plugin) {
 						java.io.File pluginDir = new java.io.File(new java.io.File(directory, "plugins"), name);
-						for(String f : pluginDir.list()) {
-							if(!f.equals(".") && !f.equals("..")) {
-								Element libraryElement = doc.createElement("library");
-								libraryElement.setAttribute("name", "plugins/"+name+"/"+f);
-								doc.getDocumentElement().appendChild(libraryElement);
+						if(pluginDir.isDirectory()) {
+							for(String f : pluginDir.list()) {
+								if(!f.equals(".") && !f.equals("..")) {
+									Element libraryElement = doc.createElement("library");
+									libraryElement.setAttribute("name", "plugins/"+name+"/"+f);
+									doc.getDocumentElement().appendChild(libraryElement);
+								}
 							}
 						}
 						continue;

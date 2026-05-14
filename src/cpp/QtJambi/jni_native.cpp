@@ -282,13 +282,12 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_NativeUtility_truncateBuff
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_NativeUtility_mutableByteArrayData(JNIEnv *env, jclass, QtJambiNativeID nid){
     jobject __java_return_value{0};
     QTJAMBI_TRY {
-        QByteArray *__qt_this = QtJambiAPI::objectFromNativeId<QByteArray>(nid);
-        QtJambiAPI::checkNullPointer(env, __qt_this);
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QByteArray::data()", __qt_this)
-        char* __qt_return_value = __qt_this->data();
-        DataJBuffer d(env, __qt_return_value, jlong(__qt_this->capacity()));
-        if(__qt_this->size()<__qt_this->capacity())
-            d.setLimit(jsize(__qt_this->size()));
+        QByteArray &__qt_this = qtjambi_cast<QByteArray&>(nid);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QByteArray::data()", nid)
+        char* __qt_return_value = __qt_this.data();
+        DataJBuffer d(env, __qt_return_value, jlong(__qt_this.capacity()));
+        if(__qt_this.size()<__qt_this.capacity())
+            d.setLimit(jsize(__qt_this.size()));
         __java_return_value = d.take();
         QtJambiAPI::registerDependency(env, __java_return_value, nid);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -300,13 +299,12 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_NativeUtility_mutableBy
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_NativeUtility_mutableStringData(JNIEnv *env, jclass, QtJambiNativeID nid){
     jobject __java_return_value{0};
     QTJAMBI_TRY {
-        QString *__qt_this = QtJambiAPI::objectFromNativeId<QString>(nid);
-        QtJambiAPI::checkNullPointer(env, __qt_this);
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QString::data()", __qt_this)
-        QChar* __qt_return_value = __qt_this->data();
-        DataJBuffer d(env, __qt_return_value, jlong(__qt_this->capacity()));
-        if(__qt_this->size()<__qt_this->capacity())
-            d.setLimit(jsize(__qt_this->size()));
+        QString &__qt_this = qtjambi_cast<QString&>(env, nid);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QString::data()", nid)
+        QChar* __qt_return_value = __qt_this.data();
+        DataJBuffer d(env, __qt_return_value, jlong(__qt_this.capacity()));
+        if(__qt_this.size()<__qt_this.capacity())
+            d.setLimit(jsize(__qt_this.size()));
         __java_return_value = d.take();
         QtJambiAPI::registerDependency(env, __java_return_value, nid);
     }QTJAMBI_CATCH(const JavaException& exn){

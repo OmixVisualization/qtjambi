@@ -36,6 +36,10 @@
 #if defined(QTJAMBI_GENERATOR_RUNNING)
 QtTaskTree::Group operator>>(const QtTaskTree::For &forItem, const QtTaskTree::Do &doItem);
 QtTaskTree::Group operator>>(const QtTaskTree::When &forItem, const QtTaskTree::Do &doItem);
+QtTaskTree::ThenItem operator>>(const QtTaskTree::If &ifItem, const QtTaskTree::Then &thenItem);
+QtTaskTree::ElseItem operator>>(const QtTaskTree::ThenItem &thenItem, const QtTaskTree::Else &elseItem);
+QtTaskTree::ElseIfItem operator>>(const QtTaskTree::ThenItem &thenItem, const QtTaskTree::ElseIf &elseIfItem);
+QtTaskTree::ThenItem operator>>(const QtTaskTree::ElseIfItem &elseIfItem, const QtTaskTree::Then &thenItem);
 #endif
 
 bool operator==(const QtTaskTree::GroupItem& value1, const QtTaskTree::GroupItem& value2);

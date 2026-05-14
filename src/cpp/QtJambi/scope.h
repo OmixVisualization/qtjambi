@@ -53,6 +53,18 @@ public:
         addFinalAction(QtJambiUtils::Runnable::deleter(pointer));
     }
     template<typename T>
+    void addDeletion(QScopedArrayPointer<T>&& pointer){
+        addFinalAction(QtJambiUtils::Runnable::deleter(std::move(pointer)));
+    }
+    template<typename T>
+    void addDeletion(QScopedPointer<T>&& pointer){
+        addFinalAction(QtJambiUtils::Runnable::deleter(std::move(pointer)));
+    }
+    template<typename T>
+    void addDeletion(std::unique_ptr<T>&& pointer){
+        addFinalAction(QtJambiUtils::Runnable::deleter(std::move(pointer)));
+    }
+    template<typename T>
     void addArrayDeletion(T* pointer){
         addFinalAction(QtJambiUtils::Runnable::arrayDeleter(pointer));
     }

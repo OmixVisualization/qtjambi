@@ -184,7 +184,7 @@ protected:
 
             destination->insert(destStart, std::move_iterator(sourceStart),
                                            std::move_iterator(sourceEnd));
-        } else if constexpr (std::is_copy_constructible_v<row_type>) {
+        } else if constexpr (QtJambiPrivate::is_copy_constructible_v<row_type>) {
             // otherwise we have to make space first, and copy later.
             destination->insert(destStart, count, row_type{});
         }
@@ -341,7 +341,7 @@ protected:
         using Children = std::remove_reference_t<decltype(children)>;
 
         if constexpr (QRangeModelDetails::is_any_of<Children, std::optional>()
-                   && std::is_default_constructible<typename Children::value_type>()) {
+                   && QtJambiPrivate::is_default_constructible_v<typename Children::value_type>) {
             if (!children)
                 children.emplace(range_type{});
         }

@@ -154,6 +154,19 @@ void ModifyArgument::setComment(const QString &newComment)
     emit commentChanged();
 }
 
+QString ModifyArgument::getResolvedType() const
+{
+    return resolvedType;
+}
+
+void ModifyArgument::setResolvedType(const QString &newResolvedType)
+{
+    if (resolvedType == newResolvedType)
+        return;
+    resolvedType = newResolvedType;
+    emit resolvedTypeChanged();
+}
+
 const QString &ReplaceDefaultExpression::getExpression() const
 {
     return expression;
@@ -907,6 +920,8 @@ void AddTypeParameter::setComment(const QString &newComment)
     comment = newComment;
     emit commentChanged();
 }
+
+GenericArgument::GenericArgument(QObject *parent): AddTypeParameter{parent}{}
 
 const QString &ModifyFunction::getSignature() const
 {

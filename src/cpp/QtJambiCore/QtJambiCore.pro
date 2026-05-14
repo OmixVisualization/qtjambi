@@ -34,6 +34,7 @@ include(../QtJambi/configure.pri)
 HEADERS += \
     future_p.h \
     hashes.h \
+    qtjambi_cast.h \
     range_p.h \
     range_p_p.h \
     utils.h \

@@ -51,6 +51,8 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/multimedia,QAbstractVideoBuffer$MapResult,
 }
 
 extern "C" JNIEXPORT jlong JNICALL Java_io_qt_multimedia_QAudioFrame_getPositionToIndex(JNIEnv *env, jclass, jint config){
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_MSVC(4200)
     switch(config){
     case QAudioFormat::ChannelConfigUnknown: return jlong(&QAudioFrame<QAudioFormat::ChannelConfigUnknown, QAudioFormat::Int32>::positionToIndex);
     case QAudioFormat::ChannelConfigMono: return jlong(&QAudioFrame<QAudioFormat::ChannelConfigMono, QAudioFormat::Int32>::positionToIndex);
@@ -67,6 +69,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_qt_multimedia_QAudioFrame_getPosition
     }
     env->Throw(Java::Runtime::IllegalArgumentException::newInstance(env, env->NewStringUTF("Unknown channel configuration")));
     return 0;
+QT_WARNING_POP
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_qt_multimedia_QAudioFrame_positionToIndex(JNIEnv *, jclass, jint pos, jlong positionToIndexFunction){
@@ -75,7 +78,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_multimedia_QAudioFrame_positionToIn
 }
 
 #if defined(Q_OS_ANDROID)
-void initialize_meta_info_QtMultimedia(){
+void initialize_meta_info_QtMultimedia(JavaVM *jvm){
     if(JniEnvironment env{300}){
         jobject activity = nullptr;
         try{
@@ -123,5 +126,27 @@ void initialize_meta_info_QtMultimedia(){
             }
         }
     }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 11, 0)
+    {
+        QLibrary library("libplugins_multimedia_ffmpegmediaplugin");
+        if(library.load()){
+            typedef jint (*JNI_OnLoadFn)(JavaVM*,void*);
+            JNI_OnLoadFn onLoad = JNI_OnLoadFn(library.resolve("JNI_OnLoad"));
+            if(onLoad){
+                onLoad(jvm,nullptr);
+            }
+        }
+    }
+    {
+        QLibrary library("libplugins_multimedia_androidmediaplugin");
+        if(library.load()){
+            typedef jint (*JNI_OnLoadFn)(JavaVM*,void*);
+            JNI_OnLoadFn onLoad = JNI_OnLoadFn(library.resolve("JNI_OnLoad"));
+            if(onLoad){
+                onLoad(jvm,nullptr);
+            }
+        }
+    }
+#endif
 }
 #endif

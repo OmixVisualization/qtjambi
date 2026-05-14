@@ -28,7 +28,214 @@
 ****************************************************************************/
 
 #include "pch_p.h"
+#include "qtjambi_cast_future.h"
 #include <QtCore/private/qfutureinterface_p.h>
+
+Q_LOGGING_CATEGORY(FUTURE_CATEGORY, "io.qt.core.QtFuture", QtWarningMsg)
+
+namespace Java{
+namespace QtCore{
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Runnable,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,()V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Runnable1,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Runnable2,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Runnable3,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Runnable4,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Runnable5,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Runnable6,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Runnable7,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Runnable8,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Runnable9,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithPromise,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithPromise1,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithPromise2,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithPromise3,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithPromise4,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithPromise5,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithPromise6,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithPromise7,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithPromise8,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithPromise9,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithVoidPromise,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithVoidPromise1,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithVoidPromise2,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithVoidPromise3,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithVoidPromise4,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithVoidPromise5,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithVoidPromise6,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithVoidPromise7,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithVoidPromise8,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$RunnableWithVoidPromise9,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Callable,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(call,()Ljava/lang/Object;)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Callable1,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(call,(Ljava/lang/Object;)Ljava/lang/Object;)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Callable2,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(call,(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Callable3,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(call,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Callable4,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(call,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Callable5,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(call,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Callable6,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(call,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Callable7,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(call,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Callable8,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(call,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Callable9,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(call,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Predicate,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(test,()Z)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Predicate1,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(test,(Ljava/lang/Object;)Z)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Predicate2,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(test,(Ljava/lang/Object;Ljava/lang/Object;)Z)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Predicate3,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(test,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Predicate4,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(test,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Predicate5,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(test,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Predicate6,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(test,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Predicate7,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(test,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Predicate8,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(test,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z)
+                                )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QtFuture$Predicate9,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(test,(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z)
+                                )
+}
+}
 
 template<>
 class QPromise<std::nullptr_t>{
@@ -98,7 +305,8 @@ FutureCallOut::FutureCallOut(QSharedPointer<QFutureInterfaceBase>&& sourceFuture
       m_targetFuture(std::move(targetFuture)),
       m_resultTranslator(resultTranslator),
       m_resultRetranslator(resultRetranslator),
-    m_reverseFutureCallOut(this), m_topLevel(false) {}
+    m_reverseFutureCallOut(this), m_topLevel(false) {
+}
 
 void FutureCallOut::initialize()
 {
@@ -199,9 +407,11 @@ void FutureCallOut::initialize()
                     }
                 }
                 source_d->outputConnections.append(this);
-                QMutexLocker locker2(&target_d->m_mutex);
-                target_d->outputConnections.append(&m_reverseFutureCallOut);
-                target_d->state.storeRelaxed(currentState);
+                {
+                    QMutexLocker locker2(&target_d->m_mutex);
+                    target_d->outputConnections.append(&m_reverseFutureCallOut);
+                    target_d->state.storeRelaxed(currentState);
+                }
             }
         }
     }
@@ -247,7 +457,15 @@ void FutureCallOut::postCallOutEvent(const QFutureCallOutEvent &callOutEvent){
             m_targetFuture->setProgressRange(callOutEvent.index1, callOutEvent.index2);
             break;
         case QFutureCallOutEvent::ResultsReady:
-            m_resultTranslator(m_sourceFuture.get(), m_targetFuture.get(), callOutEvent.index1, callOutEvent.index2-callOutEvent.index1);
+            if(QFutureInterfaceBasePrivate* target_d = d_ptr(m_targetFuture))
+            {
+                QMutexLocker<QMutex> locker(&target_d->m_mutex);
+                bool b = m_targetFuture->resultStoreBase().filterMode();
+                m_targetFuture->resultStoreBase().setFilterMode(m_sourceFuture->resultStoreBase().filterMode());
+                m_resultTranslator(m_sourceFuture->resultStoreBase(), m_targetFuture->resultStoreBase(), callOutEvent.index1, callOutEvent.index2-callOutEvent.index1);
+                m_targetFuture->resultStoreBase().setFilterMode(b);
+            }
+            m_targetFuture->reportResultsReady(callOutEvent.index1, callOutEvent.index2);
             break;
         }
     }catch(...){
@@ -333,7 +551,15 @@ void ReverseFutureCallOut::postCallOutEvent(const QFutureCallOutEvent &callOutEv
             break;
         case QFutureCallOutEvent::ResultsReady:
             if(m_futureCallOut->m_resultRetranslator){
-                m_futureCallOut->m_resultRetranslator(m_futureCallOut->m_targetFuture.get(), m_futureCallOut->m_sourceFuture.get(), callOutEvent.index1, callOutEvent.index2-callOutEvent.index1);
+                if(QFutureInterfaceBasePrivate* source_d = d_ptr(m_futureCallOut->m_sourceFuture))
+                {
+                    QMutexLocker<QMutex> locker(&source_d->m_mutex);
+                    bool b = m_futureCallOut->m_sourceFuture->resultStoreBase().filterMode();
+                    m_futureCallOut->m_sourceFuture->resultStoreBase().setFilterMode(m_futureCallOut->m_targetFuture->resultStoreBase().filterMode());
+                    m_futureCallOut->m_resultRetranslator(m_futureCallOut->m_targetFuture->resultStoreBase(), m_futureCallOut->m_sourceFuture->resultStoreBase(), callOutEvent.index1, callOutEvent.index2-callOutEvent.index1);
+                    m_futureCallOut->m_sourceFuture->resultStoreBase().setFilterMode(b);
+                }
+                m_futureCallOut->m_sourceFuture->reportResultsReady(callOutEvent.index1, callOutEvent.index2);
             }
             break;
         }
@@ -588,28 +814,28 @@ void CoreAPI::invokeAndCatch(JNIEnv *__jni_env, void* ptr, void(*expression)(voi
                 std::rethrow_exception(exn->exception());
             });
         }
-        Java::QtCore::QUnhandledException::throwNew(__jni_env, "An exception has been thrown in native code." QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtCore::QUnhandledException>(__jni_env, "An exception has been thrown in native code." QTJAMBI_STACKTRACEINFO );
     }catch(const QException& exn){
         if(typeid_equals(typeid(exn), typeid(QException))){
-            Java::QtCore::QException::throwNew(__jni_env, "An exception has been thrown in native code." QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtCore::QException>(__jni_env, "An exception has been thrown in native code." QTJAMBI_STACKTRACEINFO );
         }else{
             QByteArray exceptionName(QtJambiAPI::typeName(typeid(exn)));
             const char* what = exn.what();
             const char* original_what = exn.std::exception::what();
             if(what && QLatin1String(what)!=QLatin1String(original_what) && exceptionName!=what){
-                Java::QtCore::QException::throwNew(__jni_env, QStringLiteral("An exception (%1) has been thrown in native code: %2").arg(QLatin1String(exceptionName), QLatin1String(what)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtCore::QException>(__jni_env, QStringLiteral("An exception (%1) has been thrown in native code: %2").arg(QLatin1String(exceptionName), QLatin1String(what)) QTJAMBI_STACKTRACEINFO );
             }else{
-                Java::QtCore::QException::throwNew(__jni_env, QStringLiteral("An exception (%1) has been thrown in native code.").arg(QLatin1String(exceptionName)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtCore::QException>(__jni_env, QStringLiteral("An exception (%1) has been thrown in native code.").arg(QLatin1String(exceptionName)) QTJAMBI_STACKTRACEINFO );
             }
         }
     }catch(const std::exception& exn){
         QByteArray exceptionName(QtJambiAPI::typeName(typeid(exn)));
         if(exn.what() && exceptionName!=exn.what()){
-            Java::QtCore::QUnhandledException::throwNew(__jni_env, QStringLiteral("An exception (%1) has been thrown in native code: %2").arg(QLatin1String(exceptionName), QLatin1String(exn.what())) QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtCore::QUnhandledException>(__jni_env, QStringLiteral("An exception (%1) has been thrown in native code: %2").arg(QLatin1String(exceptionName), QLatin1String(exn.what())) QTJAMBI_STACKTRACEINFO );
         }else{
-            Java::QtCore::QUnhandledException::throwNew(__jni_env, QStringLiteral("An exception (%1) has been thrown in native code.").arg(QLatin1String(exceptionName)) QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtCore::QUnhandledException>(__jni_env, QStringLiteral("An exception (%1) has been thrown in native code.").arg(QLatin1String(exceptionName)) QTJAMBI_STACKTRACEINFO );
         }
     }catch(...){
-        Java::QtCore::QUnhandledException::throwNew(__jni_env, "An exception has been thrown in native code." QTJAMBI_STACKTRACEINFO );
+        JavaException::raise<Java::QtCore::QUnhandledException>(__jni_env, "An exception has been thrown in native code." QTJAMBI_STACKTRACEINFO );
     }
 }

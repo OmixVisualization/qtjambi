@@ -163,6 +163,22 @@ bool ComplexTypeEntry::isForceFriendly() const {
     return m_type_flags.testFlag(ForceFriendly);
 }
 
+void ComplexTypeEntry::setSealed(){
+    m_type_flags.setFlag(Sealed);
+}
+
+bool ComplexTypeEntry::isSealed() const {
+    return m_type_flags.testFlag(Sealed);
+}
+
+void ComplexTypeEntry::setNonSealed(){
+    m_type_flags.setFlag(ForceFriendly);
+}
+
+bool ComplexTypeEntry::isNonSealed() const {
+    return m_type_flags.testFlag(NonSealed);
+}
+
 void ComplexTypeEntry::setHasNonPublicFields(){
     m_type_flags.setFlag(HasFields);
     m_type_flags.setFlag(HasNonPublicFields);
@@ -334,6 +350,13 @@ const QString& ComplexTypeEntry::implements() const {
     return m_implements;
 }
 
+void ComplexTypeEntry::setPermits(const QString &permits) {
+    m_permits = permits;
+}
+const QString& ComplexTypeEntry::permits() const {
+    return m_permits;
+}
+
 void ComplexTypeEntry::setIsPolymorphicBase(bool on) {
     m_attributes.setFlag(IsPolymorphicBase, on);
 }
@@ -442,11 +465,17 @@ void ComplexTypeEntry::disableNativeIdUsage() {
 }
 
 void ComplexTypeEntry::addInstantiation(const QStringList& instantiation, const ComplexTypeEntry* typeEntry){
+    if(!m_instantiationDefinitions.contains(instantiation)){
+        m_instantiationDefinitions << instantiation;
+    }
     m_instantiations[instantiation] = typeEntry;
 }
 
 const QHash<QStringList,const ComplexTypeEntry*>& ComplexTypeEntry::instantiations() const {
     return m_instantiations;
+}
+const QList<QStringList>& ComplexTypeEntry::instantiationDefinitions() const {
+    return m_instantiationDefinitions;
 }
 void ComplexTypeEntry::setExtendType(const QString& extendType){ m_extendType = extendType; }
 const QString& ComplexTypeEntry::extendType() const { return m_extendType; }
@@ -463,6 +492,14 @@ void ComplexTypeEntry::setCustomDestructor(const CustomFunction &func) {
 }
 const CustomFunction& ComplexTypeEntry::customDestructor() const {
     return m_customDestructor;
+}
+
+const QList<ArgumentModification>& ComplexTypeEntry::genericArguments() const{
+    return m_genericArguments;
+}
+
+void ComplexTypeEntry::addGenericArgument(const ArgumentModification& mod){
+    m_genericArguments << mod;
 }
 
 bool ComplexTypeEntry::skipMetaTypeRegistration() const {
@@ -752,18 +789,17 @@ void ComplexTypeEntry::setAddTextStreamFunctions(bool newAddTextStreamFunctions)
 }
 
 QString PrimitiveTypeEntry::javaObjectName() const {
-    static QMap<QString, QString> table;
-    if (table.isEmpty()) {
-        table["boolean"] = "Boolean";
-        table["byte"] = "Byte";
-        table["char"] = "Character";
-        table["short"] = "Short";
-        table["int"] = "Integer";
-        table["long"] = "Long";
-        table["float"] = "Float";
-        table["double"] = "Double";
-        table["void"] = "Void";
-    }
+    static QMap<QString, QString> table{
+        {QStringLiteral(u"boolean"),QStringLiteral(u"Boolean")},
+        {QStringLiteral(u"byte"),QStringLiteral(u"Byte")},
+        {QStringLiteral(u"char"),QStringLiteral(u"Character")},
+        {QStringLiteral(u"short"),QStringLiteral(u"Short")},
+        {QStringLiteral(u"int"),QStringLiteral(u"Integer")},
+        {QStringLiteral(u"long"),QStringLiteral(u"Long")},
+        {QStringLiteral(u"float"),QStringLiteral(u"Float")},
+        {QStringLiteral(u"double"),QStringLiteral(u"Double")},
+        {QStringLiteral(u"void"),QStringLiteral(u"Void")}
+    };
     Q_ASSERT(table.contains(targetLangName()));
     return table[targetLangName()];
 }

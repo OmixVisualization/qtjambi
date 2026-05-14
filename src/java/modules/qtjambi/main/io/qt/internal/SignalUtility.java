@@ -114,7 +114,6 @@ import io.qt.core.QStringList;
 import io.qt.core.QThread;
 import io.qt.core.Qt;
 import io.qt.core.Qt.ConnectionType;
-import io.qt.internal.ClassAnalyzerUtility.LambdaTools;
 
 /**
  * @hidden
@@ -3719,14 +3718,14 @@ abstract class SignalUtility {
             Class<?> lambdaOwnerClass = null;
 			int lambdaHashCode = 0;
 			Class<?> lambdaClass = AccessUtility.instance.getClass(slotObject);
-			MethodInfo methodInfo = LambdaTools.lambdaSlotHandles(lambdaClass);
+			MethodInfo methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(lambdaClass);
 			boolean lambdaAnalyzed = false;
 			SerializedLambda serializedLambda;
 			if(methodInfo==null) {
 				serializedLambda = ClassAnalyzerUtility.serializeLambdaExpression(slotObject);
 				lambdaAnalyzed = true;
 				if(serializedLambda!=null)
-					methodInfo = LambdaTools.lambdaSlotHandles(lambdaClass, serializedLambda);
+					methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(lambdaClass, serializedLambda);
 			}else if(methodInfo.hasCapturedArgs){
 				serializedLambda = ClassAnalyzerUtility.serializeLambdaExpression(slotObject);
 				lambdaAnalyzed = true;
@@ -3734,7 +3733,7 @@ abstract class SignalUtility {
 				serializedLambda = null;
 			}
 			if(methodInfo!=null && methodInfo.reflectiveMethod!=null && methodInfo.methodHandle!=null){
-				int capturedArgCount = methodInfo.hasCapturedArgs ? ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda) : 0;
+				int capturedArgCount = methodInfo.hasCapturedArgs && serializedLambda!=null ? ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda) : 0;
 				Object arg1;
 				if(methodInfo.isStaticMethod) {
 					Object[] lambdaArgs = null;
@@ -3977,14 +3976,14 @@ abstract class SignalUtility {
             Class<?> lambdaOwnerClass = null;
 			int lambdaHashCode = 0;
 			Class<?> lambdaClass = AccessUtility.instance.getClass(slotObject);
-			MethodInfo methodInfo = LambdaTools.lambdaSlotHandles(lambdaClass);
+			MethodInfo methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(lambdaClass);
 			boolean lambdaAnalyzed = false;
 			SerializedLambda serializedLambda;
 			if(methodInfo==null) {
 				serializedLambda = ClassAnalyzerUtility.serializeLambdaExpression(slotObject);
 				lambdaAnalyzed = true;
 				if(serializedLambda!=null)
-					methodInfo = LambdaTools.lambdaSlotHandles(lambdaClass, serializedLambda);
+					methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(lambdaClass, serializedLambda);
 			}else if(methodInfo.hasCapturedArgs){
 				serializedLambda = ClassAnalyzerUtility.serializeLambdaExpression(slotObject);
 				lambdaAnalyzed = true;
@@ -3992,7 +3991,7 @@ abstract class SignalUtility {
 				serializedLambda = null;
 			}
 			if(methodInfo!=null && methodInfo.reflectiveMethod!=null && methodInfo.methodHandle!=null){
-				int capturedArgCount = methodInfo.hasCapturedArgs ? ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda) : 0;
+				int capturedArgCount = methodInfo.hasCapturedArgs && serializedLambda!=null ? ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda) : 0;
 				if(methodInfo.isStaticMethod) {
 					Object[] lambdaArgs = null;
 					if(capturedArgCount>0){
@@ -4179,14 +4178,14 @@ abstract class SignalUtility {
         	}
 			Object lambdaOwner = null;
         	Class<?> lambdaClass = AccessUtility.instance.getClass(slotObject);
-			MethodInfo methodInfo = LambdaTools.lambdaSlotHandles(lambdaClass);
+			MethodInfo methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(lambdaClass);
 			boolean lambdaAnalyzed = false;
 			SerializedLambda serializedLambda;
 			if(methodInfo==null) {
 				serializedLambda = ClassAnalyzerUtility.serializeLambdaExpression(slotObject);
 				lambdaAnalyzed = true;
 				if(serializedLambda!=null)
-					methodInfo = LambdaTools.lambdaSlotHandles(lambdaClass, serializedLambda);
+					methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(lambdaClass, serializedLambda);
 			}else if(methodInfo.hasCapturedArgs){
 				serializedLambda = ClassAnalyzerUtility.serializeLambdaExpression(slotObject);
 				lambdaAnalyzed = true;
@@ -4194,7 +4193,7 @@ abstract class SignalUtility {
 				serializedLambda = null;
 			}
 			if(methodInfo!=null && methodInfo.reflectiveMethod!=null && methodInfo.methodHandle!=null){
-				int capturedArgCount = methodInfo.hasCapturedArgs ? ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda) : 0;
+				int capturedArgCount = methodInfo.hasCapturedArgs && serializedLambda!=null ? ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda) : 0;
 				if(methodInfo.isStaticMethod){
 					Object[] lambdaArgs = null;
 					if(capturedArgCount>0){
@@ -4273,14 +4272,14 @@ abstract class SignalUtility {
         		return removeConnectionToSignalObject((AbstractSignal)slotObject);
         	}
         	Class<?> lambdaClass = AccessUtility.instance.getClass(slotObject);
-			MethodInfo methodInfo = LambdaTools.lambdaSlotHandles(lambdaClass);
+			MethodInfo methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(lambdaClass);
 			boolean lambdaAnalyzed = false;
 			SerializedLambda serializedLambda;
 			if(methodInfo==null) {
 				serializedLambda = ClassAnalyzerUtility.serializeLambdaExpression(slotObject);
 				lambdaAnalyzed = true;
 				if(serializedLambda!=null)
-					methodInfo = LambdaTools.lambdaSlotHandles(lambdaClass, serializedLambda);
+					methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(lambdaClass, serializedLambda);
 			}else if(methodInfo.hasCapturedArgs){
 				serializedLambda = ClassAnalyzerUtility.serializeLambdaExpression(slotObject);
 				lambdaAnalyzed = true;
@@ -4288,7 +4287,7 @@ abstract class SignalUtility {
 				serializedLambda = null;
 			}
 			if(methodInfo!=null && methodInfo.reflectiveMethod!=null && methodInfo.methodHandle!=null){
-				int capturedArgCount = methodInfo.hasCapturedArgs ? ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda) : 0;
+				int capturedArgCount = methodInfo.hasCapturedArgs && serializedLambda!=null ? ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda) : 0;
 				if(methodInfo.isStaticMethod){
 					Object[] lambdaArgs = null;
 					if(capturedArgCount>0){

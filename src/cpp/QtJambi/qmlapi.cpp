@@ -71,3 +71,7 @@ int QmlAPI::getInterfaceOffset(JNIEnv *env, jclass cls, const std::type_info& in
     }
     return -1;
 }
+
+void QmlAPI::setQQmlListPropertyElementType(JNIEnv *env, jobject list, jobject elementType){
+    Java::QtQml::QQmlListProperty::set_elementType(env, list, elementType);
+}

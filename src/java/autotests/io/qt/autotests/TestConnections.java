@@ -67,6 +67,7 @@ import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QDeclarableSignals;
 import io.qt.core.QEvent;
+import io.qt.core.QEventLoop;
 import io.qt.core.QInstanceMemberSignals;
 import io.qt.core.QList;
 import io.qt.core.QMetaMethod;
@@ -78,6 +79,7 @@ import io.qt.core.QRect;
 import io.qt.core.QRectF;
 import io.qt.core.QSize;
 import io.qt.core.QStringList;
+import io.qt.core.QTimer;
 import io.qt.core.QUrl;
 import io.qt.core.QVariant;
 import io.qt.core.Qt;
@@ -995,7 +997,8 @@ public class TestConnections extends ApplicationInitializer
         }else {
         	assertTrue(obj.signalInteger.disconnect(widget::close));
         }
-
+        widget.close();
+        widget.dispose();
         widget = new QWidget();
         QPushButton b1 = new QPushButton(widget);
         QPushButton b2 = new QPushButton(widget);
@@ -1010,11 +1013,29 @@ public class TestConnections extends ApplicationInitializer
         assertTrue(le.isEnabled());
 
         widget.show();
-        QApplication.setActiveWindow(widget);
-        assertTrue(widget.isVisible());
-        assertTrue(b1.isVisible());
-        assertTrue(b2.isVisible());
-        assertTrue(le.isVisible());
+        if(widget!=QApplication.activeWindow()) {
+            widget.activateWindow();
+        	QEventLoop loop = new QEventLoop();
+        	QTimer timer = new QTimer();
+        	timer.setSingleShot(false);
+    		timer.setInterval(50);
+    		QWidget _widget = widget;
+    		timer.timeout.connect(()->{
+    			if(_widget==QApplication.activeWindow())
+    				loop.quit();
+    			else
+    				_widget.activateWindow();
+    		});
+    		timer.start();
+    		loop.exec();
+        }
+        assertEquals("QApplication.activeWindow()", widget, QApplication.activeWindow());
+        
+        assertTrue("widget.isVisible()", widget.isVisible());
+        assertTrue("widget.isActiveWindow()", widget.isActiveWindow());
+        assertTrue("b1.isVisible()", b1.isVisible());
+        assertTrue("b2.isVisible()", b2.isVisible());
+        assertTrue("le.isVisible()", le.isVisible());
         widget.setGeometry(new QRect(200, 300, 400, 500));
         QRect rect = widget.geometry();
         assertEquals("widget.geometry.x", 200, rect.x());
@@ -1052,10 +1073,11 @@ public class TestConnections extends ApplicationInitializer
 
         obj.javaSignalint(123);
 
-        assertEquals(b1, QApplication.focusWidget());
+        assertEquals("QApplication.focusWidget()", b1, QApplication.focusWidget());
         assertTrue(QApplication.focusWidget() == b1);
+        assertTrue("expected to have focus", b1.hasFocus());
         obj.javaSignalNoParams();
-        assertEquals(b2, QApplication.focusWidget());
+        assertEquals("QApplication.focusWidget()", b2, QApplication.focusWidget());
         assertTrue(QApplication.focusWidget() == b2);
         assertEquals(b1, obj.slotResult); // set by javaSlotFocusChanged()
         assertTrue(obj.slotResult == b1);

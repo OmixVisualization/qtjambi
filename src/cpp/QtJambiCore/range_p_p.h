@@ -1184,6 +1184,7 @@ struct TreeRangeData<has_itemAccess,ClassInfo> : TreeRangeData<false>{
         TreeRangeData<false>::initialize(env, other);
         m_classInfo = other.m_classInfo;
         m_rowObject = {env, env->NewObject(m_classInfo.javaClass, m_classInfo.defaultConstructor)};
+        JavaException::check(env QTJAMBI_STACKTRACEINFO);
     }
     jobject rowObject(JNIEnv* env) const{
         return m_rowObject.object(env);
@@ -1192,6 +1193,7 @@ struct TreeRangeData<has_itemAccess,ClassInfo> : TreeRangeData<false>{
         jobject result = m_rowObject.object(env);
         if(!result){
             result = env->NewObject(m_classInfo.javaClass, m_classInfo.defaultConstructor);
+            JavaException::check(env QTJAMBI_STACKTRACEINFO);
             m_rowObject = {env, result};
         }
         return result;
@@ -1387,7 +1389,7 @@ struct TreeRangeWrapper : std::vector<typename TreeRangeData<has_itemAccess,Args
                             JObjectWrapper wr(env, inserted);
                             sequentialAccess->insert(container, index, 1, &wr);
                         }else{
-                            QVariant variant = QtJambiAPI::convertJavaObjectToQVariant(env, inserted);
+                            QVariant variant = qtjambi_cast<QVariant>(env, inserted);
                             variant.convert(value->metaType);
                             sequentialAccess->insert(container, index, 1, variant.constData());
                         }
@@ -1456,7 +1458,7 @@ struct TreeRangeWrapper : std::vector<typename TreeRangeData<has_itemAccess,Args
                 }else if(CoreAPI::isJObjectWrappedMetaType(value->metaType)){
                     value->data = new JObjectWrapper(env, inserted);
                 }else{
-                    QVariant variant = QtJambiAPI::convertJavaObjectToQVariant(env, inserted);
+                    QVariant variant = qtjambi_cast<QVariant>(env, inserted);
                     variant.convert(value->metaType);
                     value->data = value->metaType.create(variant.constData());
                 }
@@ -1537,7 +1539,7 @@ private:
                     }else if(CoreAPI::isJObjectWrappedMetaType(m_data.elementMetaType())){
                         newPtr = new JObjectWrapper(env, row);
                     }else{
-                        QVariant variant = QtJambiAPI::convertJavaObjectToQVariant(env, row);
+                        QVariant variant = qtjambi_cast<QVariant>(env, row);
                         variant.convert(m_data.elementMetaType());
                         newPtr = container = m_data.elementMetaType().create(variant.constData());
                     }
@@ -1723,7 +1725,7 @@ public:
                     }else if(CoreAPI::isJObjectWrappedMetaType(metaType)){
                         data = new JObjectWrapper(env, jthis);
                     }else{
-                        QVariant variant = QtJambiAPI::convertJavaObjectToQVariant(env, jthis);
+                        QVariant variant = qtjambi_cast<QVariant>(env, jthis);
                         variant.convert(metaType);
                         data = metaType.create(variant.constData());
                     }
@@ -2343,7 +2345,7 @@ public:
                         v = valuePtr->asJObject(env);
                     }
                     if(v)
-                        result = QtJambiAPI::convertJavaObjectToQVariant(env, Java::QtCore::QRangeModel$ItemAccess::readRole(env, itemAccess, v, role));
+                        result = qtjambi_cast<QVariant>(env, Java::QtCore::QRangeModel$ItemAccess::readRole(env, itemAccess, v, role));
                 }
             }else
 #endif
@@ -2411,7 +2413,7 @@ public:
                     }
                     if(v){
                         for (auto role : roleNames().keys()) {
-                            QVariant data = QtJambiAPI::convertJavaObjectToQVariant(env, Java::QtCore::QRangeModel$ItemAccess::readRole(env, itemAccess, v, role));
+                            QVariant data = qtjambi_cast<QVariant>(env, Java::QtCore::QRangeModel$ItemAccess::readRole(env, itemAccess, v, role));
                             if (data.isValid())
                                 result[role] = std::move(data);
                         }
@@ -2603,7 +2605,7 @@ public:
                                 v = targetPtr->asJObject(env);
                             }
                             if(v)
-                                return Java::QtCore::QRangeModel$ItemAccess::writeRole(env, itemAccess, v, role, QtJambiAPI::convertQVariantToJavaObject(env, data));
+                                return Java::QtCore::QRangeModel$ItemAccess::writeRole(env, itemAccess, v, role, qtjambi_cast<jobject>(env, data));
                         }
                     }else
 #endif
@@ -2711,7 +2713,7 @@ public:
                             }
                             if(v){
                                 for (auto &&[role, value] : data.asKeyValueRange()) {
-                                    if (!Java::QtCore::QRangeModel$ItemAccess::writeRole(env, itemAccess, v, role, QtJambiAPI::convertQVariantToJavaObject(env, value))) {
+                                    if (!Java::QtCore::QRangeModel$ItemAccess::writeRole(env, itemAccess, v, role, qtjambi_cast<jobject>(env, value))) {
                                         qWarning("Failed to write value for %s", roleNames().value(role).data());
                                         return false;
                                     }
@@ -2828,7 +2830,7 @@ public:
                                 v = targetPtr->asJObject(env);
                             }
                             if(v)
-                                return Java::QtCore::QRangeModel$ItemAccess::writeRole(env, itemAccess, v, role, QtJambiAPI::convertQVariantToJavaObject(env, QVariant(targetPtr->metaType)));
+                                return Java::QtCore::QRangeModel$ItemAccess::writeRole(env, itemAccess, v, role, qtjambi_cast<jobject>(env, QVariant(targetPtr->metaType)));
                         }*/
                     }else
 #endif

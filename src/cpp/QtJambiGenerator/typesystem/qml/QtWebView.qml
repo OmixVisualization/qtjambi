@@ -44,7 +44,25 @@ TypeSystem{
         name: "QtWebEngineQuick"
         mode: RequiredLibrary.ProvideOnly
     }
-    
+    InjectCode{
+        target: CodeClass.MetaInfo
+        position: Position.Position1
+        Text{content: String.raw`
+#if defined(Q_OS_ANDROID)
+void initialize_meta_info_QtWebView_android(JavaVM*);
+#endif`}
+    }
+    InjectCode{
+        target: CodeClass.MetaInfo
+        position: Position.Beginning
+        Text{content: String.raw`
+#if defined(Q_OS_ANDROID)
+    initialize_meta_info_QtWebView_android(%javaVM);
+#else
+    Q_UNUSED(%javaVM)
+#endif`}
+    }
+
     NamespaceType{
         name: "QtWebView"
         ExtraIncludes{
@@ -52,28 +70,6 @@ TypeSystem{
                 fileName: "QtCore/QLibrary"
                 location: Include.Global
                 ppCondition: "defined(Q_OS_ANDROID)"
-            }
-            since: 6.8
-        }
-        ModifyFunction{
-            signature: "initialize()"
-            InjectCode{
-                target: CodeClass.Native
-                position: Position.End
-                Text{content: String.raw`
-#ifdef Q_OS_ANDROID
-        QLibrary library("libplugins_webview_qtwebview_android");
-        if(library.load()){
-            typedef jint (*JNI_OnLoadFn)(JavaVM*,void*);
-            JNI_OnLoadFn onLoad = JNI_OnLoadFn(library.resolve("JNI_OnLoad"));
-            if(onLoad){
-                onLoad(nullptr,nullptr);
-            }
-        }else{
-            qWarning() << library.errorString();
-        }
-#endif
-`}
             }
             since: 6.8
         }

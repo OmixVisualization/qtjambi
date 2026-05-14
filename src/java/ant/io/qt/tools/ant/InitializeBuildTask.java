@@ -121,7 +121,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			_moduleInfos.put("qml", new ModuleInfo("QTJAMBI_NO_QML", "QtQml", ModuleInfo.Headers.Private));
 			_moduleInfos.put("quick", new ModuleInfo("QTJAMBI_NO_QUICK", "QtQuick", ModuleInfo.Headers.Private));
 			_moduleInfos.put("quicktest", new ModuleInfo("QTJAMBI_NO_QUICKTEST", "QtQuickTest"));
-			_moduleInfos.put("quickcontrols2", new ModuleInfo("QTJAMBI_NO_QUICKCONTROLS2", "QtQuickControls2"));
+			_moduleInfos.put("quickcontrols", new ModuleInfo("QTJAMBI_NO_QUICKCONTROLS2", "QtQuickControls2"));
 			_moduleInfos.put("quickwidgets", new ModuleInfo("QTJAMBI_NO_QUICKWIDGETS", "QtQuickWidgets"));
 			_moduleInfos.put("xml", new ModuleInfo("QTJAMBI_NO_XML", "QtXml"));
 			_moduleInfos.put("network", new ModuleInfo("QTJAMBI_NO_NETWORK", "QtNetwork"));
@@ -207,6 +207,8 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			if((qtMajorVersion==6 && qtMinorVersion>=11) || qtMajorVersion>=7) {
 				_moduleInfos.put("tasktree", new ModuleInfo("QTJAMBI_NO_TASKTREE", "QtTaskTree"));
 				_moduleInfos.put("canvaspainter", new ModuleInfo("QTJAMBI_NO_CANVASPAINTER", "QtCanvasPainter"));
+				_moduleInfos.put("openapi", new ModuleInfo("QTJAMBI_NO_OPENAPI", "QtOpenApiCommon"));
+				skippedModules.add("openapi");
 			}
 			moduleInfos = Collections.unmodifiableMap(_moduleInfos);
 		}
@@ -1300,24 +1302,37 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		mySetProperty(-1, "TODAY", null, new SimpleDateFormat("yyyy-MM-dd").format(new Date()), false);
 		
 		File buildDir = new File(new File(qtjambiFullVersion), "build");
-		mySetProperty(-1, "outputDir", null, buildDir.getAbsolutePath(), true);
-		mySetProperty(-1, "deploymentdir", null, new File(new File(qtjambiFullVersion), "deployment").getAbsolutePath(), true);
-		mySetProperty(-1, "testdir", null, new File(new File(qtjambiFullVersion), "test").getAbsolutePath(), true);
-		mySetProperty(-1, "java.outdir", null, new File(buildDir, "java").getAbsolutePath(), true);
-		mySetProperty(-1, "java.outsrcdir", null, new File(buildDir, "java-src").getAbsolutePath(), true);
+		File generateDir = new File(new File(qtjambiFullVersion), "generate");
+		File deploymentdir = new File(new File(qtjambiFullVersion), "distribute");
+		File testDir = new File(new File(qtjambiFullVersion), "test");
 		File platformBuildDir = new File(buildDir, osname);
-		mySetProperty(-1, "qtjambi.builddir", null, new File(platformBuildDir, "qtjambi").getAbsolutePath(), true);
-		if(Objects.equals(osInfo.os(), osInfo.crossOS()) && Objects.equals(osInfo.arch(), osInfo.crossArch())) {
-			mySetProperty(-1, "generator.builddir", null, new File(new File(platformBuildDir, "qtjambi"), "QtJambiGenerator").getAbsolutePath(), true);
-		}else {
-			mySetProperty(-1, "generator.builddir", null, new File(new File(platformBuildDir, "generator"), "QtJambiGenerator").getAbsolutePath(), true);
-		}
+		File commonBuildDir = new File(buildDir, "common");
+		mySetProperty(-1, "outputDir", null, buildDir.getAbsolutePath(), true);//TODO replace
+		mySetProperty(-1, "buildDir", null, buildDir.getAbsolutePath(), true);
+		mySetProperty(-1, "platformBuildDir", null, platformBuildDir.getAbsolutePath(), true);
+		mySetProperty(-1, "commonBuildDir", null, commonBuildDir.getAbsolutePath(), true);
 		mySetProperty(-1, "plugins.builddir", null, new File(platformBuildDir, "plugins").getAbsolutePath(), true);
+		mySetProperty(-1, "plugins.commondir", null, new File(commonBuildDir, "plugins").getAbsolutePath(), true);
+		mySetProperty(-1, "qml.commondir", null, new File(commonBuildDir, "qml").getAbsolutePath(), true);
+		mySetProperty(-1, "deploymentdir", null, deploymentdir.getAbsolutePath(), true);
+		mySetProperty(-1, "testdir", null, testDir.getAbsolutePath(), true);
+		mySetProperty(-1, "java.outdir", null, new File(commonBuildDir, "java").getAbsolutePath(), true);
+		mySetProperty(-1, "java.outsrcdir", null, new File(commonBuildDir, "java-src").getAbsolutePath(), true);
+		mySetProperty(-1, "qtjambi.javadocsDir", null, new File(commonBuildDir, "javadocs").getAbsolutePath(), true);
+		mySetProperty(-1, "qtjambi.builddir", null, new File(platformBuildDir, "qtjambi").getAbsolutePath(), true);
+		mySetProperty(-1, "qtjambi.test.builddir", null, new File(platformBuildDir, "tests").getAbsolutePath(), true);
+		if(Objects.equals(osInfo.os(), osInfo.crossOS()) && Objects.equals(osInfo.arch(), osInfo.crossArch())) {
+			mySetProperty(-1, "generator.builddir", null, new File(new File(platformBuildDir, "generator"), "QtJambiGenerator").getAbsolutePath(), true);
+		}else {
+			mySetProperty(-1, "generator.builddir", null, new File(new File(platformBuildDir, "qtjambi"), "QtJambiGenerator").getAbsolutePath(), true);
+		}
 		
 		if(testConf==null){
-			File generatorOutputdir = new File(buildDir, "generator");
-			mySetProperty(-1, "generator.outputdir", null, generatorOutputdir.getAbsolutePath(), true);
+			File generatorOutputdir = new File(generateDir, "qtjambi");
+			mySetProperty(-1, "qtjambi.generator.outputdir", null, generatorOutputdir.getAbsolutePath(), true);
 			configureGenerator(osInfo, generatorOutputdir);
+			generatorOutputdir = new File(generateDir, "tests");
+			mySetProperty(-1, "test.generator.outputdir", null, generatorOutputdir.getAbsolutePath(), true);
 		}
 		
 		mySetProperty(-1, Constants.GENERATOR_PREPROC_DEFINES, null, listJoinToString(generatorPreProcDefinesList, ","), true);

@@ -32,3 +32,8 @@
 include(../QtJambi/configure.pri)
 
 QT += core webview
+
+android:{
+SOURCES += \
+    impl.cpp
+}

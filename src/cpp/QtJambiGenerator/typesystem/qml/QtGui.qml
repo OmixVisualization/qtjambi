@@ -209,8 +209,8 @@ TypeSystem{
         jniName: "jfloat"
         preferredConversion: false
     }
-    
-    TemplateType{
+
+    TypeTemplate{
         name: "QOpenGLESFunctions"
         InjectCode{
             target: CodeClass.Native
@@ -558,2671 +558,7 @@ TypeSystem{
         }
     }
     
-    TemplateType{
-        name: "QOpenGLFunctions_1_0_template_until_4_5"
-        ModifyFunction{
-            signature: "glGetBooleanv(GLenum, GLboolean *)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetDoublev(GLenum, GLdouble *)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetFloatv(GLenum, GLfloat *)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetIntegerv(GLenum, GLint *)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetTexLevelParameterfv(GLenum, GLint, GLenum, GLfloat *)"
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetTexLevelParameteriv(GLenum, GLint, GLenum, GLint *)"
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetTexParameterfv(GLenum, GLenum, GLfloat *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetTexParameteriv(GLenum, GLenum, GLint *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetString(GLenum)"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "java.lang.@NonNull String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jstring>(%env, QLatin1String(reinterpret_cast<const char *>(%in)));"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexParameterfv(GLenum,GLenum,const GLfloat*)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glTexParameteriv(GLenum,GLenum,const GLint*)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_0_template_until_4_4"
-        ModifyFunction{
-            signature: "glReadPixels(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, GLvoid *)"
-            ModifyArgument{
-                index: 7
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetTexImage(GLenum, GLint, GLenum, GLenum, GLvoid *)"
-            ModifyArgument{
-                index: 5
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glTexImage1D(GLenum, GLint, GLint, GLsizei, GLint, GLenum, GLenum, const GLvoid *)"
-            ModifyArgument{
-                index: 8
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glTexImage2D(GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *)"
-            ModifyArgument{
-                index: 9
-                AsBuffer{}
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_0_template_since_4_4"
-        ModifyFunction{
-            signature: "glReadPixels(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, void *)"
-            ModifyArgument{
-                index: 7
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetTexImage(GLenum, GLint, GLenum, GLenum, void *)"
-            ModifyArgument{
-                index: 5
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glTexImage1D(GLenum, GLint, GLint, GLsizei, GLint, GLenum, GLenum, const void *)"
-            ModifyArgument{
-                index: 8
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glTexImage2D(GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, const void *)"
-            ModifyArgument{
-                index: 9
-                AsBuffer{}
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_0_template_until_3_1A"
-        ModifyFunction{
-            signature: "glPixelMapfv(GLenum, GLint, const GLfloat *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glPixelMapuiv(GLenum, GLint, const GLuint *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glPixelMapusv(GLenum, GLint, const GLushort *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glCallLists(GLsizei, GLenum, const GLvoid *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glDrawPixels(GLsizei, GLsizei, GLenum, GLenum, const GLvoid *)"
-            ModifyArgument{
-                index: 5
-                AsBuffer{}
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_0_template_until_3_1B"
-        ModifyFunction{
-            signature: "glPixelMapfv(GLenum, GLsizei, const GLfloat *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glPixelMapuiv(GLenum, GLsizei, const GLuint *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glPixelMapusv(GLenum, GLsizei, const GLushort *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glCallLists(GLsizei, GLenum, const void *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glDrawPixels(GLsizei, GLsizei, GLenum, GLenum, const void *)"
-            ModifyArgument{
-                index: 5
-                AsBuffer{}
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_0_template_until_3_1"
-        ModifyFunction{
-            signature: "glColor4ub(GLubyte,GLubyte,GLubyte,GLubyte)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "glColor3ub(GLubyte,GLubyte,GLubyte)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "glColor4ui(GLuint,GLuint,GLuint,GLuint)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "glColor3ui(GLuint,GLuint,GLuint)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "glColor4us(GLushort,GLushort,GLushort,GLushort)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "glColor3us(GLushort,GLushort,GLushort)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "glColor4ubv(const GLubyte *)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "glColor3ubv(const GLubyte *)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "glColor4uiv(const GLuint *)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "glColor3uiv(const GLuint *)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "glColor4usv(const GLushort *)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "glColor3usv(const GLushort *)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "glEdgeFlagv(const GLboolean *)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "glGetTexGendv(GLenum, GLenum, GLdouble *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetTexGenfv(GLenum, GLenum, GLfloat *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetTexGeniv(GLenum, GLenum, GLint *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetClipPlane(GLenum, GLdouble *)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetMaterialfv(GLenum, GLenum, GLfloat *)"
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetMaterialiv(GLenum, GLenum, GLint *)"
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glClipPlane(GLenum, const GLdouble *)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetPixelMapfv(GLenum, GLfloat *)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glPolygonStipple(const GLubyte *)"
-            ModifyArgument{
-                index: 1
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glRectdv(const GLdouble *,const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glRectfv(const GLfloat *,const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glRectiv(const GLint *,const GLint *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glRectsv(const GLshort *,const GLshort *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glBitmap(GLsizei, GLsizei, GLfloat, GLfloat, GLfloat, GLfloat, const GLubyte *)"
-            ModifyArgument{
-                index: 7
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glFogiv(GLenum, const GLint *)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glFogfv(GLenum, const GLfloat *)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glMultMatrixd(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 16
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glMultMatrixf(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 16
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glNormal3bv(const GLbyte *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glNormal3sv(const GLshort *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glNormal3iv(const GLint *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glNormal3fv(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glNormal3dv(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glColor4bv(const GLbyte *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glColor3bv(const GLbyte *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glColor4sv(const GLshort *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glColor3sv(const GLshort *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glColor4iv(const GLint *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glColor3iv(const GLint *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glColor4fv(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glColor3fv(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glColor4dv(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glColor3dv(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glRasterPos4sv(const GLshort *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glRasterPos3sv(const GLshort *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glRasterPos2sv(const GLshort *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glRasterPos4iv(const GLint *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glRasterPos3iv(const GLint *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glRasterPos2iv(const GLint *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glRasterPos4fv(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glRasterPos3fv(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glRasterPos2fv(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glRasterPos4dv(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glRasterPos3dv(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glRasterPos2dv(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glLightModeliv(GLenum, const GLint *)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glLightModelfv(GLenum, const GLfloat *)"
-            ModifyArgument{
-                index: 2
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetPolygonStipple(GLubyte *)"
-            ModifyArgument{
-                index: 1
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetLightfv(GLenum, GLenum, GLfloat *)"
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetLightiv(GLenum, GLenum, GLint *)"
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glLightiv(GLenum, GLenum, const GLint *)"
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glLightfv(GLenum, GLenum, const GLfloat *)"
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glEvalCoord1fv(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glEvalCoord1dv(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glEvalCoord2fv(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glEvalCoord2dv(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetMapdv(GLenum, GLenum, GLdouble *)"
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetMapfv(GLenum, GLenum, GLfloat *)"
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetMapiv(GLenum, GLenum, GLint *)"
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetPixelMapuiv(GLenum, GLuint *)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetPixelMapusv(GLenum, GLushort *)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glSelectBuffer(GLsizei,GLuint *)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{
-                    lengthParameter: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glMaterialiv(GLenum, GLenum, const GLint *)"
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glMaterialfv(GLenum, GLenum, const GLfloat *)"
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glVertex4sv(const GLshort *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glVertex3sv(const GLshort *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glVertex2sv(const GLshort *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glVertex4iv(const GLint *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glVertex3iv(const GLint *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glVertex2iv(const GLint *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glVertex4fv(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glVertex3fv(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glVertex2fv(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glVertex4dv(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glVertex3dv(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glVertex2dv(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoord4sv(const GLshort *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoord3sv(const GLshort *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoord2sv(const GLshort *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoord1sv(const GLshort *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoord4iv(const GLint *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoord3iv(const GLint *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoord2iv(const GLint *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoord1iv(const GLint *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoord4fv(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoord3fv(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoord2fv(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoord1fv(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoord4dv(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 4
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoord3dv(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 3
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoord2dv(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 2
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoord1dv(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexEnviv(GLenum, GLenum, const GLint *)"
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexEnvfv(GLenum, GLenum, const GLfloat *)"
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetTexEnvfv(GLenum, GLenum, GLfloat *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetTexEnviv(GLenum, GLenum, GLint *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glTexGendv(GLenum, GLenum, const GLdouble *)"
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexGenfv(GLenum, GLenum, const GLfloat *)"
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glTexGeniv(GLenum, GLenum, const GLint *)"
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glFeedbackBuffer(GLsizei, GLenum, GLfloat *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{
-                    lengthParameter: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glLoadMatrixd(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 16
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glLoadMatrixf(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 16
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glMap1d(GLenum, GLdouble, GLdouble, GLint, GLint, const GLdouble *)"
-            ModifyArgument{
-                index: 6
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glMap1f(GLenum, GLfloat, GLfloat, GLint, GLint, const GLfloat *)"
-            ModifyArgument{
-                index: 6
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glMap2d(GLenum, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, const GLdouble *)"
-            ModifyArgument{
-                index: 10
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glMap2f(GLenum, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, const GLfloat *)"
-            ModifyArgument{
-                index: 10
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glIndexdv(const GLdouble *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glIndexfv(const GLfloat *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glIndexiv(const GLint *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glIndexsv(const GLshort *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_1_deprecated"
-        ModifyFunction{
-            signature: "glAreTexturesResident(GLsizei, const GLuint *, GLboolean *)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{
-                    lengthParameter: 1
-                }
-            }
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    lengthParameter: 1
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glPrioritizeTextures(GLsizei, const GLuint *, const GLfloat *)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_1_deprecatedA"
-        ModifyFunction{
-            signature: "glColorPointer(GLint, GLenum, GLsizei, const GLvoid *)"
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glVertexPointer(GLint, GLenum, GLsizei, const GLvoid *)"
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoordPointer(GLint, GLenum, GLsizei, const GLvoid *)"
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glInterleavedArrays(GLenum, GLsizei, const GLvoid *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glNormalPointer(GLenum, GLsizei, const GLvoid *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glEdgeFlagPointer(GLsizei, const GLvoid *)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glIndexPointer(GLenum, GLsizei, const GLvoid *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_1_deprecatedB"
-        ModifyFunction{
-            signature: "glColorPointer(GLint, GLenum, GLsizei, const void *)"
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glVertexPointer(GLint, GLenum, GLsizei, const void *)"
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glTexCoordPointer(GLint, GLenum, GLsizei, const void *)"
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glInterleavedArrays(GLenum, GLsizei, const void *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glNormalPointer(GLenum, GLsizei, const void *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glEdgeFlagPointer(GLsizei, const void *)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glIndexPointer(GLenum, GLsizei, const void *)"
-            ModifyArgument{
-                index: 3
-                AsBuffer{}
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_1"
-        ModifyFunction{
-            signature: "glGenTextures(GLsizei, GLuint *)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glDeleteTextures(GLsizei, const GLuint *)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_1A"
-        ModifyFunction{
-            signature: "glGetPointerv(GLenum, GLvoid**)"
-            ModifyArgument{
-                index: 2
-                NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                    pointer = nullptr;\n"+
-                                  "                                },\n"+
-                                  "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                }\n"+
-                                  "                            );\n"+
-                                  "if(%out.size()==0){\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, \"Array length is 0.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glDrawElements(GLenum, GLsizei, GLenum, const GLvoid *)"
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glTexSubImage2D(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, const GLvoid *)"
-            ModifyArgument{
-                index: 9
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glTexSubImage1D(GLenum, GLint, GLint, GLsizei, GLenum, GLenum, const GLvoid *)"
-            ModifyArgument{
-                index: 7
-                AsBuffer{}
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_1B"
-        ModifyFunction{
-            signature: "glDrawElements(GLenum, GLsizei, GLenum, const void *)"
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glTexSubImage2D(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, const void *)"
-            ModifyArgument{
-                index: 9
-                AsBuffer{}
-            }
-        }
-        ModifyFunction{
-            signature: "glTexSubImage1D(GLenum, GLint, GLint, GLsizei, GLenum, GLenum, const void *)"
-            ModifyArgument{
-                index: 7
-                AsBuffer{}
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_1_until_4_4"
-        ModifyFunction{
-            signature: "glIndexubv(const GLubyte *)"
-            ModifyArgument{
-                index: 1
-                AsArray{
-                    minLength: 1
-                }
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_1B_until_4_4"
-        ModifyFunction{
-            signature: "glGetPointerv(GLenum, void**)"
-            ModifyArgument{
-                index: 2
-                NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                    pointer = nullptr;\n"+
-                                  "                                },\n"+
-                                  "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                }\n"+
-                                  "                            );\n"+
-                                  "if(%out.size()==0){\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, \"Array length is 0.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}"}
-                }
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_4A"
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-        }
-        ModifyFunction{
-            signature: "glMultiDrawElements(GLenum, const GLsizei *, GLenum, const GLvoid *const*, GLsizei)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-            ModifyArgument{
-                index: 4
-                NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: String.raw`
-JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
-                                    [&%scope](const void* & pointer,JNIEnv *env, jobject o){
-                                        PersistentJBufferData* bufferData = new PersistentJBufferData(env, o);
-                                        %scope.addDeletion(bufferData);
-                                        pointer = bufferData->data<void>();
-                                    },
-                                    [](JNIEnv * env, const void* const& ptr) -> jobject {
-                                        return DataJBuffer(env, ptr, INT_MAX).take();
-                                    }
-                                );
-if(%out.size()==0)
-    JavaException::raiseIllegalArgumentException(%env, "Array length is 0." QTJAMBI_STACKTRACEINFO );
-`}
-                }
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_4B"
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-        }
-        ModifyFunction{
-            signature: "glMultiDrawElements(GLenum, const GLsizei *, GLenum, const void *const*, GLsizei)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-            ModifyArgument{
-                index: 4
-                NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: String.raw`
-JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
-                                    [&%scope](const void* & pointer,JNIEnv *env, jobject o){
-                                        PersistentJBufferData* bufferData = new PersistentJBufferData(env, o);
-                                        %scope.addDeletion(bufferData);
-                                        pointer = bufferData->data<void>();
-                                    },
-                                    [](JNIEnv * env, const void* const& ptr) -> jobject {
-                                        return DataJBuffer(env, ptr, INT_MAX).take();
-                                    }
-                                );`}
-                }
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_5"
-        ModifyFunction{
-            signature: "glMapBuffer(GLenum, GLenum)"
-            ModifyArgument{
-                index: 0
-                AsBuffer{
-                    lengthExpression: "INT_MAX"
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Dependent
-                }
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_2_0"
-        ModifyFunction{
-            signature: "glShaderSource(GLuint, GLsizei, const GLchar *const*, const GLint*)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
-                                  "const char** %out = nullptr;\n"+
-                                  "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
-                                  "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
-                                  "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
-                                  "}"}
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out = %env->GetArrayLength(jarray(%3));"}
-                }
-            }
-            ModifyArgument{
-                index: 4
-                AsBuffer{}
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_5A"
-        ModifyFunction{
-            signature: "glGetBufferPointerv(GLenum, GLenum, GLvoid **)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                    pointer = nullptr;\n"+
-                                  "                                },\n"+
-                                  "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                }\n"+
-                                  "                            );\n"+
-                                  "if(%out.size()==0){\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, \"Array length is 0.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}"}
-                }
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_5B"
-        ModifyFunction{
-            signature: "glGetBufferPointerv(GLenum, GLenum, void **)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                    pointer = nullptr;\n"+
-                                  "                                },\n"+
-                                  "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                }\n"+
-                                  "                            );\n"+
-                                  "if(%out.size()==0){\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, \"Array length is 0.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}"}
-                }
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_2_0A"
-        Import{
-            template: "QOpenGLFunctions_2_0"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_4A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_5"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_5A"
-        }
-        ModifyFunction{
-            signature: "glGetVertexAttribPointerv(GLuint, GLenum, GLvoid **)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                    pointer = nullptr;\n"+
-                                  "                                },\n"+
-                                  "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                }\n"+
-                                  "                            );"}
-                }
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_2_0B"
-        ModifyFunction{
-            signature: "glGetBufferPointerv(GLenum, GLenum, void **)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                    pointer = nullptr;\n"+
-                                  "                                },\n"+
-                                  "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                }\n"+
-                                  "                            );\n"+
-                                  "if(%out.size()==0){\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, \"Array length is 0.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}"}
-                }
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_2_0B"
-        Import{
-            template: "QOpenGLFunctions_2_0"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_4B"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_5"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_5B"
-        }
-        ModifyFunction{
-            signature: "glGetVertexAttribPointerv(GLuint, GLenum, void **)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                    pointer = nullptr;\n"+
-                                  "                                },\n"+
-                                  "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                }\n"+
-                                  "                            );"}
-                }
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_3_0"
-        InjectCode{
-            target: CodeClass.Native
-            position: Position.Beginning
-            Text{content: "#ifndef GL_MAX_LABEL_LENGTH\n"+
-                          "#define GL_MAX_LABEL_LENGTH 0x82E8\n"+
-                          "#endif"}
-        }
-        ModifyFunction{
-            signature: "glTransformFeedbackVaryings(GLuint, GLsizei, const GLchar *const *, GLenum)"
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out = %env->GetArrayLength(jarray(%3));"}
-                }
-            }
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
-                                  "const GLchar** %out = nullptr;\n"+
-                                  "QScopedArrayPointer<const GLchar*> %outPtr(%out = new const GLchar*[quint32(__qt_%2)]);\n"+
-                                  "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
-                                  "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
-                                  "}"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetTransformFeedbackVarying(GLuint, GLuint, GLsizei, GLsizei *, GLsizei *, GLenum *, GLchar *)"
-            ModifyArgument{
-                index: 3
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "GLsizei %out = GL_MAX_LABEL_LENGTH;"}
-                }
-            }
-            ModifyArgument{
-                index: 4
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "GLsizei %in = 0;\n"+
-                                  "GLsizei* %out = &%in;"}
-                }
-            }
-            ModifyArgument{
-                index: 5
-                AsArray{
-                    minLength: 1
-                }
-            }
-            ModifyArgument{
-                index: 6
-                AsArray{
-                    minLength: 1
-                }
-            }
-            ModifyArgument{
-                index: 7
-                ReplaceType{
-                    modifiedType: "java.lang.String[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "    jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %4));\n"+
-                                  "    %env->SetObjectArrayElement(%in, 0, result);\n"+
-                                  "});"}
-                }
-            }
-            InjectCode{
-                Text{content: "if (name.length < 1)\n"+
-                              "throw new IllegalArgumentException(\"Argument 'name': Wrong number of elements in array. Found: 0, expected: 1\");"}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetStringi(GLenum, GLuint)"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jstring>(%env, QLatin1String(reinterpret_cast<const char *>(%in)));"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetBooleani_v(GLenum, GLuint, GLboolean *)"
-            ModifyArgument{
-                index: 3
-                NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "java.nio.IntBuffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferData %out(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glMapBufferRange(GLenum, GLintptr, GLsizeiptr, GLbitfield)"
-            ModifyArgument{
-                index: 0
-                AsBuffer{
-                    lengthParameter: 3
-                }
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_3_1"
-        Import{
-            template: "QOpenGLFunctions_3_0"
-        }
-        ModifyFunction{
-            signature: "glGetUniformIndices(GLuint, GLsizei, const GLchar *const *, GLuint *)"
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out = qMin(%env->GetArrayLength(jarray(%3)), %env->GetArrayLength(jarray(%4)));"}
-                }
-            }
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
-                                  "const char** %out = nullptr;\n"+
-                                  "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
-                                  "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
-                                  "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
-                                  "}"}
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JIntArrayPointer %out(%env, %in);"}
-                }
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_3_2"
-        ModifyFunction{
-            signature: "glFenceSync(GLenum,GLbitfield)"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    ownership: Ownership.Ignore
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetSynciv(__GLsync *, GLenum, GLsizei, GLsizei *, GLint *)"
-            ModifyArgument{
-                index: 3
-                RemoveArgument{
-                }
-            }
-            ModifyArgument{
-                index: 4
-                AsArray{
-                    minLength: 1
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "java.nio.IntBuffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferData %out(%env, %in);\n"+
-                                  "GLsizei %3 = GLsizei(%out.size());"}
-                }
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_3_2A"
-        Import{
-            template: "QOpenGLFunctions_3_2"
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-        }
-        ModifyFunction{
-            signature: "glMultiDrawElementsBaseVertex(GLenum, const GLsizei *, GLenum, const GLvoid *const*, GLsizei, const GLint *)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-            ModifyArgument{
-                index: 4
-                NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: String.raw`
-JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
-                                    [&%scope](const void* & pointer,JNIEnv *env, jobject o){
-                                        PersistentJBufferData* bufferData = new PersistentJBufferData(env, o);
-                                        %scope.addDeletion(bufferData);
-                                        pointer = bufferData->data<void>();
-                                    },
-                                    [](JNIEnv * env, const void* const& ptr) -> jobject {
-                                        return DataJBuffer(env, ptr, INT_MAX).take();
-                                    }
-                                );`}
-                }
-            }
-            ModifyArgument{
-                index: 6
-                AsBuffer{}
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_3_2B"
-        Import{
-            template: "QOpenGLFunctions_3_2"
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-        }
-        ModifyFunction{
-            signature: "glMultiDrawElementsBaseVertex(GLenum, const GLsizei *, GLenum, const void *const*, GLsizei, const GLint *)"
-            ModifyArgument{
-                index: 2
-                AsBuffer{}
-            }
-            ModifyArgument{
-                index: 4
-                NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: String.raw`
-JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
-                                    [&%scope](const void* & pointer,JNIEnv *env, jobject o){
-                                        PersistentJBufferData* bufferData = new PersistentJBufferData(env, o);
-                                        %scope.addDeletion(bufferData);
-                                        pointer = bufferData->data<void>();
-                                    },
-                                    [](JNIEnv * env, const void* const& ptr) -> jobject {
-                                        return DataJBuffer(env, ptr, INT_MAX).take();
-                                    }
-                                );`}
-                }
-            }
-            ModifyArgument{
-                index: 6
-                AsBuffer{}
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_4_1"
-        Import{
-            template: "QOpenGLFunctions_3_1"
-        }
-        ModifyFunction{
-            signature: "glGetProgramPipelineInfoLog(GLuint, GLsizei, GLsizei *, GLchar *)"
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "GLsizei %out = GL_MAX_LABEL_LENGTH;"}
-                }
-            }
-            ModifyArgument{
-                index: 3
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "GLsizei %in = 0;\n"+
-                                  "GLsizei* %out = &%in;"}
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "    jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %3));\n"+
-                                  "    %env->SetObjectArrayElement(%in, 0, result);\n"+
-                                  "});"}
-                }
-            }
-            InjectCode{
-                Text{content: "if (infoLog.length < 1)\n"+
-                              "throw new IllegalArgumentException(\"Argument 'infoLog': Wrong number of elements in array. Found: 0, expected: 1\");"}
-            }
-        }
-        ModifyFunction{
-            signature: "glCreateShaderProgramv(GLenum, GLsizei, const GLchar * const *)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
-                                  "const char** %out = nullptr;\n"+
-                                  "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
-                                  "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
-                                  "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
-                                  "}"}
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out = %env->GetArrayLength(jarray(%3));"}
-                }
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_4_3"
-        Import{
-            template: "QOpenGLFunctions_4_1"
-        }
-        ModifyFunction{
-            signature: "glGetProgramResourceName(GLuint, GLenum, GLuint, GLsizei, GLsizei *, GLchar *)"
-            ModifyArgument{
-                index: 4
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "GLsizei %out = GL_MAX_LABEL_LENGTH;"}
-                }
-            }
-            ModifyArgument{
-                index: 5
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "GLsizei %in = 0;\n"+
-                                  "GLsizei* %out = &%in;"}
-                }
-            }
-            ModifyArgument{
-                index: 6
-                ReplaceType{
-                    modifiedType: "java.lang.String[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "    jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %5));\n"+
-                                  "    %env->SetObjectArrayElement(%in, 0, result);\n"+
-                                  "});"}
-                }
-            }
-            InjectCode{
-                Text{content: "if (name.length < 1)\n"+
-                              "throw new IllegalArgumentException(\"Argument 'name': Wrong number of elements in array. Found: 0, expected: 1\");"}
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_4_4"
-        Import{
-            template: "QOpenGLFunctions_4_3"
-        }
-        ModifyFunction{
-            signature: "glDebugMessageCallback(GLDEBUGPROC, const void *)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Set
-                    variableName: "__rcDebugMessageCallback"
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "const void * %out = nullptr;"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetDebugMessageLog(GLuint, GLsizei, GLenum *, GLenum *, GLuint *, GLenum *, GLsizei *, GLchar *)"
-            ModifyArgument{
-                index: 1
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "GLuint %out = GLuint(%env->GetArrayLength(jarray(%3)));\n"+
-                                  "%out = qMin(%out, GLuint(%env->GetArrayLength(jarray(%4))));\n"+
-                                  "%out = qMin(%out, GLuint(%env->GetArrayLength(jarray(%5))));\n"+
-                                  "%out = qMin(%out, GLuint(%env->GetArrayLength(jarray(%8))));"}
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "GLsizei %out = GL_MAX_LABEL_LENGTH;"}
-                }
-            }
-            ModifyArgument{
-                index: 3
-                AsArray{
-                    minLength: 1
-                }
-            }
-            ModifyArgument{
-                index: 4
-                AsArray{
-                    minLength: 1
-                }
-            }
-            ModifyArgument{
-                index: 5
-                AsArray{
-                    minLength: 1
-                }
-            }
-            ModifyArgument{
-                index: 6
-                AsArray{
-                    minLength: 1
-                }
-            }
-            ModifyArgument{
-                index: 7
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QScopedArrayPointer<GLsizei> %in(new GLsizei[__qt_%1]);\n"+
-                                  "GLsizei* %out = %in.get();"}
-                }
-            }
-            ModifyArgument{
-                index: 8
-                ReplaceType{
-                    modifiedType: "java.lang.String[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();"}
-                }
-            }
-            ModifyArgument{
-                index: 0
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = jint(%in);\n"+
-                                  "int offset = 0;\n"+
-                                  "for(jsize i=0; i<jsize(__qt_return_value); ++i){\n"+
-                                  "    jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(__qt_%8+offset, __qt_%7[i]));\n"+
-                                  "    offset += __qt_%7[i];\n"+
-                                  "    %env->SetObjectArrayElement(%8, i, result);\n"+
-                                  "}"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetObjectPtrLabel(const void *, GLsizei, GLsizei *, GLchar *)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.gui.gl.GLsync"
-                }
-                NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "const void* %out = QtJambiAPI::convertJavaObjectToNative(%env, %in);"}
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "GLsizei %out = GL_MAX_LABEL_LENGTH;"}
-                }
-            }
-            ModifyArgument{
-                index: 3
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "GLsizei %in = 0;\n"+
-                                  "GLsizei* %out = &%in;"}
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "    jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %3));\n"+
-                                  "    %env->SetObjectArrayElement(%in, 0, result);\n"+
-                                  "});"}
-                }
-            }
-            InjectCode{
-                Text{content: "if (label.length < 1)\n"+
-                              "throw new IllegalArgumentException(\"Argument 'label': Wrong number of elements in array. Found: 0, expected: 1\");"}
-            }
-        }
-        ModifyFunction{
-            signature: "glGetObjectLabel(GLenum, GLuint, GLsizei, GLsizei *, GLchar *)"
-            ModifyArgument{
-                index: 3
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "GLsizei %out = GL_MAX_LABEL_LENGTH;"}
-                }
-            }
-            ModifyArgument{
-                index: 4
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "GLsizei %in = 0;\n"+
-                                  "GLsizei* %out = &%in;"}
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "java.lang.String[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "    jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %4));\n"+
-                                  "    %env->SetObjectArrayElement(%in, 0, result);\n"+
-                                  "});"}
-                }
-            }
-            InjectCode{
-                Text{content: "if (label.length < 1)\n"+
-                              "throw new IllegalArgumentException(\"Argument 'label': Wrong number of elements in array. Found: 0, expected: 1\");"}
-            }
-        }
-        ModifyFunction{
-            signature: "glObjectPtrLabel(const void *, GLsizei, const GLchar *)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.gui.gl.GLsync"
-                }
-                NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "const void* %out = QtJambiAPI::convertJavaObjectToNative(%env, %in);"}
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-            }
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, %in);\n"+
-                                  "GLsizei %2(%out.length());"}
-                }
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_4_5"
-        Import{
-            template: "QOpenGLFunctions_4_4"
-        }
-        ModifyFunction{
-            signature: "glMapNamedBuffer(GLuint, GLenum)"
-            ModifyArgument{
-                index: 0
-                AsBuffer{
-                    lengthExpression: "INT_MAX"
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Dependent
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glMapNamedBufferRange(GLuint,GLintptr,GLsizei,GLbitfield)"
-            ModifyArgument{
-                index: 0
-                AsBuffer{
-                    lengthExpression: "INT_MAX"
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Dependent
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "glGetNamedBufferPointerv(GLuint, GLenum, void **)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                    pointer = nullptr;\n"+
-                                  "                                },\n"+
-                                  "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                }\n"+
-                                  "                            );"}
-                }
-            }
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_0_template_full"
-        Import{
-            template: "QOpenGLFunctions_1_0_template_until_3_1"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_until_3_1A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_until_4_4"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_until_4_5"
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_0_template_full2"
-        Import{
-            template: "QOpenGLFunctions_1_0_template_until_3_1"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_until_3_1B"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_since_4_4"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_0_template_until_4_5"
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_1_template_full"
-        Import{
-            template: "QOpenGLFunctions_1_1"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_until_4_4"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1A"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_deprecated"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_deprecatedA"
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_1_template_full2"
-        Import{
-            template: "QOpenGLFunctions_1_1"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1B"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_until_4_4"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1B_until_4_4"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_deprecated"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1_deprecatedB"
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_1_template_until_4_5"
-        Import{
-            template: "QOpenGLFunctions_1_1"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1A"
-        }
-    }
-    
-    TemplateType{
-        name: "QOpenGLFunctions_1_1_template_until_4_5B"
-        Import{
-            template: "QOpenGLFunctions_1_1"
-        }
-        Import{
-            template: "QOpenGLFunctions_1_1B"
-        }
-    }
-    
-    Template{
-        name: "gui.matrix_constructor"
-        Text{content: "private static java.nio.FloatBuffer wrap(float[] values){\n"+
-                      "    if(values.length < %COUNT)\n"+
-                      "        throw new ArrayIndexOutOfBoundsException(%COUNT);\n"+
-                      "    return java.nio.FloatBuffer.wrap(values);\n"+
-                      "}\n"+
-                      "\n"+
-                      "public %TYPE(float[] values){\n"+
-                      "    this(wrap(values));\n"+
-                      "}\n"+
-                      "\n"+
-                      "@QtUninvokable\n"+
-                      "public final void copyDataTo(float[] values)    {\n"+
-                      "    copyDataTo(wrap(values));\n"+
-                      "}"}
-    }
-    
-    Template{
+    CodeTemplate{
         name: "gui.getter_returning_nativepointer"
         Text{content: "public final %RETURN_TYPE %FUNCTION_NAME() {\n"+
                       "    QNativePointer np = %FUNCTION_NAME_private();\n"+
@@ -3231,55 +567,70 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                       "}"}
     }
     
-    Template{
+    CodeTemplate{
         name: "gui.convert_validationdata_to_java"
         Text{content: "jstring __qt_converted_input = qtjambi_cast<jstring>(%env, %STRING);\n"+
                       "jobject %out = Java::QtGui::QValidator$QValidationData::newInstance(%env, __qt_converted_input, %POS);\n"+
                       "jobject __java_validation_data = %out;"}
     }
     
-    Template{
+    CodeTemplate{
         name: "gui.cleanup_validationdata_to_java"
         Text{content: "jstring __java_string = jstring(Java::QtGui::QValidator$QValidationData::string(%env, __java_validation_data));\n"+
                       "%STRING = qtjambi_cast<QString>(%env, __java_string);\n"+
                       "%POS = Java::QtGui::QValidator$QValidationData::position(%env, __java_validation_data);"}
     }
     
-    Template{
+    CodeTemplate{
         name: "gui.convert_validationdata_to_string"
         Text{content: "jstring __java_string = Java::QtGui::QValidator$QValidationData::string(%env, %in);\n"+
                       "QString %out = qtjambi_cast<QString>(%env, __java_string);\n"+
                       "QString *__string_ptr = &%out;"}
     }
     
-    Template{
+    CodeTemplate{
         name: "gui.convert_validationdata_to_pos"
         Text{content: "int %out = Java::QtGui::QValidator$QValidationData::position(%env, %1);\n"+
                       "int *__position_ptr = &%out;"}
     }
     
-    Template{
+    CodeTemplate{
         name: "gui.cleanup_validationdata_from_java"
         Text{content: "Java::QtGui::QValidator$QValidationData::set_position(%env, %1, *__position_ptr);\n"+
                       "Java::QtGui::QValidator$QValidationData::set_string(%env, %1, qtjambi_cast<jstring>(%env, *__string_ptr));"}
     }
     
-    Template{
+    CodeTemplate{
         name: "gui.tabarray.check"
-        Text{content: "if(tabarray!=null && tabarray.length>0) {\n"+
-                      "    int i = tabarray.length-1;\n"+
-                      "    for (; i >= 0; --i) {\n"+
-                      "        if(tabarray[i]==0)\n"+
-                      "            break;\n"+
-                      "    }\n"+
-                      "    if(i==0) {\n"+
-                      "        tabarray = java.util.Arrays.copyOf(tabarray, tabarray.length+1);\n"+
-                      "    }\n"+
-                      "}"}
+        Text{content: String.raw`
+                      int[] originalArray = tabarray;
+                      if(tabarray!=null && tabarray.length>0) {
+                          int i = tabarray.length-1;
+                          for (; i >= 0; --i) {
+                              if(tabarray[i]==0)
+                                  break;
+                          }
+                          if(i==0) {
+                              tabarray = java.util.Arrays.copyOf(tabarray, tabarray.length+1);
+                          }
+                      }`}
+    }
+    CodeTemplate{
+        name: "gui.tabarray.finalize"
+        Text{content: String.raw`
+                      if(originalArray != tabarray) {
+                          System.arraycopy(tabarray, 0, originalArray, 0, originalArray.length);
+                      }`}
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QMatrixXxX"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+        }
         ModifyFunction{
             signature: "operator()(int, int)"
             rename: "setValue"
@@ -4088,165 +1439,65 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             signature: "attributes(int, int *, int *) const"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
             ModifyArgument{
                 index: 3
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
         }
         ModifyFunction{
             signature: "selection(int, int *, int *) const"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
             ModifyArgument{
                 index: 3
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
         }
         ModifyFunction{
             signature: "textAfterOffset(int, QAccessible::TextBoundaryType, int *, int *) const"
             ModifyArgument{
                 index: 3
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
             ModifyArgument{
                 index: 4
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
         }
         ModifyFunction{
             signature: "textAtOffset(int, QAccessible::TextBoundaryType, int *, int *) const"
             ModifyArgument{
                 index: 3
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
             ModifyArgument{
                 index: 4
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
         }
         ModifyFunction{
             signature: "textBeforeOffset(int, QAccessible::TextBoundaryType, int *, int *) const"
             ModifyArgument{
                 index: 3
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
             ModifyArgument{
                 index: 4
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 1;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, jintArray(%in), %out_size);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jintArray %out = qtjambi_cast<jintArray>(%env, %scope, %in, %in ? 1 : 0);"}
-                }
+                NoNullPointer{}
+                AsArray{}
             }
         }
     }
@@ -5291,6 +2542,12 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
     
     ValueType{
         name: "QBitmap"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/ArrayAPI"
+                location: Include.Global
+            }
+        }
         noImplicitConstructors: true
         threadAffinity: Affinity.Pixmap
         ModifyFunction{
@@ -6476,6 +3733,10 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 fileName: "QStringList"
                 location: Include.Global
             }
+            Include{
+                fileName: "QtJambi/StringAPI"
+                location: Include.Global
+            }
         }
 
         EnumType{
@@ -6558,19 +3819,10 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                     }
                     ModifyArgument{
                         index: 1
-                        NoNullPointer{}
-                        ReplaceType{
-                            modifiedType: "java.lang.String"
-                        }
+                        AsString{}
                         ConversionRule{
                             codeClass: CodeClass.Native
-                            Text{content: String.raw`
-J2CStringBuffer buffer(%env, %in);
-if(buffer.length()!=4)
-    JavaException::raiseIllegalArgumentException(%env, "The tag name must be exactly 4 characters long!" QTJAMBI_STACKTRACEINFO);
-const char* bufferData = buffer;
-const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
-                                `}
+                            Text{content: String.raw`const char (&%out)[5] = qtjambi_cast<const char(&)[5]>(%env, %scope, %in);`}
                         }
                     }
                 }
@@ -6637,17 +3889,17 @@ const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
             signature: "boundingRect(QRectF,int,QString,int,int*)const"
             ModifyArgument{
                 index: 5
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JIntArrayPointer %out(%env, %in);"}
-                }
+                AsArray{}
             }
             InjectCode{
                 InsertTemplate{
                     name: "gui.tabarray.check"
+                }
+            }
+            InjectCode{
+                position: Position.End
+                InsertTemplate{
+                    name: "gui.tabarray.finalize"
                 }
             }
         }
@@ -6655,17 +3907,17 @@ const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
             signature: "size(int,QString,int,int*)const"
             ModifyArgument{
                 index: 4
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JIntArrayPointer %out(%env, %in);"}
-                }
+                AsArray{}
             }
             InjectCode{
                 InsertTemplate{
                     name: "gui.tabarray.check"
+                }
+            }
+            InjectCode{
+                position: Position.End
+                InsertTemplate{
+                    name: "gui.tabarray.finalize"
                 }
             }
         }
@@ -6692,17 +3944,17 @@ const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
             signature: "boundingRect(int,int,int,int,int,QString,int,int*)const"
             ModifyArgument{
                 index: 8
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JIntArrayPointer %out(%env, %in);"}
-                }
+                AsArray{}
             }
             InjectCode{
                 InsertTemplate{
                     name: "gui.tabarray.check"
+                }
+            }
+            InjectCode{
+                position: Position.End
+                InsertTemplate{
+                    name: "gui.tabarray.finalize"
                 }
             }
         }
@@ -6710,17 +3962,17 @@ const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
             signature: "boundingRect(QRect,int,QString,int,int*)const"
             ModifyArgument{
                 index: 5
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JIntArrayPointer %out(%env, %in);"}
-                }
+                AsArray{}
             }
             InjectCode{
                 InsertTemplate{
                     name: "gui.tabarray.check"
+                }
+            }
+            InjectCode{
+                position: Position.End
+                InsertTemplate{
+                    name: "gui.tabarray.finalize"
                 }
             }
         }
@@ -6728,17 +3980,17 @@ const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
             signature: "size(int,QString,int,int*)const"
             ModifyArgument{
                 index: 4
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JIntArrayPointer %out(%env, %in);"}
-                }
+                AsArray{}
             }
             InjectCode{
                 InsertTemplate{
                     name: "gui.tabarray.check"
+                }
+            }
+            InjectCode{
+                position: Position.End
+                InsertTemplate{
+                    name: "gui.tabarray.finalize"
                 }
             }
         }
@@ -6934,7 +4186,7 @@ const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
                 position: Position.Beginning
                 Text{content: String.raw`
 if(!Java::QtCore::QCoreApplication::__qt_isInitializing(%env)){
-    Java::Runtime::IllegalAccessError::throwNew(%env, "Not allowed to instantiate QGuiApplication. Please use QGuiApplication.initialize() instead." QTJAMBI_STACKTRACEINFO );
+    JavaException::raise<Java::Runtime::IllegalAccessError>(%env, "Not allowed to instantiate QGuiApplication. Please use QGuiApplication.initialize() instead." QTJAMBI_STACKTRACEINFO );
     return;
 }`}
             }
@@ -7123,6 +4375,16 @@ const char* %out = info.name;
     
     ObjectType{
         name: "QIconEngine"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/BufferAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/ArrayCast"
+                location: Include.Global
+            }
+        }
         EnumType{
             name: "IconEngineHook"
             extensible: true
@@ -7326,6 +4588,10 @@ default:
                 fileName: "QtJambi/JavaAPI"
                 location: Include.Global
             }
+            Include{
+                fileName: "QtJambi/StringAPI"
+                location: Include.Global
+            }
         }
         ModifyFunction{
             signature: "QImage(const char * const*)"
@@ -7336,15 +4602,13 @@ default:
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jsize length = %env->GetArrayLength(jarray(%in));\n"+
-                                  "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
-                                  "const char** %out = nullptr;\n"+
-                                  "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(length)]);\n"+
-                                  "for(jsize i=0; i<length; ++i){\n"+
-                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
-                                  "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        jsize length = %env->GetArrayLength(jarray(%in));
+                        auto %outPtr = std::make_unique<const char*[]>(size_t(length));
+                        const char** %out = %outPtr.get();
+                        for(jsize i=0; i<length; ++i){
+                            %out[i] = qtjambi_cast<const char*>(%env, %scope, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));
+                        }`}
                 }
             }
         }
@@ -7696,18 +4960,13 @@ default:
     
     ValueType{
         name: "QMatrix4x3"
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-        }
         ModifyFunction{
             signature: "QMatrix4x3(const float *)"
             ModifyArgument{
                 index: 1
                 NoNullPointer{}
                 AsBuffer{
+                    AsArray{varargs: true}
                     minLength: 12
                 }
             }
@@ -7733,6 +4992,7 @@ default:
                 index: 1
                 NoNullPointer{}
                 AsBuffer{
+                    AsArray{}
                     minLength: 12
                 }
             }
@@ -7762,35 +5022,17 @@ default:
                 }
             }
         }
-        InjectCode{
-            InsertTemplate{
-                name: "gui.matrix_constructor"
-                Replace{
-                    from: "%TYPE"
-                    to: "QMatrix4x3"
-                }
-                Replace{
-                    from: "%COUNT"
-                    to: "12"
-                }
-            }
-        }
     }
     
     ValueType{
         name: "QMatrix4x2"
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-        }
         ModifyFunction{
             signature: "QMatrix4x2(const float *)"
             ModifyArgument{
                 index: 1
                 NoNullPointer{}
                 AsBuffer{
+                    AsArray{varargs: true}
                     minLength: 8
                 }
             }
@@ -7816,6 +5058,7 @@ default:
                 index: 1
                 NoNullPointer{}
                 AsBuffer{
+                    AsArray{}
                     minLength: 8
                 }
             }
@@ -7845,35 +5088,17 @@ default:
                 }
             }
         }
-        InjectCode{
-            InsertTemplate{
-                name: "gui.matrix_constructor"
-                Replace{
-                    from: "%TYPE"
-                    to: "QMatrix4x2"
-                }
-                Replace{
-                    from: "%COUNT"
-                    to: "8"
-                }
-            }
-        }
     }
     
     ValueType{
         name: "QMatrix3x4"
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-        }
         ModifyFunction{
             signature: "QMatrix3x4(const float *)"
             ModifyArgument{
                 index: 1
                 NoNullPointer{}
                 AsBuffer{
+                    AsArray{varargs: true}
                     minLength: 12
                 }
             }
@@ -7899,6 +5124,7 @@ default:
                 index: 1
                 NoNullPointer{}
                 AsBuffer{
+                    AsArray{}
                     minLength: 12
                 }
             }
@@ -7928,35 +5154,17 @@ default:
                 }
             }
         }
-        InjectCode{
-            InsertTemplate{
-                name: "gui.matrix_constructor"
-                Replace{
-                    from: "%TYPE"
-                    to: "QMatrix3x4"
-                }
-                Replace{
-                    from: "%COUNT"
-                    to: "12"
-                }
-            }
-        }
     }
     
     ValueType{
         name: "QMatrix3x3"
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-        }
         ModifyFunction{
             signature: "QMatrix3x3(const float *)"
             ModifyArgument{
                 index: 1
                 NoNullPointer{}
                 AsBuffer{
+                    AsArray{varargs: true}
                     minLength: 9
                 }
             }
@@ -7982,6 +5190,7 @@ default:
                 index: 1
                 NoNullPointer{}
                 AsBuffer{
+                    AsArray{}
                     minLength: 9
                 }
             }
@@ -8011,35 +5220,17 @@ default:
                 }
             }
         }
-        InjectCode{
-            InsertTemplate{
-                name: "gui.matrix_constructor"
-                Replace{
-                    from: "%TYPE"
-                    to: "QMatrix3x3"
-                }
-                Replace{
-                    from: "%COUNT"
-                    to: "9"
-                }
-            }
-        }
     }
     
     ValueType{
         name: "QMatrix3x2"
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-        }
         ModifyFunction{
             signature: "QMatrix3x2(const float *)"
             ModifyArgument{
                 index: 1
                 NoNullPointer{}
                 AsBuffer{
+                    AsArray{varargs: true}
                     minLength: 6
                 }
             }
@@ -8065,6 +5256,7 @@ default:
                 index: 1
                 NoNullPointer{}
                 AsBuffer{
+                    AsArray{}
                     minLength: 6
                 }
             }
@@ -8094,35 +5286,17 @@ default:
                 }
             }
         }
-        InjectCode{
-            InsertTemplate{
-                name: "gui.matrix_constructor"
-                Replace{
-                    from: "%TYPE"
-                    to: "QMatrix3x2"
-                }
-                Replace{
-                    from: "%COUNT"
-                    to: "6"
-                }
-            }
-        }
     }
     
     ValueType{
         name: "QMatrix2x4"
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-        }
         ModifyFunction{
             signature: "QMatrix2x4(const float *)"
             ModifyArgument{
                 index: 1
                 NoNullPointer{}
                 AsBuffer{
+                    AsArray{varargs: true}
                     minLength: 8
                 }
             }
@@ -8148,6 +5322,7 @@ default:
                 index: 1
                 NoNullPointer{}
                 AsBuffer{
+                    AsArray{}
                     minLength: 8
                 }
             }
@@ -8177,35 +5352,17 @@ default:
                 }
             }
         }
-        InjectCode{
-            InsertTemplate{
-                name: "gui.matrix_constructor"
-                Replace{
-                    from: "%TYPE"
-                    to: "QMatrix2x4"
-                }
-                Replace{
-                    from: "%COUNT"
-                    to: "8"
-                }
-            }
-        }
     }
     
     ValueType{
         name: "QMatrix2x3"
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-        }
         ModifyFunction{
             signature: "QMatrix2x3(const float *)"
             ModifyArgument{
                 index: 1
                 NoNullPointer{}
                 AsBuffer{
+                    AsArray{varargs: true}
                     minLength: 6
                 }
             }
@@ -8231,6 +5388,7 @@ default:
                 index: 1
                 NoNullPointer{}
                 AsBuffer{
+                    AsArray{}
                     minLength: 6
                 }
             }
@@ -8260,34 +5418,16 @@ default:
                 NoNullPointer{}
             }
         }
-        InjectCode{
-            InsertTemplate{
-                name: "gui.matrix_constructor"
-                Replace{
-                    from: "%TYPE"
-                    to: "QMatrix2x3"
-                }
-                Replace{
-                    from: "%COUNT"
-                    to: "6"
-                }
-            }
-        }
     }
     
     ValueType{
         name: "QMatrix2x2"
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-        }
         ModifyFunction{
             signature: "QMatrix2x2(const float *)"
             ModifyArgument{
                 index: 1
                 AsBuffer{
+                    AsArray{varargs: true}
                     minLength: 4
                 }
                 NoNullPointer{}
@@ -8313,6 +5453,7 @@ default:
             ModifyArgument{
                 index: 1
                 AsBuffer{
+                    AsArray{}
                     minLength: 4
                 }
                 NoNullPointer{}
@@ -8343,19 +5484,6 @@ default:
                 NoNullPointer{}
             }
         }
-        InjectCode{
-            InsertTemplate{
-                name: "gui.matrix_constructor"
-                Replace{
-                    from: "%TYPE"
-                    to: "QMatrix2x2"
-                }
-                Replace{
-                    from: "%COUNT"
-                    to: "4"
-                }
-            }
-        }
     }
     
     ValueType{
@@ -8375,12 +5503,6 @@ default:
             signature: "constData()const"
             remove: RemoveFlag.All
         }
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-        }
         Import{
             template: "QMatrixXxX"
         }
@@ -8389,6 +5511,7 @@ default:
             ModifyArgument{
                 index: 1
                 AsBuffer{
+                    AsArray{}
                     minLength: 16
                 }
                 NoNullPointer{}
@@ -8398,17 +5521,9 @@ default:
             signature: "QMatrix4x4(const float *, int, int)"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "java.nio.FloatBuffer"
-                }
-                NoNullPointer{}
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);\n"+
-                                  "if(%out.size()<16){\n"+
-                                  "    JavaException::raiseIndexOutOfBoundsException(%env, \"Buffer size is less 16.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "    return;\n"+
-                                  "}"}
+                AsBuffer{
+                    AsArray{}
+                    minLength: 16
                 }
             }
         }
@@ -8454,6 +5569,7 @@ default:
                 index: 1
                 NoNullPointer{}
                 AsBuffer{
+                    AsArray{}
                     minLength: 16
                 }
             }
@@ -8481,19 +5597,6 @@ default:
                     ownership: Ownership.Dependent
                 }
                 NoNullPointer{}
-            }
-        }
-        InjectCode{
-            InsertTemplate{
-                name: "gui.matrix_constructor"
-                Replace{
-                    from: "%TYPE"
-                    to: "QMatrix4x4"
-                }
-                Replace{
-                    from: "%COUNT"
-                    to: "16"
-                }
             }
         }
     }
@@ -9777,6 +6880,12 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
     
     ValueType{
         name: "QPixmap"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/StringAPI"
+                location: Include.Global
+            }
+        }
         Rejection{
             functionName: "grabWidget"
         }
@@ -9802,15 +6911,13 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jsize length = %env->GetArrayLength(jarray(%in));\n"+
-                                  "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
-                                  "const char** %out = nullptr;\n"+
-                                  "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(length)]);\n"+
-                                  "for(jsize i=0; i<length; ++i){\n"+
-                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
-                                  "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        jsize length = %env->GetArrayLength(jarray(%in));
+                        auto %outPtr = std::make_unique<const char*[]>(size_t(length));
+                        const char** %out = %outPtr.get();
+                        for(jsize i=0; i<length; ++i){
+                            %out[i] = qtjambi_cast<const char*>(%env, %scope, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));
+                        }`}
                 }
             }
         }
@@ -9983,6 +7090,10 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 fileName: "utils_p.h"
                 location: Include.Local
             }
+            Include{
+                fileName: "QtJambi/Template1Cast"
+                location: Include.Global
+            }
         }
         ValueType{
             name: "Axes"
@@ -10000,7 +7111,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
             }
             since: [6,11]
         }
-        ObjectType{
+        ValueType{
             name: "EulerAngles<float>"
             isGeneric: false
             since: [6,11]
@@ -10200,7 +7311,6 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
             ModifyArgument{
                 index: 3
                 RemoveArgument{
-                    until: [6,10]
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -10322,7 +7432,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL Java_io_qt_gui_QScreen_nativeInterface
             }
         };
 
-        const Screen *__qt_this = QtJambiAPI::objectFromNativeId<Screen>(__this_nativeId);
+        const Screen *__qt_this = qtjambi_cast<const Screen*>(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QScreen::resolveInterface(const char * name, int revision) const", __qt_this)
         __java_return_value = __qt_this->nativeInterface(__jni_env, __this_nativeId, name0);
@@ -13419,6 +10529,22 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 fileName: "QtCore/QSharedPointer"
                 location: Include.Global
             }
+            Include{
+                fileName: "QtJambi/BufferAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/ArrayAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/ArithmeticCast"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/StringAPI"
+                location: Include.Global
+            }
         }
         ModifyFunction{
             signature: "glGetVertexAttribPointerv(GLuint, GLenum, void **)"
@@ -13561,15 +10687,13 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
-                                  "const char** %out = nullptr;\n"+
-                                  "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
-                                  "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
-                                  "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
-                                  "}"}
-                }
+                    Text{content: String.raw`
+                        jsize length = %env->GetArrayLength(jarray(%in));
+                        auto %outPtr = std::make_unique<const char*[]>(size_t(length));
+                        const char** %out = %outPtr.get();
+                        for(jsize i=0; i<length; ++i){
+                            %out[i] = qtjambi_cast<const char*>(%env, %scope, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));
+                        }`}                }
             }
             ModifyArgument{
                 index: 2
@@ -13622,6 +10746,14 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             }
             Include{
                 fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/ArithmeticCast"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/ArrayAPI"
                 location: Include.Global
             }
         }
@@ -13988,15 +11120,13 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
-                                  "const GLchar** %out = nullptr;\n"+
-                                  "QScopedArrayPointer<const GLchar*> %outPtr(%out = new const GLchar*[quint32(__qt_%2)]);\n"+
-                                  "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
-                                  "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
-                                  "}"}
-                }
+                    Text{content: String.raw`
+                        jsize length = %env->GetArrayLength(jarray(%in));
+                        auto %outPtr = std::make_unique<const char*[]>(size_t(length));
+                        const char** %out = %outPtr.get();
+                        for(jsize i=0; i<length; ++i){
+                            %out[i] = qtjambi_cast<const char*>(%env, %scope, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));
+                        }`}                }
             }
         }
         ModifyFunction{
@@ -14008,14 +11138,13 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
-                                  "const char** %out = nullptr;\n"+
-                                  "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
-                                  "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
-                                  "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        jsize length = %env->GetArrayLength(jarray(%in));
+                        auto %outPtr = std::make_unique<const char*[]>(size_t(length));
+                        const char** %out = %outPtr.get();
+                        for(jsize i=0; i<length; ++i){
+                            %out[i] = qtjambi_cast<const char*>(%env, %scope, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));
+                        }`}
                 }
             }
             ModifyArgument{
@@ -14032,52 +11161,28 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             signature: "glGetUniformBlockIndex(GLuint, const GLchar *)"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
+                AsString{}
             }
         }
         ModifyFunction{
             signature: "glGetFragDataLocation(GLuint, const GLchar *)"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
+                AsString{}
             }
         }
         ModifyFunction{
             signature: "glGetProgramResourceIndex(GLuint, GLenum, const GLchar *)"
             ModifyArgument{
                 index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
+                AsString{}
             }
         }
         ModifyFunction{
             signature: "glObjectLabel(GLenum, GLuint, GLsizei, const GLchar *)"
             ModifyArgument{
                 index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
+                AsString{}
             }
         }
         ModifyFunction{
@@ -14086,30 +11191,21 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 index: 3
                 RemoveArgument{
                 }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`GLsizei %out = %4 ? %env->GetStringUTFLength(%4) : 0;`}
+                }
             }
             ModifyArgument{
                 index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));\n"+
-                                  "GLsizei %3 = GLsizei(%out.length());"}
-                }
+                AsString{}
             }
         }
         ModifyFunction{
             signature: "glGetProgramResourceLocation(GLuint, GLenum, const GLchar *)"
             ModifyArgument{
                 index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, jstring(%in));"}
-                }
+                AsString{}
             }
         }
         ModifyFunction{
@@ -14421,18 +11517,15 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 index: 2
                 RemoveArgument{
                 }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`GLsizei %out = %env->GetStringUTFLength(%3);`}
+                }
             }
             ModifyArgument{
                 index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
+                AsString{}
                 NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, %in);\n"+
-                                  "GLsizei %2(-1);"}
                 }
             }
         }
@@ -15046,14 +12139,13 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector<QSharedPointer<PersistentJ2CStringBuffer>> %inVec;\n"+
-                                  "const char** %out = nullptr;\n"+
-                                  "QScopedArrayPointer<const char*> %outPtr(%out = new const char*[quint32(__qt_%2)]);\n"+
-                                  "for(jsize i=0; i<__qt_%2; ++i){\n"+
-                                  "    PersistentJ2CStringBuffer* b = new PersistentJ2CStringBuffer(%env, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));\n"+
-                                  "    %out[i] = *b;\n"+
-                                  "    %inVec << QSharedPointer<PersistentJ2CStringBuffer>(b);\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        jsize length = %env->GetArrayLength(jarray(%in));
+                        auto %outPtr = std::make_unique<const char*[]>(size_t(length));
+                        const char** %out = %outPtr.get();
+                        for(jsize i=0; i<length; ++i){
+                            %out[i] = qtjambi_cast<const char*>(%env, %scope, jstring(%env->GetObjectArrayElement(jobjectArray(%in), i)));
+                        }`}
                 }
             }
             ModifyArgument{
@@ -15143,32 +12235,31 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 fileName: "QtGui/QOpenGLExtraFunctions"
                 location: Include.Global
             }
+            Include{
+                fileName: "QtJambi/ArrayCast"
+                location: Include.Global
+            }
         }
         ModifyArgument{
             index: 5
             RemoveArgument{
             }
+            ConversionRule{
+                codeClass: CodeClass.Native
+                Text{content: String.raw`GLsizei %out = %6 ? %env->GetStringUTFLength(%6) : 0;`}
+            }
+        }
+        ModifyArgument{
+            index: 6
+            AsString{}
         }
         ModifyArgument{
             index: 7
             RemoveArgument{
             }
-        }
-        ModifyArgument{
-            index: 6
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
             ConversionRule{
                 codeClass: CodeClass.Native
-                Text{content: "J2CStringBuffer %out(%env, %in);\n"+
-                              "GLsizei %5 = GLsizei(%out.length());\n"+
-                              "const void * __qt_%7 = nullptr;"}
-            }
-            ConversionRule{
-                codeClass: CodeClass.Shell
-                Text{content: "Q_UNUSED(%7)\n"+
-                              "jstring %out = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%in, %5));"}
+                Text{content: String.raw`const void * %out = nullptr;`}
             }
         }
     }
@@ -16263,4 +13354,5 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QAccessible(QAccessible)' for function modification in 'QAccessible' not found. Possible candidates: "}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QQuaternion::Axis."}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QQuaternion::Axes."}
+    SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QQuaternion::EulerAngles<float>."}
 }

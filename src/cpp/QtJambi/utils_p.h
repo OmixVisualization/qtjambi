@@ -36,6 +36,9 @@
 #include <QtCore/QMutex>
 #include "qtjambiapi.h"
 #include "qmlapi.h"
+#include "javaapi.h"
+#include "javaarrays.h"
+#include "containerutils.h"
 #include "containeraccess_p.h"
 #include "supertypeinfo_p.h"
 
@@ -44,6 +47,8 @@
 #else
 #define META_TYPE_ACCESS(m) m
 #endif
+
+class QtJambiMetaObject;
 
 struct VariantUtility{
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
@@ -132,21 +137,21 @@ public:
     Printer& operator=(const Printer& other) noexcept;
     Printer& operator=(Printer&& other) noexcept;
 
-    template<typename Functor, typename std::enable_if<!std::is_pointer<Functor>::value, bool>::type = true
-             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, Printer>::value, bool>::type = true
-             , typename std::enable_if<!std::is_null_pointer<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::value, bool>::type = true
-             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, FunctionPointer>::value, bool>::type = true
-             , typename std::enable_if<std::is_invocable<Functor,QDebug&>::value, bool>::type = true
+    template<typename Functor, std::enable_if_t<!std::is_pointer_v<Functor>, bool> = true
+             , std::enable_if_t<!std::is_same_v<std::remove_reference_t<std::remove_cv_t<Functor>>, Printer>, bool> = true
+             , std::enable_if_t<!std::is_null_pointer_v<std::remove_reference_t<std::remove_cv_t<Functor>>>, bool> = true
+             , std::enable_if_t<!std::is_same_v<std::remove_reference_t<std::remove_cv_t<Functor>>, FunctionPointer>, bool> = true
+             , std::enable_if_t<std::is_invocable_v<Functor,QDebug&>, bool> = true
              >
     Printer(Functor&& functor) noexcept
         : Printer(
-            new typename std::remove_reference<typename std::remove_cv<Functor>::type>::type(std::move(functor)),
+            new std::remove_reference_t<std::remove_cv_t<Functor>>(std::move(functor)),
             [](void* data, QDebug& d){
-                typename std::remove_reference<typename std::remove_cv<Functor>::type>::type* fct = reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+                std::remove_reference_t<std::remove_cv_t<Functor>>* fct = reinterpret_cast<std::remove_reference_t<std::remove_cv_t<Functor>>*>(data);
                 (*fct)(d);
             },
             [](void* data){
-                delete reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+                delete reinterpret_cast<std::remove_reference_t<std::remove_cv_t<Functor>>*>(data);
             }
             ){}
     bool operator==(const Printer& other) const noexcept;
@@ -377,7 +382,8 @@ struct QtJambiStorage{
     typedef QHash<int, QSharedPointer<const VTable>> VTableHash;
     typedef QHash<size_t,const QMetaObject *> MetaObjectByNameHash;
     typedef QHash<size_t, QVector<ParameterTypeInfo>> ParameterTypeHash;
-    typedef QHash<int, const QMetaObject *> MetaObjectByMetaTypeHash;
+    typedef QHash<int, const QMetaObject *> OriginalMetaObjectByMetaTypeHash;
+    typedef QHash<int, const QtJambiMetaObject *> DynamicMetaObjectByMetaTypeHash;
     typedef QHash<size_t, JObjectWrapper> SignalTypesHash;
     typedef QHash<ResettableBoolFlag*,const char*> ResettableBoolFlagHash;
     typedef QSet<QtMsgType> SupportedMessageTypes;
@@ -460,7 +466,8 @@ struct QtJambiStorage{
     CACHE_MEMBER(VTableHash, virtualTables);
     CACHE_MEMBER(MetaObjectByNameHash, metaObjectsByName);
     CACHE_MEMBER(ParameterTypeHash, parameterTypeInfos);
-    CACHE_MEMBER(MetaObjectByMetaTypeHash, metaObjects);
+    CACHE_MEMBER(OriginalMetaObjectByMetaTypeHash, originalMetaObjects);
+    CACHE_MEMBER(DynamicMetaObjectByMetaTypeHash, dynamicMetaObjects);
     CACHE_MEMBER(SignalTypesHash, signalTypes);
     CACHE_MEMBER(ResettableBoolFlagHash, resettableBoolFlags);
     CACHE_MEMBER(SupportedMessageTypes, supportedMessageTypes);
@@ -589,7 +596,7 @@ private:
                  ClassIdHash& classHash,
                  JObjectWrapper& signalEmitThreadCheckHandler,
                  ResettableBoolFlagHash& resettableBoolFlags,
-                 MetaObjectByMetaTypeHash& metaObjectsHash,
+                 DynamicMetaObjectByMetaTypeHash& dynamicMetaObjectsHash,
                  SignalTypesHash& signalTypes,
 #ifdef QTJAMBI_LOG_CLASSNAMES
                  ClassNameHash& classNameHash,

@@ -31,6 +31,7 @@
 
 #include "variants.h"
 #include "internal.h"
+#include <QtJambi/Cast>
 
 Q_DECLARE_METATYPE_TEMPLATE_2ARG(QMultiHash);
 Q_DECLARE_METATYPE_TEMPLATE_2ARG(QMultiMap);

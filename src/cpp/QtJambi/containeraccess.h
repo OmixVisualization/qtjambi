@@ -36,6 +36,7 @@
 #include <QtCore/QDebug>
 #include "qtjambiapi.h"
 #include "containerapi.h"
+#include "containerutils.h"
 
 #if defined(QTJAMBI_GENERIC_ACCESS)
 #include "typetests.h"
@@ -462,8 +463,8 @@ struct TryLess<T,false>{
 
 template<template<typename> class Container, size_t _align, size_t _size, bool _isStatic, bool isConst = true>
 class SequentialConstIteratorAccess : public AbstractSequentialConstIteratorAccess{
-    typedef typename std::conditional<_size==0, void*, ContainerElement<_size, 0, _isStatic, _align>>::type T;
-    typedef typename std::conditional<isConst, typename Container<T>::const_iterator, typename Container<T>::iterator>::type Iterator;
+    typedef std::conditional_t<_size==0, void*, ContainerElement<_size, 0, _isStatic, _align>> T;
+    typedef std::conditional_t<isConst, typename Container<T>::const_iterator, typename Container<T>::iterator> Iterator;
 protected:
     SequentialConstIteratorAccess(const SequentialConstIteratorAccess<Container, _align, _size, _isStatic, isConst>& other)
         : AbstractSequentialConstIteratorAccess(),
@@ -509,7 +510,7 @@ public:
         return lessFunction(*iter, *iter2);
     }
     bool canLess() override {
-        return std::is_pointer<Iterator>::value || QtJambiPrivate::supports_less_than<Iterator>::value;
+        return std::is_pointer_v<Iterator> || QtJambiPrivate::supports_less_than<Iterator>::value;
     }
     jboolean equals(JNIEnv *, const void* iterator, const void* other) override {
         QTJAMBI_ELEMENT_LOCKER(this);
@@ -528,7 +529,7 @@ protected:
 
 template<template<typename> class Container, size_t _align, size_t _size, bool _isStatic>
 class SequentialIteratorAccess : public virtual SequentialConstIteratorAccess<Container, _align, _size, _isStatic, false>, public virtual AbstractSequentialIteratorAccess{
-    typedef typename std::conditional<_size==0, void*, ContainerElement<_size, 0, _isStatic, _align>>::type T;
+    typedef std::conditional_t<_size==0, void*, ContainerElement<_size, 0, _isStatic, _align>> T;
     SequentialIteratorAccess(const SequentialIteratorAccess<Container, _align, _size, _isStatic>& other)
         : SequentialConstIteratorAccess<Container, _align, _size, _isStatic, false>(other),
         m_externalToInternalConverter(other.m_externalToInternalConverter){}
@@ -590,9 +591,9 @@ private:
 
 template<template<typename, typename> class Container, size_t align1, size_t size1, size_t align2, size_t size2, bool isConst = true>
 class AssociativeConstIteratorAccess : public AbstractAssociativeConstIteratorAccess{
-    typedef typename std::conditional<size1==0, void*, ContainerElement<size1, 0, false, align1>>::type K;
-    typedef typename std::conditional<size2==0, void*, ContainerElement<size2, 1, false, align2>>::type T;
-    typedef typename std::conditional<isConst, typename Container<K,T>::const_iterator, typename Container<K,T>::iterator>::type Iterator;
+    typedef std::conditional_t<size1==0, void*, ContainerElement<size1, 0, false, align1>> K;
+    typedef std::conditional_t<size2==0, void*, ContainerElement<size2, 1, false, align2>> T;
+    typedef std::conditional_t<isConst, typename Container<K,T>::const_iterator, typename Container<K,T>::iterator> Iterator;
 protected:
     AssociativeConstIteratorAccess(const AssociativeConstIteratorAccess& other)
         : AbstractAssociativeConstIteratorAccess(),
@@ -658,7 +659,7 @@ public:
         return lessFunction(*iter, *iter2);
     }
     bool canLess() override {
-        return std::is_pointer<Iterator>::value || QtJambiPrivate::supports_less_than<Iterator>::value;
+        return std::is_pointer_v<Iterator> || QtJambiPrivate::supports_less_than<Iterator>::value;
     }
     jboolean equals(JNIEnv *, const void* iterator, const void* other) override {
         QTJAMBI_KEY_VALUE_LOCKER(this);
@@ -683,8 +684,8 @@ protected:
 
 template<template<typename, typename> class Container, size_t align1, size_t size1, size_t align2, size_t size2>
 class AssociativeIteratorAccess : public virtual AssociativeConstIteratorAccess<Container, align1, size1, align2, size2, false>, public virtual AbstractAssociativeIteratorAccess{
-    typedef typename std::conditional<size1==0, void*, ContainerElement<size1, 0, false, align1>>::type K;
-    typedef typename std::conditional<size2==0, void*, ContainerElement<size2, 1, false, align2>>::type T;
+    typedef std::conditional_t<size1==0, void*, ContainerElement<size1, 0, false, align1>> K;
+    typedef std::conditional_t<size2==0, void*, ContainerElement<size2, 1, false, align2>> T;
     AssociativeIteratorAccess(const AssociativeIteratorAccess<Container, align1, size1, align2, size2>& other)
         : AssociativeConstIteratorAccess<Container, align1, size1, align2, size2, false>(other),
         m_valueExternalToInternalConverter(other.m_valueExternalToInternalConverter){}

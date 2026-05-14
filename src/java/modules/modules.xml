@@ -60,7 +60,7 @@
 				</if>
             </then>
             <else>
-                <select-modules property="selected.modules" sourcedir="${modules.dir}" generatordir="${generator.outputdir}/java"/>
+                <select-modules property="selected.modules" sourcedir="${modules.dir}" generatordir="${qtjambi.generator.outputdir}/java"/>
 				<if>
 					<or>
 						<istrue value="${qtjambi-deploy-bundle}"/>
@@ -386,7 +386,7 @@
     <target name="qtjambi-javadoc">
         <property name="moduledash" value="${module}"/>
         <stringreplace property="moduledash" target="." replacement="-"/>
-        <mkdir dir="${outputDir}/javadocs/${moduledash}"/>
+        <mkdir dir="${qtjambi.javadocsDir}/${moduledash}"/>
         <if>
             <istrue value="${java.module.based}"/>
             <then>
@@ -399,7 +399,7 @@
                 <javadoc    executable="${tools.javadoc}" additionalparam="-J-Duser.language=en -Xdoclint:html --show-packages exported -html5 -keywords --module-source-path ${java.outsrcdir}"
                             access="protected" 
                             author="true" 
-                            destdir="${outputDir}/javadocs/${moduledash}" 
+                            destdir="${qtjambi.javadocsDir}/${moduledash}" 
                             windowtitle="${qtjambi.bundle.libraries} ${qtjambi.jar.version}"
                             nodeprecated="false" 
                             nodeprecatedlist="false" 
@@ -437,7 +437,7 @@
                 <javadoc    executable="${tools.javadoc}" additionalparam="-J-Duser.language=en -Xdoclint:html -exclude io.qt.internal -keywords"
                             access="protected" 
                             author="true" 
-                            destdir="${outputDir}/javadocs/${moduledash}" 
+                            destdir="${qtjambi.javadocsDir}/${moduledash}" 
                             windowtitle="${qtjambi.bundle.libraries} ${qtjambi.jar.version} API"
                             nodeprecated="false" 
                             nodeprecatedlist="false" 
@@ -473,13 +473,13 @@
                 <attribute name="Bundle-Name"      value="${module} javadoc"/>
                 <attribute name="Bundle-Description"      value="${module} javadoc"/>
             </manifest>
-            <fileset dir="${outputDir}/javadocs/${moduledash}"/>
+            <fileset dir="${qtjambi.javadocsDir}/${moduledash}"/>
         </jar>
     </target>
 
 	<target name="javadocs-all" unless="${skip-java-build}">
-		<delete dir="${outputDir}/javadocs" failonerror="no"/>
-		<mkdir dir="${outputDir}/javadocs"/>
+		<delete dir="${qtjambi.javadocsDir}" failonerror="no"/>
+		<mkdir dir="${qtjambi.javadocsDir}"/>
 		<tstamp>
 			<format property="year" pattern="yyyy"/>
 		</tstamp>
@@ -504,7 +504,7 @@
 							additionalparam="-J-Duser.language=en -Xdoclint:html --show-packages exported -html5 -keywords --module-source-path ${java.outsrcdir}"
 							access="protected" 
 							author="true" 
-							destdir="${outputDir}/javadocs/all" 
+							destdir="${qtjambi.javadocsDir}/all" 
 							windowtitle="QtJambi ${qtjambi.jar.version}"
 							nodeprecated="false" 
 							nodeprecatedlist="false" 
@@ -543,7 +543,7 @@
 				additionalparam="-J-Duser.language=en -Xdoclint:html -exclude io.qt.internal -keywords"
 				access="protected" 
 				author="true" 
-				destdir="${outputDir}/javadocs/all" 
+				destdir="${qtjambi.javadocsDir}/all" 
 				windowtitle="QtJambi ${qtjambi.jar.version}"
 				nodeprecated="false" 
 				nodeprecatedlist="false" 
@@ -570,10 +570,11 @@
 				</javadoc>
 			</else>
 		</if>
-		<echo>creating ${deploymentdir}/qtjambi-${qtjambi.jar.version}-javadocs.zip</echo>
-		<delete file="${deploymentdir}/qtjambi-${qtjambi.jar.version}-javadocs.zip"/>
-		<zip destfile="${deploymentdir}/qtjambi-${qtjambi.jar.version}-javadocs.zip">
-			<fileset dir="${outputDir}/javadocs/all"/>
+		<echo>creating ${deploymentdir}/javadocs/qtjambi-${qtjambi.jar.version}-javadocs.zip</echo>
+		<mkdir dir="${deploymentdir}/javadocs"/>
+		<delete file="${deploymentdir}/javadocs/qtjambi-${qtjambi.jar.version}-javadocs.zip"/>
+		<zip destfile="${deploymentdir}/javadocs/qtjambi-${qtjambi.jar.version}-javadocs.zip">
+			<fileset dir="${qtjambi.javadocsDir}/all"/>
 		</zip>
 		<!--ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
 			<property name="qtjambi-javadoc" value="true"/>
@@ -583,7 +584,7 @@
     <target name="qtjambi-native-bundle-impl">
         <property name="moduledash" value="${module}"/>
         <stringreplace property="moduledash" target="." replacement="-"/>
-		<condition property="qtjambi-native-bundle-path" value="${deploymentdir}/platforms/${qtjambi.osname}/debug" else="${deploymentdir}/platforms/${qtjambi.osname}/release">
+		<condition property="qtjambi-native-bundle-path" value="${platformBuildDir}/debug" else="${platformBuildDir}/release">
 			<istrue value="${platformjar.debug}"/>
 		</condition>
 		<property name="qtjambi-native-bundle-module-path" value="${qtjambi-native-bundle-path}/${module}"/>

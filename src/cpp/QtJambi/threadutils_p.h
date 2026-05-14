@@ -191,21 +191,21 @@ public:
     JNIInvokable& operator=(const JNIInvokable& other) noexcept;
     JNIInvokable& operator=(JNIInvokable&& other) noexcept;
 
-    template<typename Functor, typename std::enable_if<!std::is_pointer<Functor>::value, bool>::type = true
-             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, JNIInvokable>::value, bool>::type = true
-             , typename std::enable_if<!std::is_null_pointer<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::value, bool>::type = true
-             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, FunctionPointer>::value, bool>::type = true
-             , typename std::enable_if<std::is_invocable<Functor, JNIEnv *>::value, bool>::type = true
+    template<typename Functor, std::enable_if_t<!std::is_pointer_v<Functor>, bool> = true
+             , std::enable_if_t<!std::is_same_v<std::remove_reference_t<std::remove_cv_t<Functor>>, JNIInvokable>, bool> = true
+             , std::enable_if_t<!std::is_null_pointer_v<std::remove_reference_t<std::remove_cv_t<Functor>>>, bool> = true
+             , std::enable_if_t<!std::is_same_v<std::remove_reference_t<std::remove_cv_t<Functor>>, FunctionPointer>, bool> = true
+             , std::enable_if_t<std::is_invocable_v<Functor, JNIEnv *>, bool> = true
              >
     JNIInvokable(Functor&& functor) noexcept
         : JNIInvokable(
-              new typename std::remove_reference<typename std::remove_cv<Functor>::type>::type(std::move(functor)),
+              new std::remove_reference_t<std::remove_cv_t<Functor>>(std::move(functor)),
               [](void* data, JNIEnv *env){
-                  typename std::remove_reference<typename std::remove_cv<Functor>::type>::type* fct = reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+                  std::remove_reference_t<std::remove_cv_t<Functor>>* fct = reinterpret_cast<std::remove_reference_t<std::remove_cv_t<Functor>>*>(data);
                   (*fct)(env);
               },
               [](void* data){
-                  delete reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+                  delete reinterpret_cast<std::remove_reference_t<std::remove_cv_t<Functor>>*>(data);
               }
               ){}
     bool operator==(const JNIInvokable& other) const noexcept;

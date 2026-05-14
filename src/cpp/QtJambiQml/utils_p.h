@@ -33,6 +33,7 @@
 #include <QtJambi/QtJambiAPI>
 #include <QtJambiQml/hashes.h>
 #include <QtJambi/JavaAPI>
+#include <QtJambi/Cast>
 
 namespace Java{
 namespace QtCore{
@@ -153,5 +154,26 @@ QJSManagedValue qtjambi_toManagedValue(JNIEnv *, QJSEngine *__qt_this, const QVa
 jobject qtjambi_fromVariant(JNIEnv *env, QJSEngine *, jobject type, const QVariant& value);
 #endif
 #endif
+
+inline bool qFuzzyIsNull(const QJSPrimitiveValue& f) noexcept
+{
+    switch(f.type()){
+    case QJSPrimitiveValue::Type::Double:
+        return qFuzzyIsNull(f.toDouble());
+    case QJSPrimitiveValue::Type::String:
+        return f.toString()=="" || f.toString()=="0";
+    case QJSPrimitiveValue::Type::Boolean:
+        return !f.toBoolean();
+    case QJSPrimitiveValue::Type::Integer:
+        return f.toInteger()==0;
+    case QJSPrimitiveValue::Type::Null:
+        return true;
+    default:
+        return false;
+    }
+}
+
+extern template jobject qtjambi_cast<jobject,QJSValue>(JNIEnv *, QJSValue&&);
+extern template jobject qtjambi_cast<jobject,const QJSValue&>(JNIEnv *, const QJSValue&);
 
 #endif // UTILS_P_H

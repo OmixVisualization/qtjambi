@@ -53,7 +53,9 @@
 #include <QtJambi/JObjectWrapper>
 #include <QtJambi/RegistryAPI>
 #include <QtJambi/JavaAPI>
-#include <QtJambi/qtjambi_cast.h>
+#include <QtJambi/Cast>
+#include <QtJambi/Template1Cast>
+#include <QtJambi/FutureCast>
 #include <QtJambi/utils_p.h>
 #include "future_p.h"
 
@@ -476,7 +478,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QFutureWatcher_resultAt
         QFutureWatcherBase *__qt_this = QtJambiAPI::convertJavaObjectToNative<QFutureWatcherBase>(__jni_env, _this);
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         if(QFutureWatcher_shell* shell = dynamic_cast<QFutureWatcher_shell*>(__qt_this)){
-            result = QtJambiAPI::convertQVariantToJavaObject(__jni_env, shell->resultAt(index));
+            result = qtjambi_cast<jobject>(__jni_env, shell->resultAt(index));
         }else{
             QtJambiAPI::FutureResult futureResult = QtJambiAPI::FutureResult(Java::QtCore::QFutureWatcher::futureResult(__jni_env, _this));
             if(!futureResult)

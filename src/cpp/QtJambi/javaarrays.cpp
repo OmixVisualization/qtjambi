@@ -31,21 +31,51 @@
 
 #include "pch_p.h"
 
-#define PointerArrayINIT(Type,type)\
-     : PointerArray(env, pointer, env->New##Type##Array(pointer ? size : 0), pointer ? size : 0) {\
-    if(pointer){\
-        JavaException::check(m_env QTJAMBI_STACKTRACEINFO );\
-        m_env->Set##Type##ArrayRegion(array(), 0, size, reinterpret_cast<const j##type *>(pointer));\
-        JavaException::check(m_env QTJAMBI_STACKTRACEINFO );\
-    }\
-}
+namespace QtJambiPrivate {
 
-#define PointerArrayDEL(Type,type)\
-{\
-    if(m_array){\
-        m_env->Get##Type##ArrayRegion(m_array, 0, m_size, reinterpret_cast<j##type *>(m_pointer));\
-        JavaException::check(m_env QTJAMBI_STACKTRACEINFO );\
-    }\
+template<typename JArray>
+struct BoxedType;
+
+template<>
+struct BoxedType<jbyteArray>{
+    static constexpr auto primitiveType = &Java::Runtime::Byte::primitiveType;
+};
+
+template<>
+struct BoxedType<jshortArray>{
+    static constexpr auto primitiveType = &Java::Runtime::Short::primitiveType;
+};
+
+template<>
+struct BoxedType<jintArray>{
+    static constexpr auto primitiveType = &Java::Runtime::Integer::primitiveType;
+};
+
+template<>
+struct BoxedType<jlongArray>{
+    static constexpr auto primitiveType = &Java::Runtime::Long::primitiveType;
+};
+
+template<>
+struct BoxedType<jfloatArray>{
+    static constexpr auto primitiveType = &Java::Runtime::Float::primitiveType;
+};
+
+template<>
+struct BoxedType<jdoubleArray>{
+    static constexpr auto primitiveType = &Java::Runtime::Double::primitiveType;
+};
+
+template<>
+struct BoxedType<jcharArray>{
+    static constexpr auto primitiveType = &Java::Runtime::Character::primitiveType;
+};
+
+template<>
+struct BoxedType<jbooleanArray>{
+    static constexpr auto primitiveType = &Java::Runtime::Boolean::primitiveType;
+};
+
 }
 
 struct PersistentJArrayPointerPrivate{
@@ -66,14 +96,17 @@ jsize AbstractPersistentJArrayPointer::size() const { return m_data ? m_data->m_
 
 jarray AbstractPersistentJArrayPointer::array() const { return m_data ? jarray(jobject(m_data->m_array)) : nullptr; }
 
+bool AbstractPersistentJArrayPointer::isNull() const { return m_data ? m_data->m_array.isNull() : true; }
+
 struct PersistentPointerArrayPrivate{
     JObjectWrapper m_array;
     jsize m_size;
+    bool m_isNewArray;
 };
 
 AbstractPersistentPointerArray::~AbstractPersistentPointerArray(){}
-AbstractPersistentPointerArray::AbstractPersistentPointerArray(JNIEnv *env, jarray array, jsize size)
-    : d(new PersistentPointerArrayPrivate{JObjectWrapper(env, array), size})
+AbstractPersistentPointerArray::AbstractPersistentPointerArray(JNIEnv *env, jarray array, jsize size, bool isNewArray)
+    : d(new PersistentPointerArrayPrivate{JObjectWrapper(env, array), size, isNewArray})
 {
 }
 
@@ -91,229 +124,83 @@ jsize AbstractPersistentPointerArray::size() const{
     return d->m_size;
 }
 
-CharPointerArray::CharPointerArray(JNIEnv *env, char* pointer, jsize size) PointerArrayINIT(Byte,byte)
-
-CharPointerArray::~CharPointerArray() PointerArrayDEL(Byte,byte)
-
-WCharPointerArray::WCharPointerArray(JNIEnv *env, ushort* pointer, jsize size) PointerArrayINIT(Char,char)
-
-WCharPointerArray::~WCharPointerArray() PointerArrayDEL(Char,char)
-
-QCharPointerArray::QCharPointerArray(JNIEnv *env, QChar* pointer, jsize size) PointerArrayINIT(Char,char)
-
-QCharPointerArray::~QCharPointerArray() PointerArrayDEL(Char,char)
-
-DoublePointerArray::DoublePointerArray(JNIEnv *env, double* pointer, jsize size) PointerArrayINIT(Double,double)
-
-DoublePointerArray::~DoublePointerArray() PointerArrayDEL(Double,double)
-
-FloatPointerArray::FloatPointerArray(JNIEnv *env, float* pointer, jsize size) PointerArrayINIT(Float,float)
-
-FloatPointerArray::~FloatPointerArray() PointerArrayDEL(Float,float)
-
-Int8PointerArray::Int8PointerArray(JNIEnv *env, qint8* pointer, jsize size) PointerArrayINIT(Byte,byte)
-
-Int8PointerArray::~Int8PointerArray() PointerArrayDEL(Byte,byte)
-
-Int16PointerArray::Int16PointerArray(JNIEnv *env, qint16* pointer, jsize size) PointerArrayINIT(Short,short)
-
-Int16PointerArray::~Int16PointerArray() PointerArrayDEL(Short,short)
-
-Int32PointerArray::Int32PointerArray(JNIEnv *env, qint32* pointer, jsize size) PointerArrayINIT(Int,int)
-
-Int32PointerArray::~Int32PointerArray() PointerArrayDEL(Int,int)
-
-Int64PointerArray::Int64PointerArray(JNIEnv *env, qint64* pointer, jsize size) PointerArrayINIT(Long,long)
-
-Int64PointerArray::~Int64PointerArray() PointerArrayDEL(Long,long)
-
-UInt8PointerArray::UInt8PointerArray(JNIEnv *env, quint8* pointer, jsize size) PointerArrayINIT(Byte,byte)
-
-UInt8PointerArray::~UInt8PointerArray() PointerArrayDEL(Byte,byte)
-
-UInt16PointerArray::UInt16PointerArray(JNIEnv *env, quint16* pointer, jsize size) PointerArrayINIT(Short,short)
-
-UInt16PointerArray::~UInt16PointerArray() PointerArrayDEL(Short,short)
-
-UInt32PointerArray::UInt32PointerArray(JNIEnv *env, quint32* pointer, jsize size) PointerArrayINIT(Int,int)
-
-UInt32PointerArray::~UInt32PointerArray() PointerArrayDEL(Int,int)
-
-UInt64PointerArray::UInt64PointerArray(JNIEnv *env, quint64* pointer, jsize size) PointerArrayINIT(Long,long)
-
-UInt64PointerArray::~UInt64PointerArray() PointerArrayDEL(Long,long)
-
-BoolPointerArray::BoolPointerArray(JNIEnv *env, bool* pointer, jsize size) PointerArrayINIT(Boolean,boolean)
-
-BoolPointerArray::~BoolPointerArray() PointerArrayDEL(Boolean,boolean)
-
-Bool2PointerArray::Bool2PointerArray(JNIEnv *env, uchar* pointer, jsize size) PointerArrayINIT(Boolean,boolean)
-
-Bool2PointerArray::~Bool2PointerArray() PointerArrayDEL(Boolean,boolean)
-
-ConstCharPointerArray::ConstCharPointerArray(JNIEnv *env, const char* pointer, jsize size) PointerArrayINIT(Byte,byte)
-
-ConstInt8PointerArray::ConstInt8PointerArray(JNIEnv *env, const qint8* pointer, jsize size) PointerArrayINIT(Byte,byte)
-
-ConstInt16PointerArray::ConstInt16PointerArray(JNIEnv *env, const qint16* pointer, jsize size) PointerArrayINIT(Short,short)
-
-ConstInt32PointerArray::ConstInt32PointerArray(JNIEnv *env, const qint32* pointer, jsize size) PointerArrayINIT(Int,int)
-
-ConstInt64PointerArray::ConstInt64PointerArray(JNIEnv *env, const qint64* pointer, jsize size) PointerArrayINIT(Long,long)
-
-ConstUInt8PointerArray::ConstUInt8PointerArray(JNIEnv *env, const quint8* pointer, jsize size) PointerArrayINIT(Byte,byte)
-
-ConstUInt16PointerArray::ConstUInt16PointerArray(JNIEnv *env, const quint16* pointer, jsize size) PointerArrayINIT(Short,short)
-
-ConstUInt32PointerArray::ConstUInt32PointerArray(JNIEnv *env, const quint32* pointer, jsize size) PointerArrayINIT(Int,int)
-
-ConstUInt64PointerArray::ConstUInt64PointerArray(JNIEnv *env, const quint64* pointer, jsize size) PointerArrayINIT(Long,long)
-
-ConstBoolPointerArray::ConstBoolPointerArray(JNIEnv *env, const bool* pointer, jsize size) PointerArrayINIT(Boolean,boolean)
-
-ConstBool2PointerArray::ConstBool2PointerArray(JNIEnv *env, const uchar* pointer, jsize size) PointerArrayINIT(Boolean,boolean)
-
-ConstWCharPointerArray::ConstWCharPointerArray(JNIEnv *env, const ushort* pointer, jsize size) PointerArrayINIT(Char,char)
-
-ConstDoublePointerArray::ConstDoublePointerArray(JNIEnv *env, const double* pointer, jsize size) PointerArrayINIT(Double,double)
-
-ConstFloatPointerArray::ConstFloatPointerArray(JNIEnv *env, const float* pointer, jsize size) PointerArrayINIT(Float,float)
-
-ConstQCharPointerArray::ConstQCharPointerArray(JNIEnv *env, const QChar* pointer, jsize size) PointerArrayINIT(Char,char)
-
-Char16PointerArray::Char16PointerArray(JNIEnv *env, char16_t* pointer, jsize size) PointerArrayINIT(Char,char)
-
-Char16PointerArray::~Char16PointerArray() PointerArrayDEL(Char,char)
-
-ConstChar16PointerArray::ConstChar16PointerArray(JNIEnv *env, const char16_t* pointer, jsize size) PointerArrayINIT(Char,char)
-
-Char32PointerArray::Char32PointerArray(JNIEnv *env, char32_t* pointer, jsize size) PointerArrayINIT(Int,int)
-
-Char32PointerArray::~Char32PointerArray() PointerArrayDEL(Int,int)
-
-ConstChar32PointerArray::ConstChar32PointerArray(JNIEnv *env, const char32_t* pointer, jsize size) PointerArrayINIT(Int,int)
-
-#undef PointerArrayINIT
-#undef PointerArrayDEL
-
-#define PointerArrayINIT(Type,type)\
-     : PersistentPointerArray(env, pointer, env->New##Type##Array(pointer ? size : 0), pointer ? size : 0) {\
-    if(pointer){\
-        JavaException::check(env QTJAMBI_STACKTRACEINFO );\
-        env->Set##Type##ArrayRegion(array(env), 0, size, reinterpret_cast<const j##type *>(pointer));\
-        JavaException::check(env QTJAMBI_STACKTRACEINFO );\
-    }\
+bool AbstractPersistentPointerArray::isNewArray() const{
+    return d->m_isNewArray;
 }
 
-#define PointerArrayDEL(Type,type)\
-{\
-    if(*this){\
-        if(JniEnvironment env{100}){\
-            env->Get##Type##ArrayRegion(array(env), 0, size(), reinterpret_cast<j##type *>(m_pointer));\
-            JavaException::check(env QTJAMBI_STACKTRACEINFO );\
-        }\
-    }\
+namespace QtJambiPrivate {
+
+template<typename JArray, typename ArrayType>
+auto findOrCreateArrayImpl(JNIEnv *env, ArrayType* pointer, jsize size){
+    if(pointer){
+        JArray array = (env->*QtJambiPrivate::jni_primitive_array_functions<JArray>::NewArray)(size);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+        (env->*QtJambiPrivate::jni_primitive_array_functions<JArray>::SetArrayRegion)(array, 0, size, pointer);
+        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+        return PointerArrayInfo<JArray,true>{array,size,true};
+    }else return PointerArrayInfo<JArray,true>{nullptr,0,false};
 }
 
-PersistentCharPointerArray::PersistentCharPointerArray(JNIEnv *env, char* pointer, jsize size) PointerArrayINIT(Byte,byte)
+PointerArrayInfo<jintArray,true> findOrCreateArray(JNIEnv *env, const jint* pointer, jsize size){
+    return findOrCreateArrayImpl<jintArray>(env, pointer, size);
+}
+PointerArrayInfo<jlongArray,true> findOrCreateArray(JNIEnv *env, const jlong* pointer, jsize size){
+    return findOrCreateArrayImpl<jlongArray>(env, pointer, size);
+}
+PointerArrayInfo<jbyteArray,true> findOrCreateArray(JNIEnv *env, const jbyte* pointer, jsize size){
+    return findOrCreateArrayImpl<jbyteArray>(env, pointer, size);
+}
+PointerArrayInfo<jshortArray,true> findOrCreateArray(JNIEnv *env, const jshort* pointer, jsize size){
+    return findOrCreateArrayImpl<jshortArray>(env, pointer, size);
+}
+PointerArrayInfo<jcharArray,true> findOrCreateArray(JNIEnv *env, const jchar* pointer, jsize size){
+    return findOrCreateArrayImpl<jcharArray>(env, pointer, size);
+}
+PointerArrayInfo<jbooleanArray,true> findOrCreateArray(JNIEnv *env, const jboolean* pointer, jsize size){
+    return findOrCreateArrayImpl<jbooleanArray>(env, pointer, size);
+}
+PointerArrayInfo<jfloatArray,true> findOrCreateArray(JNIEnv *env, const jfloat* pointer, jsize size){
+    return findOrCreateArrayImpl<jfloatArray>(env, pointer, size);
+}
+PointerArrayInfo<jdoubleArray,true> findOrCreateArray(JNIEnv *env, const jdouble* pointer, jsize size){
+    return findOrCreateArrayImpl<jdoubleArray>(env, pointer, size);
+}
 
-PersistentCharPointerArray::~PersistentCharPointerArray() PointerArrayDEL(Byte,byte)
+}//namespace QtJambiPrivate
 
-PersistentWCharPointerArray::PersistentWCharPointerArray(JNIEnv *env, ushort* pointer, jsize size) PointerArrayINIT(Char,char)
+template class QTJAMBI_EXPORT PointerArray<false,jbyteArray,false,jbyte,true>;
+template class QTJAMBI_EXPORT PointerArray<false,jshortArray,false,jshort,true>;
+template class QTJAMBI_EXPORT PointerArray<false,jintArray,false,jint,true>;
+template class QTJAMBI_EXPORT PointerArray<false,jlongArray,false,jlong,true>;
+template class QTJAMBI_EXPORT PointerArray<false,jcharArray,false,jchar,true>;
+template class QTJAMBI_EXPORT PointerArray<false,jfloatArray,false,jfloat,true>;
+template class QTJAMBI_EXPORT PointerArray<false,jdoubleArray,false,jdouble,true>;
+template class QTJAMBI_EXPORT PointerArray<false,jbooleanArray,false,jboolean,true>;
+template class QTJAMBI_EXPORT PointerArray<false,jbyteArray,true,jbyte,true>;
+template class QTJAMBI_EXPORT PointerArray<false,jshortArray,true,jshort,true>;
+template class QTJAMBI_EXPORT PointerArray<false,jintArray,true,jint,true>;
+template class QTJAMBI_EXPORT PointerArray<false,jlongArray,true,jlong,true>;
+template class QTJAMBI_EXPORT PointerArray<false,jcharArray,true,jchar,true>;
+template class QTJAMBI_EXPORT PointerArray<false,jfloatArray,true,jfloat,true>;
+template class QTJAMBI_EXPORT PointerArray<false,jdoubleArray,true,jdouble,true>;
+template class QTJAMBI_EXPORT PointerArray<false,jbooleanArray,true,jboolean,true>;
 
-PersistentWCharPointerArray::~PersistentWCharPointerArray() PointerArrayDEL(Char,char)
-
-PersistentQCharPointerArray::PersistentQCharPointerArray(JNIEnv *env, QChar* pointer, jsize size) PointerArrayINIT(Char,char)
-
-PersistentQCharPointerArray::~PersistentQCharPointerArray() PointerArrayDEL(Char,char)
-
-PersistentDoublePointerArray::PersistentDoublePointerArray(JNIEnv *env, double* pointer, jsize size) PointerArrayINIT(Double,double)
-
-PersistentDoublePointerArray::~PersistentDoublePointerArray() PointerArrayDEL(Double,double)
-
-PersistentFloatPointerArray::PersistentFloatPointerArray(JNIEnv *env, float* pointer, jsize size) PointerArrayINIT(Float,float)
-
-PersistentFloatPointerArray::~PersistentFloatPointerArray() PointerArrayDEL(Float,float)
-
-PersistentInt8PointerArray::PersistentInt8PointerArray(JNIEnv *env, qint8* pointer, jsize size) PointerArrayINIT(Byte,byte)
-
-PersistentInt8PointerArray::~PersistentInt8PointerArray() PointerArrayDEL(Byte,byte)
-
-PersistentInt16PointerArray::PersistentInt16PointerArray(JNIEnv *env, qint16* pointer, jsize size) PointerArrayINIT(Short,short)
-
-PersistentInt16PointerArray::~PersistentInt16PointerArray() PointerArrayDEL(Short,short)
-
-PersistentInt32PointerArray::PersistentInt32PointerArray(JNIEnv *env, qint32* pointer, jsize size) PointerArrayINIT(Int,int)
-
-PersistentInt32PointerArray::~PersistentInt32PointerArray() PointerArrayDEL(Int,int)
-
-PersistentInt64PointerArray::PersistentInt64PointerArray(JNIEnv *env, qint64* pointer, jsize size) PointerArrayINIT(Long,long)
-
-PersistentInt64PointerArray::~PersistentInt64PointerArray() PointerArrayDEL(Long,long)
-
-PersistentUInt8PointerArray::PersistentUInt8PointerArray(JNIEnv *env, quint8* pointer, jsize size) PointerArrayINIT(Byte,byte)
-
-PersistentUInt8PointerArray::~PersistentUInt8PointerArray() PointerArrayDEL(Byte,byte)
-
-PersistentUInt16PointerArray::PersistentUInt16PointerArray(JNIEnv *env, quint16* pointer, jsize size) PointerArrayINIT(Short,short)
-
-PersistentUInt16PointerArray::~PersistentUInt16PointerArray() PointerArrayDEL(Short,short)
-
-PersistentUInt32PointerArray::PersistentUInt32PointerArray(JNIEnv *env, quint32* pointer, jsize size) PointerArrayINIT(Int,int)
-
-PersistentUInt32PointerArray::~PersistentUInt32PointerArray() PointerArrayDEL(Int,int)
-
-PersistentUInt64PointerArray::PersistentUInt64PointerArray(JNIEnv *env, quint64* pointer, jsize size) PointerArrayINIT(Long,long)
-
-PersistentUInt64PointerArray::~PersistentUInt64PointerArray() PointerArrayDEL(Long,long)
-
-PersistentBoolPointerArray::PersistentBoolPointerArray(JNIEnv *env, bool* pointer, jsize size) PointerArrayINIT(Boolean,boolean)
-
-PersistentBoolPointerArray::~PersistentBoolPointerArray() PointerArrayDEL(Boolean,boolean)
-
-PersistentBool2PointerArray::PersistentBool2PointerArray(JNIEnv *env, uchar* pointer, jsize size) PointerArrayINIT(Boolean,boolean)
-
-PersistentBool2PointerArray::~PersistentBool2PointerArray() PointerArrayDEL(Boolean,boolean)
-
-PersistentConstCharPointerArray::PersistentConstCharPointerArray(JNIEnv *env, const char* pointer, jsize size) PointerArrayINIT(Byte,byte)
-
-PersistentConstInt8PointerArray::PersistentConstInt8PointerArray(JNIEnv *env, const qint8* pointer, jsize size) PointerArrayINIT(Byte,byte)
-
-PersistentConstInt16PointerArray::PersistentConstInt16PointerArray(JNIEnv *env, const qint16* pointer, jsize size) PointerArrayINIT(Short,short)
-
-PersistentConstInt32PointerArray::PersistentConstInt32PointerArray(JNIEnv *env, const qint32* pointer, jsize size) PointerArrayINIT(Int,int)
-
-PersistentConstInt64PointerArray::PersistentConstInt64PointerArray(JNIEnv *env, const qint64* pointer, jsize size) PointerArrayINIT(Long,long)
-
-PersistentConstUInt8PointerArray::PersistentConstUInt8PointerArray(JNIEnv *env, const quint8* pointer, jsize size) PointerArrayINIT(Byte,byte)
-
-PersistentConstUInt16PointerArray::PersistentConstUInt16PointerArray(JNIEnv *env, const quint16* pointer, jsize size) PointerArrayINIT(Short,short)
-
-PersistentConstUInt32PointerArray::PersistentConstUInt32PointerArray(JNIEnv *env, const quint32* pointer, jsize size) PointerArrayINIT(Int,int)
-
-PersistentConstUInt64PointerArray::PersistentConstUInt64PointerArray(JNIEnv *env, const quint64* pointer, jsize size) PointerArrayINIT(Long,long)
-
-PersistentConstBoolPointerArray::PersistentConstBoolPointerArray(JNIEnv *env, const bool* pointer, jsize size) PointerArrayINIT(Boolean,boolean)
-
-PersistentConstBool2PointerArray::PersistentConstBool2PointerArray(JNIEnv *env, const uchar* pointer, jsize size) PointerArrayINIT(Boolean,boolean)
-
-PersistentConstWCharPointerArray::PersistentConstWCharPointerArray(JNIEnv *env, const ushort* pointer, jsize size) PointerArrayINIT(Char,char)
-
-PersistentConstDoublePointerArray::PersistentConstDoublePointerArray(JNIEnv *env, const double* pointer, jsize size) PointerArrayINIT(Double,double)
-
-PersistentConstFloatPointerArray::PersistentConstFloatPointerArray(JNIEnv *env, const float* pointer, jsize size) PointerArrayINIT(Float,float)
-
-PersistentConstQCharPointerArray::PersistentConstQCharPointerArray(JNIEnv *env, const QChar* pointer, jsize size) PointerArrayINIT(Char,char)
-
-PersistentChar16PointerArray::PersistentChar16PointerArray(JNIEnv *env, char16_t* pointer, jsize size) PointerArrayINIT(Char,char)
-PersistentChar16PointerArray::~PersistentChar16PointerArray() PointerArrayDEL(Char,char)
-PersistentConstChar16PointerArray::PersistentConstChar16PointerArray(JNIEnv *env, const char16_t* pointer, jsize size) PointerArrayINIT(Char,char)
-PersistentChar32PointerArray::PersistentChar32PointerArray(JNIEnv *env, char32_t* pointer, jsize size) PointerArrayINIT(Int,int)
-PersistentChar32PointerArray::~PersistentChar32PointerArray() PointerArrayDEL(Int,int)
-PersistentConstChar32PointerArray::PersistentConstChar32PointerArray(JNIEnv *env, const char32_t* pointer, jsize size) PointerArrayINIT(Int,int)
-
-#undef PointerArrayINIT
-#undef PointerArrayDEL
+template class QTJAMBI_EXPORT PointerArray<true,jbyteArray,false,jbyte,true>;
+template class QTJAMBI_EXPORT PointerArray<true,jshortArray,false,jshort,true>;
+template class QTJAMBI_EXPORT PointerArray<true,jintArray,false,jint,true>;
+template class QTJAMBI_EXPORT PointerArray<true,jlongArray,false,jlong,true>;
+template class QTJAMBI_EXPORT PointerArray<true,jcharArray,false,jchar,true>;
+template class QTJAMBI_EXPORT PointerArray<true,jfloatArray,false,jfloat,true>;
+template class QTJAMBI_EXPORT PointerArray<true,jdoubleArray,false,jdouble,true>;
+template class QTJAMBI_EXPORT PointerArray<true,jbooleanArray,false,jboolean,true>;
+template class QTJAMBI_EXPORT PointerArray<true,jbyteArray,true,jbyte,true>;
+template class QTJAMBI_EXPORT PointerArray<true,jshortArray,true,jshort,true>;
+template class QTJAMBI_EXPORT PointerArray<true,jintArray,true,jint,true>;
+template class QTJAMBI_EXPORT PointerArray<true,jlongArray,true,jlong,true>;
+template class QTJAMBI_EXPORT PointerArray<true,jcharArray,true,jchar,true>;
+template class QTJAMBI_EXPORT PointerArray<true,jfloatArray,true,jfloat,true>;
+template class QTJAMBI_EXPORT PointerArray<true,jdoubleArray,true,jdouble,true>;
+template class QTJAMBI_EXPORT PointerArray<true,jbooleanArray,true,jboolean,true>;
 
 bool isValidPrimitiveArray(JNIEnv *env, jobject object, jclass contentType){
     if(!object)
@@ -458,21 +345,21 @@ PersistentJ##Type##ArrayPointer::ElementType& PersistentJ##Type##ArrayPointer::o
 
 #define PointerArrayValid(Type)\
 bool JConst##Type##ArrayPointer::isValidArray(JNIEnv *env, jobject object){\
-    return isValidPrimitiveArray(env, object, QtJambiPrivate::ElementForArray<JArrayType>::RuntimeType::primitiveType(env));\
+    return isValidPrimitiveArray(env, object, QtJambiPrivate::BoxedType<JArrayType>::primitiveType(env));\
 }\
 bool J##Type##ArrayPointer::isValidArray(JNIEnv *env, jobject object){\
-    return isValidPrimitiveArray(env, object, QtJambiPrivate::ElementForArray<JArrayType>::RuntimeType::primitiveType(env));\
+    return isValidPrimitiveArray(env, object, QtJambiPrivate::BoxedType<JArrayType>::primitiveType(env));\
 }\
 bool PersistentJConst##Type##ArrayPointer::isValidArray(JNIEnv *env, jobject object){\
-    return isValidPrimitiveArray(env, object, QtJambiPrivate::ElementForArray<JArrayType>::RuntimeType::primitiveType(env));\
+    return isValidPrimitiveArray(env, object, QtJambiPrivate::BoxedType<JArrayType>::primitiveType(env));\
 }\
 bool PersistentJ##Type##ArrayPointer::isValidArray(JNIEnv *env, jobject object){\
-    return isValidPrimitiveArray(env, object, QtJambiPrivate::ElementForArray<JArrayType>::RuntimeType::primitiveType(env));\
+    return isValidPrimitiveArray(env, object, QtJambiPrivate::BoxedType<JArrayType>::primitiveType(env));\
 }
 
 #define PointerArrayInitializerList(_const,type)\
     const type* array = reinterpret_cast<const type*>(m_array_elements);\
-return QtJambiAPI::createIterable<std::initializer_list<_const type>>(array, size())
+return QtJambiAPI::initializer_list<_const type>(array, size())
 
 #define PointerArrayOperatorImpl(Type,type)\
 JConst##Type##ArrayPointer::operator const type* () const { return reinterpret_cast<const type*>(m_array_elements); }\

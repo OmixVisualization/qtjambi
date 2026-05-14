@@ -793,10 +793,12 @@ inline bool operator==(const QAbstractTextDocumentLayout::Selection &v1, const Q
             && v1.format==v2.format;
 }
 
+#if QT_VERSION <= QT_VERSION_CHECK(6, 11, 0)
 inline size_t qHash(const QRgba64 &value, size_t seed = 0)
 {
     return qHash(value.operator unsigned long long(), seed);
 }
+#endif
 
 inline bool operator==(const QRgba64 &v1, const QRgba64 &v2){
     return v1.operator unsigned long long()==v2.operator unsigned long long();

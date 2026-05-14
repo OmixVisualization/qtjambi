@@ -37,7 +37,8 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtJambi/JavaAPI>
 #include "utils_p.h"
 #include <QtJambi/CoreAPI>
-#include <QtJambi/qtjambi_cast.h>
+
+#include <QtJambi/Cast>
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QHash_initialize
 (JNIEnv * env, jobject _this, jclass keyType, QtJambiNativeID keyMetaType, jclass valueType, QtJambiNativeID valueMetaType, jobject other)
@@ -178,7 +179,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QHash_capacity__J
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key, T>::capacity() const", container.first)
         QTJAMBI_CONTAINER_CAST(Hash, containerAccess, container.second);
 
-        result = containerAccess->capacity(__jni_env, container.first);
+        result = jint(containerAccess->capacity(__jni_env, container.first));
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -238,7 +239,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QHash_count__JLjava_lang_Objec
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key, T>::count(const Key & k) const", container.first)
         QTJAMBI_CONTAINER_CAST(Hash, containerAccess, container.second);
 
-        result = containerAccess->count(__jni_env, container.first, t0);
+        result = jint(containerAccess->count(__jni_env, container.first, t0));
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -384,7 +385,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QHash_remove__JLjava_lang_Obje
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key, T>::remove(const T & t)", container.first)
         QTJAMBI_CONTAINER_CAST(Hash, containerAccess, container.second);
 
-        result = containerAccess->remove(__jni_env, ContainerInfo{_this, container.first}, t0);
+        result = jint(containerAccess->remove(__jni_env, ContainerInfo{_this, container.first}, t0));
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -423,7 +424,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QHash_size__J
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHash<Key, T>::size() const", container.first)
         QTJAMBI_CONTAINER_CAST(Hash, containerAccess, container.second);
 
-        result = containerAccess->size(__jni_env, container.first);
+        result = jint(containerAccess->size(__jni_env, container.first));
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -463,7 +464,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QHash_writeTo
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("operator << (QDataStream&, QHash<K,V>)", container.first)
         QTJAMBI_CONTAINER_CAST(Hash, containerAccess, container.second);
 
-        QDataStream* stream = QtJambiAPI::objectFromNativeId<QDataStream>(stream0);
+        QDataStream* stream = qtjambi_cast<QDataStream*>(stream0);
         QtJambiAPI::checkNullPointer(__jni_env, stream);
         QByteArray containerName = "QHash<";
         containerName += containerAccess->keyMetaType().name();
@@ -492,7 +493,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QHash_readFrom
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("operator >> (QDataStream&, QHash<K,V>&)", container.first)
         QTJAMBI_CONTAINER_CAST(Hash, containerAccess, container.second);
 
-        QDataStream* stream = QtJambiAPI::objectFromNativeId<QDataStream>(stream0);
+        QDataStream* stream = qtjambi_cast<QDataStream*>(stream0);
         QtJambiAPI::checkNullPointer(__jni_env, stream);
         QByteArray containerName = "QHash<";
         containerName += containerAccess->keyMetaType().name();

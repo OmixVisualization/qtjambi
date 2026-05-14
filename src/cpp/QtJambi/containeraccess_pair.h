@@ -40,8 +40,8 @@ namespace ContainerAccessAPI {
 
 template<size_t align1, size_t size1, size_t align2, size_t size2>
 class GenericPairAccess : public AbstractPairAccess, public AbstractNestedPairAccess {
-    typedef typename std::conditional<size1==0, void*, ContainerElement<size1, 0, false, align1>>::type K;
-    typedef typename std::conditional<size2==0, void*, ContainerElement<size2, 1, false, align2>>::type T;
+    typedef std::conditional_t<size1==0, void*, ContainerElement<size1, 0, false, align1>> K;
+    typedef std::conditional_t<size2==0, void*, ContainerElement<size2, 1, false, align2>> T;
     MetaTypeInfo<0,size1==0> m_keyMetaTypeInfo;
     QtJambiUtils::InternalToExternalConverter m_keyInternalToExternalConverter;
     QtJambiUtils::ExternalToInternalConverter m_keyExternalToInternalConverter;

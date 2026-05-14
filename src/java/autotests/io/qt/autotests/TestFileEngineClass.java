@@ -31,9 +31,6 @@ package io.qt.autotests;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-
-import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -44,17 +41,12 @@ import io.qt.core.QFile;
 import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
 import io.qt.core.QOperatingSystemVersion;
-import io.qt.core.QResource;
 import io.qt.core.QStringList;
 
 public class TestFileEngineClass extends ApplicationInitializer {
 	static{
 		System.setProperty("io.qt.allow-classfiles-as-resource", "true");
 	}
-	private static String search_path1 = null;
-	private static java.io.File tmpFile1 = null;
-	private static File tmpFile2 = null;
-	private static String search_path2 = null;
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
@@ -62,24 +54,6 @@ public class TestFileEngineClass extends ApplicationInitializer {
     	ApplicationInitializer.testInitializeWithWidgets();
     }
 	
-	@AfterClass
-    public static void testDispose() throws Exception {
-		if(search_path1!=null) {
-			runGC();
-			QResource.removeClassPath(search_path1);
-			if(tmpFile1!=null && !tmpFile1.delete()) {
-				tmpFile1.deleteOnExit();
-			}
-		}
-		if(search_path2!=null) {
-			runGC();
-			QResource.removeClassPath(search_path2);
-			if(tmpFile2!=null && !tmpFile2.delete()) {
-				tmpFile2.deleteOnExit();
-			}
-		}
-		ApplicationInitializer.testDispose();
-	}
 	@Test
     public void testClassInFileEngine() throws Exception {
 		QtUtilities.initializePackage(io.qt.autotests.generated.General.class);

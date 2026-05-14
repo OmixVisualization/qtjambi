@@ -35,7 +35,7 @@ QT = core tasktree
 
 HEADERS += \
     hashes.h \
-    util_p.h
+    utils_p.h
 
 SOURCES += \
     construction.cpp \

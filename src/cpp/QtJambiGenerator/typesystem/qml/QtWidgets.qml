@@ -36,7 +36,7 @@ TypeSystem{
     module: "qtjambi"
     precompiledHeader: "pch_p.h"
     LoadTypeSystem{name: "QtGui"; unless: "QTJAMBI_NO_GUI"}
-    Template{
+    CodeTemplate{
         name: "gui.addAction"
         Text{content: String.raw`
 /**
@@ -101,7 +101,7 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
             `}
     }
     
-    Template{
+    CodeTemplate{
         name: "gui.addAction_with_shortcut"
         InsertTemplate{
             name: "gui.addAction"
@@ -159,7 +159,7 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
         }
     }
     
-    Template{
+    CodeTemplate{
         name: "widget.addAction_with_shortcut"
         InsertTemplate{
             name: "gui.addAction"
@@ -5429,26 +5429,13 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
         }
         ModifyFunction{
             signature: "getContentsMargins(int*,int*,int*,int*)const"
-            InjectCode{
-                position: Position.Beginning
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "if(%1.length<4) throw new IllegalArgumentException(\"An array of length 4 expected.\");"}
-            }
             ModifyArgument{
                 index: 1
                 rename: "margins"
-                ReplaceType{
-                    modifiedType: "int[]"
+                AsArray{
+                    lengthExpression: "4"
                 }
                 NoNullPointer{}
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 4;\n"+
-                                  "int* %out = qtjambi_cast<int*>(%env, %scope, %in, %out_size);"}
-                }
             }
             ModifyArgument{
                 index: 2
@@ -6807,7 +6794,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = ok ? QtJambiAPI::toJavaIntegerObject(%env, %in) : nullptr;"}
+                    Text{content: "%out = ok ? qtjambi_cast<jobject>(%env, %in) : nullptr;"}
                 }
             }
             ModifyArgument{
@@ -6831,7 +6818,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = ok ? QtJambiAPI::toJavaDoubleObject(%env, %in) : nullptr;"}
+                    Text{content: "%out = ok ? qtjambi_cast<jobject>(%env, %in) : nullptr;"}
                 }
             }
             ModifyArgument{
@@ -11694,7 +11681,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 target: CodeClass.Native
                 position: Position.Beginning
                 Text{content: "if(!Java::QtCore::QCoreApplication::__qt_isInitializing(%env)){\n"+
-                              "    Java::Runtime::IllegalAccessError::throwNew(%env, \"Not allowed to instantiate QApplication. Please use QGuiApplication.initialize() instead.\" QTJAMBI_STACKTRACEINFO );\n"+
+                              "    JavaException::raise<Java::Runtime::IllegalAccessError>(%env, \"Not allowed to instantiate QApplication. Please use QGuiApplication.initialize() instead.\" QTJAMBI_STACKTRACEINFO );\n"+
                               "    return;\n"+
                               "}"}
             }
@@ -11757,7 +11744,7 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
     JavaException::raiseRuntimeException(%env, "The event loop is already running." QTJAMBI_STACKTRACEINFO );`}
             }
         }
-        Template{
+        CodeTemplate{
             name: "gui.application_char_pointer_function"
             Text{content: "public static %RETURN_TYPE %FUNCTION_NAME(%PRE_ARGUMENTS %COMMA QByteArray className) {\n"+
                           "    return %FUNCTION_NAME(%PRE_CALL_ARGUMENTS %COMMA className == null ? null : className.data());\n"+
@@ -12003,47 +11990,36 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
         }
         ModifyFunction{
             signature: "getContentsMargins(qreal*,qreal*,qreal*,qreal*)const"
-            InjectCode{
-                position: Position.Beginning
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "if(%1.length<4) throw new IllegalArgumentException(\"An array of length 4 expected.\");"}
-            }
             ModifyArgument{
                 index: 1
                 rename: "margins"
-                ReplaceType{
-                    modifiedType: "double @NonNull[]"
+                AsArray{
+                    lengthExpression: "4"
                 }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 4;\n"+
-                                  "qreal* %out = qtjambi_cast<qreal*>(%env, %scope, %in, %out_size);"}
-                }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "qreal array[4];\n"+
-                                  "if(%1)\n"+
-                                  "    array[0] = *%1;\n"+
-                                  "if(%2)\n"+
-                                  "    array[1] = *%2;\n"+
-                                  "if(%3)\n"+
-                                  "    array[2] = *%3;\n"+
-                                  "if(%4)\n"+
-                                  "    array[3] = *%4;\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "    if(%1)\n"+
-                                  "        *%1 = array[0];\n"+
-                                  "    if(%2)\n"+
-                                  "        *%2 = array[1];\n"+
-                                  "    if(%3)\n"+
-                                  "        *%3 = array[2];\n"+
-                                  "    if(%4)\n"+
-                                  "        *%4 = array[3];\n"+
-                                  "    });\n"+
-                                  "jdoubleArray %out = qtjambi_cast<jdoubleArray>(%env, %scope, array, 4);"}
+                    Text{content: String.raw`
+                          qreal array[4];
+                          if(%1)
+                              array[0] = *%1;
+                          if(%2)
+                              array[1] = *%2;
+                          if(%3)
+                              array[2] = *%3;
+                          if(%4)
+                              array[3] = *%4;
+                          %scope.addFinalAction([&](){
+                              if(%1)
+                                  *%1 = array[0];
+                              if(%2)
+                                  *%2 = array[1];
+                              if(%3)
+                                  *%3 = array[2];
+                              if(%4)
+                                  *%4 = array[3];
+                              });
+                          jdoubleArray %out = qtjambi_cast<jdoubleArray>(%env, %scope, array);`}
                 }
             }
             ModifyArgument{
@@ -12152,40 +12128,39 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                               "    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%this);"}
             }
         }
+
         ModifyFunction{
             signature: "getContentsMargins(qreal*,qreal*,qreal*,qreal*)const"
-            InjectCode{
-                position: Position.Beginning
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "if(%1.length<4) throw new IllegalArgumentException(\"An array of length 4 expected.\");"}
-            }
             ModifyArgument{
                 index: 1
                 rename: "margins"
-                ReplaceType{
-                    modifiedType: "double @NonNull[]"
+                AsArray{
+                    lengthExpression: "4"
                 }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 4;\n"+
-                                  "qreal* %out = qtjambi_cast<qreal*>(%env, %scope, %in, %out_size);"}
-                }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "qreal array[4];\n"+
-                                  "if(%1)\n"+
-                                  "    array[0] = *%1;\n"+
-                                  "if(%2)\n"+
-                                  "    array[1] = *%2;\n"+
-                                  "if(%3)\n"+
-                                  "    array[2] = *%3;\n"+
-                                  "if(%4)\n"+
-                                  "    array[3] = *%4;\n"+
-                                  "DoublePointerArray pointerArray(%env, array, 4);\n"+
-                                  "jdoubleArray %out = pointerArray.array();"}
+                    Text{content: String.raw`
+                          qreal array[4];
+                          if(%1)
+                              array[0] = *%1;
+                          if(%2)
+                              array[1] = *%2;
+                          if(%3)
+                              array[2] = *%3;
+                          if(%4)
+                              array[3] = *%4;
+                          %scope.addFinalAction([&](){
+                              if(%1)
+                                  *%1 = array[0];
+                              if(%2)
+                                  *%2 = array[1];
+                              if(%3)
+                                  *%3 = array[2];
+                              if(%4)
+                                  *%4 = array[3];
+                              });
+                          jdoubleArray %out = qtjambi_cast<jdoubleArray>(%env, %scope, array);`}
                 }
             }
             ModifyArgument{
@@ -12214,34 +12189,6 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     codeClass: CodeClass.Native
                     Text{content: "qreal* %out = __qt_%1+3;"}
                 }
-            }
-            InjectCode{
-                target: CodeClass.Shell
-                position: Position.End
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                ArgumentMap{
-                    index: 2
-                    metaName: "%2"
-                }
-                ArgumentMap{
-                    index: 3
-                    metaName: "%3"
-                }
-                ArgumentMap{
-                    index: 4
-                    metaName: "%4"
-                }
-                Text{content: "if(%1)\n"+
-                              "    *%1 = array[0];\n"+
-                              "if(%2)\n"+
-                              "    *%2 = array[1];\n"+
-                              "if(%3)\n"+
-                              "    *%3 = array[2];\n"+
-                              "if(%4)\n"+
-                              "    *%4 = array[3];"}
             }
         }
         ModifyFunction{
@@ -12287,16 +12234,17 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
         }
         InjectCode{
             target: CodeClass.JavaInterface
-            Text{content: "/**\n"+
-                          " * @see #getContentsMargins(double[])\n"+
-                          " */\n"+
-                          "@QtDeclaredFinal\n"+
-                          "@QtUninvokable\n"+
-                          "public default io.qt.core.QMarginsF contentsMargins(){\n"+
-                          "    double[] mrg = {0.0, 0.0, 0.0, 0.0};\n"+
-                          "    getContentsMargins(mrg);\n"+
-                          "    return new io.qt.core.QMarginsF(mrg[0], mrg[1], mrg[2], mrg[3]);\n"+
-                          "}"}
+            Text{content: String.raw`
+                /**
+                 * @see #getContentsMargins(double[])
+                 */
+                @QtDeclaredFinal
+                @QtUninvokable
+                public default io.qt.core.QMarginsF contentsMargins(){
+                    double[] mrg = {0.0, 0.0, 0.0, 0.0};
+                    getContentsMargins(mrg);
+                    return new io.qt.core.QMarginsF(mrg[0], mrg[1], mrg[2], mrg[3]);
+                }`}
         }
     }
     
@@ -12572,6 +12520,10 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
             Include{
                 fileName: "utils_p.h"
                 location: Include.Local
+            }
+            Include{
+                fileName: "QtJambi/ArrayAPI"
+                location: Include.Global
             }
         }
         ModifyFunction{
@@ -12998,38 +12950,36 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
         }
         ModifyFunction{
             signature: "getContentsMargins(qreal*,qreal*,qreal*,qreal*)const"
-            InjectCode{
-                position: Position.Beginning
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "if(%1.length<4) throw new IllegalArgumentException(\"An array of length 4 expected.\");"}
-            }
             ModifyArgument{
                 index: 1
                 rename: "margins"
-                ReplaceType{
-                    modifiedType: "double @NonNull[]"
+                AsArray{
+                    lengthExpression: "4"
                 }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 4;\n"+
-                                  "qreal* %out = qtjambi_cast<qreal*>(%env, %scope, %in, %out_size);"}
-                }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "qreal array[4];\n"+
-                                  "if(%1)\n"+
-                                  "    array[0] = *%1;\n"+
-                                  "if(%2)\n"+
-                                  "    array[1] = *%2;\n"+
-                                  "if(%3)\n"+
-                                  "    array[2] = *%3;\n"+
-                                  "if(%4)\n"+
-                                  "    array[3] = *%4;\n"+
-                                  "DoublePointerArray pointerArray(%env, array, 4);\n"+
-                                  "jdoubleArray %out = pointerArray.array();"}
+                    Text{content: String.raw`
+                          qreal array[4];
+                          if(%1)
+                              array[0] = *%1;
+                          if(%2)
+                              array[1] = *%2;
+                          if(%3)
+                              array[2] = *%3;
+                          if(%4)
+                              array[3] = *%4;
+                          %scope.addFinalAction([&](){
+                              if(%1)
+                                  *%1 = array[0];
+                              if(%2)
+                                  *%2 = array[1];
+                              if(%3)
+                                  *%3 = array[2];
+                              if(%4)
+                                  *%4 = array[3];
+                              });
+                          jdoubleArray %out = qtjambi_cast<jdoubleArray>(%env, %scope, array);`}
                 }
             }
             ModifyArgument{
@@ -13058,34 +13008,6 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     codeClass: CodeClass.Native
                     Text{content: "qreal* %out = __qt_%1+3;"}
                 }
-            }
-            InjectCode{
-                target: CodeClass.Shell
-                position: Position.End
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                ArgumentMap{
-                    index: 2
-                    metaName: "%2"
-                }
-                ArgumentMap{
-                    index: 3
-                    metaName: "%3"
-                }
-                ArgumentMap{
-                    index: 4
-                    metaName: "%4"
-                }
-                Text{content: "if(%1)\n"+
-                              "    *%1 = array[0];\n"+
-                              "if(%2)\n"+
-                              "    *%2 = array[1];\n"+
-                              "if(%3)\n"+
-                              "    *%3 = array[2];\n"+
-                              "if(%4)\n"+
-                              "    *%4 = array[3];"}
             }
         }
         ModifyFunction{

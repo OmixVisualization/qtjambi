@@ -31,9 +31,9 @@
 #if QT_CONFIG(vulkan)
 #if !__has_include(<vulkan/vulkan.h>)
 #define QVULKANINSTANCE_H
-typedef typename std::conditional<sizeof(void*)==sizeof(qint64), struct VkImage_T *, uint64_t>::type VkImage;
-typedef std::conditional<sizeof(void*)==sizeof(qint64), struct VkPhysicalDevice_T *, uint64_t>::type VkPhysicalDevice;
-typedef std::conditional<sizeof(void*)==sizeof(qint64), struct VkDevice_T *, uint64_t>::type VkDevice;
+typedef std::conditional_t<sizeof(void*)==sizeof(qint64), struct VkImage_T *, uint64_t> VkImage;
+typedef std::conditional_t<sizeof(void*)==sizeof(qint64), struct VkPhysicalDevice_T *, uint64_t> VkPhysicalDevice;
+typedef std::conditional_t<sizeof(void*)==sizeof(qint64), struct VkDevice_T *, uint64_t> VkDevice;
 //typedef struct VkDevice_T *VkDevice;
 typedef enum VkImageLayout{}VkImageLayout;
 typedef enum VkFormat{}VkFormat;
@@ -41,16 +41,12 @@ typedef enum VkFormat{}VkFormat;
 #include <qsgtexture_platform.h>
 #endif
 
-#include <QtQml/QQmlPropertyValueSource>
 #include <QtQuick/QQuickItem>
 #include <QtQuick/QQuickRenderTarget>
 #include <QtQuick/QQuickGraphicsDevice>
 #include <QtQuick/QSGGeometry>
-#include <QtJambi/QtJambiAPI>
 #include <QtJambi/QmlAPI>
-#include <QtJambi/JavaAPI>
 #include "utils_p.h"
-#include <QtJambi/Cast>
 
 class QmlPropertyValueSource : public QQmlPropertyValueSource{
     void setTarget(const QQmlProperty &) override;
@@ -253,7 +249,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_quick_QSGGeometry_setPoint2D
 
 #if QT_CONFIG(vulkan)
 
-template<typename T, bool = std::is_pointer<T>::value>
+template<typename T, bool = std::is_pointer_v<T>>
 struct CastHelper{
     static constexpr T cast(jlong image) {return reinterpret_cast<T>(image);}
 };
@@ -314,3 +310,34 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/quick,QQuickWindow,
 )
 }
 }
+
+template jobject qtjambi_cast<jobject,QInputMethodEvent*&>(JNIEnv *, QInputMethodEvent*&);
+template jobject qtjambi_cast<jobject,QActionEvent*&>(JNIEnv *, QActionEvent*&);
+template jobject qtjambi_cast<jobject,QCloseEvent*&>(JNIEnv *, QCloseEvent*&);
+template jobject qtjambi_cast<jobject,QContextMenuEvent*&>(JNIEnv *, QContextMenuEvent*&);
+template jobject qtjambi_cast<jobject,QDragEnterEvent*&>(JNIEnv *, QDragEnterEvent*&);
+template jobject qtjambi_cast<jobject,QDragLeaveEvent*&>(JNIEnv *, QDragLeaveEvent*&);
+template jobject qtjambi_cast<jobject,QDragMoveEvent*&>(JNIEnv *, QDragMoveEvent*&);
+template jobject qtjambi_cast<jobject,QDropEvent*&>(JNIEnv *, QDropEvent*&);
+template jobject qtjambi_cast<jobject,QEnterEvent*&>(JNIEnv *, QEnterEvent*&);
+template jobject qtjambi_cast<jobject,QHideEvent*&>(JNIEnv *, QHideEvent*&);
+template jobject qtjambi_cast<jobject,QKeyEvent*&>(JNIEnv *, QKeyEvent*&);
+template jobject qtjambi_cast<jobject,QMouseEvent*&>(JNIEnv *, QMouseEvent*&);
+template jobject qtjambi_cast<jobject,QMoveEvent*&>(JNIEnv *, QMoveEvent*&);
+template jobject qtjambi_cast<jobject,QPaintEvent*&>(JNIEnv *, QPaintEvent*&);
+template jobject qtjambi_cast<jobject,QResizeEvent*&>(JNIEnv *, QResizeEvent*&);
+template jobject qtjambi_cast<jobject,QShowEvent*&>(JNIEnv *, QShowEvent*&);
+template jobject qtjambi_cast<jobject,QTabletEvent*&>(JNIEnv *, QTabletEvent*&);
+
+template QWindow* qtjambi_cast<QWindow*,jobject&>(JNIEnv *, jobject&);
+template jobject qtjambi_cast<jobject,QWindow*&>(JNIEnv *, QWindow*&);
+template jobject qtjambi_cast<jobject,const QWindow*&>(JNIEnv *, const QWindow*&);
+
+template jobject qtjambi_cast<jobject,QColor>(JNIEnv *, QColor&&);
+template jobject qtjambi_cast<jobject,const QColor&>(JNIEnv *, const QColor&);
+
+template jobject qtjambi_cast<jobject,QImage>(JNIEnv *, QImage&&);
+template jobject qtjambi_cast<jobject,const QImage&>(JNIEnv *, const QImage&);
+
+template jobject qtjambi_cast<jobject,QFont>(JNIEnv *, QFont&&);
+template jobject qtjambi_cast<jobject,const QFont&>(JNIEnv *, const QFont&);

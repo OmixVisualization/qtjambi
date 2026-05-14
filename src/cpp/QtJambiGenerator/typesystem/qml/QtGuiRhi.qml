@@ -396,9 +396,10 @@ TypeSystem{
                     metaName: "%3"
                     index: 3
                 }
-                Text{content: "if(%3 == 0 || %3 > QRhiShaderResourceBinding::Data::MAX_TEX_SAMPLER_ARRAY_SIZE){\n"+
-                              "    Java::Runtime::IllegalArgumentException::throwNew(%env, \"Array size must not be 0 or greater 16.\" QTJAMBI_STACKTRACEINFO );\n"+
-                              "}"}
+                Text{content: String.raw`
+                        if(%3 == 0 || %3 > QRhiShaderResourceBinding::Data::MAX_TEX_SAMPLER_ARRAY_SIZE){
+                            JavaException::raiseIllegalArgumentException(%env, "Array size must not be 0 or greater 16." QTJAMBI_STACKTRACEINFO );
+                        }`}
             }
         }
         ModifyFunction{
@@ -460,7 +461,7 @@ const QRhiShaderResourceBinding * %out = array.pointer();
 JBufferData %out_buffer(__jni_env, %in);
 quint32* %out = %out_buffer.data<quint32>();
 if(%out_buffer.size()<array.size()*4)
-    Java::Runtime::IllegalArgumentException::throwNew(%env, \"Buffer size must be greater binding count * 4.\" QTJAMBI_STACKTRACEINFO );\n"+
+    JavaException::raiseIllegalArgumentException(%env, "Buffer size must be greater binding count * 4." QTJAMBI_STACKTRACEINFO );
 `}
                     }
                 }
@@ -702,6 +703,10 @@ if(%out_buffer.size()<array.size()*4)
                 fileName: "QtJambi/JavaAPI"
                 location: Include.Global
             }
+            Include{
+                fileName: "QtJambi/BufferAPI"
+                location: Include.Global
+            }
         }
         ObjectType{
             name: "NativeBuffer"
@@ -794,7 +799,7 @@ if(%out_buffer.size()<array.size()*4)
                 target: CodeClass.Native
                 position: Position.Beginning
                 Text{content: "if(__qt_this->type()!=QRhiBuffer::Dynamic){\n"+
-                              "    Java::Runtime::IllegalStateException::throwNew(%env, \"Buffer type is not Dynamic.\" QTJAMBI_STACKTRACEINFO );\n"+
+                              "    JavaException::raise<Java::Runtime::IllegalStateException>(%env, \"Buffer type is not Dynamic.\" QTJAMBI_STACKTRACEINFO );\n"+
                               "}"}
             }
         }

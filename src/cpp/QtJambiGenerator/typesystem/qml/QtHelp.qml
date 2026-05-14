@@ -41,6 +41,12 @@ TypeSystem{
         mode: RequiredLibrary.ProvideOnly
         platforms: ["linux", "macos"]
     }
+    RequiredLibrary{
+        name: "QtConcurrent"
+        mode: RequiredLibrary.ProvideOnly
+        platforms: ["linux", "macos"]
+        since: [6,11,1]
+    }
     
     ObjectType{
         name: "QHelpContentItem"
@@ -99,7 +105,6 @@ TypeSystem{
     
     ObjectType{
         name: "QHelpIndexModel"
-
         ModifyFunction{
             signature: "createIndexForCurrentFilter()"
             ModifyArgument{

@@ -39,7 +39,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/QVariant>
 #include <QtJambi/CoreAPI>
 #include "utils_p.h"
-#include <QtJambi/qtjambi_cast.h>
+#include <QtJambi/Cast>
 
 // emitting  (functionsInTargetLang writeFinalFunction)
 
@@ -123,7 +123,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QSet_capacity__J
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QSet<T>::capacity() const", container.first)
         QTJAMBI_CONTAINER_CAST(Set, containerAccess, container.second);
 
-        result = containerAccess->capacity(__jni_env, container.first);
+        result = jint(containerAccess->capacity(__jni_env, container.first));
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -341,7 +341,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QSet_size__J
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QSet<T>::size() const", container.first)
         QTJAMBI_CONTAINER_CAST(Set, containerAccess, container.second);
 
-        result = containerAccess->size(__jni_env, container.first);
+        result = jint(containerAccess->size(__jni_env, container.first));
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -382,7 +382,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QSet_writeTo
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("operator << (QDataStream&, QSet<T>)", container.first)
         QTJAMBI_CONTAINER_CAST(Set, containerAccess, container.second);
 
-        QDataStream* stream = QtJambiAPI::objectFromNativeId<QDataStream>(stream0);
+        QDataStream* stream = qtjambi_cast<QDataStream*>(stream0);
         QtJambiAPI::checkNullPointer(__jni_env, stream);
         QByteArray containerName = "QSet<";
         containerName += containerAccess->elementMetaType().name();
@@ -409,7 +409,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QSet_readFrom
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("operator >> (QDataStream&, QSet<T>&)", container.first)
         QTJAMBI_CONTAINER_CAST(Set, containerAccess, container.second);
 
-        QDataStream* stream = QtJambiAPI::objectFromNativeId<QDataStream>(stream0);
+        QDataStream* stream = qtjambi_cast<QDataStream*>(stream0);
         QtJambiAPI::checkNullPointer(__jni_env, stream);
         QByteArray containerName = "QSet<";
         containerName += containerAccess->elementMetaType().name();

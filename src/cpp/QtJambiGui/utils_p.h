@@ -34,6 +34,7 @@
 
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/JavaAPI>
+#include <QtJambi/Cast>
 
 namespace Java{
 namespace QtGui{
@@ -74,5 +75,76 @@ namespace QtWidgets{
 }
 
 const QObject* getPointerOwner(const QTextCursor* __qt_this);
+
+inline bool qFuzzyIsNull(const QVector2D& f) noexcept{
+    return qFuzzyIsNull(f.x()) || qFuzzyIsNull(f.y());
+}
+
+inline bool qFuzzyIsNull(const QVector3D& f) noexcept{
+    return qFuzzyIsNull(f.x()) || qFuzzyIsNull(f.y()) || qFuzzyIsNull(f.z());
+}
+
+inline bool qFuzzyIsNull(const QVector4D& f) noexcept{
+    return qFuzzyIsNull(f.x()) || qFuzzyIsNull(f.y()) || qFuzzyIsNull(f.z()) || qFuzzyIsNull(f.w());
+}
+
+extern template jobject qtjambi_cast<jobject,QAccessibleInterface*&>(JNIEnv *, QAccessibleInterface*&);
+extern template jobject qtjambi_cast<jobject,const QAccessibleInterface*&>(JNIEnv *, const QAccessibleInterface*&);
+
+extern template jobject qtjambi_cast<jobject,QPaintDevice::PaintDeviceMetric&>(JNIEnv *, QPaintDevice::PaintDeviceMetric&);
+
+extern template jobject qtjambi_cast<jobject,QInputMethodEvent*&>(JNIEnv *, QInputMethodEvent*&);
+extern template jobject qtjambi_cast<jobject,QActionEvent*&>(JNIEnv *, QActionEvent*&);
+extern template jobject qtjambi_cast<jobject,QCloseEvent*&>(JNIEnv *, QCloseEvent*&);
+extern template jobject qtjambi_cast<jobject,QContextMenuEvent*&>(JNIEnv *, QContextMenuEvent*&);
+extern template jobject qtjambi_cast<jobject,QDragEnterEvent*&>(JNIEnv *, QDragEnterEvent*&);
+extern template jobject qtjambi_cast<jobject,QDragLeaveEvent*&>(JNIEnv *, QDragLeaveEvent*&);
+extern template jobject qtjambi_cast<jobject,QDragMoveEvent*&>(JNIEnv *, QDragMoveEvent*&);
+extern template jobject qtjambi_cast<jobject,QDropEvent*&>(JNIEnv *, QDropEvent*&);
+extern template jobject qtjambi_cast<jobject,QEnterEvent*&>(JNIEnv *, QEnterEvent*&);
+extern template jobject qtjambi_cast<jobject,QHideEvent*&>(JNIEnv *, QHideEvent*&);
+extern template jobject qtjambi_cast<jobject,QKeyEvent*&>(JNIEnv *, QKeyEvent*&);
+extern template jobject qtjambi_cast<jobject,QMouseEvent*&>(JNIEnv *, QMouseEvent*&);
+extern template jobject qtjambi_cast<jobject,QMoveEvent*&>(JNIEnv *, QMoveEvent*&);
+extern template jobject qtjambi_cast<jobject,QPaintEvent*&>(JNIEnv *, QPaintEvent*&);
+extern template jobject qtjambi_cast<jobject,QResizeEvent*&>(JNIEnv *, QResizeEvent*&);
+extern template jobject qtjambi_cast<jobject,QShowEvent*&>(JNIEnv *, QShowEvent*&);
+extern template jobject qtjambi_cast<jobject,QTabletEvent*&>(JNIEnv *, QTabletEvent*&);
+extern template jobject qtjambi_cast<jobject,QPainter*&>(JNIEnv *, QPainter*&);
+extern template jobject qtjambi_cast<jobject,QPaintEngine*&>(JNIEnv *, QPaintEngine*&);
+
+extern template QWindow* qtjambi_cast<QWindow*,jobject&>(JNIEnv *, jobject&);
+extern template jobject qtjambi_cast<jobject,QWindow*&>(JNIEnv *, QWindow*&);
+extern template jobject qtjambi_cast<jobject,const QWindow*&>(JNIEnv *, const QWindow*&);
+
+extern template jobject qtjambi_cast<jobject,QIcon>(JNIEnv *, QIcon&&);
+extern template jobject qtjambi_cast<jobject,const QIcon&>(JNIEnv *, const QIcon&);
+extern template jobject qtjambi_cast<jobject,QColor>(JNIEnv *, QColor&&);
+extern template jobject qtjambi_cast<jobject,const QColor&>(JNIEnv *, const QColor&);
+extern template jobject qtjambi_cast<jobject,QTransform>(JNIEnv *, QTransform&&);
+extern template jobject qtjambi_cast<jobject,const QTransform&>(JNIEnv *, const QTransform&);
+extern template jobject qtjambi_cast<jobject,QCursor>(JNIEnv *, QCursor&&);
+extern template jobject qtjambi_cast<jobject,const QCursor&>(JNIEnv *, const QCursor&);
+extern template jobject qtjambi_cast<jobject,QPainterPath>(JNIEnv *, QPainterPath&&);
+extern template jobject qtjambi_cast<jobject,const QPainterPath&>(JNIEnv *, const QPainterPath&);
+extern template jobject qtjambi_cast<jobject,QRegion>(JNIEnv *, QRegion&&);
+extern template jobject qtjambi_cast<jobject,const QRegion&>(JNIEnv *, const QRegion&);
+extern template jobject qtjambi_cast<jobject,QPalette>(JNIEnv *, QPalette&&);
+extern template jobject qtjambi_cast<jobject,const QPalette&>(JNIEnv *, const QPalette&);
+extern template jobject qtjambi_cast<jobject,QPalette>(JNIEnv *, QPalette&&);
+extern template jobject qtjambi_cast<jobject,const QPalette&>(JNIEnv *, const QPalette&);
+extern template jobject qtjambi_cast<jobject,QTextCursor>(JNIEnv *, QTextCursor&&);
+extern template jobject qtjambi_cast<jobject,const QTextCursor&>(JNIEnv *, const QTextCursor&);
+extern template jobject qtjambi_cast<jobject,QBrush>(JNIEnv *, QBrush&&);
+extern template jobject qtjambi_cast<jobject,const QBrush&>(JNIEnv *, const QBrush&);
+
+extern template jobject qtjambi_cast<jobject,QImage>(JNIEnv *, QImage&&);
+extern template jobject qtjambi_cast<jobject,const QImage&>(JNIEnv *, const QImage&);
+
+extern template jobject qtjambi_cast<jobject,QFont>(JNIEnv *, QFont&&);
+extern template jobject qtjambi_cast<jobject,const QFont&>(JNIEnv *, const QFont&);
+
+extern template jobject qtjambi_cast<jobject,QPixmap>(JNIEnv *, QPixmap&&);
+extern template jobject qtjambi_cast<jobject,const QPixmap&>(JNIEnv *, const QPixmap&);
 
 #endif // QTJAMBIGUI_UTILS_H

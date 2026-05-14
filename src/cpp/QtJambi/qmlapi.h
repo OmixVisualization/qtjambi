@@ -32,6 +32,7 @@
 
 #include "qtjambiapi.h"
 #include "objectdata.h"
+#include "qtjambiapi_construct.h"
 
 class QObject;
 struct QMetaObject;
@@ -94,6 +95,8 @@ struct InPlaceConstructorInfo{
 QTJAMBI_EXPORT InPlaceConstructorInfo findInPlaceConstructor(JNIEnv *env, jclass type, const QMetaObject *meta_object);
 QTJAMBI_EXPORT void* beginInPlaceConstruction(void* placement, const QMetaObject *meta_object, QtJambiAPI::ConstructorFn constructorFunction);
 QTJAMBI_EXPORT void endInPlaceConstruction(JNIEnv *env, jobject object, void* pointer);
+
+QTJAMBI_EXPORT void setQQmlListPropertyElementType(JNIEnv *env, jobject list, jobject elementType);
 
 enum class ConstructorKind{
     NoConstructor,

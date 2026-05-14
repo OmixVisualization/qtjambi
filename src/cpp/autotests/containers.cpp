@@ -37,6 +37,8 @@ size_t qHash(const std::pair<float,double>& value, size_t seed = 0);
 #include "containers.h"
 #include <QtCore/QPoint>
 #include <QtJambi/QtJambiAPI>
+#include <QtJambi/Template2Cast>
+#include <QtJambi/ArithmeticCast>
 #include <QtJambi/Cast>
 
 #include <QtCore/QtCore>
@@ -59,7 +61,7 @@ QSet<QString> valueAt(QList<QSet<QString>>& container, int position){
 void copyQListFDToJavaList(const QList<QPair<float,double>>& container, jobject results){
     if(JniEnvironment env{200}){
         for(QPair<float,double> f : container){
-            QtJambiAPI::addToJavaCollection(env, results, QtJambiAPI::newQPair(env, QtJambiAPI::toJavaFloatObject(env, f.first), QtJambiAPI::toJavaDoubleObject(env, f.second)));
+            QtJambiAPI::addToJavaCollection(env, results, qtjambi_cast<jobject>(env, f));
         }
     }
 }
@@ -79,7 +81,7 @@ void readQListFD(QDataStream &s, QList<QPair<float,double>>& container){
 void copyQHashShortDoubleToJavaList(const QHash<short,double>& container, jobject results){
     if(JniEnvironment env{200}){
         for(short s : container){
-            QtJambiAPI::putJavaMap(env, results, QtJambiAPI::toJavaShortObject(env, s), QtJambiAPI::toJavaDoubleObject(env, container[s]));
+            QtJambiAPI::putJavaMap(env, results, qtjambi_cast<jobject>(env, s), qtjambi_cast<jobject>(env, container[s]));
         }
     }
 }
@@ -119,7 +121,7 @@ void readQSetQPoint(QDataStream &s, QSet<QPoint>& container){
 void copyQMapShortDoubleToJavaList(const QMap<short,double>& container, jobject results){
     if(JniEnvironment env{200}){
         for(short s : container){
-            QtJambiAPI::putJavaMap(env, results, QtJambiAPI::toJavaShortObject(env, s), QtJambiAPI::toJavaDoubleObject(env, container[s]));
+            QtJambiAPI::putJavaMap(env, results, qtjambi_cast<jobject>(env, s), qtjambi_cast<jobject>(env, container[s]));
         }
     }
 }
@@ -140,7 +142,7 @@ void copyQMultiHashShortDoubleToJavaList(const QMultiHash<short,double>& contain
     if(JniEnvironment env{200}){
         for(short s : container){
             for(double d : container.values(s)){
-                QtJambiAPI::putJavaMap(env, results, QtJambiAPI::toJavaShortObject(env, s), QtJambiAPI::toJavaDoubleObject(env, d));
+                QtJambiAPI::putJavaMap(env, results, qtjambi_cast<jobject>(env, s), qtjambi_cast<jobject>(env, d));
             }
         }
     }
@@ -162,7 +164,7 @@ void copyQMultiMapShortDoubleToJavaList(const QMultiMap<short,double>& container
     if(JniEnvironment env{200}){
         for(short s : container){
             for(double d : container.values(s)){
-                QtJambiAPI::putJavaMap(env, results, QtJambiAPI::toJavaShortObject(env, s), QtJambiAPI::toJavaDoubleObject(env, d));
+                QtJambiAPI::putJavaMap(env, results, qtjambi_cast<jobject>(env, s), qtjambi_cast<jobject>(env, d));
             }
         }
     }
@@ -196,7 +198,7 @@ void copyFromIterable(const QVariant& variant, jobject results){
             auto end = iterable.end();
             while(begin!=end){
                 QVariant value = *begin;
-                QtJambiAPI::addToJavaCollection(env, results, QtJambiAPI::convertQVariantToJavaObject(env, value));
+                QtJambiAPI::addToJavaCollection(env, results, qtjambi_cast<jobject>(env, value));
                 ++begin;
             }
         }
@@ -207,7 +209,7 @@ void copyFromIterable(const QVariant& variant, jobject results){
             while(begin!=end){
                 QVariant key = begin.key();
                 QVariant value = begin.value();
-                QtJambiAPI::putJavaMap(env, results, QtJambiAPI::convertQVariantToJavaObject(env, key), QtJambiAPI::convertQVariantToJavaObject(env, value));
+                QtJambiAPI::putJavaMap(env, results, qtjambi_cast<jobject>(env, key), qtjambi_cast<jobject>(env, value));
                 ++begin;
             }
         }

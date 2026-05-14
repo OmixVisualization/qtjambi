@@ -40,7 +40,15 @@ J2CStringBuffer::J2CStringBuffer(JNIEnv* env, jstring strg)
 
 J2CStringBuffer::~J2CStringBuffer(){
     if(m_strg){
+        jthrowable exn = nullptr;
+        if(m_env->ExceptionCheck()){
+            exn = m_env->ExceptionOccurred();
+            m_env->ExceptionClear();
+        }
         m_env->ReleaseStringUTFChars(m_strg, m_data);
+        if(exn){
+            m_env->Throw(exn);
+        }
     }
 }
 
@@ -66,8 +74,16 @@ PersistentJ2CStringBuffer::~PersistentJ2CStringBuffer(){
     if(Q_LIKELY(m_data)){
         if(m_data->m_strg){
             if(JniEnvironment env{24}){
+                jthrowable exn = nullptr;
+                if(env->ExceptionCheck()){
+                    exn = env->ExceptionOccurred();
+                    env->ExceptionClear();
+                }
                 env->ReleaseStringUTFChars(m_data->m_strg.typedObject<jstring>(env), m_data->m_data);
                 m_data->m_strg.clear(env);
+                if(exn){
+                    env->Throw(exn);
+                }
             }
         }
     }
@@ -99,7 +115,15 @@ JString2QChars::JString2QChars(JNIEnv* env, jstring strg)
 
 JString2QChars::~JString2QChars(){
     if(m_strg){
+        jthrowable exn = nullptr;
+        if(m_env->ExceptionCheck()){
+            exn = m_env->ExceptionOccurred();
+            m_env->ExceptionClear();
+        }
         m_env->ReleaseStringChars(m_strg, m_data);
+        if(exn){
+            m_env->Throw(exn);
+        }
     }
 }
 
@@ -127,8 +151,16 @@ PersistentJString2QChars::PersistentJString2QChars(JNIEnv* env, jstring strg)
 PersistentJString2QChars::~PersistentJString2QChars(){
     if(m_data && m_data->m_strg){
         if(JniEnvironment env{24}){
+            jthrowable exn = nullptr;
+            if(env->ExceptionCheck()){
+                exn = env->ExceptionOccurred();
+                env->ExceptionClear();
+            }
             env->ReleaseStringChars(m_data->m_strg.typedObject<jstring>(env), m_data->m_data);
             m_data->m_strg.clear(env);
+            if(exn){
+                env->Throw(exn);
+            }
         }
     }
 }

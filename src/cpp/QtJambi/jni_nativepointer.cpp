@@ -183,7 +183,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QNativePointer_fromArray
                 if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, java_object))
                     ptr = link->pointer();
                 else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, java_object))
-                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java_object)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, java_object)) QTJAMBI_STACKTRACEINFO );
 
             }
 
@@ -290,7 +290,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_QNativePointer_fromObject
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(__jni_env, object))
             return QtJambiAPI::convertNativeToQNativePointer(__jni_env, link->pointer(), QNativePointer::Type::Pointer, -1, 1);
         else if(Java::QtJambi::QtObjectInterface::isInstanceOf(__jni_env, object))
-            Java::QtJambi::QNoNativeResourcesException::throwNew(__jni_env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, object)) QTJAMBI_STACKTRACEINFO );
+            JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(__jni_env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, object)) QTJAMBI_STACKTRACEINFO );
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -439,7 +439,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_QNativePointer_writeObject
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(__jni_env, value))
                 ptr = link->pointer();
             else if(Java::QtJambi::QtObjectInterface::isInstanceOf(__jni_env, value))
-                Java::QtJambi::QNoNativeResourcesException::throwNew(__jni_env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, value)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(__jni_env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(__jni_env, value)) QTJAMBI_STACKTRACEINFO );
         }
 
         if (buf != 0)

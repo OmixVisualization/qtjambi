@@ -17,17 +17,14 @@ import io.qt.core.QProcess;
 
 /**
  * <p>A class template used for declaring custom task items and defining their setup and done handlers</p>
- * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qttasktree-qcustomtask.html">QtTaskTree::QCustomTask&lt;JObjectWrapper&gt;</a></code></p>
+ * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qttasktree-qcustomtask.html">QtTaskTree::QCustomTask&lt;QTaskTree,QTaskTreeTaskAdapter&gt;</a></code></p>
  * @since This class was introduced in Qt 6.11.
  */
 public final class QCustomTask<Task, Adapter extends java.util.function.BiConsumer<Task, io.qt.tasktree.@Nullable QTaskInterface>> extends io.qt.tasktree.ExecutableItem
 {
 	final Class<Task> taskType;
 	final Class<Adapter> adapterType;
-	/**
-     * <p>See <code><a href="https://doc.qt.io/qt/qttasktree-qsynctask.html#QSyncTask">QtTaskTree::QCustomTask::<wbr/>QCustomTask(SetupHandler &amp;&amp;,DoneHandler &amp;&amp;,CallDone)</a></code></p>
-     * @param handler
-     */
+	
     public QCustomTask(@StrictNonNull Class<Task> taskType, 
     		@StrictNonNull Class<Adapter> adapterType,
     		@Nullable Function<Task, QtTaskTree.@NonNull SetupResult> setup,
@@ -46,6 +43,8 @@ public final class QCustomTask<Task, Adapter extends java.util.function.BiConsum
         	initialize_native_QBarrierTask(this, setup, done, callDone);
         }else if(QThreadFunction.typedClass()==taskType && adapterType==QThreadFunctionTaskAdapter.typedClass()) {
         	initialize_native_QThreadFunctionTask(this, setup, done, callDone);
+        }else if(QThreadFunctionVoid.class==taskType && adapterType==QThreadFunctionVoidTaskAdapter.class) {
+        	initialize_native_QThreadFunctionVoidTask(this, setup, done, callDone);
         }else if(QProcess.class==taskType && adapterType==QProcessTaskAdapter.class) {
         	initialize_native_QProcessTask(this, setup, done, callDone);
         }else {
@@ -385,6 +384,11 @@ public final class QCustomTask<Task, Adapter extends java.util.function.BiConsum
     	    QtTaskTree.CallDone callDone);
     
     private native static <Task> void initialize_native_QThreadFunctionTask(QCustomTask<?,?> instance, 
+    		Function<Task, QtTaskTree.SetupResult> setup,
+    	    BiFunction<Task, QtTaskTree.DoneWith, QtTaskTree.DoneResult> done,
+    	    QtTaskTree.CallDone callDone);
+    
+    private native static <Task> void initialize_native_QThreadFunctionVoidTask(QCustomTask<?,?> instance, 
     		Function<Task, QtTaskTree.SetupResult> setup,
     	    BiFunction<Task, QtTaskTree.DoneWith, QtTaskTree.DoneResult> done,
     	    QtTaskTree.CallDone callDone);
@@ -1690,6 +1694,266 @@ public final class QCustomTask<Task, Adapter extends java.util.function.BiConsum
     		@Nullable Consumer<QThreadFunction<ResultType>> done,
     	    QtTaskTree.@NonNull CallDoneFlag @NonNull... callDone){
 		return new QCustomTask<>(QThreadFunction.typedClass(), QThreadFunctionTaskAdapter.typedClass(), setup, done, callDone);
+	}
+	
+	// QThreadFunctionVoidTask
+    
+    public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable BiFunction<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith, QtTaskTree.@NonNull DoneResult> done,
+    	    QtTaskTree.@NonNull CallDone callDone) {
+    	return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+    }
+    public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable BiFunction<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith, QtTaskTree.@NonNull DoneResult> done){
+    	return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    	    QtTaskTree.@NonNull CallDone callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    	    QtTaskTree.@NonNull CallDone callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable BiFunction<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith, QtTaskTree.@NonNull DoneResult> done){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, done);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable BiFunction<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith, QtTaskTree.@NonNull DoneResult> done,
+    		QtTaskTree.@NonNull CallDone callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable BiFunction<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith, QtTaskTree.@NonNull DoneResult> done,
+    	    QtTaskTree.@NonNull CallDone callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable BiFunction<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith, QtTaskTree.@NonNull DoneResult> done){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    	    QtTaskTree.@NonNull CallDone callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull DoneResult> done,
+    	    QtTaskTree.@NonNull CallDone callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull DoneResult> done){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull DoneResult> done,
+    	    QtTaskTree.@NonNull CallDone callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull DoneResult> done){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable BiPredicate<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith> done,
+    	    QtTaskTree.@NonNull CallDone callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable BiPredicate<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith> done){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable BiPredicate<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith> done,
+    	    QtTaskTree.@NonNull CallDone callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable BiPredicate<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith> done){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable Predicate<QThreadFunctionVoid> done,
+    	    QtTaskTree.@NonNull CallDone callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable Predicate<QThreadFunctionVoid> done){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable Predicate<QThreadFunctionVoid> done,
+    	    QtTaskTree.@NonNull CallDone callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable Predicate<QThreadFunctionVoid> done){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable BiConsumer<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith> done,
+    	    QtTaskTree.@NonNull CallDone callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable BiConsumer<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith> done){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable BiConsumer<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith> done,
+    	    QtTaskTree.@NonNull CallDone callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable BiConsumer<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith> done){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable Consumer<QThreadFunctionVoid> done,
+    	    QtTaskTree.@NonNull CallDone callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable Consumer<QThreadFunctionVoid> done){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable Consumer<QThreadFunctionVoid> done,
+    	    QtTaskTree.@NonNull CallDone callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable Consumer<QThreadFunctionVoid> done){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable BiFunction<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith, QtTaskTree.@NonNull DoneResult> done,
+    	    QtTaskTree.@NonNull CallDoneFlag @NonNull... callDone) {
+    	return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+    }
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    	    QtTaskTree.@NonNull CallDoneFlag @NonNull... callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    	    QtTaskTree.@NonNull CallDoneFlag @NonNull... callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable BiFunction<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith, QtTaskTree.@NonNull DoneResult> done,
+    		QtTaskTree.@NonNull CallDoneFlag @NonNull... callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable BiFunction<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith, QtTaskTree.@NonNull DoneResult> done,
+    	    QtTaskTree.@NonNull CallDoneFlag @NonNull... callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    	    QtTaskTree.@NonNull CallDoneFlag @NonNull... callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull DoneResult> done,
+    	    QtTaskTree.@NonNull CallDoneFlag @NonNull... callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull DoneResult> done,
+    	    QtTaskTree.@NonNull CallDoneFlag @NonNull... callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable BiPredicate<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith> done,
+    	    QtTaskTree.@NonNull CallDoneFlag @NonNull... callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable BiPredicate<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith> done,
+    	    QtTaskTree.@NonNull CallDoneFlag @NonNull... callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable Predicate<QThreadFunctionVoid> done,
+    	    QtTaskTree.@NonNull CallDoneFlag @NonNull... callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable Predicate<QThreadFunctionVoid> done,
+    	    QtTaskTree.@NonNull CallDoneFlag @NonNull... callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable BiConsumer<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith> done,
+    	    QtTaskTree.@NonNull CallDoneFlag @NonNull... callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable BiConsumer<QThreadFunctionVoid, QtTaskTree.@NonNull DoneWith> done,
+    	    QtTaskTree.@NonNull CallDoneFlag @NonNull... callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Function<QThreadFunctionVoid, QtTaskTree.@NonNull SetupResult> setup,
+    		@Nullable Consumer<QThreadFunctionVoid> done,
+    	    QtTaskTree.@NonNull CallDoneFlag @NonNull... callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
+	}
+	public static <ResultType> QCustomTask<QThreadFunctionVoid,QThreadFunctionVoidTaskAdapter> createQThreadFunctionVoidTask(
+    		@Nullable Consumer<QThreadFunctionVoid> setup,
+    		@Nullable Consumer<QThreadFunctionVoid> done,
+    	    QtTaskTree.@NonNull CallDoneFlag @NonNull... callDone){
+		return new QCustomTask<>(QThreadFunctionVoid.class, QThreadFunctionVoidTaskAdapter.class, setup, done, callDone);
 	}
 	
 	// QDefaultTask

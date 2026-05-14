@@ -33,6 +33,7 @@ include(../QtJambi/configure.pri)
 
 HEADERS += \
     hashes.h \
+    qtjambi_cast_qmllist.h \
     utils_p.h
 SOURCES += \
     impl.cpp

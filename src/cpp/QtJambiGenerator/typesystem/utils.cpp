@@ -152,7 +152,7 @@ QTextStream &CodeSnip::formattedCode(QTextStream &s, Indentor &indentor) const {
 }
 
 QString TemplateInstance::expandCode() const {
-    TemplateEntry *templateEntry = TypeDatabase::instance()->findTemplate(m_name);
+    CodeTemplate *templateEntry = TypeDatabase::instance()->findCodeTemplate(m_name);
     if (templateEntry) {
         QString code = templateEntry->code();
         for(const QString& key : replaceRules.keys()) {
@@ -218,7 +218,7 @@ QString TemplateInstance::expandCode() const {
 }
 
 bool TemplateInstance::hasCode() const {
-    TemplateEntry *templateEntry = TypeDatabase::instance()->findTemplate(m_name);
+    CodeTemplate *templateEntry = TypeDatabase::instance()->findCodeTemplate(m_name);
     if (templateEntry) {
         return templateEntry->hasCode();
     }

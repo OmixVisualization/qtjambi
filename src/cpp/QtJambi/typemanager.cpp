@@ -37,6 +37,10 @@ QT_WARNING_DISABLE_CLANG("-Wignored-qualifiers")
 QT_WARNING_DISABLE_GCC("-Winit-list-lifetime")
 
 #include "pch_p.h"
+#include "qtjambi_cast_template1.h"
+#include "qtjambi_cast_template2.h"
+#include "qtjambi_cast_container.h"
+#include "qtjambi_cast_model.h"
 
 Q_LOGGING_CATEGORY(CATEGORY, "io.qtjambi.typemanager", QtWarningMsg)
 
@@ -119,7 +123,7 @@ struct OptionalConverter{
                 }
             }
             if(!Java::Runtime::Optional::isInstanceOf(env, in.l))
-                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, in.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Optional::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, in.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Optional::getClass(env))) QTJAMBI_STACKTRACEINFO );
             if(Java::Runtime::Optional::isPresent(env, in.l))
                 value = Java::Runtime::Optional::get(env, in.l);
             optionalContainerAccess->setFirst(env, out, value);
@@ -2720,7 +2724,7 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                         p.l = convertNativeToJavaObjectOfClass(env, in, className, externalClass, nullptr, internalMetaType, NativeToJavaConversionMode::MakeCopyOfValues, &ok);
                         QMetaType memberMetaType = QMetaType::fromName(typeName);
                         if(p.l && memberMetaType.isValid()){
-                            QtJambiAPI::setQQmlListPropertyElementType(env, p.l, qtjambi_cast<jobject>(env, memberMetaType));
+                            Java::QtQml::QQmlListProperty::set_elementType(env, p.l, qtjambi_cast<jobject>(env, memberMetaType));
                         }
                     }
                     return true;
@@ -2731,7 +2735,7 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                         bool ok = false;
                         p.l = convertNativeToJavaObjectOfClass(env, in, className, externalClass, nullptr, internalMetaType, NativeToJavaConversionMode::MakeCopyOfValues, &ok);
                         if(p.l){
-                            QtJambiAPI::setQQmlListPropertyElementType(env, p.l, qtjambi_cast<jobject>(env, memberMetaType));
+                            Java::QtQml::QQmlListProperty::set_elementType(env, p.l, qtjambi_cast<jobject>(env, memberMetaType));
                         }
                     }
                     return true;
@@ -2975,7 +2979,7 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                         if(clazz.startsWith("io/qt/core/QMetaType$Generic")){
                             hashFunction = [](const void*, size_t seed) -> size_t{ return seed; };
                         }else{
-                            Java::Runtime::IllegalArgumentException::throwNew(_env, QStringLiteral("Unable to use %1 in QSet.").arg(QLatin1String(clazz.replace('/', '.').replace('$', '.'))) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(_env, QStringLiteral("Unable to use %1 in QSet.").arg(QLatin1String(clazz.replace('/', '.').replace('$', '.'))) QTJAMBI_STACKTRACEINFO );
                         }
                     }
                     QSharedPointer<AbstractContainerAccess> memberNestedContainerAccess = findContainerAccess(memberMetaType);
@@ -3677,7 +3681,7 @@ QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExter
                             if(clazz1.startsWith("io/qt/core/QMetaType$Generic"))
                                 hashFunction1 = [](const void*, size_t seed) -> size_t{ return seed; };
                             else
-                                Java::Runtime::IllegalArgumentException::throwNew(_env, QStringLiteral("Unable to use %1 as hash key.").arg(QLatin1String(clazz1.replace('/', '.').replace('$', '.'))) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raiseIllegalArgumentException(_env, QStringLiteral("Unable to use %1 as hash key.").arg(QLatin1String(clazz1.replace('/', '.').replace('$', '.'))) QTJAMBI_STACKTRACEINFO );
                         }
                         QSharedPointer<AbstractContainerAccess> memberNestedContainerAccess1 = findContainerAccess(memberMetaType1);
                         QSharedPointer<AbstractContainerAccess> memberNestedContainerAccess2 = findContainerAccess(memberMetaType2);
@@ -5142,11 +5146,11 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
              || internalMetaType==QMetaType::fromType<jarray>()){
         return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
             if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
             jobject* ptr;
             if(!out){
                 if(!scope)
-                    Java::Runtime::IllegalArgumentException::throwNew(env, "Cannot cast to pointer without scope" QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseIllegalArgumentException(env, "Cannot cast to pointer without scope" QTJAMBI_STACKTRACEINFO );
                 out = ptr = new jobject;
                 scope->addDeletion(ptr);
             }else{
@@ -5170,7 +5174,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
     }else if(JObjectValueWrapper::isValueType(internalMetaType)){
         return [internalMetaType, externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
             if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
             if(scope && !out){
                 JObjectValueWrapper* ptr;
                 out = ptr = new JObjectValueWrapper;
@@ -5185,7 +5189,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
         if(internalMetaType.flags() & QMetaType::PointerToQObject){
             return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                 if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                 if(scope && !out){
                     JQObjectWrapper* ptr;
                     out = ptr = new JQObjectWrapper;
@@ -5199,7 +5203,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
         }else{
             return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                 if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                 if(scope && !out){
                     JObjectWrapper* ptr;
                     out = ptr = new JObjectWrapper;
@@ -5226,7 +5230,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
              || internalMetaType==registeredMetaType(typeid(JObjectWrapper))){
         return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
             if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
             if(scope && !out){
                 JObjectWrapper* ptr;
                 out = ptr = new JObjectWrapper;
@@ -5293,7 +5297,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             && !Java::Runtime::Byte::isInstanceOf(env, val.l)
                             && !Java::Runtime::Short::isInstanceOf(env, val.l)
                             && !Java::Runtime::Integer::isInstanceOf(env, val.l))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: int").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: int").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     v = QtJambiAPI::fromJavaIntegerObject(env, val.l);
                     break;
                 default:
@@ -5319,7 +5323,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             && !Java::Runtime::Byte::isInstanceOf(env, val.l)
                             && !Java::Runtime::Short::isInstanceOf(env, val.l)
                             && !Java::Runtime::Integer::isInstanceOf(env, val.l))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: int").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: int").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     v = QtJambiAPI::fromJavaIntegerObject(env, val.l);
                     break;
                 default:
@@ -5363,7 +5367,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             && !Java::Runtime::Short::isInstanceOf(env, val.l)
                             && !Java::Runtime::Integer::isInstanceOf(env, val.l)
                             && !Java::Runtime::Long::isInstanceOf(env, val.l))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: long").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: long").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     v = QtJambiAPI::fromJavaLongObject(env, val.l);
                     break;
                 default:
@@ -5390,7 +5394,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             && !Java::Runtime::Short::isInstanceOf(env, val.l)
                             && !Java::Runtime::Integer::isInstanceOf(env, val.l)
                             && !Java::Runtime::Long::isInstanceOf(env, val.l))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: long").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: long").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     v = QtJambiAPI::fromJavaLongObject(env, val.l);
                     break;
                 default:
@@ -5432,7 +5436,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(val.l
                             && !Java::Runtime::Byte::isInstanceOf(env, val.l)
                             && !Java::Runtime::Short::isInstanceOf(env, val.l))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: short").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: short").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     v = QtJambiAPI::fromJavaShortObject(env, val.l);
                     break;
                 default:
@@ -5457,7 +5461,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(val.l
                             && !Java::Runtime::Byte::isInstanceOf(env, val.l)
                             && !Java::Runtime::Short::isInstanceOf(env, val.l))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: short").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: short").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     v = QtJambiAPI::fromJavaShortObject(env, val.l);
                     break;
                 default:
@@ -5497,7 +5501,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 switch(valueType){
                 case jValueType::l:
                     if(val.l && !Java::Runtime::Byte::isInstanceOf(env, val.l))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: byte").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: byte").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     v = QtJambiAPI::fromJavaByteObject(env, val.l);
                     break;
                 default:
@@ -5520,7 +5524,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 switch(valueType){
                 case jValueType::l:
                     if(val.l && !Java::Runtime::Byte::isInstanceOf(env, val.l))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: byte").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: byte").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     v = QtJambiAPI::fromJavaByteObject(env, val.l);
                     break;
                 default:
@@ -5560,7 +5564,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 switch(valueType){
                 case jValueType::l:
                     if(val.l && !Java::Runtime::Boolean::isInstanceOf(env, val.l))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: boolean").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: boolean").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     v = QtJambiAPI::fromJavaBooleanObject(env, val.l);
                     break;
                 default:
@@ -5583,7 +5587,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 switch(valueType){
                 case jValueType::l:
                     if(val.l && !Java::Runtime::Boolean::isInstanceOf(env, val.l))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: boolean").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: boolean").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     v = QtJambiAPI::fromJavaBooleanObject(env, val.l);
                     break;
                 default:
@@ -5623,7 +5627,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 switch(valueType){
                 case jValueType::l:
                     if(val.l && !Java::Runtime::Character::isInstanceOf(env, val.l))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: char").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: char").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     v = QtJambiAPI::fromJavaCharacterObject(env, val.l);
                     break;
                 default:
@@ -5646,7 +5650,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 switch(valueType){
                 case jValueType::l:
                     if(val.l && !Java::Runtime::Character::isInstanceOf(env, val.l))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: char").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: char").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     v = QtJambiAPI::fromJavaCharacterObject(env, val.l);
                     break;
                 default:
@@ -5669,7 +5673,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 switch(valueType){
                 case jValueType::l:
                     if(val.l && !Java::Runtime::Character::isInstanceOf(env, val.l))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: char").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: char").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     v = QtJambiAPI::fromJavaCharacterObject(env, val.l);
                     break;
                 default:
@@ -5713,7 +5717,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             && !Java::Runtime::Short::isInstanceOf(env, val.l)
                             && !Java::Runtime::Integer::isInstanceOf(env, val.l)
                             && !Java::Runtime::Float::isInstanceOf(env, val.l))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: float").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: float").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     v = QtJambiAPI::fromJavaFloatObject(env, val.l);
                     break;
                 default:
@@ -5740,7 +5744,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             && !Java::Runtime::Short::isInstanceOf(env, val.l)
                             && !Java::Runtime::Integer::isInstanceOf(env, val.l)
                             && !Java::Runtime::Float::isInstanceOf(env, val.l))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: float").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: float").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     v = QtJambiAPI::fromJavaFloatObject(env, val.l);
                     break;
                 default:
@@ -5780,7 +5784,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 switch(valueType){
                 case jValueType::l:
                     if(val.l && !Java::Runtime::Number::isInstanceOf(env, val.l))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: double").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: double").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     v = QtJambiAPI::fromJavaDoubleObject(env, val.l);
                     break;
                 default:
@@ -5803,7 +5807,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 switch(valueType){
                 case jValueType::l:
                     if(val.l && !Java::Runtime::Number::isInstanceOf(env, val.l))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: double").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: double").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     v = QtJambiAPI::fromJavaDoubleObject(env, val.l);
                     break;
                 default:
@@ -5847,7 +5851,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 if(!out)
                     return false;
                 if(val.l && !Java::Runtime::String::isInstanceOf(env, val.l))
-                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: java.lang.String").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: java.lang.String").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                 jstring strg = reinterpret_cast<jstring>(val.l);
                 *reinterpret_cast<QString*>(out) = qtjambi_cast<QString>(env, strg);
                 return true;
@@ -5855,7 +5859,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
         }else{
             return [internalMetaType](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                 if(val.l && !Java::Runtime::String::isInstanceOf(env, val.l))
-                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: java.lang.String").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: java.lang.String").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                 jstring strg = reinterpret_cast<jstring>(val.l);
                 QString s(qtjambi_cast<QString>(env, strg));
                 if(scope && !out){
@@ -5895,14 +5899,14 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 if(!out)
                     return false;
                 if(val.l && !Java::Runtime::CharSequence::isInstanceOf(env, val.l))
-                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: java.lang.CharSequence").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: java.lang.CharSequence").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                 *reinterpret_cast<QString*>(out) = qtjambi_cast<QString>(env, val.l);
                 return true;
             };
         }else{
             return [internalMetaType](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                 if(val.l && !Java::Runtime::CharSequence::isInstanceOf(env, val.l))
-                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: java.lang.String").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: java.lang.String").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                 QString s(qtjambi_cast<QString>(env, val.l));
                 if(scope && !out){
                     void* ptr;
@@ -5934,7 +5938,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
         if(!internalMetaType.isValid()){
             return [](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                 if(val.l && !Java::QtJambi::QNativePointer::isInstanceOf(env, val.l))
-                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: QNativePointer").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: QNativePointer").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                 if(scope && !out){
                     void** ptr;
                     out = ptr = new void*(!val.l ? nullptr : QtJambiAPI::convertQNativePointerToNative(env, val.l));
@@ -5949,7 +5953,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
         }else{
             return [internalMetaType](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                 if(val.l && !Java::QtJambi::QNativePointer::isInstanceOf(env, val.l))
-                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: QNativePointer").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: QNativePointer").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                 void* nptr = !val.l ? nullptr : QtJambiAPI::convertQNativePointerToNative(env, val.l);
                 if(scope && !out){
                     void* ptr;
@@ -5998,17 +6002,17 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             }
                         }
                         if(!matches)
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaType$GenericValue::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaType$GenericValue::getClass(env))) QTJAMBI_STACKTRACEINFO );
                     }else{
                         QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(internalMetaType!=given){
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
                     }
                     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                         ptr = link->pointer();
                     }else{
-                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     }
                 }
                 if(scope && !out){
@@ -6037,11 +6041,11 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             }
                         }
                         if(!matches)
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaType$GenericValue::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaType$GenericValue::getClass(env))) QTJAMBI_STACKTRACEINFO );
                     }else{
                         QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(internalMetaType!=given){
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
                     }
                     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
@@ -6072,7 +6076,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             out = nptr;
                         }
                     }else{
-                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     }
                     return true;
                 }else{
@@ -6104,17 +6108,17 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             }
                         }
                         if(!matches)
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaType$GenericObject::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaType$GenericObject::getClass(env))) QTJAMBI_STACKTRACEINFO );
                     }else{
                         QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(internalMetaType!=given){
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
                     }
                     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                         ptr = link->pointer();
                     }else{
-                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     }
                 }
                 if(scope && !out){
@@ -6143,11 +6147,11 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             }
                         }
                         if(!matches)
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaType$GenericObject::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaType$GenericObject::getClass(env))) QTJAMBI_STACKTRACEINFO );
                     }else{
                         QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(internalMetaType!=given){
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
                     }
                     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
@@ -6178,7 +6182,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             out = nptr;
                         }
                     }else{
-                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     }
                     return true;
                 }else{
@@ -6209,17 +6213,17 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             }
                         }
                         if(!matches)
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaType$GenericGadget::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaType$GenericGadget::getClass(env))) QTJAMBI_STACKTRACEINFO );
                     }else{
                         QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(internalMetaType!=given){
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
                     }
                     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                         out = link->pointer();
                     }else{
-                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     }
                 }else{
                     out = nullptr;
@@ -6244,17 +6248,17 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             }
                         }
                         if(!matches)
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaType$GenericGadget::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaType$GenericGadget::getClass(env))) QTJAMBI_STACKTRACEINFO );
                     }else{
                         QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(internalMetaType!=given){
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
                     }
                     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                         ptr = link->pointer();
                     }else{
-                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                     }
                 }
                 if(scope && !out){
@@ -6274,7 +6278,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 switch(valueType){
                 case jValueType::l:
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     v = val.l;
                     break;
                 default:
@@ -6298,7 +6302,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(Java::QtCore::QMetaType$GenericFlags::isInstanceOf(env,val.l)){
                         QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(internalMetaType!=given){
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
                         if(scope && !out){
                             qint32* ptr;
@@ -6323,7 +6327,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                 }
                             }
                             if(!matches && !env->IsInstanceOf(val.l, Java::Runtime::Number::getClass(env)))
-                                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), "any number") QTJAMBI_STACKTRACEINFO );
+                                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), "any number") QTJAMBI_STACKTRACEINFO );
                         }
                         if(scope && !out){
                             qint32* ptr;
@@ -6356,7 +6360,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(Java::QtCore::QMetaType$GenericLongFlags::isInstanceOf(env,val.l)){
                         QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(internalMetaType!=given){
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
                         if(scope && !out){
                             qint64* ptr;
@@ -6381,7 +6385,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                 }
                             }
                             if(!matches && !env->IsInstanceOf(val.l, Java::Runtime::Number::getClass(env)))
-                                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), "any number") QTJAMBI_STACKTRACEINFO );
+                                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), "any number") QTJAMBI_STACKTRACEINFO );
                         }
                         if(scope && !out){
                             qint64* ptr;
@@ -6414,7 +6418,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(Java::QtCore::QMetaType$GenericTypeInterface::isInstanceOf(env,val.l)){
                         QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(internalMetaType!=given){
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
                         if(scope && !out){
                             qint32* ptr;
@@ -6426,7 +6430,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                         *reinterpret_cast<qint32*>(out) = int_for_QtEnumerator_or_QFlags(env, val.l).value<qint32>();
                     }else{
                         if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                         if(scope && !out){
                             qint32* ptr;
                             out = ptr = new qint32;
@@ -6490,7 +6494,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                         if(Java::QtCore::QMetaType$GenericTypeInterface::isInstanceOf(env,val.l)){
                             QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                             if(internalMetaType!=given){
-                                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                             }
                             value = int_for_QtEnumerator_or_QFlags(env, val.l);
                         }else if(Java::Runtime::Number::isInstanceOf(env, val.l)){
@@ -6510,7 +6514,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             }
                             if(!matches
                                     && !Java::Runtime::Enum::isInstanceOf(env, val.l))
-                                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), "any number or enum") QTJAMBI_STACKTRACEINFO );
+                                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), "any number or enum") QTJAMBI_STACKTRACEINFO );
                             value = int_for_QtEnumerator_or_QFlags(env, val.l);
                         }else{
                             value = QVariant::fromValue(0);
@@ -6577,12 +6581,12 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                         if(Java::QtCore::QMetaType$GenericTypeInterface::isInstanceOf(env,val.l)){
                             QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                             if(internalMetaType!=given){
-                                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                             }
                             value = int_for_QtEnumerator_or_QFlags(env, val.l);
                         }else{
                             if(val.l && !env->IsInstanceOf(val.l, externalClass) && !Java::Runtime::Number::isInstanceOf(env, val.l))
-                                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                             value = !val.l ? 0 : int_for_QtEnumerator_or_QFlags(env, val.l);
                         }
                         break;
@@ -6646,7 +6650,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 switch(valueType){
                 case jValueType::l:
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         qint32* ptr;
                         out = ptr = new qint32;
@@ -6674,7 +6678,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 switch(valueType){
                 case jValueType::l:
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         qint64* ptr;
                         out = ptr = new qint64;
@@ -6702,7 +6706,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 switch(valueType){
                     case jValueType::l:
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         qint16* ptr;
                         out = ptr = new qint16;
@@ -6730,7 +6734,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 switch(valueType){
                     case jValueType::l:
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         qint8* ptr;
                         out = ptr = new qint8;
@@ -6775,7 +6779,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             case PointerType::SharedPointer:{
                 return [memberMetaType, externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         QSharedPointer<JObjectValueWrapper>* ptr;
                         out = ptr = new QSharedPointer<JObjectValueWrapper>;
@@ -6790,7 +6794,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             case PointerType::WeakPointer:{
                 return [memberMetaType, externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         QWeakPointer<JObjectValueWrapper>* ptr;
                         out = ptr = new QWeakPointer<JObjectValueWrapper>;
@@ -6806,7 +6810,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             case PointerType::ScopedPointer:{
                 return [memberMetaType, externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         QScopedPointer<JObjectValueWrapper>* ptr;
                         out = ptr = new QScopedPointer<JObjectValueWrapper>;
@@ -6821,7 +6825,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             case PointerType::unique_ptr:{
                 return [memberMetaType, externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         std::unique_ptr<JObjectValueWrapper>* ptr;
                         out = ptr = new std::unique_ptr<JObjectValueWrapper>;
@@ -6836,7 +6840,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             case PointerType::shared_ptr:{
                 return [memberMetaType, externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         std::shared_ptr<JObjectValueWrapper>* ptr;
                         out = ptr = new std::shared_ptr<JObjectValueWrapper>;
@@ -6851,7 +6855,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             case PointerType::weak_ptr:{
                 return [memberMetaType, externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         std::weak_ptr<JObjectValueWrapper>* ptr;
                         out = ptr = new std::weak_ptr<JObjectValueWrapper>;
@@ -6875,7 +6879,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 if(memberMetaType.flags() & QMetaType::PointerToQObject){
                     return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                         if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                         if(scope && !out){
                             QSharedPointer<JQObjectWrapper>* ptr;
                             out = ptr = new QSharedPointer<JQObjectWrapper>;
@@ -6889,7 +6893,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 }else{
                     return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                         if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                         if(scope && !out){
                             QSharedPointer<JObjectWrapper>* ptr;
                             out = ptr = new QSharedPointer<JObjectWrapper>;
@@ -6906,7 +6910,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 if(memberMetaType.flags() & QMetaType::PointerToQObject){
                     return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                         if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                         if(scope && !out){
                             QWeakPointer<JQObjectWrapper>* ptr;
                             out = ptr = new QWeakPointer<JQObjectWrapper>;
@@ -6920,7 +6924,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 }else{
                     return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                         if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                         if(scope && !out){
                             QWeakPointer<JObjectWrapper>* ptr;
                             out = ptr = new QWeakPointer<JObjectWrapper>;
@@ -6937,7 +6941,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 if(memberMetaType.flags() & QMetaType::PointerToQObject){
                     return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                         if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                         if(scope && !out){
                             QScopedPointer<JQObjectWrapper>* ptr;
                             out = ptr = new QScopedPointer<JQObjectWrapper>;
@@ -6951,7 +6955,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 }else{
                     return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                         if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                         if(scope && !out){
                             QScopedPointer<JObjectWrapper>* ptr;
                             out = ptr = new QScopedPointer<JObjectWrapper>;
@@ -6968,7 +6972,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 if(memberMetaType.flags() & QMetaType::PointerToQObject){
                     return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                         if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                         if(scope && !out){
                             std::unique_ptr<JQObjectWrapper>* ptr;
                             out = ptr = new std::unique_ptr<JQObjectWrapper>;
@@ -6982,7 +6986,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 }else{
                     return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                         if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                         if(scope && !out){
                             std::unique_ptr<JObjectWrapper>* ptr;
                             out = ptr = new std::unique_ptr<JObjectWrapper>;
@@ -6999,7 +7003,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 if(memberMetaType.flags() & QMetaType::PointerToQObject){
                     return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                         if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                         if(scope && !out){
                             std::shared_ptr<JQObjectWrapper>* ptr;
                             out = ptr = new std::shared_ptr<JQObjectWrapper>;
@@ -7013,7 +7017,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 }else{
                     return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                         if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                         if(scope && !out){
                             std::shared_ptr<JObjectWrapper>* ptr;
                             out = ptr = new std::shared_ptr<JObjectWrapper>;
@@ -7030,7 +7034,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 if(memberMetaType.flags() & QMetaType::PointerToQObject){
                     return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                         if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                         if(scope && !out){
                             std::weak_ptr<JQObjectWrapper>* ptr;
                             out = ptr = new std::weak_ptr<JQObjectWrapper>;
@@ -7044,7 +7048,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 }else{
                     return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                         if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                         if(scope && !out){
                             std::weak_ptr<JObjectWrapper>* ptr;
                             out = ptr = new std::weak_ptr<JObjectWrapper>;
@@ -7079,7 +7083,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             case PointerType::SharedPointer:{
                 return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         QSharedPointer<JObjectWrapper>* ptr;
                         out = ptr = new QSharedPointer<JObjectWrapper>;
@@ -7094,7 +7098,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             case PointerType::WeakPointer:{
                 return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         QWeakPointer<JObjectWrapper>* ptr;
                         out = ptr = new QWeakPointer<JObjectWrapper>;
@@ -7109,7 +7113,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             case PointerType::ScopedPointer:{
                 return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         QScopedPointer<JObjectWrapper>* ptr;
                         out = ptr = new QScopedPointer<JObjectWrapper>;
@@ -7124,7 +7128,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             case PointerType::unique_ptr:{
                 return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         std::unique_ptr<JObjectWrapper>* ptr;
                         out = ptr = new std::unique_ptr<JObjectWrapper>;
@@ -7139,7 +7143,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             case PointerType::shared_ptr:{
                 return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         std::shared_ptr<JObjectWrapper>* ptr;
                         out = ptr = new std::shared_ptr<JObjectWrapper>;
@@ -7154,7 +7158,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             case PointerType::weak_ptr:{
                 return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         std::weak_ptr<JObjectWrapper>* ptr;
                         out = ptr = new std::weak_ptr<JObjectWrapper>;
@@ -7173,7 +7177,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             }
             return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                 if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                 if(scope && !out){
                     JObjectWrapper* ptr;
                     out = ptr = new JObjectWrapper;
@@ -7223,7 +7227,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(jvt!=jValueType::l)
                         return false;
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         QSharedPointer<QObject>* ptr;
                         out = ptr = new QSharedPointer<QObject>;
@@ -7240,7 +7244,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(jvt!=jValueType::l)
                         return false;
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         QSharedPointer<char>* ptr;
                         out = ptr = new QSharedPointer<char>;
@@ -7260,10 +7264,10 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             && Java::QtJambi::QtObject::isInstanceOf(env, val.l)){
                         QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(memberMetaType!=given){
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), memberMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), memberMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
                     }else if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         QSharedPointer<char>* ptr;
                         out = ptr = new QSharedPointer<char>;
@@ -7291,7 +7295,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(jvt!=jValueType::l)
                         return false;
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         QSharedPointer<char>* ptr;
                         out = ptr = new QSharedPointer<char>;
@@ -7319,7 +7323,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(jvt!=jValueType::l)
                         return false;
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         QSharedPointer<char>* ptr;
                         out = ptr = new QSharedPointer<char>;
@@ -7344,7 +7348,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(jvt!=jValueType::l)
                         return false;
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         QWeakPointer<QObject>* ptr;
                         out = ptr = new QWeakPointer<QObject>;
@@ -7361,7 +7365,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(jvt!=jValueType::l)
                         return false;
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         QWeakPointer<char>* ptr;
                         out = ptr = new QWeakPointer<char>;
@@ -7386,7 +7390,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(jvt!=jValueType::l)
                         return false;
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         QPointer<QObject>* ptr;
                         out = ptr = new QPointer<QObject>;
@@ -7410,7 +7414,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(jvt!=jValueType::l)
                         return false;
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         QScopedPointer<QObject>* ptr;
                         out = ptr = new QScopedPointer<QObject>;
@@ -7430,7 +7434,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(jvt!=jValueType::l)
                         return false;
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         QScopedPointer<char>* ptr;
                         out = ptr = new QScopedPointer<char>;
@@ -7463,7 +7467,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(jvt!=jValueType::l)
                         return false;
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         QScopedPointer<char>* ptr;
                         out = ptr = new QScopedPointer<char>;
@@ -7500,7 +7504,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(jvt!=jValueType::l)
                         return false;
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         std::shared_ptr<QObject>* ptr;
                         out = ptr = new std::shared_ptr<QObject>;
@@ -7517,7 +7521,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(jvt!=jValueType::l)
                         return false;
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         std::shared_ptr<char>* ptr;
                         out = ptr = new std::shared_ptr<char>;
@@ -7534,7 +7538,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(jvt!=jValueType::l)
                         return false;
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         std::shared_ptr<char>* ptr;
                         out = ptr = new std::shared_ptr<char>;
@@ -7562,7 +7566,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(jvt!=jValueType::l)
                         return false;
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         std::shared_ptr<char>* ptr;
                         out = ptr = new std::shared_ptr<char>;
@@ -7590,7 +7594,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(jvt!=jValueType::l)
                         return false;
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         std::shared_ptr<char>* ptr;
                         out = ptr = new std::shared_ptr<char>;
@@ -7615,7 +7619,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(jvt!=jValueType::l)
                         return false;
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         std::weak_ptr<QObject>* ptr;
                         out = ptr = new std::weak_ptr<QObject>;
@@ -7632,7 +7636,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     if(jvt!=jValueType::l)
                         return false;
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(scope && !out){
                         std::weak_ptr<char>* ptr;
                         out = ptr = new std::weak_ptr<char>;
@@ -7663,7 +7667,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             if(t!=jValueType::l)
                 return false;
             if(val.l && !env->IsInstanceOf(val.l, Java::Runtime::Collection::getClass(env)))
-                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Collection::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Collection::getClass(env))) QTJAMBI_STACKTRACEINFO );
             if(env->IsInstanceOf(val.l, Java::QtCore::QList::getClass(env))){
                 if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                     auto containerAccess = link->containerAccess();
@@ -7687,11 +7691,11 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                 return true;
                             }
                         }else{
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: QList<%1>, expected: QList<QString>").arg(QLatin1String(listAccess->elementMetaType().name())) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: QList<%1>, expected: QList<QString>").arg(QLatin1String(listAccess->elementMetaType().name())) QTJAMBI_STACKTRACEINFO );
                         }
                     }
                 }else{
-                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                 }
             }
             QList<jstring> content;
@@ -7700,7 +7704,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
                     jobject next = QtJambiAPI::nextOfJavaIterator(env, iter);
                     if(next && !Java::Runtime::String::isInstanceOf(env, next))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong collection content given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, next), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::String::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QString("Wrong collection content given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, next), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::String::getClass(env))) QTJAMBI_STACKTRACEINFO );
                     content << jstring(next);
                 }
             }
@@ -7726,7 +7730,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             if(t!=jValueType::l)
                 return false;
             if(val.l && !env->IsInstanceOf(val.l, Java::Runtime::Collection::getClass(env)))
-                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Collection::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Collection::getClass(env))) QTJAMBI_STACKTRACEINFO );
             if(env->IsInstanceOf(val.l, Java::QtCore::QList::getClass(env))){
                 if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                     auto containerAccess = link->containerAccess();
@@ -7750,11 +7754,11 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                 return true;
                             }
                         }else{
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: QList<%1>, expected: QList<QByteArray>").arg(QLatin1String(listAccess->elementMetaType().name())) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: QList<%1>, expected: QList<QByteArray>").arg(QLatin1String(listAccess->elementMetaType().name())) QTJAMBI_STACKTRACEINFO );
                         }
                     }
                 }else{
-                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                 }
             }
             QList<jobject> content;
@@ -7763,7 +7767,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                 while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
                     jobject next = QtJambiAPI::nextOfJavaIterator(env, iter);
                     if(next && !env->IsInstanceOf(next, Java::QtCore::QByteArray::getClass(env)))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong collection content given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, next), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QByteArray::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QString("Wrong collection content given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, next), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QByteArray::getClass(env))) QTJAMBI_STACKTRACEINFO );
                     content << next;
                 }
             }
@@ -7789,7 +7793,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             if(t!=jValueType::l)
                 return false;
             if(val.l && !env->IsInstanceOf(val.l, Java::Runtime::Collection::getClass(env)))
-                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Collection::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Collection::getClass(env))) QTJAMBI_STACKTRACEINFO );
             if(env->IsInstanceOf(val.l, Java::QtCore::QList::getClass(env))){
                 if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                     auto containerAccess = link->containerAccess();
@@ -7815,7 +7819,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                         }
                     }
                 }else{
-                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                 }
             }
             if(scope && !out){
@@ -7842,7 +7846,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             if(t!=jValueType::l)
                 return false;
             if(val.l && !env->IsInstanceOf(val.l, Java::Runtime::Map::getClass(env)))
-                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );
             if(env->IsInstanceOf(val.l, Java::QtCore::QMap::getClass(env))){
                 if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                     auto containerAccess = link->containerAccess();
@@ -7868,11 +7872,11 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                 }
                             }
                         }else{
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: QMap<%1,QVariant>, expected: QMap<QString,QVariant>").arg(QLatin1String(mapAccess->keyMetaType().name())) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: QMap<%1,QVariant>, expected: QMap<QString,QVariant>").arg(QLatin1String(mapAccess->keyMetaType().name())) QTJAMBI_STACKTRACEINFO );
                         }
                     }
                 }else{
-                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                 }
             }
             QList<jobject> content;
@@ -7882,7 +7886,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     jobject next = QtJambiAPI::nextOfJavaIterator(env, iter);
                     jobject key = QtJambiAPI::keyOfJavaMapEntry(env, next);
                     if(key && !Java::Runtime::String::isInstanceOf(env, key))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong map key given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, key), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::String::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QString("Wrong map key given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, key), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::String::getClass(env))) QTJAMBI_STACKTRACEINFO );
                     content << next;
                 }
             }
@@ -7910,7 +7914,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             if(t!=jValueType::l)
                 return false;
             if(val.l && !env->IsInstanceOf(val.l, Java::Runtime::Map::getClass(env)))
-                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );
             if(env->IsInstanceOf(val.l, Java::QtCore::QHash::getClass(env))){
                 if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                     auto containerAccess = link->containerAccess();
@@ -7936,11 +7940,11 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                 }
                             }
                         }else{
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: QHash<%1,QVariant>, expected: QHash<QString,QVariant>").arg(QLatin1String(mapAccess->keyMetaType().name())) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: QHash<%1,QVariant>, expected: QHash<QString,QVariant>").arg(QLatin1String(mapAccess->keyMetaType().name())) QTJAMBI_STACKTRACEINFO );
                         }
                     }
                 }else{
-                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                 }
             }
             QList<jobject> content;
@@ -7950,7 +7954,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                     jobject next = QtJambiAPI::nextOfJavaIterator(env, iter);
                     jobject key = QtJambiAPI::keyOfJavaMapEntry(env, next);
                     if(key && !Java::Runtime::String::isInstanceOf(env, key))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong map key given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, key), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::String::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QString("Wrong map key given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, key), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::String::getClass(env))) QTJAMBI_STACKTRACEINFO );
                     content << next;
                 }
             }
@@ -7978,7 +7982,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             bool response = false;
             if(valueType==jValueType::l){
                 if(in.l && !env->IsInstanceOf(in.l, Java::QtCore::QPair::getClass(env)))
-                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, in.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QPair::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, in.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QPair::getClass(env))) QTJAMBI_STACKTRACEINFO );
                 if(!out){
                     if(scope){
                         out = new QVariantPair();
@@ -7998,7 +8002,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
     }else if (Java::QtCore::QModelIndex::isAssignableFrom(_env,externalClass) && (!internalMetaType.isValid() || QByteArray("QModelIndex")==internalMetaType.name() || QByteArray("const QModelIndex&")==internalMetaType.name())) {
         return [](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
             if(val.l && !Java::QtCore::QModelIndex::isInstanceOf(env, val.l))
-                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaObject::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaObject::getClass(env))) QTJAMBI_STACKTRACEINFO );
             if(scope && !out){
                 QModelIndex* ptr;
                 out = ptr = new QModelIndex;
@@ -8013,7 +8017,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
     }else if (Java::QtCore::QMetaObject::isAssignableFrom(_env,externalClass) && (!internalMetaType.isValid() || QByteArray("QMetaObject*")==internalMetaType.name() || QByteArray("const QMetaObject*")==internalMetaType.name())) {
         return [](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
             if(val.l && !Java::QtCore::QMetaObject::isInstanceOf(env, val.l))
-                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaObject::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaObject::getClass(env))) QTJAMBI_STACKTRACEINFO );
             if(scope && !out){
                 QMetaObject** ptr;
                 out = ptr = new QMetaObject*;
@@ -8027,7 +8031,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
     }else if (Java::QtCore::QMetaObject$Connection::isAssignableFrom(_env,externalClass) && (!internalMetaType.isValid() || QByteArray("QMetaObject::Connection")==internalMetaType.name())) {
         return [](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
             if(val.l && !env->IsInstanceOf(val.l, Java::QtCore::QMetaObject$Connection::getClass(env)))
-                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaObject$Connection::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, Java::QtCore::QMetaObject$Connection::getClass(env))) QTJAMBI_STACKTRACEINFO );
             if(scope && !out){
                 QMetaObject::Connection* ptr;
                 out = ptr = new QMetaObject::Connection;
@@ -8056,7 +8060,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                     if(in.l){
                                         jclass objectClass = env->GetObjectClass(in.l);
                                         if(!Java::Runtime::Class::isArray(env, objectClass) || !Java::Runtime::Byte::isPrimitiveType(env, Java::Runtime::Class::getComponentType(env, objectClass)))
-                                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: byte[]").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
+                                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: byte[]").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
                                         if(!out){
                                             std::initializer_list<jbyte>* _out = new std::initializer_list<jbyte>;
                                             out = _out;
@@ -8088,7 +8092,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                     if(in.l){
                                         jclass objectClass = env->GetObjectClass(in.l);
                                         if(!Java::Runtime::Class::isArray(env, objectClass) || !Java::Runtime::Short::isPrimitiveType(env, Java::Runtime::Class::getComponentType(env, objectClass)))
-                                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: short[]").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
+                                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: short[]").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
                                         if(!out){
                                             std::initializer_list<jshort>* _out = new std::initializer_list<jshort>;
                                             out = _out;
@@ -8120,7 +8124,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                     if(in.l){
                                         jclass objectClass = env->GetObjectClass(in.l);
                                         if(!Java::Runtime::Class::isArray(env, objectClass) || !Java::Runtime::Integer::isPrimitiveType(env, Java::Runtime::Class::getComponentType(env, objectClass)))
-                                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: int[]").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
+                                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: int[]").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
                                         if(!out){
                                             std::initializer_list<jint>* _out = new std::initializer_list<jint>;
                                             out = _out;
@@ -8152,7 +8156,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                     if(in.l){
                                         jclass objectClass = env->GetObjectClass(in.l);
                                         if(!Java::Runtime::Class::isArray(env, objectClass) || !Java::Runtime::Long::isPrimitiveType(env, Java::Runtime::Class::getComponentType(env, objectClass)))
-                                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: long[]").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
+                                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: long[]").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
                                         if(!out){
                                             std::initializer_list<jlong>* _out = new std::initializer_list<jlong>;
                                             out = _out;
@@ -8184,7 +8188,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                     if(in.l){
                                         jclass objectClass = env->GetObjectClass(in.l);
                                         if(!Java::Runtime::Class::isArray(env, objectClass) || !Java::Runtime::Float::isPrimitiveType(env, Java::Runtime::Class::getComponentType(env, objectClass)))
-                                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: float[]").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
+                                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: float[]").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
                                         if(!out){
                                             std::initializer_list<jfloat>* _out = new std::initializer_list<jfloat>;
                                             out = _out;
@@ -8216,7 +8220,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                     if(in.l){
                                         jclass objectClass = env->GetObjectClass(in.l);
                                         if(!Java::Runtime::Class::isArray(env, objectClass) || !Java::Runtime::Double::isPrimitiveType(env, Java::Runtime::Class::getComponentType(env, objectClass)))
-                                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: double[]").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
+                                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: double[]").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
                                         if(!out){
                                             std::initializer_list<jdouble>* _out = new std::initializer_list<jdouble>;
                                             out = _out;
@@ -8248,7 +8252,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                     if(in.l){
                                         jclass objectClass = env->GetObjectClass(in.l);
                                         if(!Java::Runtime::Class::isArray(env, objectClass) || !Java::Runtime::Character::isPrimitiveType(env, Java::Runtime::Class::getComponentType(env, objectClass)))
-                                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: char[]").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
+                                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: char[]").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
                                         if(!out){
                                             std::initializer_list<jchar>* _out = new std::initializer_list<jchar>;
                                             out = _out;
@@ -8280,7 +8284,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                     if(in.l){
                                         jclass objectClass = env->GetObjectClass(in.l);
                                         if(!Java::Runtime::Class::isArray(env, objectClass) || !Java::Runtime::Boolean::isPrimitiveType(env, Java::Runtime::Class::getComponentType(env, objectClass)))
-                                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: boolean[]").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
+                                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: boolean[]").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
 
                                         if(!out){
                                             std::initializer_list<jboolean>* _out = new std::initializer_list<jboolean>;
@@ -8324,7 +8328,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                     if(in.l){
                                         jclass objectClass = env->GetObjectClass(in.l);
                                         if(!Java::Runtime::Class::isArray(env, objectClass) || !env->IsAssignableFrom(Java::Runtime::Class::getComponentType(env, objectClass), componentClass))
-                                            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Object of type %1 not allowed. Array expected.").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
+                                            JavaException::raiseIllegalArgumentException(env, QString("Object of type %1 not allowed. Array expected.").arg(QtJambiAPI::getClassNamePrintable(env, objectClass)) QTJAMBI_STACKTRACEINFO );
                                         if(!out){
                                             std::initializer_list<char>* _out = new std::initializer_list<char>;
                                             out = _out;
@@ -8366,11 +8370,11 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             && Java::QtJambi::QtObject::isInstanceOf(env, val.l)){
                         QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                         if(internalMetaType!=given){
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                         }
                     }else{
                         if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     }
                     if(!val.l){
                         QObject* object = nullptr;
@@ -8400,7 +8404,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             *reinterpret_cast<QObject**>(out) = object;
                         return out;
                     }else{
-                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                         return false;
                     }
                 };
@@ -8560,7 +8564,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             *opt = std::nullopt;
                         }else{
                             if(!Java::Runtime::OptionalInt::isInstanceOf(env, in.l))
-                                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, in.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::OptionalInt::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, in.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::OptionalInt::getClass(env))) QTJAMBI_STACKTRACEINFO );
                             if(Java::Runtime::OptionalInt::isPresent(env, in.l)){
                                 *opt = std::make_optional(Java::Runtime::OptionalInt::getAsInt(env, in.l));
                             }else{
@@ -8706,7 +8710,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             *opt = std::nullopt;
                         }else{
                             if(!Java::Runtime::OptionalLong::isInstanceOf(env, in.l))
-                                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, in.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::OptionalLong::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, in.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::OptionalLong::getClass(env))) QTJAMBI_STACKTRACEINFO );
                             if(Java::Runtime::OptionalLong::isPresent(env, in.l)){
                                 *opt = std::make_optional(Java::Runtime::OptionalLong::getAsLong(env, in.l));
                             }else{
@@ -8852,7 +8856,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                             *opt = std::nullopt;
                         }else{
                             if(!Java::Runtime::OptionalDouble::isInstanceOf(env, in.l))
-                                Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, in.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::OptionalDouble::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, in.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::OptionalDouble::getClass(env))) QTJAMBI_STACKTRACEINFO );
                             if(Java::Runtime::OptionalDouble::isPresent(env, in.l)){
                                 *opt = std::make_optional(Java::Runtime::OptionalDouble::getAsDouble(env, in.l));
                             }else{
@@ -9339,7 +9343,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                 bool response = false;
                                 if(valueType==jValueType::l){
                                     if(in.l && !env->IsInstanceOf(in.l, Java::Runtime::Collection::getClass(env)))
-                                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, in.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Collection::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, in.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Collection::getClass(env))) QTJAMBI_STACKTRACEINFO );
                                     bool deleteAccess = true;
                                     Q_ASSERT(env->GetObjectRefType(elementClass)==JNIGlobalRefType);
                                     AbstractContainerAccess* access = sharedAccess->clone();
@@ -9388,7 +9392,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                             while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
                                                 jobject element = QtJambiAPI::nextOfJavaIterator(env, iterator);
                                                 if(element && !env->IsInstanceOf(element, elementClass))
-                                                    Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong collection content given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, element), QtJambiAPI::getClassNamePrintable(env, elementClass)) QTJAMBI_STACKTRACEINFO );
+                                                    JavaException::raiseIllegalArgumentException(env, QString("Wrong collection content given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, element), QtJambiAPI::getClassNamePrintable(env, elementClass)) QTJAMBI_STACKTRACEINFO );
                                                 content << element;
                                             }
                                             for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(out)){
@@ -9837,13 +9841,13 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                     jobject second = nullptr;
                                     if(in.l){
                                         if(!env->IsInstanceOf(in.l, Java::QtCore::QPair::getClass(env)))
-                                            Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: QPair<%2,%3>").arg(QtJambiAPI::getObjectClassNamePrintable(env, in.l), QtJambiAPI::getClassNamePrintable(env, keyClass), QtJambiAPI::getClassNamePrintable(env, valueClass)) QTJAMBI_STACKTRACEINFO );
+                                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: QPair<%2,%3>").arg(QtJambiAPI::getObjectClassNamePrintable(env, in.l), QtJambiAPI::getClassNamePrintable(env, keyClass), QtJambiAPI::getClassNamePrintable(env, valueClass)) QTJAMBI_STACKTRACEINFO );
                                         first = Java::QtCore::QPair::first(env, in.l);
                                         second = Java::QtCore::QPair::second(env, in.l);
                                         if(first && !env->IsInstanceOf(first, keyClass))
-                                            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong QPair.first given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, first), QtJambiAPI::getClassNamePrintable(env, keyClass)) QTJAMBI_STACKTRACEINFO );
+                                            JavaException::raiseIllegalArgumentException(env, QString("Wrong QPair.first given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, first), QtJambiAPI::getClassNamePrintable(env, keyClass)) QTJAMBI_STACKTRACEINFO );
                                         if(second && !env->IsInstanceOf(second, valueClass))
-                                            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong QPair.second given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, second), QtJambiAPI::getClassNamePrintable(env, valueClass)) QTJAMBI_STACKTRACEINFO );
+                                            JavaException::raiseIllegalArgumentException(env, QString("Wrong QPair.second given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, second), QtJambiAPI::getClassNamePrintable(env, valueClass)) QTJAMBI_STACKTRACEINFO );
                                     }
                                     if(!out){
                                         if(scope){
@@ -9924,7 +9928,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                 void* pointer{nullptr};
                                 if(valueType==jValueType::l){
                                     if(in.l && !env->IsInstanceOf(in.l, Java::Runtime::Map::getClass(env)))
-                                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, in.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );
+                                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, in.l), QtJambiAPI::getClassNamePrintable(env, Java::Runtime::Map::getClass(env))) QTJAMBI_STACKTRACEINFO );
                                     bool deleteAccess = true;
                                     Q_ASSERT(env->GetObjectRefType(keyClass)==JNIGlobalRefType);
                                     Q_ASSERT(env->GetObjectRefType(valueClass)==JNIGlobalRefType);
@@ -9975,9 +9979,9 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                                     jobject key = QtJambiAPI::keyOfJavaMapEntry(env, next);
                                                     jobject value = QtJambiAPI::valueOfJavaMapEntry(env, next);
                                                     if(key && !env->IsInstanceOf(key, keyClass))
-                                                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong map key given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, key), QtJambiAPI::getClassNamePrintable(env, keyClass)) QTJAMBI_STACKTRACEINFO );
+                                                        JavaException::raiseIllegalArgumentException(env, QString("Wrong map key given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, key), QtJambiAPI::getClassNamePrintable(env, keyClass)) QTJAMBI_STACKTRACEINFO );
                                                     if(value && !env->IsInstanceOf(value, valueClass))
-                                                        Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong map value given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, value), QtJambiAPI::getClassNamePrintable(env, valueClass)) QTJAMBI_STACKTRACEINFO );
+                                                        JavaException::raiseIllegalArgumentException(env, QString("Wrong map value given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, value), QtJambiAPI::getClassNamePrintable(env, valueClass)) QTJAMBI_STACKTRACEINFO );
                                                     content << next;
                                                 }
                                             }
@@ -10102,10 +10106,10 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                         && Java::QtJambi::QtObjectInterface::isInstanceOf(env, val.l)){
                                     QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                                     if(_internalMetaType!=given){
-                                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), _internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), _internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }else if(!env->IsInstanceOf(val.l, externalClass)){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                                 }
                                 out = QtJambiLink::findPointerForJavaInterface(env, val.l, *typeId);
                             }else{
@@ -10120,10 +10124,10 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                         && Java::QtJambi::QtObjectInterface::isInstanceOf(env, val.l)){
                                     QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                                     if(_internalMetaType!=given){
-                                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), _internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), _internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }else if(!env->IsInstanceOf(val.l, externalClass)){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                                 }
                                 if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, val.l)){
                                     if(!out){
@@ -10148,7 +10152,7 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                         }
                                     }
                                 }else{
-                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                                 }
                             }else{
                                 out = nullptr;
@@ -10162,10 +10166,10 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                         && Java::QtJambi::QtObjectInterface::isInstanceOf(env, val.l)){
                                     QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                                     if(_internalMetaType!=given){
-                                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), _internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), _internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }else if(!env->IsInstanceOf(val.l, externalClass)){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                                 }
                                 if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, val.l)){
                                     if(!out){
@@ -10192,10 +10196,10 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                     }
                                     if(!*reinterpret_cast<void**>(out)){
                                         QString funTypeName = QtJambiAPI::typeName(*typeId);
-                                        Java::Runtime::ClassCastException::throwNew(env, QStringLiteral("Unable to convert java object of type '%1' to function pointer '%2'.").arg(QtJambiAPI::getClassNamePrintable(env, externalClass), funTypeName) QTJAMBI_STACKTRACEINFO );
+                                        JavaException::raise<Java::Runtime::ClassCastException>(env, QStringLiteral("Unable to convert java object of type '%1' to function pointer '%2'.").arg(QtJambiAPI::getClassNamePrintable(env, externalClass), funTypeName) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }else{
-                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                                 }
                             }else{
                                 out = nullptr;
@@ -10209,15 +10213,15 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                         && Java::QtJambi::QtObject::isInstanceOf(env, val.l)){
                                     QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                                     if(_internalMetaType!=given){
-                                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), _internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), _internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }else if(!env->IsInstanceOf(val.l, externalClass)){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                                 }
                                 if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                                     out = link->pointer();
                                 }else{
-                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                                 }
                             }else{
                                 out = nullptr;
@@ -10234,10 +10238,10 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                         && Java::QtJambi::QtObject::isInstanceOf(env, val.l)){
                                     QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                                     if(_internalMetaType!=given){
-                                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), _internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), _internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }else if(!env->IsInstanceOf(val.l, externalClass)){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                                 }
                                 ptr = QtJambiLink::findPointerForJavaInterface(env, val.l, *typeId);
                             }
@@ -10276,15 +10280,15 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                         && Java::QtJambi::QtObject::isInstanceOf(env, val.l)){
                                     QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                                     if(_internalMetaType!=given){
-                                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), _internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), _internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }else if(!env->IsInstanceOf(val.l, externalClass)){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                                 }
                                 if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                                     ptr = link->pointer();
                                 }else{
-                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                                 }
                             }
                             if(scope && !out){
@@ -10324,10 +10328,10 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                         && Java::QtJambi::QtObjectInterface::isInstanceOf(env, val.l)){
                                     QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                                     if(_internalMetaType!=given){
-                                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), _internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), _internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }else if(!env->IsInstanceOf(val.l, externalClass)){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                                 }
                                 ptr = QtJambiLink::findPointerForJavaInterface(env, val.l, *typeId);
                             }
@@ -10347,15 +10351,15 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                                         && Java::QtJambi::QtObject::isInstanceOf(env, val.l)){
                                     QMetaType given = qtjambi_cast<QMetaType>(env, Java::QtCore::QMetaType$GenericTypeInterface::metaType(env, val.l));
                                     if(_internalMetaType!=given){
-                                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), _internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
+                                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(given.name(), _internalMetaType.name()) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }else if(!env->IsInstanceOf(val.l, externalClass)){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                                 }
                                 if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, val.l)){
                                     ptr = link->pointer();
                                 }else{
-                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
+                                    JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l)) QTJAMBI_STACKTRACEINFO );
                                 }
                             }
                             if(scope && !out){
@@ -10378,9 +10382,9 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
             if(JObjectValueWrapper::isValueType(internalMetaType)){
                 return [internalMetaType, externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(!scope)
-                        Java::Runtime::IllegalArgumentException::throwNew(env, "Cannot cast to pointer without scope" QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, "Cannot cast to pointer without scope" QTJAMBI_STACKTRACEINFO );
                     JObjectValueWrapper** ptr;
                     if(!out){
                         out = ptr = new JObjectValueWrapper*;
@@ -10411,9 +10415,9 @@ QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInter
                       || internalMetaType==registeredMetaType(typeid(JObjectWrapper))){
                 return [externalClass](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                     if(val.l && !env->IsInstanceOf(val.l, externalClass))
-                        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassNamePrintable(env, val.l), QtJambiAPI::getClassNamePrintable(env, externalClass)) QTJAMBI_STACKTRACEINFO );
                     if(!scope)
-                        Java::Runtime::IllegalArgumentException::throwNew(env, "Cannot cast to pointer without scope" QTJAMBI_STACKTRACEINFO );
+                        JavaException::raiseIllegalArgumentException(env, "Cannot cast to pointer without scope" QTJAMBI_STACKTRACEINFO );
                     JObjectWrapper** ptr;
                     if(!out){
                         out = ptr = new JObjectWrapper*;

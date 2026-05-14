@@ -62,7 +62,8 @@
         <javac debug="true" deprecation="true" source="1.8" target="1.8"
                 memorymaximumsize="1024m" verbose="false"
                 includeantruntime="true"
-                destdir="${resourcesdir}/ant">
+                destdir="${resourcesdir}/ant"
+				excludes="io/qt/tools/ant/Formatter.java">
             <compilerarg value="-Xlint:deprecation" />
             <compilerarg value="-Xlint:unchecked" />
             <compilerarg value="-Xlint:-module,-options" />
@@ -419,14 +420,14 @@ Further options:
     </target>
 	
 	<target name="tools.generator.run" unless="${skip-generate}">
-        <mkdir dir="${generator.outputdir}"/>
+        <mkdir dir="${qtjambi.generator.outputdir}"/>
 		<!--options="- - debug-level=full"-->
 		<if>
 			<istrue value="${generate.legacy.modules}"/>
 			<then>
 				<generator dir="${generator.builddir}/../bin"
 						importdirectories="${basedir}/src/cpp/QtJambiGenerator"
-						outputDirectory="${generator.outputdir}"
+						outputDirectory="${qtjambi.generator.outputdir}"
 						generatorDirectory="${generator.builddir}/../bin"
 						nullness="${qtjambi.generate.nullness}"
 						kotlinpropertydelegates="${qtjambi.generate.kotlin.delegates}"
@@ -440,7 +441,7 @@ Further options:
 		</if>
         <generator dir="${generator.builddir}/../bin"
                 importdirectories="${basedir}/src/cpp/QtJambiGenerator"
-                outputDirectory="${generator.outputdir}"
+                outputDirectory="${qtjambi.generator.outputdir}"
                 generatorDirectory="${generator.builddir}/../bin"
                 nullness="${qtjambi.generate.nullness}"
                 kotlinpropertydelegates="${qtjambi.generate.kotlin.delegates}"
@@ -597,7 +598,7 @@ Further options:
         depends="make.clean.global, make.clean.generator">
         <delete dir="${java.outdir}" quiet="true"/>
         <delete dir="${deploymentdir}" quiet="true"/>
-        <delete dir="${generator.outputdir}" quiet="true"/>
+        <delete dir="${qtjambi.generator.outputdir}" quiet="true"/>
         <delete quiet="true">
             <fileset dir=".">
                 <include name="plugins/**/*"/>

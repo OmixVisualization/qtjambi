@@ -62,8 +62,7 @@ class QQmlInfo___ extends QQmlInfo {
 
     /**
      * <p>
-     * See <a href=
-     * "@docRoot/qqmlinfo.html#operator-lt-lt"><code>QQmlInfo::operator&lt;&lt;</code></a>
+     * See <a href="@docRoot/qqmlinfo.html#operator-lt-lt"><code>QQmlInfo::operator&lt;&lt;</code></a>
      * </p>
      */
     @QtUninvokable

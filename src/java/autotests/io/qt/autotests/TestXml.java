@@ -79,6 +79,7 @@ public class TestXml extends ApplicationInitializer {
     }
 
     @Test
+    @Deprecated
     public void readDocument() {
         QDomDocument doc = new QDomDocument("mydocument");
         QFile file = new QFile(":generator/typesystem_core.txt");

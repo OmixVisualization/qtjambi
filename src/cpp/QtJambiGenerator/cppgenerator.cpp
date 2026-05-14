@@ -59,6 +59,23 @@ QString CppGenerator::fixNormalizedSignatureForQt(const QString &signature) {
 
 CppGenerator::CppGenerator(PriGenerator *_priGenerator) : AbstractGenerator(), priGenerator(_priGenerator) {}
 
+QString CppGenerator::toIdString(QString name){
+    return name
+        .replace(QStringLiteral(u"::"), QStringLiteral(u"_"))
+        .replace(QStringLiteral(u"<"), QStringLiteral(u"_lt"))
+        .replace(QStringLiteral(u">"), QStringLiteral(u"_gt"))
+        .replace(QStringLiteral(u"()"), QStringLiteral(u"_fun"))
+        .replace(QStringLiteral(u"("), QStringLiteral(u"_lpar"))
+        .replace(QStringLiteral(u")"), QStringLiteral(u"_rpar"))
+        .replace(QStringLiteral(u"*"), QStringLiteral(u"_ptr"))
+        .replace(QStringLiteral(u"&&"), QStringLiteral(u"_rval"))
+        .replace(QStringLiteral(u"&"), QStringLiteral(u"_ref"))
+        .replace(u',', u'_')
+        .replace(u'.', u'_')
+        .replace(u':', u'_')
+        .replace(u' ', u'_');
+}
+
 QString CppGenerator::subDirectoryForPackage(const QString &package) const {
     TypeSystemTypeEntry * typeSystemEntry = static_cast<TypeSystemTypeEntry *>(database()->findType(package));
     if(typeSystemEntry && !typeSystemEntry->qtLibrary().isEmpty()){
@@ -444,6 +461,8 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
             else{
                 if(java_function->useArgumentAsBuffer(arg->argumentIndex() + 1)){
                     s << "jobject";
+                }else if(java_function->useArgumentAsString(arg->argumentIndex() + 1)){
+                    s << "jstring";
                 }else if(java_function->useArgumentAsArray(arg->argumentIndex() + 1)){
                     if(arg->type()->typeEntry()->isPrimitive()){
                         if(arg->type()->typeEntry()->targetLangName()==QStringLiteral(u"int")){
@@ -781,6 +800,8 @@ QString CppGenerator::jni_signature(const MetaFunctional *function, JNISignature
                 }else{
                     returned += jni_signature(QStringLiteral(u"java.nio.Buffer"), format);
                 }
+            }else if(function->useArgumentAsString(argument->argumentIndex() + 1)){
+                returned += jni_signature(QStringLiteral(u"java.lang.String"), format);
             }else if(function->useArgumentAsArray(argument->argumentIndex() + 1)){
                 QScopedPointer<MetaType> array(argument->type()->copy());
                 array->setConstant(false);
@@ -899,6 +920,8 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
                 }else{
                     returned += jni_signature(QStringLiteral(u"java.nio.Buffer"), format);
                 }
+            }else if(function->useArgumentAsString(argument->argumentIndex() + 1)){
+                returned += jni_signature(QStringLiteral(u"java.lang.String"), format);
             }else if(function->useArgumentAsArray(argument->argumentIndex() + 1)){
                 QScopedPointer<MetaType> array(argument->type()->copy());
                 array->setConstant(false);

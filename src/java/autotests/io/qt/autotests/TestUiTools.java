@@ -9,7 +9,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.QtUtilities;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QDir;
 import io.qt.core.QFile;
@@ -21,7 +20,6 @@ import io.qt.core.QRect;
 import io.qt.core.QTimer;
 import io.qt.core.Qt;
 import io.qt.gui.QKeySequence;
-import io.qt.internal.TestUtility;
 import io.qt.quick.QQuickWindow;
 import io.qt.quick.QSGRendererInterface;
 import io.qt.widgets.QDialog;
@@ -78,12 +76,7 @@ public class TestUiTools extends ApplicationInitializer {
     	QWidget widget;
     	{
 	    	QUiLoader loader = new QUiLoader();
-			String version = QtUtilities.qtjambiVersion().toString();
-	    	if(TestUtility.isDebugBuild()) {
-	    		loader.addPluginPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/debug/plugins/designer");
-			}else {
-				loader.addPluginPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/"+version+"/build/tests/release/plugins/designer");
-			}
+    		loader.addPluginPath(QDir.fromNativeSeparators(System.getProperty("testPlujginPath", ""))+"/designer");
 	    	for(String path : QCoreApplication.libraryPaths()) {
 				loader.addPluginPath(path);
 			}

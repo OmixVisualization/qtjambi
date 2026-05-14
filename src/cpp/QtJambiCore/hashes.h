@@ -279,12 +279,6 @@ inline size_t qHash(const QFutureInterfaceBase &value, size_t seed = 0)
 }
 
 #if defined(QTJAMBI_GENERATOR_RUNNING)
-using QFutureRunnable = std::function<void()>;
-using QFutureSupplier = std::function<QVariant()>;
-using QFutureConsumer = std::function<void(QVariant)>;
-using QFutureFutureConsumer = std::function<void(QFuture<QVariant>)>;
-using QFutureFunction = std::function<QVariant(QVariant)>;
-using QFutureFutureFunction = std::function<QVariant(QFuture<QVariant>)>;
 size_t qHash(const QFuture<QVariant> &, size_t = 0);
 template<class T>
 bool operator==(const QFuture<QVariant> &f1, const QFuture<T> &f2);

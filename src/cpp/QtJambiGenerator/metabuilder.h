@@ -78,6 +78,8 @@ class MetaBuilder {
         bool build(FileModelItem&& dom);
 
         void applyDocs(const DocModel* model);
+        static void analyzeClass(MetaClass* meta_class);
+        static void analyzeFunctional(MetaFunctional* meta_class);
 
         void figureOutEnumValuesForClass(MetaClass *meta_class, QSet<MetaClass *> *classes, QSet<MetaClass *> *repeatClasses, QSet<QString> *warnings = nullptr);
         QVariant figureOutEnumValue(const uint size, const QString &name, QVariant value, MetaClass *global, MetaEnum *meta_enum, MetaFunction *meta_function = nullptr, QSet<QString> *warnings = nullptr);

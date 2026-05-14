@@ -40,7 +40,7 @@ TypeSystem{
         text: "Provides public API shared by both modules {@code qtjambi.webenginequick} and {@code qtjambi.webenginewidgets}."
     }
 
-    Template{
+    CodeTemplate{
         name: "webc.comsumer.function"
         Text{content: String.raw`
 std::function<void(%TYPE)> %out;

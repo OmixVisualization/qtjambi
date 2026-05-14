@@ -35,6 +35,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "pch_p.h"
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qmetaobject_p.h>
+#include "containeraccess_associative.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
 #define qAsConst std::as_const
@@ -825,7 +826,12 @@ bool QmlAPI::registerMetaTypeConverter(JNIEnv *env, const QMetaType& metaType1, 
                         if(parameter1.convertInternalToExternal(env, nullptr, src, jv, true)){
                             jobject result{nullptr};
                             try{
+                                if(env->ExceptionCheck()){
+                                    env->ExceptionDescribe();
+                                    env->ExceptionClear();
+                                }
                                 result = env->NewObject(parameter2.javaClass(), constructor, jv.l);
+                                JavaException::check(env QTJAMBI_STACKTRACEINFO );
                             }catch(const JavaException&){
                                 return false;
                             }
@@ -847,7 +853,12 @@ bool QmlAPI::registerMetaTypeConverter(JNIEnv *env, const QMetaType& metaType1, 
                         if(parameter1.convertInternalToExternal(env, nullptr, src, jv, true)){
                             jobject result{nullptr};
                             try{
+                                if(env->ExceptionCheck()){
+                                    env->ExceptionDescribe();
+                                    env->ExceptionClear();
+                                }
                                 result = env->CallStaticObjectMethod(parameter2.javaClass(), factory, jv.l);
+                                JavaException::check(env QTJAMBI_STACKTRACEINFO );
                             }catch(const JavaException&){
                                 return false;
                             }
@@ -1131,7 +1142,7 @@ QSharedPointer<AbstractContainerAccess> findContainerAccess(const QMetaType& met
         if(!result){
             switch(metaType.id()){
             case QMetaType::QStringList:
-                result.reset(QtJambiPrivate::QListAccess<QString>::newInstance(), &containerDisposer);
+                result.reset(QListAccess<QString>::newInstance(), &containerDisposer);
                 {
                     QWriteLocker locker(storage->registryLock());
                     storage->containerAccessMap().insert(id, result);
@@ -1139,7 +1150,7 @@ QSharedPointer<AbstractContainerAccess> findContainerAccess(const QMetaType& met
                 }
                 break;
             case QMetaType::QVariantList:
-                result.reset(QtJambiPrivate::QListAccess<QVariant>::newInstance(), &containerDisposer);
+                result.reset(QListAccess<QVariant>::newInstance(), &containerDisposer);
                 {
                     QWriteLocker locker(storage->registryLock());
                     storage->containerAccessMap().insert(id, result);
@@ -1147,7 +1158,7 @@ QSharedPointer<AbstractContainerAccess> findContainerAccess(const QMetaType& met
                 }
                 break;
             case QMetaType::QVariantHash:
-                result.reset(QtJambiPrivate::QHashAccess<QString,QVariant>::newInstance(), &containerDisposer);
+                result.reset(QHashAccess<QString,QVariant>::newInstance(), &containerDisposer);
                 {
                     QWriteLocker locker(storage->registryLock());
                     storage->containerAccessMap().insert(id, result);
@@ -1155,7 +1166,7 @@ QSharedPointer<AbstractContainerAccess> findContainerAccess(const QMetaType& met
                 }
                 break;
             case QMetaType::QVariantMap:
-                result.reset(QtJambiPrivate::QMapAccess<QString,QVariant>::newInstance(), &containerDisposer);
+                result.reset(QMapAccess<QString,QVariant>::newInstance(), &containerDisposer);
                 {
                     QWriteLocker locker(storage->registryLock());
                     storage->containerAccessMap().insert(id, result);
@@ -1163,7 +1174,7 @@ QSharedPointer<AbstractContainerAccess> findContainerAccess(const QMetaType& met
                 }
                 break;
             case QMetaType::QVariantPair:
-                result.reset(QtJambiPrivate::QPairAccess<QVariant,QVariant>::newInstance(), &containerDisposer);
+                result.reset(QPairAccess<QVariant,QVariant>::newInstance(), &containerDisposer);
                 {
                     QWriteLocker locker(storage->registryLock());
                     storage->containerAccessMap().insert(id, result);
@@ -1460,23 +1471,6 @@ const std::type_info* getTypeByMetaType(const QMetaType& metaType)
         }
         return getTypeByQtName(metaType.name());
     }
-}
-
-const void* QtJambiPrivate::getDefaultValue(const std::type_info& type_info, QtJambiPrivate::DefaultValueCreator creator)
-{
-    size_t uid = unique_id(type_info);
-    const void* result{nullptr};
-    QtJambiStorage* storage = getQtJambiStorage();
-    {
-        QReadLocker locker(storage->registryLock());
-        result = storage->defaultValueHash().value(uid, nullptr);
-    }
-    if(!result){
-        result = creator();
-        QWriteLocker wlocker(storage->registryLock());
-        storage->defaultValueHash().insert(uid, result);
-    }
-    return result;
 }
 
 void RegistryAPI::registerFunctionInfos(const std::type_info& typeId, std::initializer_list<FunctionInfo> virtualFunctions)
@@ -2400,7 +2394,7 @@ const QMetaObject *findWrappersMetaObject(const QtPrivate::QMetaTypeInterface *i
                     clazz = storage->javaTypeByCustomMetaTypes()[iface];
                 }
                 if(clazz){
-                    meta_object = CoreAPI::metaObjectForClass(env, clazz);
+                    meta_object = metaObjectForClass(env, clazz);
                     if(meta_object){
                         registerMetaObjectByMetaTypeInterface(iface, meta_object);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
@@ -3079,7 +3073,7 @@ QMetaType QmlAPI::registerMetaType(JNIEnv *env, SequentialContainerType containe
 template<typename INT, int isQtEnum0OrFlag1 = 0>
 QMetaType qtjambi_register_enum_meta_type(JNIEnv *env, jclass clazz, QByteArrayView javaClassName, QByteArray&& javaTypeName){
     enum E:INT{};
-    typedef typename std::conditional<isQtEnum0OrFlag1==1,QFlags<E>,E>::type EnumOrFlags;
+    typedef std::conditional_t<isQtEnum0OrFlag1==1,QFlags<E>,E> EnumOrFlags;
     typedef JObjectWrapper Wrapper;
     QtPrivate::QMetaTypeInterface* metaTypeInterface = new QtPrivate::QMetaTypeInterface{
             /*.revision=*/ QMetaTypeInterface_CurrentRevision,
@@ -3141,7 +3135,7 @@ QMetaType qtjambi_register_enum_meta_type(JNIEnv *env, jclass clazz, QByteArrayV
                         if constexpr(isQtEnum0OrFlag1==0){
                             new (target)Wrapper(CoreAPI::convertEnumToJavaObject(env, *reinterpret_cast<const INT*>(src), clazz));
                         }else if constexpr(isQtEnum0OrFlag1==1){
-                            typename std::conditional<sizeof(EnumOrFlags)==sizeof(jlong), jlong, jint>::type value = *reinterpret_cast<const INT*>(src);
+                            std::conditional_t<sizeof(EnumOrFlags)==sizeof(jlong), jlong, jint> value = *reinterpret_cast<const INT*>(src);
                             new (target)Wrapper(CoreAPI::convertQFlagsToJavaObject(env, value, clazz));
                         }else{
                             jobjectArray enumConstants = Java::Runtime::Class::getEnumConstants(env, clazz);

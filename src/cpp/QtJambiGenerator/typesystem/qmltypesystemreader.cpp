@@ -62,11 +62,9 @@ typedef TS::TemplateInstantiation TemplateInstantiation;
 typedef TS::CustomFunction CustomFunction;
 typedef TS::TypeDatabase TypeDatabase;
 typedef TS::TypeSystemTypeEntry TypeSystemTypeEntry;
-typedef TS::TemplateEntry TemplateEntry;
 typedef TS::PrimitiveTypeEntry PrimitiveTypeEntry;
 typedef TS::InterfaceTypeEntry InterfaceTypeEntry;
 typedef TS::ObjectTypeEntry ObjectTypeEntry;
-typedef TS::TemplateTypeEntry TemplateTypeEntry;
 typedef TS::ArgumentModification ArgumentModification;
 typedef TS::FieldModification FieldModification;
 typedef TS::FunctionModification FunctionModification;
@@ -112,14 +110,14 @@ class QmlTypeSystemReaderPrivate {
     void parseExtraIncludes(ExtraIncludes* element, TypeEntry* entry);
     TS::Include parseInclude(Include* element);
     void parseRejection(Rejection* element);
-    void parseTemplate(Template* element);
+    void parseCodeTemplate(CodeTemplate* element);
     void parseTemplateArguments(TemplateArguments* element, ComplexTypeEntry* entry);
     void parsePrimitiveType(const QString& nameSpace, PrimitiveType* element);
     void parseNativePointerType(const QString& nameSpace, NativePointerType* element);
     void parseObjectType(const QString& nameSpace, ObjectType* element);
     void parseAttributesOfComplexType(ComplexType* element, ComplexTypeEntry* entry);
     QList<AbstractObject*> parseChildrenOfComplexType(const QString& nameSpace, ComplexType* element, ComplexTypeEntry* entry);
-    void parseTemplateType(const QString& nameSpace, TemplateType* element);
+    void parseTypeTemplate(const QString& nameSpace, TypeTemplate* element);
     void parseFunctionalType(const QString& nameSpace, FunctionalType* element);
     void parseIteratorType(const QString& nameSpace, IteratorType* element);
     void parseValueType(const QString& nameSpace, ValueType* element);
@@ -304,8 +302,8 @@ void QmlTypeSystemReaderPrivate::parseTypeSystem(TypeSystem* typeSystem, const Q
                     parseNativePointerType({}, childElement);
                 }else if(ObjectType* childElement = qobject_cast<ObjectType*>(item)){
                     parseObjectType({}, childElement);
-                }else if(TemplateType* childElement = qobject_cast<TemplateType*>(item)){
-                    parseTemplateType({}, childElement);
+                }else if(TypeTemplate* childElement = qobject_cast<TypeTemplate*>(item)){
+                    parseTypeTemplate({}, childElement);
                 }else if(FunctionalType* childElement = qobject_cast<FunctionalType*>(item)){
                     parseFunctionalType({}, childElement);
                 }else if(IteratorType* childElement = qobject_cast<IteratorType*>(item)){
@@ -347,8 +345,8 @@ void QmlTypeSystemReaderPrivate::parseTypeSystem(TypeSystem* typeSystem, const Q
                     }, false, true);
                 }else if(SuppressedWarning* childElement = qobject_cast<SuppressedWarning*>(item)){
                     parseSuppressedWarning(childElement);
-                }else if(Template* childElement = qobject_cast<Template*>(item)){
-                    parseTemplate(childElement);
+                }else if(CodeTemplate* childElement = qobject_cast<CodeTemplate*>(item)){
+                    parseCodeTemplate(childElement);
                 }else if(GlobalFunction* childElement = qobject_cast<GlobalFunction*>(item)){
                     parseModifyFunction(childElement, entry);
                 }else{
@@ -450,10 +448,10 @@ void QmlTypeSystemReaderPrivate::parseTemplateArguments(TemplateArguments* eleme
     }
 }
 
-void QmlTypeSystemReaderPrivate::parseTemplate(Template* element){
+void QmlTypeSystemReaderPrivate::parseCodeTemplate(CodeTemplate* element){
     if (checkQtVersion(element)){
         QString name = element->getName();
-        std::unique_ptr<TemplateEntry> entry(new TemplateEntry(name));
+        auto entry = std::make_unique<TS::CodeTemplate>(name);
         const QList<AbstractObject*>& childrenList = element->childrenList();
         for(int i=0; i<childrenList.size(); ++i){
             AbstractObject* item = childrenList[i];
@@ -472,7 +470,7 @@ void QmlTypeSystemReaderPrivate::parseTemplate(Template* element){
                 TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of Template").arg(item->metaObject()->className()));
             }
         }
-        m_database->addTemplate(entry.release());
+        m_database->addCodeTemplate(entry.release());
     }
 }
 
@@ -633,6 +631,8 @@ void QmlTypeSystemReaderPrivate::parseInsertTemplate(InsertTemplate* element, co
                         TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
                     }
                 }
+            }else{
+                TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item->metaObject()->className(), element->metaObject()->className()));
             }
         }
         consumeTemplateInstance(templateInstance.release());
@@ -731,7 +731,23 @@ void QmlTypeSystemReaderPrivate::parseImportFile(ImportFile* element, const std:
                 if(line.startsWith(spaces))
                     line = line.mid(sp);
             }
-            consumeCode(lines.join("\n") + "\n");
+
+            QString code = lines.join("\n") + "\n";
+            const QList<AbstractObject*>& childrenList = element->childrenList();
+            for(int i=0; i<childrenList.size(); ++i){
+                AbstractObject* item = childrenList[i];
+                if(Replace* childElement = qobject_cast<Replace*>(item)){
+                    if (checkQtVersion(childElement)){
+                        code = code.replace(childElement->getFrom(), childElement->getTo());
+                        for(AbstractObject* item2 : item->childrenList()){
+                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                        }
+                    }
+                }else{
+                    TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item->metaObject()->className(), element->metaObject()->className()));
+                }
+            }
+            consumeCode(code);
         }
         if (!foundFromOk || !foundToOk) {
             QString fromError = QStringLiteral(u"Could not find quote-after-line='%1' in file '%2'.").arg(quoteFrom, fileName);
@@ -809,7 +825,7 @@ void QmlTypeSystemReaderPrivate::parsePrimitiveType(const QString& nameSpace, Pr
                 TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), element->metaObject()->className()));
             }
         }catch(const TypesystemException& exn){
-            TypesystemException::raise(QStringLiteral(u"%1 of type %2").arg(QLatin1String(exn.what()), name));
+            TypesystemException::raise(QStringLiteral(u"%1 in type %2").arg(QLatin1String(exn.what()), name));
         }
     }
 }
@@ -831,7 +847,7 @@ void QmlTypeSystemReaderPrivate::parseNativePointerType(const QString& nameSpace
                 TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), element->metaObject()->className()));
             }
         }catch(const TypesystemException& exn){
-            TypesystemException::raise(QStringLiteral(u"%1 of type %2").arg(QLatin1String(exn.what()), name));
+            TypesystemException::raise(QStringLiteral(u"%1 in type %2").arg(QLatin1String(exn.what()), name));
         }
     }
 }
@@ -840,13 +856,12 @@ void QmlTypeSystemReaderPrivate::parseAttributesOfComplexType(ComplexType* eleme
     QString package = element->getPackageName().isEmpty() ? m_defaultPackage : element->getPackageName();
     QString ppCondition = element->getPpCondition().isEmpty() ? m_defaultPPCondition : element->getPpCondition();
     QString implements = element->getImplementing();
+    QString permitting = element->getPermitting();
     //QString _using = element->getUsing();
     QString javaName = element->getJavaName();
     QString defaultSuperclass = element->getDefaultSuperClass();
     QString extendType = element->getExtendType();
 
-    if(defaultSuperclass.isEmpty())
-        defaultSuperclass = m_defaultSuperclass;
     ctype->setPPCondition(ppCondition);
     if(!ppCondition.isEmpty()){
         TS::Include incl = ctype->include();
@@ -868,6 +883,10 @@ void QmlTypeSystemReaderPrivate::parseAttributesOfComplexType(ComplexType* eleme
         ctype->setForceFriendly();
     if (element->getDeprecated())
         ctype->setDeprecated();
+    if (element->getSealed())
+        ctype->setSealed();
+    if (element->getNonSealed())
+        ctype->setNonSealed();
     ctype->setPushUpStatics(element->getPushUpStatics());
     ctype->setNoImplicitConstructors(element->getNoImplicitConstructors());
     ctype->setNotAssignable(element->getNotAssignable());
@@ -945,6 +964,7 @@ void QmlTypeSystemReaderPrivate::parseAttributesOfComplexType(ComplexType* eleme
     ctype->setDefaultSuperclass(defaultSuperclass);
     ctype->setPrecompiledHeader(m_precompiledHeader);
     ctype->setImplements(implements);
+    ctype->setPermits(permitting);
     if(ctype->designatedInterface()){
         ctype->designatedInterface()->setGenericClass(ctype->isGenericClass());
         ctype->designatedInterface()->setTargetTypeSystem(m_defaultPackage);
@@ -1008,6 +1028,12 @@ void QmlTypeSystemReaderPrivate::parseObjectType(const QString& nameSpace, Objec
                 for(AbstractObject* unhandledElement : unhandledElements){
                     TypesystemException::raise(QStringLiteral(u"Unexpected child element %1 in %2.").arg(unhandledElement->metaObject()->className(), element->metaObject()->className()));
                 }
+                if(entry->defaultSuperclass().isEmpty()){
+                    entry->setDefaultSuperclass(m_defaultSuperclass);
+                    if(entry->designatedInterface()){
+                        entry->designatedInterface()->setDefaultSuperclass(m_defaultSuperclass);
+                    }
+                }
                 ReportHandler::debugTypes("Adding to TypeDatabase(2): " + entry->name());
                 m_database->addType(entry.release());
                 m_database->addType(new TS::QMetaObjectConnectionTypeEntry());
@@ -1021,6 +1047,12 @@ void QmlTypeSystemReaderPrivate::parseObjectType(const QString& nameSpace, Objec
                 const QList<AbstractObject*> unhandledElements = parseChildrenOfComplexType(nameSpace, element, entry.get());
                 for(AbstractObject* unhandledElement : unhandledElements){
                     TypesystemException::raise(QStringLiteral(u"Unexpected child element %1 in %2.").arg(unhandledElement->metaObject()->className(), element->metaObject()->className()));
+                }
+                if(entry->defaultSuperclass().isEmpty()){
+                    entry->setDefaultSuperclass(m_defaultSuperclass);
+                    if(entry->designatedInterface()){
+                        entry->designatedInterface()->setDefaultSuperclass(m_defaultSuperclass);
+                    }
                 }
                 ReportHandler::debugTypes("Adding to TypeDatabase(2): " + entry->name());
                 m_database->addType(entry.release());
@@ -1042,19 +1074,35 @@ void QmlTypeSystemReaderPrivate::parseObjectType(const QString& nameSpace, Objec
                 for(AbstractObject* unhandledElement : unhandledElements){
                     TypesystemException::raise(QStringLiteral(u"Unexpected child element %1 in %2.").arg(unhandledElement->metaObject()->className(), element->metaObject()->className()));
                 }
+                if(entry->defaultSuperclass().isEmpty()){
+                    entry->setDefaultSuperclass(m_defaultSuperclass);
+                    if(entry->designatedInterface()){
+                        entry->designatedInterface()->setDefaultSuperclass(m_defaultSuperclass);
+                    }
+                }
                 if(name.endsWith(">")){
                     auto idx = name.indexOf('<');
                     QString templateName = name.mid(0, idx);
-                    QStringList templateArguments = name.mid(idx+1).chopped(1).split(",");
+                    QString templateArguments = name.mid(idx+1).chopped(1);
                     ComplexTypeEntry* templateType = m_database->findComplexType(templateName);
                     if(templateType){
                         if(templateType->isTemplate()){
-                            if(templateType->instantiations().contains(templateArguments) && templateType->instantiations()[templateArguments]==nullptr){
-                                if(entry->overrideTargetLangName().isEmpty())
-                                    entry->setTargetLangName(templateType->targetLangName());
-                                templateType->addInstantiation(templateArguments, entry.release());
-                            }else{
-                                TypesystemException::raise(QStringLiteral(u"Template %1<%2> already defined").arg(templateName, templateArguments.join(",")));
+                            bool found = false;
+                            for(auto iter = templateType->instantiations().keyValueBegin(), end = templateType->instantiations().keyValueEnd(); iter!=end; ++iter){
+                                if(templateArguments==iter->first.join(",")){
+                                    found = true;
+                                    if(iter->second==nullptr){
+                                        if(entry->overrideTargetLangName().isEmpty())
+                                            entry->setTargetLangName(templateType->targetLangName());
+                                        templateType->addInstantiation(QStringList(iter->first), entry.release());
+                                        break;
+                                    }else{
+                                        TypesystemException::raise(QStringLiteral(u"Template defined twice"));
+                                    }
+                                }
+                            }
+                            if(!found){
+                                TypesystemException::raise(QStringLiteral(u"Template definition not available in %1").arg(templateName));
                             }
                         }else{
                             TypesystemException::raise(QStringLiteral(u"Type %1 not a template").arg(templateName));
@@ -1068,7 +1116,7 @@ void QmlTypeSystemReaderPrivate::parseObjectType(const QString& nameSpace, Objec
                 }
             }
         }catch(const TypesystemException& exn){
-            TypesystemException::raise(QStringLiteral(u"%1 of type %2").arg(QLatin1String(exn.what()), name));
+            TypesystemException::raise(QStringLiteral(u"%1 in type %2").arg(QLatin1String(exn.what()), name));
         }
     }
 }
@@ -1100,8 +1148,8 @@ QList<AbstractObject*> QmlTypeSystemReaderPrivate::parseChildrenOfComplexType(co
             }else{
                 unhandledElements << item;
             }
-        }else if(Template* childElement = qobject_cast<Template*>(item)){
-            parseTemplate(childElement);
+        }else if(CodeTemplate* childElement = qobject_cast<CodeTemplate*>(item)){
+            parseCodeTemplate(childElement);
         }else if(TemplateArguments* childElement = qobject_cast<TemplateArguments*>(item)){
             if(!entry->isTemplate())
                 TypesystemException::raise(QStringLiteral(u"Unexpected element TemplateArguments as child of non-template"));
@@ -1112,6 +1160,17 @@ QList<AbstractObject*> QmlTypeSystemReaderPrivate::parseChildrenOfComplexType(co
             parseModifyField(childElement, entry);
         }else if(InjectCode* childElement = qobject_cast<InjectCode*>(item)){
             parseInjectCode(childElement, entry);
+        }else if(GenericArgument* childElement = qobject_cast<GenericArgument*>(item)){
+            if (checkQtVersion(childElement)){
+                ArgumentModification argumentModification = ArgumentModification(ArgumentModification::TypeParameter);
+                argumentModification.modified_name = childElement->getName();
+                argumentModification.comment = childElement->getComment();
+                argumentModification.modified_type = childElement->getExtending();
+                entry->addGenericArgument(argumentModification);
+                for(AbstractObject* item2 : item->childrenList()){
+                    TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                }
+            }
         }else if(DelegateBaseClass* childElement = qobject_cast<DelegateBaseClass*>(item)){
             if (checkQtVersion(childElement)){
                 if(!childElement->getBaseClass().isEmpty())
@@ -1134,7 +1193,71 @@ QList<AbstractObject*> QmlTypeSystemReaderPrivate::parseChildrenOfComplexType(co
         }else if(Import* childElement = qobject_cast<Import*>(item)){
             if (checkQtVersion(childElement)){
                 QString name = childElement->getTemplate();
-                if(TemplateTypeEntry* templateEntry = m_database->findTemplateType(name)){
+                if(auto templateEntry = m_database->findTypeTemplate(name)){
+                    if(entry->defaultSuperclass().isEmpty()){
+                        entry->setDefaultSuperclass(templateEntry->defaultSuperclass());
+                        if(entry->designatedInterface()){
+                            entry->designatedInterface()->setDefaultSuperclass(templateEntry->defaultSuperclass());
+                        }
+                    }
+                    if(templateEntry->isNonSealed())
+                        entry->setNonSealed();
+                    if(templateEntry->isSealed())
+                        entry->setSealed();
+                    if(templateEntry->isAddTextStreamFunctions())
+                        entry->setAddTextStreamFunctions(true);
+                    if(templateEntry->hasPrivateConstructors()){
+                        entry->setHasPrivateCopyConstructor();
+                        entry->setHasPrivateMoveConstructor();
+                        entry->setHasPrivateDefaultConstructor();
+                        entry->setHasPrivateMoveAssignment();
+                        entry->setHasPrivateDefaultAssignment();
+                        entry->setHasPrivateConstructors();
+                    }
+                    for(const auto& mod : templateEntry->genericArguments())
+                        entry->addGenericArgument(mod);
+                    if(templateEntry->getPushUpStatics())
+                        entry->setPushUpStatics(true);
+                    if(templateEntry->getNotCloneable())
+                        entry->setNotCloneable(true);
+                    if(templateEntry->getNotMoveAssignable())
+                        entry->setNotMoveAssignable(true);
+                    if(templateEntry->getNotAssignable())
+                        entry->setNotAssignable(true);
+                    if(templateEntry->getNoImplicitConstructors())
+                        entry->setNoImplicitConstructors(true);
+                    if(templateEntry->skipMetaTypeRegistration())
+                        entry->setSkipMetaTypeRegistration(true);
+                    if(!templateEntry->ppCondition().isEmpty()){
+                        if(entry->ppCondition().isEmpty())
+                            entry->setPPCondition(templateEntry->ppCondition());
+                        else
+                            entry->setPPCondition("(" + entry->ppCondition() + ") && (" + templateEntry->ppCondition() + ")");
+                    }
+                    if(!templateEntry->extendType().isEmpty())
+                        entry->setExtendType(templateEntry->extendType());
+                    if(!templateEntry->threadAffinity().isEmpty())
+                        entry->setThreadAffinity(templateEntry->threadAffinity());
+                    if(!templateEntry->implements().isEmpty())
+                        entry->setImplements(templateEntry->implements());
+                    if(!templateEntry->permits().isEmpty())
+                        entry->setPermits(templateEntry->permits());
+                    if(templateEntry->isNativeInterface())
+                        entry->setNativeInterface(true);
+                    if(templateEntry->isDeprecated())
+                        entry->setDeprecated();
+                    if(templateEntry->isForceFriendly())
+                        entry->setForceFriendly();
+                    if(templateEntry->isForceAbstract())
+                        entry->setForceAbstract();
+                    if(!templateEntry->isNativeIdBased())
+                        entry->disableNativeIdUsage();
+                    if(templateEntry->forceFinal())
+                        entry->setForceFinal(true);
+                    if(templateEntry->codeGeneration()!=TypeEntry::GenerateAll)
+                        entry->setCodeGeneration(templateEntry->codeGeneration());
+                    if(templateEntry->isGenericClass())
+                        entry->setGenericClass(true);
                     for(const CodeSnip& snip : templateEntry->codeSnips()){
                         CodeSnip _snip = snip;
                         for(TS::CodeSnipFragment* fragm : _snip.codeList){
@@ -1268,11 +1391,11 @@ QList<AbstractObject*> QmlTypeSystemReaderPrivate::parseChildrenOfComplexType(co
             if(!nameSpace.isEmpty())
                 name = nameSpace+"::"+name;
             parseObjectType(name, childElement);
-        }else if(TemplateType* childElement = qobject_cast<TemplateType*>(item)){
+        }else if(TypeTemplate* childElement = qobject_cast<TypeTemplate*>(item)){
             QString name = element->getName();
             if(!nameSpace.isEmpty())
                 name = nameSpace+"::"+name;
-            parseTemplateType(name, childElement);
+            parseTypeTemplate(name, childElement);
         }else if(FunctionalType* childElement = qobject_cast<FunctionalType*>(item)){
             QString name = element->getName();
             if(!nameSpace.isEmpty())
@@ -1372,19 +1495,124 @@ CustomFunction QmlTypeSystemReaderPrivate::parseCustomStructor(AbstractStructor*
     return func;
 }
 
-void QmlTypeSystemReaderPrivate::parseTemplateType(const QString& nameSpace, TemplateType* element){
+void QmlTypeSystemReaderPrivate::parseTypeTemplate(const QString& nameSpace, TypeTemplate* element){
     if (checkQtVersion(element)){
         QString name = element->getName();
         if(!nameSpace.isEmpty())
             name = nameSpace+"::"+name;
         try{
-            std::unique_ptr<TemplateTypeEntry> entry(new TemplateTypeEntry(name));
+            auto entry = std::make_unique<TS::TypeTemplate>(name);
+            {
+                QString ppCondition = element->getPpCondition();
+                QString extendType = element->getExtendType();
+                QString implements = element->getImplementing();
+                QString permitting = element->getPermitting();
+                QString defaultSuperclass = element->getDefaultSuperClass();
+                entry->setPPCondition(ppCondition);
+                if(!ppCondition.isEmpty()){
+                    TS::Include incl = entry->include();
+                    if(incl.isValid()){
+                        incl.ckeckAvailability = true;
+                        entry->setInclude(incl);
+                        if(entry->designatedInterface())
+                            entry->designatedInterface()->setInclude(incl);
+                    }
+                }
+                entry->setDefaultSuperclass(element->getDefaultSuperClass());
+                entry->setAddTextStreamFunctions(element->getAddTextStreamFunctions());
+                entry->setForceFinal(element->getForceFinal());
+                entry->setSkipMetaTypeRegistration(element->getNoMetaType());
+                if (element->getDisableNativeIdUsage())
+                    entry->disableNativeIdUsage();
+                if (element->getForceAbstract())
+                    entry->setForceAbstract();
+                if (element->getForceFriendly())
+                    entry->setForceFriendly();
+                if (element->getDeprecated())
+                    entry->setDeprecated();
+                if (element->getSealed())
+                    entry->setSealed();
+                if (element->getNonSealed())
+                    entry->setNonSealed();
+                entry->setPushUpStatics(element->getPushUpStatics());
+                entry->setNoImplicitConstructors(element->getNoImplicitConstructors());
+                entry->setNotAssignable(element->getNotAssignable());
+                entry->setNotMoveAssignable(element->getNotMoveAssignable());
+                entry->setNotCloneable(element->getNotCloneable());
+                entry->setNoInstance(element->getNoInstance());
+                if(element->getNoInstance()){
+                    entry->setHasPrivateCopyConstructor();
+                    entry->setHasPrivateMoveConstructor();
+                    entry->setHasPrivateDefaultConstructor();
+                    entry->setHasPrivateMoveAssignment();
+                    entry->setHasPrivateDefaultAssignment();
+                    entry->setHasPrivateConstructors();
+                }
+                if(!entry->isNamespace() && !entry->isIterator()){
+                    if(element->getThreadAffinity().userType()==QMetaType::QString){
+                        if(!element->getThreadAffinity().toString().isEmpty()){
+                            entry->setThreadAffine();
+                            entry->setThreadAffinity(element->getThreadAffinity().toString());
+                        }
+                    }else if(element->getThreadAffinity().canConvert<int>()){
+                        bool ok = false;
+                        int v = element->getThreadAffinity().toInt(&ok);
+                        if(ok){
+                            switch(v){
+                            case Affinity::UI:
+                                entry->setThreadAffine();
+                                entry->setThreadAffinity("ui");
+                                break;
+                            case Affinity::Pixmap:
+                                entry->setThreadAffine();
+                                entry->setThreadAffinity("pixmap");
+                                break;
+                            default:
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                QVariant generate = element->getGenerate();
+
+                if(element->getIsNativeInterface()){
+                    entry->setGenericClass(element->getIsGeneric());
+                    entry->setNativeInterface(true);
+                    if((m_generate & ~TypeEntry::InheritedByTypeSystem)==TypeEntry::GenerateAll){
+                        if((generate.userType()==QMetaType::QString && generate.value<QString>()=="no-shell") || (generate.userType()==QMetaType::Bool && generate.value<bool>())){
+                            entry->setCodeGeneration(TypeEntry::GenerateNoShell | TypeEntry::GenerateAll);
+                        }else{
+                            entry->setCodeGeneration(TypeEntry::GenerateForSubclass);
+                        }
+                    }else
+                        entry->setCodeGeneration(m_generate | TypeEntry::InheritedByTypeSystem);
+                }else{
+                    entry->setGenericClass(element->getIsGeneric());
+                    if((m_generate & ~TypeEntry::InheritedByTypeSystem)==TypeEntry::GenerateAll){
+                        if(generate.userType()==QMetaType::QString && generate.value<QString>()=="no-shell"){
+                            entry->setCodeGeneration(TypeEntry::GenerateNoShell | TypeEntry::GenerateAll);
+                        }else if (generate.userType()==QMetaType::Bool && !generate.value<bool>())
+                            entry->setCodeGeneration(TypeEntry::GenerateForSubclass);
+                        else
+                            entry->setCodeGeneration(m_generate | TypeEntry::InheritedByTypeSystem);
+                    }else
+                        entry->setCodeGeneration(m_generate | TypeEntry::InheritedByTypeSystem);
+                }
+                entry->setPrecompiledHeader(m_precompiledHeader);
+                entry->setImplements(implements);
+                entry->setPermits(permitting);
+                entry->setExtendType(extendType);
+                if(!extendType.isEmpty()){
+                    entry->setCodeGeneration(TypeEntry::GenerateForSubclass);
+                }
+            }
             const QList<AbstractObject*>& childrenList = element->childrenList();
             QList<Include*> includes;
             for(int i=0; i<childrenList.size(); ++i){
                 AbstractObject* item = childrenList[i];
-                if(Template* childElement = qobject_cast<Template*>(item)){
-                    parseTemplate(childElement);
+                if(CodeTemplate* childElement = qobject_cast<CodeTemplate*>(item)){
+                    parseCodeTemplate(childElement);
                 }else if(TemplateArguments* childElement = qobject_cast<TemplateArguments*>(item)){
                     if(!entry->isTemplate())
                         TypesystemException::raise(QStringLiteral(u"Unexpected element TemplateArguments as child of non-template"));
@@ -1393,6 +1621,17 @@ void QmlTypeSystemReaderPrivate::parseTemplateType(const QString& nameSpace, Tem
                     parseModifyFunction(childElement, entry.get());
                 }else if(ModifyField* childElement = qobject_cast<ModifyField*>(item)){
                     parseModifyField(childElement, entry.get());
+                }else if(GenericArgument* childElement = qobject_cast<GenericArgument*>(item)){
+                    if (checkQtVersion(childElement)){
+                        ArgumentModification argumentModification = ArgumentModification(ArgumentModification::TypeParameter);
+                        argumentModification.modified_name = childElement->getName();
+                        argumentModification.comment = childElement->getComment();
+                        argumentModification.modified_type = childElement->getExtending();
+                        entry->addGenericArgument(argumentModification);
+                        for(AbstractObject* item2 : item->childrenList()){
+                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                        }
+                    }
                 }else if(InjectCode* childElement = qobject_cast<InjectCode*>(item)){
                     parseInjectCode(childElement, entry.get());
                 }else if(DelegateBaseClass* childElement = qobject_cast<DelegateBaseClass*>(item)){
@@ -1426,20 +1665,72 @@ void QmlTypeSystemReaderPrivate::parseTemplateType(const QString& nameSpace, Tem
                             TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
                         }
                         QString name = childElement->getTemplate();
-                        if(TemplateTypeEntry* templateEntry = m_database->findTemplateType(name)){
+                        if(auto templateEntry = m_database->findTypeTemplate(name)){
+                            if(entry->defaultSuperclass().isEmpty())
+                                entry->setDefaultSuperclass(templateEntry->defaultSuperclass());
+                            if(templateEntry->isNonSealed())
+                                entry->setNonSealed();
+                            if(templateEntry->isSealed())
+                                entry->setSealed();
+                            if(templateEntry->isAddTextStreamFunctions())
+                                entry->setAddTextStreamFunctions(true);
+                            if(templateEntry->hasPrivateConstructors()){
+                                entry->setHasPrivateCopyConstructor();
+                                entry->setHasPrivateMoveConstructor();
+                                entry->setHasPrivateDefaultConstructor();
+                                entry->setHasPrivateMoveAssignment();
+                                entry->setHasPrivateDefaultAssignment();
+                                entry->setHasPrivateConstructors();
+                            }
+                            for(const auto& mod : templateEntry->genericArguments())
+                                entry->addGenericArgument(mod);
+                            if(templateEntry->getPushUpStatics())
+                                entry->setPushUpStatics(true);
+                            if(templateEntry->getNotCloneable())
+                                entry->setNotCloneable(true);
+                            if(templateEntry->getNotMoveAssignable())
+                                entry->setNotMoveAssignable(true);
+                            if(templateEntry->getNotAssignable())
+                                entry->setNotAssignable(true);
+                            if(templateEntry->getNoImplicitConstructors())
+                                entry->setNoImplicitConstructors(true);
+                            if(templateEntry->skipMetaTypeRegistration())
+                                entry->setSkipMetaTypeRegistration(true);
+                            if(!templateEntry->ppCondition().isEmpty()){
+                                if(entry->ppCondition().isEmpty())
+                                    entry->setPPCondition(templateEntry->ppCondition());
+                                else
+                                    entry->setPPCondition("(" + entry->ppCondition() + ") && (" + templateEntry->ppCondition() + ")");
+                            }
+                            if(!templateEntry->extendType().isEmpty())
+                                entry->setExtendType(templateEntry->extendType());
+                            if(!templateEntry->threadAffinity().isEmpty())
+                                entry->setThreadAffinity(templateEntry->threadAffinity());
+                            if(!templateEntry->implements().isEmpty())
+                                entry->setImplements(templateEntry->implements());
+                            if(!templateEntry->permits().isEmpty())
+                                entry->setPermits(templateEntry->permits());
+                            if(templateEntry->isNativeInterface())
+                                entry->setNativeInterface(true);
+                            if(templateEntry->isDeprecated())
+                                entry->setDeprecated();
+                            if(templateEntry->isForceFriendly())
+                                entry->setForceFriendly();
+                            if(templateEntry->isForceAbstract())
+                                entry->setForceAbstract();
+                            if(!templateEntry->isNativeIdBased())
+                                entry->disableNativeIdUsage();
+                            if(templateEntry->forceFinal())
+                                entry->setForceFinal(true);
+                            if(templateEntry->codeGeneration()!=TypeEntry::GenerateAll)
+                                entry->setCodeGeneration(templateEntry->codeGeneration());
+                            if(templateEntry->isGenericClass())
+                                entry->setGenericClass(true);
                             entry->addCodeSnips(templateEntry->codeSnips());
                             entry->addFunctionModifications(templateEntry->functionModifications());
                             entry->addFieldModifications(templateEntry->fieldModifications());
                             for(const TS::Include& incl : templateEntry->extraIncludes()){
                                 entry->addExtraInclude(incl);
-                            }
-                            if(entry->designatedInterface()){
-                                entry->designatedInterface()->addCodeSnips(templateEntry->codeSnips());
-                                entry->designatedInterface()->addFunctionModifications(templateEntry->functionModifications());
-                                entry->designatedInterface()->addFieldModifications(templateEntry->fieldModifications());
-                                for(const TS::Include& incl : templateEntry->extraIncludes()){
-                                    entry->designatedInterface()->addExtraInclude(incl);
-                                }
                             }
                         }else{
                             TypesystemException::raise(QStringLiteral(u"Unable to find template-type '%1'.").arg(name));
@@ -1516,9 +1807,9 @@ void QmlTypeSystemReaderPrivate::parseTemplateType(const QString& nameSpace, Tem
                         entry->designatedInterface()->setInclude(incl);
                 }
             }
-            m_database->addTemplateType(entry.release());
+            m_database->addTypeTemplate(entry.release());
         }catch(const TypesystemException& exn){
-            TypesystemException::raise(QStringLiteral(u"%1 of type %2").arg(QLatin1String(exn.what()), name));
+            TypesystemException::raise(QStringLiteral(u"%1 in type %2").arg(QLatin1String(exn.what()), name));
         }
     }
 }
@@ -1592,8 +1883,13 @@ void QmlTypeSystemReaderPrivate::parseModifyArgument(ModifyArgument* element, Ab
             ArgumentModification argumentModification(index);
 
             argumentModification.replace_value = element->getReplaceValue();
+            argumentModification.resolved_type = element->getResolvedType();
+            if (!argumentModification.resolved_type.isEmpty() && index != 0)
+                    TypesystemException::raise(QStringLiteral(u"ModifyArgument.resolvedValue is only supported for return values (index=0)"));
             if (!argumentModification.replace_value.isEmpty() && index != 0)
                 TypesystemException::raise(QStringLiteral(u"ModifyArgument.replaceValue is only supported for return values (index=0)"));
+            if (!argumentModification.resolved_type.isEmpty() && !argumentModification.replace_value.isEmpty())
+                TypesystemException::raise(QStringLiteral(u"Either use resolvedValue or replaceValue on ModifyArgument but not both"));
             if(element->getThreadAffinity().userType()==QMetaType::Bool){
                 if(element->getThreadAffinity().toBool()){
                     argumentModification.thread_affine = TS::ThreadAffinity::Yes;
@@ -1740,6 +2036,15 @@ void QmlTypeSystemReaderPrivate::parseModifyArgument(ModifyArgument* element, Ab
                         }
                         argumentModification.useAsArrayType = asArrayType;
                     }
+                }else if(AsString* childElement = qobject_cast<AsString*>(item)){
+                    if (checkQtVersion(childElement)){
+                        for(AbstractObject* item2 : item->childrenList()){
+                            TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                        }
+                        argumentModification.useAsStringType = TS::AsStringType::Yes;
+                        argumentModification.useAsArrayType = TS::AsArrayType::No;
+                        argumentModification.useAsBufferType = TS::AsBufferType::No;
+                    }
                 }else if(AsArray* childElement = qobject_cast<AsArray*>(item)){
                     if (checkQtVersion(childElement)){
                         for(AbstractObject* item2 : item->childrenList()){
@@ -1774,11 +2079,6 @@ void QmlTypeSystemReaderPrivate::parseModifyArgument(ModifyArgument* element, Ab
                                 argumentModification.maxArrayLength = -1;
                                 argumentModification.arrayLengthExpression = childElement->getLengthExpression();
                             }
-                        }
-                        if(argumentModification.utilArgParameter<1
-                            && argumentModification.minArrayLength<0
-                            && argumentModification.arrayLengthExpression.isEmpty()){
-                            TypesystemException::raise(QStringLiteral(u"%1 requires to specify either lengthParameter, lengthExpression or minLength").arg(item->metaObject()->className()));
                         }
                     }
                 }else if(AsSlot* childElement = qobject_cast<AsSlot*>(item)){
@@ -2701,7 +3001,7 @@ void QmlTypeSystemReaderPrivate::parseFunctionalType(const QString& nameSpace, F
             }
             m_database->addType(fentry.release());
         }catch(const TypesystemException& exn){
-            TypesystemException::raise(QStringLiteral(u"%1 of type %2").arg(QLatin1String(exn.what()), name));
+            TypesystemException::raise(QStringLiteral(u"%1 in type %2").arg(QLatin1String(exn.what()), name));
         }
     }
 }
@@ -2736,7 +3036,7 @@ void QmlTypeSystemReaderPrivate::parseIteratorType(const QString& nameSpace, Ite
                 TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), element->metaObject()->className()));
             }
         }catch(const TypesystemException& exn){
-            TypesystemException::raise(QStringLiteral(u"%1 of type %2").arg(QLatin1String(exn.what()), name));
+            TypesystemException::raise(QStringLiteral(u"%1 in type %2").arg(QLatin1String(exn.what()), name));
         }
     }
 }
@@ -2778,21 +3078,37 @@ void QmlTypeSystemReaderPrivate::parseValueType(const QString& nameSpace, ValueT
                 entry->setPolymorphicIdValue(element->getPolymorphicIdExpression());
                 parseAttributesOfComplexType(element, entry.get());
                 QList<AbstractObject*> unhandledElements = parseChildrenOfComplexType(nameSpace, element, entry.get());
+                if(entry->defaultSuperclass().isEmpty()){
+                    entry->setDefaultSuperclass(m_defaultSuperclass);
+                    if(entry->designatedInterface()){
+                        entry->designatedInterface()->setDefaultSuperclass(m_defaultSuperclass);
+                    }
+                }
                 for(AbstractObject* childElement : qAsConst(unhandledElements)){
                     TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(childElement->metaObject()->className(), element->metaObject()->className()));
                 }
                 if(name.endsWith(">")){
                     auto idx = name.indexOf('<');
                     QString templateName = name.mid(0, idx);
-                    QStringList templateArguments = name.mid(idx+1).chopped(1).split(",");
+                    QString templateArguments = name.mid(idx+1).chopped(1);
                     ComplexTypeEntry* templateType = m_database->findComplexType(templateName);
                     if(templateType){
                         if(templateType->isTemplate()){
-                            if(templateType->instantiations().contains(templateArguments) && templateType->instantiations()[templateArguments]==nullptr){
-                                entry->setTargetLangName(templateType->targetLangName());
-                                templateType->addInstantiation(templateArguments, entry.release());
-                            }else{
-                                TypesystemException::raise(QStringLiteral(u"Template %1<%2> already defined").arg(templateName, templateArguments.join(",")));
+                            bool found = false;
+                            for(auto iter = templateType->instantiations().keyValueBegin(), end = templateType->instantiations().keyValueEnd(); iter!=end; ++iter){
+                                if(templateArguments==iter->first.join(",")){
+                                    found = true;
+                                    if(iter->second==nullptr){
+                                        entry->setTargetLangName(templateType->targetLangName());
+                                        templateType->addInstantiation(QStringList(iter->first), entry.release());
+                                        break;
+                                    }else{
+                                        TypesystemException::raise(QStringLiteral(u"Template defined twice"));
+                                    }
+                                }
+                            }
+                            if(!found){
+                                TypesystemException::raise(QStringLiteral(u"Template definition not available in %1").arg(templateName));
                             }
                         }else{
                             TypesystemException::raise(QStringLiteral(u"Type %1 not a template").arg(templateName));
@@ -2806,7 +3122,7 @@ void QmlTypeSystemReaderPrivate::parseValueType(const QString& nameSpace, ValueT
                 }
             }
         }catch(const TypesystemException& exn){
-            TypesystemException::raise(QStringLiteral(u"%1 of type %2").arg(QLatin1String(exn.what()), name));
+            TypesystemException::raise(QStringLiteral(u"%1 in type %2").arg(QLatin1String(exn.what()), name));
         }
     }
 }
@@ -2834,15 +3150,25 @@ void QmlTypeSystemReaderPrivate::parseTypeAliasType(const QString& nameSpace, Ty
             if(name.endsWith(">")){
                 auto idx = name.indexOf('<');
                 QString templateName = name.mid(0, idx);
-                QStringList templateArguments = name.mid(idx+1).chopped(1).split(",");
+                QString templateArguments = name.mid(idx+1).chopped(1);
                 ComplexTypeEntry* templateType = m_database->findComplexType(templateName);
                 if(templateType){
                     if(templateType->isTemplate()){
-                        if(templateType->instantiations().contains(templateArguments) && templateType->instantiations()[templateArguments]==nullptr){
-                            entry->setTargetLangName(templateType->targetLangName());
-                            templateType->addInstantiation(templateArguments, entry.release());
-                        }else{
-                            TypesystemException::raise(QStringLiteral(u"Template %1<%2> already defined").arg(templateName, templateArguments.join(",")));
+                        bool found = false;
+                        for(auto iter = templateType->instantiations().keyValueBegin(), end = templateType->instantiations().keyValueEnd(); iter!=end; ++iter){
+                            if(templateArguments==iter->first.join(",")){
+                                found = true;
+                                if(iter->second==nullptr){
+                                    entry->setTargetLangName(templateType->targetLangName());
+                                    templateType->addInstantiation(QStringList(iter->first), entry.release());
+                                    break;
+                                }else{
+                                    TypesystemException::raise(QStringLiteral(u"Template defined twice"));
+                                }
+                            }
+                        }
+                        if(!found){
+                            TypesystemException::raise(QStringLiteral(u"Template definition not available in %1").arg(templateName));
                         }
                     }else{
                         TypesystemException::raise(QStringLiteral(u"Type %1 not a template").arg(templateName));
@@ -2855,7 +3181,7 @@ void QmlTypeSystemReaderPrivate::parseTypeAliasType(const QString& nameSpace, Ty
                 m_database->addType(entry.release());
             }
         }catch(const TypesystemException& exn){
-            TypesystemException::raise(QStringLiteral(u"%1 of type %2").arg(QLatin1String(exn.what()), name));
+            TypesystemException::raise(QStringLiteral(u"%1 in type %2").arg(QLatin1String(exn.what()), name));
         }
     }
 }
@@ -2893,13 +3219,19 @@ void QmlTypeSystemReaderPrivate::parseInterfaceType(const QString& nameSpace, In
             itype->setNoImpl(element->getNoImpl());
             parseAttributesOfComplexType(element, otype.get());
             QList<AbstractObject*> unhandledElements = parseChildrenOfComplexType(nameSpace, element, otype.get());
+            if(otype->defaultSuperclass().isEmpty()){
+                otype->setDefaultSuperclass(m_defaultSuperclass);
+                if(otype->designatedInterface()){
+                    otype->designatedInterface()->setDefaultSuperclass(m_defaultSuperclass);
+                }
+            }
             for(AbstractObject* childElement : qAsConst(unhandledElements)){
                 TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(childElement->metaObject()->className(), element->metaObject()->className()));
             }
             m_database->addType(otype.release());
             itype.release();
         }catch(const TypesystemException& exn){
-            TypesystemException::raise(QStringLiteral(u"%1 of type %2").arg(QLatin1String(exn.what()), name));
+            TypesystemException::raise(QStringLiteral(u"%1 in type %2").arg(QLatin1String(exn.what()), name));
         }
     }
 }
@@ -2935,10 +3267,16 @@ void QmlTypeSystemReaderPrivate::parseNamespaceType(const QString& nameSpace, Na
             for(AbstractObject* childElement : qAsConst(unhandledElements)){
                 TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(childElement->metaObject()->className(), element->metaObject()->className()));
             }
+            if(entry->defaultSuperclass().isEmpty()){
+                entry->setDefaultSuperclass(m_defaultSuperclass);
+                if(entry->designatedInterface()){
+                    entry->designatedInterface()->setDefaultSuperclass(m_defaultSuperclass);
+                }
+            }
             ReportHandler::debugTypes("Adding to TypeDatabase(2): " + entry->name());
             m_database->addType(entry.release());
         }catch(const TypesystemException& exn){
-            TypesystemException::raise(QStringLiteral(u"%1 of type %2").arg(QLatin1String(exn.what()), name));
+            TypesystemException::raise(QStringLiteral(u"%1 in type %2").arg(QLatin1String(exn.what()), name));
         }
     }
 }
@@ -3075,7 +3413,7 @@ void QmlTypeSystemReaderPrivate::parseEnumType(const QString& nameSpace, EnumTyp
             }
             m_database->addType(eentry.release());
         }catch(const TypesystemException& exn){
-            TypesystemException::raise(QStringLiteral(u"%1 of type %2").arg(QLatin1String(exn.what()), name));
+            TypesystemException::raise(QStringLiteral(u"%1 in type %2").arg(QLatin1String(exn.what()), name));
         }
     }
 }

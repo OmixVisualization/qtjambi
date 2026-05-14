@@ -275,10 +275,20 @@ JObjectWrapperData* createJObjectValueWrapperData(JNIEnv *env, jobject obj);
 JObjectWrapperData* qtjambiCreateObject(const JObjectValueWrapperPrivate* methods){
     if(methods){
         if(JniEnvironment env{200}){
+            jthrowable exn = nullptr;
+            if(env->ExceptionCheck()){
+                exn = env->ExceptionOccurred();
+                env->ExceptionClear();
+            }
             try{
-                return createJObjectValueWrapperData(env, env->NewObject(methods->clazz, methods->constructor));
+                jobject newObject = env->NewObject(methods->clazz, methods->constructor);
+                JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                return createJObjectValueWrapperData(env, newObject);
             }catch(const JavaException& exn){
                 exn.report(env);
+            }
+            if(exn){
+                env->Throw(exn);
             }
         }
     }
@@ -287,12 +297,20 @@ JObjectWrapperData* qtjambiCreateObject(const JObjectValueWrapperPrivate* method
 
 JObjectWrapper qtjambiCopyObject(JNIEnv* env, const JObjectValueWrapperPrivate* methods, const JObjectWrapper& other){
     if(methods && env){
+        jthrowable exn = nullptr;
+        if(env->ExceptionCheck()){
+            exn = env->ExceptionOccurred();
+            env->ExceptionClear();
+        }
         try{
             jobject o = env->CallObjectMethod(other.object(env), methods->clone);
             JavaException::check(env QTJAMBI_STACKTRACEINFO );
             return JObjectWrapper(env, o);
         }catch(const JavaException& exn){
             exn.report(env);
+        }
+        if(exn){
+            env->Throw(exn);
         }
     }
     return JObjectWrapper();
@@ -307,12 +325,20 @@ JObjectWrapper qtjambiCopyObject(const JObjectValueWrapperPrivate* methods, cons
 
 JObjectWrapperData* qtjambiCopyObjectData(JNIEnv* env, const JObjectValueWrapperPrivate* methods, const JObjectWrapper& other){
     if(methods && env){
+        jthrowable exn = nullptr;
+        if(env->ExceptionCheck()){
+            exn = env->ExceptionOccurred();
+            env->ExceptionClear();
+        }
         try{
             jobject o = env->CallObjectMethod(other.object(env), methods->clone);
             JavaException::check(env QTJAMBI_STACKTRACEINFO );
             return createJObjectValueWrapperData(env, o);
         }catch(const JavaException& exn){
             exn.report(env);
+        }
+        if(exn){
+            env->Throw(exn);
         }
     }
     return nullptr;
@@ -474,6 +500,7 @@ void JObjectValueWrapper::writeTo(QDataStream &d)const{
             jobject _d = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, &d);
             QTJAMBI_INVALIDATE_AFTER_USE(env, _d);
             env->CallVoidMethod(object(env), p->writeTo, _d);
+            JavaException::check(env QTJAMBI_STACKTRACEINFO );
         }catch(const JavaException& exn){
             exn.report(env);
         }
@@ -485,6 +512,7 @@ void JObjectValueWrapper::readFrom(QDataStream &d){
             jobject _d = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, &d);
             QTJAMBI_INVALIDATE_AFTER_USE(env, _d);
             env->CallVoidMethod(object(env), p->readFrom, _d);
+            JavaException::check(env QTJAMBI_STACKTRACEINFO );
         }catch(const JavaException& exn){
             exn.report(env);
         }
@@ -526,7 +554,7 @@ const QMetaObject *JObjectValueWrapper::metaObject(const QtPrivate::QMetaTypeInt
     if(methods){
         if(quintptr(methods->metaObject) == std::numeric_limits<quintptr>::max()){
             if(JniEnvironment env{200}){
-                const_cast<JObjectValueWrapperPrivate*>(methods.get())->metaObject = CoreAPI::metaObjectForClass(env, methods->clazz);
+                const_cast<JObjectValueWrapperPrivate*>(methods.get())->metaObject = metaObjectForClass(env, methods->clazz);
                 if(!methods->metaObject){
                     const_cast<QtPrivate::QMetaTypeInterface*>(iface)->flags &= ~QMetaType::IsGadget;
                     const_cast<QtPrivate::QMetaTypeInterface*>(iface)->flags &= ~QMetaType::PointerToGadget;
@@ -910,7 +938,8 @@ CACHE_MEMBER_DECL(QtJambiStorage::SuperTypeInfoHash, superTypeInfos);
 CACHE_MEMBER_DECL(QtJambiStorage::VTableHash, virtualTables);
 CACHE_MEMBER_DECL(QtJambiStorage::MetaObjectByNameHash, metaObjectsByName);
 CACHE_MEMBER_DECL(QtJambiStorage::ParameterTypeHash, parameterTypeInfos);
-CACHE_MEMBER_DECL(QtJambiStorage::MetaObjectByMetaTypeHash, metaObjects);
+CACHE_MEMBER_DECL(QtJambiStorage::OriginalMetaObjectByMetaTypeHash, originalMetaObjects);
+CACHE_MEMBER_DECL(QtJambiStorage::DynamicMetaObjectByMetaTypeHash, dynamicMetaObjects);
 CACHE_MEMBER_DECL(QtJambiStorage::SignalTypesHash, signalTypes);
 CACHE_MEMBER_DECL(QtJambiStorage::ResettableBoolFlagHash, resettableBoolFlags);
 CACHE_MEMBER_DECL(QtJambiStorage::SupportedMessageTypes, supportedMessageTypes);
@@ -1038,7 +1067,7 @@ void QtJambiStorage::cleanup(GlobalClassPointers& globalClassPointers,
                                ClassIdHash& classHash,
                                JObjectWrapper& signalEmitThreadCheckHandler,
                                ResettableBoolFlagHash& resettableBoolFlags,
-                               MetaObjectByMetaTypeHash& metaObjects,
+                               DynamicMetaObjectByMetaTypeHash& dynamicMetaObjects,
                                SignalTypesHash& signalTypes,
 #ifdef QTJAMBI_LOG_CLASSNAMES
                                ClassNameHash& classNameHash,
@@ -1196,7 +1225,7 @@ void QtJambiStorage::cleanup(GlobalClassPointers& globalClassPointers,
         // qtjambimetaobject
         CACHE_DESTRUCTOR_SWAP(metaObjectsByName);
         CACHE_DESTRUCTOR_SWAP(parameterTypeInfos);
-        CACHE_DESTRUCTOR_SWAP(metaObjects);
+        CACHE_DESTRUCTOR_SWAP(dynamicMetaObjects);
         CACHE_DESTRUCTOR_SWAP(signalTypes);
 #if !defined(QTJAMBI_NO_GLOBALREFS)
         CACHE_DESTRUCTOR_SWAP(javaMetaObjects);
@@ -1312,7 +1341,7 @@ QtJambiStorage::~QtJambiStorage(){
     CACHE_DESTRUCTOR_VAR(ClassIdHash, classHash)
     CACHE_DESTRUCTOR_VAR(ObjectsByFunctionPointerHash, objectsByFunctionPointers)
     CACHE_DESTRUCTOR_VAR(SuperTypeInfoHash, superTypeInfos)
-    CACHE_DESTRUCTOR_VAR(MetaObjectByMetaTypeHash, metaObjects)
+    CACHE_DESTRUCTOR_VAR(DynamicMetaObjectByMetaTypeHash, dynamicMetaObjects)
     CACHE_DESTRUCTOR_VAR(SignalTypesHash, signalTypes)
     CACHE_DESTRUCTOR_VAR(ResettableBoolFlagHash, resettableBoolFlags)
     CACHE_DESTRUCTOR_VAR(JObjectWrapper, signalEmitThreadCheckHandler)
@@ -1327,7 +1356,7 @@ QtJambiStorage::~QtJambiStorage(){
             classHash,
             signalEmitThreadCheckHandler,
             resettableBoolFlags,
-            metaObjects,
+            dynamicMetaObjects,
             signalTypes,
 #ifdef QTJAMBI_LOG_CLASSNAMES
             classNameHash,
@@ -1351,7 +1380,7 @@ void clearQtJambiStorage(JNIEnv* env, bool regular){
     CACHE_DESTRUCTOR_VAR(QtJambiStorage::ClassIdHash, classHash)
     CACHE_DESTRUCTOR_VAR(QtJambiStorage::ObjectsByFunctionPointerHash, objectsByFunctionPointers)
     CACHE_DESTRUCTOR_VAR(QtJambiStorage::SuperTypeInfoHash, superTypeInfos)
-    CACHE_DESTRUCTOR_VAR(QtJambiStorage::MetaObjectByMetaTypeHash, metaObjects)
+    CACHE_DESTRUCTOR_VAR(QtJambiStorage::DynamicMetaObjectByMetaTypeHash, dynamicMetaObjects)
     CACHE_DESTRUCTOR_VAR(QtJambiStorage::SignalTypesHash, signalTypes)
     CACHE_DESTRUCTOR_VAR(QtJambiStorage::ResettableBoolFlagHash, resettableBoolFlags)
     CACHE_DESTRUCTOR_VAR(JObjectWrapper, signalEmitThreadCheckHandler)
@@ -1367,7 +1396,7 @@ void clearQtJambiStorage(JNIEnv* env, bool regular){
                        classHash,
                        signalEmitThreadCheckHandler,
                        resettableBoolFlags,
-                       metaObjects,
+                       dynamicMetaObjects,
                        signalTypes,
 #ifdef QTJAMBI_LOG_CLASSNAMES
                        classNameHash,
@@ -1393,11 +1422,8 @@ void clearQtJambiStorage(JNIEnv* env, bool regular){
         for(SuperTypeInfos& info : superTypeInfos){
             info.m_interfaceInfos.clear(env);
         }
-        for(const QMetaObject* mo : std::as_const(metaObjects)){
-            if(const QtJambiMetaObject* dynamo = QtJambiMetaObject::cast(mo)){
-                // delete self-reference
-                metaObjectList << dynamo->dispose(env);
-            }
+        for(const QtJambiMetaObject* dynamo : std::as_const(dynamicMetaObjects)){
+            metaObjectList << dynamo->dispose(env);
         }
 #if !defined(QTJAMBI_NO_GLOBALREFS)
         for(jweak w : qAsConst(javaMetaObjects)){

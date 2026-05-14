@@ -98,6 +98,17 @@ public:
     Q_NORETURN static void raiseUnsupportedOperationException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
     Q_NORETURN static void raiseIndexOutOfBoundsException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
     Q_NORETURN static void raiseQThreadAffinityException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL , jobject t1, QThread* t2, QThread* t3);
+    template<typename Exn>
+    Q_NORETURN static void raise(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL ){
+        jthrowable t = Exn::newInstanceWithMessage(env,message);
+        JavaException jexn(env, t);
+#ifdef QTJAMBI_STACKTRACE
+        jexn.raise(env, methodName, fileName, lineNumber);
+#else
+        jexn.raise();
+#endif
+        throw jexn;
+    }
 private:
     void update(JNIEnv *env);
     QExplicitlySharedDataPointer<JavaExceptionPrivate> p;

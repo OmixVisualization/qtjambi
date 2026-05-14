@@ -104,12 +104,18 @@ class TypeEntry {
             QStringViewType,
             QAnyStringViewType,
             QUtf8StringViewType,
+            std_string_type,
+            std_string_view_type,
+            std_u8string_type,
+            std_u8string_view_type,
+            std_u16string_type,
+            std_u16string_view_type,
             QStringRefType,
             ContainerType,
             IteratorType,
             InterfaceType,
             ObjectType,
-            TemplateType,
+            TypeTemplateType,
             NamespaceType,
             QVariantType,
             SmartPointerType,
@@ -198,10 +204,44 @@ class TypeEntry {
                     || m_type == QStringViewType
                     || m_type == QAnyStringViewType
                     || m_type == QUtf8StringViewType
-                    || m_type == QStringRefType;
+                    || m_type == QStringRefType
+                    || m_type == std_string_type
+                    || m_type == std_string_view_type
+                    || m_type == std_u8string_type
+                    || m_type == std_u8string_view_type
+                    || m_type == std_u16string_type
+                    || m_type == std_u16string_view_type;
         }
         bool isQString() const {
             return m_type == QStringType;
+        }
+        bool isStdStringBased() const {
+            return m_type == std_string_type
+                   || m_type == std_u8string_type
+                   || m_type == std_u16string_type;
+        }
+        bool isStdStringViewBased() const {
+            return m_type == std_string_view_type
+                   || m_type == std_u8string_view_type
+                   || m_type == std_u16string_view_type;
+        }
+        bool isStdString() const {
+            return m_type == std_string_type;
+        }
+        bool isStdU8String() const {
+            return m_type == std_u8string_type;
+        }
+        bool isStdU16String() const {
+            return m_type == std_u16string_type;
+        }
+        bool isStdStringView() const {
+            return m_type == std_string_view_type;
+        }
+        bool isStdU8StringView() const {
+            return m_type == std_u8string_view_type;
+        }
+        bool isStdU16StringView() const {
+            return m_type == std_u16string_view_type;
         }
         bool isQLatin1String() const {
             return m_type == QLatin1StringType;
@@ -1182,13 +1222,15 @@ class ComplexTypeEntry : public TypeEntry {
             MoveConstructor
         };
         enum TypeFlag {
-            ForceAbstract       = 0x01,
-            ThreadAffine        = 0x02,
-            Deprecated          = 0x04,
-            ForceFriendly       = 0x10,
-            NestedNonPublic     = 0x20,
-            HasNonPublicFields  = 0x40,
-            HasFields           = 0x80,
+            ForceAbstract       = 0x0001,
+            ThreadAffine        = 0x0002,
+            Deprecated          = 0x0004,
+            ForceFriendly       = 0x0010,
+            NestedNonPublic     = 0x0020,
+            HasNonPublicFields  = 0x0040,
+            HasFields           = 0x0080,
+            Sealed              = 0x0100,
+            NonSealed           = 0x0200
         };
         typedef QFlags<TypeFlag> TypeFlags;
 
@@ -1227,6 +1269,14 @@ class ComplexTypeEntry : public TypeEntry {
         void setForceFriendly();
 
         bool isForceFriendly() const;
+
+        void setSealed();
+
+        bool isSealed() const;
+
+        void setNonSealed();
+
+        bool isNonSealed() const;
 
         void setHasNonPublicFields();
 
@@ -1302,6 +1352,8 @@ class ComplexTypeEntry : public TypeEntry {
         void setDefaultSuperclass(const QString &sc);
         void setImplements(const QString &implements);
         const QString& implements() const;
+        void setPermits(const QString &permits);
+        const QString& permits() const;
 
         void setIsPolymorphicBase(bool on);
         bool isPolymorphicBase() const;
@@ -1351,6 +1403,7 @@ class ComplexTypeEntry : public TypeEntry {
         void addInstantiation(const QStringList& instantiation, const ComplexTypeEntry* typeEntry = nullptr);
 
         const QHash<QStringList,const ComplexTypeEntry*>& instantiations() const;
+        const QList<QStringList>& instantiationDefinitions() const;
         void setExtendType(const QString& extendType);
         const QString& extendType() const;
 
@@ -1359,6 +1412,9 @@ class ComplexTypeEntry : public TypeEntry {
 
         void setCustomDestructor(const CustomFunction &func);
         const CustomFunction& customDestructor() const;
+
+        const QList<ArgumentModification>& genericArguments() const;
+        void addGenericArgument(const ArgumentModification& mod);
 
         bool skipMetaTypeRegistration() const;
 
@@ -1580,6 +1636,7 @@ private:
         QString m_qualified_cpp_name;
         QString m_java_name;
         QString m_implements;
+        QString m_permits;
         QString m_threadAffinity;
         QHash<ConstructorType,CustomFunction> m_customConstructors;
         CustomFunction m_customDestructor;
@@ -1590,10 +1647,12 @@ private:
         ExpensePolicy m_expense_policy;
         TypeFlags m_type_flags;
         QMap<QString,QString> m_delegatedBaseClasses;
+        QList<QStringList> m_instantiationDefinitions;
         QHash<QStringList,const ComplexTypeEntry*> m_instantiations;
         QString m_extendType;
         QList<void*> m_declImplicitCasts;
         QStringList m_implicitCasts;
+        QList<ArgumentModification> m_genericArguments;
         bool noImplicitConstructors = false;
         bool notAssignable = false;
         bool notMoveAssignable = false;
@@ -1720,10 +1779,10 @@ public:
 private:
 };
 
-class TemplateTypeEntry : public ImplementorTypeEntry {
+class TypeTemplate : public ImplementorTypeEntry {
     public:
-        TemplateTypeEntry(const QString &name)
-                : ImplementorTypeEntry(name, TemplateType) {
+        TypeTemplate(const QString &name)
+                : ImplementorTypeEntry(name, TypeTemplateType) {
         }
 };
 
@@ -1753,8 +1812,14 @@ class StringTypeEntry : public ValueTypeEntry {
                                 (name=="QLatin1String" ? QLatin1StringType :
                                 (name=="QLatin1StringView" ? QLatin1StringViewType :
                                 (name=="QStringView" ? QStringViewType :
+                                (name=="std::string" ? std_string_type :
+                                (name=="std::string_view" ? std_string_view_type :
+                                (name=="std::u8string" ? std_u8string_type :
+                                (name=="std::u8string_view" ? std_u8string_view_type :
+                                (name=="std::u16string" ? std_u16string_type :
+                                (name=="std::u16string_view" ? std_u16string_view_type :
                                 (name=="QAnyStringView" ? QAnyStringViewType :
-                                (name=="QUtf8StringView" ? QUtf8StringViewType : QStringRefType)))))) {
+                                (name=="QUtf8StringView" ? QUtf8StringViewType : QStringRefType)))))))))))) {
             setCodeGeneration(GenerateNothing);
         }
 

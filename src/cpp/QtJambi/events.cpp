@@ -268,10 +268,10 @@ template<UIInitialCheck::ConstructorCheck replacement>
 void UIInitialCheck::initialPixmapConstructorCheck(JNIEnv *env, const std::type_info& constructedType){
     QCoreApplication* instance = QCoreApplication::instance();
     if(!instance) {
-        Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 before initializing QGuiApplication.").arg(getQtName(constructedType)) QTJAMBI_STACKTRACEINFO);
+        JavaException::raise<Java::Runtime::IllegalStateException>(env, QStringLiteral("Cannot create %1 before initializing QGuiApplication.").arg(getQtName(constructedType)) QTJAMBI_STACKTRACEINFO);
     }else{
         if(!instance->inherits("QGuiApplication"))
-            Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 without QGuiApplication (instead of %2).").arg(getQtName(constructedType), instance->metaObject()->className()) QTJAMBI_STACKTRACEINFO);
+            JavaException::raise<Java::Runtime::IllegalStateException>(env, QStringLiteral("Cannot create %1 without QGuiApplication (instead of %2).").arg(getQtName(constructedType), instance->metaObject()->className()) QTJAMBI_STACKTRACEINFO);
         else{
             if(threadedPixmapsChecker()){
                 pixmapConstructorCheck = &trivial;
@@ -305,10 +305,10 @@ template<UIInitialCheck::ConstructorCheck replacement>
 void UIInitialCheck::initialUIConstructorCheck(JNIEnv *env, const std::type_info& constructedType){
     QCoreApplication* instance = QCoreApplication::instance();
     if(!instance) {
-        Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 before initializing QGuiApplication.").arg(getQtName(constructedType)) QTJAMBI_STACKTRACEINFO);
+        JavaException::raise<Java::Runtime::IllegalStateException>(env, QStringLiteral("Cannot create %1 before initializing QGuiApplication.").arg(getQtName(constructedType)) QTJAMBI_STACKTRACEINFO);
     }else{
         if(!instance->inherits("QGuiApplication"))
-            Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 without QGuiApplication (instead of %2).").arg(getQtName(constructedType), instance->metaObject()->className()) QTJAMBI_STACKTRACEINFO);
+            JavaException::raise<Java::Runtime::IllegalStateException>(env, QStringLiteral("Cannot create %1 without QGuiApplication (instead of %2).").arg(getQtName(constructedType), instance->metaObject()->className()) QTJAMBI_STACKTRACEINFO);
         else{
             uiConstructorCheck = replacement;
             qAddPostRoutine([](){ UIInitialCheck::uiConstructorCheck = &UIInitialCheck::initialUIConstructorCheck<replacement>; });
@@ -396,10 +396,10 @@ template<UIInitialCheck::WindowConstructorCheck replacement>
 void UIInitialCheck::initialWindowConstructorCheck(JNIEnv *env, const std::type_info& constructedType, const QObject* parent){
     QCoreApplication* instance = QCoreApplication::instance();
     if(!instance) {
-        Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 before initializing QGuiApplication.").arg(getQtName(constructedType)) QTJAMBI_STACKTRACEINFO);
+        JavaException::raise<Java::Runtime::IllegalStateException>(env, QStringLiteral("Cannot create %1 before initializing QGuiApplication.").arg(getQtName(constructedType)) QTJAMBI_STACKTRACEINFO);
     }else{
         if(!instance->inherits("QGuiApplication"))
-            Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 without QGuiApplication (instead of %2).").arg(getQtName(constructedType), instance->metaObject()->className()) QTJAMBI_STACKTRACEINFO);
+            JavaException::raise<Java::Runtime::IllegalStateException>(env, QStringLiteral("Cannot create %1 without QGuiApplication (instead of %2).").arg(getQtName(constructedType), instance->metaObject()->className()) QTJAMBI_STACKTRACEINFO);
         else{
             windowConstructorCheck = replacement;
             qAddPostRoutine([](){ UIInitialCheck::windowConstructorCheck = &UIInitialCheck::initialWindowConstructorCheck<replacement>; });
@@ -412,10 +412,10 @@ template<UIInitialCheck::WidgetConstructorCheck replacement>
 void UIInitialCheck::initialWidgetConstructorCheck(JNIEnv *env, const std::type_info& constructedType, const QObject* parent){
     QCoreApplication* instance = QCoreApplication::instance();
     if(!instance) {
-        Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 before initializing QApplication.").arg(getQtName(constructedType)) QTJAMBI_STACKTRACEINFO);
+        JavaException::raise<Java::Runtime::IllegalStateException>(env, QStringLiteral("Cannot create %1 before initializing QApplication.").arg(getQtName(constructedType)) QTJAMBI_STACKTRACEINFO);
     }else{
         if(!instance->inherits("QApplication")){
-            Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 without QApplication (instead of %2).").arg(getQtName(constructedType), instance->metaObject()->className()) QTJAMBI_STACKTRACEINFO);
+            JavaException::raise<Java::Runtime::IllegalStateException>(env, QStringLiteral("Cannot create %1 without QApplication (instead of %2).").arg(getQtName(constructedType), instance->metaObject()->className()) QTJAMBI_STACKTRACEINFO);
         }else{
             widgetConstructorCheck = replacement;
             qAddPostRoutine([](){ UIInitialCheck::widgetConstructorCheck = &UIInitialCheck::initialWidgetConstructorCheck<replacement>; });
@@ -775,7 +775,7 @@ bool eventNotifier(QObject *receiver, QEvent *event, bool* result)
                 if(enabledDanglingPointerCheck()){
                     if(JniEnvironmentExceptionHandler env{200}){
                         try{
-                            Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("QCoreApplication::notify(): QEvent(%d) sent to QObject %p which has been already deleted", event->type(), receiver) QTJAMBI_STACKTRACEINFO );
+                            JavaException::raise<Java::QtJambi::QDanglingPointerException>(env, QString::asprintf("QCoreApplication::notify(): QEvent(%d) sent to QObject %p which has been already deleted", event->type(), receiver) QTJAMBI_STACKTRACEINFO );
                         }catch(const JavaException& exn){
                             env.handleException(exn, "QCoreApplication::sendEvent");
                         }

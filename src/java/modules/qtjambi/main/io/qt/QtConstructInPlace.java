@@ -32,19 +32,19 @@ public final class QtConstructInPlace{
 		if(type.isPrimitive()) {
 			if(type==int.class)
 				type = (Class)Integer.class;
-			if(type==long.class)
+			else if(type==long.class)
 				type = (Class)Long.class;
-			if(type==short.class)
+			else if(type==short.class)
 				type = (Class)Short.class;
-			if(type==float.class)
+			else if(type==float.class)
 				type = (Class)Float.class;
-			if(type==double.class)
+			else if(type==double.class)
 				type = (Class)Double.class;
-			if(type==byte.class)
+			else if(type==byte.class)
 				type = (Class)Byte.class;
-			if(type==boolean.class)
+			else if(type==boolean.class)
 				type = (Class)Boolean.class;
-			if(type==char.class)
+			else if(type==char.class)
 				type = (Class)Character.class;
 		}
 		return type.cast(argumentAt(native_id, index));

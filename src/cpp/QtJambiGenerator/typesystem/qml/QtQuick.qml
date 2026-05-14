@@ -61,7 +61,7 @@ TypeSystem{
         Text{content: "initialize_meta_info_registerParserStatusCaster();"}
     }
     
-    TemplateType{
+    TypeTemplate{
         name: "QuickItem"
         ExtraIncludes{
             Include{
@@ -82,87 +82,89 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "//conversion-rule-shell\n"+
-                                  "jobject %out = nullptr;\n"+
-                                  "switch(%1){\n"+
-                                  "case QQuickItem::ItemChildAddedChange:      // value.item\n"+
-                                  "case QQuickItem::ItemChildRemovedChange:    // value.item\n"+
-                                  "case QQuickItem::ItemParentHasChanged:      // value.item\n"+
-                                  "    {\n"+
-                                  "        %out = qtjambi_cast<jobject>(%env, %in.item);\n"+
-                                  "    }\n"+
-                                  "    break;\n"+
-                                  "case QQuickItem::ItemSceneChange:           // value.window\n"+
-                                  "    {\n"+
-                                  "        %out = qtjambi_cast<jobject>(%env, %in.window);\n"+
-                                  "    }\n"+
-                                  "    break;\n"+
-                                  "case QQuickItem::ItemVisibleHasChanged:     // value.boolValue\n"+
-                                  "case QQuickItem::ItemActiveFocusHasChanged: // value.boolValue\n"+
-                                  "case QQuickItem::ItemAntialiasingHasChanged: // value.boolValue\n"+
-                                  "case QQuickItem::ItemEnabledHasChanged:      // value.boolValue\n"+
-                                  "    {\n"+
-                                  "        %out = qtjambi_cast<jobject>(%env, %in.boolValue);\n"+
-                                  "    }\n"+
-                                  "    break;\n"+
-                                  "case QQuickItem::ItemOpacityHasChanged:     // value.realValue\n"+
-                                  "case QQuickItem::ItemRotationHasChanged:    // value.realValue\n"+
-                                  "case QQuickItem::ItemDevicePixelRatioHasChanged: // value.realValue\n"+
-                                  "    {\n"+
-                                  "        %out = qtjambi_cast<jobject>(%env, double(%in.realValue));\n"+
-                                  "    }\n"+
-                                  "    break;\n"+
-                                  "default:\n"+
-                                  "    break;\n"+
-                                  "}"}
+                    Text{content: String.raw`
+//conversion-rule-shell
+jobject %out = nullptr;
+switch(%1){
+case QQuickItem::ItemChildAddedChange:      // value.item
+case QQuickItem::ItemChildRemovedChange:    // value.item
+case QQuickItem::ItemParentHasChanged:      // value.item
+    {
+        %out = qtjambi_cast<jobject>(%env, %in.item);
+    }
+    break;
+case QQuickItem::ItemSceneChange:           // value.window
+    {
+        %out = qtjambi_cast<jobject>(%env, %in.window);
+    }
+    break;
+case QQuickItem::ItemVisibleHasChanged:     // value.boolValue
+case QQuickItem::ItemActiveFocusHasChanged: // value.boolValue
+case QQuickItem::ItemAntialiasingHasChanged: // value.boolValue
+case QQuickItem::ItemEnabledHasChanged:      // value.boolValue
+    {
+        %out = qtjambi_cast<jobject>(%env, %in.boolValue);
+    }
+    break;
+case QQuickItem::ItemOpacityHasChanged:     // value.realValue
+case QQuickItem::ItemRotationHasChanged:    // value.realValue
+case QQuickItem::ItemDevicePixelRatioHasChanged: // value.realValue
+    {
+        %out = qtjambi_cast<jobject>(%env, double(%in.realValue));
+    }
+    break;
+default:
+    break;
+}`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "//conversion-rule-native\n"+
-                                  "QQuickItem::ItemChangeData %out(false);\n"+
-                                  "switch(__qt_%1){\n"+
-                                  "case QQuickItem::ItemChildAddedChange:      // value.item\n"+
-                                  "case QQuickItem::ItemChildRemovedChange:    // value.item\n"+
-                                  "case QQuickItem::ItemParentHasChanged:      // value.item\n"+
-                                  "    {\n"+
-                                  "        if(%in && !Java::QtQuick::QQuickItem::isInstanceOf(%env, %in)){\n"+
-                                  "            JavaException::raiseIllegalArgumentException(%env, \"Object of type QQuickItem expected.\" QTJAMBI_STACKTRACEINFO);\n"+
-                                  "        }\n"+
-                                  "        %out.item = qtjambi_cast<QQuickItem*>(%env, %in);\n"+
-                                  "    }\n"+
-                                  "    break;\n"+
-                                  "case QQuickItem::ItemSceneChange:           // value.window\n"+
-                                  "    {\n"+
-                                  "        if(%in && !Java::QtQuick::QQuickWindow::isInstanceOf(%env, %in)){\n"+
-                                  "            JavaException::raiseIllegalArgumentException(%env, \"Object of type QQuickWindow expected.\" QTJAMBI_STACKTRACEINFO);\n"+
-                                  "        }\n"+
-                                  "        %out.window = qtjambi_cast<QQuickWindow*>(%env, %in);\n"+
-                                  "    }\n"+
-                                  "    break;\n"+
-                                  "case QQuickItem::ItemVisibleHasChanged:     // value.boolValue\n"+
-                                  "case QQuickItem::ItemActiveFocusHasChanged: // value.boolValue\n"+
-                                  "case QQuickItem::ItemAntialiasingHasChanged: // value.boolValue\n"+
-                                  "case QQuickItem::ItemEnabledHasChanged:      // value.boolValue\n"+
-                                  "    {\n"+
-                                  "        if(%in && !Java::Runtime::Boolean::isInstanceOf(%env, %in)){\n"+
-                                  "            JavaException::raiseIllegalArgumentException(%env, \"Boolean value expected.\" QTJAMBI_STACKTRACEINFO);\n"+
-                                  "        }\n"+
-                                  "        %out.boolValue = QtJambiAPI::fromJavaBooleanObject(%env, %in);\n"+
-                                  "    }\n"+
-                                  "    break;\n"+
-                                  "case QQuickItem::ItemOpacityHasChanged:     // value.realValue\n"+
-                                  "case QQuickItem::ItemRotationHasChanged:    // value.realValue\n"+
-                                  "case QQuickItem::ItemDevicePixelRatioHasChanged: // value.realValue\n"+
-                                  "    {\n"+
-                                  "        if(%in && !Java::Runtime::Number::isInstanceOf(%env, %in)){\n"+
-                                  "            JavaException::raiseIllegalArgumentException(%env, \"Number value expected.\" QTJAMBI_STACKTRACEINFO);\n"+
-                                  "        }\n"+
-                                  "        %out.realValue = qreal(QtJambiAPI::fromJavaDoubleObject(%env, %in));\n"+
-                                  "    }\n"+
-                                  "    break;\n"+
-                                  "default:\n"+
-                                  "    break;\n"+
-                                  "}"}
+                    Text{content: String.raw`
+//conversion-rule-native
+QQuickItem::ItemChangeData %out(false);
+switch(__qt_%1){
+case QQuickItem::ItemChildAddedChange:      // value.item
+case QQuickItem::ItemChildRemovedChange:    // value.item
+case QQuickItem::ItemParentHasChanged:      // value.item
+    {
+        if(%in && !Java::QtQuick::QQuickItem::isInstanceOf(%env, %in)){
+            JavaException::raiseIllegalArgumentException(%env, "Object of type QQuickItem expected." QTJAMBI_STACKTRACEINFO);
+        }
+        %out.item = qtjambi_cast<QQuickItem*>(%env, %in);
+    }
+    break;
+case QQuickItem::ItemSceneChange:           // value.window
+    {
+        if(%in && !Java::QtQuick::QQuickWindow::isInstanceOf(%env, %in)){
+            JavaException::raiseIllegalArgumentException(%env, "Object of type QQuickWindow expected." QTJAMBI_STACKTRACEINFO);
+        }
+        %out.window = qtjambi_cast<QQuickWindow*>(%env, %in);
+    }
+    break;
+case QQuickItem::ItemVisibleHasChanged:     // value.boolValue
+case QQuickItem::ItemActiveFocusHasChanged: // value.boolValue
+case QQuickItem::ItemAntialiasingHasChanged: // value.boolValue
+case QQuickItem::ItemEnabledHasChanged:      // value.boolValue
+    {
+        if(%in && !Java::Runtime::Boolean::isInstanceOf(%env, %in)){
+            JavaException::raiseIllegalArgumentException(%env, "Boolean value expected." QTJAMBI_STACKTRACEINFO);
+        }
+        %out.boolValue = qtjambi_cast<bool>(%env, %in);
+    }
+    break;
+case QQuickItem::ItemOpacityHasChanged:     // value.realValue
+case QQuickItem::ItemRotationHasChanged:    // value.realValue
+case QQuickItem::ItemDevicePixelRatioHasChanged: // value.realValue
+    {
+        if(%in && !Java::Runtime::Number::isInstanceOf(%env, %in)){
+            JavaException::raiseIllegalArgumentException(%env, "Number value expected." QTJAMBI_STACKTRACEINFO);
+        }
+        %out.realValue = qreal(qtjambi_cast<double>(%env, %in));
+    }
+    break;
+default:
+    break;
+}`}
                 }
             }
         }
@@ -1634,6 +1636,12 @@ void addRC(Object obj){
 
         ValueType{
             name: "AttributeSet"
+            ExtraIncludes{
+                Include{
+                    fileName: "QtJambi/ArrayCast"
+                    location: Include.Global
+                }
+            }
             InjectCode{
                 target: CodeClass.Destructor
                 position: Position.Position1
@@ -1767,6 +1775,10 @@ for(jsize i=0; i<count0; ++i){
             Include{
                 fileName: "utils_p.h"
                 location: Include.Local
+            }
+            Include{
+                fileName: "QtJambi/BufferAPI"
+                location: Include.Global
             }
         }
         ModifyFunction{

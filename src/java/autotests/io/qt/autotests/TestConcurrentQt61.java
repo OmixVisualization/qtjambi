@@ -14,9 +14,10 @@ import io.qt.core.QtFuture;
 public class TestConcurrentQt61 extends ApplicationInitializer {
 	@Test
 	@Deprecated
-    public void testFutureUnwrap() {
+    public void testFutureUnwrap() throws InterruptedException {
     	QStringList list = new QStringList("A", "B", "C");
 		QFuture<QFuture<QFuture<String>>> results = QtConcurrent.mapped(list, s->QtFuture.makeReadyFuture(Arrays.asList(QtFuture.makeReadyFuture(s), QtFuture.makeReadyFuture(s))));
+		Thread.sleep(200);
     	QFuture<String> unwrapped = results.unwrap(String.class);
     	assertEquals(6, unwrapped.results().size());
     }

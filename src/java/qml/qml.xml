@@ -55,8 +55,8 @@
     </target>
     
     <target name="copy-resources">
-        <mkdir dir="${java.outdir}/qml/${module}"/>
-        <copy todir="${java.outdir}/qml/${module}" includeemptydirs="false">
+        <mkdir dir="${java.outdir}/${module}"/>
+        <copy todir="${java.outdir}/${module}" includeemptydirs="false">
             <fileset dir="${modulesrc}">
                 <include name="**/*"/>
                 <exclude name="**/.*"/>
@@ -69,8 +69,8 @@
     </target>
 
     <target name="copy-src-resources">
-        <mkdir dir="${java.outsrcdir}/qml/${module}"/>
-        <copy todir="${java.outsrcdir}/qml/${module}" includeemptydirs="false">
+        <mkdir dir="${java.outsrcdir}/${module}"/>
+        <copy todir="${java.outsrcdir}/${module}" includeemptydirs="false">
             <fileset dir="${modulesrc}">
                 <include name="**/*"/>
                 <exclude name="build.xml"/>
@@ -92,15 +92,15 @@
     </target>
     <target name="compile-qml" depends="jar_init">
         <dependencies-to-classpath property="qtjambi.dependencies" jarversion="${qtjambi.jar.version}" dependencies="${qtjambi.required.modules}"/>
-        <echo message="Compiling java classes: ${java.srcdir}/qml/${module} excludes: ${module.excludes}"/>
+        <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
         <pathconvert pathsep=","
             property="multiroot.basedirs">
             <path refid="sourcedirs"/>
         </pathconvert>
         <mkdir dir="${deploymentdir}"/>
-        <delete dir="${java.outdir}/qml/${module}" failonerror="no"/>
-        <mkdir dir="${java.outdir}/qml/${module}"/>
-        <copy todir="${java.outdir}/qml/${module}" includeemptydirs="false">
+        <delete dir="${java.outdir}/${module}" failonerror="no"/>
+        <mkdir dir="${java.outdir}/${module}"/>
+        <copy todir="${java.outdir}/${module}" includeemptydirs="false">
             <multirootfileset basedirs="${multiroot.basedirs}"
                               excludes="**/.*,
                                                 pom.xml,
@@ -114,7 +114,7 @@
         <condition property="module.info.exclude" value="" else="module-info.java">
             <istrue value="${java.module.based}"/>
         </condition>
-        <copy todir="${java.outsrcdir}/qml/${module}" includeemptydirs="false">
+        <copy todir="${java.outsrcdir}/${module}" includeemptydirs="false">
             <multirootfileset basedirs="${multiroot.basedirs}" 
                               excludes="pom.xml,
                                                     build.xml,
@@ -137,7 +137,7 @@
                         includeantruntime="false"
                         srcdir="${sourcedirs2}"
                         excludes="${module.excludes}"
-                        destdir="${java.outdir}/qml/${module}">
+                        destdir="${java.outdir}/${module}">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
                     <compilerarg value="-Xlint:-module,-options" />
@@ -153,7 +153,7 @@
                         includeantruntime="false"
                         srcdir="${sourcedirs2}"
                         excludes="${module.excludes},module-info.java"
-                        destdir="${java.outdir}/qml/${module}">
+                        destdir="${java.outdir}/${module}">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
                     <classpath>
@@ -171,12 +171,14 @@
                     <param name="dbgsuffix" value=""/>
                     <param name="platformjar.debug.suffix" value=""/>
                     <param name="libisdebug" value="false"/>
+					<param name="qmldestdir" value="${platformBuildDir}/release"/>
                 </antcall>
                 <antcall target="createjarimpl">
                     <param name="subdir" value="debug"/>
                     <param name="dbgsuffix" value="_debug"/>
                     <param name="platformjar.debug.suffix" value="-debug"/>
                     <param name="libisdebug" value="true"/>
+					<param name="qmldestdir" value="${platformBuildDir}/debug"/>
                 </antcall>
             </then>
         </if>
@@ -188,6 +190,7 @@
                     <param name="dbgsuffix" value=""/>
                     <param name="platformjar.debug.suffix" value=""/>
                     <param name="libisdebug" value="false"/>
+					<param name="qmldestdir" value="${platformBuildDir}/release"/>
                 </antcall>
             </then>
         </if>
@@ -200,6 +203,7 @@
                     <param name="dbgsuffix" value=""/>
                     <param name="platformjar.debug.suffix" value=""/>
                     <param name="libisdebug" value="false"/>
+					<param name="qmldestdir" value="${platformBuildDir}/release"/>
                 </antcall>
             </then>
         </if>
@@ -211,6 +215,7 @@
                     <param name="dbgsuffix" value="_debug"/>
                     <param name="platformjar.debug.suffix" value="-debug"/>
                     <param name="libisdebug" value="true"/>
+					<param name="qmldestdir" value="${platformBuildDir}/debug"/>
                 </antcall>
             </then>
         </if>
@@ -221,10 +226,10 @@
     </target>
 
     <target name="createjarimpl">
-        <condition property="destdir" value="${outputDir}/${qtjambi.osname}/tests/${subdir}" else="${qtjambi.builddir}">
+        <condition property="destdir" value="${qml.commondir}" else="${qml.commondir}">
             <istrue value="${qtjambi.testbuild}"/>
         </condition>
-        <jar destfile="${outputDir}/${qtjambi.osname}/tests/${module}.jar" excludes="${jar.excludes}">
+        <jar destfile="${qml.commondir}/${module}.jar" excludes="${jar.excludes}">
             <manifest>
                 <attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
                 <attribute name="Bundle-Description"      value="QtJambi Common API Bundle (${qtjambi.osname} ${qtjambi.configuration})"/>
@@ -239,7 +244,7 @@
                 <attribute name="X-QtJambi-Version"       value="${qtjambi.jar.version}"/>
                 <attribute name="X-QtJambi-SoName-Version" value="${qtjambi.soname.version.major}"/>
             </manifest>
-            <fileset dir="${java.outdir}/qml/${module}"/>
+            <fileset dir="${java.outdir}/${module}"/>
         </jar>
         <pathconvert property="librarypath">
             <path id="librarypath">
@@ -285,9 +290,9 @@
 							<jvmarg value="-Xrs"/>
 							<jvmarg value="-Xcheck:jni"/-->
 							<arg value="qml" />
-							<arg value="--library=${outputDir}/${qtjambi.osname}/tests/${module}.jar" />
+							<arg value="--library=${qml.commondir}/${module}.jar" />
 							<arg value="--configuration=${debug.conf}" />
-							<arg value="--dir=${destdir}" />
+							<arg value="--dir=${qmldestdir}" />
 							<arg value="--jarimport-location=${qtjambi.builddir}/lib/" />
 							<env key="DYLD_FRAMEWORK_PATH" value="${librarypath}" />
 							<modulepath>
@@ -306,9 +311,9 @@
 							<jvmarg value="-Xrs"/>
 							<jvmarg value="-Xcheck:jni"/-->
 							<arg value="qml" />
-							<arg value="--library=${outputDir}/${qtjambi.osname}/tests/${module}.jar" />
+							<arg value="--library=${qml.commondir}/${module}.jar" />
 							<arg value="--configuration=${debug.conf}" />
-							<arg value="--dir=${destdir}" />
+							<arg value="--dir=${qmldestdir}" />
 							<arg value="--jarimport-location=${qtjambi.builddir}/lib/" />
 							<env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
 							<classpath>
@@ -368,13 +373,13 @@
 						<mkdir dir="${outputDir}/${targetdirname}/tests"/>
 						<mkdir dir="${outputDir}/${targetdirname}/tests/qt-project.org/imports/${qml-subdir}"/>
 						<copy todir="${outputDir}/${targetdirname}/tests/qt-project.org/imports/${qml-subdir}">
-							  <fileset dir="${outputDir}/${targetdirname}/tests/${subdir}/qml/${qml-subdir}" includes="*" excludes="*.class,*.jar,*.so"/>
+							  <fileset dir="${outputDir}/${targetdirname}/${subdir}/qml/${qml-subdir}" includes="*" excludes="*.class,*.jar,*.so"/>
 						</copy>
 						<copy todir="${outputDir}/${targetdirname}/tests/qt-project.org/imports/">
-							<zipfileset includes="**" excludes="**/*.class" src="${outputDir}/${targetdirname}/tests/${module}.jar"/>
+							<zipfileset includes="**" excludes="**/*.class" src="${qml.commondir}/${module}.jar"/>
 						</copy>
 						<delete dir="${outputDir}/${targetdirname}/tests/qt-project.org/imports/META-INF" failonerror="0"/>
-						<jar destfile="${outputDir}/${targetdirname}/tests/${moduledash}-native-android-common-${qtjambi.jar.version}.jar">
+						<jar destfile="${deploymentdir}/native/${moduledash}-native-android-common-${qtjambi.jar.version}.jar">
 							<manifest>
 								<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 								<attribute name="Bundle-Name"      value="QtJambi ${module}"/>
@@ -383,7 +388,7 @@
 								<attribute name="Bundle-Version"         value="${qtjambi.jar.version}"/>
 								<attribute name="Bundle-ManifestVersion" value="2"/>
 							</manifest>
-							<zipfileset includes="**/*class" excludes="META-INF" src="${outputDir}/${targetdirname}/tests/${module}.jar"/>
+							<zipfileset includes="**/*class" excludes="META-INF" src="${qml.commondir}/${module}.jar"/>
 							<fileset dir="${outputDir}/${targetdirname}/tests" includes="qt-project.org/**"/>
 						</jar>
 						<delete dir="${outputDir}/${targetdirname}/tests/qt-project.org"/>
@@ -408,7 +413,7 @@
 				<equals arg1="${qtjambi.osplatform}" arg2="android"/>
 			</or>
 			<then>
-				<condition property="qmltargetdir" value="${outputDir}/${targetdirname}/tests" else="${deploymentdir}/native">
+				<condition property="qmltargetdir" value="${deploymentdir}/native" else="${deploymentdir}/native">
 					<istrue value="${qtjambi.testbuild}"/>
 				</condition>
 				<mkdir dir="${qmltargetdir}/${moduledash}"/>
@@ -451,7 +456,7 @@
 						</if>
 					</else>
 				</if>
-				<jar destfile="${qmltargetdir}/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
+				<jar destfile="${deploymentdir}/native/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
 					<manifest>
 						<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 						<attribute name="Bundle-Name"      value="QtJambi ${module} plugin platform bundle"/>
@@ -460,7 +465,7 @@
 						<attribute name="Bundle-Version"         value="${qtjambi.jar.version}"/>
 						<attribute name="Bundle-ManifestVersion" value="2"/>
 					</manifest>
-					<fileset dir="${qmltargetdir}/${subdir}" includes="${jar-includes}"/>
+					<fileset dir="${qmldestdir}/" includes="${jar-includes}"/>
 					<fileset dir="${qmltargetdir}/${moduledash}" includes="META-INF/*" erroronmissingdir="false"/>
 				</jar>
 				<delete dir="${qmltargetdir}/${moduledash}"/>

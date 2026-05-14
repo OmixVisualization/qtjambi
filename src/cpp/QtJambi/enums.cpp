@@ -343,8 +343,8 @@ jobject resolveIntEnum(JNIEnv *env, jint hashCode, jclass enumClass, jint value,
 }
 
 void registerSwitchTableFields(JNIEnv *env, jobject switchTableFields){
-    for(jsize i=0, l = Java::Runtime::Collection::size(env, switchTableFields); i<l; ++i){
-        jobject field = Java::Runtime::List::get(env, switchTableFields, i);
+    for(int i=0, l = QtJambiAPI::sizeOfJavaCollection(env, switchTableFields); i<l; ++i){
+        jobject field = QtJambiAPI::getAtJavaList(env, switchTableFields, i);
         QString name = qtjambi_cast<QString>(env, Java::Runtime::Field::getName(env, field));
         bool table = false;
         bool isEnumSwitchMapping = false;

@@ -280,6 +280,24 @@ namespace QtCore
                                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(accept))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QFutureInterfaceBase$State,)
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QFutureInterfaceBase,)
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QVariantAnimation$Interpolator,
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(compute))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QVariantAnimation$IntInterpolator,
+                                     QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(compute))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QVariantAnimation$LongInterpolator,
+                                     QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(compute))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QVariantAnimation$ByteInterpolator,
+                                     QTJAMBI_REPOSITORY_DECLARE_BYTE_METHOD(compute))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QVariantAnimation$ShortInterpolator,
+                                     QTJAMBI_REPOSITORY_DECLARE_SHORT_METHOD(compute))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QVariantAnimation$CharInterpolator,
+                                     QTJAMBI_REPOSITORY_DECLARE_CHAR_METHOD(compute))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QVariantAnimation$BooleanInterpolator,
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(compute))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QVariantAnimation$DoubleInterpolator,
+                                     QTJAMBI_REPOSITORY_DECLARE_DOUBLE_METHOD(compute))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QVariantAnimation$FloatInterpolator,
+                                     QTJAMBI_REPOSITORY_DECLARE_FLOAT_METHOD(compute))
 #if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QStringConverter$FinalizeResult,QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 #endif

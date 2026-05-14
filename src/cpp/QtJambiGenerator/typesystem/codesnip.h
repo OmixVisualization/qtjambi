@@ -89,9 +89,9 @@ class CustomFunction : public CodeSnipAbstract {
         QString placement_name;
 };
 
-class TemplateEntry : public CodeSnipAbstract {
+class CodeTemplate : public CodeSnipAbstract {
     public:
-        TemplateEntry(const QString &name)
+        CodeTemplate(const QString &name)
                 : m_name(name) {
         }
 

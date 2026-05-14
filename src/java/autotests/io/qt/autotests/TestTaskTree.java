@@ -28,6 +28,9 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.*;
 
 import org.junit.*;
@@ -585,7 +588,7 @@ public class TestTaskTree extends ApplicationInitializer{
 	            ),
 	            task()
 	        );
-
+	    
 	    {
 	        QScrollArea scrollArea = new QScrollArea();
 	        scrollArea.setWidgetResizable(true);
@@ -651,5 +654,33 @@ public class TestTaskTree extends ApplicationInitializer{
 	    QTimer.singleShot(50, startButton, QAbstractButton::click);
 	    QTimer.singleShot(12000, QCoreApplication.instance(), QCoreApplication::quit);
 	    QCoreApplication.exec();
+	}
+	
+	@org.junit.Test
+	public void testFor() {
+		List<String> list = new ArrayList<>();
+	    Group group = For.each( QList.of("C", "D", "E") )
+	    		         .apply( t->{list.add(0, t);} );
+	    QSingleTaskTreeRunner taskTreeRunner = new QSingleTaskTreeRunner();
+	    taskTreeRunner.start(group);
+	    Assert.assertEquals(Arrays.asList("E", "D", "C"), list);
+	}
+	
+	@org.junit.Test
+	public void testIfFor() {
+		List<String> list1 = new ArrayList<>();
+		List<String> list2 = new ArrayList<>();
+		ListIterator<String> iterator = new ListIterator<>(QList.of("A", "B", "AA", "BB"));
+	    Group group = For.iter(iterator)
+	    		         .apply(
+		    				If.test( ()->iterator.value().length()==1 )
+		    				  .then( ()->list1.add(iterator.value()) )
+		    				  .otherwise( ()->list2.add(iterator.value()) )
+		    				  .endif()
+		    			 );
+	    QSingleTaskTreeRunner taskTreeRunner = new QSingleTaskTreeRunner();
+	    taskTreeRunner.start(group);
+	    Assert.assertEquals(Arrays.asList("A", "B"), list1);
+	    Assert.assertEquals(Arrays.asList("AA", "BB"), list2);
 	}
 }

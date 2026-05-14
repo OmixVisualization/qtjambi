@@ -124,6 +124,12 @@ TypeSystem{
     
     ObjectType{
         name: "QDBusAbstractInterface"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/StringAPI"
+                location: Include.Global
+            }
+        }
         ModifyFunction{
             signature: "interface() const"
             rename: "interfaceName"
@@ -763,7 +769,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = QtJambiAPI::convertQStringToJavaObject(%env, __qt_%1);"}
+                                  "%out = qtjambi_cast<jcoreobject>(%env, std::move(__qt_%1));"}
                 }
             }
             ModifyArgument{

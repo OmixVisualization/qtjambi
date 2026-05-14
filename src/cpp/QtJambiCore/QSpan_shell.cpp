@@ -44,7 +44,11 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtJambi/ContainerAPI>
 #include <QtJambi/CoreAPI>
 #include <QtJambi/JavaAPI>
+#include <QtJambi/BufferAPI>
 #include <QtJambi/Cast>
+#include <QtJambi/ArrayCast>
+#include <QtJambi/ContainerCast>
+#include <QtJambi/ArithmeticCast>
 
 // emitting (writeExtraFunctions)
 // emitting (writeToStringFunction)
@@ -155,8 +159,8 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_AbstractSpan_asBuffer
         if(container.second->isSpan() && static_cast<AbstractSpanAccess*>(container.second)->elementMetaType().isValid()){
             AbstractSpanAccess* containerAccess = static_cast<AbstractSpanAccess*>(container.second);
             QtJambiSpan* span = static_cast<QtJambiSpan*>(container.first);
-            jint elementSize = containerAccess->elementMetaType().sizeOf() + (containerAccess->elementMetaType().alignOf() > 0 ? containerAccess->elementMetaType().sizeOf() % containerAccess->elementMetaType().alignOf() : 0);
-            jint size_bytes = span->size * elementSize;
+            qsizetype elementSize = containerAccess->elementMetaType().sizeOf() + (containerAccess->elementMetaType().alignOf() > 0 ? containerAccess->elementMetaType().sizeOf() % containerAccess->elementMetaType().alignOf() : 0);
+            qsizetype size_bytes = span->size * elementSize;
             if(containerAccess->isConst()){
                 result = DataJBuffer(env, reinterpret_cast<char*>(const_cast<void*>(span->begin)), size_bytes).take();
             }else{
@@ -212,30 +216,31 @@ extern "C" JNIEXPORT jarray JNICALL Java_io_qt_core_AbstractSpan_asArray
             bool* z;
         }pointer;
         pointer.pointer = span->begin;
+        qsizetype size = span->size;
         switch(type){
         case 'B':
-            result = ConstCharPointerArray(env, pointer.b, span->size).array();
+            result = qtjambi_cast<jbyteArray>(env, pointer.b, std::move(size));
             break;
         case 'S':
-            result = ConstInt16PointerArray(env, pointer.s, span->size).array();
+            result = qtjambi_cast<jshortArray>(env, pointer.s, std::move(size));
             break;
         case 'I':
-            result = ConstInt32PointerArray(env, pointer.i, span->size).array();
+            result = qtjambi_cast<jintArray>(env, pointer.i, std::move(size));
             break;
         case 'J':
-            result = ConstInt64PointerArray(env, pointer.j, span->size).array();
+            result = qtjambi_cast<jlongArray>(env, pointer.j, std::move(size));
             break;
         case 'C':
-            result = ConstQCharPointerArray(env, pointer.c, span->size).array();
+            result = qtjambi_cast<jcharArray>(env, pointer.c, std::move(size));
             break;
         case 'F':
-            result = ConstFloatPointerArray(env, pointer.f, span->size).array();
+            result = qtjambi_cast<jfloatArray>(env, pointer.f, std::move(size));
             break;
         case 'D':
-            result = ConstDoublePointerArray(env, pointer.d, span->size).array();
+            result = qtjambi_cast<jdoubleArray>(env, pointer.d, std::move(size));
             break;
         case 'Z':
-            result = ConstBoolPointerArray(env, pointer.z, span->size).array();
+            result = qtjambi_cast<jbooleanArray>(env, pointer.z, std::move(size));
             break;
         default:
             JavaException::raiseIllegalArgumentException(env, "Unable to create QSpan" QTJAMBI_STACKTRACEINFO );
@@ -360,7 +365,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_AbstractSpan_initializeFromBeg
 
 template<bool isConst>
 class BufferArraySpan : public ManagedSpan{
-    typedef typename std::conditional<isConst, PersistentJBufferConstData, PersistentJBufferData>::type BufferAccess;
+    typedef std::conditional_t<isConst, PersistentJBufferConstData, PersistentJBufferData> BufferAccess;
 
     struct Data : ManagedSpanData{
         BufferAccess bufferAccess;
@@ -414,32 +419,32 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_initializeFro
         AbstractSpanAccess* containerAccess;
         switch(type){
         case 'B':
-            containerAccess = isConst ? QtJambiPrivate::QSpanAccess<const char>::newInstance()
-                                      : QtJambiPrivate::QSpanAccess<char>::newInstance();
+            containerAccess = isConst ? QSpanAccess<const char>::newInstance()
+                                      : QSpanAccess<char>::newInstance();
             break;
         case 'S':
-            containerAccess = isConst ? QtJambiPrivate::QSpanAccess<const qint16>::newInstance()
-                                      : QtJambiPrivate::QSpanAccess<qint16>::newInstance();
+            containerAccess = isConst ? QSpanAccess<const qint16>::newInstance()
+                                      : QSpanAccess<qint16>::newInstance();
             break;
         case 'I':
-            containerAccess = isConst ? QtJambiPrivate::QSpanAccess<const qint32>::newInstance()
-                                      : QtJambiPrivate::QSpanAccess<qint32>::newInstance();
+            containerAccess = isConst ? QSpanAccess<const qint32>::newInstance()
+                                      : QSpanAccess<qint32>::newInstance();
             break;
         case 'J':
-            containerAccess = isConst ? QtJambiPrivate::QSpanAccess<const qint64>::newInstance()
-                                      : QtJambiPrivate::QSpanAccess<qint64>::newInstance();
+            containerAccess = isConst ? QSpanAccess<const qint64>::newInstance()
+                                      : QSpanAccess<qint64>::newInstance();
             break;
         case 'C':
-            containerAccess = isConst ? QtJambiPrivate::QSpanAccess<const QChar>::newInstance()
-                                      : QtJambiPrivate::QSpanAccess<QChar>::newInstance();
+            containerAccess = isConst ? QSpanAccess<const QChar>::newInstance()
+                                      : QSpanAccess<QChar>::newInstance();
             break;
         case 'F':
-            containerAccess = isConst ? QtJambiPrivate::QSpanAccess<const float>::newInstance()
-                                      : QtJambiPrivate::QSpanAccess<float>::newInstance();
+            containerAccess = isConst ? QSpanAccess<const float>::newInstance()
+                                      : QSpanAccess<float>::newInstance();
             break;
         case 'D':
-            containerAccess = isConst ? QtJambiPrivate::QSpanAccess<const double>::newInstance()
-                                      : QtJambiPrivate::QSpanAccess<double>::newInstance();
+            containerAccess = isConst ? QSpanAccess<const double>::newInstance()
+                                      : QSpanAccess<double>::newInstance();
             break;
         default:
             JavaException::raiseIllegalArgumentException(__jni_env, "Unable to create QSpan" QTJAMBI_STACKTRACEINFO );
@@ -458,8 +463,8 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_AbstractSpan_initializeFro
 
 template<typename NativeType>
 class ArraySpan : public ManagedSpan{
-    typedef typename QtJambiPrivate::jni_type_decider<NativeType>::JArrayType JArray;
-    typedef typename QtJambiPrivate::jni_type<JArray>::template NativeFactory<NativeType, std::is_const<NativeType>::value>::PersistentConverter ArrayAccess;
+    using JArray = QtJambiPrivate::jni_array_type_t<NativeType>;
+    using ArrayAccess = QtJambiPrivate::jni_native_to_java_array_converter_t<JArray, true, std::remove_cv_t<NativeType>, std::is_const_v<NativeType>>;
 
     struct Data : ManagedSpanData{
         ArrayAccess arrayAccess;
@@ -501,7 +506,7 @@ public:
             QtJambiShell::initialize(__jni_env, __jni_env->GetObjectClass(__jni_object),
                                      __jni_object,
                                      &construct, sizeof(ManagedSpan), alignof(ManagedSpan), typeid(QSpan<QVariant>), 0, false,
-                                     QtJambiPrivate::QSpanAccess<NativeType>::newInstance(),
+                                     QSpanAccess<NativeType>::newInstance(),
                                      &ManagedSpan::deleter, arguments, InvalidNativeID);
             return arguments[1].z;
         }

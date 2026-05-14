@@ -30,6 +30,7 @@
 ****************************************************************************/
 
 #include "pch_p.h"
+#include "qtjambi_cast_arithmetic.h"
 
 extern "C" JNIEXPORT jint JNICALL Java_io_qt_internal_MetaTypeUtility_registerRefMetaType(JNIEnv *env, jclass, jint id, jboolean isPointer, jboolean isReference){
     try{

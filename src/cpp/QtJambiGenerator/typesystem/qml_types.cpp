@@ -635,6 +635,45 @@ void ComplexType::setAddTextStreamFunctions(bool newAddTextStreamFunctions)
     emit addTextStreamFunctionsChanged();
 }
 
+QString ComplexType::getPermitting() const
+{
+    return permitting;
+}
+
+void ComplexType::setPermitting(const QString &newPermitting)
+{
+    if (permitting == newPermitting)
+        return;
+    permitting = newPermitting;
+    emit permittingChanged();
+}
+
+bool ComplexType::getSealed() const
+{
+    return sealed;
+}
+
+void ComplexType::setSealed(bool newSealed)
+{
+    if (sealed == newSealed)
+        return;
+    sealed = newSealed;
+    emit sealedChanged();
+}
+
+bool ComplexType::getNonSealed() const
+{
+    return nonSealed;
+}
+
+void ComplexType::setNonSealed(bool newNonSealed)
+{
+    if (nonSealed == newNonSealed)
+        return;
+    nonSealed = newNonSealed;
+    emit nonSealedChanged();
+}
+
 bool ValueType::getIsPolymorphicBase() const
 {
     return isPolymorphicBase;

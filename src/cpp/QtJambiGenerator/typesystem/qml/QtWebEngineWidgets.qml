@@ -35,7 +35,7 @@ TypeSystem{
     qtLibrary: "QtWebEngineWidgets"
     module: "qtjambi.webenginewidgets"
     description: "Provides C++ classes for rendering web content in a QWidget based application."
-    Template{
+    CodeTemplate{
         name: "web.comsumer.function"
         Text{content: "std::function<void(%TYPE)> %out;\n"+
                       "if(%in){\n"+
@@ -52,7 +52,7 @@ TypeSystem{
                       "}"}
     }
     
-    Template{
+    CodeTemplate{
         name: "web.comsumer.QWebEngineCallback"
         Text{content: "QWebEngineCallback<%TYPE> %out;\n"+
                       "if(%in){\n"+

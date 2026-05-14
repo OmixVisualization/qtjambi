@@ -33,7 +33,7 @@
         <if>
             <istrue value="${qtjambi.testbuild}"/>
             <then>
-                <property name="destdir" value="${outputDir}/${qtjambi.osname}/tests/jar" />
+                <property name="destdir" value="${deploymentdir}" />
                 <subant target="build" inheritall="true" verbose="true">
                     <filelist dir="${basedir}/src/java/plugins" files="customwidgets,multimediawidgets,helpwidgets"/>
                 </subant>
@@ -47,56 +47,31 @@
         </if>
     </target>
     <target name="bundle-plugin">
-        <if>
-            <istrue value="${qtjambi.testbuild}"/>
-            <then>
-                <if>
-                    <istrue value="${platformjar.debug}" />
-                    <then>
-                        <antcall target="bundle-plugin-impl">
-                            <param name="isdebug" value="true"/>
-                            <param name="debug.conf" value="debug"/>
-                            <param name="platformjar.debug.suffix" value="-debug"/>
-                            <param name="plugindestdir" value="${outputDir}/${qtjambi.osname}/tests/debug"/>
-                        </antcall>
-                    </then>
-                    <else>
-                        <antcall target="bundle-plugin-impl">
-                            <param name="debug.conf" value="release"/>
-                            <param name="platformjar.debug.suffix" value=""/>
-                            <param name="plugindestdir" value="${outputDir}/${qtjambi.osname}/tests/release"/>
-                        </antcall>
-                    </else>
-                </if>
-            </then>
-            <else>
-                <if>
-                    <istrue value="${platformjar.debug}" />
-                    <then>
-                        <antcall target="bundle-plugin-impl">
-                            <param name="isdebug" value="true"/>
-                            <param name="debug.conf" value="debug"/>
-                            <param name="platformjar.debug.suffix" value="-debug"/>
-                            <param name="plugindestdir" value="${deploymentdir}/platforms/${qtjambi.osname}/debug"/>
-                        </antcall>
-                    </then>
-                    <else>
-                        <antcall target="bundle-plugin-impl">
-                            <param name="debug.conf" value="release"/>
-                            <param name="platformjar.debug.suffix" value=""/>
-                            <param name="plugindestdir" value="${deploymentdir}/platforms/${qtjambi.osname}/release"/>
-                        </antcall>
-                    </else>
-                </if>
-            </else>
-        </if>
+		<if>
+			<istrue value="${platformjar.debug}" />
+			<then>
+				<antcall target="bundle-plugin-impl">
+					<param name="isdebug" value="true"/>
+					<param name="debug.conf" value="debug"/>
+					<param name="platformjar.debug.suffix" value="-debug"/>
+					<param name="plugindestdir" value="${platformBuildDir}/debug"/>
+				</antcall>
+			</then>
+			<else>
+				<antcall target="bundle-plugin-impl">
+					<param name="debug.conf" value="release"/>
+					<param name="platformjar.debug.suffix" value=""/>
+					<param name="plugindestdir" value="${platformBuildDir}/release"/>
+				</antcall>
+			</else>
+		</if>
     </target>
     <target name="bundle-plugin-impl">
-		<condition property="plugindeploymentdir" value="${outputDir}/${qtjambi.osname}/tests" else="${outputDir}/plugins">
+		<condition property="plugindeploymentdir" value="${plugins.commondir}" else="${plugins.commondir}">
 			<istrue value="${qtjambi.testbuild}"/>
 		</condition>
 		<if>
-			<available file="${plugindeploymentdir}/${module}.jar" type="file"/>
+			<available file="${plugins.commondir}/${module}.jar" type="file"/>
 			<then>
 				<mkdir dir="${plugindestdir}/plugins/${plugin-subdir}"/>
 				<if>
@@ -146,7 +121,7 @@
 				</if>
 			</then>
 			<else>
-				<echo>plugin not available: ${plugindeploymentdir}/${module}.jar</echo>
+				<echo>plugin not available: ${plugins.commondir}/${module}.jar</echo>
 			</else>
 		</if>
     </target>
@@ -178,7 +153,7 @@
 									<arg value="--configuration=${debug.conf}" />
 									<arg value="--dir=${plugins.builddir}" />
 									<arg value="--subdir=${plugin-subdir}" />
-									<arg value="--class-path=${plugindeploymentdir}/${module}.jar" />
+									<arg value="--class-path=${plugins.commondir}/${module}.jar" />
 									<arg value="--platform=${qtjambi.osname}" />
 									<arg value="--plugin-library-location=${qtjambi.builddir}/lib/" />
 									<env key="DYLD_FRAMEWORK_PATH" value="${librarypath}" />
@@ -202,7 +177,7 @@
 									<arg value="--configuration=${debug.conf}" />
 									<arg value="--dir=${plugins.builddir}" />
 									<arg value="--subdir=${plugin-subdir}" />
-									<arg value="--class-path=${plugindeploymentdir}/${module}.jar" />
+									<arg value="--class-path=${plugins.commondir}/${module}.jar" />
 									<arg value="--platform=${qtjambi.osname}" />
 									<arg value="--plugin-library-location=${qtjambi.builddir}/lib/" />
 									<env key="DYLD_FRAMEWORK_PATH" value="${librarypath}" />
@@ -257,7 +232,7 @@
 						</if>
 					</then>
 				</if>
-				<move file="${plugins.builddir}/${module}/${module}.jar" 
+				<move file="${plugins.commondir}/${module}.jar" 
 					  todir="${plugindestdir}/plugins/${plugin-subdir}"/>
 			</then>
 			<else>
@@ -282,7 +257,7 @@
 									<arg value="--configuration=${debug.conf}" />
 									<arg value="--dir=${plugindestdir}" />
 									<arg value="--subdir=${plugin-subdir}" />
-									<arg value="--class-path=${plugindeploymentdir}/${module}.jar" />
+									<arg value="--class-path=${plugins.commondir}/${module}.jar" />
 									<arg value="--platform=${qtjambi.osname}" />
 									<arg value="--plugin-library-location=${qtjambi.builddir}/lib/" />
 									<env key="DYLD_FRAMEWORK_PATH" value="${librarypath}" />
@@ -306,7 +281,7 @@
 									<arg value="--configuration=${debug.conf}" />
 									<arg value="--dir=${plugindestdir}" />
 									<arg value="--subdir=${plugin-subdir}" />
-									<arg value="--class-path=${plugindeploymentdir}/${module}.jar" />
+									<arg value="--class-path=${plugins.commondir}/${module}.jar" />
 									<arg value="--platform=${qtjambi.osname}" />
 									<arg value="--plugin-library-location=${qtjambi.builddir}/lib/" />
 									<env key="DYLD_FRAMEWORK_PATH" value="${librarypath}" />
@@ -326,32 +301,20 @@
 		<if>
 			<equals arg1="${qtjambi.osplatform}" arg2="android"/>
 			<then>
-				<if>
-					<istrue value="${qtjambi.testbuild}"/>
-					<then>
-						<mkdir dir="${outputDir}/${targetdirname}/tests"/>
-						<copy file="${plugindeploymentdir}/${module}.jar" 
-							  tofile="${outputDir}/${targetdirname}/tests/${moduledash}-native-android-common-${qtjambi.jar.version}.jar"/>
-						<copy file="${plugindeploymentdir}/${module}-sources.jar" 
-							  tofile="${outputDir}/${targetdirname}/tests/${moduledash}-native-android-common-${qtjambi.jar.version}-sources.jar"/>
-					</then>
-					<else>
-						<copy file="${plugindestdir}/plugins/${plugin-subdir}/${module}.jar" 
-							  tofile="${deploymentdir}/native/${moduledash}-native-android-common-${qtjambi.jar.version}.jar"/>
-						<copy file="${outputDir}/plugins/${module}-sources.jar" 
-							  tofile="${deploymentdir}/sources/${moduledash}-native-android-common-${qtjambi.jar.version}-sources.jar"/>
-						<echo>create empty ${deploymentdir}/javadocs/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar</echo>
-						<delete file="${deploymentdir}/javadocs/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar"/>
-						<jar destfile="${deploymentdir}/javadocs/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar" whenmanifestonly="create">
-							<manifest>
-								<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
-								<attribute name="Bundle-Name"      value="QtJambi ${module} plugin javadoc"/>
-								<attribute name="Bundle-Description"      value="QtJambi ${module} plugin javadoc"/>
-								<attribute name="Bundle-ManifestVersion" value="2"/>
-							</manifest>
-						</jar>
-					</else>
-				</if>
+					<copy file="${plugins.commondir}/${module}.jar" 
+						  tofile="${deploymentdir}/native/${moduledash}-native-android-common-${qtjambi.jar.version}.jar"/>
+					<copy file="${plugins.commondir}/${module}-sources.jar" 
+						  tofile="${deploymentdir}/sources/${moduledash}-native-android-common-${qtjambi.jar.version}-sources.jar"/>
+					<echo>create empty ${deploymentdir}/javadocs/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar</echo>
+					<delete file="${deploymentdir}/javadocs/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar"/>
+					<jar destfile="${deploymentdir}/javadocs/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar" whenmanifestonly="create">
+						<manifest>
+							<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
+							<attribute name="Bundle-Name"      value="QtJambi ${module} plugin javadoc"/>
+							<attribute name="Bundle-Description"      value="QtJambi ${module} plugin javadoc"/>
+							<attribute name="Bundle-ManifestVersion" value="2"/>
+						</manifest>
+					</jar>
 			</then>
 		</if>
 		<if>
@@ -415,7 +378,7 @@
 						</not>
 					</and>
 					<then>
-						<condition property="plugintargetdir" value="${outputDir}/${targetdirname}/tests" else="${deploymentdir}/native">
+						<condition property="plugintargetdir" value="${deploymentdir}/native" else="${deploymentdir}/native">
 							<istrue value="${qtjambi.testbuild}"/>
 						</condition>
 						<jar destfile="${plugintargetdir}/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
@@ -454,9 +417,9 @@
             <path refid="sourcedirs"/>
         </pathconvert>
         <mkdir dir="${deploymentdir}"/>
-        <delete dir="${java.outdir}/plugins/${module}" failonerror="no"/>
-        <mkdir dir="${java.outdir}/plugins/${module}"/>
-        <copy todir="${java.outdir}/plugins/${module}" includeemptydirs="false">
+        <delete dir="${java.outdir}/${module}" failonerror="no"/>
+        <mkdir dir="${java.outdir}/${module}"/>
+        <copy todir="${java.outdir}/${module}" includeemptydirs="false">
             <multirootfileset basedirs="${multiroot.basedirs}"
                               excludes="**/.*,
                                                 pom.xml,
@@ -470,7 +433,7 @@
         <condition property="module.info.exclude" value="" else="module-info.java">
             <istrue value="${java.module.based}"/>
         </condition>
-        <copy todir="${java.outsrcdir}/plugins/${module}" includeemptydirs="false">
+        <copy todir="${java.outsrcdir}/${module}" includeemptydirs="false">
             <multirootfileset basedirs="${multiroot.basedirs}" 
                               excludes="pom.xml,
                                                     build.xml,
@@ -493,7 +456,7 @@
                         includeantruntime="false"
                         excludes="${module.excludes}"
                         srcdir="${sourcedirs2}"
-                        destdir="${java.outdir}/plugins/${module}">
+                        destdir="${java.outdir}/${module}">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
                     <compilerarg value="-Xlint:-module,-options" />
@@ -509,7 +472,7 @@
                         includeantruntime="false"
                         srcdir="${sourcedirs2}"
                         excludes="${module.excludes},module-info.java"
-                        destdir="${java.outdir}/plugins/${module}">
+                        destdir="${java.outdir}/${module}">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
                     <classpath>
@@ -518,7 +481,7 @@
                 </javac>
             </else>
         </if>
-		<condition property="plugindeploymentdir" value="${outputDir}/${qtjambi.osname}/tests" else="${outputDir}/plugins">
+		<condition property="plugindeploymentdir" value="${plugins.commondir}" else="${plugins.commondir}">
 			<istrue value="${qtjambi.testbuild}"/>
 		</condition>
 		<echo message="Creating JAR file for ${module}"/>
@@ -537,7 +500,7 @@
 				<attribute name="QtJambi-Plugin-Class"    value="${plugin.class.name}"/>
 				<attribute name="QtJambi-Plugin-Name"    value="${module}"/>
 			</manifest>
-			<fileset dir="${java.outdir}/plugins/${module}"/>
+			<fileset dir="${java.outdir}/${module}"/>
 		</jar>
 		<jar destfile="${plugindeploymentdir}/${module}-sources.jar" excludes="${jar.excludes}">
 			<manifest>
@@ -545,7 +508,7 @@
 				<attribute name="Bundle-Name"             value="QtJambi Plugin ${module} sources"/>
 				<attribute name="Bundle-Description"      value="QtJambi Plugin ${module} sources"/>
 			</manifest>
-			<fileset dir="${java.outsrcdir}/plugins/${module}" excludes="**/*.class"/>
+			<fileset dir="${java.outsrcdir}/${module}" excludes="**/*.class"/>
 		</jar>
 		<register-finished-module module="${module}"/>
     </target>

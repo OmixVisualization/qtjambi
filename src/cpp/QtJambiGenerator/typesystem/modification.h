@@ -60,9 +60,14 @@ enum class AsBufferType{
     Yes = 0x001,
     Deref = 0x002,
 };
+enum class AsStringType{
+    No = 0,
+    Yes = 0x001
+};
 typedef QFlags<AsSlotType> AsSlotTypes;
 typedef QFlags<AsArrayType> AsArrayTypes;
 typedef QFlags<AsBufferType> AsBufferTypes;
+typedef QFlags<AsStringType> AsStringTypes;
 
 enum class ThreadAffinity : uint{
     None =   0x00000000,
@@ -134,6 +139,7 @@ struct ArgumentModification {
     QString modified_name;
 
     QString replace_value;
+    QString resolved_type;
 
     //! The code to be used to construct a return value when no_null_pointers is true and
     //! the returned value is null. If no_null_pointers is true and this string is
@@ -151,6 +157,7 @@ struct ArgumentModification {
     CodeSnipList conversion_rules;
 
     AsArrayTypes useAsArrayType;
+    AsStringTypes useAsStringType;
     AsBufferTypes useAsBufferType;
     AsSlotTypes useAsSlotType;
     int utilArgParameter;

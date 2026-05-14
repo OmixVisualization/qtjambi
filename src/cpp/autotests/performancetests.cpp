@@ -37,6 +37,7 @@
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/JavaAPI>
 #include <QtJambi/Cast>
+#include <QtJambi/ModelCast>
 
 namespace Java{
 namespace Runtime{

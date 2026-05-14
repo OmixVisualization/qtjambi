@@ -122,6 +122,9 @@ public:
     QString getComment() const;
     void setComment(const QString &newComment);
 
+    QString getResolvedType() const;
+    void setResolvedType(const QString &newResolvedType);
+
 signals:
     void indexChanged();
 
@@ -141,12 +144,15 @@ signals:
 
     void commentChanged();
 
+    void resolvedTypeChanged();
+
 private:
     QVariant index;
     QString replaceValue;
     QVariant threadAffinity = false;
     QString rename;
     QString replaceType;
+    QString resolvedType;
     bool invalidateAfterUse = false;
     bool valueAsPointer = false;
     bool noImplicitCalls = false;
@@ -160,6 +166,7 @@ private:
     Q_PROPERTY(bool valueAsPointer READ getValueAsPointer WRITE setValueAsPointer NOTIFY valueAsPointerChanged)
     Q_PROPERTY(bool noImplicitCalls READ getNoImplicitCalls WRITE setNoImplicitCalls NOTIFY noImplicitCallsChanged FINAL)
     Q_PROPERTY(QString comment READ getComment WRITE setComment NOTIFY commentChanged FINAL)
+    Q_PROPERTY(QString resolvedType READ getResolvedType WRITE setResolvedType NOTIFY resolvedTypeChanged FINAL)
 };
 
 class RemoveDefaultExpression : public AbstractObject
@@ -261,6 +268,14 @@ private:
     Q_PROPERTY(ReferenceCount::Action action READ getAction WRITE setAction NOTIFY actionChanged)
     Q_PROPERTY(QString condition READ getCondition WRITE setCondition NOTIFY conditionChanged)
     Q_PROPERTY(AccessModifications access READ getAccess WRITE setAccess NOTIFY accessChanged)
+};
+
+class AsString : public AbstractObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+public:
+    explicit AsString(QObject *parent = nullptr):AbstractObject{parent}{}
 };
 
 class AsBuffer : public AbstractObject
@@ -871,6 +886,13 @@ private:
     Q_PROPERTY(QString comment READ getComment WRITE setComment NOTIFY commentChanged FINAL)
 };
 
+class GenericArgument : public AddTypeParameter{
+    Q_OBJECT
+    QML_ELEMENT
+public:
+    explicit GenericArgument(QObject *parent = nullptr);
+};
+
 class Remove : public AbstractObject
 {
     Q_OBJECT
@@ -1327,6 +1349,7 @@ QML_DECLARE_TYPE(AddTypeParameter)
 QML_DECLARE_TYPE(Argument)
 QML_DECLARE_TYPE(AsArray)
 QML_DECLARE_TYPE(AsBuffer)
+QML_DECLARE_TYPE(AsString)
 QML_DECLARE_TYPE(AsSlot)
 QML_DECLARE_TYPE(ConversionRule)
 QML_DECLARE_TYPE(CustomConstructor)

@@ -30,7 +30,7 @@
 #ifndef QTJAMBI_MODELAPI_H
 #define QTJAMBI_MODELAPI_H
 
-#include "qtjambiapi.h"
+#include "qtjambishell.h"
 
 class QAbstractItemModel;
 struct ModelDataPrivate;

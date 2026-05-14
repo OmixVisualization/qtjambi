@@ -41,12 +41,20 @@ TypeSystem{
     InjectCode{
         target: CodeClass.MetaInfo
         position: Position.Position1
-        Text{content: "#if defined(Q_OS_ANDROID)\nvoid initialize_meta_info_QtMultimedia();\n#endif"}
+        Text{content: String.raw`
+#if defined(Q_OS_ANDROID)
+void initialize_meta_info_QtMultimedia(JavaVM*);
+#endif`}
     }
     
     InjectCode{
         target: CodeClass.MetaInfo
-        Text{content: "#if defined(Q_OS_ANDROID)\ninitialize_meta_info_QtMultimedia();\n#endif"}
+        Text{content: String.raw`
+#if defined(Q_OS_ANDROID)
+    initialize_meta_info_QtMultimedia(%javaVM);
+#else
+    Q_UNUSED(%javaVM)
+#endif`}
     }
 
     RequiredLibrary{
@@ -362,6 +370,10 @@ TypeSystem{
             Include{
                 fileName: "utils_p.h"
                 location: Include.Local
+            }
+            Include{
+                fileName: "QtJambi/BufferAPI"
+                location: Include.Global
             }
         }
         ModifyFunction{
@@ -1483,6 +1495,10 @@ if(%in){
                 fileName: "QtJambi/JObjectWrapper"
                 location: Include.Global
             }
+            Include{
+                fileName: "QtJambi/ArrayCast"
+                location: Include.Global
+            }
             since: [6,11]
         }
         InjectCode{
@@ -1644,6 +1660,10 @@ if(%in){
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/JObjectWrapper"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/ArrayCast"
                 location: Include.Global
             }
             since: [6,11]

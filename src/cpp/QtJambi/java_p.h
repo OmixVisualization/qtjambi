@@ -372,6 +372,13 @@ namespace Java{
     }
     namespace QtJambi
     {
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(ReferenceUtility,
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(setReferenceCount)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(addAllReferenceCount)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(addReferenceCount)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(putReferenceCount)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(copyReferenceCount)
+                                     )
         QTJAMBI_REPOSITORY_DECLARE_CLASS(NativeUtility,
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(terminateCleanupThread)
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_INT_METHOD(createAssociation)
@@ -506,6 +513,7 @@ namespace Java{
                                          )
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(MetaObjectData,
+                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(classLoader)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(intData)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(stringData)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(signalInfos)
@@ -527,7 +535,10 @@ namespace Java{
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(switchTableFields)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(privateConstructor)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(inPlaceConstructor)
-                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_FIELD(hasStaticMembers))
+                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_FIELD(hasStaticMembers)
+                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_FIELD(hasExplicitMembers)
+                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_FIELD(hasClassInfo)
+                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_FIELD(hasQmlClassInfo))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QThreadAffinityException,
                       QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())

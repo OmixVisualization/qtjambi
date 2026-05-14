@@ -186,6 +186,7 @@
             <exclude name="io/qt/**/Test*Concurrent.java" unless="${qtjambi.concurrent.any.true}"/>
             <exclude name="io/qt/**/Test*Network.java" unless="${qtjambi.network.any.true}"/>
             <exclude name="io/qt/**/Test*Designer.java" unless="${qtjambi.designer.any.true}"/>
+            <exclude name="io/qt/**/TestUIC.java" unless="${qtjambi.designer.any.true}"/>
             <exclude name="io/qt/**/Test*Gamepad.java" unless="${qtjambi.gamepad.any.true}"/>
             <exclude name="io/qt/**/Test*UiTools.java" unless="${qtjambi.uitools.any.true}"/>
             <exclude name="io/qt/**/Test*Xml.java" unless="${qtjambi.xml.any.true}"/>
@@ -196,6 +197,8 @@
             <exclude name="io/qt/**/TestCanvasPainter*.java" unless="${qtjambi.canvaspainter.any.true}"/>
             <exclude name="io/qt/**/Test*Multimedia.java" unless="${qtjambi.multimedia.any.true}"/>
             <exclude name="io/qt/**/Test*MultimediaWidgets.java" unless="${qtjambi.multimediawidgets.any.true}"/>
+            <exclude name="io/qt/**/Test*StateMachine.java" unless="${qtjambi.statemachine.any.true}"/>
+            <exclude name="io/qt/**/TestStateMachine*.java" unless="${qtjambi.statemachine.any.true}"/>
             <exclude name="io/qt/**/Test*MacExtras.java" unless="${qtjambi.macextras.any.true}"/>
             <exclude name="io/qt/**/Test*X11Extras.java" unless="${qtjambi.x11extras.any.true}"/>
             <exclude name="io/qt/**/Test*WinExtras.java" unless="${qtjambi.winextras.any.true}"/>
@@ -241,7 +244,6 @@
             <exclude name="io/qt/**/Test*QuickWidgets.java" unless="${qtjambi.quickwidgets.any.true}"/>
             <exclude name="io/qt/**/Test*Location.java" unless="${qtjambi.location.any.true}"/>
             <exclude name="io/qt/**/Test*RemoteObjects.java" unless="${qtjambi.remoteobjects.any.true}"/>
-            <exclude name="io/qt/**/Test*Statemachine.java" unless="${qtjambi.statemachine.any.true}"/>
             <exclude name="io/qt/**/Test*SerialBus.java" unless="${qtjambi.serialbus.any.true}"/>
             <exclude name="io/qt/**/Test*SerialPort.java" unless="${qtjambi.serialport.any.true}"/>
             <exclude name="io/qt/**/Test*Svg.java" unless="${qtjambi.svg.any.true}"/>
@@ -327,16 +329,16 @@
     <property name="junit.exists" value="tests.junit.exists" />
 
     <target name="tests.clean-impl" depends="load-properties">
+        <delete dir="${test.generator.outputdir}"/>
+        <delete dir="${qtjambi.test.builddir}/autotests"/>
+        <delete dir="${qtjambi.test.builddir}/auto"/>
         <delete dir="${outputDir}/tests"/>
-        <delete dir="${outputDir}/${qtjambi.osname}/tests/autotests"/>
-        <delete dir="${outputDir}/${qtjambi.osname}/tests/auto"/>
-        <delete dir="${outputDir}/tests"/>
-        <delete dir="${outputDir}/${qtjambi.osname}/tests"/>
+        <delete dir="${qtjambi.test.builddir}"/>
+        <delete dir="${testdir}"/>
     </target>
 
     <target name="reports.clean" depends="load-properties" description="Cleans the Unit Test results">
-        <delete dir="${outputDir}/${qtjambi.osname}/tests/junitxml-*"/>
-        <delete dir="${outputDir}/${qtjambi.osname}/tests/TestResults-*"/>
+        <delete dir="${testdir}/${qtjambi.osname}/junitxml-*"/>
     </target>
 
     <target name="check.junit">
@@ -361,14 +363,14 @@
     </target>
     
     <target name="check.ssl">
-        <available property="qtjambi.ssl" type="file" file="${generator.outputdir}/java/io/qt/network/QSslSocket.java"/>
+        <available property="qtjambi.ssl" type="file" file="${qtjambi.generator.outputdir}/java/io/qt/network/QSslSocket.java"/>
     </target>
 
     <target name="compile.native.generator" unless="${skip-generate}" depends="init.build, load-properties, tools.generator.make">
-        <mkdir dir="${outputDir}/tests"/>
+        <mkdir dir="${test.generator.outputdir}"/>
         <generator dir="${generator.builddir}/../bin"
                 importdirectories="generator/${psep}${basedir}/src/cpp/autotests"
-                outputDirectory="${outputDir}/tests"
+                outputDirectory="${test.generator.outputdir}"
                 generatorDirectory="${generator.builddir}/../bin"
 				nullness="${qtjambi.generate.nullness}"
                 qtlibdirectory="${generator.builddir}/../lib${psep}${tools.qt.libdir}"
@@ -387,29 +389,29 @@
             <then>
                 <uic uifile="${java.srcdir}/autotests/io/qt/autotests/ui/uitest.ui"
                      targetpackage="io.qt.autotests.generated"
-                     targetdirectory="${outputDir}/tests/java/autotests"
+                     targetdirectory="${test.generator.outputdir}/java/autotests"
                      libfiles=""
                      connections=""/>
                 <uic uifile="${java.srcdir}/autotests/io/qt/autotests/ui/bluetoothdevice.ui"
                      targetpackage="io.qt.autotests.generated"
-                     targetdirectory="${outputDir}/tests/java/autotests"
+                     targetdirectory="${test.generator.outputdir}/java/autotests"
                      libfiles=""
                      connections=""/>
                 <uic uifile="${java.srcdir}/autotests/io/qt/autotests/ui/bluetoothservice.ui"
                      targetpackage="io.qt.autotests.generated"
-                     targetdirectory="${outputDir}/tests/java/autotests"
+                     targetdirectory="${test.generator.outputdir}/java/autotests"
                      libfiles=""
                      connections=""/>
             </then>
         </if>
     </target>
 	<target name="compile.native.make" depends="init.build">
-        <make dir="${outputDir}/${qtjambi.osname}/tests/autotests" target="${qtjambi.qmake.target.default}"/>
+        <make dir="${qtjambi.test.builddir}/autotests" target="${qtjambi.qmake.target.default}"/>
         <if>
             <os family="mac"/>
             <then>
-                <install-name-tool dir="${outputDir}/${qtjambi.osname}/tests/lib/" libname="autotests" debug="false" suffix="jnilib"/>
-                <install-name-tool dir="${outputDir}/${qtjambi.osname}/tests/lib/" libname="autotests" debug="true" suffix="jnilib"/>
+                <install-name-tool dir="${qtjambi.test.builddir}/lib/" libname="autotests" debug="false" suffix="jnilib"/>
+                <install-name-tool dir="${qtjambi.test.builddir}/lib/" libname="autotests" debug="true" suffix="jnilib"/>
             </then>
         </if>
 		<if>
@@ -447,7 +449,7 @@
 					</then>
 					<else>
 						<antcall inheritrefs="true" target="create-bundle">
-							<param name="qtjambi.builddir" location="${outputDir}/${qtjambi.osname}/tests"/>
+							<param name="qtjambi.builddir" location="${qtjambi.test.builddir}"/>
 						</antcall>
 					</else>
 				</if>
@@ -455,8 +457,8 @@
 		</if>
     </target>
 	<target name="compile.native.qmake" depends="init.build">
-        <mkdir dir="${outputDir}/${qtjambi.osname}/tests/autotests"/>
-        <qmake  dir="${outputDir}/${qtjambi.osname}/tests/autotests"
+        <mkdir dir="${qtjambi.test.builddir}/autotests"/>
+        <qmake  dir="${qtjambi.test.builddir}/autotests"
                 pro="${basedir}/src/cpp/autotests/autotests.pro"
                 config="${qtjambi.configuration}"
                 qmakebinary="${qtjambi.qt.qmake.abspath}"/>
@@ -468,18 +470,23 @@
         </antcall>
     </target>
 	<target name="create-bundle">
-		<create-native-deployment outputDirectory="${outputDir}/${qtjambi.osname}/tests" 
-									tempDirectory="${outputDir}/${qtjambi.osname}/tests"
+		<condition property="qtjambi-native-bundle-path" value="${platformBuildDir}/debug" else="${platformBuildDir}/release">
+			<istrue value="${platformjar.debug}"/>
+		</condition>
+		<property name="qtjambi-native-bundle-module-path" value="${qtjambi-native-bundle-path}/autotests"/>
+		<mkdir dir="${qtjambi-native-bundle-module-path}"/>
+		<create-native-deployment outputDirectory="${qtjambi-native-bundle-path}" 
+									tempDirectory="${qtjambi-native-bundle-module-path}"
 									debug="false" module="qtjambi.autotests" 
 									libraries="autotests" 
-									jarFile="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-native-${qtjambi.osname}-${qtjambi.jar.version}.jar"
+									jarFile="${deploymentdir}/native/qtjambi-autotests-native-${qtjambi.osname}-${qtjambi.jar.version}.jar"
 									forcedebuginfo="false"/>
 		<if>
 			<not>
 				<equals arg1="${library.includes}" arg2=""/>
 			</not>
 			<then>
-				<jar destfile="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-native-${qtjambi.osname}-${qtjambi.jar.version}.jar">
+				<jar destfile="${deploymentdir}/native/qtjambi-autotests-native-${qtjambi.osname}-${qtjambi.jar.version}.jar">
 					<manifest>
 						<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 						<attribute name="Bundle-Name"      value="qtjambi.autotests native library"/>
@@ -488,29 +495,30 @@
 						<attribute name="Bundle-Version"          value="${qtjambi.jar.version}"/>
 						<attribute name="Bundle-ManifestVersion" value="2"/>
 					</manifest>
-					<fileset dir="${outputDir}/${qtjambi.osname}/tests" includes="${library.includes}"/>
-					<fileset dir="${outputDir}/${qtjambi.osname}/tests" includes="META-INF/*"/>
+					<fileset dir="${qtjambi.test.builddir}" includes="${library.includes}"/>
+					<fileset dir="${qtjambi.test.builddir}" includes="META-INF/*"/>
 				</jar>
 			</then>
         </if>
-		<delete dir="${outputDir}/${qtjambi.osname}/tests/META-INF" failonerror="false"/>
+		<delete dir="${qtjambi-native-bundle-module-path}" failonerror="false"/>
 		<if>
 			<and>
 				<istrue value="${qtjambi.force.debug.info}"/>
 			</and>
 			<then>
-				<create-native-deployment outputDirectory="${outputDir}/${qtjambi.osname}/tests" 
-											tempDirectory="${outputDir}/${qtjambi.osname}/tests"
+				<mkdir dir="${qtjambi-native-bundle-module-path}"/>
+				<create-native-deployment outputDirectory="${qtjambi-native-bundle-path}" 
+											tempDirectory="${qtjambi-native-bundle-module-path}"
 											debug="false" module="qtjambi.autotests" 
 											libraries="autotests" 
-											jarFile="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-debuginfo-${qtjambi.osname}-${qtjambi.jar.version}.jar"
+											jarFile="${qtjambi.test.builddir}/qtjambi-autotests-debuginfo-${qtjambi.osname}-${qtjambi.jar.version}.jar"
 											forcedebuginfo="true"/>
 				<if>
 					<not>
 						<equals arg1="${library.includes}" arg2=""/>
 					</not>
 					<then>
-						<jar destfile="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-debuginfo-${qtjambi.osname}-${qtjambi.jar.version}.jar">
+						<jar destfile="${deploymentdir}/debuginfo/qtjambi-autotests-debuginfo-${qtjambi.osname}-${qtjambi.jar.version}.jar">
 							<manifest>
 								<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 								<attribute name="Bundle-Name"      value="qtjambi.autotests debuginfo"/>
@@ -519,73 +527,73 @@
 								<attribute name="Bundle-Version"          value="${qtjambi.jar.version}"/>
 								<attribute name="Bundle-ManifestVersion" value="2"/>
 							</manifest>
-							<fileset dir="${outputDir}/${qtjambi.osname}/tests" includes="${library.includes}"/>
-							<fileset dir="${outputDir}/${qtjambi.osname}/tests" includes="META-INF/*"/>
+							<fileset dir="${qtjambi.test.builddir}" includes="${library.includes}"/>
+							<fileset dir="${qtjambi.test.builddir}" includes="META-INF/*"/>
 						</jar>
 					</then>
 				</if>
-				<delete dir="${outputDir}/${qtjambi.osname}/tests/META-INF" failonerror="false"/>
+				<delete dir="${qtjambi-native-bundle-module-path}" failonerror="false"/>
 			</then>
 		</if>
 	</target>
 	<target name="create-android-bundles">
 		<if>
-			<available file="${outputDir}/${qtjambi.osname}/tests/lib/libautotests_${qtjambi.android.abi}.so"/>
+			<available file="${qtjambi.test.builddir}/lib/libautotests_${qtjambi.android.abi}.so"/>
 			<then>
-				<mkdir dir="${outputDir}/${qtjambi.osname}/tests/lib/${qtjambi.android.abi}"/>
-				<copy file="${outputDir}/${qtjambi.osname}/tests/lib/libautotests_${qtjambi.android.abi}.so" todir="${outputDir}/${qtjambi.osname}/tests/lib/${qtjambi.android.abi}"/>
-				<jar destfile="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-native-${qtjambi.android.osname}-${qtjambi.jar.version}.jar" excludes="${jar.excludes}">
+				<mkdir dir="${qtjambi.test.builddir}/lib/${qtjambi.android.abi}"/>
+				<copy file="${qtjambi.test.builddir}/lib/libautotests_${qtjambi.android.abi}.so" todir="${qtjambi.test.builddir}/lib/${qtjambi.android.abi}"/>
+				<jar destfile="${deploymentdir}/native/qtjambi-autotests-native-${qtjambi.android.osname}-${qtjambi.jar.version}.jar" excludes="${jar.excludes}">
 					<manifest>
 						<attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 						<attribute name="Bundle-Name"             value="QtJambi Autotests natives ${qtjambi.android.osname}"/>
 						<attribute name="Bundle-Description"      value="QtJambi Autotests natives ${qtjambi.android.osname}"/>
 					</manifest>
-					<fileset dir="${outputDir}/${qtjambi.osname}/tests" includes="lib/${qtjambi.android.abi}/libautotests_${qtjambi.android.abi}.so"/>
+					<fileset dir="${qtjambi.test.builddir}" includes="lib/${qtjambi.android.abi}/libautotests_${qtjambi.android.abi}.so"/>
 				</jar>
 			</then>
 		</if>
 		<if>
-			<available file="${outputDir}/${qtjambi.osname}/tests/lib/libautotests_debug_${qtjambi.android.abi}.so"/>
+			<available file="${qtjambi.test.builddir}/lib/libautotests_debug_${qtjambi.android.abi}.so"/>
 			<then>
-				<mkdir dir="${outputDir}/${qtjambi.osname}/tests/lib/${qtjambi.android.abi}"/>
-				<copy file="${outputDir}/${qtjambi.osname}/tests/lib/libautotests_debug_${qtjambi.android.abi}.so" todir="${outputDir}/${qtjambi.osname}/tests/lib/${qtjambi.android.abi}"/>
-				<jar destfile="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-native-${qtjambi.android.osname}-debug-${qtjambi.jar.version}.jar" excludes="${jar.excludes}">
+				<mkdir dir="${qtjambi.test.builddir}/lib/${qtjambi.android.abi}"/>
+				<copy file="${qtjambi.test.builddir}/lib/libautotests_debug_${qtjambi.android.abi}.so" todir="${qtjambi.test.builddir}/lib/${qtjambi.android.abi}"/>
+				<jar destfile="${deploymentdir}/native/qtjambi-autotests-native-${qtjambi.android.osname}-debug-${qtjambi.jar.version}.jar" excludes="${jar.excludes}">
 					<manifest>
 						<attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 						<attribute name="Bundle-Name"             value="QtJambi Autotests natives ${qtjambi.android.osname}"/>
 						<attribute name="Bundle-Description"      value="QtJambi Autotests natives ${qtjambi.android.osname}"/>
 					</manifest>
-					<fileset dir="${outputDir}/${qtjambi.osname}/tests" includes="lib/${qtjambi.android.abi}/libautotests_debug_${qtjambi.android.abi}.so"/>
+					<fileset dir="${qtjambi.test.builddir}" includes="lib/${qtjambi.android.abi}/libautotests_debug_${qtjambi.android.abi}.so"/>
 				</jar>
 			</then>
 		</if>
     </target>
 	<target name="create-ios-bundles">
 		<if>
-			<available file="${outputDir}/${qtjambi.osname}/tests/lib/libautotests.a"/>
+			<available file="${qtjambi.test.builddir}/lib/libautotests.a"/>
 			<then>
-				<mkdir dir="${outputDir}/${qtjambi.osname}/tests/"/>
-				<jar destfile="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-native-ios-${qtjambi.jar.version}.jar" excludes="${jar.excludes}">
+				<mkdir dir="${qtjambi.test.builddir}/"/>
+				<jar destfile="${deploymentdir}/native/qtjambi-autotests-native-ios-${qtjambi.jar.version}.jar" excludes="${jar.excludes}">
 					<manifest>
 						<attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 						<attribute name="Bundle-Name"             value="QtJambi Autotests natives iOS"/>
 						<attribute name="Bundle-Description"      value="QtJambi Autotests natives iOS"/>
 					</manifest>
-					<fileset dir="${outputDir}/${qtjambi.osname}/tests" includes="lib/libautotests.a"/>
+					<fileset dir="${qtjambi.test.builddir}" includes="lib/libautotests.a"/>
 				</jar>
 			</then>
 		</if>
 		<if>
-			<available file="${outputDir}/${qtjambi.osname}/tests/lib/libautotests_debug.a"/>
+			<available file="${qtjambi.test.builddir}/lib/libautotests_debug.a"/>
 			<then>
-				<mkdir dir="${outputDir}/${qtjambi.osname}/tests/"/>
-				<jar destfile="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-native-ios-debug-${qtjambi.jar.version}.jar" excludes="${jar.excludes}">
+				<mkdir dir="${qtjambi.test.builddir}/"/>
+				<jar destfile="${deploymentdir}/native/qtjambi-autotests-native-ios-debug-${qtjambi.jar.version}.jar" excludes="${jar.excludes}">
 					<manifest>
 						<attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 						<attribute name="Bundle-Name"             value="QtJambi Autotests natives iOS"/>
 						<attribute name="Bundle-Description"      value="QtJambi Autotests natives iOS"/>
 					</manifest>
-					<fileset dir="${outputDir}/${qtjambi.osname}/tests" includes="lib/libautotests_debug.a"/>
+					<fileset dir="${qtjambi.test.builddir}" includes="lib/libautotests_debug.a"/>
 				</jar>
 			</then>
 		</if>
@@ -610,24 +618,24 @@
     <target name="compile.java">
         <ant inheritrefs="true" target="compile.java.impl">
             <property name="module.suffix" value=""/>
-            <property name="test.javaext.outdir" location="${outputDir}/${qtjambi.osname}/tests/javaext"/>
-            <property name="test.javaext.srcoutdir" location="${outputDir}/${qtjambi.osname}/tests/javaext-src"/>
-            <property name="test.javamd.outdir" location="${outputDir}/${qtjambi.osname}/tests/javamd"/>
-            <property name="test.javamd.srcoutdir" location="${outputDir}/${qtjambi.osname}/tests/javamd-src"/>
-            <property name="test.java.outdir" location="${outputDir}/${qtjambi.osname}/tests/java"/>
-            <property name="test.java.srcoutdir" location="${outputDir}/${qtjambi.osname}/tests/java-src"/>
+            <property name="test.javaext.outdir" location="${commonBuildDir}/java/autotests/ext"/>
+            <property name="test.javaext.srcoutdir" location="${commonBuildDir}/java-src/autotests/ext"/>
+            <property name="test.javamd.outdir" location="${commonBuildDir}/java/autotests/md"/>
+            <property name="test.javamd.srcoutdir" location="${commonBuildDir}/java-src/autotests/md"/>
+            <property name="test.java.outdir" location="${commonBuildDir}/java/autotests/base"/>
+            <property name="test.java.srcoutdir" location="${commonBuildDir}/java-src/autotests/base"/>
         </ant>
     </target>
     <target name="compile.plugins.java">
         <ant inheritrefs="true" target="compile.java.plugins.impl">
             <property name="module.suffix" value=""/>
-            <property name="test.javaext.outdir" location="${outputDir}/${qtjambi.osname}/tests/javaext"/>
-            <property name="test.javaext.srcoutdir" location="${outputDir}/${qtjambi.osname}/tests/javaext-src"/>
-            <property name="test.java.outdir" location="${outputDir}/${qtjambi.osname}/tests/java"/>
-            <property name="test.java.srcoutdir" location="${outputDir}/${qtjambi.osname}/tests/java-src"/>
+            <property name="test.javaext.outdir" location="${commonBuildDir}/java/autotests/ext"/>
+            <property name="test.javaext.srcoutdir" location="${commonBuildDir}/java-src/autotests/ext"/>
+            <property name="test.java.outdir" location="${commonBuildDir}/java/autotests/base"/>
+            <property name="test.java.srcoutdir" location="${commonBuildDir}/java-src/autotests/base"/>
         </ant>
     </target>
-    <target name="compile.java.impl" depends="load-properties">
+    <target name="compile.java.impl" depends="load-properties" unless="${skip-java-build}">
         <delete dir="${test.java.outdir}" failonerror="no"/>
         <mkdir dir="${test.java.outdir}"/>
         <delete dir="${test.java.srcoutdir}" failonerror="false"/>
@@ -647,9 +655,9 @@
                 <exclude name="io/qt/**/Test*.java"/>
             </fileset>
         </copy>
-		<echo>copying ${outputDir}/tests/java/autotests/*</echo>
+		<echo>copying ${test.generator.outputdir}/java/autotests/*</echo>
         <copy todir="${test.java.srcoutdir}">
-            <fileset dir="${outputDir}/tests/java/autotests" includes="*.java,io/qt/**/*.java">
+            <fileset dir="${test.generator.outputdir}/java/autotests" includes="*.java,io/qt/**/*.java">
 				<exclude name="io/qt/**/AbstractSocketSubclass.java" unless="${qtjambi.network.any.true}"/>
 				<exclude name="io/qt/**/SqlTableModelSubclass.java" unless="${qtjambi.sql.any.true}"/>
 				<exclude name="io/qt/**/Xml*Subclass.java" unless="${qtjambi.xml.any.true}"/>
@@ -770,7 +778,7 @@
         <antcall inheritrefs="true" target="copy-resources">
             <param name="src" value="${basedir}/src/java/autotests"/>
         </antcall>
-		<jar destfile="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-${qtjambi.jar.version}.jar">
+		<jar destfile="${deploymentdir}/qtjambi-autotests-${qtjambi.jar.version}.jar">
 			<manifest>
 				<attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 				<attribute name="Bundle-Description"      value="QtJambi Autotests"/>
@@ -783,7 +791,7 @@
 			<fileset dir="${test.java.outdir}"/>
 			<fileset dir="${test.javaext.outdir}"/>
 		</jar>
-		<jar destfile="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-${qtjambi.jar.version}-sources.jar" excludes="${jar.excludes}">
+		<jar destfile="${deploymentdir}/sources/qtjambi-autotests-${qtjambi.jar.version}-sources.jar" excludes="${jar.excludes}">
 			<manifest>
 				<attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 				<attribute name="Bundle-Name"             value="QtJambi Autotests sources"/>
@@ -882,8 +890,8 @@
 			</then>
 			<else>
 				<qtjambi-resolve-path var="absOutputDir"     path="${outputDir}" />
-				<property name="jambiLib"      location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/lib"/>
-				<property name="jambiBin"      location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/bin"/>
+				<property name="jambiLib"      location="${platformBuildDir}/${kind}/lib"/>
+				<property name="jambiBin"      location="${platformBuildDir}/${kind}/bin"/>
 				<if>
 					<and>
 						<isset property="test.jvm"/>
@@ -1119,17 +1127,18 @@
 							</or>
 							<then>
 								<property name="qtPath"            location="${qtjambi.qt.bindir}" />
-								<property name="qtJambiPath"       location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/bin" />
-								<property name="testLibPath"       location="${outputDir}/${qtjambi.osname}/tests/bin" />
-								<property name="testDeploymentDir" location="${outputDir}/${qtjambi.osname}/tests/${kind}" />
+								<property name="qtJambiPath"       location="${platformBuildDir}/${kind}/bin" />
+								<property name="testLibPath"       location="${qtjambi.test.builddir}/bin" />
 							</then>
 							<else>
 								<property name="qtPath"            location="${qtjambi.qt.libdir}" />
-								<property name="qtJambiPath"       location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/lib" />
-								<property name="testLibPath"       location="${outputDir}/${qtjambi.osname}/tests/lib" />
-								<property name="testDeploymentDir" location="${outputDir}/${qtjambi.osname}/tests/${kind}" />
+								<property name="qtJambiPath"       location="${platformBuildDir}/${kind}/lib" />
+								<property name="testLibPath"       location="${qtjambi.test.builddir}/lib" />
 							</else>
 						</if>
+						<property name="testDeploymentDir" location="${testdir}/${qtjambi.osname}/${kind}" />
+						<property name="testFormatterDir" location="${testdir}/formatter/${qtjambi.osname}/${kind}" />
+						<property name="testTempDir"       location="${testdir}/tmp/${qtjambi.osname}/${kind}" />
 						<trycatch>
 							<try>
 								<if>
@@ -1149,17 +1158,17 @@
 												<property name="Dio.qt.no-deployment-spec" value="-Dio.qt.no-deployment-spec=true" />
 											</then>
 											<else>
-												<delete dir="${testDeploymentDir}/QtJambi${qtjambi.jar.version}" failonerror="false"/>
+												<delete dir="${testTempDir}/QtJambi/${qtjambi.jar.version}" failonerror="false"/>
 												<java fork="true" jvm="${test.jvm}" classname="io.qt.internal.LibraryExtractor" failonerror="true">
 													<classpath>
 														<fileset dir="${deploymentdir}">
 															<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
 															<exclude name="qtjambi-*native-*.jar"/>
 														</fileset>
-														<pathelement path="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-${qtjambi.jar.version}.jar" />
+														<pathelement path="${deploymentdir}/qtjambi-autotests-${qtjambi.jar.version}.jar" />
 													</classpath>
 													<jvmarg value="-Dio.qt.library-path-override=${qtPath}"/>
-													<jvmarg value="-Dio.qt.deploymentdir=${testDeploymentDir}"/>
+													<jvmarg value="-Dio.qt.deploymentdir=${testTempDir}/QtJambi"/>
 													<jvmarg value="-Dqtjambi.osname=${qtjambi.osname}"/>
 													<jvmarg value="${JVMArg.enable.native.access}"/>
 												</java>
@@ -1171,22 +1180,22 @@
 										</if>
 									</then>
 									<else>
-										<delete dir="${testDeploymentDir}/QtJambi${qtjambi.jar.version}" failonerror="false"/>
+										<delete dir="${testTempDir}/QtJambi/${qtjambi.jar.version}" failonerror="false"/>
 										<java fork="true" jvm="${test.jvm}" classname="io.qt.internal.LibraryExtractor" failonerror="true">
 											<classpath>
 												<fileset dir="${deploymentdir}">
 													<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
 													<exclude name="qtjambi-*native-*.jar"/>
 												</fileset>
-												<pathelement path="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-${qtjambi.jar.version}.jar" />
+												<pathelement path="${deploymentdir}/qtjambi-autotests-${qtjambi.jar.version}.jar" />
 											</classpath>
 											<jvmarg value="-Dio.qt.library-path-override="/>
-											<jvmarg value="-Dio.qt.deploymentdir=${testDeploymentDir}"/>
+											<jvmarg value="-Dio.qt.deploymentdir=${testTempDir}/QtJambi"/>
 											<jvmarg value="-Dqtjambi.osname=${qtjambi.osname}"/>
 											<jvmarg value="${JVMArg.enable.native.access}"/>
 										</java>
 										<property name="Dio.qt.library-path-override" value="-Dio.qt.library-path-override=" />
-										<property name="Dio.qt.deploymentdir" value="-Dio.qt.deploymentdir=${testDeploymentDir}" />
+										<property name="Dio.qt.deploymentdir" value="-Dio.qt.deploymentdir=${testTempDir}/QtJambi" />
 										<property name="Dkeep-temp-deployment" value="-Dio.qt.keep-temp-deployment=true" />
 										<property name="Dio.qt.no-deployment-spec" value="-Dx" />
 									</else>
@@ -1194,9 +1203,9 @@
 								<condition property="Dio.qt.library-path-override" value="-Dx" else="">
 									<isset property="qtjambi.test.conf"/>
 								</condition>
-								<property name="qtjambiPluginPath"   location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/plugins" />
-								<property name="testPluginPath"   location="${outputDir}/${qtjambi.osname}/tests/${kind}/plugins" />
-								<property name="testQmlPath"   location="${outputDir}/${qtjambi.osname}/tests/${kind}/qml" />
+								<property name="qtjambiPluginPath"   location="${platformBuildDir}/${kind}/plugins" />
+								<property name="testPluginPath"   location="${platformBuildDir}/${kind}/plugins" />
+								<property name="testQmlPath"   location="${platformBuildDir}/${kind}/qml" />
 								<condition property="qtjambi.enable-method-logs" value="true" else="false">
 									<or>
 										<istrue value="${qtjambi.debug.trace}"/>
@@ -1287,7 +1296,7 @@
 										<isset property="test"/>
 									</not>
 									<then>
-										<delete dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}" failonerror="false"/>
+										<delete dir="${testdir}/${qtjambi.osname}/junitxml-${kind}${jdk-exec-version}" failonerror="false"/>
 									</then>
 								</if>
 								<condition property="Xcheck_jni" value="-Xcheck:jni" else="-Dx">
@@ -1335,13 +1344,61 @@
 								<condition property="Dtermination.mode" value="-Dtermination.mode=${termination.mode}" else="-Dx">
 									<isset property="termination.mode"/>
 								</condition>
-								<mkdir dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}"/>
-								<mkdir dir="${outputDir}/${qtjambi.osname}/tests/${kind}"/>
+								<mkdir dir="${testdir}/${qtjambi.osname}"/>
+								<mkdir dir="${testdir}/${qtjambi.osname}/junitxml-${kind}${jdk-exec-version}"/>
+								<mkdir dir="${testDeploymentDir}"/>
+								<mkdir dir="${testFormatterDir}"/>
+								<mkdir dir="${testTempDir}"/>
+								<delete failonerror="false">
+									<dirset dir="${testTempDir}" includes="QtJambi_QDirTest_*"/>
+								</delete>
+								<delete failonerror="false">
+									<fileset dir="${testTempDir}" includes="*.properties"/>
+								</delete>
+								<if>
+									<not>
+										<available file="${testFormatterDir}/Formatter.class" type="file"/>
+									</not>
+									<then>
+										<echo file="${testFormatterDir}/Formatter.java">
+										import java.io.*;
+										import org.apache.tools.ant.*;
+										import org.apache.tools.ant.taskdefs.optional.junit.*;
+										public class Formatter extends XMLJUnitResultFormatter {
+											private static final String version = "${qtjambi.jar.version}".replace(".", "\u00b7");
+											private static final String mode = "${kind}";
+											private static final String os = "${jdk-exec-os}";
+											private static final String nbsp = "\u00a0";
+											private static final String suffix = String.format("%1$s%1$s(%2$s,%1$s%3$s,%1$s%4$s)", nbsp, version, mode, os);
+											@Override
+											public void startTestSuite(JUnitTest suite) {
+												suite.setName(suite.getName()+suffix);
+												super.startTestSuite(suite);
+											}
+										}
+										</echo>
+										<javac debug="true" 
+												deprecation="true" 
+												source="1.8" target="1.8"
+												verbose="false"
+												includeantruntime="true"
+												destdir="${testFormatterDir}"
+												includes="Formatter.java">
+											<compilerarg value="-Xlint:deprecation" />
+											<compilerarg value="-Xlint:unchecked" />
+											<compilerarg value="-Xlint:-module,-options" />
+											<classpath>
+												<pathelement location="${resourcesdir}/junit.jar" />
+											</classpath>
+											<src path="${testFormatterDir}"/>
+										</javac>
+									</then>
+								</if>
 								<trycatch>
 									<try>
 										<junit fork="yes" jvm="${test.jvm}" printsummary="true" 
-												dir="${outputDir}/${qtjambi.osname}/tests/${kind}/" 
-												tempdir="${outputDir}/${qtjambi.osname}/tests/${kind}/" 
+												dir="${testDeploymentDir}" 
+												tempdir="${testTempDir}" 
 												haltonfailure="no" timeout="${qtjambi.junit.timeout}" 
 												showoutput="yes" logfailedtests="yes" threads="${qtjambi.junit.threads}">
 											<classpath>
@@ -1349,11 +1406,12 @@
 													<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
 													<exclude name="qtjambi-*native-*.jar"/>
 												</fileset>
+												<pathelement location="${testFormatterDir}" />
 												<pathelement location="${resourcesdir}/junit.jar" />
 												<pathelement location="${resourcesdir}/hamcrest.jar" />
 												<pathelement location="${resourcesdir}/sqlite-jdbc.jar" />
 												<pathelement location="${resourcesdir}/jna.jar" />
-												<pathelement path="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-${qtjambi.jar.version}.jar" />
+												<pathelement path="${deploymentdir}/qtjambi-autotests-${qtjambi.jar.version}.jar" />
 											</classpath>
 											<jvmarg value="${Dio.qt.library-path-override}"/>
 											<jvmarg value="-Dio.qt.debug=${kind}"/><!-- This should not be needed now, it loads default from MANIFEST.MF -->
@@ -1392,21 +1450,18 @@
 											<env key="QT_MULTIMEDIA_PREFERRED_PLUGINS" value="Test"/>
 											<!--env key="QML_IMPORT_PATH" value="${absQtPath}/../qml"/-->
 								<!--            <jvmarg value="-verbose"/> -->
-											<formatter type="xml" usefile="yes" />
-											<batchtest fork="yes" todir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}">
+											<batchtest fork="yes" todir="${testdir}/${qtjambi.osname}/junitxml-${kind}${jdk-exec-version}">
+												<formatter type="xml" classname="Formatter" usefile="yes" />
 												<path refid="qtjambi.autotest.classes.junit"/>
 											</batchtest>
 										</junit>
 									</try>
 									<catch throwable="java.lang.Throwable" print="true">
 									</catch>
-									<finally>
-										<modify-test-results dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}" version="${qtjambi.jar.version}" mode="${kind}" jdk="${jdk-exec-os}"/>
-									</finally>
 								</trycatch>
 							</try>
 							<finally>
-								<delete dir="${testDeploymentDir}/QtJambi${qtjambi.jar.version}" failonerror="false"/>
+								<delete dir="${testTempDir}/QtJambi/${qtjambi.jar.version}" failonerror="false"/>
 							</finally>
 						</trycatch>
 					</then>
@@ -1429,7 +1484,7 @@
 		<if>
 			<and>
 				<available file="${qtjambi.qt.bindir}" type="dir"/>
-				<available file="${deploymentdir}/platforms/${qtjambi.osname}/debug" type="dir"/>
+				<available file="${platformBuildDir}/debug" type="dir"/>
 			</and>
             <then>
                 <antcall target="debug.run"/>
@@ -1498,7 +1553,7 @@
         <if>
 			<and>
 				<available file="${qtjambi.qt.bindir}" type="dir"/>
-				<available file="${deploymentdir}/platforms/${qtjambi.osname}/debug" type="dir"/>
+				<available file="${platformBuildDir}/debug" type="dir"/>
 			</and>
             <then>
                 <if>
@@ -1547,7 +1602,7 @@
         <if>
 			<and>
 				<available file="${qtjambi.qt.bindir}" type="dir"/>
-				<available file="${deploymentdir}/platforms/${qtjambi.osname}/release" type="dir"/>
+				<available file="${platformBuildDir}/release" type="dir"/>
 			</and>
             <then>
                 <antcall target="run.test">
@@ -1567,7 +1622,7 @@
         <if>
 			<and>
 				<available file="${qtjambi.qt.bindir}" type="dir"/>
-				<available file="${deploymentdir}/platforms/${qtjambi.osname}/debug" type="dir"/>
+				<available file="${platformBuildDir}/debug" type="dir"/>
 			</and>
             <then>
                 <antcall target="run.test">
@@ -1588,7 +1643,7 @@
         <mkdir dir="${basedir}/TestResults"/>
         <junitreport todir="${basedir}/TestResults">
             <fileset dir="${basedir}">
-                <include name="*/build/*/tests/junitxml-*/TEST-*.xml" />
+                <include name="*/test/*/junitxml-*/TEST-*.xml" />
             </fileset>
             <report format="frames" todir="${basedir}/TestResults" />
         </junitreport>
@@ -1641,13 +1696,13 @@
         <trycatch>
             <try>
 				<if>
-					<available file="${deploymentdir}/platforms/${qtjambi.osname}/release" type="dir"/>
+					<available file="${platformBuildDir}/release" type="dir"/>
 					<then>
 						<antcall target="release.run"/>
 					</then>
 				</if>
 				<if>
-					<available file="${deploymentdir}/platforms/${qtjambi.osname}/debug" type="dir"/>
+					<available file="${platformBuildDir}/debug" type="dir"/>
 					<then>
 						<antcall target="debug.run"/>
 					</then>

@@ -30,8 +30,16 @@
 #ifndef UTILS_P_H
 #define UTILS_P_H
 
+#include <QtGui/QWindow>
+#include <QtGui/QPalette>
+#include <QtGui/QPainter>
+#include <QtGui/QPainterPath>
+#include <QtGui/QCursor>
+#include <QtGui/QIcon>
+#include <QtGui/QInputMethodEvent>
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/JavaAPI>
+#include <QtJambi/Cast>
 
 namespace Java{
 namespace QtQuick {
@@ -55,5 +63,36 @@ namespace QtQuick {
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QQuickWindow,)
 }
 }
+
+extern template jobject qtjambi_cast<jobject,QInputMethodEvent*&>(JNIEnv *, QInputMethodEvent*&);
+extern template jobject qtjambi_cast<jobject,QActionEvent*&>(JNIEnv *, QActionEvent*&);
+extern template jobject qtjambi_cast<jobject,QCloseEvent*&>(JNIEnv *, QCloseEvent*&);
+extern template jobject qtjambi_cast<jobject,QContextMenuEvent*&>(JNIEnv *, QContextMenuEvent*&);
+extern template jobject qtjambi_cast<jobject,QDragEnterEvent*&>(JNIEnv *, QDragEnterEvent*&);
+extern template jobject qtjambi_cast<jobject,QDragLeaveEvent*&>(JNIEnv *, QDragLeaveEvent*&);
+extern template jobject qtjambi_cast<jobject,QDragMoveEvent*&>(JNIEnv *, QDragMoveEvent*&);
+extern template jobject qtjambi_cast<jobject,QDropEvent*&>(JNIEnv *, QDropEvent*&);
+extern template jobject qtjambi_cast<jobject,QEnterEvent*&>(JNIEnv *, QEnterEvent*&);
+extern template jobject qtjambi_cast<jobject,QHideEvent*&>(JNIEnv *, QHideEvent*&);
+extern template jobject qtjambi_cast<jobject,QKeyEvent*&>(JNIEnv *, QKeyEvent*&);
+extern template jobject qtjambi_cast<jobject,QMouseEvent*&>(JNIEnv *, QMouseEvent*&);
+extern template jobject qtjambi_cast<jobject,QMoveEvent*&>(JNIEnv *, QMoveEvent*&);
+extern template jobject qtjambi_cast<jobject,QPaintEvent*&>(JNIEnv *, QPaintEvent*&);
+extern template jobject qtjambi_cast<jobject,QResizeEvent*&>(JNIEnv *, QResizeEvent*&);
+extern template jobject qtjambi_cast<jobject,QShowEvent*&>(JNIEnv *, QShowEvent*&);
+extern template jobject qtjambi_cast<jobject,QTabletEvent*&>(JNIEnv *, QTabletEvent*&);
+
+extern template QWindow* qtjambi_cast<QWindow*,jobject&>(JNIEnv *, jobject&);
+extern template jobject qtjambi_cast<jobject,QWindow*&>(JNIEnv *, QWindow*&);
+extern template jobject qtjambi_cast<jobject,const QWindow*&>(JNIEnv *, const QWindow*&);
+
+extern template jobject qtjambi_cast<jobject,QColor>(JNIEnv *, QColor&&);
+extern template jobject qtjambi_cast<jobject,const QColor&>(JNIEnv *, const QColor&);
+
+extern template jobject qtjambi_cast<jobject,QImage>(JNIEnv *, QImage&&);
+extern template jobject qtjambi_cast<jobject,const QImage&>(JNIEnv *, const QImage&);
+
+extern template jobject qtjambi_cast<jobject,QFont>(JNIEnv *, QFont&&);
+extern template jobject qtjambi_cast<jobject,const QFont&>(JNIEnv *, const QFont&);
 
 #endif // QTJAMBI_QML_REPOSITORY_H

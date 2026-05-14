@@ -34,3 +34,6 @@ include(../QtJambi/configure.pri)
 SOURCES += impl.cpp
 
 QT = core concurrent
+
+HEADERS += \
+    utils_p.h

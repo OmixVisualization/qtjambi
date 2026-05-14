@@ -202,7 +202,7 @@ final class QMLGenerator {
 			throw new Error("Missing qml library. Please use --library=...");
 		}
 		if(!library.isFile() || !library.getName().endsWith(".jar")) {
-			throw new Error("Qml library is not a jar file.");
+			throw new Error("Qml library "+library.getAbsolutePath()+" is not a jar file.");
 		}
 		if(dir==null) {
 			throw new Error("Missing target directory. Please use --dir=...");

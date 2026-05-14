@@ -38,7 +38,7 @@
                 <istrue value="${qtjambi.core.any.true}"/>
                 <istrue value="${qtjambi.gui.any.true}"/>
                 <istrue value="${qtjambi.widgets.any.true}"/>
-                <available file="${generator.outputdir}/java/${module}" type="dir"/>
+                <available file="${qtjambi.generator.outputdir}/java/${module}" type="dir"/>
             </and>
         </condition>
         <antcall inheritrefs="true" target="build.impl"/>
@@ -90,10 +90,9 @@
         <condition property="jsr305-dir" value="non-jsr305" else="jsr305">
             <istrue value="${qtjambi.no.jsr305}"/>
         </condition>
-        <property name="destdir" value="${deploymentdir}"/>
-        <mkdir dir="${destdir}"/>
+        <mkdir dir="${deploymentdir}"/>
         <path id="sourcedirs">
-            <pathelement location="${generator.outputdir}/java/${module}"/>
+            <pathelement location="${qtjambi.generator.outputdir}/java/${module}"/>
             <pathelement location="${antfile.dir}/main"/>
             <pathelement location="${antfile.dir}/Retro-JDK${retroversion}"/>
             <pathelement location="${antfile.dir}/${jsr305-dir}"/>

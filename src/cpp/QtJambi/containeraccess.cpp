@@ -37,6 +37,8 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/private/qfactoryloader_p.h>
 
 #include "containeraccess_p.h"
+#include "containeraccess_associative.h"
+#include "qtjambi_cast_arithmetic.h"
 
 #if defined(QTJAMBI_GENERIC_ACCESS)
 
@@ -1980,7 +1982,7 @@ PointerRCListAccess* PointerRCListAccess::clone(){
 
 void PointerRCListAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
-    jobject set = Java::Runtime::ArrayList::newInstance(env);
+    jobject set = QtJambiAPI::newJavaArrayList(env);
     auto iterator = elementIterator(container.container);
     while(iterator->hasNext()){
         const void* content = iterator->next();
@@ -1991,7 +1993,7 @@ void PointerRCListAccess::updateRC(JNIEnv * env, const ContainerInfo& container)
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(elementMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content, *typeId);
+                obj = QtJambiPrivate::findFunctionPointerObject(env, content, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -2002,7 +2004,7 @@ void PointerRCListAccess::updateRC(JNIEnv * env, const ContainerInfo& container)
             break;
         }
         if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
     }
     clearRC(env, container.object);
     addAllRC(env, container.object, set);
@@ -2066,14 +2068,14 @@ void PointerRCListAccess::remove(JNIEnv * env, const ContainerInfo& container, j
         removeRC(env, container.object, oldValue);
     }else{
         jint size = WrapperListAccess::size(env, container.container);
-        jobject removedValues = Java::Runtime::ArrayList::newInstance(env);
+        jobject removedValues = QtJambiAPI::newJavaArrayList(env);
         for(jint i = index; i<=index+n && i<size; ++i){
-            Java::Runtime::Collection::add(env, removedValues, WrapperListAccess::at(env, container.container, i));
+            QtJambiAPI::addToJavaCollection(env, removedValues, WrapperListAccess::at(env, container.container, i));
         }
         WrapperListAccess::remove(env, container, index, n);
-        jobject iter = Java::Runtime::Collection::iterator(env, removedValues);
-        while(Java::Runtime::Iterator::hasNext(env, iter)){
-            jobject value = Java::Runtime::Iterator::next(env, iter);
+        jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, removedValues);
+        while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+            jobject value = QtJambiAPI::nextOfJavaIterator(env, iter);
             removeRC(env, container.object, value);
         }
     }
@@ -2114,7 +2116,7 @@ void PointerRCSetAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(elementMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content, *typeId);
+                obj = QtJambiPrivate::findFunctionPointerObject(env, content, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -2125,7 +2127,7 @@ void PointerRCSetAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
             break;
         }
         if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
     }
     clearRC(env, container.object);
     addAllRC(env, container.object, set);
@@ -2210,7 +2212,7 @@ void KeyPointerRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& containe
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content, *typeId);
+                obj = QtJambiPrivate::findFunctionPointerObject(env, content, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -2221,7 +2223,7 @@ void KeyPointerRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& containe
             break;
         }
         if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
     }
     clearRC(env, container.object);
     addAllRC(env, container.object, set);
@@ -2298,7 +2300,7 @@ void ValuePointerRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& contai
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content, *typeId);
+                obj = QtJambiPrivate::findFunctionPointerObject(env, content, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -2309,7 +2311,7 @@ void ValuePointerRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& contai
             break;
         }
         if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
     }
     clearRC(env, container.object);
     addAllRC(env, container.object, set);
@@ -2387,7 +2389,7 @@ void PointersRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container)
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
-                key = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
+                key = QtJambiPrivate::findFunctionPointerObject(env, content.first, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -2404,7 +2406,7 @@ void PointersRCMapAccess::updateRC(JNIEnv * env, const ContainerInfo& container)
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
-                value = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
+                value = QtJambiPrivate::findFunctionPointerObject(env, content.second, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -2489,7 +2491,7 @@ void KeyPointerRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& con
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
+                obj = QtJambiPrivate::findFunctionPointerObject(env, content.first, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -2500,7 +2502,7 @@ void KeyPointerRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& con
             break;
         }
         if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
     }
     clearRC(env, container.object);
     addAllRC(env, container.object, set);
@@ -2594,7 +2596,7 @@ void ValuePointerRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& c
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
+                obj = QtJambiPrivate::findFunctionPointerObject(env, content.second, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -2605,7 +2607,7 @@ void ValuePointerRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& c
             break;
         }
         if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
     }
     clearRC(env, container.object);
     addAllRC(env, container.object, set);
@@ -2645,10 +2647,10 @@ jint ValuePointerRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& con
     ContainerAndAccessInfo oldValues = WrapperMultiMapAccess::values(env, container, key);
     jint result = WrapperMultiMapAccess::remove(env, container, key);
     if(result>0){
-        jobject iter = Java::Runtime::Collection::iterator(env, oldValues.object);
-        while(Java::Runtime::Iterator::hasNext(env, iter)){
-            jobject value = Java::Runtime::Iterator::next(env, iter);
-            if(Java::Runtime::Collection::size(env, WrapperMultiMapAccess::keys(env, container, value).object)==0){
+        jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, oldValues.object);
+        while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+            jobject value = QtJambiAPI::nextOfJavaIterator(env, iter);
+            if(QtJambiAPI::sizeOfJavaCollection(env, WrapperMultiMapAccess::keys(env, container, value).object)==0){
                 removeRC(env, container.object, value);
             }
         }
@@ -2658,7 +2660,7 @@ jint ValuePointerRCMultiMapAccess::remove(JNIEnv * env, const ContainerInfo& con
 
 jobject ValuePointerRCMultiMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
     jobject result = WrapperMultiMapAccess::take(env, container, key);
-    if(Java::Runtime::Collection::size(env, WrapperMultiMapAccess::keys(env, container, result).object)==0){
+    if(QtJambiAPI::sizeOfJavaCollection(env, WrapperMultiMapAccess::keys(env, container, result).object)==0){
         removeRC(env, container.object, result);
     }
     return result;
@@ -2712,7 +2714,7 @@ void PointersRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& conta
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
-                key = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
+                key = QtJambiPrivate::findFunctionPointerObject(env, content.first, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -2729,7 +2731,7 @@ void PointersRCMultiMapAccess::updateRC(JNIEnv * env, const ContainerInfo& conta
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
-                value = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
+                value = QtJambiPrivate::findFunctionPointerObject(env, content.second, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -2831,7 +2833,7 @@ void KeyPointerRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& contain
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
+                obj = QtJambiPrivate::findFunctionPointerObject(env, content.first, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -2842,7 +2844,7 @@ void KeyPointerRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& contain
             break;
         }
         if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
     }
     clearRC(env, container.object);
     addAllRC(env, container.object, set);
@@ -2915,7 +2917,7 @@ void ValuePointerRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& conta
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
+                obj = QtJambiPrivate::findFunctionPointerObject(env, content.second, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -2926,7 +2928,7 @@ void ValuePointerRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& conta
             break;
         }
         if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
     }
     clearRC(env, container.object);
     addAllRC(env, container.object, set);
@@ -3004,7 +3006,7 @@ void PointersRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
-                key = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
+                key = QtJambiPrivate::findFunctionPointerObject(env, content.first, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -3021,7 +3023,7 @@ void PointersRCHashAccess::updateRC(JNIEnv * env, const ContainerInfo& container
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
-                value = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
+                value = QtJambiPrivate::findFunctionPointerObject(env, content.second, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -3108,7 +3110,7 @@ void KeyPointerRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& co
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
+                obj = QtJambiPrivate::findFunctionPointerObject(env, content.first, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -3119,7 +3121,7 @@ void KeyPointerRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& co
             break;
         }
         if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
     }
     clearRC(env, container.object);
     addAllRC(env, container.object, set);
@@ -3206,7 +3208,7 @@ void ValuePointerRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& 
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
-                obj = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
+                obj = QtJambiPrivate::findFunctionPointerObject(env, content.second, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -3217,7 +3219,7 @@ void ValuePointerRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& 
             break;
         }
         if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
     }
     clearRC(env, container.object);
     addAllRC(env, container.object, set);
@@ -3257,10 +3259,10 @@ jint ValuePointerRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& co
     ContainerAndAccessInfo oldValues = WrapperMultiHashAccess::values(env, container, key);
     jint result = WrapperMultiHashAccess::remove(env, container, key);
     if(result>0){
-        jobject iter = Java::Runtime::Collection::iterator(env, oldValues.object);
-        while(Java::Runtime::Iterator::hasNext(env, iter)){
-            jobject value = Java::Runtime::Iterator::next(env, iter);
-            if(Java::Runtime::Collection::size(env, WrapperMultiHashAccess::keys(env, container, value).object)==0){
+        jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, oldValues.object);
+        while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+            jobject value = QtJambiAPI::nextOfJavaIterator(env, iter);
+            if(QtJambiAPI::sizeOfJavaCollection(env, WrapperMultiHashAccess::keys(env, container, value).object)==0){
                 removeRC(env, container.object, value);
             }
         }
@@ -3270,7 +3272,7 @@ jint ValuePointerRCMultiHashAccess::remove(JNIEnv * env, const ContainerInfo& co
 
 jobject ValuePointerRCMultiHashAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {
     jobject result = WrapperMultiHashAccess::take(env, container, key);
-    if(Java::Runtime::Collection::size(env, WrapperMultiHashAccess::keys(env, container, result).object)==0){
+    if(QtJambiAPI::sizeOfJavaCollection(env, WrapperMultiHashAccess::keys(env, container, result).object)==0){
         removeRC(env, container.object, result);
     }
     return result;
@@ -3315,7 +3317,7 @@ void PointersRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& cont
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(keyMetaType())){
-                key = QtJambiAPI::findFunctionPointerObject(env, content.first, *typeId);
+                key = QtJambiPrivate::findFunctionPointerObject(env, content.first, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -3332,7 +3334,7 @@ void PointersRCMultiHashAccess::updateRC(JNIEnv * env, const ContainerInfo& cont
             break;
         case FunctionPointer:
             if(const std::type_info* typeId = getTypeByMetaType(valueMetaType())){
-                value = QtJambiAPI::findFunctionPointerObject(env, content.second, *typeId);
+                value = QtJambiPrivate::findFunctionPointerObject(env, content.second, *typeId);
                 break;
             }
             Q_FALLTHROUGH();
@@ -4007,7 +4009,7 @@ public:
 
 private:
     explicit OwnerFunctional(OwnerFunctionalPrivate* _d) noexcept;
-    template<typename Functor, bool = std::is_assignable<FunctionPointer&, Functor>::value, bool = std::is_same<Functor, OwnerFunctional>::value>
+    template<typename Functor, bool = std::is_assignable<FunctionPointer&, Functor>::value, bool = std::is_same_v<Functor, OwnerFunctional>>
     class Data : public OwnerFunctionalPrivate{
     public:
         inline static OwnerFunctionalPrivate* from(Functor&& functor){
@@ -4047,7 +4049,7 @@ public:
 
     template<typename Functor, typename = std::enable_if_t<std::is_invocable_r_v<const QObject*, Functor, const void *>>>
     OwnerFunctional(Functor&& functor) noexcept
-        : OwnerFunctional(Data<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::from(std::forward<Functor>(functor))){}
+        : OwnerFunctional(Data<std::remove_reference_t<std::remove_cv_t<Functor>>>::from(std::forward<Functor>(functor))){}
 
     bool operator==(const OwnerFunctional& other) const noexcept;
     const QObject* operator()(const void *container) const;
@@ -4116,19 +4118,19 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
     case QMetaType::Bool:
         switch(containerType){
         case SequentialContainerType::QSet:
-            containerAccess = QtJambiPrivate::QSetAccess<bool>::newInstance();
+            containerAccess = QSetAccess<bool>::newInstance();
             break;
         case SequentialContainerType::QStack:
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
-            containerAccess = QtJambiPrivate::QListAccess<bool>::newInstance();
+            containerAccess = QListAccess<bool>::newInstance();
             break;
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
         case SequentialContainerType::QConstSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<const bool>::newInstance();
+            containerAccess = QSpanAccess<const bool>::newInstance();
             break;
         case SequentialContainerType::QSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<bool>::newInstance();
+            containerAccess = QSpanAccess<bool>::newInstance();
             break;
 #endif
         }
@@ -4138,19 +4140,19 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
     case QMetaType::UChar:
         switch(containerType){
         case SequentialContainerType::QSet:
-            containerAccess = QtJambiPrivate::QSetAccess<qint8>::newInstance();
+            containerAccess = QSetAccess<qint8>::newInstance();
             break;
         case SequentialContainerType::QStack:
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
-            containerAccess = QtJambiPrivate::QListAccess<qint8>::newInstance();
+            containerAccess = QListAccess<qint8>::newInstance();
             break;
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
         case SequentialContainerType::QConstSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<const qint8>::newInstance();
+            containerAccess = QSpanAccess<const qint8>::newInstance();
             break;
         case SequentialContainerType::QSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<qint8>::newInstance();
+            containerAccess = QSpanAccess<qint8>::newInstance();
             break;
 #endif
         }
@@ -4159,19 +4161,19 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
     case QMetaType::UShort:
         switch(containerType){
         case SequentialContainerType::QSet:
-            containerAccess = QtJambiPrivate::QSetAccess<qint16>::newInstance();
+            containerAccess = QSetAccess<qint16>::newInstance();
             break;
         case SequentialContainerType::QStack:
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
-            containerAccess = QtJambiPrivate::QListAccess<qint16>::newInstance();
+            containerAccess = QListAccess<qint16>::newInstance();
             break;
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
         case SequentialContainerType::QConstSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<const qint16>::newInstance();
+            containerAccess = QSpanAccess<const qint16>::newInstance();
             break;
         case SequentialContainerType::QSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<qint16>::newInstance();
+            containerAccess = QSpanAccess<qint16>::newInstance();
             break;
 #endif
         }
@@ -4180,19 +4182,19 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
     case QMetaType::UInt:
         switch(containerType){
         case SequentialContainerType::QSet:
-            containerAccess = QtJambiPrivate::QSetAccess<qint32>::newInstance();
+            containerAccess = QSetAccess<qint32>::newInstance();
             break;
         case SequentialContainerType::QStack:
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
-            containerAccess = QtJambiPrivate::QListAccess<qint32>::newInstance();
+            containerAccess = QListAccess<qint32>::newInstance();
             break;
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
         case SequentialContainerType::QConstSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<const qint32>::newInstance();
+            containerAccess = QSpanAccess<const qint32>::newInstance();
             break;
         case SequentialContainerType::QSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<qint32>::newInstance();
+            containerAccess = QSpanAccess<qint32>::newInstance();
             break;
 #endif
         }
@@ -4201,19 +4203,19 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
     case QMetaType::ULongLong:
         switch(containerType){
         case SequentialContainerType::QSet:
-            containerAccess = QtJambiPrivate::QSetAccess<qint64>::newInstance();
+            containerAccess = QSetAccess<qint64>::newInstance();
             break;
         case SequentialContainerType::QStack:
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
-            containerAccess = QtJambiPrivate::QListAccess<qint64>::newInstance();
+            containerAccess = QListAccess<qint64>::newInstance();
             break;
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
         case SequentialContainerType::QConstSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<const qint64>::newInstance();
+            containerAccess = QSpanAccess<const qint64>::newInstance();
             break;
         case SequentialContainerType::QSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<qint64>::newInstance();
+            containerAccess = QSpanAccess<qint64>::newInstance();
             break;
 #endif
         }
@@ -4221,19 +4223,19 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
     case QMetaType::Double:
         switch(containerType){
         case SequentialContainerType::QSet:
-            containerAccess = QtJambiPrivate::QSetAccess<double>::newInstance();
+            containerAccess = QSetAccess<double>::newInstance();
             break;
         case SequentialContainerType::QStack:
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
-            containerAccess = QtJambiPrivate::QListAccess<double>::newInstance();
+            containerAccess = QListAccess<double>::newInstance();
             break;
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
         case SequentialContainerType::QConstSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<const double>::newInstance();
+            containerAccess = QSpanAccess<const double>::newInstance();
             break;
         case SequentialContainerType::QSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<double>::newInstance();
+            containerAccess = QSpanAccess<double>::newInstance();
             break;
 #endif
         }
@@ -4241,19 +4243,19 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
     case QMetaType::Float:
         switch(containerType){
         case SequentialContainerType::QSet:
-            containerAccess = QtJambiPrivate::QSetAccess<float>::newInstance();
+            containerAccess = QSetAccess<float>::newInstance();
             break;
         case SequentialContainerType::QStack:
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
-            containerAccess = QtJambiPrivate::QListAccess<float>::newInstance();
+            containerAccess = QListAccess<float>::newInstance();
             break;
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
         case SequentialContainerType::QConstSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<const float>::newInstance();
+            containerAccess = QSpanAccess<const float>::newInstance();
             break;
         case SequentialContainerType::QSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<float>::newInstance();
+            containerAccess = QSpanAccess<float>::newInstance();
             break;
 #endif
         }
@@ -4261,19 +4263,19 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
     case QMetaType::QChar:
         switch(containerType){
         case SequentialContainerType::QSet:
-            containerAccess = QtJambiPrivate::QSetAccess<QChar>::newInstance();
+            containerAccess = QSetAccess<QChar>::newInstance();
             break;
         case SequentialContainerType::QStack:
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
-            containerAccess = QtJambiPrivate::QListAccess<QChar>::newInstance();
+            containerAccess = QListAccess<QChar>::newInstance();
             break;
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
         case SequentialContainerType::QConstSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<const QChar>::newInstance();
+            containerAccess = QSpanAccess<const QChar>::newInstance();
             break;
         case SequentialContainerType::QSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<QChar>::newInstance();
+            containerAccess = QSpanAccess<QChar>::newInstance();
             break;
 #endif
         }
@@ -4281,19 +4283,19 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
     case QMetaType::Char16:
         switch(containerType){
         case SequentialContainerType::QSet:
-            containerAccess = QtJambiPrivate::QSetAccess<char16_t>::newInstance();
+            containerAccess = QSetAccess<char16_t>::newInstance();
             break;
         case SequentialContainerType::QStack:
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
-            containerAccess = QtJambiPrivate::QListAccess<char16_t>::newInstance();
+            containerAccess = QListAccess<char16_t>::newInstance();
             break;
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
         case SequentialContainerType::QConstSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<const char16_t>::newInstance();
+            containerAccess = QSpanAccess<const char16_t>::newInstance();
             break;
         case SequentialContainerType::QSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<char16_t>::newInstance();
+            containerAccess = QSpanAccess<char16_t>::newInstance();
             break;
 #endif
         }
@@ -4301,19 +4303,19 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
     case QMetaType::Char32:
         switch(containerType){
         case SequentialContainerType::QSet:
-            containerAccess = QtJambiPrivate::QSetAccess<char32_t>::newInstance();
+            containerAccess = QSetAccess<char32_t>::newInstance();
             break;
         case SequentialContainerType::QStack:
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
-            containerAccess = QtJambiPrivate::QListAccess<char32_t>::newInstance();
+            containerAccess = QListAccess<char32_t>::newInstance();
             break;
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
         case SequentialContainerType::QConstSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<const char32_t>::newInstance();
+            containerAccess = QSpanAccess<const char32_t>::newInstance();
             break;
         case SequentialContainerType::QSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<char32_t>::newInstance();
+            containerAccess = QSpanAccess<char32_t>::newInstance();
             break;
 #endif
         }
@@ -4322,19 +4324,19 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
         switch(containerType){
         case SequentialContainerType::QSet:
             // no qhash for qvariant
-            // containerAccess = QtJambiPrivate::QSetAccess<QVariant>::newInstance();
+            // containerAccess = QSetAccess<QVariant>::newInstance();
             break;
         case SequentialContainerType::QStack:
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
-            containerAccess = QtJambiPrivate::QListAccess<QVariant>::newInstance();
+            containerAccess = QListAccess<QVariant>::newInstance();
             break;
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
         case SequentialContainerType::QConstSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<const QVariant>::newInstance();
+            containerAccess = QSpanAccess<const QVariant>::newInstance();
             break;
         case SequentialContainerType::QSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<QVariant>::newInstance();
+            containerAccess = QSpanAccess<QVariant>::newInstance();
             break;
 #endif
         }
@@ -4342,19 +4344,19 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
     case QMetaType::QString:
         switch(containerType){
         case SequentialContainerType::QSet:
-            containerAccess = QtJambiPrivate::QSetAccess<QString>::newInstance();
+            containerAccess = QSetAccess<QString>::newInstance();
             break;
         case SequentialContainerType::QStack:
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
-            containerAccess = QtJambiPrivate::QListAccess<QString>::newInstance();
+            containerAccess = QListAccess<QString>::newInstance();
             break;
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
         case SequentialContainerType::QConstSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<const QString>::newInstance();
+            containerAccess = QSpanAccess<const QString>::newInstance();
             break;
         case SequentialContainerType::QSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<QString>::newInstance();
+            containerAccess = QSpanAccess<QString>::newInstance();
             break;
 #endif
         }
@@ -4362,19 +4364,19 @@ AbstractContainerAccess* createContainerAccess(SequentialContainerType container
     case QMetaType::QObjectStar:
         switch(containerType){
         case SequentialContainerType::QSet:
-            containerAccess = QtJambiPrivate::QSetAccess<QObject*>::newInstance();
+            containerAccess = QSetAccess<QObject*>::newInstance();
             break;
         case SequentialContainerType::QStack:
         case SequentialContainerType::QQueue:
         case SequentialContainerType::QList:
-            containerAccess = QtJambiPrivate::QListAccess<QObject*>::newInstance();
+            containerAccess = QListAccess<QObject*>::newInstance();
             break;
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
         case SequentialContainerType::QConstSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<const QObject*>::newInstance();
+            containerAccess = QSpanAccess<const QObject*>::newInstance();
             break;
         case SequentialContainerType::QSpan:
-            containerAccess = QtJambiPrivate::QSpanAccess<QObject*>::newInstance();
+            containerAccess = QSpanAccess<QObject*>::newInstance();
             break;
 #endif
         }
@@ -5729,7 +5731,7 @@ bool hasReferenceCounts(JNIEnv * env, jobject container){
             rc = Java::QtCore::AbstractContainer::__rcContainer(env, container);
         }
         if(Java::Runtime::Collection::isInstanceOf(env, rc))
-            return Java::Runtime::Collection::size(env, rc)>0;
+            return QtJambiAPI::sizeOfJavaCollection(env, rc)>0;
         if(Java::Runtime::Map::isInstanceOf(env, rc))
             return Java::Runtime::Map::size(env, rc)>0;
     }
@@ -5740,19 +5742,19 @@ void AbstractReferenceCountingContainer::unfoldAndAddContainer(JNIEnv * env, job
     switch(dataType){
     case AbstractContainerAccess::PointerToQObject:
         if(jobject obj = QtJambiAPI::findObject(env, reinterpret_cast<const QObject*>(data)))
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
         break;
     case AbstractContainerAccess::FunctionPointer:
         if(const std::type_info* typeId = getTypeByMetaType(metaType)){
-            if(jobject obj = QtJambiAPI::findFunctionPointerObject(env, data, *typeId)){
-                Java::Runtime::Collection::add(env, set, obj);
+            if(jobject obj = QtJambiPrivate::findFunctionPointerObject(env, data, *typeId)){
+                QtJambiAPI::addToJavaCollection(env, set, obj);
             }
             break;
         }
         Q_FALLTHROUGH();
     case AbstractContainerAccess::Pointer:
         if(jobject obj = QtJambiAPI::findObject(env, data))
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
         break;
     default:
         if(access){
@@ -5810,13 +5812,13 @@ void AbstractReferenceCountingContainer::unfoldAndAddContainer(JNIEnv * env, job
                 unfoldAndAddContainer(env, set, rc);
         }else if(Java::Runtime::Collection::isInstanceOf(env, value)){
             jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, value);
-            while(Java::Runtime::Iterator::hasNext(env, iter)){
-                unfoldAndAddContainer(env, set, Java::Runtime::Iterator::next(env, iter));
+            while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+                unfoldAndAddContainer(env, set, QtJambiAPI::nextOfJavaIterator(env, iter));
             }
         }else if(Java::Runtime::Map::isInstanceOf(env, value)){
             jobject iter = QtJambiAPI::entrySetIteratorOfJavaMap(env, value);
-            while(Java::Runtime::Iterator::hasNext(env, iter)){
-                jobject entry = Java::Runtime::Iterator::next(env, iter);
+            while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+                jobject entry = QtJambiAPI::nextOfJavaIterator(env, iter);
                 unfoldAndAddContainer(env, set, Java::Runtime::Map$Entry::getKey(env, entry));
                 unfoldAndAddContainer(env, set, Java::Runtime::Map$Entry::getValue(env, entry));
             }
@@ -5824,7 +5826,7 @@ void AbstractReferenceCountingContainer::unfoldAndAddContainer(JNIEnv * env, job
             unfoldAndAddContainer(env, set, Java::QtCore::QPair::first(env, value));
             unfoldAndAddContainer(env, set, Java::QtCore::QPair::second(env, value));
         }else if(value){
-            Java::Runtime::Collection::add(env, set, value);
+            QtJambiAPI::addToJavaCollection(env, set, value);
         }
     }
 }
@@ -5848,15 +5850,15 @@ void ReferenceCountingSetContainer::addNestedValueRC(JNIEnv * env, jobject conta
                     if(set){
                         if(Java::Runtime::Collection::isInstanceOf(env, otherRC)){
                             jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, otherRC);
-                            while(Java::Runtime::Iterator::hasNext(env, iter)){
-                                Java::Runtime::Collection::add(env, set, Java::Runtime::Iterator::next(env, iter));
+                            while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+                                QtJambiAPI::addToJavaCollection(env, set, QtJambiAPI::nextOfJavaIterator(env, iter));
                             }
                         }else if(Java::Runtime::Map::isInstanceOf(env, otherRC)){
                             jobject iter = QtJambiAPI::entrySetIteratorOfJavaMap(env, otherRC);
-                            while(Java::Runtime::Iterator::hasNext(env, iter)){
-                                jobject entry = Java::Runtime::Iterator::next(env, iter);
-                                Java::Runtime::Collection::add(env, set, Java::Runtime::Map$Entry::getKey(env, entry));
-                                Java::Runtime::Collection::add(env, set, Java::Runtime::Map$Entry::getValue(env, entry));
+                            while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+                                jobject entry = QtJambiAPI::nextOfJavaIterator(env, iter);
+                                QtJambiAPI::addToJavaCollection(env, set, Java::Runtime::Map$Entry::getKey(env, entry));
+                                QtJambiAPI::addToJavaCollection(env, set, Java::Runtime::Map$Entry::getValue(env, entry));
                             }
                         }
                     }
@@ -5865,16 +5867,16 @@ void ReferenceCountingSetContainer::addNestedValueRC(JNIEnv * env, jobject conta
             }else if(Java::Runtime::Collection::isInstanceOf(env, value)){
                 if(jobject set = rcContainer(env, container)){
                     jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, value);
-                    while(Java::Runtime::Iterator::hasNext(env, iter)){
-                        unfoldAndAddContainer(env, set, Java::Runtime::Iterator::next(env, iter));
+                    while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+                        unfoldAndAddContainer(env, set, QtJambiAPI::nextOfJavaIterator(env, iter));
                     }
                 }
                 break;
             }else if(Java::Runtime::Map::isInstanceOf(env, value)){
                 if(jobject set = rcContainer(env, container)){
                     jobject iter = QtJambiAPI::entrySetIteratorOfJavaMap(env, value);
-                    while(Java::Runtime::Iterator::hasNext(env, iter)){
-                        jobject entry = Java::Runtime::Iterator::next(env, iter);
+                    while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+                        jobject entry = QtJambiAPI::nextOfJavaIterator(env, iter);
                         unfoldAndAddContainer(env, set, Java::Runtime::Map$Entry::getKey(env, entry));
                         unfoldAndAddContainer(env, set, Java::Runtime::Map$Entry::getValue(env, entry));
                     }
@@ -5893,7 +5895,7 @@ void ReferenceCountingSetContainer::addNestedValueRC(JNIEnv * env, jobject conta
     case AbstractContainerAccess::FunctionPointer:
     case AbstractContainerAccess::Pointer:
         if(jobject set = rcContainer(env, container))
-            Java::Runtime::Collection::add(env, set, value);
+            QtJambiAPI::addToJavaCollection(env, set, value);
         break;
     default:
         break;
@@ -5997,7 +5999,7 @@ jobject ReferenceCountingMultiMapContainer::rcContainer(JNIEnv * env, jobject co
 
 void ReferenceCountingSetContainer::clearRC(JNIEnv * env, jobject container){
     if(jobject rc = findContainer(env, container)){
-        Java::Runtime::Collection::clear(env, rc);
+        QtJambiAPI::clearJavaCollection(env, rc);
     }
 }
 
@@ -6007,9 +6009,9 @@ void ReferenceCountingSetContainer::assignRC(JNIEnv * env, jobject container, jo
         jobject tmp = rcContainer(env, container);
         jobject tmp2 = rcContainer(env, container2);
         if(tmp){
-            Java::Runtime::Collection::clear(env, tmp);
+            QtJambiAPI::clearJavaCollection(env, tmp);
             if(tmp2)
-                Java::Runtime::Collection::addAll(env, tmp, tmp2);
+                QtJambiAPI::addAllToJavaCollection(env, tmp, tmp2);
         }
     }
 }
@@ -6020,13 +6022,13 @@ void ReferenceCountingSetContainer::assignUniqueRC(JNIEnv * env, jobject contain
         jobject tmp = rcContainer(env, container);
         jobject tmp2 = rcContainer(env, container2);
         if(tmp){
-            Java::Runtime::Collection::clear(env, tmp);
+            QtJambiAPI::clearJavaCollection(env, tmp);
             if(tmp2){
-                jobject iter = Java::Runtime::Collection::iterator(env, tmp2);
-                while(Java::Runtime::Iterator::hasNext(env, iter)){
-                    jobject value = Java::Runtime::Iterator::next(env, iter);
+                jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, tmp2);
+                while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+                    jobject value = QtJambiAPI::nextOfJavaIterator(env, iter);
                     if(!Java::Runtime::Collection::contains(env, tmp, value))
-                        Java::Runtime::Collection::addAll(env, tmp, value);
+                        QtJambiAPI::addAllToJavaCollection(env, tmp, value);
                 }
             }
         }
@@ -6037,7 +6039,7 @@ void ReferenceCountingSetContainer::addAllRC(JNIEnv * env, jobject container, jo
     if(container && container2){
         JniLocalFrame frame(env, 200);
         if(jobject tmp = rcContainer(env, container))
-            Java::Runtime::Collection::addAll(env, tmp, container2);
+            QtJambiAPI::addAllToJavaCollection(env, tmp, container2);
     }
 }
 
@@ -6045,11 +6047,11 @@ void ReferenceCountingSetContainer::addAllUniqueRC(JNIEnv * env, jobject contain
     if(container && container2){
         JniLocalFrame frame(env, 200);
         if(jobject tmp = rcContainer(env, container)){
-            jobject iter = Java::Runtime::Collection::iterator(env, container2);
-            while(Java::Runtime::Iterator::hasNext(env, iter)){
-                jobject value = Java::Runtime::Iterator::next(env, iter);
+            jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, container2);
+            while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+                jobject value = QtJambiAPI::nextOfJavaIterator(env, iter);
                 if(!Java::Runtime::Collection::contains(env, tmp, value))
-                    Java::Runtime::Collection::addAll(env, tmp, value);
+                    QtJambiAPI::addAllToJavaCollection(env, tmp, value);
             }
         }
     }
@@ -6059,7 +6061,7 @@ void ReferenceCountingSetContainer::addRC(JNIEnv * env, jobject container, jobje
     if(container){
         JniLocalFrame frame(env, 200);
         if(jobject rc = rcContainer(env, container))
-            Java::Runtime::Collection::add(env, rc, value);
+            QtJambiAPI::addToJavaCollection(env, rc, value);
     }
 }
 
@@ -6068,7 +6070,7 @@ void ReferenceCountingSetContainer::addUniqueRC(JNIEnv * env, jobject container,
         JniLocalFrame frame(env, 200);
         if(jobject rc = rcContainer(env, container)){
             if(!Java::Runtime::Collection::contains(env, rc, value))
-                Java::Runtime::Collection::add(env, rc, value);
+                QtJambiAPI::addToJavaCollection(env, rc, value);
         }
     }
 }

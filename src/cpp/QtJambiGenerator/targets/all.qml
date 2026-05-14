@@ -105,4 +105,5 @@ TypeSystem{
     LoadTypeSystem{name: "QtInsightTracker";    generate: true; unless: "QTJAMBI_NO_INSIGHTTRACKER"}
     LoadTypeSystem{name: "QtTaskTree";          generate: true; unless: "QTJAMBI_NO_TASKTREE";         since: [6, 11]}
     LoadTypeSystem{name: "QtCanvasPainter";     generate: true; unless: "QTJAMBI_NO_CANVASPAINTER";         since: [6, 11]}
+    LoadTypeSystem{name: "QtOpenApiCommon";     generate: true; unless: "QTJAMBI_NO_OPENAPI";         since: [6, 11]}
 }

@@ -905,7 +905,7 @@ void AutoListAccess::appendList(JNIEnv * env, const ContainerInfo& container, Co
         }
     }else{
         jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, containerInfo.object);
-        jint idx = size(env, container.container);
+        qsizetype idx = size(env, container.container);
         reserve(env, container, idx + QtJambiAPI::sizeOfJavaCollection(env, containerInfo.object));
         while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
             insert(env, container, idx++, 1, QtJambiAPI::nextOfJavaIterator(env, iter));
@@ -928,7 +928,7 @@ void* AutoListAccess::at(void* container, qsizetype index)
     return p->ptr+index*m_offset;
 }
 
-jobject AutoListAccess::at(JNIEnv * env, const void* container, jint index)
+jobject AutoListAccess::at(JNIEnv * env, const void* container, qsizetype index)
 {
     jvalue _value;
     _value.l = nullptr;
@@ -941,7 +941,7 @@ jobject AutoListAccess::at(JNIEnv * env, const void* container, jint index)
     return nullptr;
 }
 
-jobject AutoListAccess::value(JNIEnv * env, const void* container, jint index)
+jobject AutoListAccess::value(JNIEnv * env, const void* container, qsizetype index)
 {
     jvalue _value;
     _value.l = nullptr;
@@ -961,7 +961,7 @@ jobject AutoListAccess::value(JNIEnv * env, const void* container, jint index)
     return nullptr;
 }
 
-jobject AutoListAccess::value(JNIEnv * env, const void* container, jint index, jobject defaultValue)
+jobject AutoListAccess::value(JNIEnv * env, const void* container, qsizetype index, jobject defaultValue)
 {
     jvalue _value;
     _value.l = nullptr;
@@ -977,7 +977,7 @@ jobject AutoListAccess::value(JNIEnv * env, const void* container, jint index, j
     return nullptr;
 }
 
-void AutoListAccess::swapItemsAt(JNIEnv *, const ContainerInfo& container, jint i, jint j)
+void AutoListAccess::swapItemsAt(JNIEnv *, const ContainerInfo& container, qsizetype i, qsizetype j)
 {
     QListData* p = reinterpret_cast<QListData*>(container.container);
     Q_ASSERT_X(i >= 0 && i < p->size && j >= 0 && j < p->size,
@@ -1024,13 +1024,13 @@ qsizetype AutoListAccess::size(const void* container)
     return p->size;
 }
 
-jint AutoListAccess::size(JNIEnv *, const void* container)
+qsizetype AutoListAccess::size(JNIEnv *, const void* container)
 {
     const QListData* p = reinterpret_cast<const QListData*>(container);
-    return jint(p->size);
+    return p->size;
 }
 
-void AutoListAccess::reserve(JNIEnv *, const ContainerInfo& container, jint asize)
+void AutoListAccess::reserve(JNIEnv *, const ContainerInfo& container, qsizetype asize)
 {
     reserve(container.container, asize);
 }
@@ -1072,7 +1072,7 @@ void AutoListAccess::replace(void* container, qsizetype index, const void* value
     m_elementMetaType.construct(target, value);
 }
 
-void AutoListAccess::replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value)
+void AutoListAccess::replace(JNIEnv * env, const ContainerInfo& container, qsizetype index, jobject value)
 {
     QListData* p = reinterpret_cast<QListData*>(container.container);
     Q_ASSERT_X(index >= 0 && index < p->size, "QList<T>::replace", "index out of range");
@@ -1087,7 +1087,7 @@ void AutoListAccess::replace(JNIEnv * env, const ContainerInfo& container, jint 
     }
 }
 
-void AutoListAccess::remove(JNIEnv *, const ContainerInfo& container, jint index, jint n){
+void AutoListAccess::remove(JNIEnv *, const ContainerInfo& container, qsizetype index, qsizetype n){
     remove(container.container, index, n);
 }
 void AutoListAccess::remove(void* container, qsizetype index, qsizetype n)
@@ -1139,10 +1139,10 @@ void AutoListAccess::remove(void* container, qsizetype index, qsizetype n)
     }
 }
 
-jint AutoListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value)
+qsizetype AutoListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value)
 {
     QtJambiScope scope;
-    jint removedCount = 0;
+    qsizetype removedCount = 0;
     void *_qvaluePtr = nullptr;
     jvalue _value;
     _value.l = value;
@@ -1205,7 +1205,7 @@ jboolean AutoListAccess::equal(JNIEnv * env, const void* container, jobject othe
     return false;
 }
 
-void AutoListAccess::move(JNIEnv *, const ContainerInfo& container, jint from, jint to)
+void AutoListAccess::move(JNIEnv *, const ContainerInfo& container, qsizetype from, qsizetype to)
 {
     if (from == to)
         return;
@@ -1214,7 +1214,7 @@ void AutoListAccess::move(JNIEnv *, const ContainerInfo& container, jint from, j
                "QList<T>::move", "index out of range");
     detach(p);
     void* tmp = m_elementMetaType.create(p->ptr + from * m_offset);
-    for(jint i=from; i<to; ++i){
+    for(qsizetype i=from; i<to; ++i){
         m_elementMetaType.destruct(p->ptr + i * m_offset);
         m_elementMetaType.construct(p->ptr + i * m_offset, p->ptr + (i+1) * m_offset);
     }
@@ -1223,7 +1223,7 @@ void AutoListAccess::move(JNIEnv *, const ContainerInfo& container, jint from, j
     m_elementMetaType.destroy(tmp);
 }
 
-ContainerAndAccessInfo AutoListAccess::mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint _pos, jint _len)
+ContainerAndAccessInfo AutoListAccess::mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, qsizetype _pos, qsizetype _len)
 {
     ContainerAndAccessInfo result;
     using namespace QtPrivate;
@@ -1261,9 +1261,9 @@ ContainerAndAccessInfo AutoListAccess::mid(JNIEnv * env, const ConstContainerAnd
     return result;
 }
 
-jint AutoListAccess::lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index)
+qsizetype AutoListAccess::lastIndexOf(JNIEnv * env, const void* container, jobject value, qsizetype index)
 {
-    jint sz = size(env, container);
+    qsizetype sz = size(env, container);
     if (index < 0)
         index += sz;
     else if (index >= sz)
@@ -1291,7 +1291,7 @@ bool AutoListAccess::append(void* container, const void* value){
     return true;
 }
 
-void AutoListAccess::insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value)
+void AutoListAccess::insert(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n, jobject value)
 {
     QListData* p = reinterpret_cast<QListData*>(container.container);
     emplace(p, env, index, value, n);
@@ -1303,11 +1303,11 @@ void AutoListAccess::insert(void* container, qsizetype index, qsizetype n, const
     emplace(p, index, value, n);
 }
 
-jint AutoListAccess::indexOf(JNIEnv * env, const void* container, jobject value, jint index)
+qsizetype AutoListAccess::indexOf(JNIEnv * env, const void* container, jobject value, qsizetype index)
 {
-    jint sz = size(env, container);
+    qsizetype sz = size(env, container);
     if (index < 0)
-        index = qMax<jint>(index + sz, 0);
+        index = qMax<qsizetype>(index + sz, 0);
     if (index < sz) {
         QtJambiScope scope;
         void *_qvaluePtr = nullptr;
@@ -1342,9 +1342,9 @@ jboolean AutoListAccess::endsWith(JNIEnv * env, const void* container, jobject v
     return false;
 }
 
-jint AutoListAccess::count(JNIEnv * env, const void* container, jobject value)
+qsizetype AutoListAccess::count(JNIEnv * env, const void* container, jobject value)
 {
-    jint result = 0;
+    qsizetype result = 0;
     auto sz = size(env, container);
     QtJambiScope scope;
     void *_qvaluePtr = nullptr;
@@ -1410,7 +1410,7 @@ void AutoListAccess::clear(void* container)
     }
 }
 
-void AutoListAccess::emplace(QListData* p, JNIEnv * env, jint index, jobject value, jint n)
+void AutoListAccess::emplace(QListData* p, JNIEnv * env, qsizetype index, jobject value, qsizetype n)
 {
     if(n<=0)
         return;
@@ -1419,7 +1419,7 @@ void AutoListAccess::emplace(QListData* p, JNIEnv * env, jint index, jobject val
     bool detach = p->needsDetach();
     if (!detach) {
         if(index == p->size && freeSpaceAtEnd(p)>=n){
-            for(jint i=0; i<n; ++i){
+            for(qsizetype i=0; i<n; ++i){
                 void* _qvaluePtr = p->ptr+p->size*m_offset;
                 m_elementMetaType.construct(_qvaluePtr);
                 m_externalToInternalConverter(env, nullptr, _value, _qvaluePtr, jValueType::l);
@@ -1429,7 +1429,7 @@ void AutoListAccess::emplace(QListData* p, JNIEnv * env, jint index, jobject val
         }
         if (index == 0 && freeSpaceAtBegin(p)>=n) {
             p->ptr -= n*m_offset;
-            for(jint i=0; i<n; ++i){
+            for(qsizetype i=0; i<n; ++i){
                 void* _qvaluePtr = p->ptr+i*m_offset;
                 m_elementMetaType.construct(_qvaluePtr);
                 m_externalToInternalConverter(env, nullptr, _value, _qvaluePtr, jValueType::l);
@@ -1727,13 +1727,13 @@ auto AutoListAccess::allocate(qsizetype capacity, QArrayData::AllocationOption o
     return QListData(reinterpret_cast<QTypedArrayData<char>*>(header), reinterpret_cast<char*>(dataPtr));
 }
 
-jint AutoListAccess::capacity(JNIEnv *, const void* container)
+qsizetype AutoListAccess::capacity(JNIEnv *, const void* container)
 {
     const QListData* p = reinterpret_cast<const QListData*>(container);
     return qsizetype(p->constAllocatedCapacity());
 }
 
-void AutoListAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint newSize)
+void AutoListAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, qsizetype newSize)
 {
     QListData* p = reinterpret_cast<QListData*>(container.container);
     if (newSize == -1)
@@ -1786,7 +1786,7 @@ void AutoListAccess::resize(void* container, qsizetype newSize)
     }
 }
 
-void AutoListAccess::resize(JNIEnv * env, const ContainerInfo& container, jint newSize)
+void AutoListAccess::resize(JNIEnv * env, const ContainerInfo& container, qsizetype newSize)
 {
     QListData* p = reinterpret_cast<QListData*>(container.container);
     if (p->needsDetach() || newSize > capacity(env, container.container) - freeSpaceAtBegin(p)) {
@@ -1876,7 +1876,7 @@ AutoSpanAccess* PointerRCAutoListAccess::createSpanAccess(bool isConst){
 
 void PointerRCAutoListAccess::updateRC(JNIEnv * env, const ContainerInfo& container){
     JniLocalFrame frame(env, 200);
-    jobject set = Java::Runtime::ArrayList::newInstance(env);
+    jobject set = QtJambiAPI::newJavaArrayList(env);
     auto iterator = elementIterator(container.container);
     while(iterator->hasNext()){
         const void* content = iterator->next();
@@ -1906,7 +1906,7 @@ void PointerRCAutoListAccess::updateRC(JNIEnv * env, const ContainerInfo& contai
             break;
         }
         if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
     }
     clearRC(env, container.object);
     addAllRC(env, container.object, set);
@@ -1937,7 +1937,7 @@ void PointerRCAutoListAccess::appendList(JNIEnv * env, const ContainerInfo& cont
     addAllRC(env, container.object, findContainer(env, containerInfo.object));
 }
 
-void PointerRCAutoListAccess::replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) {
+void PointerRCAutoListAccess::replace(JNIEnv * env, const ContainerInfo& container, qsizetype index, jobject value) {
     jobject oldValue = AutoListAccess::at(env, container.container, index);
     AutoListAccess::replace(env, container, index, value);
     if(oldValue && !AutoListAccess::contains(env, container.container, oldValue))
@@ -1946,13 +1946,13 @@ void PointerRCAutoListAccess::replace(JNIEnv * env, const ContainerInfo& contain
         addRC(env, container.object, value);
 }
 
-jint PointerRCAutoListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    jint result = AutoListAccess::removeAll(env, container, value);
+qsizetype PointerRCAutoListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
+    qsizetype result = AutoListAccess::removeAll(env, container, value);
     removeRC(env, container.object, value, result);
     return result;
 }
 
-void PointerRCAutoListAccess::insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) {
+void PointerRCAutoListAccess::insert(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n, jobject value) {
     AutoListAccess::insert(env, container, index, n, value);
     if(value)
         addRC(env, container.object, value);
@@ -1963,28 +1963,28 @@ void PointerRCAutoListAccess::clear(JNIEnv * env, const ContainerInfo& container
     clearRC(env, container.object);
 }
 
-void PointerRCAutoListAccess::remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) {
+void PointerRCAutoListAccess::remove(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n) {
     if(n==1){
         jobject oldValue = AutoListAccess::at(env, container.container, index);
         AutoListAccess::remove(env, container, index, n);
         removeRC(env, container.object, oldValue);
     }else{
-        jint size = AutoListAccess::size(env, container.container);
-        jobject removedValues = Java::Runtime::ArrayList::newInstance(env);
-        for(jint i = index; i<=index+n && i<size; ++i){
-            Java::Runtime::Collection::add(env, removedValues, AutoListAccess::at(env, container.container, i));
+        qsizetype size = AutoListAccess::size(env, container.container);
+        jobject removedValues = QtJambiAPI::newJavaArrayList(env);
+        for(qsizetype i = index; i<=index+n && i<size; ++i){
+            QtJambiAPI::addToJavaCollection(env, removedValues, AutoListAccess::at(env, container.container, i));
         }
         AutoListAccess::remove(env, container, index, n);
-        jobject iter = Java::Runtime::Collection::iterator(env, removedValues);
-        while(Java::Runtime::Iterator::hasNext(env, iter)){
-            jobject value = Java::Runtime::Iterator::next(env, iter);
+        jobject iter = QtJambiAPI::iteratorOfJavaIterable(env, removedValues);
+        while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+            jobject value = QtJambiAPI::nextOfJavaIterator(env, iter);
             removeRC(env, container.object, value);
         }
     }
 }
 
-void PointerRCAutoListAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size){
-    jint oldSize = AutoListAccess::size(env, container.container);
+void PointerRCAutoListAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, qsizetype size){
+    qsizetype oldSize = AutoListAccess::size(env, container.container);
     AutoListAccess::fill(env, container, value, size);
     for(;oldSize<size;++oldSize){
         addRC(env, container.object, value);
@@ -2065,25 +2065,25 @@ void NestedPointersRCAutoListAccess::updateRC(JNIEnv * env, const ContainerInfo&
     }
 }
 
-void NestedPointersRCAutoListAccess::replace(JNIEnv * env, const ContainerInfo& container, jint index, jobject value) {
+void NestedPointersRCAutoListAccess::replace(JNIEnv * env, const ContainerInfo& container, qsizetype index, jobject value) {
     AutoListAccess::replace(env, container, index, value);
     updateRC(env, container);
 }
 
-jint NestedPointersRCAutoListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
-    jint result = AutoListAccess::removeAll(env, container, value);
+qsizetype NestedPointersRCAutoListAccess::removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) {
+    qsizetype result = AutoListAccess::removeAll(env, container, value);
     if(result>0){
         updateRC(env, container);
     }
     return result;
 }
 
-ContainerAndAccessInfo NestedPointersRCAutoListAccess::mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, jint index1, jint index2) {
+ContainerAndAccessInfo NestedPointersRCAutoListAccess::mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, qsizetype index1, qsizetype index2) {
     ContainerAndAccessInfo result = AutoListAccess::mid(env, container, index1, index2);
     return result;
 }
 
-void NestedPointersRCAutoListAccess::insert(JNIEnv * env, const ContainerInfo& container, jint index, jint n, jobject value) {
+void NestedPointersRCAutoListAccess::insert(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n, jobject value) {
     AutoListAccess::insert(env, container, index, n, value);
     addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
 }
@@ -2093,12 +2093,12 @@ void NestedPointersRCAutoListAccess::clear(JNIEnv * env, const ContainerInfo& co
     clearRC(env, container.object);
 }
 
-void NestedPointersRCAutoListAccess::remove(JNIEnv * env, const ContainerInfo& container, jint index, jint n) {
+void NestedPointersRCAutoListAccess::remove(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n) {
     AutoListAccess::remove(env, container, index, n);
     updateRC(env, container);
 }
 
-void NestedPointersRCAutoListAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, jint size){
+void NestedPointersRCAutoListAccess::fill(JNIEnv * env, const ContainerInfo& container, jobject value, qsizetype size){
     AutoListAccess::fill(env, container, value, size);
     addNestedValueRC(env, container.object, elementType(), hasNestedPointers(), value);
 }

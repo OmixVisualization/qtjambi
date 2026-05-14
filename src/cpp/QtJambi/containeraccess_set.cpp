@@ -403,7 +403,7 @@ jobject AutoSetAccess::constEnd(JNIEnv * env, const ConstExtendedContainerInfo& 
     return m_hashAccess.constEnd(env, container);
 }
 
-jint AutoSetAccess::capacity(JNIEnv * env, const void* container)
+qsizetype AutoSetAccess::capacity(JNIEnv * env, const void* container)
 {
     return m_hashAccess.capacity(env, container);
 }
@@ -541,12 +541,12 @@ jboolean AutoSetAccess::remove(JNIEnv * env, const ContainerInfo& container, job
     return m_hashAccess.remove(env, container, value);
 }
 
-void AutoSetAccess::reserve(JNIEnv * env, const ContainerInfo& container, jint newSize)
+void AutoSetAccess::reserve(JNIEnv * env, const ContainerInfo& container, qsizetype newSize)
 {
     m_hashAccess.reserve(env, container, newSize);
 }
 
-jint AutoSetAccess::size(JNIEnv * env, const void* container)
+qsizetype AutoSetAccess::size(JNIEnv * env, const void* container)
 {
     return m_hashAccess.size(env, container);
 }
@@ -716,7 +716,7 @@ void PointerRCAutoSetAccess::updateRC(JNIEnv * env, const ContainerInfo& contain
             break;
         }
         if(obj)
-            Java::Runtime::Collection::add(env, set, obj);
+            QtJambiAPI::addToJavaCollection(env, set, obj);
     }
     clearRC(env, container.object);
     addAllRC(env, container.object, set);
