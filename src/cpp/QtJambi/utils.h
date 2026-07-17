@@ -35,6 +35,12 @@
 #include <QtCore/QPointer>
 #include "global.h"
 
+#if defined(QTJAMBI_FAST_BUILD)
+#define QTJAMBI_CAST_INCLUDE_CHECK(msg, ...)
+#else
+#define QTJAMBI_CAST_INCLUDE_CHECK(msg, ...) static_assert(__VA_ARGS__, "Cannot cast without including <" #msg ">");
+#endif
+
 namespace QtJambiPrivate {
 
 template<typename T, typename = void>
@@ -76,8 +82,7 @@ using qtjambi_cast_result_t = std::enable_if_t<QtJambiPrivate::test_qtjambi_cast
 
 template<class O, typename... Args>
 static constexpr auto find_qtjambi_cast_impl() {
-    constexpr bool hasCastImpl = QtJambiPrivate::is_complete_v< QtJambiPrivate::qtjambi_cast_impl<O,Args...> >;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/Cast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/Cast, QtJambiPrivate::is_complete_v< QtJambiPrivate::qtjambi_cast_impl<O,Args...> >);
     return QtJambiPrivate::qtjambi_cast_impl<O, Args...>{};
 }
 
@@ -85,24 +90,24 @@ template<typename O, typename... Args>
 using qtjambi_cast_impl = decltype(find_qtjambi_cast_impl<O,Args...>());
 
 template<class O, typename... Args>
-constexpr qtjambi_cast_result_t<O,Args...> qtjambi_cast(Args&&... args){
+Q_REQUIRED_RESULT constexpr qtjambi_cast_result_t<O,Args...> qtjambi_cast(Args&&... args){
     return qtjambi_cast_impl<O, Args...>::cast(std::forward<Args>(args)...);
 }
 
 class QtJambiScope;
 
 template<class O, typename... Args>
-constexpr qtjambi_cast_result_t<O,JNIEnv*,Args...> qtjambi_cast(JNIEnv *env, Args&&... args){
+Q_REQUIRED_RESULT constexpr qtjambi_cast_result_t<O,JNIEnv*,Args...> qtjambi_cast(JNIEnv *env, Args&&... args){
     return qtjambi_cast_impl<O,Args...,JNIEnv*>::cast(std::forward<Args>(args)..., env);
 }
 
 template<class O, typename... Args>
-constexpr qtjambi_cast_result_t<O,QtJambiScope&,Args...> qtjambi_cast(QtJambiScope& scope, Args&&... args){
+Q_REQUIRED_RESULT constexpr qtjambi_cast_result_t<O,QtJambiScope&,Args...> qtjambi_cast(QtJambiScope& scope, Args&&... args){
     return qtjambi_cast_impl<O,Args...,QtJambiScope&>::cast(std::forward<Args>(args)..., scope);
 }
 
 template<class O, typename... Args>
-constexpr qtjambi_cast_result_t<O,JNIEnv*,QtJambiScope&,Args...> qtjambi_cast(JNIEnv *env, QtJambiScope& scope, Args&&... args){
+Q_REQUIRED_RESULT constexpr qtjambi_cast_result_t<O,JNIEnv*,QtJambiScope&,Args...> qtjambi_cast(JNIEnv *env, QtJambiScope& scope, Args&&... args){
     return qtjambi_cast_impl<O,Args...,JNIEnv*,QtJambiScope&>::cast(std::forward<Args>(args)..., env, scope);
 }
 
@@ -130,20 +135,20 @@ public:
     Runnable& operator=(Runnable&& other) noexcept;
 
     template<typename Functor, std::enable_if_t<!std::is_pointer_v<Functor>, bool> = true
-                             , std::enable_if_t<!std::is_same_v<std::remove_reference_t<std::remove_cv_t<Functor>>, Runnable>, bool> = true
-                             , std::enable_if_t<!std::is_null_pointer_v<std::remove_reference_t<std::remove_cv_t<Functor>>>, bool> = true
-                             , std::enable_if_t<!std::is_same_v<std::remove_reference_t<std::remove_cv_t<Functor>>, FunctionPointer>, bool> = true
+                             , std::enable_if_t<!std::is_same_v<std::remove_cv_t<std::remove_reference_t<Functor>>, Runnable>, bool> = true
+                             , std::enable_if_t<!std::is_null_pointer_v<std::remove_cv_t<std::remove_reference_t<Functor>>>, bool> = true
+                             , std::enable_if_t<!std::is_same_v<std::remove_cv_t<std::remove_reference_t<Functor>>, FunctionPointer>, bool> = true
                              , std::enable_if_t<std::is_invocable_v<Functor>, bool> = true
     >
     Runnable(Functor&& functor) noexcept
         : Runnable(
-            new std::remove_reference_t<std::remove_cv_t<Functor>>(std::move(functor)),
+            new std::remove_cv_t<std::remove_reference_t<Functor>>(std::move(functor)),
             [](void* data){
-                std::remove_reference_t<std::remove_cv_t<Functor>>* fct = reinterpret_cast<std::remove_reference_t<std::remove_cv_t<Functor>>*>(data);
+                std::remove_cv_t<std::remove_reference_t<Functor>>* fct = reinterpret_cast<std::remove_cv_t<std::remove_reference_t<Functor>>*>(data);
                 (*fct)();
             },
             [](void* data){
-                delete reinterpret_cast<std::remove_reference_t<std::remove_cv_t<Functor>>*>(data);
+                delete reinterpret_cast<std::remove_cv_t<std::remove_reference_t<Functor>>*>(data);
             }
             ){}
     bool operator==(const Runnable& other) const noexcept;

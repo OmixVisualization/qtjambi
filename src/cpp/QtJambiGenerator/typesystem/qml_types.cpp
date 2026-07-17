@@ -492,19 +492,6 @@ void FunctionalType::setDisableNativeIdUsage(bool newDisableNativeIdUsage)
     emit disableNativeIdUsageChanged();
 }
 
-bool IteratorType::getGenericClass() const
-{
-    return genericClass;
-}
-
-void IteratorType::setGenericClass(bool newGenericClass)
-{
-    if (genericClass == newGenericClass)
-        return;
-    genericClass = newGenericClass;
-    emit genericClassChanged();
-}
-
 bool IteratorType::getIsConst() const
 {
     return isConst;

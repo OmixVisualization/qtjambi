@@ -33,6 +33,43 @@
 
 #include "qtjambi_cast_object.h"
 
+#if !defined(__GLIBCXX__) || !defined(Q_OS_WIN)
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const bool&>(JNIEnv *, const bool&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const qint8&>(JNIEnv *, const qint8&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const qint16&>(JNIEnv *, const qint16&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const qint32&>(JNIEnv *, const qint32&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const qint64&>(JNIEnv *, const qint64&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const double&>(JNIEnv *, const double&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const float&>(JNIEnv *, const float&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QChar&>(JNIEnv *, const QChar&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const char16_t&>(JNIEnv *, const char16_t&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const char32_t&>(JNIEnv *, const char32_t&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QObject*&>(JNIEnv *, const QObject*&);
+
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,bool&>(JNIEnv *, bool&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,qint8&>(JNIEnv *, qint8&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,qint16&>(JNIEnv *, qint16&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,qint32&>(JNIEnv *, qint32&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,qint64&>(JNIEnv *, qint64&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,double&>(JNIEnv *, double&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,float&>(JNIEnv *, float&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QChar&>(JNIEnv *, QChar&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,char16_t&>(JNIEnv *, char16_t&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,char32_t&>(JNIEnv *, char32_t&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QObject*&>(JNIEnv *, QObject*&);
+
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,bool>(JNIEnv *, bool&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,qint8>(JNIEnv *, qint8&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,qint16>(JNIEnv *, qint16&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,qint32>(JNIEnv *, qint32&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,qint64>(JNIEnv *, qint64&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,double>(JNIEnv *, double&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,float>(JNIEnv *, float&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QChar>(JNIEnv *, QChar&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,char16_t>(JNIEnv *, char16_t&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,char32_t>(JNIEnv *, char32_t&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QObject*>(JNIEnv *, QObject*&&);
+
 #ifdef QNAMESPACE_H
 extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,Qt::InputMethodQuery&>(JNIEnv *, Qt::InputMethodQuery&);
 extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,Qt::ItemSelectionMode&>(JNIEnv *, Qt::ItemSelectionMode&);
@@ -57,6 +94,9 @@ extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QList<QVariant
 #endif
 
 #ifdef QSTRING_H
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QString&>(JNIEnv *, const QString&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QString&>(JNIEnv *, QString&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QString>(JNIEnv *, QString&&);
 extern template QTJAMBI_EXPORT QString qtjambi_cast<QString,jstring&>(JNIEnv *, jstring&);
 extern template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,QString>(JNIEnv *, QString&&);
 extern template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,QString&>(JNIEnv *, QString&);
@@ -83,6 +123,11 @@ extern template QTJAMBI_EXPORT QByteArray qtjambi_cast<QByteArray,jobject&>(JNIE
 extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QByteArray>(JNIEnv *, QByteArray&&);
 extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QByteArray&>(JNIEnv *, QByteArray&);
 extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QByteArray&>(JNIEnv *, const QByteArray&);
+
+extern template QTJAMBI_EXPORT QList<QByteArray> qtjambi_cast<QList<QByteArray>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<QByteArray>>(JNIEnv *, QList<QByteArray>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<QByteArray>&>(JNIEnv *, QList<QByteArray>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QList<QByteArray>&>(JNIEnv *, const QList<QByteArray>&);
 #endif
 
 #ifdef QBYTEARRAYVIEW_H
@@ -222,6 +267,99 @@ extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<JObjectWrapper
 extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QList<JObjectWrapper>&>(JNIEnv *, const QList<JObjectWrapper>&);
 #endif
 
+#ifdef QABSTRACTITEMMODEL_H
+extern template QTJAMBI_EXPORT QList<QModelIndex> qtjambi_cast<QList<QModelIndex>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<QModelIndex>>(JNIEnv *, QList<QModelIndex>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<QModelIndex>&>(JNIEnv *, QList<QModelIndex>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QList<QModelIndex>&>(JNIEnv *, const QList<QModelIndex>&);
+extern template QTJAMBI_EXPORT QList<QPersistentModelIndex> qtjambi_cast<QList<QPersistentModelIndex>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<QPersistentModelIndex>>(JNIEnv *, QList<QPersistentModelIndex>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<QPersistentModelIndex>&>(JNIEnv *, QList<QPersistentModelIndex>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QList<QPersistentModelIndex>&>(JNIEnv *, const QList<QPersistentModelIndex>&);
+#endif
+
+extern template QTJAMBI_EXPORT QMap<qint32,qint32> qtjambi_cast<QMap<qint32,qint32>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<qint32,qint32>>(JNIEnv *, QMap<qint32,qint32>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<qint32,qint32>&>(JNIEnv *, QMap<qint32,qint32>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMap<qint32,qint32>&>(JNIEnv *, const QMap<qint32,qint32>&);
+
+#ifdef QVARIANT_H
+extern template QTJAMBI_EXPORT QMap<qint32,QVariant> qtjambi_cast<QMap<qint32,QVariant>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<qint32,QVariant>>(JNIEnv *, QMap<qint32,QVariant>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<qint32,QVariant>&>(JNIEnv *, QMap<qint32,QVariant>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMap<qint32,QVariant>&>(JNIEnv *, const QMap<qint32,QVariant>&);
+
+extern template QTJAMBI_EXPORT QMultiMap<qint32,QVariant> qtjambi_cast<QMultiMap<qint32,QVariant>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiMap<qint32,QVariant>>(JNIEnv *, QMultiMap<qint32,QVariant>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiMap<qint32,QVariant>&>(JNIEnv *, QMultiMap<qint32,QVariant>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMultiMap<qint32,QVariant>&>(JNIEnv *, const QMultiMap<qint32,QVariant>&);
+#ifdef QSTRING_H
+extern template QTJAMBI_EXPORT QMap<QString,QVariant> qtjambi_cast<QMap<QString,QVariant>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<QString,QVariant>>(JNIEnv *, QMap<QString,QVariant>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<QString,QVariant>&>(JNIEnv *, QMap<QString,QVariant>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMap<QString,QVariant>&>(JNIEnv *, const QMap<QString,QVariant>&);
+
+extern template QTJAMBI_EXPORT QMultiMap<QString,QVariant> qtjambi_cast<QMultiMap<QString,QVariant>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiMap<QString,QVariant>>(JNIEnv *, QMultiMap<QString,QVariant>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiMap<QString,QVariant>&>(JNIEnv *, QMultiMap<QString,QVariant>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMultiMap<QString,QVariant>&>(JNIEnv *, const QMultiMap<QString,QVariant>&);
+
+extern template QTJAMBI_EXPORT QHash<QString,QVariant> qtjambi_cast<QHash<QString,QVariant>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QHash<QString,QVariant>>(JNIEnv *, QHash<QString,QVariant>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QHash<QString,QVariant>&>(JNIEnv *, QHash<QString,QVariant>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QHash<QString,QVariant>&>(JNIEnv *, const QHash<QString,QVariant>&);
+#endif
+#ifdef QBYTEARRAY_H
+extern template QTJAMBI_EXPORT QMap<QByteArray,QVariant> qtjambi_cast<QMap<QByteArray,QVariant>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<QByteArray,QVariant>>(JNIEnv *, QMap<QByteArray,QVariant>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<QByteArray,QVariant>&>(JNIEnv *, QMap<QByteArray,QVariant>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMap<QByteArray,QVariant>&>(JNIEnv *, const QMap<QByteArray,QVariant>&);
+#endif
+#endif
+
+#ifdef QSTRING_H
+extern template QTJAMBI_EXPORT QMap<QString,QString> qtjambi_cast<QMap<QString,QString>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<QString,QString>>(JNIEnv *, QMap<QString,QString>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<QString,QString>&>(JNIEnv *, QMap<QString,QString>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMap<QString,QString>&>(JNIEnv *, const QMap<QString,QString>&);
+#ifdef QURL_H
+extern template QTJAMBI_EXPORT QMultiMap<QString,QUrl> qtjambi_cast<QMultiMap<QString,QUrl>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiMap<QString,QUrl>>(JNIEnv *, QMultiMap<QString,QUrl>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiMap<QString,QUrl>&>(JNIEnv *, QMultiMap<QString,QUrl>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMultiMap<QString,QUrl>&>(JNIEnv *, const QMultiMap<QString,QUrl>&);
+#endif
+
+#endif
+#ifdef QBYTEARRAY_H
+extern template QTJAMBI_EXPORT QMap<QByteArray,QByteArray> qtjambi_cast<QMap<QByteArray,QByteArray>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<QByteArray,QByteArray>>(JNIEnv *, QMap<QByteArray,QByteArray>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<QByteArray,QByteArray>&>(JNIEnv *, QMap<QByteArray,QByteArray>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMap<QByteArray,QByteArray>&>(JNIEnv *, const QMap<QByteArray,QByteArray>&);
+extern template QTJAMBI_EXPORT QHash<QByteArray,QByteArray> qtjambi_cast<QHash<QByteArray,QByteArray>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QHash<QByteArray,QByteArray>>(JNIEnv *, QHash<QByteArray,QByteArray>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QHash<QByteArray,QByteArray>&>(JNIEnv *, QHash<QByteArray,QByteArray>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QHash<QByteArray,QByteArray>&>(JNIEnv *, const QHash<QByteArray,QByteArray>&);
+extern template QTJAMBI_EXPORT QHash<qint32,QByteArray> qtjambi_cast<QHash<qint32,QByteArray>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QHash<qint32,QByteArray>>(JNIEnv *, QHash<qint32,QByteArray>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QHash<qint32,QByteArray>&>(JNIEnv *, QHash<qint32,QByteArray>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QHash<qint32,QByteArray>&>(JNIEnv *, const QHash<qint32,QByteArray>&);
+
+extern template QTJAMBI_EXPORT QMultiHash<qint16,QByteArray> qtjambi_cast<QMultiHash<qint16,QByteArray>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiHash<qint16,QByteArray>>(JNIEnv *, QMultiHash<qint16,QByteArray>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiHash<qint16,QByteArray>&>(JNIEnv *, QMultiHash<qint16,QByteArray>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMultiHash<qint16,QByteArray>&>(JNIEnv *, const QMultiHash<qint16,QByteArray>&);
+extern template QTJAMBI_EXPORT QMultiHash<QByteArray,QByteArray> qtjambi_cast<QMultiHash<QByteArray,QByteArray>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiHash<QByteArray,QByteArray>>(JNIEnv *, QMultiHash<QByteArray,QByteArray>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiHash<QByteArray,QByteArray>&>(JNIEnv *, QMultiHash<QByteArray,QByteArray>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMultiHash<QByteArray,QByteArray>&>(JNIEnv *, const QMultiHash<QByteArray,QByteArray>&);
+
+extern template QTJAMBI_EXPORT QMultiMap<QByteArray,QByteArray> qtjambi_cast<QMultiMap<QByteArray,QByteArray>,jobject&>(JNIEnv *, jobject&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiMap<QByteArray,QByteArray>>(JNIEnv *, QMultiMap<QByteArray,QByteArray>&&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiMap<QByteArray,QByteArray>&>(JNIEnv *, QMultiMap<QByteArray,QByteArray>&);
+extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMultiMap<QByteArray,QByteArray>&>(JNIEnv *, const QMultiMap<QByteArray,QByteArray>&);
+#endif
+#endif // !defined(__GLIBCXX__) || !defined(Q_OS_WIN)
+
 namespace QtJambiPrivate {
 
 template<class O, class T, typename... Args>
@@ -267,8 +405,7 @@ struct qtjambi_array_cast;
 template<class O, class T, class I, typename... Args>
 static constexpr auto qtjambi_cast_array() {
     constexpr bool fixSize = std::is_same_v<I,void> ? true : !(std::is_reference_v<I> || std::is_pointer_v<I>) || std::is_const_v<I>;
-    constexpr bool hasCastImpl = is_complete_v<qtjambi_array_cast<O, std::remove_reference_t<T>, I, fixSize, Args...>>;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/ArrayCast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/ArrayCast, is_complete_v<qtjambi_array_cast<O, std::remove_reference_t<T>, I, fixSize, Args...>>);
     return qtjambi_array_cast<O, std::remove_reference_t<T>, I, fixSize, Args...>{};
 }
 
@@ -281,8 +418,7 @@ template<bool forward,
          typename EnumType,
          typename NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
 static constexpr auto qtjambi_cast_enum() {
-    constexpr bool hasCastImpl = is_complete_v<qtjambi_enum_cast<forward, EnumType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>>;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/EnumCast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/EnumCast, is_complete_v<qtjambi_enum_cast<forward, EnumType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>>);
     return qtjambi_enum_cast<forward, EnumType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>{};
 }
 
@@ -295,8 +431,7 @@ template<bool forward,
          typename ArithmeticType,
          typename NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
 static constexpr auto qtjambi_cast_arithmetic() {
-    constexpr bool hasCastImpl = is_complete_v<qtjambi_arithmetic_cast<forward, ArithmeticType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>>;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/ArithmeticCast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/ArithmeticCast, is_complete_v<qtjambi_arithmetic_cast<forward, ArithmeticType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>>);
     return qtjambi_arithmetic_cast<forward, ArithmeticType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>{};
 }
 
@@ -369,13 +504,11 @@ struct qtjambi_sequential_iterator_cast;
 template<class T, typename... Args>
 static constexpr auto qtjambi_cast_iterator() {
     if constexpr(supports_key_v<T>){
-        constexpr bool hasCastImpl = is_complete_v<qtjambi_associative_iterator_cast<std::remove_reference_t<T>, Args...>>;
-        Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/IteratorCast>");
-        return qtjambi_associative_iterator_cast<std::remove_reference_t<T>, Args...>{};
+        QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/IteratorCast, is_complete_v<qtjambi_associative_iterator_cast<T, Args...>>);
+        return qtjambi_associative_iterator_cast<T, Args...>{};
     }else{
-        constexpr bool hasCastImpl = is_complete_v<qtjambi_sequential_iterator_cast<std::remove_reference_t<T>, Args...>>;
-        Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/IteratorCast>");
-        return qtjambi_sequential_iterator_cast<std::remove_reference_t<T>, Args...>{};
+        QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/IteratorCast, is_complete_v<qtjambi_sequential_iterator_cast<T, Args...>>);
+        return qtjambi_sequential_iterator_cast<T, Args...>{};
     }
 }
 

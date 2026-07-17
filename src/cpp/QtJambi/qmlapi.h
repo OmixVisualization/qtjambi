@@ -51,6 +51,12 @@ QTJAMBI_EXPORT void setQmlReportDestruction(QmlReportDestruction fct);
 
 QTJAMBI_EXPORT void setGetQmlOwnership(GetQmlOwnership fct);
 
+typedef QVariant (*ConvertToVariant)(const QObject* context, QObject * obj);
+
+#if 0
+QTJAMBI_EXPORT void setConvertToVariant(ConvertToVariant fct);
+#endif
+
 typedef QObject* (* CreateQmlErrorDummyObject) (const QMetaObject* metaObject, void* placement, int vsCast, int viCast);
 
 QTJAMBI_EXPORT void registerCreateQmlErrorDummyObjectFunction(CreateQmlErrorDummyObject createQmlErrorDummyObject);

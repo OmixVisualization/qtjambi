@@ -52,7 +52,6 @@ public class TestTerminate extends ApplicationInitializer {
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithWidgets();
-    	General.canCreateVulkanInstance();
     	QLogging.qInstallMessageHandler((t, c, m)->System.out.println(m));
     }
 	

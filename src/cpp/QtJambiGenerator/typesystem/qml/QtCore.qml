@@ -894,15 +894,7 @@ Q_UNUSED(__qt_return_value)
     }
 
     Rejection{
-        className: "std::seed_seq"
-    }
-
-    Rejection{
         className: "function_ref"
-    }
-
-    Rejection{
-        className: "JNIEnv_"
     }
 
     Rejection{
@@ -915,10 +907,6 @@ Q_UNUSED(__qt_return_value)
 
     Rejection{
         className: "JNIInvokeInterface_"
-    }
-
-    Rejection{
-        className: "JNINativeInterface_"
     }
 
     Rejection{
@@ -1111,6 +1099,56 @@ Q_UNUSED(__qt_return_value)
     }
 
     Rejection{
+        className: "Qt::has_qt_compare_three_way"
+    }
+
+    Rejection{
+        className: "QTypedArrayAllocationResult"
+    }
+
+    Rejection{
+        className: "QMultiHash::const_iterator"
+    }
+    Rejection{
+        className: "QMultiHash::iterator"
+    }
+
+    Rejection{
+        className: "QMultiMap::const_iterator"
+    }
+    Rejection{
+        className: "QMultiMap::iterator"
+    }
+
+    Rejection{
+        className: "QHash::const_iterator"
+    }
+    Rejection{
+        className: "QHash::iterator"
+    }
+
+    Rejection{
+        className: "QSet::const_iterator"
+    }
+    Rejection{
+        className: "QSet::iterator"
+    }
+
+    Rejection{
+        className: "QMap::const_iterator"
+    }
+    Rejection{
+        className: "QMap::iterator"
+    }
+
+    Rejection{
+        className: "QList::const_iterator"
+    }
+    Rejection{
+        className: "QList::iterator"
+    }
+
+    Rejection{
         className: "QList::MemoryLayout"
     }
 
@@ -1204,20 +1242,8 @@ Q_UNUSED(__qt_return_value)
     }
 
     Rejection{
-        className: "QSet::const_iterator"
-    }
-
-    Rejection{
         className: "QSet"
         functionName: "empty"
-    }
-
-    Rejection{
-        className: "QCborArray::Iterator"
-    }
-
-    Rejection{
-        className: "QHash::iterator"
     }
 
     Rejection{
@@ -1234,10 +1260,6 @@ Q_UNUSED(__qt_return_value)
     }
 
     Rejection{
-        className: "QLinkedList::iterator"
-    }
-
-    Rejection{
         className: "QObjectPrivate"
     }
 
@@ -1247,49 +1269,6 @@ Q_UNUSED(__qt_return_value)
 
     Rejection{
         className: "FILE"
-    }
-
-    Rejection{
-        className: "QLinkedList"
-        functionName: "empty"
-    }
-
-    Rejection{
-        className: "QLinkedList"
-        functionName: "back"
-    }
-
-    Rejection{
-        className: "QLinkedList"
-        functionName: "front"
-    }
-
-    Rejection{
-        className: "QLinkedList"
-        functionName: "push_back"
-    }
-
-    Rejection{
-        className: "QLinkedList"
-        functionName: "push_front"
-    }
-
-    Rejection{
-        className: "QLinkedList"
-        functionName: "pop_back"
-    }
-
-    Rejection{
-        className: "QLinkedList"
-        functionName: "pop_front"
-    }
-
-    Rejection{
-        className: "QList::iterator"
-    }
-
-    Rejection{
-        className: "QMap::iterator"
     }
 
     Rejection{
@@ -4281,50 +4260,27 @@ final void notifyObservers(io.qt.core.@Nullable QUntypedPropertyData propertyDat
                 location: Include.Global
             }
         }
-        implementing: "Iterable<io.qt.core.QDirListing.@NonNull DirEntry>"
-        InjectCode{
-            Text{content: String.raw`
-@Override
-@QtUninvokable
-public final java.util.@NonNull Iterator<io.qt.core.QDirListing.@NonNull DirEntry> iterator() {
-    return new java.util.Iterator<DirEntry>(){
-            final QSequentialConstIterator<DirEntry> current = constBegin();
-            private DirEntry next;
-
-            @Override
-            public boolean hasNext() {
-                if(!isEnd(QtJambi_LibraryUtilities.internal.nativeId(current))) {
-                    if(next!=null) {
-                        current.increment();
-                        if(!isEnd(QtJambi_LibraryUtilities.internal.nativeId(current)))
-                            next = current._value();
-                        else
-                            next = null;
-                    }else {
-                        next = current._value();
-                    }
-                }else{
-                    next = null;
+        ModifyFunction{
+            signature: "constEnd()const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.QDirListing.@NonNull Sentinel"
                 }
-                return next!=null;
             }
-
-            @Override
-            public DirEntry next() {
-                return next;
+            ModifyArgument{
+                index: 1
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "int yearNumber(0);\n"+
+                                  "int* %out = &yearNumber;"}
+                }
             }
-        };
-}
-@QtUninvokable
-private static native boolean isEnd(long __iter);
-`}
+            Delegate{name: "end"}
+            Delegate{name: "cend"}
         }
-        Rejection{functionName: "cbegin"}
-        Rejection{functionName: "cend"}
-        Rejection{functionName: "begin"}
-        Rejection{functionName: "end"}
-        Rejection{functionName: "constEnd"}
-        Rejection{className: "sentinel"}
         EnumType{
             name: "IteratorFlag"
             RejectEnumValue{name: "ExcludeSpecial"; since: [6,10]}
@@ -4334,49 +4290,39 @@ private static native boolean isEnd(long __iter);
         }
         IteratorType{
             name: "const_iterator"
-            isConst: true
+            javaName: "QDirListing$ConstIterator"
         }
-        ModifyFunction{
-            signature: "constBegin()const"
-            ModifyArgument{
-                index: 0
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: String.raw`
-%out = QtJambiAPI::convertQSequentialIteratorToJavaObject(%env, __this_nativeId,
-            new QDirListing::const_iterator(std::move(%in)),
-            [](void* ptr,bool) {
-                QDirListing::const_iterator* iterator = static_cast<QDirListing::const_iterator*>(ptr);
-                delete iterator;
-            },
-            QtJambiPrivate::QSequentialConstIteratorAccess<QDirListing::const_iterator>::newInstance()
-        );
-`}
-                }
-            }
+        IteratorType{
+            name: "sentinel"
+            javaName: "QDirListing$Sentinel"
         }
         InjectCode{
             target: CodeClass.Native
             Text{content: String.raw`
-bool operator==(const QDirListing::const_iterator &lhs, const QDirListing::const_iterator &rhs) noexcept {
-    return lhs==QDirListing::sentinel{} && rhs==QDirListing::sentinel{};
-}
-
-extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QDirListing_isEnd
-    (JNIEnv *__jni_env,
-     jclass,
-     QtJambiNativeID __this_nativeId)
-{
-    jboolean result = false;
-    QTJAMBI_TRY {
-        QDirListing::const_iterator &__qt_this = qtjambi_cast<QDirListing::const_iterator&>(__jni_env, __this_nativeId);
-        result = __qt_this==QDirListing::sentinel{};
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return result;
-}
-`}
+                namespace QtJambiPrivate{
+                template<>
+                struct iter_value_type<QDirListing,QDirListing::sentinel,false,false>{
+                    using value_type = typename QDirListing::const_iterator::value_type;
+                };
+                template<>
+                struct InitialItersContainer<QDirListing,false>{
+                    InitialItersContainer(const QDirListing&){}
+                };
+                template<>
+                struct IteratorSequentialValue<ContainerIterator<QDirListing,QDirListing::const_iterator,QtJambiPrivate::ContainerRef<QDirListing>>,true,true>{
+                    using Iterator = ContainerIterator<QDirListing,QDirListing::const_iterator,QtJambiPrivate::ContainerRef<QDirListing>>;
+                    static jobject function(JNIEnv *env, const void* ptr) {
+                        const Iterator& iterator = *static_cast<const Iterator*>(ptr);
+                        QtJambiNativeID nativeId = iterator.storage().nativeId();
+                        jobject object = ::qtjambi_cast<jobject>(env, *iterator);
+                        QtJambiAPI::registerDependency(env, object, nativeId);
+                        return object;
+                    }
+                };
+                }
+                bool operator==(const QDirListing::const_iterator &lhs, const QDirListing::const_iterator &rhs) noexcept {
+                    return lhs==QDirListing::sentinel{} && rhs==QDirListing::sentinel{};
+                }`}
         }
         since: 6.8
     }
@@ -5599,6 +5545,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QDirListing_isEnd
         ModifyFunction{
             signature: "operator QModelIndex() const"
             rename: "toIndex"
+            noImplicitArguments: true
         }
     }
 
@@ -5621,6 +5568,10 @@ extern "C" JNIEXPORT jboolean JNICALL Java_io_qt_core_QDirListing_isEnd
         }
         ValueType{
             name: "Id128Bytes"
+            ModifyFunction{
+                signature: "operator QByteArrayView()const"
+                noImplicitArguments: true
+            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
@@ -6631,20 +6582,24 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
 
     ValueType{
         name: "QCborArray"
-
+        ExtraIncludes{
+            Include{
+                fileName: "iterators_p.h"
+                location: Include.Local
+            }
+        }
         Rejection{functionName: "empty"}
         Rejection{functionName: "pop_back"}
         Rejection{functionName: "pop_front"}
         Rejection{functionName: "push_back"}
         Rejection{functionName: "push_front"}
-        Rejection{functionName: "erase"}
 
         IteratorType{
             name: "ConstIterator"
         }
-        ModifyFunction{
-            signature: "extract(QCborArray::ConstIterator)"
-            remove: RemoveFlag.All
+        IteratorType{
+            name: "Iterator"
+            isConst: false
         }
         ModifyFunction{
             signature: "first()const"
@@ -6655,20 +6610,28 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "cend()const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "cbegin()const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
             signature: "end()const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "begin()const"
             remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "constBegin() const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "constEnd() const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "cbegin()const"
+            Delegate{name: "constBegin"}
+        }
+        ModifyFunction{
+            signature: "cend()const"
+            Delegate{name: "constEnd"}
         }
         ModifyFunction{//in favor of operator+
             signature: "operator+=(QCborValue)"
@@ -6744,66 +6707,52 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
 
     ValueType{
         name: "QCborMap"
-
+        ExtraIncludes{
+            Include{
+                fileName: "iterators_p.h"
+                location: Include.Local
+            }
+        }
         IteratorType{
             name: "ConstIterator"
+            ModifyFunction{
+                signature: "keyRef()const"
+                remove: RemoveFlag.All
+            }
         }
         IteratorType{
             name: "Iterator"
+            ModifyFunction{
+                signature: "keyRef()const"
+                remove: RemoveFlag.All
+            }
+            isConst: false
         }
-        Rejection{
-            className: "Iterator"
+        IteratorType{
+            name: "const_key_value_iterator"
+            javaName: "QCborMap$ConstKeyValueIterator"
+            since: [6,10]
         }
-        Rejection{
-            functionName: "keyValueBegin"
-            since: "6.10"
-        }
-        Rejection{
-            functionName: "keyValueEnd"
-            since: "6.10"
-        }
-        Rejection{
-            functionName: "constKeyValueBegin"
-            since: "6.10"
-        }
-        Rejection{
-            functionName: "constKeyValueEnd"
-            since: "6.10"
+        IteratorType{
+            name: "key_value_iterator"
+            isConst: false
+            javaName: "QCborMap$KeyValueIterator"
+            since: [6,10]
         }
         Rejection{
             functionName: "asKeyValueRange"
-            since: "6.10"
-        }
-        ModifyFunction{
-            signature: "erase(QCborMap::Iterator)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "extract(QCborMap::Iterator)"
-            remove: RemoveFlag.All
+            since: [6,10]
         }
         ModifyFunction{
             signature: "erase(QCborMap::ConstIterator)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "extract(QCborMap::ConstIterator)"
-            remove: RemoveFlag.All
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Position3
+                Text{content: String.raw`QtJambiPrivate::adapt(__qt_return_value, *%this);`}
+            }
         }
         ModifyFunction{
             signature: "end()const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "cend()const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "begin()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "end()"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -6811,8 +6760,28 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "cbegin()const"
+            signature: "keyValueBegin()const"
             remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "keyValueEnd()const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "constBegin() const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "constEnd() const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "cbegin()const"
+            Delegate{name: "constBegin"}
+        }
+        ModifyFunction{
+            signature: "cend()const"
+            Delegate{name: "constEnd"}
         }
         ModifyFunction{
             signature: "contains(QLatin1StringView)const"
@@ -6855,23 +6824,11 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             since: [6, 4]
         }
         ModifyFunction{
-            signature: "find(QString)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "find(QCborValue)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
             signature: "find(QCborValue)const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "find(QString)const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "find(qint64)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -7023,6 +6980,28 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             signature: "operator!=(QCborValueConstRef)"
             remove: RemoveFlag.All
             since: 6.8
+        }
+        InjectCode{
+            Text{
+                content: String.raw`
+                /**
+                 * Returns a range object that allows iteration over this container as key/value pairs.
+                 */
+                @QtUninvokable
+                public final @NonNull QKeyVaueRange<QCborValue, QCborValue> asConstKeyValueRange(){
+                    return new QKeyVaueRange<>(this::constKeyValueBegin);
+                }
+
+                /**
+                 * Returns a range object that allows iteration over this container as key/value pairs.
+                 */
+                @QtUninvokable
+                public final @NonNull QKeyVaueRange<QCborValue, QCborValue> asKeyValueRange(){
+                    return new QKeyVaueRange<>(this::keyValueBegin);
+                }`
+                since: [6,10]
+            }
+            since: [6,10]
         }
     }
 
@@ -7397,6 +7376,12 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
 
     ValueType{
         name: "QJsonArray"
+        ExtraIncludes{
+            Include{
+                fileName: "iterators_p.h"
+                location: Include.Local
+            }
+        }
         Rejection{functionName: "empty"}
         Rejection{functionName: "pop_back"}
         Rejection{functionName: "pop_front"}
@@ -7405,10 +7390,12 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
 
         IteratorType{
             name: "const_iterator"
+            javaName: "QJsonArray$ConstIterator"
         }
         IteratorType{
             name: "iterator"
-            isConst: true
+            javaName: "QJsonArray$Iterator"
+            isConst: false
         }
         ModifyFunction{
             signature: "insert(QJsonArray::iterator,QJsonValue)"
@@ -7423,14 +7410,6 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             rename: "toList"
         }
         ModifyFunction{
-            signature: "begin()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "end()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
             signature: "begin() const"
             remove: RemoveFlag.All
         }
@@ -7439,12 +7418,20 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "cbegin() const"
+            signature: "constBegin() const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "cend() const"
+            signature: "constEnd() const"
             remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "cbegin()const"
+            Delegate{name: "constBegin"}
+        }
+        ModifyFunction{
+            signature: "cend()const"
+            Delegate{name: "constEnd"}
         }
         ModifyFunction{// in favor to operator+
             signature: "operator+=(QJsonValue)"
@@ -7527,28 +7514,40 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
 
     ValueType{
         name: "QJsonObject"
+        ExtraIncludes{
+            Include{
+                fileName: "iterators_p.h"
+                location: Include.Local
+            }
+        }
         Rejection{
             functionName: "empty"
         }
         Rejection{
-            functionName: "keyValueBegin"
-            since: "6.10"
-        }
-        Rejection{
-            functionName: "keyValueEnd"
-            since: "6.10"
-        }
-        Rejection{
-            functionName: "constKeyValueBegin"
-            since: "6.10"
-        }
-        Rejection{
-            functionName: "constKeyValueEnd"
-            since: "6.10"
-        }
-        Rejection{
             functionName: "asKeyValueRange"
-            since: "6.10"
+            since: [6,10]
+        }
+        InjectCode{
+            Text{
+                content: String.raw`
+                /**
+                 * Returns a range object that allows iteration over this container as key/value pairs.
+                 */
+                @QtUninvokable
+                public final @NonNull QKeyVaueRange<String, QJsonValue> asConstKeyValueRange(){
+                    return new QKeyVaueRange<>(this::constKeyValueBegin);
+                }
+
+                /**
+                 * Returns a range object that allows iteration over this container as key/value pairs.
+                 */
+                @QtUninvokable
+                public final @NonNull QKeyVaueRange<String, QJsonValue> asKeyValueRange(){
+                    return new QKeyVaueRange<>(this::keyValueBegin);
+                }`
+                since: [6,10]
+            }
+            since: [6,10]
         }
         ModifyFunction{
             signature: "insert(QLatin1String,QJsonValue)"
@@ -7678,11 +7677,11 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "begin()"
+            signature: "keyValueBegin() const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "end()"
+            signature: "keyValueEnd() const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -7744,14 +7743,43 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             remove: RemoveFlag.All
             since: 6.8
         }
+        ModifyFunction{
+            signature: "constBegin()const"
+            Delegate{name: "cbegin"}
+        }
+        ModifyFunction{
+            signature: "constEnd()const"
+            Delegate{name: "cend"}
+        }
 
         IteratorType{
             name: "const_iterator"
+            javaName: "QJsonObject$ConstIterator"
+            ModifyFunction{
+                signature: "keyView()const"
+                remove: RemoveFlag.All
+            }
         }
 
         IteratorType{
             name: "iterator"
-            isConst: true
+            javaName: "QJsonObject$Iterator"
+            isConst: false
+            ModifyFunction{
+                signature: "keyView()const"
+                remove: RemoveFlag.All
+            }
+        }
+        IteratorType{
+            name: "const_key_value_iterator"
+            javaName: "QJsonObject$ConstKeyValueIterator"
+            since: [6,10]
+        }
+        IteratorType{
+            name: "key_value_iterator"
+            isConst: false
+            javaName: "QJsonObject$KeyValueIterator"
+            since: [6,10]
         }
     }
 
@@ -8229,6 +8257,10 @@ public static final int MaxUtcOffsetSecs = +14 * 3600;`}
                 fileName: "QtJambi/JavaAPI"
                 location: Include.Global
             }
+            Include{
+                fileName: "QtJambi/CoreAPI"
+                location: Include.Global
+            }
         }
         EnumType{
             name: "LayoutChangeHint"
@@ -8237,6 +8269,39 @@ public static final int MaxUtcOffsetSecs = +14 * 3600;`}
             name: "CheckIndexOption"
         }
         isValueOwner: true
+        /*ModifyFunction{
+            signature: "data(const QModelIndex&, int) const"
+            ModifyArgument{
+                index: 0
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: "%out = CoreAPI::convertVariant(%env, this, %in);"}
+                }
+            }
+            since: [6, 12]
+        }
+        ModifyFunction{
+            signature: "itemData(const QModelIndex&) const"
+            ModifyArgument{
+                index: 0
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: "%out = CoreAPI::convertItemData(%env, this, %in);"}
+                }
+            }
+            since: [6, 12]
+        }
+        ModifyFunction{
+            signature: "headerData(int, Qt::Orientation, int) const"
+            ModifyArgument{
+                index: 0
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: "%out = CoreAPI::convertVariant(%env, this, %in);"}
+                }
+            }
+            since: [6, 12]
+        }*/
         ModifyFunction{
             signature: "beginInsertColumns(const QModelIndex &, int, int)"
             access: Modification.NonFinal
@@ -8454,6 +8519,17 @@ if(destinationChildV<0)
         throw new IllegalArgumentException("topLeft and bottomRight must not have different parent indexes.");`}
             }
         }
+        ModifyFunction{
+            signature: "compareData(QVariant,QVariant,const QCollator*)"
+            ModifyArgument{
+                index: 0
+                replaceType: "int"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "jint %out = QtOrderingPrivate::toUnderlying(%in);"}
+                }
+            }
+        }
     }
 
     ObjectType{
@@ -8644,20 +8720,15 @@ if(destinationChildV<0)
         }
         Rejection{functionName: "back"}
         Rejection{functionName: "front"}
-        Rejection{functionName: "rbegin"}
-        Rejection{functionName: "rend"}
-        Rejection{functionName: "cend"}
-        Rejection{functionName: "cbegin"}
-        Rejection{functionName: "crend"}
-        Rejection{functionName: "crbegin"}
         Rejection{functionName: "empty"}
 
         IteratorType{
             name: "const_iterator"
+            javaName: "QByteArrayView$ConstIterator"
         }
         IteratorType{
-            name: "iterator"
-            isConst: true
+            name: "const_reverse_iterator"
+            javaName: "QByteArrayView$ConstReverseIterator"
         }
         TypeAliasType{
             name: "pointer"
@@ -8671,6 +8742,44 @@ if(destinationChildV<0)
         ImplicitCast{from: "io.qt.core.@NonNull QByteArray"}
         ImplicitCast{from: "java.nio.@NonNull ByteBuffer"}
         ImplicitCast{from: "byte @NonNull[]"}
+        ModifyFunction{
+            signature: "begin()const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "end()const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "rbegin()const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "rend()const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "crbegin()const"
+            Delegate{name: "rbegin"}
+            Delegate{name: "reverseBegin"}
+            Delegate{name: "constReverseBegin"}
+        }
+        ModifyFunction{
+            signature: "crend()const"
+            Delegate{name: "rend"}
+            Delegate{name: "reverseEnd"}
+            Delegate{name: "constReverseEnd"}
+        }
+        ModifyFunction{
+            signature: "cbegin()const"
+            Delegate{name: "begin"}
+            Delegate{name: "constBegin"}
+        }
+        ModifyFunction{
+            signature: "cend()const"
+            Delegate{name: "end"}
+            Delegate{name: "constEnd"}
+        }
         ModifyFunction{
             signature: "QByteArrayView(QByteArrayView)"
             InjectCode{
@@ -8706,6 +8815,7 @@ if(destinationChildV<0)
             signature: "QByteArrayView<Byte,true>(const Byte*)"
             remove: RemoveFlag.All
             since: 6.9
+            until: [6,11]
         }
         ModifyFunction{
             signature: "QByteArrayView<Byte,true>(const Byte*,qsizetype)"
@@ -9041,17 +9151,11 @@ if(destinationChildV<0)
 
     ValueType{
         name: "QByteArray"
-        Rejection{functionName: "rbegin"}
-        Rejection{functionName: "rend"}
-        Rejection{functionName: "cend"}
-        Rejection{functionName: "cbegin"}
-        Rejection{functionName: "crend"}
-        Rejection{functionName: "crbegin"}
         Rejection{functionName: "empty"}
-        Rejection{functionName: "erase"}
         Rejection{functionName: "fromStdString"}
         Rejection{functionName: "reallocData"}
         Rejection{functionName: "reallocGrowData"}
+        Rejection{functionName: "toStdString"}
         Rejection{className: "Data"}
         Rejection{className: "DataPointer"}
 
@@ -9139,14 +9243,6 @@ if(destinationChildV<0)
         }
         ModifyFunction{
             signature: "number(long, int)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "begin()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "end()"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -9904,11 +10000,65 @@ if(destinationChildV<0)
 
         IteratorType{
             name: "const_iterator"
+            javaName: "QByteArray$ConstIterator"
         }
-
         IteratorType{
             name: "iterator"
-            isConst: true
+            javaName: "QByteArray$Iterator"
+            isConst: false
+        }
+        IteratorType{
+            name: "reverse_iterator"
+            javaName: "QByteArray$ReverseIterator"
+        }
+        IteratorType{
+            name: "const_reverse_iterator"
+            javaName: "QByteArray$ConstReverseIterator"
+        }
+
+        ModifyFunction{
+            signature: "constBegin()const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "constEnd()const"
+            remove: RemoveFlag.All
+        }
+
+        ModifyFunction{
+            signature: "cbegin()const"
+            Delegate{name: "constBegin"}
+        }
+        ModifyFunction{
+            signature: "cend()const"
+            Delegate{name: "constEnd"}
+        }
+
+        ModifyFunction{
+            signature: "rbegin()const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "rend()const"
+            remove: RemoveFlag.All
+        }
+
+        ModifyFunction{
+            signature: "rbegin()"
+            Delegate{name: "reverseBegin"}
+        }
+        ModifyFunction{
+            signature: "rend()"
+            Delegate{name: "reverseEnd"}
+        }
+
+        ModifyFunction{
+            signature: "crbegin()const"
+            Delegate{name: "constReverseBegin"}
+        }
+        ModifyFunction{
+            signature: "crend()const"
+            Delegate{name: "constReverseEnd"}
         }
     }
 
@@ -10022,7 +10172,7 @@ if(destinationChildV<0)
                           "    template<>\n"+
                           "    struct supports_stream_operators<QItemSelection> : std::false_type{};\n"+
                           "    template<>\n"+
-                          "    struct supports_debugstream<QItemSelection> : std::false_type{};\n"+
+                          "    struct supports_streamin<QDebug&,QItemSelection> : std::false_type{};\n"+
                           "}"}
         }
         InjectCode{
@@ -10543,6 +10693,12 @@ if(destinationChildV<0)
 
     ValueType{
         name: "QVersionNumber"
+        ExtraIncludes{
+            Include{
+                fileName: "iterators_p.h"
+                location: Include.Local
+            }
+        }
         ModifyFunction{
             signature: "QVersionNumber<>(QList<int>&&)"
             remove: RemoveFlag.All
@@ -10562,17 +10718,18 @@ if(destinationChildV<0)
             from: "int@NonNull []"
             since: 6.8
         }
-
-        Rejection{functionName: "rbegin"}
-        Rejection{functionName: "rend"}
-        Rejection{functionName: "crbegin"}
-        Rejection{functionName: "crend"}
-        Rejection{functionName: "cbegin"}
-        Rejection{functionName: "cend"}
-        Rejection{functionName: "begin"}
-        Rejection{functionName: "end"}
-        Rejection{functionName: "constBegin"}
-        Rejection{functionName: "constEnd"}
+        ValueType{
+            name: "It"
+            generate: false
+        }
+        IteratorType{
+            name: "const_iterator"
+            javaName: "QVersionNumber$ConstIterator"
+        }
+        IteratorType{
+            name: "const_reverse_iterator"
+            javaName: "QVersionNumber$ConstReverseIterator"
+        }
 
         EnumType{
             name: "SegmentStorage"
@@ -10594,6 +10751,16 @@ if(destinationChildV<0)
             since: [6, 1]
             Text{content: "new(placement) QVersionNumber(copy->segments());"}
         }
+
+        ModifyFunction{
+            signature: "crbegin()const"
+            Delegate{name: "constReverseBegin"}
+        }
+        ModifyFunction{
+            signature: "crend()const"
+            Delegate{name: "constReverseEnd"}
+        }
+
         ModifyFunction{
             signature: "fromString(QLatin1String, int *)"
             remove: RemoveFlag.All
@@ -15444,6 +15611,10 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 since: 6.9
             }
             RejectEnumValue{
+                name: "Qt_6_12"
+                since: [6, 12]
+            }
+            RejectEnumValue{
                 name: "Qt_DefaultCompiledVersion"
             }
         }
@@ -15470,7 +15641,7 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
         ModifyFunction{
             signature: "operator bool()const"
             rename: "isOk"
-            since: "6.10"
+            since: [6,10]
         }
         ModifyFunction{
             signature: "operator<<(char)"
@@ -15944,7 +16115,7 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
         ModifyFunction{
             signature: "operator bool()const"
             rename: "isOk"
-            since: "6.10"
+            since: [6,10]
         }
         ModifyFunction{
             signature: "device() const"
@@ -17548,8 +17719,14 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
         }
         IteratorType{
             name: "const_iterator"
-            isConst: true
-            genericClass: true
+            javaName: "QFuture$ConstIterator<T>"
+            template: true
+            isGeneric: true
+        }
+        IteratorType{
+            name: "const_iterator<QVariant>"
+            javaName: "QFuture$ConstIterator<T>"
+            isGeneric: true
         }
     }
     Rejection{className: "QFuture<void>"}
@@ -19426,7 +19603,7 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QFutureInterfaceBase* %out = qtjambi_cast<QFutureInterfaceBase*>(%env, %in);"}
+                    Text{content: "%out = qtjambi_cast<QFutureInterfaceBase*>(%env, %in);"}
                 }
             }
         }
@@ -19441,7 +19618,7 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "const QFutureInterfaceBase* %out = qtjambi_cast<const QFutureInterfaceBase*>(%env, %in);"}
+                    Text{content: "%out = qtjambi_cast<const QFutureInterfaceBase*>(%env, %in);"}
                 }
             }
         }
@@ -20887,16 +21064,12 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
         Rejection{functionName: "asprintf"}
         Rejection{functionName: "vasprintf"}
         Rejection{functionName: "fromStdU32String"}
-        Rejection{functionName: "crend"}
         Rejection{functionName: "normalized"}
         Rejection{functionName: "fromStdU16String"}
         Rejection{functionName: "fromWCharArray"}
         Rejection{functionName: "fromStdWString"}
         Rejection{functionName: "tokenize"}
-        Rejection{functionName: "crbegin"}
-        Rejection{functionName: "rbegin"}
         Rejection{functionName: "fromStdString"}
-        Rejection{functionName: "rend"}
         Rejection{functionName: "toWCharArray"}
         Rejection{functionName: "toUInt"}
         Rejection{functionName: "toUShort"}
@@ -20913,11 +21086,21 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
 
         IteratorType{
             name: "const_iterator"
+            javaName: "QString$ConstIterator"
         }
 
         IteratorType{
             name: "iterator"
-            isConst: true
+            javaName: "QString$Iterator"
+            isConst: false
+        }
+        IteratorType{
+            name: "reverse_iterator"
+            javaName: "QString$ReverseIterator"
+        }
+        IteratorType{
+            name: "const_reverse_iterator"
+            javaName: "QString$ConstReverseIterator"
         }
 
         ExtraIncludes{
@@ -20929,10 +21112,59 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                 fileName: "utils.h"
                 location: Include.Local
             }
+            Include{
+                fileName: "iterators_p.h"
+                location: Include.Local
+            }
         }
 
         EnumType{
             name: "SectionFlag"
+        }
+
+        ModifyFunction{
+            signature: "rbegin()const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "rend()const"
+            remove: RemoveFlag.All
+        }
+
+        ModifyFunction{
+            signature: "rbegin()"
+            Delegate{name: "reverseBegin"}
+        }
+        ModifyFunction{
+            signature: "rend()"
+            Delegate{name: "reverseEnd"}
+        }
+
+        ModifyFunction{
+            signature: "crbegin()const"
+            Delegate{name: "constReverseBegin"}
+        }
+        ModifyFunction{
+            signature: "crend()const"
+            Delegate{name: "constReverseEnd"}
+        }
+
+        ModifyFunction{
+            signature: "constBegin()const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "constEnd()const"
+            remove: RemoveFlag.All
+        }
+
+        ModifyFunction{
+            signature: "cbegin()const"
+            Delegate{name: "constBegin"}
+        }
+        ModifyFunction{
+            signature: "cend()const"
+            Delegate{name: "constEnd"}
         }
 
         ModifyFunction{
@@ -20942,16 +21174,6 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
         ModifyFunction{
             signature: "operator std::u16string_view()const"
             remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "erase(QString::const_iterator,QString::const_iterator)"
-            remove: RemoveFlag.All
-            since: 6.1
-        }
-        ModifyFunction{
-            signature: "erase(QString::const_iterator)"
-            remove: RemoveFlag.All
-            since: 6.5
         }
         ModifyFunction{
             signature: "append(const char*)"
@@ -21253,27 +21475,11 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "end()"
+            signature: "end()const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "cend()const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "constEnd()const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "begin()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "cbegin()const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "constBegin()const"
+            signature: "begin()const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -24538,17 +24744,12 @@ this.__rcMutex = %1.__rcMutex;
         }
         ModifyFunction{
             signature: "QSemaphoreReleaser(QSemaphore&,int)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "QSemaphoreReleaser(QSemaphore*,int)"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.core.@Nullable QSemaphore"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{
-                        content: "QSemaphore* %out = QtJambiAPI::convertJavaObjectToNative<QSemaphore>(%env, %in);"
-                    }
-                }
                 ReferenceCount{
                     variableName: "__rcSemaphore"
                     action: ReferenceCount.Set
@@ -24605,6 +24806,7 @@ this.__rcSemaphore = %1.__rcSemaphore;
         Rejection{functionName: "try_lock"}
         Rejection{functionName: "try_lock_shared"}
         Rejection{functionName: "unlock_shared"}
+        Rejection{functionName: "describeLockInternal"}
         Rejection{fieldName: "StateLockedForRead"}
         Rejection{fieldName: "StateLockedForWrite"}
         Rejection{fieldName: "StateMask"}
@@ -25357,12 +25559,46 @@ static FilterResetter resetter(%0);
         }*/
     }
 
+    ValueType{
+        name: "std::seed_seq"
+        generate: false
+    }
+
     Rejection{
         className: "QRandomGenerator64"
     }
 
     ValueType{
         name: "QRandomGenerator"
+        implementing: "java.util.function.LongSupplier, java.util.function.DoubleSupplier"
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+                template <typename ForwardIterator>
+                void generate64(JNIEnv *, QRandomGenerator *__qt_this, ForwardIterator begin, ForwardIterator end){
+                    std::generate(begin, end, [__qt_this]() { return __qt_this->generate64(); });
+                }
+                template <typename ForwardIterator>
+                void generateDouble(JNIEnv *, QRandomGenerator *__qt_this, ForwardIterator begin, ForwardIterator end){
+                    std::generate(begin, end, [__qt_this]() { return __qt_this->generateDouble(); });
+                }`}
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.End
+            Text{content: String.raw`
+                @QtUninvokable
+                public final long getAsLong() {
+                    return generate64();
+                }
+
+                @QtUninvokable
+                public final double getAsDouble() {
+                    return generateDouble();
+                }
+                `}
+        }
         Rejection{
             enumName: "System"
         }
@@ -25375,31 +25611,211 @@ static FilterResetter resetter(%0);
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "generate<ForwardIterator>(ForwardIterator,ForwardIterator)"
+            signature: "QRandomGenerator(const quint32*, qsizetype)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "generate(quint32*, quint32*)"
+            signature: "QRandomGenerator(std::seed_seq&)"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "int[]"
-                }
-                rename: "array"
-                NoNullPointer{}
+                replaceType: "int @NonNull..."
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content:
-                             "jsize size = 0;\n"
-                            +"quint32* %out = qtjambi_cast<quint32*>(%env, %scope, %in, size);\n"
-                            +"quint32* __qt_%2 = %out + size;"
+                    Text{content: String.raw`
+                        size_t length = 0;
+                        uint* seed = qtjambi_cast<uint*>(%env, %scope, %in, length);
+                        std::seed_seq %out(seed, seed+length);`}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "generate<ForwardIterator>(ForwardIterator,ForwardIterator)"
+            Instantiation{
+                Argument{
+                    type: "QList<quint32>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    rename: "buffer"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content:
+                                String.raw`
+                            QList<quint32>& list = qtjambi_cast<QList<quint32>&>(%env, %scope, %in);
+                            auto %out = list.begin();
+                            auto __qt_%2 = list.end();`
+                        }
+                    }
+                }
+                ModifyArgument{
+                    index: 2
+                    RemoveArgument{}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QSpan<quint32>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    rename: "buffer"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content:
+                                String.raw`
+                            QSpan<quint32> list = qtjambi_cast<QSpan<quint32>>(%env, %in);
+                            auto %out = list.begin();
+                            auto __qt_%2 = list.end();`
+                        }
+                    }
+                }
+                ModifyArgument{
+                    index: 2
+                    RemoveArgument{}
+                }
+                since: 6.8
+            }
+            Instantiation{
+                Argument{
+                    type: "QList<quint64>"
+                    isImplicit: true
+                }
+                rename: "generate64"
+                proxyCall: "generate64"
+                ModifyArgument{
+                    index: 1
+                    rename: "buffer"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content:
+                                String.raw`
+                            QList<quint64>& list = qtjambi_cast<QList<quint64>&>(%env, %scope, %in);
+                            auto %out = list.begin();
+                            auto __qt_%2 = list.end();`
+                        }
+                    }
+                }
+                ModifyArgument{
+                    index: 2
+                    RemoveArgument{}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QSpan<quint64>"
+                    isImplicit: true
+                }
+                rename: "generate64"
+                proxyCall: "generate64"
+                ModifyArgument{
+                    index: 1
+                    rename: "buffer"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content:
+                                String.raw`
+                            QSpan<quint64> list = qtjambi_cast<QSpan<quint64>>(%env, %in);
+                            auto %out = list.begin();
+                            auto __qt_%2 = list.end();`
+                        }
+                    }
+                }
+                ModifyArgument{
+                    index: 2
+                    RemoveArgument{}
+                }
+                since: 6.8
+            }
+            Instantiation{
+                Argument{
+                    type: "QList<double>"
+                    isImplicit: true
+                }
+                rename: "generateDouble"
+                proxyCall: "generateDouble"
+                ModifyArgument{
+                    index: 1
+                    rename: "buffer"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content:
+                                String.raw`
+                            QList<double>& list = qtjambi_cast<QList<double>&>(%env, %scope, %in);
+                            auto %out = list.begin();
+                            auto __qt_%2 = list.end();`
+                        }
+                    }
+                }
+                ModifyArgument{
+                    index: 2
+                    RemoveArgument{}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QSpan<double>"
+                    isImplicit: true
+                }
+                rename: "generateDouble"
+                proxyCall: "generateDouble"
+                ModifyArgument{
+                    index: 1
+                    rename: "buffer"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content:
+                                String.raw`
+                            QSpan<double> list = qtjambi_cast<QSpan<double>>(%env, %in);
+                            auto %out = list.begin();
+                            auto __qt_%2 = list.end();`
+                        }
+                    }
+                }
+                ModifyArgument{
+                    index: 2
+                    RemoveArgument{}
+                }
+                since: 6.8
+            }
+        }
+        ModifyFunction{
+            signature: "fillRange<UInt,true>(UInt*,qsizetype)"
+            Instantiation{
+                Argument{
+                    type: "quint32"
+                }
+                ModifyArgument{
+                    index: 1
+                    AsBuffer{
+                        lengthParameter: 2
+                        AsArray{}
                     }
                 }
             }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{}
+            Instantiation{
+                Argument{
+                    type: "quint64"
+                }
+                ModifyArgument{
+                    index: 1
+                    AsBuffer{
+                        lengthParameter: 2
+                        AsArray{}
+                    }
+                }
             }
+        }
+        ModifyFunction{
+            signature: "generate(quint32*, quint32*)"
+            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "bounded(quint32)"
@@ -25434,28 +25850,16 @@ static FilterResetter resetter(%0);
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "QRandomGenerator(const quint32*, qsizetype)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "QRandomGenerator(std::initializer_list<uint>)"
+            signature: "seed(std::seed_seq&)"
             ModifyArgument{
                 index: 1
+                replaceType: "int @NonNull..."
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "std::initializer_list<uint> seed = qtjambi_cast<std::initializer_list<uint>>(%env, %scope, %in);\n"
-                                  +"std::seed_seq %out(seed.begin(), seed.end());"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "seed(std::initializer_list<uint>)"
-            ModifyArgument{
-                index: 1
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "std::initializer_list<uint> seed = qtjambi_cast<std::initializer_list<uint>>(%env, %scope, %in);\n"
-                                  +"std::seed_seq %out(seed.begin(), seed.end());"}
+                    Text{content: String.raw`
+                        size_t length = 0;
+                        uint* seed = qtjambi_cast<uint*>(%env, %scope, %in, length);
+                        std::seed_seq %out(seed, seed+length);`}
                 }
             }
         }
@@ -25475,6 +25879,14 @@ static FilterResetter resetter(%0);
                 DefineOwnership{
                     ownership: Ownership.Ignore
                 }
+            }
+        }
+        ModifyFunction{
+            signature: "operator()()"
+            rename: "getAsInt"
+            Delegate{
+                name: "invoke"
+                deprecated: true
             }
         }
     }
@@ -27792,7 +28204,6 @@ static FilterResetter resetter(%0);
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'operator<<(char32_t)' for function modification in 'QDebug' not found.*"}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QHashSeed."}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QDebug."}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Class 'QRandomGenerator' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QUtf8StringView'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAnyStringView'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QLatin1StringView'"}
@@ -27975,8 +28386,6 @@ static FilterResetter resetter(%0);
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QPropertyChangeHandler*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QPropertyNotifier*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: function 'QtMessageHandler' is specified in typesystem, but not declared"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QRandomGenerator::QRandomGenerator*', unmatched parameter type 'const quint32[N]'"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QRandomGenerator::_fillRange', unmatched parameter type 'qptrdiff'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QtFuture::makeReadyFuture*'*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QtFuture::makeReadyValueFuture*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'reportFinished(const JObjectWrapper*)' for function modification in 'QtJambiFutureInterface' not found.*"}
@@ -28041,7 +28450,6 @@ static FilterResetter resetter(%0);
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method *::assign<InputIterator,true>(InputIterator,InputIterator)"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method *::nativeInterface<NativeInterface,TypeInfo,BaseType,true>()const"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method *::nativeInterface<QNativeInterface>()const"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QRandomGenerator::fillRange<*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QStringList::QStringList<InputIterator,true>(InputIterator,InputIterator)"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: template baseclass 'QtPrivate::ContextTypeForFunctor::ContextType<Functor>' of '' is not known"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: class '' inherits from unknown base class 'objc_object'"}
@@ -28055,4 +28463,13 @@ static FilterResetter resetter(%0);
     SuppressedWarning{text: "WARNING(JavaGenerator) :: Cloneable class QFuture*<QVariant> is missing an explicit copy constructor"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'open*' for function modification in 'QFSFileEngine' not found. Possible candidates: *"}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: Cloneable class QCborStreamReader::StringResult<QVariant> is missing an explicit copy constructor"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Class 'QRandomGenerator' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QRandomGenerator::fillRange<UInt,N,true>(UInt(&)[N])"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping field 'QFuture$ConstIterator<T>::static_assert' with unmatched type '<T>'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Class '*terator' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: template baseclass 'std::reverse_iterator<*>' of '*' is not known"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: template baseclass 'QKeyValueIterator<*>' of '*' is not known"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Class 'QCollatorSortKey' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: horribly broken type in QMetaObject::Connection() return type "}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QMetaObject::Connection() -> ', unmatched return type ''"}
 }

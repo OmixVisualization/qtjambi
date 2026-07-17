@@ -29,15 +29,9 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.function.Function;
+import java.util.*;
 
-import io.qt.NativeAccess;
-import io.qt.QtObject;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
  * <p>Java-iterable wrapper for Qt's constant iterator types:</p>
@@ -68,15 +62,28 @@ import io.qt.QtUninvokable;
  * @see QMultiHash#find(Object)
  * @see #iterator()
  */
-public class QAssociativeConstIterator<Key,T> extends AbstractIterator<T> implements java.lang.Iterable<QPair<Key,T>> {
+public class QAssociativeConstIterator<Key,T,Container extends QtObjectInterface> extends AbstractIterator<T,Container> {
 
     static {
     	QtJambi_LibraryUtilities.initialize();
     }
     
     @NativeAccess
-    QAssociativeConstIterator(QPrivateConstructor c, QtObject owner) { 
-    	super(c, owner);
+    protected QAssociativeConstIterator(QtConstructInPlace p) { 
+    	super(p);
+	}
+    
+    @NativeAccess
+	protected QAssociativeConstIterator(QPrivateConstructor c) { 
+    	super(c);
+	}
+    
+	protected QAssociativeConstIterator(QAssociativeConstIterator<Key,T,Container> other) { 
+    	super(other, false, false);
+	}
+	
+	protected QAssociativeConstIterator(QAssociativeIterator<Key,T,Container> other) { 
+    	super(other, true, false);
 	}
     
     /**
@@ -87,126 +94,52 @@ public class QAssociativeConstIterator<Key,T> extends AbstractIterator<T> implem
         return key(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private static native <K> K key(long __this__nativeId);
+    static native <K> K key(long __this__nativeId);
     
     @QtUninvokable
     static native QMetaType keyType(long __this__nativeId);
-
+    
     /**
-     * {@inheritDoc}
-     */
-	@Override
-    @QtUninvokable
-    public boolean equals(Object other) {
-		if (other instanceof QAssociativeConstIterator) {
-			return super.equals(other);
-		}
-    	return false;
-    }
-	
-
-	
-	private final static Function<QAssociativeConstIterator<?,?>, java.util.Iterator<?>> iteratorFactory;
-	
-	static {
-		if(Boolean.getBoolean("io.qt.enable-concurrent-container-modification-check")) {
-			@SuppressWarnings("unchecked")
-			Function<QAssociativeConstIterator<?,?>, java.util.Iterator<?>> _iteratorFactory = CheckingIncrementalIterator::new;
-			iteratorFactory = _iteratorFactory;
-		}else {
-			@SuppressWarnings("unchecked")
-			Function<QAssociativeConstIterator<?,?>, java.util.Iterator<?>> _iteratorFactory = IncrementalIterator::new;
-			iteratorFactory = _iteratorFactory;
-		}
-	}
-	
-	private static class IncrementalIterator<Key,T> implements java.util.Iterator<QPair<Key,T>>{
-    	final QAssociativeConstIterator<Key,T> nativeIterator;
-    	final AbstractIterator<T> end;
-    	private boolean hasNext;
-    	
-		IncrementalIterator(QAssociativeConstIterator<Key, T> nativeIterator) {
-			super();
-			this.nativeIterator = nativeIterator;
-			end = nativeIterator.end();
-			hasNext = end!=null && !nativeIterator.equals(end);
-		}
-
-		@Override
-		public boolean hasNext() {
-			return hasNext;
-		}
-
-		@Override
-		public QPair<Key,T> next() {
-			checkNext();
-			QPair<Key,T> e = new QPair<>(nativeIterator._key(), nativeIterator._value());
-			nativeIterator.increment();
-            hasNext = end!=null && !nativeIterator.equals(end);
-            return e;
-		}
-    	
-		void checkNext() {
-            if(!hasNext)
-                throw new NoSuchElementException();
-		}
-    }
-	
-	private static class CheckingIncrementalIterator<Key,T> extends IncrementalIterator<Key,T>{
-		CheckingIncrementalIterator(QAssociativeConstIterator<Key, T> nativeIterator) {
-			super(nativeIterator);
-		}
-
-		void checkNext() {
-    		super.checkNext();
-        	if(end!=null && !end.equals(nativeIterator.end()))
-        		throw new ConcurrentModificationException();
-		}
-	}
-
-    /**
-     * Returns a Java iterator between this and the container's end.
-     */
-	@SuppressWarnings("unchecked")
-    @QtUninvokable
-    public final Iterator<QPair<Key,T>> iterator(){
-    	return (java.util.Iterator<QPair<Key,T>>)iteratorFactory.apply(this);
-    }
-
-    /**
-	 * Returns the key value pair at iterator's position in the container or emptiness in case of <code>end</code>.
+	 * Returns the value at iterator's position in the container.
+	 * @throws NoSuchElementException in case of <code>end</code>.
 	 */
     @QtUninvokable
-	public final Optional<QPair<Key,T>> keyValuePair() {
-		return !isValid() ? Optional.empty() : Optional.ofNullable(new QPair<>(_key(), _value()));
+	public final T value() {
+		return validValue();
 	}
     
     /**
-	 * Returns the key at iterator's position in the container or emptiness in case of <code>end</code>.
+	 * Returns the key at iterator's position in the container.
+	 * @throws NoSuchElementException in case of <code>end</code>.
 	 */
     @QtUninvokable
-	public final Optional<Key> key() {
-		return !isValid() ? Optional.empty() : Optional.ofNullable(_key());
+	public final Key key() {
+    	if(!isValid())
+    		throw new NoSuchElementException();
+		return _key();
+	}
+    
+    /**
+	 * Returns the value type of the iterator.
+	 */
+    @QtUninvokable
+	public final QMetaType valueMetaType() {
+    	return valueType(QtJambi_LibraryUtilities.internal.nativeId(this));
 	}
     
     /**
 	 * Returns the key type of the iterator.
 	 */
     @QtUninvokable
-	public final QMetaType keyType() {
+	public final QMetaType keyMetaType() {
     	return keyType(QtJambi_LibraryUtilities.internal.nativeId(this));
 	}
-    
-    /**
-     * Returns the current item's key if item is valid
-     * or throws NoSuchElementException otherwise.
+	
+	/**
+     * Creates and returns a copy of this object.
      */
-    @QtUninvokable
-    final Key checkedKey() throws NoSuchElementException {
-    	if(isValid()) {
-    		return _key();
-    	}else {
-    		throw new NoSuchElementException();
-    	}
+    @Override
+	public @NonNull QAssociativeConstIterator<Key,T,Container> clone(){
+		return new QAssociativeConstIterator<>(this);
 	}
 }

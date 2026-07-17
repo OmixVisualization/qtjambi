@@ -36,3 +36,9 @@ CONFIG+=no_private_qt_headers_warning
 
 SOURCES += \
     impl.cpp
+
+win32-g++* {
+    CONFIG(debug, debug|release) {
+        QMAKE_CXXFLAGS += -O2
+    }
+}

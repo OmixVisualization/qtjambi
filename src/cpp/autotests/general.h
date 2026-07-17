@@ -74,9 +74,9 @@ public:
     static void callPaintCellNull(QCalendarWidget *w);
 #endif
 
-    static QList<bool> start_qtjambi_cast_test(jobject list, jobject qObject, jobject graphicsItem, jobject gradient, jobject functionalPointer, jobject functional, jobject customCList, jobject customJavaList, jobject text);
+    static QList<bool> start_qtjambi_cast_test(JNIEnv * env, jobject list, jobject qObject, jobject graphicsItem, jobject gradient, jobject functionalPointer, jobject functional, jobject customCList, jobject customJavaList, jobject text, jobject utf16Text);
 
-    static void qtjambi_jni_test(jobject object);
+    static void qtjambi_jni_test(JNIEnv * env, jobject object);
 
     static void run(QRunnable* runnable);
 

@@ -154,6 +154,14 @@ macx | ios:{
     }
 }
 
+isEmpty(VULKAN_HOME):{
+    VULKAN_HOME = $$(VULKAN_HOME)
+}
+
+!isEmpty(VULKAN_HOME):{
+    INCLUDEPATH += $$VULKAN_HOME/Include
+}
+
 #lessThan(QT_MAJOR_VERSION, 6):{
     CONFIG += c++17
 #}
@@ -231,6 +239,11 @@ macx{
 
 win32-arm64-msvc* | win32-msvc* {
     CONFIG += embed_manifest_dll force_embed_manifest
+    QMAKE_CXXFLAGS += /bigobj #/Bt+ /d2cgsummary /d1reportTime
+}
+
+win32-g++* {
+    QMAKE_CXXFLAGS += -Wa,-mbig-obj -fno-asynchronous-unwind-tables
 }
 
 GENERATOR_PRI = $$clean_path($$GENERATED_SOURCES_BASE/$$QTJAMBI_PROJECT/generated.pri)
@@ -297,3 +310,4 @@ exists($$GENERATOR_PRI): include($$GENERATOR_PRI)
 }
 
 ios: DEFINES += LIBRARY_NAME=$$member(TARGET, 0)
+

@@ -29,22 +29,133 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.lang.reflect.Array;
-import java.util.Collection;
-import java.util.Collections;
+import java.lang.reflect.*;
+import java.util.*;
 
-import io.qt.NativeAccess;
-import io.qt.NonNull;
-import io.qt.Nullable;
-import io.qt.QtObject;
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
-import io.qt.StrictNonNull;
+import io.qt.*;
 
 /**
  * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qspan.html">QSpan</a></code></p>
  */
 public class QConstSpan<T> extends AbstractSpan<T>{
+    
+    /**
+     * <p>Java wrapper for Qt class <code>QSpan::const_iterator</code></p>
+     */
+    public static final class ConstIterator<T> extends io.qt.core.QSequentialConstIterator<T,QConstSpan<T>> implements Comparable<@NonNull ConstIterator<T>>
+    {
+        static {
+            QtJambi_LibraryUtilities.initialize();
+        }
+        
+        /**
+         * Creates and returns a copy of this object.
+         */
+        @Override
+        public @NonNull ConstIterator<T> clone(){
+            return new ConstIterator<>(this);
+        }
+
+        public ConstIterator(ConstIterator<T> other){
+            super(other);
+        }
+        
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+		public ConstIterator(QSpan.Iterator<T> other){
+            super((QSequentialIterator)other);
+        }
+
+        /**
+         * Compares this iterator with other object.
+         */
+        @Override
+        public int compareTo(@NonNull ConstIterator<T> other){
+            return super.compareTo(other);
+        }
+
+        /**
+         * Constructor for internal use only.
+         * @param p expected to be <code>null</code>.
+         * @hidden
+         */
+        @NativeAccess
+        private ConstIterator(QPrivateConstructor p) { super(p); } 
+        
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+		public final java.util.Iterator<T> descendingIterator() {
+			return super.descendingIterator();
+		}
+        
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+		public final java.util.ListIterator<T> bidirectionalIterator() {
+			return super.bidirectionalIterator();
+		}
+    }
+    
+    /**
+     * <p>Java wrapper for Qt class <code>QList::const_reverse_iterator</code></p>
+     */
+    public static final class ConstReverseIterator<T> extends io.qt.core.QSequentialConstIterator<T,QList<T>> implements Comparable<@NonNull ConstReverseIterator<T>>
+    {
+        static {
+            QtJambi_LibraryUtilities.initialize();
+        }
+        
+        /**
+         * Creates and returns a copy of this object.
+         */
+        @Override
+        public @NonNull ConstReverseIterator<T> clone(){
+            return new ConstReverseIterator<>(this);
+        }
+
+        public ConstReverseIterator(ConstReverseIterator<T> other){
+            super(other);
+        }
+        
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+		public ConstReverseIterator(QSpan.ReverseIterator<T> other){
+            super((QSequentialIterator)other);
+        }
+        
+        /**
+         * Compares this iterator with other object.
+         */
+        @Override
+        public int compareTo(@NonNull ConstReverseIterator<T> other){
+            return super.compareTo(other);
+        }
+
+        /**
+         * Constructor for internal use only.
+         * @param p expected to be <code>null</code>.
+         * @hidden
+         */
+        @NativeAccess
+        private ConstReverseIterator(QPrivateConstructor p) { super(p); } 
+        
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+		public final java.util.Iterator<T> descendingIterator() {
+			return super.descendingIterator();
+		}
+        
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+		public final java.util.ListIterator<T> bidirectionalIterator() {
+			return super.bidirectionalIterator();
+		}
+    }
 
 	QConstSpan(){
 		super();
@@ -107,6 +218,14 @@ public class QConstSpan<T> extends AbstractSpan<T>{
 	QConstSpan(QList<T> list){
 		super(list);
 	}
+	
+	<Container extends QtObjectInterface, InputIterator extends QSequentialIterator<T,Container>> QConstSpan(@StrictNonNull InputIterator begin, @StrictNonNull InputIterator end) {
+    	super(begin, end);
+    }
+	
+	public <Container extends QtObjectInterface, InputIterator extends QSequentialConstIterator<T,Container>> QConstSpan(@StrictNonNull InputIterator begin, @StrictNonNull InputIterator end) {
+    	super(null, new QList<>(begin, end));
+    }
 	
 	QConstSpan(@StrictNonNull QByteArray byteArray){
 		super(byteArray);
@@ -173,6 +292,10 @@ public class QConstSpan<T> extends AbstractSpan<T>{
 	public static <T> @NonNull QConstSpan<T> of(T element0, T @StrictNonNull...elements){
 		return new QConstSpan<>(null, QList.of(element0, elements));
 	}
+	
+	public static <T,Container extends QtObjectInterface, InputIterator extends QSequentialConstIterator<T,Container>> @NonNull QConstSpan<T> of(@StrictNonNull InputIterator begin, @StrictNonNull InputIterator end) {
+		return new QConstSpan<>(null, new QList<>(begin, end));
+    }
 	
 	@SafeVarargs
 	public static <T> @NonNull QConstSpan<T> ofTyped(@StrictNonNull QMetaType metaType, T @StrictNonNull...elements){
@@ -373,22 +496,20 @@ public class QConstSpan<T> extends AbstractSpan<T>{
 	@QtUninvokable
 	@Override
     public final java.util.Iterator<T> iterator(){
-		QSequentialConstIterator<T> begin = constBegin();
-    	return begin==null ? Collections.<T>emptyList().listIterator() : begin.iterator();
+    	return AbstractIterator.iterator(constBegin());
     }
     
 	@QtUninvokable
 	public final java.util.Iterator<T> descendingIterator() {
-		QSequentialConstIterator<T> end = constEnd();
-		return end==null ? Collections.<T>emptyList().listIterator() : end.toJavaDescendingIterator();
+		return AbstractIterator.descendingIterator(constEnd());
     }
 	
 	/**
 	 * Returns the value type of the QSpan.
 	 */
     @QtUninvokable
-	public final QMetaType elementType() {
-    	return elementMetaType();
+	public final QMetaType elementMetaType() {
+    	return elementType();
 	}
     
     /**
@@ -525,4 +646,102 @@ public class QConstSpan<T> extends AbstractSpan<T>{
 	boolean isConstSpan() {
 		return true;
 	}
+
+	@QtUninvokable
+    public java.util.ListIterator<T> bidirectionalIterator(){
+		ConstIterator<T> begin = constBegin();
+		if(begin!=null) {
+			return begin.bidirectionalIterator();
+		}else {
+			return Collections.<T>emptyList().listIterator();
+		}
+    }
+
+    /**
+     * Provides a constant C++ iterator to the container's begin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qspan.html#constBegin">QSpan::<wbr>cbegin()const</a></code></p>
+     * @return begin
+     */
+    @QtUninvokable
+    public final @NonNull ConstIterator<T> cbegin() {
+    	return constBegin();
+    }
+
+    /**
+     * Provides a constant C++ iterator to the container's begin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qspan.html#constBegin">QSpan::<wbr>constBegin()const</a></code></p>
+     * @return begin
+     */
+    @QtUninvokable
+    public final @NonNull ConstIterator<T> constBegin() {
+        return constBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+
+    /**
+     * Provides a constant C++ iterator to the container's end.
+     * <p>See <code><a href="https://doc.qt.io/qt/qspan.html#constEnd">QSpan::<wbr>cend()const</a></code></p>
+     * @return end
+     */
+    @QtUninvokable
+    public final @NonNull ConstIterator<T> cend() {
+    	return constEnd();
+    }
+
+    /**
+     * Provides a constant C++ iterator to the container's end.
+     * <p>See <code><a href="https://doc.qt.io/qt/qspan.html#constEnd">QSpan::<wbr>constEnd()const</a></code></p>
+     * @return end
+     */
+    @QtUninvokable
+    public final @NonNull ConstIterator<T> constEnd() {
+        return constEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+
+    private native ConstIterator<T> constBegin(long nativeId);
+    
+    private native ConstIterator<T> constEnd(long nativeId);
+
+    /**
+     * Provides a constant C++ iterator to the container's reverse begin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qspan.html#crbegin">QSpan::<wbr>crbegin()const</a></code></p>
+     * @return reverse begin
+     */
+    @QtUninvokable
+    public final @NonNull ConstReverseIterator<T> crbegin() {
+    	return constReverseBegin();
+    }
+
+    /**
+     * Provides a constant C++ iterator to the container's reverse begin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qspan.html#crbegin">QSpan::<wbr>crbegin()const</a></code></p>
+     * @return reverse begin
+     */
+    @QtUninvokable
+    public final @NonNull ConstReverseIterator<T> constReverseBegin() {
+        return constReverseBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+
+    /**
+     * Provides a constant C++ iterator to the container's reverse end.
+     * <p>See <code><a href="https://doc.qt.io/qt/qspan.html#crend">QSpan::<wbr>crend()const</a></code></p>
+     * @return reverse end
+     */
+    @QtUninvokable
+    public final @NonNull ConstReverseIterator<T> crend() {
+    	return constReverseEnd();
+    }
+
+    /**
+     * Provides a constant C++ iterator to the container's reverse end.
+     * <p>See <code><a href="https://doc.qt.io/qt/qspan.html#crend">QSpan::<wbr>crend()const</a></code></p>
+     * @return reverse end
+     */
+    @QtUninvokable
+    public final @NonNull ConstReverseIterator<T> constReverseEnd() {
+        return constReverseEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+
+    private native ConstReverseIterator<T> constReverseBegin(long nativeId);
+    
+    private native ConstReverseIterator<T> constReverseEnd(long nativeId);
 }

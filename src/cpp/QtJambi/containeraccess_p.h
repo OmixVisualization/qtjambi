@@ -42,832 +42,370 @@ QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
 
 #include "utils_p.h"
 #include "objectdata.h"
+#include "qtjambilink_p.h"
 #include "containeraccess.h"
+#include "containeraccess_iterator.h"
 
-#if defined(QTJAMBI_GENERIC_ACCESS)
+class QtJambiLink;
 
-AbstractListAccess* checkContainerAccess(JNIEnv * env, AbstractListAccess* containerAccess);
-AbstractSetAccess* checkContainerAccess(JNIEnv * env, AbstractSetAccess* containerAccess);
-AbstractHashAccess* checkContainerAccess(JNIEnv * env, AbstractHashAccess* containerAccess);
-AbstractMapAccess* checkContainerAccess(JNIEnv * env, AbstractMapAccess* containerAccess);
-AbstractMultiHashAccess* checkContainerAccess(JNIEnv * env, AbstractMultiHashAccess* containerAccess);
-AbstractMultiMapAccess* checkContainerAccess(JNIEnv * env, AbstractMultiMapAccess* containerAccess);
-#define CHECK_CONTAINER_ACCESS(env, containerAccess) containerAccess = checkContainerAccess(env, containerAccess);
+class AutoMultiMapAccess;
+class AutoMultiHashAccess;
 
-class AbstractWrapperContainerAccess{
-protected:
-    AbstractWrapperContainerAccess() = default;
-    virtual ~AbstractWrapperContainerAccess();
-    Q_DISABLE_COPY_MOVE(AbstractWrapperContainerAccess)
+namespace QtJambiPrivate{
+
+template<typename, typename, typename, bool, bool, bool, typename...>
+struct qtjambi_ContainerIterator_cast;
+
+jobject convertIteratorToJavaObject(JNIEnv *env,
+                                    const QSharedPointer<QtJambiLink>& owner,
+                                    void* iteratorPtr,
+                                    PtrDeleterFunction destructor_function,
+                                    AbstractAssociativeConstIteratorAccess* containerAccess);
+jobject convertMapIteratorToJavaObject(JNIEnv *env,
+                                    const QSharedPointer<QtJambiLink>& owner,
+                                    void* iteratorPtr,
+                                    PtrDeleterFunction destructor_function,
+                                    AbstractAssociativeConstIteratorAccess* containerAccess);
+jobject convertMultiMapIteratorToJavaObject(JNIEnv *env,
+                                       const QSharedPointer<QtJambiLink>& owner,
+                                       void* iteratorPtr,
+                                       PtrDeleterFunction destructor_function,
+                                       AbstractAssociativeConstIteratorAccess* containerAccess);
+jobject convertHashIteratorToJavaObject(JNIEnv *env,
+                                       const QSharedPointer<QtJambiLink>& owner,
+                                       void* iteratorPtr,
+                                       PtrDeleterFunction destructor_function,
+                                       AbstractAssociativeConstIteratorAccess* containerAccess);
+jobject convertMultiHashIteratorToJavaObject(JNIEnv *env,
+                                            const QSharedPointer<QtJambiLink>& owner,
+                                            void* iteratorPtr,
+                                            PtrDeleterFunction destructor_function,
+                                            AbstractAssociativeConstIteratorAccess* containerAccess);
+jobject convertMapKeyIteratorToJavaObject(JNIEnv *env,
+                                          const QSharedPointer<QtJambiLink>& owner,
+                                          void* iteratorPtr,
+                                          PtrDeleterFunction destructor_function,
+                                          AbstractSequentialConstIteratorAccess* containerAccess);
+jobject convertMultiMapKeyIteratorToJavaObject(JNIEnv *env,
+                                            const QSharedPointer<QtJambiLink>& owner,
+                                            void* iteratorPtr,
+                                            PtrDeleterFunction destructor_function,
+                                            AbstractSequentialConstIteratorAccess* containerAccess);
+jobject convertHashKeyIteratorToJavaObject(JNIEnv *env,
+                                        const QSharedPointer<QtJambiLink>& owner,
+                                        void* iteratorPtr,
+                                        PtrDeleterFunction destructor_function,
+                                        AbstractSequentialConstIteratorAccess* containerAccess);
+jobject convertMultiHashKeyIteratorToJavaObject(JNIEnv *env,
+                                             const QSharedPointer<QtJambiLink>& owner,
+                                             void* iteratorPtr,
+                                             PtrDeleterFunction destructor_function,
+                                             AbstractSequentialConstIteratorAccess* containerAccess);
+jobject convertMultiMapIteratorToJavaObject(JNIEnv *env,
+                                            const QSharedPointer<QtJambiLink>& owner,
+                                            void* iteratorPtr,
+                                            PtrDeleterFunction destructor_function,
+                                            AbstractSequentialConstIteratorAccess* containerAccess);
+jobject convertHashKeyValueIteratorToJavaObject(JNIEnv *env,
+                                        const QSharedPointer<QtJambiLink>& owner,
+                                        void* iteratorPtr,
+                                        PtrDeleterFunction destructor_function,
+                                        AbstractSequentialConstIteratorAccess* containerAccess);
+jobject convertMultiMapKeyValueIteratorToJavaObject(JNIEnv *env,
+                                             const QSharedPointer<QtJambiLink>& owner,
+                                             void* iteratorPtr,
+                                             PtrDeleterFunction destructor_function,
+                                             AbstractSequentialConstIteratorAccess* containerAccess);
+jobject convertMultiHashKeyValueIteratorToJavaObject(JNIEnv *env,
+                                                     const QSharedPointer<QtJambiLink>& owner,
+                                                     void* iteratorPtr,
+                                                     PtrDeleterFunction destructor_function,
+                                                     AbstractSequentialConstIteratorAccess* containerAccess);
+jobject convertMapKeyValueIteratorToJavaObject(JNIEnv *env,
+                                               const QSharedPointer<QtJambiLink>& owner,
+                                               void* iteratorPtr,
+                                               PtrDeleterFunction destructor_function,
+                                               AbstractSequentialConstIteratorAccess* containerAccess);
+
+jobject convertListIteratorToJavaObject(JNIEnv *env,
+                                    const QSharedPointer<QtJambiLink>& owner,
+                                    void* iteratorPtr,
+                                    PtrDeleterFunction destructor_function,
+                                    AbstractSequentialConstIteratorAccess* containerAccess);
+jobject convertListReverseIteratorToJavaObject(JNIEnv *env,
+                                        const QSharedPointer<QtJambiLink>& owner,
+                                        void* iteratorPtr,
+                                        PtrDeleterFunction destructor_function,
+                                        AbstractSequentialConstIteratorAccess* containerAccess);
+
+jobject convertSetIteratorToJavaObject(JNIEnv *env,
+                                        const QSharedPointer<QtJambiLink>& owner,
+                                        void* iteratorPtr,
+                                        PtrDeleterFunction destructor_function,
+                                        AbstractSequentialConstIteratorAccess* containerAccess);
+
+jobject convertSpanIteratorToJavaObject(JNIEnv *env,
+                                        const QSharedPointer<QtJambiLink>& owner,
+                                        void* iteratorPtr,
+                                        PtrDeleterFunction destructor_function,
+                                        AbstractSequentialConstIteratorAccess* containerAccess);
+
+jobject convertSpanReverseIteratorToJavaObject(JNIEnv *env,
+                                        const QSharedPointer<QtJambiLink>& owner,
+                                        void* iteratorPtr,
+                                        PtrDeleterFunction destructor_function,
+                                        AbstractSequentialConstIteratorAccess* containerAccess);
+
+
+jobject convertIteratorToJavaObject(JNIEnv *env,
+                                    const QSharedPointer<QtJambiLink>& owner,
+                                    void* iteratorPtr,
+                                    PtrDeleterFunction destructor_function,
+                                    AbstractSequentialConstIteratorAccess* containerAccess);
+
+jobject convertIteratorToJavaObject(JNIEnv *env,
+                                    const std::type_info& containerTypeId,
+                                    const std::type_info& iteratorTypeId,
+                                    const QSharedPointer<QtJambiLink>& owner,
+                                    void* iteratorPtr,
+                                    PtrDeleterFunction destructor_function,
+                                    AbstractAssociativeConstIteratorAccess* containerAccess);
+
+jobject convertIteratorToJavaObject(JNIEnv *env,
+                                    const std::type_info& containerTypeId,
+                                    const std::type_info& iteratorTypeId,
+                                    const QSharedPointer<QtJambiLink>& owner,
+                                    void* iteratorPtr,
+                                    PtrDeleterFunction destructor_function,
+                                    AbstractSequentialConstIteratorAccess* containerAccess);
+
+template<typename Access>
+class ContainerClonePrivate : public QSharedData{
+    Access* m_access;
+    void* m_container;
 public:
-    virtual AbstractContainerAccess* wrappedAccess() = 0;
+    template<typename _Access = Access, std::enable_if_t<std::is_same_v<_Access,AutoMultiMapAccess>,bool> = true>
+    ContainerClonePrivate(_Access* access, const void* container)
+        : m_access(dynamic_cast<_Access*>(access->clone())),
+        m_container(m_access->createContainer(container))
+    {
+    }
+    template<typename _Access = Access, std::enable_if_t<std::is_same_v<_Access,AutoMultiHashAccess>,bool> = true>
+    ContainerClonePrivate(_Access* access, const void* container)
+        : m_access(dynamic_cast<_Access*>(access->clone())),
+        m_container(m_access->createContainer(container))
+    {
+    }
+    template<typename _Access = Access, std::enable_if_t<!std::is_same_v<_Access,AutoMultiMapAccess> && !std::is_same_v<_Access,AutoMultiHashAccess>,bool> = true>
+    ContainerClonePrivate(_Access* access, const void* container)
+        : m_access(static_cast<_Access*>(access->clone())),
+        m_container(m_access->createContainer(container))
+    {
+    }
+    ContainerClonePrivate(ContainerClonePrivate&& other)
+        : m_access(other.m_access),
+        m_container(other.m_container)
+    {
+        other.m_access = nullptr;
+        other.m_container = nullptr;
+    }
+    ContainerClonePrivate& operator=(ContainerClonePrivate&& other){
+        m_access = other.m_access;
+        m_container = other.m_container;
+        other.m_access = nullptr;
+        other.m_container = nullptr;
+        return *this;
+    }
+    ContainerClonePrivate(const ContainerClonePrivate&) = delete;
+    ContainerClonePrivate& operator=(const ContainerClonePrivate&) = delete;
+    ~ContainerClonePrivate(){
+        if(m_access){
+            if(m_container)
+                m_access->deleteContainer(m_container);
+            m_access->dispose();
+        }
+    }
+    Access* containerAccess() const {return m_access;}
+    void* pointer() const {return m_container;}
 };
 
-class WrapperListAccess : public AbstractListAccess, public AbstractWrapperContainerAccess {
+template<typename Access>
+class ContainerClone{
+    QExplicitlySharedDataPointer<QtJambiPrivate::ContainerClonePrivate<Access>> d;
 public:
-    WrapperListAccess(AbstractListAccess* containerAccess);
-    ~WrapperListAccess() override;
-    bool isDetached(const void* container) final override;
-    void detach(const ContainerInfo& container) final override;
-    bool isSharedWith(const void* container, const void* container2) final override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    bool append(void* container, const void* entry) override;
-    AbstractListAccess* clone() override;
-#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
-    AbstractSpanAccess* createSpanAccess(bool isConst) override;
-#endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
-    void dispose() final override;
-    size_t sizeOf() const final override;
-    size_t alignOf() const final override;
-    void* constructContainer(void* placement) final override;
-    void* constructContainer(void* placement, const void* container) override;
-    void* constructContainer(JNIEnv * env, void* placement, const ConstContainerAndAccessInfo& copyOf) override;
-    void* constructContainer(void* placement, void* move) override;
-    void* constructContainer(JNIEnv * env, void* placement, const ContainerAndAccessInfo& move) override;
-    bool destructContainer(void* container) final override;
-    void assign(void*, const void* ) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    QMetaType registerContainer(QByteArrayView containerTypeName) final override;
-    const QMetaType& elementMetaType() final override;
-    DataType elementType() override;
-    AbstractContainerAccess* elementNestedContainerAccess() override;
-    bool hasNestedContainerAccess() override;
-    bool hasNestedPointers() override;
-    const QObject* getOwner(const void* container) override;
-    bool hasOwnerFunction() override;
-    void appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) override;
-    jobject at(JNIEnv * env, const void* container, qsizetype index) override;
-    const void* at(const void* container, qsizetype index) override;
-    void* at(void* container, qsizetype index) override;
-    jobject value(JNIEnv * env, const void* container, qsizetype index) override;
-    jobject value(JNIEnv * env, const void* container, qsizetype index, jobject defaultValue) override;
-    void swapItemsAt(JNIEnv * env, const ContainerInfo& container, qsizetype index1, qsizetype index2) override;
-    jboolean startsWith(JNIEnv * env, const void* container, jobject value) override;
-    qsizetype size(JNIEnv * env, const void* container) override;
-    qsizetype size(const void* container)override;
-    void reserve(JNIEnv * env, const ContainerInfo& container, qsizetype size) override;
-    void replace(JNIEnv * env, const ContainerInfo& container, qsizetype index, jobject value) override;
-    void replace(void* container, qsizetype index, const void* value) override;
-    qsizetype removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
-    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
-    void move(JNIEnv * env, const ContainerInfo& container, qsizetype index1, qsizetype index2) override;
-    ContainerAndAccessInfo mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, qsizetype index1, qsizetype index2) override;
-    qsizetype lastIndexOf(JNIEnv * env, const void* container, jobject value, qsizetype index) override;
-    qsizetype indexOf(JNIEnv * env, const void* container, jobject value, qsizetype index) override;
-    jboolean endsWith(JNIEnv * env, const void* container, jobject value) override;
-    jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
-    jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
-    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
-    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
-    qsizetype count(JNIEnv * env, const void* container, jobject value) override;
-    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void remove(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n) override;
-    void remove(void* container, qsizetype pos, qsizetype n) override;
-    void insert(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n, jobject value) override;
-    void insert(void* container, qsizetype index, qsizetype n, const void* entry) override;
+    using value_type = char;
+    using difference_type = qsizetype;
+    using pointer = char*;
+    using reference = char&;
+    ContainerClone(Access* access, const void* container)
+        : d(new QtJambiPrivate::ContainerClonePrivate<Access>(access, container))
+    {
+    }
+    ContainerClone(Access* access, const ConstExtendedContainerInfo& container)
+        : d(new QtJambiPrivate::ContainerClonePrivate<Access>(access, container.container))
+    {
+    }
+    ContainerClone() = delete;
+    ContainerClone(const ContainerClone& cl) : d(cl.d){}
+    ContainerClone(ContainerClone&& cl) : d(std::move(cl.d)){}
+    template<typename _Access = Access, std::enable_if_t<QtJambiPrivate::supports_isSharedWith_v<_Access,const void*,const void*>,bool> = true>
+    bool isSharedWith(const ContainerClone& clone) const{
+        return d && d->containerAccess()->isSharedWith(d->pointer(), clone.d->pointer());
+    }
+    auto begin() const {
+        Q_ASSERT(d);
+        return d->containerAccess()->constBegin(d->pointer());
+    }
+    auto end() const {
+        Q_ASSERT(d);
+        return d->containerAccess()->constEnd(d->pointer());
+    }
+    template<typename _Access = Access, std::enable_if_t<QtJambiPrivate::supports_constReverseBegin_v<_Access,const void*>,bool> = true>
+    auto crbegin() const {
+        Q_ASSERT(d);
+        return containerAccess()->constReverseBegin(d->pointer());
+    }
+    template<typename _Access = Access, std::enable_if_t<QtJambiPrivate::supports_constReverseEnd_v<_Access,const void*>,bool> = true>
+    auto crend() const {
+        Q_ASSERT(d);
+        return containerAccess()->constReverseEnd(d->pointer());
+    }
+    template<typename _Access = Access, std::enable_if_t<QtJambiPrivate::supports_constKeyValueBegin_v<_Access,const void*>,bool> = true>
+    auto constKeyValueBegin() const {
+        Q_ASSERT(d);
+        return containerAccess()->constKeyValueBegin(d->pointer());
+    }
+    template<typename _Access = Access, std::enable_if_t<QtJambiPrivate::supports_constKeyValueEnd_v<_Access,const void*>,bool> = true>
+    auto constKeyValueEnd() const {
+        Q_ASSERT(d);
+        return containerAccess()->constKeyValueEnd(d->pointer());
+    }
+    Access* containerAccess() const {return d ? d->containerAccess() : nullptr;}
+};
 
-    void resize(void* container, qsizetype newSize) override;
-    qsizetype capacity(JNIEnv * env, const void* container) override;
-    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, qsizetype size) override;
-    void resize(JNIEnv * env, const ContainerInfo& container, qsizetype newSize) override;
-    void squeeze(JNIEnv * env, const ContainerInfo& container) override;
-    std::unique_ptr<ElementIterator> elementIterator(const void* container) final override;
-    std::unique_ptr<ElementIterator> elementIterator(void* container) final override;
-    AbstractListAccess* wrappedAccess() override final;
-    AbstractWrapperContainerAccess* asWrapper() override final;
-    Q_DISABLE_COPY_MOVE(WrapperListAccess)
+template<typename Access,
+         bool = supports_less_than_v<decltype(std::declval<Access&>().constBegin(std::declval<const void*>()))&>>
+struct InitialItersAccessContainer{
+    InitialItersAccessContainer(Access* access, const void * container)
+        : m_initialBegin(access->constBegin(container)),
+          m_initialEnd(access->constEnd(container))
+    {}
+    auto initialBegin() const {
+        return m_initialBegin;
+    }
+    auto initialEnd() const {
+        return m_initialEnd;
+    }
 private:
-    AbstractListAccess* m_containerAccess;
+    decltype(std::declval<Access&>().constBegin(std::declval<const void*>())) m_initialBegin;
+    decltype(std::declval<Access&>().constEnd(std::declval<const void*>())) m_initialEnd;
 };
 
-class WrapperSetAccess : public AbstractSetAccess, public AbstractWrapperContainerAccess {
-public:
-    WrapperSetAccess(AbstractSetAccess* containerAccess);
-    ~WrapperSetAccess() override;
-    AbstractSetAccess* clone() override;
-    void dispose() override;
-    bool isDetached(const void* container) final override;
-    void detach(const ContainerInfo& container) final override;
-    bool isSharedWith(const void* container, const void* container2) final override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(void*, const void* ) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    size_t sizeOf() const final override;
-    size_t alignOf() const final override;
-    void* constructContainer(void* placement) final override;
-    void* constructContainer(void* placement, const void* container) override;
-    void* constructContainer(JNIEnv * env, void* placement, const ConstContainerAndAccessInfo& copyOf) override;
-    void* constructContainer(void* placement, void* move) override;
-    void* constructContainer(JNIEnv * env, void* placement, const ContainerAndAccessInfo& move) override;
-    bool destructContainer(void* container) final override;
-    QMetaType registerContainer(QByteArrayView containerTypeName) override;
-    const QMetaType& elementMetaType() override;
-    DataType elementType() override;
-    AbstractContainerAccess* elementNestedContainerAccess() override;
-    bool hasNestedContainerAccess() override;
-    bool hasNestedPointers() override;
-    const QObject* getOwner(const void* container) override;
-    bool hasOwnerFunction() override;
-    qsizetype capacity(JNIEnv * env, const void* container) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
-    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
-    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container, jobject value) override;
-    void intersect(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    jboolean intersects(JNIEnv * env, const void* container, jobject other) override;
-    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
-    jboolean remove(JNIEnv * env, const ContainerInfo& container, jobject value) override;
-    void reserve(JNIEnv * env, const ContainerInfo& container, qsizetype newSize) override;
-    qsizetype size(JNIEnv * env, const void* container) override;
-    qsizetype size(const void* container) override;
-    void subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override;
-    std::unique_ptr<ElementIterator> elementIterator(const void* container) final override;
-    std::unique_ptr<ElementIterator> elementIterator(void* container) final override;
-    AbstractSetAccess* wrappedAccess() override final;
-    AbstractWrapperContainerAccess* asWrapper() override final;
-    Q_DISABLE_COPY_MOVE(WrapperSetAccess)
+template<typename Access>
+struct InitialItersAccessContainer<Access,true>{
+    InitialItersAccessContainer(const Access*, const void *){}
+};
+
+template<typename Access>
+struct ContainerAccessLink : InitialItersAccessContainer<Access>{
+    using value_type = char;
+    using difference_type = qsizetype;
+    using pointer = char*;
+    using reference = char&;
+    ContainerAccessLink(Access* access, QSharedPointer<QtJambiLink>&& link)
+        : InitialItersAccessContainer<Access>(access, link->pointer()),
+          m_link(std::move(link)) {}
+    ContainerAccessLink(Access* access, const ExtendedContainerInfo& container)
+        : InitialItersAccessContainer<Access>(access, container.container),
+        m_link(QtJambiLink::fromNativeId(container.nativeId)) {}
+    bool operator==(const ContainerAccessLink& other) const {
+        return m_link==other.m_link;
+    }
+    template<typename _Access = Access, std::enable_if_t<supports_isSharedWith_v<_Access,const void*,const void*>,bool> = true>
+    bool isSharedWith(const ContainerAccessLink& clone) const{
+        return containerAccess()->isSharedWith(m_link->pointer(), clone.m_link->pointer());
+    }
+    auto begin() const {
+        return containerAccess()->constBegin(m_link->pointer());
+    }
+    auto end() const {
+        return containerAccess()->constEnd(m_link->pointer());
+    }
+    template<typename _Access = Access, std::enable_if_t<QtJambiPrivate::supports_constReverseBegin_v<_Access,const void*>,bool> = true>
+    auto crbegin() const {
+        return containerAccess()->constReverseBegin(m_link->pointer());
+    }
+    template<typename _Access = Access, std::enable_if_t<QtJambiPrivate::supports_constReverseEnd_v<_Access,const void*>,bool> = true>
+    auto crend() const {
+        return containerAccess()->constReverseEnd(m_link->pointer());
+    }
+    template<typename _Access = Access, std::enable_if_t<QtJambiPrivate::supports_constKeyValueBegin_v<_Access,const void*>,bool> = true>
+    auto constKeyValueBegin() const {
+        return containerAccess()->constKeyValueBegin(m_link->pointer());
+    }
+    template<typename _Access = Access, std::enable_if_t<QtJambiPrivate::supports_constKeyValueEnd_v<_Access,const void*>,bool> = true>
+    auto constKeyValueEnd() const {
+        return containerAccess()->constKeyValueEnd(m_link->pointer());
+    }
+    const QSharedPointer<QtJambiLink>& link() const {
+        return m_link;
+    }
+    Access* containerAccess() const{
+        if constexpr(std::is_same_v<Access,AutoMultiMapAccess>){
+            return dynamic_cast<Access*>(m_link->containerAccess());
+        }else if constexpr(std::is_same_v<Access,AutoMultiHashAccess>){
+            return dynamic_cast<Access*>(m_link->containerAccess());
+        }else{
+            return static_cast<Access*>(m_link->containerAccess());
+        }
+    }
 private:
-    AbstractSetAccess* m_containerAccess;
+    QSharedPointer<QtJambiLink> m_link;
 };
 
-class WrapperMapAccess : public AbstractMapAccess, public AbstractWrapperContainerAccess {
-public:
-    WrapperMapAccess(AbstractMapAccess* containerAccess);
-    ~WrapperMapAccess() override;
-    AbstractMapAccess* clone() override;
-    void dispose() override;
-    void assign(void*, const void* ) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    bool isDetached(const void* container) final override;
-    void detach(const ContainerInfo& container) final override;
-    bool isSharedWith(const void* container, const void* container2) final override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    size_t sizeOf() const final override;
-    size_t alignOf() const final override;
-    void* constructContainer(void* placement) final override;
-    void* constructContainer(void* placement, const void* container) override;
-    void* constructContainer(JNIEnv * env, void* placement, const ConstContainerAndAccessInfo& copyOf) override;
-    void* constructContainer(void* placement, void* move) override;
-    void* constructContainer(JNIEnv * env, void* placement, const ContainerAndAccessInfo& move) override;
-    bool destructContainer(void* container) final override;
-    QMetaType registerContainer(QByteArrayView containerTypeName) override;
-    const QMetaType& keyMetaType() override;
-    const QMetaType& valueMetaType() override;
-    DataType keyType() override;
-    DataType valueType() override;
-    AbstractContainerAccess* keyNestedContainerAccess() override;
-    AbstractContainerAccess* valueNestedContainerAccess() override;
-    bool hasKeyNestedContainerAccess() override;
-    bool hasValueNestedContainerAccess() override;
-    bool hasKeyNestedPointers() override;
-    bool hasValueNestedPointers() override;
-    const QObject* getOwner(const void* container) override;
-    bool hasOwnerFunction() override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
-    qsizetype count(JNIEnv * env, const void* container, jobject key) override;
-    jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
-    jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
-    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
-    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
-    jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key) override;
-    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
-    jobject first(JNIEnv * env, const void* container) override;
-    jobject firstKey(JNIEnv * env, const void* container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override;
-    ContainerAndAccessInfo keys(JNIEnv * env, const ConstContainerInfo& container) override;
-    ContainerAndAccessInfo keys(JNIEnv * env, const ConstContainerInfo& container, jobject value) override;
-    jobject last(JNIEnv * env, const void* container) override;
-    jobject lastKey(JNIEnv * env, const void* container) override;
-    jobject constLowerBound(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
-    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    qsizetype size(JNIEnv * env, const void* container) override;
-    qsizetype size(const void* container)override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jobject constUpperBound(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
-    jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override;
-    ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override;
-    bool keyLessThan(JNIEnv *env, jobject key1, jobject key2) override;
-    std::unique_ptr<KeyValueIterator> keyValueIterator(const void* container) final override;
-    std::unique_ptr<KeyValueIterator> keyValueIterator(void* container) override;
-    bool contains(const void*,const void*) override;
-    void insert(void* container,const void* key, const void* value) override;
-    const void* value(const void*, const void*, const void*) override;
-    AbstractMapAccess* wrappedAccess() override final;
-    AbstractWrapperContainerAccess* asWrapper() override final;
-    Q_DISABLE_COPY_MOVE(WrapperMapAccess)
-private:
-    AbstractMapAccess* m_containerAccess;
+template<typename, typename, bool>
+struct CreateConstIterator;
+
+template<typename Access, bool b>
+struct CreateConstIterator<ContainerIterator<ContainerAccessLink<Access>,typename Access::iterator>, Access, b>{
+    using Iter = ContainerIterator<ContainerAccessLink<Access>,typename Access::iterator>;
+    using type = ContainerIterator<ContainerClone<Access>,typename Access::const_iterator>;
+    static void* function(const void* ptr){
+        const Iter& iterator = *static_cast<const Iter*>(ptr);
+        return new type(typename Access::const_iterator(iterator.iterator()), ContainerClone<Access>(iterator.storage().containerAccess(), iterator.storage().link()->pointer()));
+    }
 };
 
-class WrapperMultiMapAccess : public AbstractMultiMapAccess, public AbstractWrapperContainerAccess {
-public:
-    WrapperMultiMapAccess(AbstractMultiMapAccess* containerAccess);
-    ~WrapperMultiMapAccess() override;
-    AbstractMultiMapAccess* clone() override;
-    void dispose() override;
-    bool isDetached(const void* container) final override;
-    void detach(const ContainerInfo& container) final override;
-    bool isSharedWith(const void* container, const void* container2) final override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(void*, const void* ) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    size_t sizeOf() const final override;
-    size_t alignOf() const final override;
-    void* constructContainer(void* placement) final override;
-    void* constructContainer(void* placement, const void* container) override;
-    void* constructContainer(JNIEnv * env, void* placement, const ConstContainerAndAccessInfo& copyOf) override;
-    void* constructContainer(void* placement, void* move) override;
-    void* constructContainer(JNIEnv * env, void* placement, const ContainerAndAccessInfo& move) override;
-    bool destructContainer(void* container) final override;
-    QMetaType registerContainer(QByteArrayView containerTypeName) override;
-    const QMetaType& keyMetaType() override;
-    const QMetaType& valueMetaType() override;
-    DataType keyType() override;
-    DataType valueType() override;
-    AbstractContainerAccess* keyNestedContainerAccess() override;
-    AbstractContainerAccess* valueNestedContainerAccess() override;
-    bool hasKeyNestedContainerAccess() override;
-    bool hasValueNestedContainerAccess() override;
-    bool hasKeyNestedPointers() override;
-    bool hasValueNestedPointers() override;
-    const QObject* getOwner(const void* container) override;
-    bool hasOwnerFunction() override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
-    qsizetype count(JNIEnv * env,const void* container, jobject key) override;
-    jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
-    jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
-    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
-    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
-    jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key) override;
-    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
-    jobject first(JNIEnv * env, const void* container) override;
-    jobject firstKey(JNIEnv * env, const void* container) override;
-    void insert(JNIEnv *env, const ContainerInfo& container,jobject key,jobject value) override;
-    jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override;
-    ContainerAndAccessInfo keys(JNIEnv * env, const ConstContainerInfo& container) override;
-    ContainerAndAccessInfo keys(JNIEnv * env, const ConstContainerInfo& container, jobject value) override;
-    jobject last(JNIEnv * env, const void* container) override;
-    jobject lastKey(JNIEnv * env, const void* container) override;
-    jobject constLowerBound(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
-    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
-    qsizetype size(JNIEnv * env, const void* container) override;
-    qsizetype size(const void* container)override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    jobject constUpperBound(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
-    jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override;
-    ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override;
-    bool keyLessThan(JNIEnv *env, jobject key1, jobject key2) override;
-    ContainerAndAccessInfo uniqueKeys(JNIEnv * env, const ConstContainerInfo& container) override;
-    void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container, jobject key) override;
-    jboolean contains(JNIEnv * env, const void* container, jobject key, jobject value) override;
-    qsizetype count(JNIEnv *env, const void* container, jobject key, jobject value) override;
-    jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key, jobject value) override;
-    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key, jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
-    std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(const void* container) override;
-    std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(void* container) override;
-    bool contains(const void*,const void*) override;
-    void insert(void* container,const void* key, const void* value) override;
-    const void* value(const void*, const void*, const void*) override;
-    AbstractMultiMapAccess* wrappedAccess() override final;
-    AbstractWrapperContainerAccess* asWrapper() override final;
-    Q_DISABLE_COPY_MOVE(WrapperMultiMapAccess)
-private:
-    AbstractMultiMapAccess* m_containerAccess;
+template<typename Access, bool b>
+struct CreateConstIterator<ContainerIterator<ContainerAccessLink<Access>,typename Access::key_value_iterator>, Access, b>{
+    using Iter = ContainerIterator<ContainerAccessLink<Access>,typename Access::key_value_iterator>;
+    using type = ContainerIterator<ContainerClone<Access>,typename Access::const_key_value_iterator>;
+    static void* function(const void* ptr){
+        const Iter& iterator = *static_cast<const Iter*>(ptr);
+        return new type(typename Access::const_key_value_iterator(iterator.iterator()), ContainerClone<Access>(iterator.storage().containerAccess(), iterator.storage().link()->pointer()));
+    }
 };
 
-class WrapperHashAccess : public AbstractHashAccess, public AbstractWrapperContainerAccess {
-public:
-    WrapperHashAccess(AbstractHashAccess* containerAccess);
-    ~WrapperHashAccess() override;
-    AbstractHashAccess* clone() override;
-    void dispose() override;
-    bool isDetached(const void* container) final override;
-    void detach(const ContainerInfo& container) final override;
-    bool isSharedWith(const void* container, const void* container2) final override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    size_t sizeOf() const final override;
-    size_t alignOf() const final override;
-    void* constructContainer(void* placement) final override;
-    void* constructContainer(void* placement, const void* container) override;
-    void* constructContainer(JNIEnv * env, void* placement, const ConstContainerAndAccessInfo& copyOf) override;
-    void* constructContainer(void* placement, void* move) override;
-    void* constructContainer(JNIEnv * env, void* placement, const ContainerAndAccessInfo& move) override;
-    bool destructContainer(void* container) final override;
-    void assign(void*, const void* ) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    QMetaType registerContainer(QByteArrayView containerTypeName) override;
-    const QMetaType& keyMetaType() override;
-    const QMetaType& valueMetaType() override;
-    DataType keyType() override;
-    DataType valueType() override;
-    AbstractContainerAccess* keyNestedContainerAccess() override;
-    AbstractContainerAccess* valueNestedContainerAccess() override;
-    bool hasKeyNestedContainerAccess() override;
-    bool hasValueNestedContainerAccess() override;
-    bool hasKeyNestedPointers() override;
-    bool hasValueNestedPointers() override;
-    const QObject* getOwner(const void* container) override;
-    bool hasOwnerFunction() override;
-    qsizetype capacity(JNIEnv * env,const void* container) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
-    qsizetype count(JNIEnv * env, const void* container, jobject key) override;
-    jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
-    jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
-    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
-    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
-    jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key) override;
-    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
-    void insert(JNIEnv *env, const ContainerInfo& container,jobject key,jobject value) override;
-    jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override;
-    ContainerAndAccessInfo keys(JNIEnv * env, const ConstContainerInfo& container) override;
-    ContainerAndAccessInfo keys(JNIEnv * env, const ConstContainerInfo& container, jobject value) override;
-    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    void reserve(JNIEnv * env, const ContainerInfo& container, qsizetype newSize) override;
-    qsizetype size(JNIEnv * env, const void* container) override;
-    qsizetype size(const void* container)override;
-    jobject take(JNIEnv *env, const ContainerInfo& container, jobject key) override;
-    jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override;
-    ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override;
-    bool contains(const void*,const void*) override;
-    void insert(void* container,const void* key, const void* value) override;
-    const void* value(const void*, const void*, const void*) override;
-    std::unique_ptr<KeyValueIterator> keyValueIterator(const void* container) final override;
-    std::unique_ptr<KeyValueIterator> keyValueIterator(void* container) override;
-    AbstractHashAccess* wrappedAccess() override final;
-    AbstractWrapperContainerAccess* asWrapper() override final;
-    Q_DISABLE_COPY_MOVE(WrapperHashAccess)
-private:
-    AbstractHashAccess* m_containerAccess;
+template<typename Access, bool b>
+struct CreateConstIterator<ContainerIterator<ContainerAccessLink<Access>,std::reverse_iterator<typename Access::iterator>>, Access, b>{
+    using Iter = ContainerIterator<ContainerAccessLink<Access>,std::reverse_iterator<typename Access::iterator>>;
+    using type = ContainerIterator<ContainerClone<Access>,std::reverse_iterator<typename Access::const_iterator>>;
+    static void* function(const void* ptr){
+        const Iter& iterator = *static_cast<const Iter*>(ptr);
+        return new type(std::reverse_iterator<typename Access::const_iterator>(iterator.iterator()), ContainerClone<Access>(iterator.storage().containerAccess(), iterator.storage().link()->pointer()));
+    }
 };
 
-class WrapperMultiHashAccess : public AbstractMultiHashAccess, public AbstractWrapperContainerAccess {
-public:
-    WrapperMultiHashAccess(AbstractMultiHashAccess* containerAccess);
-    ~WrapperMultiHashAccess() override;
-    AbstractMultiHashAccess* clone() override;
-    bool isDetached(const void* container) final override;
-    void detach(const ContainerInfo& container) final override;
-    bool isSharedWith(const void* container, const void* container2) final override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void dispose() override;
-    void assign(void*, const void* ) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    size_t sizeOf() const final override;
-    size_t alignOf() const final override;
-    void* constructContainer(void* placement) final override;
-    void* constructContainer(void* placement, const void* container) override;
-    void* constructContainer(JNIEnv * env, void* placement, const ConstContainerAndAccessInfo& copyOf) override;
-    void* constructContainer(void* placement, void* move) override;
-    void* constructContainer(JNIEnv * env, void* placement, const ContainerAndAccessInfo& move) override;
-    bool destructContainer(void* container) final override;
-    QMetaType registerContainer(QByteArrayView containerTypeName) override;
-    const QMetaType& keyMetaType() override;
-    const QMetaType& valueMetaType() override;
-    DataType keyType() override;
-    DataType valueType() override;
-    AbstractContainerAccess* keyNestedContainerAccess() override;
-    AbstractContainerAccess* valueNestedContainerAccess() override;
-    bool hasKeyNestedContainerAccess() override;
-    bool hasValueNestedContainerAccess() override;
-    bool hasKeyNestedPointers() override;
-    bool hasValueNestedPointers() override;
-    const QObject* getOwner(const void* container) override;
-    bool hasOwnerFunction() override;
-    qsizetype capacity(JNIEnv * env,const void* container) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    jboolean contains(JNIEnv * env, const void* container, jobject value) override;
-    qsizetype count(JNIEnv * env, const void* container, jobject key) override;
-    jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
-    jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
-    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
-    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
-    jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key) override;
-    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
-    void insert(JNIEnv *env, const ContainerInfo& container,jobject key,jobject value) override;
-    jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override;
-    ContainerAndAccessInfo keys(JNIEnv * env, const ConstContainerInfo& container) override;
-    ContainerAndAccessInfo keys(JNIEnv * env, const ConstContainerInfo& container, jobject value) override;
-    jboolean equal(JNIEnv * env, const void* container, jobject other) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    void reserve(JNIEnv * env, const ContainerInfo& container, qsizetype newSize) override;
-    qsizetype size(JNIEnv * env, const void* container) override;
-    qsizetype size(const void* container)override;
-    bool contains(const void*,const void*) override;
-    void insert(void* container,const void* key, const void* value) override;
-    const void* value(const void*, const void*, const void*) override;
-    jobject take(JNIEnv *env, const ContainerInfo& container, jobject key) override;
-    jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override;
-    ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override;
-    ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container, jobject key) override;
-    jboolean contains(JNIEnv * env, const void* container, jobject key, jobject value) override;
-    qsizetype count(JNIEnv *env, const void* container, jobject key, jobject value) override;
-    jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key, jobject value) override;
-    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key, jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
-    void replace(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
-    ContainerAndAccessInfo uniqueKeys(JNIEnv * env, const ConstContainerInfo& container) override;
-    void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(const void* container) override;
-    std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(void* container) override;
-    AbstractMultiHashAccess* wrappedAccess() override final;
-    AbstractWrapperContainerAccess* asWrapper() override final;
-    Q_DISABLE_COPY_MOVE(WrapperMultiHashAccess)
-private:
-    AbstractMultiHashAccess* m_containerAccess;
-};
+}
 
-class PointerRCListAccess : public WrapperListAccess, public ReferenceCountingSetContainer{
-private:
-    PointerRCListAccess(PointerRCListAccess& _this);
-public:
-    ~PointerRCListAccess() override;
-    PointerRCListAccess(AbstractListAccess* containerAccess);
-    PointerRCListAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) override;
-    void replace(JNIEnv * env, const ContainerInfo& container, qsizetype index, jobject value) override;
-    qsizetype removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void remove(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n) override;
-    void insert(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n, jobject value) override;
-    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, qsizetype size) override;
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-    AbstractReferenceCountingContainer* asRC() override;
-};
+template<typename,typename,typename>
+struct ContainerIterator;
 
-class PointerRCSetAccess : public WrapperSetAccess, public ReferenceCountingSetContainer{
-private:
-    PointerRCSetAccess(PointerRCSetAccess& _this);
-public:
-    ~PointerRCSetAccess() override;
-    PointerRCSetAccess(AbstractSetAccess* containerAccess);
-    PointerRCSetAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void insert(JNIEnv * env, const ContainerInfo& container, jobject value) override;
-    jboolean remove(JNIEnv * env, const ContainerInfo& container, jobject value) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void intersect(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    void subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-    AbstractReferenceCountingContainer* asRC() override;
-};
+template<typename Access, typename Iter>
+ContainerIterator(Iter&& iter, Access* c, const ExtendedContainerInfo& container) -> ContainerIterator<QtJambiPrivate::ContainerAccessLink<Access>, Iter>;
 
-class KeyPointerRCMapAccess : public WrapperMapAccess, public ReferenceCountingSetContainer{
-private:
-    KeyPointerRCMapAccess(KeyPointerRCMapAccess& _this);
-public:
-    ~KeyPointerRCMapAccess() override;
-    AbstractReferenceCountingContainer* asRC() override;
-    KeyPointerRCMapAccess(AbstractMapAccess* containerAccess);
-    KeyPointerRCMapAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-};
-
-class KeyPointerRCMultiMapAccess : public WrapperMultiMapAccess, public ReferenceCountingSetContainer{
-private:
-    KeyPointerRCMultiMapAccess(KeyPointerRCMultiMapAccess& _this);
-public:
-    ~KeyPointerRCMultiMapAccess() override;
-    AbstractReferenceCountingContainer* asRC() override;
-    KeyPointerRCMultiMapAccess(AbstractMultiMapAccess* containerAccess);
-    KeyPointerRCMultiMapAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
-    void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-};
-
-class KeyPointerRCHashAccess : public WrapperHashAccess, public ReferenceCountingSetContainer{
-private:
-    KeyPointerRCHashAccess(KeyPointerRCHashAccess& _this);
-public:
-    ~KeyPointerRCHashAccess() override;
-    AbstractReferenceCountingContainer* asRC() override;
-    KeyPointerRCHashAccess(AbstractHashAccess* containerAccess);
-    KeyPointerRCHashAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-};
-
-class KeyPointerRCMultiHashAccess : public WrapperMultiHashAccess, public ReferenceCountingSetContainer{
-private:
-    KeyPointerRCMultiHashAccess(KeyPointerRCMultiHashAccess& _this);
-public:
-    ~KeyPointerRCMultiHashAccess() override;
-    AbstractReferenceCountingContainer* asRC() override;
-    KeyPointerRCMultiHashAccess(AbstractMultiHashAccess* containerAccess);
-    KeyPointerRCMultiHashAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
-    void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-};
-
-class ValuePointerRCMapAccess : public WrapperMapAccess, public ReferenceCountingSetContainer{
-private:
-    ValuePointerRCMapAccess(ValuePointerRCMapAccess& _this);
-public:
-    ~ValuePointerRCMapAccess() override;
-    AbstractReferenceCountingContainer* asRC() override;
-    ValuePointerRCMapAccess(AbstractMapAccess* containerAccess);
-    ValuePointerRCMapAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-};
-
-class ValuePointerRCMultiMapAccess : public WrapperMultiMapAccess, public ReferenceCountingSetContainer{
-private:
-    ValuePointerRCMultiMapAccess(ValuePointerRCMultiMapAccess& _this);
-public:
-    ~ValuePointerRCMultiMapAccess() override = default;
-    AbstractReferenceCountingContainer* asRC() override;
-    ValuePointerRCMultiMapAccess(AbstractMultiMapAccess* containerAccess);
-    ValuePointerRCMultiMapAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
-    void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-};
-
-class ValuePointerRCHashAccess : public WrapperHashAccess, public ReferenceCountingSetContainer{
-private:
-    ValuePointerRCHashAccess(ValuePointerRCHashAccess& _this);
-public:
-    ~ValuePointerRCHashAccess() override = default;
-    AbstractReferenceCountingContainer* asRC() override;
-    ValuePointerRCHashAccess(AbstractHashAccess* containerAccess);
-    ValuePointerRCHashAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-};
-
-class ValuePointerRCMultiHashAccess : public WrapperMultiHashAccess, public ReferenceCountingSetContainer{
-private:
-    ValuePointerRCMultiHashAccess(ValuePointerRCMultiHashAccess& _this);
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-public:
-    ~ValuePointerRCMultiHashAccess() override = default;
-    AbstractReferenceCountingContainer* asRC() override;
-    ValuePointerRCMultiHashAccess(AbstractMultiHashAccess* containerAccess);
-    ValuePointerRCMultiHashAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
-    void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
-};
-
-class PointersRCMapAccess : public WrapperMapAccess, public ReferenceCountingMapContainer{
-private:
-    PointersRCMapAccess(PointersRCMapAccess& _this);
-public:
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-    ~PointersRCMapAccess() override = default;
-    PointersRCMapAccess(AbstractMapAccess* containerAccess);
-    PointersRCMapAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    AbstractReferenceCountingContainer* asRC() override;
-};
-
-class PointersRCMultiMapAccess : public WrapperMultiMapAccess, public ReferenceCountingMultiMapContainer{
-private:
-    PointersRCMultiMapAccess(PointersRCMultiMapAccess& _this);
-public:
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-    ~PointersRCMultiMapAccess() override = default;
-    PointersRCMultiMapAccess(AbstractMultiMapAccess* containerAccess);
-    PointersRCMultiMapAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
-    void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
-    AbstractReferenceCountingContainer* asRC() override;
-};
-
-class PointersRCHashAccess : public WrapperHashAccess, public ReferenceCountingMapContainer{
-private:
-    PointersRCHashAccess(PointersRCHashAccess& _this);
-public:
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-    ~PointersRCHashAccess() override = default;
-    PointersRCHashAccess(AbstractHashAccess* containerAccess);
-    PointersRCHashAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    AbstractReferenceCountingContainer* asRC() override;
-};
-
-class PointersRCMultiHashAccess : public WrapperMultiHashAccess, public ReferenceCountingMultiMapContainer{
-private:
-    PointersRCMultiHashAccess(PointersRCMultiHashAccess& _this);
-public:
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-    ~PointersRCMultiHashAccess() override = default;
-    PointersRCMultiHashAccess(AbstractMultiHashAccess* containerAccess);
-    PointersRCMultiHashAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
-    void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
-    AbstractReferenceCountingContainer* asRC() override;
-};
-
-class NestedPointersRCListAccess : public WrapperListAccess, public ReferenceCountingSetContainer{
-private:
-    NestedPointersRCListAccess(NestedPointersRCListAccess& _this);
-public:
-    ~NestedPointersRCListAccess() override = default;
-    AbstractReferenceCountingContainer* asRC() override;
-    NestedPointersRCListAccess(AbstractListAccess* containerAccess);
-    NestedPointersRCListAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) override;
-    void replace(JNIEnv * env, const ContainerInfo& container, qsizetype index, jobject value) override;
-    qsizetype removeAll(JNIEnv * env, const ContainerInfo& container, jobject value) override;
-    ContainerAndAccessInfo mid(JNIEnv * env, const ConstContainerAndAccessInfo& container, qsizetype index1, qsizetype index2) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void remove(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n) override;
-    void insert(JNIEnv * env, const ContainerInfo& container, qsizetype index, qsizetype n, jobject value) override;
-    void fill(JNIEnv * env, const ContainerInfo& container, jobject value, qsizetype size) override;
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-};
-
-class NestedPointersRCSetAccess : public WrapperSetAccess, public ReferenceCountingSetContainer{
-private:
-    NestedPointersRCSetAccess(NestedPointersRCSetAccess& _this);
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-public:
-    ~NestedPointersRCSetAccess() override = default;
-    AbstractReferenceCountingContainer* asRC() override;
-    NestedPointersRCSetAccess(AbstractSetAccess* containerAccess);
-    NestedPointersRCSetAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void insert(JNIEnv * env, const ContainerInfo& container, jobject value) override;
-    jboolean remove(JNIEnv * env, const ContainerInfo& container, jobject value) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void intersect(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    void subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-};
-
-class NestedPointersRCMapAccess : public WrapperMapAccess, public ReferenceCountingSetContainer{
-private:
-    NestedPointersRCMapAccess(NestedPointersRCMapAccess& _this);
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-public:
-    ~NestedPointersRCMapAccess() override = default;
-    AbstractReferenceCountingContainer* asRC() override;
-    NestedPointersRCMapAccess(AbstractMapAccess* containerAccess);
-    NestedPointersRCMapAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-};
-
-class NestedPointersRCMultiMapAccess : public WrapperMultiMapAccess, public ReferenceCountingSetContainer{
-private:
-    NestedPointersRCMultiMapAccess(NestedPointersRCMultiMapAccess& _this);
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-public:
-    ~NestedPointersRCMultiMapAccess() override = default;
-    AbstractReferenceCountingContainer* asRC() override;
-    NestedPointersRCMultiMapAccess(AbstractMultiMapAccess* containerAccess);
-    NestedPointersRCMultiMapAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
-    void unite(JNIEnv *env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
-};
-
-class NestedPointersRCHashAccess : public WrapperHashAccess, public ReferenceCountingSetContainer{
-private:
-    NestedPointersRCHashAccess(NestedPointersRCHashAccess& _this);
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-public:
-    ~NestedPointersRCHashAccess() override = default;
-    AbstractReferenceCountingContainer* asRC() override;
-    NestedPointersRCHashAccess(AbstractHashAccess* containerAccess);
-    NestedPointersRCHashAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-};
-
-class NestedPointersRCMultiHashAccess : public WrapperMultiHashAccess, public ReferenceCountingSetContainer{
-private:
-    NestedPointersRCMultiHashAccess(NestedPointersRCMultiHashAccess& _this);
-    void updateRC(JNIEnv * env, const ContainerInfo& container) override;
-public:
-    ~NestedPointersRCMultiHashAccess() override = default;
-    AbstractReferenceCountingContainer* asRC() override;
-    NestedPointersRCMultiHashAccess(AbstractMultiHashAccess* containerAccess);
-    NestedPointersRCMultiHashAccess* clone() override;
-    void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
-    void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
-    void clear(JNIEnv * env, const ContainerInfo& container) override;
-    void insert(JNIEnv * env, const ContainerInfo& container,jobject key,jobject value) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key) override;
-    jobject take(JNIEnv *env, const ContainerInfo& container,jobject key) override;
-    qsizetype remove(JNIEnv * env, const ContainerInfo& container, jobject key, jobject value) override;
-    void unite(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
-    void replace(JNIEnv * env, const ContainerInfo& container,jobject key, jobject value) override;
-};
-
-#else
-#define CHECK_CONTAINER_ACCESS(env, containerAccess)
-#endif //defined(QTJAMBI_GENERIC_ACCESS)
+template<typename Access, typename Iter>
+ContainerIterator(Iter&& iter, Access* c, const ConstExtendedContainerInfo& container) -> ContainerIterator<QtJambiPrivate::ContainerClone<Access>, Iter>;
 
 QMetaType registerContainerMetaType(QByteArrayView typeName,
                                     QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
@@ -970,6 +508,12 @@ public:
     void setFirst(JNIEnv *env, void* container, jobject first) override;
     jobject second(JNIEnv * env, const void* container) override;
     void setSecond(JNIEnv *env, void* container, jobject second) override;
+    const void* first(const void*) override;
+    const void* second(const void*) override;
+    void* first(void*) override;
+    void* second(void*) override;
+    void setFirst(void*,const void*) override;
+    void setSecond(void*,const void*) override;
 
     QPair<const void*,const void*> elements(const void* container) override;
     const QMetaType& firstMetaType() override;
@@ -1047,6 +591,12 @@ private:
 public:
     jobject first(JNIEnv * env, const void* container) override;
     void setFirst(JNIEnv *env, void* container, jobject first) override;
+    const void* first(const void*) override;
+    const void* second(const void*) override;
+    void* first(void*) override;
+    void* second(void*) override;
+    void setFirst(void*,const void*) override;
+    void setSecond(void*,const void*) override;
     void assign(void*, const void* ) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void swap(JNIEnv * env, const ContainerInfo& container, const ContainerAndAccessInfo& container2) override;
@@ -1071,194 +621,1232 @@ public:
     std::unique_ptr<AbstractSequentialAccess::ElementIterator> elementIterator(void*) override;
 };
 
-template<typename Super = AbstractSequentialConstIteratorAccess>
-class AutoSequentialConstIteratorAccess : public Super{
-public:
-    typedef void(*IncrementFn)(AutoSequentialConstIteratorAccess<Super>*,void*);
-    typedef void(*DecrementFn)(AutoSequentialConstIteratorAccess<Super>*,void*);
-    typedef const void*(*ValueFn)(AutoSequentialConstIteratorAccess<Super>*,const void*);
-    typedef bool(*LessThanFn)(AutoSequentialConstIteratorAccess<Super>*,const void*,const void*);
-    typedef bool(*EqualsFn)(AutoSequentialConstIteratorAccess<Super>*,const void*,const void*);
+template<typename SuperType>
+struct AbstractAutoContainerIteratorAccess : SuperType{
+    AbstractAutoContainerIteratorAccess() {}
+    ~AbstractAutoContainerIteratorAccess() {}
+    AbstractContainerAccess::ContainerType containerType() const override { return AbstractContainerAccess::ContainerType(SuperType::containerType() | AbstractContainerAccess::AutoAccess); }
+};
+
+template<typename Access, typename Iterator, AbstractSequentialConstIteratorAccess::IteratorType type, typename SuperType>
+struct AbstractAutoConstIteratorAccess : AbstractAutoContainerIteratorAccess<SuperType>{
+    AbstractSequentialConstIteratorAccess::IteratorType iteratorType() const override {
+        return type;
+    }
+    AbstractAutoConstIteratorAccess() : AbstractAutoContainerIteratorAccess<SuperType>() {}
+    void dispose() final override {}
+    void advance(JNIEnv *env, void* iterator, qsizetype n) override {
+        QtJambiPrivate::IteratorAdvance<Iterator>::function(env, iterator, n);
+    }
+    bool advance(void* iterator, qsizetype n) override {
+        return QtJambiPrivate::IteratorAdvance<Iterator>::function(iterator, n);
+    }
+    void increment(JNIEnv *env, void* iterator) override {
+        QtJambiPrivate::IteratorIncrement<Iterator>::function(env, iterator);
+    }
+    void increment(void* iterator) override {
+        QtJambiPrivate::IteratorIncrement<Iterator>::function(iterator);
+    }
+    void decrement(JNIEnv *env, void* iterator) override {
+        QtJambiPrivate::IteratorDecrement<Iterator>::function(env, iterator);
+    }
+    void decrement(void* iterator) override {
+        QtJambiPrivate::IteratorDecrement<Iterator>::function(iterator);
+    }
+    jboolean lessThan(JNIEnv *env, const void* iterator, const void* other) override {
+        return QtJambiPrivate::IteratorLessThan<Iterator>::function(env, iterator, other);
+    }
+    std::optional<bool> lessThan(const void* iterator, const void* other) override {
+        return QtJambiPrivate::IteratorLessThan<Iterator>::function(iterator, other);
+    }
+    std::optional<size_t> distance(const void* iterator, const void* other) override {
+        return QtJambiPrivate::IteratorDistance<Iterator>::function(iterator, other);
+    }
+    bool canDistance() override {
+        return QtJambiPrivate::IteratorDistance<Iterator>::value;
+    }
+    bool canLess() override {
+        return QtJambiPrivate::IteratorLessThan<Iterator>::value;
+    }
+    bool isBidirectionalIterator() override {
+        return QtJambiPrivate::IteratorDecrement<Iterator>::value;
+    }
+    bool isBegin(JNIEnv *env, const void* iterator) override {
+        return QtJambiPrivate::IteratorIsBegin<Iterator>::function(env, iterator);
+    }
+    std::optional<bool> isBegin(const void* iterator) override {
+        return QtJambiPrivate::IteratorIsBegin<Iterator>::function(iterator);
+    }
+    bool isEnd(JNIEnv *env, const void* iterator) override {
+        return QtJambiPrivate::IteratorIsEnd<Iterator>::function(env, iterator);
+    }
+    std::optional<bool> isEnd(const void* iterator) override {
+        return QtJambiPrivate::IteratorIsEnd<Iterator>::function(iterator);
+    }
+    bool isValid(JNIEnv *env, const void* iterator) override {
+        return QtJambiPrivate::IteratorIsValid<Iterator>::function(env, iterator);
+    }
+    std::optional<bool> isValid(const void* iterator) override {
+        return QtJambiPrivate::IteratorIsValid<Iterator>::function(iterator);
+    }
+    jboolean equals(JNIEnv *, const void* ptr, const void* ptr2) override {
+        const Iterator* iterator = static_cast<const Iterator*>(ptr);
+        const Iterator* iterator2 = static_cast<const Iterator*>(ptr2);
+        return (*iterator)==(*iterator2);
+    }
+    bool equals(const void* ptr, const void* ptr2) override {
+        const Iterator* iterator = static_cast<const Iterator*>(ptr);
+        const Iterator* iterator2 = static_cast<const Iterator*>(ptr2);
+        return (*iterator)==(*iterator2);
+    }
+    size_t sizeOf() const override {return sizeof(Iterator);}
+    size_t alignOf() const override {return alignof(Iterator);}
+    void* constructContainer(void* placement, const void* copyOf) override{
+        if constexpr(QtJambiPrivate::is_copy_constructible_v<Iterator>){
+            return new(placement)Iterator(*static_cast<const Iterator*>(copyOf));
+        }else{
+            Q_UNUSED(placement)
+            Q_UNUSED(copyOf)
+            return nullptr;
+        }
+    }
+    bool canCopy() const override {return QtJambiPrivate::is_copy_constructible_v<Iterator>;}
+};
+
+template<typename Access, typename Iterator = void,
+         AbstractSequentialConstIteratorAccess::IteratorType type = AbstractSequentialConstIteratorAccess::IteratorType::const_iterator,
+         typename SuperType = AbstractSequentialConstIteratorAccess>
+class AutoSequentialConstIteratorAccess : public AbstractAutoConstIteratorAccess<Access,Iterator,type,SuperType>{
+    using Super = AbstractAutoConstIteratorAccess<Access,Iterator,type,SuperType>;
 protected:
+    QtJambiUtils::InternalToExternalConverter m_internalToExternalConverter;
+    QMetaType m_valueMetaType;
+    QtJambiUtils::QHashFunction m_hashFunction;
+    QSharedPointer<AbstractContainerAccess> m_elementNestedContainerAccess;
+    PtrOwnerFunction m_elementOwnerFunction;
+    AbstractContainerAccess::DataType m_elementDataType;
+public:
+    using Super::equals;
+    AutoSequentialConstIteratorAccess(
+            const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+            const QMetaType& valueMetaType,
+            const QtJambiUtils::QHashFunction& hashFunction,
+            const QSharedPointer<AbstractContainerAccess>& elementNestedContainerAccess,
+            PtrOwnerFunction elementOwnerFunction,
+            AbstractContainerAccess::DataType elementDataType
+        )
+        : Super(),
+        m_internalToExternalConverter(internalToExternalConverter),
+        m_valueMetaType(valueMetaType),
+        m_hashFunction(hashFunction),
+        m_elementNestedContainerAccess(elementNestedContainerAccess),
+        m_elementOwnerFunction(elementOwnerFunction),
+        m_elementDataType(elementDataType)
+    {
+    }
+    using Super::value;
+
+    SuperType* clone() override{
+        if constexpr(std::is_same_v<SuperType,AbstractSequentialConstIteratorAccess>){
+            return new AutoSequentialConstIteratorAccess<Access,Iterator,type,SuperType>(
+                        m_internalToExternalConverter,
+                        m_valueMetaType,
+                        m_hashFunction,
+                        m_elementNestedContainerAccess,
+                        m_elementOwnerFunction,
+                        m_elementDataType);
+        }else return nullptr;
+    }
+
+    jobject value(JNIEnv * env, const void* ptr) override {
+        const Iterator& iterator = *static_cast<const Iterator*>(ptr);
+        const void* v = &*iterator;
+        jvalue jval;
+        jval.l = nullptr;
+        if(m_internalToExternalConverter(env, nullptr, v, jval, true))
+            return jval.l;
+        return nullptr;
+    }
+    std::optional<const void*> value(const void* ptr) override {
+        const Iterator& iterator = *static_cast<const Iterator*>(ptr);
+        return std::make_optional<const void*>(&*iterator);
+    }
+    template<typename T>
+    std::optional<T> value(const void* ptr) {
+        if constexpr(QtJambiPrivate::supports_assign_v<T, std::add_lvalue_reference_t<decltype(*std::declval<Iterator>())>>){
+            const Iterator& iterator = *static_cast<const Iterator*>(ptr);
+            const void* d = &*iterator;
+            return std::make_optional<T>(*reinterpret_cast<const T*>(d));
+        }else{
+            Q_UNUSED(ptr)
+            return std::nullopt;
+        }
+    }
+    std::optional<jint> intValue(const void* ptr) override {
+        return value<jint>(ptr);
+    }
+    std::optional<jlong> longValue(const void* ptr) override {
+        return value<jlong>(ptr);
+    }
+    std::optional<jshort> shortValue(const void* ptr) override {
+        return value<jshort>(ptr);
+    }
+    std::optional<jbyte> byteValue(const void* ptr) override {
+        return value<jbyte>(ptr);
+    }
+    std::optional<jfloat> floatValue(const void* ptr) override {
+        return value<jfloat>(ptr);
+    }
+    std::optional<jdouble> doubleValue(const void* ptr) override {
+        return value<jdouble>(ptr);
+    }
+    std::optional<jchar> charValue(const void* ptr) override {
+        return value<jchar>(ptr);
+    }
+    std::optional<jboolean> booleanValue(const void* ptr) override {
+        return value<jboolean>(ptr);
+    }
+    QVariant variantValue(const void* ptr) override {
+        const Iterator& iterator = *static_cast<const Iterator*>(ptr);
+        const void* d = &*iterator;
+        return QVariant(m_valueMetaType, d);
+    }
+    const QMetaType& valueMetaType() override{
+        return m_valueMetaType;
+    }
+    jboolean equals(JNIEnv *env, const void* ptr, const ConstContainerAndAccessInfo& ptr2) override{
+        return Access::iteratorEquals(env, ptr, type, ptr2);
+    }
+    void* asIterator(void* iterator) override{
+        return Access::asIterator(iterator, type);
+    }
+    bool findIterator(const void* iterator, const std::type_info& typeId, void* output) override{
+        return Access::findIterator(iterator, type, typeId, output);
+    }
+    bool isContiguousIterator() override{
+        return std::is_pointer_v<Iterator>;
+    }
+    bool isRandomAccessIterator() override{
+        return QtJambiPrivate::is_random_access_iterator_v<Iterator>;
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+    AbstractSpanAccess* createSpanAccess() override;
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+    void assign(void* iterator, const void* other) override{
+        if constexpr(QtJambiPrivate::supports_assign_v<Iterator&,const Iterator&>){
+            *static_cast<Iterator*>(iterator) = *static_cast<const Iterator*>(other);
+        }
+        Q_UNUSED(iterator)
+        Q_UNUSED(other)
+    }
+    void* constructContainer(void* placement) override{
+        if constexpr(QtJambiPrivate::is_default_constructible_v<Iterator>){
+            return new(placement)Iterator();
+        }else{
+            Q_UNUSED(placement)
+            return nullptr;
+        }
+    }
+    void* constructContainer(void* placement,const void* copyOf) override{
+        if constexpr(QtJambiPrivate::is_copy_constructible_v<Iterator>){
+            return new(placement)Iterator(*static_cast<const Iterator*>(copyOf));
+        }else{
+            Q_UNUSED(placement)
+            Q_UNUSED(copyOf)
+            return nullptr;
+        }
+    }
+    void* constructContainer(void* placement,void* moveOf) override{
+        if constexpr(QtJambiPrivate::is_move_constructible_v<Iterator>){
+            return new(placement)Iterator(std::move(*static_cast<Iterator*>(moveOf)));
+        }else{
+            Q_UNUSED(placement)
+            Q_UNUSED(moveOf)
+            return nullptr;
+        }
+    }
+    bool destructContainer(void* ptr) override {
+        static_cast<const Iterator*>(ptr)->~Iterator();
+        return true;
+    }
+    std::pair<void*,AbstractSequentialConstIteratorAccess*> createConstIterator(const void* iterator) override {
+        if constexpr(std::is_same_v<typename QtJambiPrivate::CreateConstIterator<Iterator,Access>::type,void>){
+            return {nullptr,nullptr};
+        }else{
+            return {
+                    QtJambiPrivate::CreateConstIterator<Iterator,Access>::function(iterator),
+                    new AutoSequentialConstIteratorAccess<Access,typename QtJambiPrivate::CreateConstIterator<Iterator,Access>::type,type>(
+                                    m_internalToExternalConverter,
+                                    m_valueMetaType,
+                                    m_hashFunction,
+                                    m_elementNestedContainerAccess,
+                                    m_elementOwnerFunction,
+                                    m_elementDataType)
+            };
+        }
+    }
+};
+
+template<typename Access, typename Iterator = void,
+         AbstractSequentialConstIteratorAccess::IteratorType type = AbstractSequentialConstIteratorAccess::IteratorType::iterator>
+class AutoSequentialIteratorAccess : public AutoSequentialConstIteratorAccess<Access,Iterator,type,AbstractSequentialIteratorAccess>{
+    using Super = AutoSequentialConstIteratorAccess<Access,Iterator,type,AbstractSequentialIteratorAccess>;
+    QtJambiUtils::ExternalToInternalConverter m_externalToInternalConverter;
+    using Super::m_internalToExternalConverter;
+    using Super::m_valueMetaType;
+    using Super::m_hashFunction;
+    using Super::m_elementNestedContainerAccess;
+    using Super::m_elementOwnerFunction;
+    using Super::m_elementDataType;
+public:
+    using Super::Super;
+    using Super::value;
+    using Super::equals;
+    AutoSequentialIteratorAccess(
+            const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+            const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter,
+            const QMetaType& valueMetaType,
+            const QtJambiUtils::QHashFunction& hashFunction,
+            const QSharedPointer<AbstractContainerAccess>& elementNestedContainerAccess,
+            PtrOwnerFunction elementOwnerFunction,
+            AbstractContainerAccess::DataType elementDataType
+        )
+        : Super(internalToExternalConverter, valueMetaType, hashFunction, elementNestedContainerAccess, elementOwnerFunction, elementDataType),
+        m_externalToInternalConverter(externalToInternalConverter)
+    {
+    }
+    AbstractSequentialIteratorAccess* clone() override{
+        return new AutoSequentialIteratorAccess<Access,Iterator>(
+                    m_internalToExternalConverter,
+                    m_externalToInternalConverter,
+                    m_valueMetaType,
+                    m_hashFunction,
+                    m_elementNestedContainerAccess,
+                    m_elementOwnerFunction,
+                    m_elementDataType);
+    }
+    void setValue(JNIEnv * env, void* ptr, jobject newValue) override {
+        Iterator& iterator = *static_cast<Iterator*>(ptr);
+        void* newval = &*iterator;
+        jvalue jval;
+        jval.l = newValue;
+        m_externalToInternalConverter(env, nullptr, jval, newval, jValueType::l);
+    }
+
+    std::optional<void*> value(void* ptr) override {
+        Iterator& iterator = *static_cast<Iterator*>(ptr);
+        return std::make_optional<void*>(&*iterator);
+    }
+    template<typename T>
+    bool setValue(void* ptr, T value) {
+        Iterator& iterator = *static_cast<Iterator*>(ptr);
+        if constexpr(std::is_same_v<T,QVariant>){
+            if(value.convert(m_valueMetaType)){
+                void* pos = &*iterator;
+                m_valueMetaType.destruct(pos);
+                m_valueMetaType.construct(pos, value.data());
+                return true;
+            }
+        }else{
+            QMetaType mt = QMetaType::fromType<T>();
+            if(m_valueMetaType==mt){
+                void* pos = &*iterator;
+                *reinterpret_cast<T*>(pos) = value;
+                return true;
+            }else if(QMetaType::canConvert(m_valueMetaType,mt)){
+                QVariant v = QVariant::fromValue(value);
+                if(v.convert(m_valueMetaType)){
+                    void* pos = &*iterator;
+                    m_valueMetaType.destruct(pos);
+                    m_valueMetaType.construct(pos, v.data());
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    bool setIntValue(void* ptr, jint value) override {
+        return setValue(ptr, value);
+    }
+    bool setLongValue(void* ptr, jlong value) override {
+        return setValue(ptr, value);
+    }
+    bool setShortValue(void* ptr, jshort value) override {
+        return setValue(ptr, value);
+    }
+    bool setByteValue(void* ptr, jbyte value) override {
+        return setValue(ptr, value);
+    }
+    bool setFloatValue(void* ptr, jfloat value) override {
+        return setValue(ptr, value);
+    }
+    bool setDoubleValue(void* ptr, jdouble value) override {
+        return setValue(ptr, value);
+    }
+    bool setCharValue(void* ptr, jchar value) override {
+        return setValue(ptr, value);
+    }
+    bool setBooleanValue(void* ptr, jboolean value) override {
+        return setValue(ptr, value);
+    }
+    bool setVariantValue(void* ptr, const QVariant& value) override {
+        return setValue<QVariant>(ptr, value);
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+    AbstractSpanAccess* createSpanAccess() override;
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+};
+
+template<typename Access, typename Iterator = void,
+         AbstractSequentialConstIteratorAccess::IteratorType type = AbstractSequentialConstIteratorAccess::IteratorType::const_iterator,
+         typename SuperType = AbstractAssociativeConstIteratorAccess>
+class AutoAssociativeConstIteratorAccess : public AbstractAutoConstIteratorAccess<Access,Iterator,type,SuperType>{
+    using Super = AbstractAutoConstIteratorAccess<Access,Iterator,type,SuperType>;
+protected:
+    using Super::equals;
+    QtJambiUtils::InternalToExternalConverter m_valueInternalToExternalConverter;
+    QMetaType m_valueMetaType;
+    QtJambiUtils::InternalToExternalConverter m_keyInternalToExternalConverter;
+    QMetaType m_keyMetaType;
+public:
+    AutoAssociativeConstIteratorAccess(
+            const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
+            const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
+            const QMetaType& keyMetaType,
+            const QMetaType& valueMetaType)
+        : Super(),
+        m_valueInternalToExternalConverter(valueInternalToExternalConverter),
+        m_valueMetaType(valueMetaType),
+        m_keyInternalToExternalConverter(keyInternalToExternalConverter),
+        m_keyMetaType(keyMetaType)
+    {}
+    using Super::value;
+
+    SuperType* clone() override{
+        if constexpr(std::is_same_v<SuperType,AbstractAssociativeConstIteratorAccess>){
+            return new AutoAssociativeConstIteratorAccess<Access,Iterator,type,SuperType>(
+                        m_valueInternalToExternalConverter,
+                        m_keyInternalToExternalConverter,
+                        m_keyMetaType,
+                        m_valueMetaType);
+        }else return nullptr;
+    }
+
+    jobject value(JNIEnv * env, const void* ptr) override {
+        if constexpr(type==AbstractSequentialConstIteratorAccess::IteratorType::key_iterator){
+            return key(env, ptr);
+        }else{
+            const Iterator& iterator = *static_cast<const Iterator*>(ptr);
+            const void* v;
+            jvalue jval;
+            jval.l = nullptr;
+            if constexpr(QtJambiPrivate::supports_key_v<Iterator> && QtJambiPrivate::supports_value_v<Iterator>){
+                v = &iterator.value();
+            }else{
+                v = &((*iterator).second);
+            }
+            if(m_valueInternalToExternalConverter(env, nullptr, v, jval, true))
+                return jval.l;
+        }
+        return nullptr;
+    }
+    std::optional<const void*> value(const void* ptr) override {
+        if constexpr(type==AbstractSequentialConstIteratorAccess::IteratorType::key_iterator){
+            return key(ptr);
+        }else{
+            const Iterator& iterator = *static_cast<const Iterator*>(ptr);
+            const void* v;
+            if constexpr(QtJambiPrivate::supports_key_v<Iterator> && QtJambiPrivate::supports_value_v<Iterator>){
+                v = &iterator.value();
+            }else{
+                v = &((*iterator).second);
+            }
+            return std::make_optional<const void*>(v);
+        }
+    }
+    jobject key(JNIEnv * env, const void* ptr) override {
+        const Iterator& iterator = *static_cast<const Iterator*>(ptr);
+        const void* v{nullptr};
+        jvalue jval;
+        jval.l = nullptr;
+        if constexpr(type==AbstractSequentialConstIteratorAccess::IteratorType::key_iterator){
+            if constexpr(QtJambiPrivate::supports_key_v<const Iterator&>){
+                v = &iterator.key();
+            } else if constexpr(QtJambiPrivate::supports_deref_v<const Iterator&>){
+                v = &*iterator;
+            }
+        }else if constexpr(QtJambiPrivate::supports_key_v<Iterator> && QtJambiPrivate::supports_value_v<Iterator>){
+            v = &iterator.key();
+        }else{
+            v = &((*iterator).first);
+        }
+        if(m_keyInternalToExternalConverter(env, nullptr, v, jval, true))
+            return jval.l;
+        return nullptr;
+    }
+    std::optional<const void*> key(const void* ptr) override {
+        const Iterator& iterator = *static_cast<const Iterator*>(ptr);
+        const void* v{nullptr};
+        if constexpr(type==AbstractSequentialConstIteratorAccess::IteratorType::key_iterator){
+            if constexpr(QtJambiPrivate::supports_key_v<const Iterator&>){
+                v = &iterator.key();
+            } else if constexpr(QtJambiPrivate::supports_deref_v<const Iterator&>){
+                v = &*iterator;
+            }
+        }else if constexpr(QtJambiPrivate::supports_key_v<Iterator> && QtJambiPrivate::supports_value_v<Iterator>){
+            v = &iterator.key();
+        }else{
+            v = &((*iterator).first);
+        }
+        return std::make_optional<const void*>(v);
+    }
+    template<typename T>
+    std::optional<T> key(const void* ptr) {
+        if constexpr(type==AbstractSequentialConstIteratorAccess::IteratorType::key_iterator){
+            if constexpr(QtJambiPrivate::supports_key_v<Iterator>){
+                if constexpr(QtJambiPrivate::supports_assign_v<T, std::add_lvalue_reference_t<decltype(std::declval<Iterator>().key())>>){
+                    const Iterator& iterator = *static_cast<const Iterator*>(ptr);
+                    const void* d = &iterator.key();
+                    return std::make_optional<T>(*reinterpret_cast<const T*>(d));
+                }else{
+                    Q_UNUSED(ptr)
+                    return std::nullopt;
+                }
+            } else if constexpr(QtJambiPrivate::supports_deref_v<const Iterator&>){
+                if constexpr(QtJambiPrivate::supports_assign_v<T, std::add_lvalue_reference_t<decltype(*std::declval<Iterator>())>>){
+                    const Iterator& iterator = *static_cast<const Iterator*>(ptr);
+                    const void* d = &*iterator;
+                    return std::make_optional<T>(*reinterpret_cast<const T*>(d));
+                }else{
+                    Q_UNUSED(ptr)
+                    return std::nullopt;
+                }
+            }else{
+                Q_UNUSED(ptr)
+                return std::nullopt;
+            }
+        } else if constexpr(QtJambiPrivate::supports_key_v<Iterator>){
+            if constexpr(QtJambiPrivate::supports_assign_v<T, std::add_lvalue_reference_t<decltype(std::declval<Iterator>().key())>>){
+                const Iterator& iterator = *static_cast<const Iterator*>(ptr);
+                const void* d = &iterator.key();
+                return std::make_optional<T>(*reinterpret_cast<const T*>(d));
+            }else{
+                Q_UNUSED(ptr)
+                return std::nullopt;
+            }
+        }else if constexpr(QtJambiPrivate::supports_assign_v<T, std::add_lvalue_reference_t<decltype((*std::declval<Iterator>()).first)>>){
+            const Iterator& iterator = *static_cast<const Iterator*>(ptr);
+            const void* d = &((*iterator).first);
+            return std::make_optional<T>(*reinterpret_cast<const T*>(d));
+        }else{
+            Q_UNUSED(ptr)
+            return std::nullopt;
+        }
+    }
+    template<typename T>
+    std::optional<T> value(const void* ptr) {
+        if constexpr(type==AbstractSequentialConstIteratorAccess::IteratorType::key_iterator)
+            return key<T>(ptr);
+        else if constexpr(QtJambiPrivate::supports_value_v<Iterator>){
+            if constexpr(QtJambiPrivate::supports_assign_v<T, std::add_lvalue_reference_t<decltype(std::declval<Iterator>().value())>>){
+                const Iterator& iterator = *static_cast<const Iterator*>(ptr);
+                const void* d = &iterator.value();
+                return std::make_optional<T>(*reinterpret_cast<const T*>(d));
+            }else{
+                Q_UNUSED(ptr)
+                return std::nullopt;
+            }
+        }else if constexpr(QtJambiPrivate::supports_assign_v<T, std::add_lvalue_reference_t<decltype((*std::declval<Iterator>()).second)>>){
+            const Iterator& iterator = *static_cast<const Iterator*>(ptr);
+            const void* d = &((*iterator).second);
+            return std::make_optional<T>(*reinterpret_cast<const T*>(d));
+        }else{
+            Q_UNUSED(ptr)
+            return std::nullopt;
+        }
+    }
+    std::optional<jint> intValue(const void* ptr) override {
+        return value<jint>(ptr);
+    }
+    std::optional<jlong> longValue(const void* ptr) override {
+        return value<jlong>(ptr);
+    }
+    std::optional<jshort> shortValue(const void* ptr) override {
+        return value<jshort>(ptr);
+    }
+    std::optional<jbyte> byteValue(const void* ptr) override {
+        return value<jbyte>(ptr);
+    }
+    std::optional<jfloat> floatValue(const void* ptr) override {
+        return value<jfloat>(ptr);
+    }
+    std::optional<jdouble> doubleValue(const void* ptr) override {
+        return value<jdouble>(ptr);
+    }
+    std::optional<jchar> charValue(const void* ptr) override {
+        return value<jchar>(ptr);
+    }
+    std::optional<jboolean> booleanValue(const void* ptr) override {
+        return value<jboolean>(ptr);
+    }
+    QVariant variantValue(const void* ptr) override {
+        if constexpr(type==AbstractSequentialConstIteratorAccess::IteratorType::key_iterator)
+            return variantKey(ptr);
+        else{
+            const Iterator& iterator = *static_cast<const Iterator*>(ptr);
+            const void* d;
+            if constexpr(QtJambiPrivate::supports_value_v<Iterator>){
+                d = &iterator.value();
+            }else{
+                d = &((*iterator).second);
+            }
+            return QVariant(m_valueMetaType, d);
+        }
+    }
+    std::optional<jint> intKey(const void* ptr) override {
+        return key<jint>(ptr);
+    }
+    std::optional<jlong> longKey(const void* ptr) override {
+        return key<jlong>(ptr);
+    }
+    std::optional<jshort> shortKey(const void* ptr) override {
+        return key<jshort>(ptr);
+    }
+    std::optional<jbyte> byteKey(const void* ptr) override {
+        return key<jbyte>(ptr);
+    }
+    std::optional<jfloat> floatKey(const void* ptr) override {
+        return key<jfloat>(ptr);
+    }
+    std::optional<jdouble> doubleKey(const void* ptr) override {
+        return key<jdouble>(ptr);
+    }
+    std::optional<jchar> charKey(const void* ptr) override {
+        return key<jchar>(ptr);
+    }
+    std::optional<jboolean> booleanKey(const void* ptr) override {
+        return key<jboolean>(ptr);
+    }
+    QVariant variantKey(const void* ptr) override {
+        const Iterator& iterator = *static_cast<const Iterator*>(ptr);
+        const void* d{nullptr};
+        if constexpr(type==AbstractSequentialConstIteratorAccess::IteratorType::key_iterator){
+            if constexpr(QtJambiPrivate::supports_key_v<const Iterator&>){
+                d = &iterator.key();
+            } else if constexpr(QtJambiPrivate::supports_deref_v<const Iterator&>){
+                d = &*iterator;
+            }
+        } else if constexpr(QtJambiPrivate::supports_key_v<const Iterator&>){
+            d = &iterator.key();
+        }else{
+            d = &((*iterator).first);
+        }
+        return QVariant(m_keyMetaType, d);
+    }
+
+    const QMetaType& keyMetaType() override{
+        return m_keyMetaType;
+    }
+
+    const QMetaType& valueMetaType() override{
+        if constexpr(type==AbstractSequentialConstIteratorAccess::IteratorType::key_iterator){
+            return keyMetaType();
+        }else{
+            return m_valueMetaType;
+        }
+    }
+    jboolean equals(JNIEnv *env, const void* ptr, const ConstContainerAndAccessInfo& ptr2) override{
+        return Access::iteratorEquals(env, ptr, type, ptr2);
+    }
+    void* asIterator(void* iterator) override{
+        return Access::asIterator(iterator, type);
+    }
+    bool findIterator(const void* iterator, const std::type_info& typeId, void* output) override{
+        return Access::findIterator(iterator, type, typeId, output);
+    }
+    std::pair<void*,AbstractSequentialConstIteratorAccess*> createConstIterator(const void* iterator) override {
+        if constexpr(std::is_same_v<typename QtJambiPrivate::CreateConstIterator<Iterator,Access>::type,void>){
+            return {nullptr,nullptr};
+        }else{
+            return {
+                    QtJambiPrivate::CreateConstIterator<Iterator,Access>::function(iterator),
+                    new AutoAssociativeConstIteratorAccess<Access,typename QtJambiPrivate::CreateConstIterator<Iterator,Access>::type,type>(
+                                    m_valueInternalToExternalConverter,
+                                    m_keyInternalToExternalConverter,
+                                    m_keyMetaType,
+                                    m_valueMetaType)
+            };
+        }
+    }
+};
+
+template<typename Access, typename Iterator = void,
+         AbstractSequentialConstIteratorAccess::IteratorType type = AbstractSequentialConstIteratorAccess::IteratorType::iterator>
+class AutoAssociativeIteratorAccess : public AutoAssociativeConstIteratorAccess<Access,Iterator,type,AbstractAssociativeIteratorAccess> {
+    using Super = AutoAssociativeConstIteratorAccess<Access,Iterator,type,AbstractAssociativeIteratorAccess>;
+    QtJambiUtils::ExternalToInternalConverter m_valueExternalToInternalConverter;
+    using Super::m_valueInternalToExternalConverter;
+    using Super::m_keyInternalToExternalConverter;
+    using Super::m_keyMetaType;
+    using Super::m_valueMetaType;
+public:
+    AutoAssociativeIteratorAccess(
+            const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
+            const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter,
+            const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
+            const QMetaType& keyMetaType,
+            const QMetaType& valueMetaType)
+        : Super(valueInternalToExternalConverter,keyInternalToExternalConverter,keyMetaType,valueMetaType),
+        m_valueExternalToInternalConverter(valueExternalToInternalConverter)
+    {}
+    using Super::value;
+    using Super::equals;
+    AbstractAssociativeIteratorAccess* clone() override{
+        return new AutoAssociativeIteratorAccess<Access,Iterator,type>(
+            m_valueInternalToExternalConverter,
+            m_valueExternalToInternalConverter,
+            m_keyInternalToExternalConverter,
+            m_keyMetaType,
+            m_valueMetaType);
+    }
+    void setValue(JNIEnv * env, void* ptr, jobject newValue) override {
+        Iterator& iterator = *static_cast<Iterator*>(ptr);
+        void* v;
+        if constexpr(QtJambiPrivate::supports_key_v<Iterator> && QtJambiPrivate::supports_value_v<Iterator>){
+            v = &iterator.value();
+        }else{
+            v = &(*iterator).second;
+        }
+        jvalue jval;
+        jval.l = newValue;
+        m_valueExternalToInternalConverter(env, nullptr, jval, v, jValueType::l);
+    }
+    std::optional<void*> value(void* ptr) override {
+        Iterator& iterator = *static_cast<Iterator*>(ptr);
+        void* v;
+        if constexpr(QtJambiPrivate::supports_key_v<Iterator> && QtJambiPrivate::supports_value_v<Iterator>){
+            v = &iterator.value();
+        }else{
+            v = &(*iterator).second;
+        }
+        return std::make_optional<void*>(v);
+    }
+    template<typename T>
+    bool setValue(void* ptr, T value) {
+        Iterator& iterator = *static_cast<Iterator*>(ptr);
+        void* pos;
+        if constexpr(QtJambiPrivate::supports_key_v<Iterator> && QtJambiPrivate::supports_value_v<Iterator>){
+            pos = &iterator.value();
+        }else{
+            pos = &(*iterator).second;
+        }
+        if constexpr(std::is_same_v<T,QVariant>){
+            if(value.convert(m_valueMetaType)){
+                m_valueMetaType.destruct(pos);
+                m_valueMetaType.construct(pos, value.data());
+                return true;
+            }
+        }else{
+            QMetaType mt = QMetaType::fromType<T>();
+            if(m_valueMetaType==mt){
+                *reinterpret_cast<T*>(pos) = value;
+                return true;
+            }else if(QMetaType::canConvert(m_valueMetaType,mt)){
+                QVariant v = QVariant::fromValue(value);
+                if(v.convert(m_valueMetaType)){
+                    m_valueMetaType.destruct(pos);
+                    m_valueMetaType.construct(pos, v.data());
+                    return true;
+                }
+            }
+        }
+        Q_UNUSED(pos)
+        return false;
+    }
+    bool setIntValue(void* ptr, jint value) override {
+        return setValue(ptr, value);
+    }
+    bool setLongValue(void* ptr, jlong value) override {
+        return setValue(ptr, value);
+    }
+    bool setShortValue(void* ptr, jshort value) override {
+        return setValue(ptr, value);
+    }
+    bool setByteValue(void* ptr, jbyte value) override {
+        return setValue(ptr, value);
+    }
+    bool setFloatValue(void* ptr, jfloat value) override {
+        return setValue(ptr, value);
+    }
+    bool setDoubleValue(void* ptr, jdouble value) override {
+        return setValue(ptr, value);
+    }
+    bool setCharValue(void* ptr, jchar value) override {
+        return setValue(ptr, value);
+    }
+    bool setBooleanValue(void* ptr, jboolean value) override {
+        return setValue(ptr, value);
+    }
+    bool setVariantValue(void* ptr, const QVariant& value) override {
+        return setValue<QVariant>(ptr, value);
+    }
+};
+
+template<typename Access, typename Super>
+class AutoSequentialConstIteratorAccess<Access,void,AbstractSequentialConstIteratorAccess::IteratorType::const_iterator,Super> : public AbstractAutoContainerIteratorAccess<Super>{
+    using Self = AutoSequentialConstIteratorAccess<Access,void,AbstractSequentialConstIteratorAccess::IteratorType::const_iterator,Super>;
+public:
+    typedef void(*IncrementFn)(Self*,void*);
+    typedef void(*DecrementFn)(Self*,void*);
+    typedef const void*(*ValueFn)(Self*,const void*);
+    typedef bool(*LessThanFn)(Self*,const void*,const void*);
+    typedef bool(*EqualsFn)(Self*,const void*,const void*);
+    typedef bool(*IsBeginFn)(Self*,const void*);
+    typedef bool(*IsEndFn)(Self*,const void*);
+    typedef bool(*IsValidFn)(Self*,const void*);
+    typedef void*(*CloneFn)(Self*,void*,const void*);
+protected:
+    size_t m_sizeOf;
+    size_t m_alignOf;
+    CloneFn m_clone;
     QtJambiUtils::InternalToExternalConverter m_internalToExternalConverter;
     IncrementFn m_increment;
     DecrementFn m_decrement;
     ValueFn m_value;
     LessThanFn m_lessThan;
     EqualsFn m_equals;
+    IsBeginFn m_isBegin;
+    IsEndFn m_isEnd;
+    IsValidFn m_isValid;
     QMetaType m_valueMetaType;
-    size_t m_offset;
 public:
-    ~AutoSequentialConstIteratorAccess() override;
+    using Super::value;
+    ~AutoSequentialConstIteratorAccess() override = default;
     AutoSequentialConstIteratorAccess(
+            size_t sizeOf,
+            size_t alignOf,
+            CloneFn clone,
             const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
             IncrementFn increment,
             DecrementFn decrement,
             ValueFn value,
             LessThanFn lessThan,
             EqualsFn equals,
-            const QMetaType& valueMetaType,
-            size_t offset
-        );
-    inline size_t offset(){
-        return m_offset;
+            IsBeginFn isBegin,
+            IsEndFn isEnd,
+            IsValidFn isValid,
+            const QMetaType& valueMetaType
+        ) : Super(),
+        m_sizeOf(sizeOf),
+        m_alignOf(alignOf),
+        m_clone(clone),
+        m_internalToExternalConverter(internalToExternalConverter),
+        m_increment(increment),
+        m_decrement(decrement),
+        m_value(value),
+        m_lessThan(lessThan),
+        m_equals(equals),
+        m_isBegin(isBegin),
+        m_isEnd(isEnd),
+        m_isValid(isValid),
+        m_valueMetaType(valueMetaType)
+    {
+        Q_ASSERT(m_value);
     }
-    void dispose() override;
-    AutoSequentialConstIteratorAccess<Super>* clone() override;
-    jobject value(JNIEnv * env, const void* iterator) override;
-    void increment(JNIEnv * env, void* iterator) override;
-    void decrement(JNIEnv * env, void* iterator) override;
-    jboolean lessThan(JNIEnv * env, const void* iterator, const void* other) override;
-    bool canLess() override;
-    jboolean equals(JNIEnv * env, const void* iterator, const void* other) override;
-    const QMetaType& valueMetaType() override;
+    void dispose() override  {delete this;}
+    Super* clone() override{
+        if constexpr(std::is_same_v<Super,AbstractSequentialConstIteratorAccess>){
+            return new Self(
+                        m_sizeOf,
+                        m_alignOf,
+                        m_clone,
+                        m_internalToExternalConverter,
+                        m_increment,
+                        m_decrement,
+                        m_value,
+                        m_lessThan,
+                        m_equals,
+                        m_isBegin,
+                        m_isEnd,
+                        m_isValid,
+                        m_valueMetaType);
+        }else return nullptr;
+    }
+    jobject value(JNIEnv * env, const void* iterator) override{
+        const void* v = m_value(this, iterator);
+        jvalue jval;
+        jval.l = nullptr;
+        if(m_internalToExternalConverter(env, nullptr, v, jval, true))
+            return jval.l;
+        return nullptr;
+    }
+    std::optional<const void*> value(const void* iterator) override{
+        return std::make_optional<const void*>(m_value(this, iterator));
+    }
+    void increment(JNIEnv * env, void* iterator) override{
+        if(m_increment)
+            m_increment(this, iterator);
+        else
+            JavaException::raiseUnsupportedOperationException(env, "Iterator::operator++()" QTJAMBI_STACKTRACEINFO );
+    }
+    void increment(void* iterator) override{
+        if(m_increment)
+            m_increment(this, iterator);
+    }
+    void decrement(JNIEnv * env, void* iterator) override{
+        if(m_decrement)
+            m_decrement(this, iterator);
+        else
+            JavaException::raiseUnsupportedOperationException(env, "Iterator::operator--()" QTJAMBI_STACKTRACEINFO );
+    }
+    void decrement(void* iterator) override{
+        if(m_decrement)
+            m_decrement(this, iterator);
+    }
+    jboolean lessThan(JNIEnv * env, const void* iterator, const void* other) override{
+        if(m_lessThan)
+            return m_lessThan(this, iterator, other);
+        JavaException::raiseUnsupportedOperationException(env, "Iterator::operator<(Iterator)" QTJAMBI_STACKTRACEINFO );
+    }
+    std::optional<bool> lessThan(const void* iterator, const void* other) override{
+        if(m_lessThan)
+            return std::make_optional<bool>(m_lessThan(this, iterator, other));
+        return std::nullopt;
+    }
+    std::optional<size_t> distance(const void* ptr, const void* ptr2) override {
+        return std::nullopt;
+    }
+    bool canLess() override{
+        return m_lessThan;
+    }
+    bool canDistance() override{
+        return false;
+    }
+    bool isBidirectionalIterator() override{
+        return m_decrement;
+    }
+    bool isContiguousIterator() override{
+        return false;
+    }
+    bool isRandomAccessIterator() override{
+        return false;
+    }
+    bool isBegin(JNIEnv *, const void*iterator) override{
+        return m_isBegin && m_isBegin(this, iterator);
+    }
+    std::optional<bool> isBegin(const void*iterator) override{
+        if(m_isBegin)
+            return m_isBegin(this, iterator);
+        return std::nullopt;
+    }
+    bool isEnd(JNIEnv *, const void*iterator) override{
+        return m_isEnd && m_isEnd(this, iterator);
+    }
+    std::optional<bool> isEnd(const void*iterator) override{
+        if(m_isEnd)
+            return m_isEnd(this, iterator);
+        return std::nullopt;
+    }
+    bool isValid(JNIEnv *, const void*iterator) override{
+        return m_isValid && m_isValid(this, iterator);
+    }
+    std::optional<bool> isValid(const void*iterator) override{
+        if(m_isValid)
+            return m_isValid(this, iterator);
+        return std::nullopt;
+    }
+    jboolean equals(JNIEnv *, const void* iterator, const void* other) override{
+        return m_equals(this, iterator, other);
+    }
+    bool equals(const void* iterator, const void* other) override{
+        return m_equals(this, iterator, other);
+    }
+    jboolean equals(JNIEnv *env, const void* ptr, const ConstContainerAndAccessInfo& ptr2) override{
+        return equals(env, ptr, ptr2.container);
+    }
+    const QMetaType& valueMetaType() override{
+        return m_valueMetaType;
+    }
+    size_t sizeOf() const override {return m_sizeOf;}
+    size_t alignOf() const override {return m_alignOf;}
+    void* constructContainer(void* placement, const void* copyOf) override{
+        return m_clone(this, placement, copyOf);
+    }
+    bool canCopy() const override {return m_clone;}
 private:
     Q_DISABLE_COPY_MOVE(AutoSequentialConstIteratorAccess)
 };
 
-AutoSequentialConstIteratorAccess<AbstractSequentialConstIteratorAccess>* createAutoSequentialConstIteratorAccess(
-        const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
-        AutoSequentialConstIteratorAccess<AbstractSequentialConstIteratorAccess>::IncrementFn increment,
-        AutoSequentialConstIteratorAccess<AbstractSequentialConstIteratorAccess>::DecrementFn decrement,
-        AutoSequentialConstIteratorAccess<AbstractSequentialConstIteratorAccess>::ValueFn value,
-        AutoSequentialConstIteratorAccess<AbstractSequentialConstIteratorAccess>::LessThanFn lessThan,
-        AutoSequentialConstIteratorAccess<AbstractSequentialConstIteratorAccess>::EqualsFn equals,
-        const QMetaType& valueMetaType,
-        size_t offset
-    );
-
-class AutoSequentialIteratorAccess : public AutoSequentialConstIteratorAccess<AbstractSequentialIteratorAccess>{
+template<typename Access>
+class AutoSequentialIteratorAccess<Access,void,AbstractSequentialConstIteratorAccess::IteratorType::iterator>
+    : public AutoSequentialConstIteratorAccess<Access,void,AbstractSequentialConstIteratorAccess::IteratorType::iterator,AbstractSequentialIteratorAccess>{
+    using Super = AutoSequentialConstIteratorAccess<Access,void,AbstractSequentialConstIteratorAccess::IteratorType::iterator,AbstractSequentialIteratorAccess>;
+    using Self = AutoSequentialIteratorAccess<Access,void,AbstractSequentialConstIteratorAccess::IteratorType::iterator>;
 public:
-    typedef void(*IncrementFn)(AutoSequentialIteratorAccess*,void*);
-    typedef void(*DecrementFn)(AutoSequentialIteratorAccess*,void*);
-    typedef const void*(*ValueFn)(AutoSequentialIteratorAccess*,const void*);
-    typedef bool(*LessThanFn)(AutoSequentialIteratorAccess*,const void*,const void*);
-    typedef bool(*EqualsFn)(AutoSequentialIteratorAccess*,const void*,const void*);
-    typedef void*(*SetValueFn)(AutoSequentialIteratorAccess*,void*);
-    ~AutoSequentialIteratorAccess() override;
+    using Super::value;
+    typedef void(*IncrementFn)(Self*,void*);
+    typedef void(*DecrementFn)(Self*,void*);
+    typedef const void*(*ValueFn)(Self*,const void*);
+    typedef bool(*LessThanFn)(Self*,const void*,const void*);
+    typedef bool(*EqualsFn)(Self*,const void*,const void*);
+    typedef bool(*IsBeginFn)(Self*,const void*);
+    typedef bool(*IsEndFn)(Self*,const void*);
+    typedef bool(*IsValidFn)(Self*,const void*);
+    typedef void*(*SetValueFn)(Self*,void*);
+    typedef void*(*CloneFn)(Self*,void*,const void*);
+    ~AutoSequentialIteratorAccess() override = default;
     AutoSequentialIteratorAccess(
+            size_t sizeOf,
+            size_t alignOf,
+            CloneFn clone,
             const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
             IncrementFn increment,
             DecrementFn decrement,
             ValueFn value,
             LessThanFn lessThan,
             EqualsFn equals,
+            IsBeginFn isBegin,
+            IsEndFn isEnd,
+            IsValidFn isValid,
             const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter,
             SetValueFn setValue,
-            const QMetaType& valueMetaType,
-            size_t offset
-        );
-    void setValue(JNIEnv * env, void* iterator, jobject newValue) override;
-    jobject value(JNIEnv * env, const void* iterator) override;
-    void increment(JNIEnv * env, void* iterator) override;
-    void decrement(JNIEnv * env, void* iterator) override;
-    jboolean lessThan(JNIEnv * env, const void* iterator, const void* other) override;
-    bool canLess() override;
-    jboolean equals(JNIEnv * env, const void* iterator, const void* other) override;
-    const QMetaType& valueMetaType() override;
-    AutoSequentialIteratorAccess* clone() override;
+            const QMetaType& valueMetaType
+        )    : Super(sizeOf, alignOf,
+              Super::CloneFn(clone),
+              internalToExternalConverter,
+              Super::IncrementFn(increment),
+              Super::DecrementFn(decrement),
+              Super::ValueFn(value),
+              Super::LessThanFn(lessThan),
+              Super::EqualsFn(equals),
+              Super::IsBeginFn(isBegin),
+              Super::IsEndFn(isEnd),
+              Super::IsValidFn(isValid),
+              valueMetaType),
+        m_externalToInternalConverter(externalToInternalConverter),
+        m_setValue(setValue)
+    {
+        Q_ASSERT(Super::m_value);
+        Q_ASSERT(m_setValue);
+    }
+    void setValue(JNIEnv * env, void* iterator, jobject newValue) override{
+        void* newval = m_setValue(this, iterator);
+        jvalue jval;
+        jval.l = newValue;
+        m_externalToInternalConverter(env, nullptr, jval, newval, jValueType::l);
+    }
+    std::optional<void*> value(void* iterator) override{
+        return std::make_optional<void*>(m_setValue(this, iterator));
+    }
+    Self* clone() override{
+        return new Self(
+                    Super::m_sizeOf,
+                    Super::m_alignOf,
+                    CloneFn(Super::m_clone),
+                    Super::m_internalToExternalConverter,
+                    IncrementFn(Super::m_increment),
+                    DecrementFn(Super::m_decrement),
+                    ValueFn(Super::m_value),
+                    LessThanFn(Super::m_lessThan),
+                    EqualsFn(Super::m_equals),
+                    IsBeginFn(Super::m_isBegin),
+                    IsEndFn(Super::m_isEnd),
+                    IsValidFn(Super::m_isValid),
+                    m_externalToInternalConverter,
+                    m_setValue,
+                    Super::m_valueMetaType);
+    }
 private:
     Q_DISABLE_COPY_MOVE(AutoSequentialIteratorAccess)
     QtJambiUtils::ExternalToInternalConverter m_externalToInternalConverter;
     SetValueFn m_setValue;
 };
 
-template<typename Super = AbstractAssociativeConstIteratorAccess>
-class AutoAssociativeConstIteratorAccess : public AutoSequentialConstIteratorAccess<Super>{
+template<typename Access, typename Super>
+class AutoAssociativeConstIteratorAccess<Access,void,AbstractSequentialConstIteratorAccess::IteratorType::const_iterator,Super> : public AutoSequentialConstIteratorAccess<Access,void,AbstractSequentialConstIteratorAccess::IteratorType::const_iterator,Super>{
+    using Self = AutoAssociativeConstIteratorAccess<Access,void,AbstractSequentialConstIteratorAccess::IteratorType::const_iterator,Super>;
+    using SuperType = AutoSequentialConstIteratorAccess<Access,void,AbstractSequentialConstIteratorAccess::IteratorType::const_iterator,Super>;
 public:
-    typedef void(*IncrementFn)(AutoAssociativeConstIteratorAccess<Super>*,void*);
-    typedef void(*DecrementFn)(AutoAssociativeConstIteratorAccess<Super>*,void*);
-    typedef const void*(*ValueFn)(AutoAssociativeConstIteratorAccess<Super>*,const void*);
-    typedef bool(*LessThanFn)(AutoAssociativeConstIteratorAccess<Super>*,const void*,const void*);
-    typedef bool(*EqualsFn)(AutoAssociativeConstIteratorAccess<Super>*,const void*,const void*);
-    typedef const void*(*KeyFn)(AutoAssociativeConstIteratorAccess<Super>*,const void*);
+    typedef void(*IncrementFn)(Self*,void*);
+    typedef void(*DecrementFn)(Self*,void*);
+    typedef const void*(*ValueFn)(Self*,const void*);
+    typedef bool(*LessThanFn)(Self*,const void*,const void*);
+    typedef bool(*EqualsFn)(Self*,const void*,const void*);
+    typedef bool(*IsBeginFn)(Self*,const void*);
+    typedef bool(*IsEndFn)(Self*,const void*);
+    typedef bool(*IsValidFn)(Self*,const void*);
+    typedef const void*(*KeyFn)(Self*,const void*);
+    typedef void*(*CloneFn)(Self*,void*,const void*);
 protected:
     QtJambiUtils::InternalToExternalConverter m_keyInternalToExternalConverter;
     KeyFn m_key;
     QMetaType m_keyMetaType;
-    size_t m_keyOffset;
 public:
-    ~AutoAssociativeConstIteratorAccess() override;
+    using SuperType::value;
+    ~AutoAssociativeConstIteratorAccess() override = default;
     AutoAssociativeConstIteratorAccess(
+            size_t sizeOf,
+            size_t alignOf,
+            CloneFn clone,
             const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
             IncrementFn increment,
             DecrementFn decrement,
             ValueFn value,
             LessThanFn lessThan,
             EqualsFn equals,
+            IsBeginFn isBegin,
+            IsEndFn isEnd,
+            IsValidFn isValid,
             const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
             KeyFn key,
             const QMetaType& keyMetaType,
-            const QMetaType& valueMetaType,
-            size_t keyOffset,
-            size_t valueOffset
-        );
-    AutoAssociativeConstIteratorAccess<Super>* clone() override;
-    jobject key(JNIEnv * env, const void* iterator) override;
-    const QMetaType& keyMetaType() override;
-    inline size_t keyOffset(){
-        return m_keyOffset;
+            const QMetaType& valueMetaType
+        ) : SuperType(sizeOf,
+                                                         alignOf,
+                                                         typename SuperType::CloneFn(clone),
+                                                         internalToExternalConverter,
+                                                         typename SuperType::IncrementFn(increment),
+                                                         typename SuperType::DecrementFn(decrement),
+                                                         typename SuperType::ValueFn(value),
+                                                         typename SuperType::LessThanFn(lessThan),
+                                                         typename SuperType::EqualsFn(equals),
+                                                         typename SuperType::IsBeginFn(isBegin),
+                                                         typename SuperType::IsEndFn(isEnd),
+                                                         typename SuperType::IsValidFn(isValid),
+                                                         valueMetaType),
+        m_keyInternalToExternalConverter(keyInternalToExternalConverter),
+        m_key(std::move(key)),
+        m_keyMetaType(keyMetaType)
+    {
+        Q_ASSERT(m_key);
     }
-    inline size_t valueOffset(){
-        return AutoSequentialConstIteratorAccess<Super>::m_offset;
+    Self* clone() override{
+        if constexpr(std::is_same_v<Super,AbstractAssociativeConstIteratorAccess>){
+            return new Self(
+                        Super::m_sizeOf,
+                        Super::m_alignOf,
+                        CloneFn(Super::m_clone),
+                        Super::m_internalToExternalConverter,
+                        IncrementFn(Super::m_increment),
+                        DecrementFn(Super::m_decrement),
+                        ValueFn(Super::m_value),
+                        LessThanFn(Super::m_lessThan),
+                        EqualsFn(Super::m_equals),
+                        IsBeginFn(Super::m_isBegin),
+                        IsEndFn(Super::m_isEnd),
+                        IsValidFn(Super::m_isValid),
+                        m_keyInternalToExternalConverter,
+                        m_key,
+                        m_keyMetaType,
+                        Super::m_valueMetaType);
+        }else return nullptr;
+    }
+    jobject key(JNIEnv * env, const void* iterator) override{
+        const void* v = m_key(this, iterator);
+        jvalue jval;
+        jval.l = nullptr;
+        if(m_keyInternalToExternalConverter(env, nullptr, v, jval, true))
+            return jval.l;
+        return nullptr;
+    }
+    std::optional<const void*> key(const void* iterator) override{
+        return std::make_optional<const void*>(m_key(this, iterator));
+    }
+    const QMetaType& keyMetaType() override{
+        return m_keyMetaType;
     }
 private:
     Q_DISABLE_COPY_MOVE(AutoAssociativeConstIteratorAccess)
-    friend class AutoAssociativeIteratorAccess;
 };
 
-AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>* createAutoAssociativeConstIteratorAccess(
-    const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
-    AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>::IncrementFn increment,
-    AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>::DecrementFn decrement,
-    AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>::ValueFn value,
-    AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>::LessThanFn lessThan,
-    AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>::EqualsFn equals,
-    const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
-    AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>::KeyFn key,
-    const QMetaType& keyMetaType,
-    const QMetaType& valueMetaType,
-    size_t keyOffset,
-    size_t valueOffset
-);
-
-class AutoAssociativeIteratorAccess : public AutoAssociativeConstIteratorAccess<AbstractAssociativeIteratorAccess>{
-    typedef void(*IncrementFn)(AutoAssociativeIteratorAccess*,void*);
-    typedef void(*DecrementFn)(AutoAssociativeIteratorAccess*,void*);
-    typedef const void*(*ValueFn)(AutoAssociativeIteratorAccess*,const void*);
-    typedef bool(*LessThanFn)(AutoAssociativeIteratorAccess*,const void*,const void*);
-    typedef bool(*EqualsFn)(AutoAssociativeIteratorAccess*,const void*,const void*);
-    typedef void*(*SetValueFn)(AutoAssociativeIteratorAccess*,void*);
-    typedef const void*(*KeyFn)(AutoAssociativeIteratorAccess*,const void*);
+template<typename Access>
+class AutoAssociativeIteratorAccess<Access,void,AbstractSequentialConstIteratorAccess::IteratorType::iterator> : public AutoAssociativeConstIteratorAccess<Access,void,AbstractSequentialConstIteratorAccess::IteratorType::iterator,AbstractAssociativeIteratorAccess>{
+    using Self = AutoAssociativeIteratorAccess<Access,void,AbstractSequentialConstIteratorAccess::IteratorType::iterator>;
+    using Super = AutoAssociativeConstIteratorAccess<Access,void,AbstractSequentialConstIteratorAccess::IteratorType::iterator,AbstractAssociativeIteratorAccess>;
+    typedef void(*IncrementFn)(Self*,void*);
+    typedef void(*DecrementFn)(Self*,void*);
+    typedef const void*(*ValueFn)(Self*,const void*);
+    typedef bool(*LessThanFn)(Self*,const void*,const void*);
+    typedef bool(*EqualsFn)(Self*,const void*,const void*);
+    typedef bool(*IsBeginFn)(Self*,const void*);
+    typedef bool(*IsEndFn)(Self*,const void*);
+    typedef bool(*IsValidFn)(Self*,const void*);
+    typedef void*(*SetValueFn)(Self*,void*);
+    typedef const void*(*KeyFn)(Self*,const void*);
+    typedef void*(*CloneFn)(Self*,void*,const void*);
 public:
-    ~AutoAssociativeIteratorAccess() override;
+    using Super::value;
+    ~AutoAssociativeIteratorAccess() override = default;
     AutoAssociativeIteratorAccess(
-            const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+            size_t sizeOf,
+            size_t alignOf,
+            CloneFn clone,
+            const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
             IncrementFn increment,
             DecrementFn decrement,
             ValueFn value,
             LessThanFn lessThan,
             EqualsFn equals,
+            IsBeginFn isBegin,
+            IsEndFn isEnd,
+            IsValidFn isValid,
             const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
             KeyFn key,
             const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter,
             SetValueFn setValue,
             const QMetaType& keyMetaType,
-            const QMetaType& valueMetaType,
-            size_t keyOffset,
-            size_t valueOffset
-            );
-    void setValue(JNIEnv * env, void* iterator, jobject newValue) override;
-    jobject value(JNIEnv * env, const void* iterator) override;
-    void increment(JNIEnv * env, void* iterator) override;
-    void decrement(JNIEnv * env, void* iterator) override;
-    jboolean lessThan(JNIEnv * env, const void* iterator, const void* other) override;
-    bool canLess() override;
-    jboolean equals(JNIEnv * env, const void* iterator, const void* other) override;
-    AutoAssociativeIteratorAccess* clone() override;
-    jobject key(JNIEnv * env, const void* iterator) override;
-    const QMetaType& keyMetaType() override;
-    const QMetaType& valueMetaType() override;
+            const QMetaType& valueMetaType
+            ) : Super(
+              sizeOf, alignOf,
+              Super::CloneFn(clone),
+              valueInternalToExternalConverter,
+              Super::IncrementFn(increment),
+              Super::DecrementFn(decrement),
+              Super::ValueFn(value),
+              Super::LessThanFn(lessThan),
+              Super::EqualsFn(equals),
+              Super::IsBeginFn(isBegin),
+              Super::IsEndFn(isEnd),
+              Super::IsValidFn(isValid),
+              keyInternalToExternalConverter,
+              Super::KeyFn(key),
+              keyMetaType,
+              valueMetaType),
+        m_valueExternalToInternalConverter(valueExternalToInternalConverter),
+        m_setValue(setValue)
+    {
+        Q_ASSERT(setValue);
+    }
+    void setValue(JNIEnv * env, void* iterator, jobject newValue) override{
+        void* newval = m_setValue(this, iterator);
+        jvalue jval;
+        jval.l = newValue;
+        m_valueExternalToInternalConverter(env, nullptr, jval, newval, jValueType::l);
+    }
+    std::optional<void*> value(void* iterator) override{
+        return std::make_optional<void*>(m_setValue(this, iterator));
+    }
+    Self* clone() override{
+        return new Self(
+                    Super::m_sizeOf,
+                    Super::m_alignOf,
+                    CloneFn(Super::m_clone),
+                    Super::m_internalToExternalConverter,
+                    IncrementFn(Super::m_increment),
+                    DecrementFn(Super::m_decrement),
+                    ValueFn(Super::m_value),
+                    LessThanFn(Super::m_lessThan),
+                    EqualsFn(Super::m_equals),
+                    IsBeginFn(Super::m_isBegin),
+                    IsEndFn(Super::m_isEnd),
+                    IsValidFn(Super::m_isValid),
+                    Super::m_keyInternalToExternalConverter,
+                    KeyFn(Super::m_key),
+                    m_valueExternalToInternalConverter,
+                    m_setValue,
+                    Super::m_keyMetaType,
+                    Super::m_valueMetaType);
+    }
 private:
     Q_DISABLE_COPY_MOVE(AutoAssociativeIteratorAccess)
     QtJambiUtils::ExternalToInternalConverter m_valueExternalToInternalConverter;
@@ -1270,6 +1858,75 @@ class AutoMapAccess;
 class AutoHashAccess;
 
 namespace QtJambiPrivate{
+
+template<typename Container, typename Iterator, typename Storage, bool rvalue, bool sequential, bool isMutable, typename... Args>
+struct qtjambi_ContainerIterator_cast;
+
+template<typename Access, typename Iterator, bool rvalue, bool sequential, bool isMutable, typename... Args>
+struct qtjambi_ContainerIterator_cast<ContainerAccessLink<Access>, Iterator, ContainerAccessLink<Access>, rvalue, sequential, isMutable, Args...>{
+    using iterator_type = ContainerIterator<ContainerAccessLink<Access>,Iterator>;
+    using In = std::conditional_t<rvalue,iterator_type&&,const iterator_type&>;
+    static jobject cast(In iter, Args... args){
+        auto env = cast_var_args<Args...>::env(args...);
+        QSharedPointer<QtJambiLink> owner = iter.storage().link();
+        Access* access = iter.storage().containerAccess();
+        if constexpr(sequential){
+            if constexpr(isMutable){
+                return QtJambiPrivate::convertIteratorToJavaObject(env,
+                                                                   owner,
+                                                                   new iterator_type(std::move(iter)),
+                                                                   &QtJambiAPI::deletePointer<iterator_type>,
+                                                                   new AutoSequentialIteratorAccess<Access,iterator_type,IteratorTypeDecider<iterator_type,isMutable>::type>(
+                                                                                                                        access->m_internalToExternalConverter,
+                                                                                                                        access->m_externalToInternalConverter,
+                                                                                                                        access->m_valueMetaType,
+                                                                                                                        access->m_hashFunction,
+                                                                                                                        access->m_elementNestedContainerAccess,
+                                                                                                                        access->m_elementOwnerFunction,
+                                                                                                                        access->m_elementDataType)
+                                                                   );
+            }else{
+                return QtJambiPrivate::convertIteratorToJavaObject(env,
+                                                                   owner,
+                                                                   new iterator_type(std::move(iter)),
+                                                                   &QtJambiAPI::deletePointer<iterator_type>,
+                                                                   new AutoSequentialConstIteratorAccess<Access,iterator_type,IteratorTypeDecider<iterator_type,isMutable>::type,AbstractSequentialConstIteratorAccess>(
+                                                                                                                        access->m_internalToExternalConverter,
+                                                                                                                        access->m_valueMetaType,
+                                                                                                                        access->m_hashFunction,
+                                                                                                                        access->m_elementNestedContainerAccess,
+                                                                                                                        access->m_elementOwnerFunction,
+                                                                                                                        access->m_elementDataType)
+                                                                   );
+            }
+        }else{
+            if constexpr(isMutable){
+                return QtJambiPrivate::convertIteratorToJavaObject(env,
+                                                                   owner,
+                                                                   new iterator_type(std::move(iter)),
+                                                                   &QtJambiAPI::deletePointer<iterator_type>,
+                                                                   new AutoAssociativeIteratorAccess<Access,iterator_type,IteratorTypeDecider<iterator_type,isMutable>::type>(
+                                                                       access->m_valueInternalToExternalConverter,
+                                                                       access->m_valueExternalToInternalConverter,
+                                                                       access->m_keyInternalToExternalConverter,
+                                                                       access->m_keyMetaType,
+                                                                       access->m_valueMetaType)
+                                                                   );
+            }else{
+                return QtJambiPrivate::convertIteratorToJavaObject(env,
+                                                                   owner,
+                                                                   new iterator_type(std::move(iter)),
+                                                                   &QtJambiAPI::deletePointer<iterator_type>,
+                                                                   new AutoAssociativeConstIteratorAccess<Access,iterator_type,IteratorTypeDecider<iterator_type,isMutable>::type,AbstractAssociativeConstIteratorAccess>(
+                                                                        access->m_valueInternalToExternalConverter,
+                                                                        access->m_keyInternalToExternalConverter,
+                                                                        access->m_keyMetaType,
+                                                                        access->m_valueMetaType)
+                                                                   );
+            }
+        }
+    }
+};
 
 struct ConstRef{
     const void *ptr;
@@ -1331,11 +1988,11 @@ struct ConstAssociativeContainer : AbstractContainerBase<Access>{
     typedef QtJambiPrivate::Ref key_type;
     typedef QtJambiPrivate::SecondRef mapped_type;
     struct ConstIterator{
-        typedef typename Access::iterator iterator;
-        iterator iter;
+        typedef typename Access::const_iterator const_iterator;
+        const_iterator iter;
         Access* access;
         ConstIterator(Access* _access) : iter(), access(_access) {}
-        ConstIterator(const iterator& _i, Access* _access) : iter(_i), access(_access) {}
+        ConstIterator(const const_iterator& _i, Access* _access) : iter(_i), access(_access) {}
         ConstIterator(const ConstIterator& iter) : iter(iter.iter), access(iter.access) {}
         using iterator_category = std::forward_iterator_tag;
         using value_type      = QtJambiPrivate::ConstRef;
@@ -1361,19 +2018,19 @@ struct ConstAssociativeContainer : AbstractContainerBase<Access>{
         }
         bool operator!=(ConstIterator other) const noexcept { return !(*this == other); }
         QtJambiPrivate::ConstRef key()const{
-            return QtJambiPrivate::ConstRef{iter.key(), access->metaTypes().first};
+            return QtJambiPrivate::ConstRef{&iter.key(), access->metaTypes().first};
         }
         QtJambiPrivate::ConstRef value()const{
-            return QtJambiPrivate::ConstRef{iter.value(), access->metaTypes().second};
+            return QtJambiPrivate::ConstRef{&iter.value(), access->metaTypes().second};
         }
         QtJambiPrivate::ConstRef operator*()const {return key();}
     };
     typedef ConstIterator const_iterator;
     ConstIterator constBegin() const{
-        return ConstIterator(access->begin(container), access);
+        return ConstIterator(access->constBegin(container), access);
     }
     ConstIterator constEnd() const{
-        return ConstIterator(access->end(container), access);
+        return ConstIterator(access->constEnd(container), access);
     }
     ConstIterator begin() const {return constBegin();}
     ConstIterator end() const {return constEnd();}
@@ -1410,9 +2067,9 @@ struct ConstSequentialContainer : AbstractContainerBase<Access>{
         using difference_type = qsizetype;
         using pointer         = QtJambiPrivate::ConstRef*;
         using reference       = QtJambiPrivate::ConstRef&;
-        typename Access::iterator iter;
+        typename Access::const_iterator iter;
         Access* access;
-        ConstIterator(typename Access::iterator _i, Access* _access) : iter(_i), access(_access) {}
+        ConstIterator(typename Access::const_iterator _i, Access* _access) : iter(_i), access(_access) {}
 
         ConstIterator(const ConstIterator& iter) : iter(iter.iter), access(iter.access) {}
 
@@ -1440,10 +2097,10 @@ struct ConstSequentialContainer : AbstractContainerBase<Access>{
     };
     typedef ConstIterator const_iterator;
     ConstIterator constBegin() const{
-        return ConstIterator(access->begin(container), access);
+        return ConstIterator(access->constBegin(container), access);
     }
     ConstIterator constEnd() const{
-        return ConstIterator(access->end(container), access);
+        return ConstIterator(access->constEnd(container), access);
     }
     ConstIterator begin() const {return constBegin();}
     ConstIterator end() const {return constEnd();}
@@ -1490,10 +2147,53 @@ class AutoSpanAccess : public AbstractSpanAccess, public AbstractNestedSequentia
     size_t m_offset;
     PtrOwnerFunction m_elementOwnerFunction;
     AbstractContainerAccess::DataType m_elementDataType;
-    bool m_isConst;
+    template<typename, typename, typename, bool, bool, bool, typename...>
+    friend struct qtjambi_ContainerIterator_cast;
+public:
+    struct iterator;
+    struct const_iterator{
+        using iterator_category = std::bidirectional_iterator_tag;
+        using value_type      = const char&;
+        using difference_type = qsizetype;
+        using pointer         = const char*;
+        using reference       = const char&;
+
+        const_iterator(size_t _offset, const char* _ptr = nullptr);
+        const_iterator(const_iterator&&) = default;
+        const_iterator(const const_iterator&) = default;
+        const_iterator(const iterator&);
+        const_iterator& operator++();
+        const_iterator operator++(int);
+        const_iterator& operator--();
+        const_iterator operator--(int);
+        const_iterator& operator+=(size_t);
+        const_iterator& operator-=(size_t);
+        bool operator<(const const_iterator& right) const;
+        bool operator>(const const_iterator& right) const;
+        bool operator<=(const const_iterator& right) const;
+        bool operator>=(const const_iterator& right) const;
+        bool operator==(const const_iterator& right) const;
+        inline bool operator!=(const const_iterator& right) const { return !operator==(right);}
+        bool operator<(const iterator& right) const;
+        bool operator>(const iterator& right) const;
+        bool operator<=(const iterator& right) const;
+        bool operator>=(const iterator& right) const;
+        bool operator==(const iterator& right) const;
+        inline bool operator!=(const iterator& right) const { return !operator==(right);}
+        const char* operator->() const;
+        const char& operator*() const;
+        const char& operator[](qsizetype j) const;
+        qsizetype operator-(const const_iterator& j) const;
+        qsizetype operator-(const iterator& j) const;
+        const char* data() const;
+    private:
+        size_t offset;
+        const char* ptr;
+        friend iterator;
+    };
     struct iterator{
         using iterator_category = std::bidirectional_iterator_tag;
-        using value_type      = char*;
+        using value_type      = char&;
         using difference_type = qsizetype;
         using pointer         = char*;
         using reference       = char&;
@@ -1505,11 +2205,25 @@ class AutoSpanAccess : public AbstractSpanAccess, public AbstractNestedSequentia
         iterator operator++(int);
         iterator& operator--();
         iterator operator--(int);
+        iterator& operator+=(size_t);
+        iterator& operator-=(size_t);
         bool operator<(const iterator& right) const;
+        bool operator>(const iterator& right) const;
+        bool operator<=(const iterator& right) const;
+        bool operator>=(const iterator& right) const;
         bool operator==(const iterator& right) const;
         inline bool operator!=(const iterator& right) const { return !operator==(right);}
+        bool operator<(const const_iterator& right) const;
+        bool operator>(const const_iterator& right) const;
+        bool operator<=(const const_iterator& right) const;
+        bool operator>=(const const_iterator& right) const;
+        bool operator==(const const_iterator& right) const;
+        inline bool operator!=(const const_iterator& right) const { return !operator==(right);}
         const char* operator->() const;
         const char& operator*() const;
+        const char& operator[](qsizetype j) const;
+        qsizetype operator-(const const_iterator& j) const;
+        qsizetype operator-(const iterator& j) const;
         const char* data() const;
         char* operator->();
         char& operator*();
@@ -1517,11 +2231,20 @@ class AutoSpanAccess : public AbstractSpanAccess, public AbstractNestedSequentia
     private:
         size_t offset;
         char* ptr;
+        friend const_iterator;
     };
-    using ConstContainer = QtJambiPrivate::ConstSequentialContainer<AutoSpanAccess>;
-    using Container = QtJambiPrivate::SequentialContainer<AutoSpanAccess>;
-    iterator begin(const void* container);
-    iterator end(const void* container);
+    const_iterator begin(const void* container);
+    const_iterator end(const void* container);
+    inline const_iterator constBegin(const void* container) {return begin(container);}
+    inline const_iterator constEnd(const void* container) {return end(container);}
+    iterator begin(void* container);
+    iterator end(void* container);
+    inline std::reverse_iterator<const_iterator> reverseBegin(const void* container) {return std::reverse_iterator<const_iterator>{end(container)};}
+    inline std::reverse_iterator<const_iterator> reverseEnd(const void* container) {return std::reverse_iterator<const_iterator>{begin(container)};}
+    inline std::reverse_iterator<const_iterator> constReverseBegin(const void* container) {return reverseBegin(container);}
+    inline std::reverse_iterator<const_iterator> constReverseEnd(const void* container) {return reverseEnd(container);}
+    inline std::reverse_iterator<iterator> reverseBegin(void* container) {return std::reverse_iterator<iterator>{end(container)};}
+    inline std::reverse_iterator<iterator> reverseEnd(void* container) {return std::reverse_iterator<iterator>{begin(container)};}
 protected:
     AutoSpanAccess(const AutoSpanAccess& other);
 public:
@@ -1529,11 +2252,18 @@ public:
         const QMetaType& elementMetaType,
         const QtJambiUtils::QHashFunction& hashFunction,
         const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+        const QSharedPointer<AbstractContainerAccess>& elementNestedContainerAccess,
+        PtrOwnerFunction elementOwnerFunction,
+        AbstractContainerAccess::DataType elementDataType
+    );
+    AutoSpanAccess(
+        const QMetaType& elementMetaType,
+        const QtJambiUtils::QHashFunction& hashFunction,
+        const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
         const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter,
         const QSharedPointer<AbstractContainerAccess>& elementNestedContainerAccess,
         PtrOwnerFunction elementOwnerFunction,
-        AbstractContainerAccess::DataType elementDataType,
-        bool isConst = false
+        AbstractContainerAccess::DataType elementDataType
         );
     void dispose() override;
     AutoSpanAccess* clone() override;
@@ -1547,6 +2277,9 @@ public:
     size_t alignOf() const override;
     void* constructContainer(void* result, void* container) override;
     void* constructContainer(JNIEnv * env, void* result, const ContainerAndAccessInfo& container) override;
+    static jboolean iteratorEquals(JNIEnv *, const void* ptr, AbstractSequentialConstIteratorAccess::IteratorType iteratorType, const ConstContainerAndAccessInfo& ptr2);
+    static void* asIterator(void* iterator, AbstractSequentialConstIteratorAccess::IteratorType iteratorType);
+    static bool findIterator(const void* iterator, AbstractSequentialConstIteratorAccess::IteratorType iteratorType, const std::type_info& typeId, void* output);
 private:
     AbstractNestedSequentialAccess* asNested() override;
     bool equals(const void* p1, const void* p2);
@@ -1559,8 +2292,10 @@ private:
     static void debugStreamFn(const QtPrivate::QMetaTypeInterface *iface, QDebug &s, const void *ptr);
     static QtMetaContainerPrivate::QMetaSequenceInterface* createMetaSequenceInterface(QMetaType newMetaType);
     qsizetype size(const void* container) override;
-    jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iter);
-    jobject createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iter);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, const_iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, std::reverse_iterator<const_iterator>>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, std::reverse_iterator<iterator>>&& iterator);
 public:
     void assign(void*, const void* ) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
@@ -1576,6 +2311,10 @@ public:
     jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
+    jobject constReverseBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject constReverseEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject reverseBegin(JNIEnv * env, const ExtendedContainerInfo& container) override;
+    jobject reverseEnd(JNIEnv * env, const ExtendedContainerInfo& container) override;
     std::unique_ptr<AbstractSpanAccess::ElementIterator> elementIterator(void* container) override;
     std::unique_ptr<AbstractSpanAccess::ElementIterator> elementIterator(const void* container) override;
 
@@ -1586,6 +2325,31 @@ public:
     bool hasNestedContainerAccess() override;
     bool hasNestedPointers() override;
 };
+
+template<typename Access, typename Iterator, AbstractSequentialConstIteratorAccess::IteratorType type, typename SuperType>
+AbstractSpanAccess* AutoSequentialConstIteratorAccess<Access,Iterator,type,SuperType>::createSpanAccess(){
+    return new AutoSpanAccess(
+                            m_valueMetaType,
+                            m_hashFunction,
+                            m_internalToExternalConverter,
+                            m_elementNestedContainerAccess,
+                            m_elementOwnerFunction,
+                            m_elementDataType
+                        );
+}
+template<typename Access, typename Iterator, AbstractSequentialConstIteratorAccess::IteratorType type>
+AbstractSpanAccess* AutoSequentialIteratorAccess<Access,Iterator,type>::createSpanAccess(){
+    return new AutoSpanAccess(
+                            m_valueMetaType,
+                            m_hashFunction,
+                            m_internalToExternalConverter,
+                            m_externalToInternalConverter,
+                            m_elementNestedContainerAccess,
+                            m_elementOwnerFunction,
+                            m_elementDataType
+                        );
+}
+
 
 class PointerRCAutoSpanAccess : public AutoSpanAccess, public ReferenceCountingSetContainer{
 private:
@@ -1610,7 +2374,6 @@ public:
     void updateRC(JNIEnv * env, const ContainerInfo& container) override;
     AbstractReferenceCountingContainer* asRC() override;
 };
-
 #endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
 
 class AutoListAccess : public AbstractListAccess, public AbstractNestedSequentialAccess {
@@ -1623,6 +2386,8 @@ class AutoListAccess : public AbstractListAccess, public AbstractNestedSequentia
     size_t m_offset;
     PtrOwnerFunction m_elementOwnerFunction;
     AbstractContainerAccess::DataType m_elementDataType;
+    template<typename, typename, typename, bool, bool, bool, typename...>
+    friend struct qtjambi_ContainerIterator_cast;
 protected:
     AutoListAccess(const AutoListAccess& other);
 public:
@@ -1636,6 +2401,9 @@ public:
             AbstractContainerAccess::DataType elementDataType
             );
     void dispose() override;
+    static jboolean iteratorEquals(JNIEnv *, const void* ptr, AbstractSequentialConstIteratorAccess::IteratorType iteratorType, const ConstContainerAndAccessInfo& ptr2);
+    static void* asIterator(void* iterator, AbstractSequentialConstIteratorAccess::IteratorType iteratorType);
+    static bool findIterator(const void* iterator, AbstractSequentialConstIteratorAccess::IteratorType iteratorType, const std::type_info& typeId, void* output);
     bool isDetached(const void* container) override;
     void detach(const ContainerInfo& container) override;
     bool isSharedWith(const void* container, const void* container2) override;
@@ -1654,32 +2422,106 @@ public:
     size_t alignOf() const override;
     void* constructContainer(void* result, void* container) override;
     void* constructContainer(JNIEnv * env, void* result, const ContainerAndAccessInfo& container) override;
+    struct iterator;
+    struct const_iterator{
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type      = const char&;
+        using difference_type = qsizetype;
+        using pointer         = const char*;
+        using reference       = const char&;
+
+        const_iterator(size_t _offset, const char* _ptr = nullptr);
+        const_iterator(const const_iterator&) = default;
+        const_iterator(const_iterator&&) = default;
+        const_iterator(const iterator&);
+        const_iterator& operator=(const const_iterator&) = default;
+        const_iterator& operator=(const_iterator&&) = default;
+        const_iterator& operator++();
+        const_iterator operator++(int);
+        const_iterator& operator--();
+        const_iterator operator--(int);
+        bool operator<(const const_iterator& right) const;
+        bool operator>(const const_iterator& right) const;
+        bool operator==(const const_iterator& right) const;
+        bool operator<=(const const_iterator& right) const;
+        bool operator>=(const const_iterator& right) const;
+        inline bool operator!=(const const_iterator& right) const { return !operator==(right);}
+        bool operator<(const iterator& right) const;
+        bool operator>(const iterator& right) const;
+        bool operator<=(const iterator& right) const;
+        bool operator>=(const iterator& right) const;
+        bool operator==(const iterator& right) const;
+        inline bool operator!=(const iterator& right) const { return !operator==(right);}
+        const char* operator->() const;
+        const char& operator*() const;
+        const char&operator[](qsizetype j) const;
+        const_iterator& operator+=(size_t n);
+        const_iterator& operator-=(size_t n);
+        qsizetype operator-(const const_iterator& j) const;
+        qsizetype operator-(const iterator& j) const;
+        const char* data() const;
+    private:
+        size_t offset;
+        const char* ptr;
+        friend iterator;
+    };
     struct iterator{
-        using iterator_category = std::bidirectional_iterator_tag;
-        using value_type      = char*;
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type      = char&;
         using difference_type = qsizetype;
         using pointer         = char*;
         using reference       = char&;
 
         iterator(size_t _offset, char* _ptr = nullptr);
         iterator(const iterator&) = default;
+        iterator(iterator&&) = default;
+        iterator& operator=(const iterator&) = default;
+        iterator& operator=(iterator&&) = default;
         iterator& operator++();
         iterator operator++(int);
         iterator& operator--();
         iterator operator--(int);
         bool operator<(const iterator& right) const;
+        bool operator>(const iterator& right) const;
+        bool operator<=(const iterator& right) const;
+        bool operator>=(const iterator& right) const;
         bool operator==(const iterator& right) const;
         inline bool operator!=(const iterator& right) const { return !operator==(right);}
+        bool operator<(const const_iterator& right) const;
+        bool operator>(const const_iterator& right) const;
+        bool operator<=(const const_iterator& right) const;
+        bool operator>=(const const_iterator& right) const;
+        bool operator==(const const_iterator& right) const;
+        inline bool operator!=(const const_iterator& right) const { return !operator==(right);}
         const char* operator->() const;
         const char& operator*() const;
+        const char&operator[](qsizetype j) const;
+        iterator& operator+=(size_t n);
+        iterator& operator-=(size_t n);
         const char* data() const;
+        qsizetype operator-(const const_iterator& j) const;
+        qsizetype operator-(const iterator& j) const;
         char* operator->();
         char& operator*();
+        char&operator[](qsizetype j);
         char* data();
     private:
         size_t offset;
         char* ptr;
+        friend const_iterator;
     };
+    const_iterator begin(const void* container);
+    const_iterator end(const void* container);
+    inline const_iterator constBegin(const void* container) {return begin(container);}
+    inline const_iterator constEnd(const void* container) {return end(container);}
+    iterator begin(void* container);
+    iterator end(void* container);
+    inline std::reverse_iterator<const_iterator> reverseBegin(const void* container) {return std::reverse_iterator<const_iterator>{end(container)};}
+    inline std::reverse_iterator<const_iterator> reverseEnd(const void* container) {return std::reverse_iterator<const_iterator>{begin(container)};}
+    inline std::reverse_iterator<const_iterator> constReverseBegin(const void* container) {return reverseBegin(container);}
+    inline std::reverse_iterator<const_iterator> constReverseEnd(const void* container) {return reverseEnd(container);}
+    inline std::reverse_iterator<iterator> reverseBegin(void* container) {return std::reverse_iterator<iterator>{end(container)};}
+    inline std::reverse_iterator<iterator> reverseEnd(void* container) {return std::reverse_iterator<iterator>{begin(container)};}
 private:
     AbstractNestedSequentialAccess* asNested() override;
     bool equals(const void* p1, const void* p2);
@@ -1694,11 +2536,10 @@ private:
     static void debugStreamFn(const QtPrivate::QMetaTypeInterface *iface, QDebug &s, const void *ptr);
     static void dataStreamOutFn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &s, const void *ptr);
     static void dataStreamInFn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &s, void *ptr);
-
     using ConstContainer = QtJambiPrivate::ConstSequentialContainer<AutoListAccess>;
     using Container = QtJambiPrivate::SequentialContainer<AutoListAccess>;
-    iterator begin(const void* container);
-    iterator end(const void* container);
+    friend ConstContainer;
+    friend Container;
 public:
     void assign(void* container, const void* other) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
@@ -1709,14 +2550,20 @@ public:
     const QSharedPointer<AbstractContainerAccess>& sharedElementNestedContainerAccess() override;
     bool hasNestedContainerAccess() override;
     bool hasNestedPointers() override;
-    jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
-    jobject createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
-    void reserve(void*,qsizetype);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoListAccess>, const_iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoListAccess>, iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoListAccess>, std::reverse_iterator<const_iterator>>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoListAccess>, std::reverse_iterator<iterator>>&& iterator);
+    void reserve(void*,qsizetype) override;
     std::pair<const QtPrivate::QMetaTypeInterface *,const QtPrivate::QMetaTypeInterface *> metaTypes();
     jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject constReverseBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject constReverseEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject reverseBegin(JNIEnv * env, const ExtendedContainerInfo& container) override;
+    jobject reverseEnd(JNIEnv * env, const ExtendedContainerInfo& container) override;
     void appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) override;
     jobject at(JNIEnv * env, const void* container, qsizetype index) override;
     const void* at(const void* container, qsizetype index) override;
@@ -1772,8 +2619,6 @@ private:
     QListData allocateGrow(const QListData &from, qsizetype n, QArrayData::GrowthPosition position);
     QListData allocate(qsizetype capacity, QArrayData::AllocationOption option = QArrayData::KeepSize);
     void swapAndDestroy(QListData* p, QListData&& other);
-    friend Container;
-    friend ConstContainer;
     friend class PointerRCAutoListAccess;
     friend class NestedPointersRCAutoListAccess;
 };
@@ -1799,6 +2644,8 @@ class AutoMapAccess : public AbstractMapAccess, public AbstractNestedAssociative
     PtrOwnerFunction m_valueOwnerFunction;
     AbstractContainerAccess::DataType m_keyDataType;
     AbstractContainerAccess::DataType m_valueDataType;
+    template<typename, typename, typename, bool, bool, bool, typename...>
+    friend struct qtjambi_ContainerIterator_cast;
 protected:
     AutoMapAccess(const AutoMapAccess &);
 public:
@@ -1819,6 +2666,9 @@ public:
                     PtrOwnerFunction valueOwnerFunction,
                     AbstractContainerAccess::DataType valueDataType
             );
+    static jboolean iteratorEquals(JNIEnv *, const void* ptr, AbstractSequentialConstIteratorAccess::IteratorType iteratorType, const ConstContainerAndAccessInfo& ptr2);
+    static void* asIterator(void* iterator, AbstractSequentialConstIteratorAccess::IteratorType iteratorType);
+    static bool findIterator(const void* iterator, AbstractSequentialConstIteratorAccess::IteratorType iteratorType, const std::type_info& typeId, void* output);
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     void assign(void* container, const void* other) override;
     QMetaType registerContainer(QByteArrayView containerTypeName) override;
@@ -1853,6 +2703,12 @@ public:
     jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject keyValueBegin(JNIEnv * env, const ExtendedContainerInfo& container) override;
+    jobject keyValueEnd(JNIEnv * env, const ExtendedContainerInfo& container) override;
+    jobject constKeyValueBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject constKeyValueEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject keyBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject keyEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key) override;
     jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
     jobject first(JNIEnv *,const void*) override;
@@ -1864,12 +2720,14 @@ public:
     jobject last(JNIEnv *,const void*) override;
     jobject lastKey(JNIEnv *,const void*) override;
     jobject constLowerBound(JNIEnv *,const ConstExtendedContainerInfo& container,jobject) override;
+    jobject constUpperBound(JNIEnv *,const ConstExtendedContainerInfo& container,jobject) override;
+    jobject lowerBound(JNIEnv *,const ExtendedContainerInfo& container,jobject) override;
+    jobject upperBound(JNIEnv *,const ExtendedContainerInfo& container,jobject) override;
     jboolean equal(JNIEnv *,const void*,jobject) override;
     qsizetype remove(JNIEnv *,const ContainerInfo&,jobject) override;
     qsizetype size(JNIEnv *,const void*) override;
     qsizetype size(const void* container) override;
     jobject take(JNIEnv *,const ContainerInfo&,jobject) override;
-    jobject constUpperBound(JNIEnv *,const ConstExtendedContainerInfo& container,jobject) override;
     jobject value(JNIEnv *,const void*,jobject,jobject) override;
     ContainerAndAccessInfo values(JNIEnv *,const ConstContainerInfo&) override;
     bool keyLessThan(JNIEnv *,jobject,jobject) override;
@@ -1929,8 +2787,8 @@ private:
         TreeNode* left = nullptr;
         TreeNode* right = nullptr;
 #endif // defined(_LIBCPP_VERSION)
-        void* data(qsizetype offset);
-        const void* data(qsizetype offset) const;
+        char* data(qsizetype offset);
+        const char* data(qsizetype offset) const;
     };
 #if defined(Q_CC_MSVC)
 #if _ITERATOR_DEBUG_LEVEL == 0
@@ -1985,29 +2843,212 @@ private:
         TreeNode* node;
     };
 
+public:
+    struct const_key_value_iterator;
+    struct key_value_iterator;
+    struct const_iterator;
+    struct key_iterator;
+
     struct iterator{
         node_iterator m_iter;
         size_t m_offset1 = 0;
         size_t m_offset2 = 0;
-        iterator();
         iterator(node_iterator iter, size_t offset1, size_t offset2);
+        iterator() = default;
         iterator(const iterator&) = default;
-        inline iterator& operator=(const iterator& o) {
-            m_iter = o.m_iter;
-            m_offset1 = o.m_offset1;
-            m_offset2 = o.m_offset2;
-            return *this;
-        }
+        iterator& operator=(const iterator& o) = default;
+        iterator(iterator&&) = default;
+        iterator& operator=(iterator&& o) = default;
         iterator& operator++();
         iterator operator++(int);
         iterator& operator--();
         iterator operator--(int);
+        bool operator==(const const_iterator& right) const;
+        inline bool operator!=(const const_iterator& right) const {return !(*this==right);}
         bool operator==(const iterator& right) const;
         inline bool operator!=(const iterator& right) const {return !(*this==right);}
-        void* key()const;
-        void* value()const;
+        bool operator==(const key_iterator& right) const;
+        inline bool operator!=(const key_iterator& right) const {return !(*this==right);}
+        bool operator==(const key_value_iterator& right) const;
+        inline bool operator!=(const key_value_iterator& right) const {return !(*this==right);}
+        bool operator==(const const_key_value_iterator& right) const;
+        inline bool operator!=(const const_key_value_iterator& right) const {return !(*this==right);}
+        const char& key()const;
+        const char& value()const;
+        char& key();
+        char& value();
+        typedef std::bidirectional_iterator_tag iterator_category;
+        typedef qptrdiff difference_type;
+        typedef char value_type;
+        typedef const char *pointer;
+        typedef const char &reference;
+        friend const_iterator;
+        friend key_value_iterator;
+        friend const_key_value_iterator;
+        friend key_iterator;
     };
 
+    struct const_iterator{
+        node_iterator m_iter;
+        size_t m_offset1 = 0;
+        size_t m_offset2 = 0;
+        const_iterator(node_iterator iter, size_t offset1, size_t offset2);
+        const_iterator() = default;
+        const_iterator(const const_iterator&) = default;
+        const_iterator(const iterator&);
+        const_iterator& operator=(const const_iterator& o) = default;
+        const_iterator(const_iterator&&) = default;
+        const_iterator& operator=(const_iterator&& o) = default;
+        const_iterator& operator++();
+        const_iterator operator++(int);
+        const_iterator& operator--();
+        const_iterator operator--(int);
+        bool operator==(const const_iterator& right) const;
+        inline bool operator!=(const const_iterator& right) const {return !(*this==right);}
+        bool operator==(const iterator& right) const;
+        inline bool operator!=(const iterator& right) const {return !(*this==right);}
+        bool operator==(const key_iterator& right) const;
+        inline bool operator!=(const key_iterator& right) const {return !(*this==right);}
+        bool operator==(const key_value_iterator& right) const;
+        inline bool operator!=(const key_value_iterator& right) const {return !(*this==right);}
+        bool operator==(const const_key_value_iterator& right) const;
+        inline bool operator!=(const const_key_value_iterator& right) const {return !(*this==right);}
+        const char& key()const;
+        const char& value()const;
+        typedef std::bidirectional_iterator_tag iterator_category;
+        typedef qptrdiff difference_type;
+        typedef char value_type;
+        typedef const char *pointer;
+        typedef const char &reference;
+        friend iterator;
+        friend key_value_iterator;
+        friend const_key_value_iterator;
+        friend key_iterator;
+    };
+
+    struct key_iterator{
+        node_iterator m_iter;
+        size_t m_offset1 = 0;
+        key_iterator(node_iterator iter, size_t offset1);
+        key_iterator() = default;
+        key_iterator(const key_iterator&) = default;
+        key_iterator& operator=(const key_iterator& o) = default;
+        key_iterator(key_iterator&&) = default;
+        key_iterator& operator=(key_iterator&& o) = default;
+        key_iterator& operator++();
+        key_iterator operator++(int);
+        key_iterator& operator--();
+        key_iterator operator--(int);
+        bool operator==(const key_iterator& right) const;
+        inline bool operator!=(const key_iterator& right) const {return !(*this==right);}
+        bool operator==(const iterator& right) const;
+        inline bool operator!=(const iterator& right) const {return !(*this==right);}
+        bool operator==(const const_iterator& right) const;
+        inline bool operator!=(const const_iterator& right) const {return !(*this==right);}
+        bool operator==(const key_value_iterator& right) const;
+        inline bool operator!=(const key_value_iterator& right) const {return !(*this==right);}
+        bool operator==(const const_key_value_iterator& right) const;
+        inline bool operator!=(const const_key_value_iterator& right) const {return !(*this==right);}
+        const char& operator*()const;
+        typedef std::bidirectional_iterator_tag iterator_category;
+        typedef qptrdiff difference_type;
+        typedef const char& value_type;
+        typedef const char *pointer;
+        typedef const char &reference;
+        friend const_iterator;
+        friend iterator;
+        friend key_value_iterator;
+        friend const_key_value_iterator;
+    };
+
+    struct key_value_iterator{
+        node_iterator m_iter;
+        size_t m_offset1 = 0;
+        size_t m_offset2 = 0;
+        key_value_iterator(node_iterator iter, size_t offset1, size_t offset2);
+        key_value_iterator() = default;
+        key_value_iterator(const key_value_iterator&) = default;
+        key_value_iterator& operator=(const key_value_iterator& o) = default;
+        key_value_iterator(key_value_iterator&&) = default;
+        key_value_iterator& operator=(key_value_iterator&& o) = default;
+        key_value_iterator& operator++();
+        key_value_iterator operator++(int);
+        key_value_iterator& operator--();
+        key_value_iterator operator--(int);
+        bool operator==(const const_iterator& right) const;
+        inline bool operator!=(const const_iterator& right) const {return !(*this==right);}
+        bool operator==(const iterator& right) const;
+        inline bool operator!=(const iterator& right) const {return !(*this==right);}
+        bool operator==(const key_iterator& right) const;
+        inline bool operator!=(const key_iterator& right) const {return !(*this==right);}
+        bool operator==(const key_value_iterator& right) const;
+        inline bool operator!=(const key_value_iterator& right) const {return !(*this==right);}
+        bool operator==(const const_key_value_iterator& right) const;
+        inline bool operator!=(const const_key_value_iterator& right) const {return !(*this==right);}
+        std::pair<const char&,const char&> operator*()const;
+        std::pair<const char&,char&> operator*();
+        typedef std::bidirectional_iterator_tag iterator_category;
+        typedef qptrdiff difference_type;
+        typedef char value_type;
+        typedef const char *pointer;
+        typedef const char &reference;
+        friend const_iterator;
+        friend const_key_value_iterator;
+        friend key_iterator;
+        friend iterator;
+    };
+
+    struct const_key_value_iterator{
+        node_iterator m_iter;
+        size_t m_offset1 = 0;
+        size_t m_offset2 = 0;
+        const_key_value_iterator(node_iterator iter, size_t offset1, size_t offset2);
+        const_key_value_iterator() = default;
+        const_key_value_iterator(const key_value_iterator&);
+        const_key_value_iterator(const const_key_value_iterator&) = default;
+        const_key_value_iterator& operator=(const const_key_value_iterator& o) = default;
+        const_key_value_iterator(const_key_value_iterator&&) = default;
+        const_key_value_iterator& operator=(const_key_value_iterator&& o) = default;
+        const_key_value_iterator& operator++();
+        const_key_value_iterator operator++(int);
+        const_key_value_iterator& operator--();
+        const_key_value_iterator operator--(int);
+        bool operator==(const const_iterator& right) const;
+        inline bool operator!=(const const_iterator& right) const {return !(*this==right);}
+        bool operator==(const iterator& right) const;
+        inline bool operator!=(const iterator& right) const {return !(*this==right);}
+        bool operator==(const key_iterator& right) const;
+        inline bool operator!=(const key_iterator& right) const {return !(*this==right);}
+        bool operator==(const key_value_iterator& right) const;
+        inline bool operator!=(const key_value_iterator& right) const {return !(*this==right);}
+        bool operator==(const const_key_value_iterator& right) const;
+        inline bool operator!=(const const_key_value_iterator& right) const {return !(*this==right);}
+        std::pair<const char&,const char&> operator*()const;
+        typedef std::bidirectional_iterator_tag iterator_category;
+        typedef qptrdiff difference_type;
+        typedef char value_type;
+        typedef const char *pointer;
+        typedef const char &reference;
+        friend iterator;
+    };
+
+    key_iterator keyBegin(const void* container);
+    key_iterator keyEnd(const void* container);
+
+    const_key_value_iterator keyValueEnd(const void* container);
+    const_key_value_iterator keyValueBegin(const void* container);
+    inline const_key_value_iterator constKeyValueBegin(const void* container) {return keyValueBegin(container);}
+    inline const_key_value_iterator constKeyValueEnd(const void* container) {return keyValueEnd(container);}
+    key_value_iterator keyValueEnd(void* container);
+    key_value_iterator keyValueBegin(void* container);
+
+    const_iterator end(const void* container);
+    const_iterator begin(const void* container);
+    inline const_iterator constBegin(const void* container) {return begin(container);}
+    inline const_iterator constEnd(const void* container) {return end(container);}
+    iterator end(void* container);
+    iterator begin(void* container);
+private:
     struct extended_iterator : node_iterator{
         extended_iterator(const void* _container, const QSharedPointer<class AutoMapAccess>& _access, TreeNode* _node = nullptr);
         extended_iterator(const void* _container, const QSharedPointer<class AutoMapAccess>& _access, const node_iterator& other);
@@ -2016,20 +3057,12 @@ private:
         QSharedPointer<class AutoMapAccess> access;
     };
 
-    using ConstContainer = QtJambiPrivate::ConstAssociativeContainer<AutoMapAccess>;
-
-    using Container = QtJambiPrivate::AssociativeContainer<AutoMapAccess>;
-    friend Container;
-    friend ConstContainer;
-
     MapData& detach(MapDataPointer& container);
     void copyNode(QList<TreeNode*>& nextNodes, QHash<TreeNode*,TreeNode*> &nodesMap, TreeNode* node);
     MapData* createMapData();
     void clear(MapData& data);
     node_iterator end(const MapData& data);
     node_iterator begin(const MapData& data);
-    iterator end(const void* container);
-    iterator begin(const void* container);
     void eraseTree(MapData& data, TreeNode* node);
     qsizetype erase(MapData& data, const void* key);
     qsizetype erase(MapData& data, const void* key, const void* value);
@@ -2084,15 +3117,25 @@ private:
 #endif // defined(Q_CC_MSVC) || defined(_LIBCPP_VERSION)
     TreeNode* findUpperBound(const MapData& data, const void* key);
 
-    jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iter);
-    jobject createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iter);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_key_value_iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, key_value_iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, key_iterator>&& iterator);
     friend class AutoMultiMapAccess;
+
+    using ConstContainer = QtJambiPrivate::ConstAssociativeContainer<AutoMapAccess>;
+    using Container = QtJambiPrivate::AssociativeContainer<AutoMapAccess>;
+    friend Container;
+    friend ConstContainer;
 public:
     std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(const void* container) override;
     std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(void* container) override;
 };
 
 class AutoMultiMapAccess : public virtual AbstractMultiMapAccess, public AutoMapAccess{
+    template<typename, typename, typename, bool, bool, bool, typename...>
+    friend struct qtjambi_ContainerIterator_cast;
 protected:
     AutoMultiMapAccess(const AutoMultiMapAccess&);
 public:
@@ -2113,6 +3156,57 @@ public:
                     PtrOwnerFunction valueOwnerFunction,
                     AbstractContainerAccess::DataType valueDataType
             );
+    using AutoMapAccess::take;
+    using AutoMapAccess::value;
+    using AutoMapAccess::values;
+    using AutoMapAccess::key;
+    using AutoMapAccess::keys;
+    using AutoMapAccess::equal;
+    using AutoMapAccess::size;
+    using AutoMapAccess::insert;
+    using AutoMapAccess::hasOwnerFunction;
+    using AutoMapAccess::getOwner;
+    using AutoMapAccess::isSharedWith;
+    using AutoMapAccess::detach;
+    using AutoMapAccess::isDetached;
+    using AutoMapAccess::constFind;
+    using AutoMapAccess::constEnd;
+    using AutoMapAccess::constBegin;
+    using AutoMapAccess::find;
+    using AutoMapAccess::end;
+    using AutoMapAccess::begin;
+    using AutoMapAccess::keyBegin;
+    using AutoMapAccess::keyEnd;
+    using AutoMapAccess::keyValueBegin;
+    using AutoMapAccess::keyValueEnd;
+    using AutoMapAccess::constKeyValueBegin;
+    using AutoMapAccess::constKeyValueEnd;
+    using AutoMapAccess::count;
+    using AutoMapAccess::contains;
+    using AutoMapAccess::clear;
+    using AutoMapAccess::hasValueNestedPointers;
+    using AutoMapAccess::hasValueNestedContainerAccess;
+    using AutoMapAccess::hasKeyNestedPointers;
+    using AutoMapAccess::hasKeyNestedContainerAccess;
+    using AutoMapAccess::sharedValueNestedContainerAccess;
+    using AutoMapAccess::sharedKeyNestedContainerAccess;
+    using AutoMapAccess::valueNestedContainerAccess;
+    using AutoMapAccess::keyNestedContainerAccess;
+    using AutoMapAccess::valueType;
+    using AutoMapAccess::keyType;
+    using AutoMapAccess::valueMetaType;
+    using AutoMapAccess::keyMetaType;
+    using AutoMapAccess::registerContainer;
+    using AutoMapAccess::keyValueIterator;
+    using AutoMapAccess::destructContainer;
+    using AutoMapAccess::constructContainer;
+    using AutoMapAccess::assign;
+    using AutoMapAccess::constLowerBound;
+    using AutoMapAccess::constUpperBound;
+    using AutoMapAccess::deleteContainer;
+    using AutoMapAccess::createContainer;
+    static jboolean iteratorEquals(JNIEnv *, const void* ptr, AbstractSequentialConstIteratorAccess::IteratorType iteratorType, const ConstContainerAndAccessInfo& ptr2);
+    static void* asIterator(void* iterator, AbstractSequentialConstIteratorAccess::IteratorType iteratorType);
     void assign(void*, const void* ) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     QMetaType registerContainer(QByteArrayView containerTypeName) override;
@@ -2140,6 +3234,12 @@ public:
     jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject keyValueBegin(JNIEnv * env, const ExtendedContainerInfo& container) override;
+    jobject keyValueEnd(JNIEnv * env, const ExtendedContainerInfo& container) override;
+    jobject constKeyValueBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject constKeyValueEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject keyBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject keyEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key) override;
     jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
     jobject first(JNIEnv *,const void*) override;
@@ -2150,13 +3250,15 @@ public:
     ContainerAndAccessInfo keys(JNIEnv *,const ConstContainerInfo&,jobject) override;
     jobject last(JNIEnv *,const void*) override;
     jobject lastKey(JNIEnv *,const void*) override;
-    jobject constLowerBound(JNIEnv *,const ConstExtendedContainerInfo& container,jobject) override;
     jboolean equal(JNIEnv *,const void*,jobject) override;
     qsizetype remove(JNIEnv *,const ContainerInfo&,jobject) override;
     qsizetype size(JNIEnv *,const void*) override;
     qsizetype size(const void* container) override;
     jobject take(JNIEnv *,const ContainerInfo&,jobject) override;
+    jobject constLowerBound(JNIEnv *,const ConstExtendedContainerInfo& container,jobject) override;
     jobject constUpperBound(JNIEnv *,const ConstExtendedContainerInfo& container,jobject) override;
+    jobject lowerBound(JNIEnv *,const ExtendedContainerInfo& container,jobject) override;
+    jobject upperBound(JNIEnv *,const ExtendedContainerInfo& container,jobject) override;
     jobject value(JNIEnv *,const void*,jobject,jobject) override;
     ContainerAndAccessInfo values(JNIEnv *,const ConstContainerInfo&) override;
     bool keyLessThan(JNIEnv *,jobject,jobject) override;
@@ -2187,7 +3289,14 @@ public:
     void debugStream(QDebug &s, const void *ptr) override;
     std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(const void* container) override;
     std::unique_ptr<AbstractMapAccess::KeyValueIterator> keyValueIterator(void* container) override;
+    void* createContainer(const void* copy);
+    void deleteContainer(void* container);
 private:
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, const_iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiMapAccess>, iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, const_key_value_iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiMapAccess>, key_value_iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, key_iterator>&& iterator);
     IsBiContainerFunction getIsBiContainerFunction() override;
     bool isMulti() const override;
 };
@@ -2210,6 +3319,8 @@ class AutoHashAccess : public AbstractHashAccess, public AbstractNestedAssociati
     PtrOwnerFunction m_valueOwnerFunction;
     AbstractContainerAccess::DataType m_keyDataType;
     AbstractContainerAccess::DataType m_valueDataType;
+    template<typename, typename, typename, bool, bool, bool, typename...>
+    friend struct qtjambi_ContainerIterator_cast;
 protected:
     AutoHashAccess(const AutoHashAccess&);
 public:
@@ -2222,14 +3333,17 @@ public:
                     const QSharedPointer<AbstractContainerAccess>& keyNestedContainerAccess,
                     PtrOwnerFunction keyOwnerFunction,
                     AbstractContainerAccess::DataType keyDataType,
-                    const QMetaType& valueMetaType,
-                    const QtJambiUtils::QHashFunction& valueHashFunction,
-                    const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
-                    const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter,
-                    const QSharedPointer<AbstractContainerAccess>& valueNestedContainerAccess,
-                    PtrOwnerFunction valueOwnerFunction,
-                    AbstractContainerAccess::DataType valueDataType
+                    const QMetaType& valueMetaType = QMetaType(QMetaType::Void),
+                    const QtJambiUtils::QHashFunction& valueHashFunction = {},
+                    const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter = {},
+                    const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter = {},
+                    const QSharedPointer<AbstractContainerAccess>& valueNestedContainerAccess = {},
+                    PtrOwnerFunction valueOwnerFunction = nullptr,
+                    AbstractContainerAccess::DataType valueDataType = AbstractContainerAccess::Value
             );
+    static jboolean iteratorEquals(JNIEnv *, const void* ptr, AbstractSequentialConstIteratorAccess::IteratorType iteratorType, const ConstContainerAndAccessInfo& ptr2);
+    static void* asIterator(void* iterator, AbstractSequentialConstIteratorAccess::IteratorType iteratorType);
+    static bool findIterator(const void* iterator, AbstractSequentialConstIteratorAccess::IteratorType iteratorType, const std::type_info& typeId, void* output);
     bool isDetached(const void* container) override;
     void detach(const ContainerInfo& container) override;
     bool isSharedWith(const void* container, const void* container2) override;
@@ -2262,6 +3376,12 @@ public:
     jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject keyValueBegin(JNIEnv * env, const ExtendedContainerInfo& container) override;
+    jobject keyValueEnd(JNIEnv * env, const ExtendedContainerInfo& container) override;
+    jobject constKeyValueBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject constKeyValueEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject keyBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject keyEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key) override;
     jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
     void insert(JNIEnv *,const ContainerInfo&,jobject,jobject) override;
@@ -2271,6 +3391,7 @@ public:
     jboolean equal(JNIEnv *,const void*,jobject) override;
     qsizetype remove(JNIEnv *,const ContainerInfo&,jobject) override;
     void reserve(JNIEnv *,const ContainerInfo&,qsizetype) override;
+    void reserve(void* container, qsizetype size) override;
     qsizetype size(JNIEnv *,const void*) override;
     qsizetype size(const void*) override;
     jobject take(JNIEnv *,const ContainerInfo&,jobject) override;
@@ -2326,7 +3447,7 @@ private:
         char* at(const AutoHashAccess& access, size_t i) const noexcept;
         char* atOffset(const AutoHashAccess& access, size_t o) noexcept;
         char* atOffset(const AutoHashAccess& access, size_t o) const noexcept;
-        void erase(const AutoHashAccess& access, size_t bucket);
+        void erase(const AutoHashAccess& access, size_t bucket, qsizetype* count = nullptr);
 
         void moveLocal(size_t from, size_t to) noexcept;
         void moveFromSpan(const AutoHashAccess& access, Span &fromSpan, size_t fromIndex, size_t to);
@@ -2334,33 +3455,22 @@ private:
 
     struct QHashData{
         struct iterator{
-            const AutoHashAccess* access;
+            QSharedPointer<const AutoHashAccess> access;
             struct QHashData const* d = nullptr;
             size_t bucket = 0;
-
-            iterator(const AutoHashAccess& _access, struct QHashData const* _d = nullptr, size_t _bucket = 0)
-                : access(&_access), d(_d), bucket(_bucket) {}
-
-            iterator(const iterator& iter) : access(iter.access), d(iter.d), bucket(iter.bucket) {}
-
-            iterator& operator=(const iterator& iter) {
-                access = iter.access;
-                d = iter.d;
-                bucket = iter.bucket;
-                return *this;
-            }
-
+            iterator(const AutoHashAccess& _access, struct QHashData const* _d = nullptr, size_t _bucket = 0);
+            iterator(const iterator& iter);
+            iterator& operator=(const iterator& iter);
             size_t span() const noexcept;
             size_t index() const noexcept;
             bool isUnused() const noexcept;
             char* node() const noexcept;
-            char* key() const noexcept { return node(); };
-            char* value() const noexcept { return node() + access->m_offset2; };
+            char* key() const noexcept;
+            char* value() const noexcept;
             bool atEnd() const noexcept;
-
             iterator operator++() noexcept;
-            bool operator==(iterator other) const noexcept;
-            inline bool operator!=(iterator other) const noexcept { return !(*this == other); }
+            bool operator==(const iterator& other) const noexcept;
+            inline bool operator!=(const iterator& other) const noexcept { return !(*this == other); }
         };
 
         QtPrivate::RefCount ref = {{1}};
@@ -2406,53 +3516,245 @@ private:
 
         iterator end(const AutoHashAccess& access) const noexcept;
 
-        iterator erase(const AutoHashAccess& access, iterator it);
+        iterator erase(const AutoHashAccess& access, iterator it, qsizetype* count = nullptr);
     };
+    using ConstContainer = QtJambiPrivate::ConstAssociativeContainer<AutoHashAccess>;
+    using Container = QtJambiPrivate::AssociativeContainer<AutoHashAccess>;
+    friend ConstContainer;
+    friend Container;
+    using SetConstContainer = QtJambiPrivate::ConstSequentialContainer<AutoHashAccess>;
+    using SetContainer = QtJambiPrivate::SequentialContainer<AutoHashAccess>;
+    friend SetConstContainer;
+    friend SetContainer;
+public:
 
-    class iterator{
+    class const_iterator;
+    class key_iterator;
+    class key_value_iterator;
+    class const_key_value_iterator;
+
+    class abstract_iterator{
         QHashData::iterator i;
         void* e = nullptr;
-    public:
-        iterator(const QHashData::iterator& _i);
-
-        iterator(iterator&& iter) : i(std::move(iter.i)), e(std::move(iter.e)) {}
-        iterator(const iterator& iter) : i(iter.i), e(iter.e) {}
-
-        iterator& operator=(const iterator& iter) {
-            i = iter.i;
-            e = iter.e;
-            return *this;
-        }
-        iterator& operator++() noexcept;
-        bool operator==(iterator other) const noexcept;
-        inline bool operator!=(iterator other) const noexcept { return !(*this == other); }
-        inline char* key() const noexcept {return i.key();}
-        inline char& operator*() const noexcept {return *i.key();}
-        char* value() const noexcept;
+    protected:
+        explicit abstract_iterator(const QHashData::iterator& _i);
+        abstract_iterator(abstract_iterator&& iter) = default;
+        abstract_iterator(const abstract_iterator& iter) = default;
+        abstract_iterator& operator=(const abstract_iterator& iter) = default;
+        abstract_iterator& operator=(abstract_iterator&& iter) = default;
         friend AutoHashAccess;
         friend class AutoMultiHashAccess;
         friend class AutoSetAccess;
     };
 
-    using ConstContainer = QtJambiPrivate::ConstAssociativeContainer<AutoHashAccess>;
-    using Container = QtJambiPrivate::AssociativeContainer<AutoHashAccess>;
-    using SetConstContainer = QtJambiPrivate::ConstSequentialContainer<AutoHashAccess>;
-    using SetContainer = QtJambiPrivate::SequentialContainer<AutoHashAccess>;
+    class iterator : public abstract_iterator {
+    public:
+        typedef std::forward_iterator_tag iterator_category;
+        typedef qptrdiff difference_type;
+        typedef char& value_type;
+        typedef const char *pointer;
+        typedef const char &reference;
+        iterator(const QHashData::iterator& _i);
 
-    jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iterator);
-    jobject createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iterator);
+        iterator(iterator&& iter) = default;
+        iterator(const iterator& iter) = default;
+        iterator& operator=(const iterator& iter) = default;
+        iterator& operator=(iterator&& iter) = default;
+        iterator& operator++() noexcept;
+        iterator operator++(int) noexcept;
+        bool operator==(const iterator& other) const noexcept;
+        inline bool operator!=(const iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const const_iterator& other) const noexcept;
+        inline bool operator!=(const const_iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const key_iterator& other) const noexcept;
+        inline bool operator!=(const key_iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const key_value_iterator& other) const noexcept;
+        inline bool operator!=(const key_value_iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const const_key_value_iterator& other) const noexcept;
+        inline bool operator!=(const const_key_value_iterator& other) const noexcept { return !(*this == other); }
+        inline const char& key() const noexcept {return *i.key();}
+        inline char& operator*() const noexcept {return *i.key();}
+        char& value() const noexcept;
+        friend AutoHashAccess;
+        friend class AutoMultiHashAccess;
+        friend const_iterator;
+        friend key_iterator;
+        friend key_value_iterator;
+        friend const_key_value_iterator;
+    };
 
-    iterator begin(const void* container);
-    iterator end(const void* container);
+    class const_iterator : public abstract_iterator {
+    public:
+        typedef std::forward_iterator_tag iterator_category;
+        typedef qptrdiff difference_type;
+        typedef const char& value_type;
+        typedef const char *pointer;
+        typedef const char &reference;
+
+        const_iterator(const QHashData::iterator& _i);
+        const_iterator(const iterator& other);
+
+        const_iterator(const_iterator&& iter) = default;
+        const_iterator(const const_iterator& iter) = default;
+        const_iterator& operator=(const const_iterator& iter) = default;
+        const_iterator& operator=(const_iterator&& iter) = default;
+        const_iterator& operator++() noexcept;
+        const_iterator operator++(int) noexcept;
+        bool operator==(const const_iterator& other) const noexcept;
+        inline bool operator!=(const const_iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const key_iterator& other) const noexcept;
+        inline bool operator!=(const key_iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const iterator& other) const noexcept;
+        inline bool operator!=(const iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const key_value_iterator& other) const noexcept;
+        inline bool operator!=(const key_value_iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const const_key_value_iterator& other) const noexcept;
+        inline bool operator!=(const const_key_value_iterator& other) const noexcept { return !(*this == other); }
+        inline const char& key() const noexcept {return *i.key();}
+        inline const char& operator*() const noexcept {return *i.key();}
+        const char& value() const noexcept;
+        friend AutoHashAccess;
+        friend class AutoMultiHashAccess;
+        friend class AutoSetAccess;
+        friend key_value_iterator;
+        friend key_iterator;
+        friend const_key_value_iterator;
+        friend iterator;
+    };
+
+    class key_iterator : public abstract_iterator {
+    public:
+        typedef std::forward_iterator_tag iterator_category;
+        typedef qptrdiff difference_type;
+        typedef const char& value_type;
+        typedef const char *pointer;
+        typedef const char &reference;
+
+        key_iterator(const QHashData::iterator& _i);
+
+        key_iterator(key_iterator&& iter) = default;
+        key_iterator(const key_iterator& iter) = default;
+        key_iterator& operator=(const key_iterator& iter) = default;
+        key_iterator& operator=(key_iterator&& iter) = default;
+        key_iterator& operator++() noexcept;
+        key_iterator operator++(int) noexcept;
+        bool operator==(const key_iterator& other) const noexcept;
+        inline bool operator!=(const key_iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const const_iterator& other) const noexcept;
+        inline bool operator!=(const const_iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const iterator& other) const noexcept;
+        inline bool operator!=(const iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const key_value_iterator& other) const noexcept;
+        inline bool operator!=(const key_value_iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const const_key_value_iterator& other) const noexcept;
+        inline bool operator!=(const const_key_value_iterator& other) const noexcept { return !(*this == other); }
+        inline const char& operator*() const noexcept {return *i.key();}
+        friend AutoHashAccess;
+        friend class AutoMultiHashAccess;
+    };
+
+    class key_value_iterator : public abstract_iterator {
+    public:
+        typedef std::forward_iterator_tag iterator_category;
+        typedef qptrdiff difference_type;
+        typedef std::pair<const char&,char&> value_type;
+        typedef const char *pointer;
+        typedef const char &reference;
+        key_value_iterator(const QHashData::iterator& _i);
+
+        key_value_iterator(key_value_iterator&& iter) = default;
+        key_value_iterator(const key_value_iterator& iter) = default;
+        key_value_iterator& operator=(const key_value_iterator& iter) = default;
+        key_value_iterator& operator=(key_value_iterator&& iter) = default;
+        key_value_iterator& operator++() noexcept;
+        key_value_iterator operator++(int) noexcept;
+        bool operator==(const iterator& other) const noexcept;
+        inline bool operator!=(const iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const const_iterator& other) const noexcept;
+        inline bool operator!=(const const_iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const key_iterator& other) const noexcept;
+        inline bool operator!=(const key_iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const key_value_iterator& other) const noexcept;
+        inline bool operator!=(const key_value_iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const const_key_value_iterator& other) const noexcept;
+        inline bool operator!=(const const_key_value_iterator& other) const noexcept { return !(*this == other); }
+        std::pair<const char&,char&> operator*() const noexcept;
+        friend AutoHashAccess;
+        friend class AutoMultiHashAccess;
+        friend const_iterator;
+        friend key_iterator;
+        friend iterator;
+        friend const_key_value_iterator;
+    };
+
+    class const_key_value_iterator : public abstract_iterator {
+    public:
+        typedef std::forward_iterator_tag iterator_category;
+        typedef qptrdiff difference_type;
+        typedef std::pair<const char&,const char&> value_type;
+        typedef const char *pointer;
+        typedef const char &reference;
+
+        const_key_value_iterator(const QHashData::iterator& _i);
+        const_key_value_iterator(const key_value_iterator& other);
+
+        const_key_value_iterator(const_key_value_iterator&& iter) = default;
+        const_key_value_iterator(const const_key_value_iterator& iter) = default;
+        const_key_value_iterator& operator=(const const_key_value_iterator& iter) = default;
+        const_key_value_iterator& operator=(const_key_value_iterator&& iter) = default;
+        const_key_value_iterator& operator++() noexcept;
+        const_key_value_iterator operator++(int) noexcept;
+        bool operator==(const const_iterator& other) const noexcept;
+        inline bool operator!=(const const_iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const key_iterator& other) const noexcept;
+        inline bool operator!=(const key_iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const iterator& other) const noexcept;
+        inline bool operator!=(const iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const key_value_iterator& other) const noexcept;
+        inline bool operator!=(const key_value_iterator& other) const noexcept { return !(*this == other); }
+        bool operator==(const const_key_value_iterator& other) const noexcept;
+        inline bool operator!=(const const_key_value_iterator& other) const noexcept { return !(*this == other); }
+        std::pair<const char&,const char&> operator*() const noexcept;
+        friend AutoHashAccess;
+        friend class AutoMultiHashAccess;
+        friend const_iterator;
+        friend key_iterator;
+        friend iterator;
+        friend key_value_iterator;
+    };
+
+    key_iterator keyBegin(const void* container);
+    key_iterator keyEnd(const void* container);
+
+    const_key_value_iterator keyValueEnd(const void* container);
+    const_key_value_iterator keyValueBegin(const void* container);
+    inline const_key_value_iterator constKeyValueBegin(const void* container) {return keyValueBegin(container);}
+    inline const_key_value_iterator constKeyValueEnd(const void* container) {return keyValueEnd(container);}
+    key_value_iterator keyValueEnd(void* container);
+    key_value_iterator keyValueBegin(void* container);
+
+    iterator begin(void* container);
+    iterator end(void* container);
+    const_iterator begin(const void* container);
+    const_iterator end(const void* container);
+    inline const_iterator constBegin(const void* container) {return begin(container);}
+    inline const_iterator constEnd(const void* container) {return end(container);}
+private:
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoHashAccess>, const_iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoHashAccess>, iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoHashAccess>, key_value_iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoHashAccess>, const_key_value_iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoHashAccess>, key_iterator>&& iterator);
+
     virtual bool equalSpanEntries(const char* value1, const char* value2) const;
     virtual void copySpanEntry(char* value1, const char* value2) const;
-    virtual void eraseSpanEntry(char* value) const;
+    virtual void eraseSpanEntry(char* value, qsizetype* count = nullptr) const;
     virtual void emplace(void* container, const void* akey, JNIEnv *env, jobject value);
     virtual void emplace(void* container, const void* akey, const void* value);
-    virtual char* iteratorValue(const iterator& it) const;
-    virtual iterator& incrementIterator(iterator& it) const;
-    virtual void initializeIterator(iterator& it) const;
-    virtual bool iteratorEquals(const iterator& it1, const iterator& it2) const;
+    virtual char& iteratorValue(const abstract_iterator& it) const;
+    virtual void incrementIterator(abstract_iterator& it) const;
+    virtual void initializeIterator(abstract_iterator& it) const;
+    virtual bool iteratorEquals(const abstract_iterator& it1, const abstract_iterator& it2) const;
     static void defaultCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr);
     static void copyCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr, const void *other);
     static void moveCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr, void *other);
@@ -2465,20 +3767,43 @@ private:
     static void dataStreamOutSetFn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &s, const void *ptr);
     static void dataStreamInSetFn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &s, void *ptr);
     friend iterator;
-    friend Container;
-    friend ConstContainer;
-    friend SetContainer;
-    friend SetConstContainer;
 
     virtual bool isMulti() const;
     bool equal(const void* a, const void* b);
     void detach(QHashData ** map);
+    struct LinkDeleter{
+        void operator()(AutoHashAccess*);
+    };
+    typedef QtSharedPointer::ExternalRefCountWithCustomDeleter<AutoHashAccess, LinkDeleter> ExternalRefCountData;
+    QtSharedPointer::ExternalRefCountData *const m_refCount;
+    friend QtSharedPointer::ExternalRefCountWithCustomDeleter<AutoHashAccess, QtSharedPointer::NormalDeleter>;
+    friend QtSharedPointer::ExternalRefCountWithCustomDeleter<const AutoHashAccess, QtSharedPointer::NormalDeleter>;
+    friend QtSharedPointer::ExternalRefCountWithCustomDeleter<AutoMultiHashAccess, QtSharedPointer::NormalDeleter>;
+    friend QtSharedPointer::ExternalRefCountWithCustomDeleter<const AutoMultiHashAccess, QtSharedPointer::NormalDeleter>;
 
     friend class AutoMultiHashAccess;
     friend class AutoSetAccess;
 };
 
+template<>
+struct QtSharedPointer::ExternalRefCountWithCustomDeleter<AutoHashAccess, QtSharedPointer::NormalDeleter>{
+    typedef const void* DestroyerFn;
+    static constexpr char safetyCheckDeleter = 0;
+    static constexpr char deleter = 0;
+    static ExternalRefCountData* create(AutoHashAccess*, QtSharedPointer::NormalDeleter, DestroyerFn);
+};
+
+template<>
+struct QtSharedPointer::ExternalRefCountWithCustomDeleter<const AutoHashAccess, QtSharedPointer::NormalDeleter>{
+    typedef const void* DestroyerFn;
+    static constexpr char safetyCheckDeleter = 0;
+    static constexpr char deleter = 0;
+    static ExternalRefCountData* create(const AutoHashAccess*, QtSharedPointer::NormalDeleter, DestroyerFn);
+};
+
 class AutoMultiHashAccess : public virtual AbstractMultiHashAccess, public AutoHashAccess{
+    template<typename, typename, typename, bool, bool, bool, typename...>
+    friend struct qtjambi_ContainerIterator_cast;
 protected:
     AutoMultiHashAccess(const AutoMultiHashAccess&);
 public:
@@ -2499,6 +3824,55 @@ public:
                     PtrOwnerFunction valueOwnerFunction,
                     AbstractContainerAccess::DataType valueDataType
             );
+    using AutoHashAccess::take;
+    using AutoHashAccess::value;
+    using AutoHashAccess::values;
+    using AutoHashAccess::key;
+    using AutoHashAccess::keys;
+    using AutoHashAccess::equal;
+    using AutoHashAccess::size;
+    using AutoHashAccess::insert;
+    using AutoHashAccess::hasOwnerFunction;
+    using AutoHashAccess::getOwner;
+    using AutoHashAccess::isSharedWith;
+    using AutoHashAccess::detach;
+    using AutoHashAccess::isDetached;
+    using AutoHashAccess::constFind;
+    using AutoHashAccess::constEnd;
+    using AutoHashAccess::constBegin;
+    using AutoHashAccess::find;
+    using AutoHashAccess::end;
+    using AutoHashAccess::begin;
+    using AutoHashAccess::keyBegin;
+    using AutoHashAccess::keyEnd;
+    using AutoHashAccess::keyValueBegin;
+    using AutoHashAccess::keyValueEnd;
+    using AutoHashAccess::constKeyValueBegin;
+    using AutoHashAccess::constKeyValueEnd;
+    using AutoHashAccess::count;
+    using AutoHashAccess::contains;
+    using AutoHashAccess::clear;
+    using AutoHashAccess::hasValueNestedPointers;
+    using AutoHashAccess::hasValueNestedContainerAccess;
+    using AutoHashAccess::hasKeyNestedPointers;
+    using AutoHashAccess::hasKeyNestedContainerAccess;
+    using AutoHashAccess::sharedValueNestedContainerAccess;
+    using AutoHashAccess::sharedKeyNestedContainerAccess;
+    using AutoHashAccess::valueNestedContainerAccess;
+    using AutoHashAccess::keyNestedContainerAccess;
+    using AutoHashAccess::valueType;
+    using AutoHashAccess::keyType;
+    using AutoHashAccess::valueMetaType;
+    using AutoHashAccess::keyMetaType;
+    using AutoHashAccess::registerContainer;
+    using AutoHashAccess::keyValueIterator;
+    using AutoHashAccess::destructContainer;
+    using AutoHashAccess::deleteContainer;
+    using AutoHashAccess::createContainer;
+    using AutoHashAccess::reserve;
+    using AutoHashAccess::capacity;
+    static jboolean iteratorEquals(JNIEnv *, const void* ptr, AbstractSequentialConstIteratorAccess::IteratorType iteratorType, const ConstContainerAndAccessInfo& ptr2);
+    static void* asIterator(void* iterator, AbstractSequentialConstIteratorAccess::IteratorType iteratorType);
     void assign(void* container, const void* other) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     QMetaType registerContainer(QByteArrayView containerTypeName) override;
@@ -2532,6 +3906,12 @@ public:
     jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override;
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject keyValueBegin(JNIEnv * env, const ExtendedContainerInfo& container) override;
+    jobject keyValueEnd(JNIEnv * env, const ExtendedContainerInfo& container) override;
+    jobject constKeyValueBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject constKeyValueEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject keyBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
+    jobject keyEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key) override;
     jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override;
     void insert(JNIEnv *,const ContainerInfo&,jobject,jobject) override;
@@ -2541,6 +3921,7 @@ public:
     jboolean equal(JNIEnv *,const void*,jobject) override;
     qsizetype remove(JNIEnv *,const ContainerInfo&,jobject) override;
     void reserve(JNIEnv *,const ContainerInfo&,qsizetype) override;
+    void reserve(void* container, qsizetype size) override;
     qsizetype size(const void*) override;
     qsizetype size(JNIEnv *,const void*) override;
     jobject take(JNIEnv *,const ContainerInfo&,jobject) override;
@@ -2566,7 +3947,14 @@ public:
     size_t alignOf() const override;
     std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(const void* container) override;
     std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(void* container) override;
+    void* createContainer(const void* copy);
+    void deleteContainer(void* container);
 private:
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiHashAccess>, const_iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiHashAccess>, iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiHashAccess>, key_value_iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiHashAccess>, const_key_value_iterator>&& iterator);
+    jobject createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiHashAccess>, key_iterator>&& iterator);
     friend class AutoHashAccess;
     typedef AutoHashAccess::QHashData QHashData;
     struct MultiHashData{
@@ -2592,19 +3980,37 @@ private:
     void debugStream(QDebug &s, const void *ptr) override;
     bool equalSpanEntries(const char* value1, const char* value2) const override;
     void copySpanEntry(char* value1, const char* value2) const override;
-    void eraseSpanEntry(char* value) const override;
+    void eraseSpanEntry(char* value, qsizetype* count = nullptr) const override;
     void emplace(void* container, const void* akey, JNIEnv *env, jobject value) override;
     void emplace(void* container, const void* akey, const void* value) override;
-    void initializeIterator(iterator& it) const override;
-    char* iteratorValue(const iterator& it) const override;
-    iterator& incrementIterator(iterator& it) const override;
-    bool iteratorEquals(const iterator& it1, const iterator& it2) const override;
+    void initializeIterator(abstract_iterator& it) const override;
+    char& iteratorValue(const abstract_iterator& it) const override;
+    void incrementIterator(abstract_iterator& it) const override;
+    bool iteratorEquals(const abstract_iterator& it1, const abstract_iterator& it2) const override;
     IsBiContainerFunction getIsBiContainerFunction() override;
     bool isMulti() const override;
 };
 
+template<>
+struct QtSharedPointer::ExternalRefCountWithCustomDeleter<AutoMultiHashAccess, QtSharedPointer::NormalDeleter>{
+    typedef const void* DestroyerFn;
+    static constexpr char safetyCheckDeleter = 0;
+    static constexpr char deleter = 0;
+    static ExternalRefCountData* create(AutoMultiHashAccess*, QtSharedPointer::NormalDeleter, DestroyerFn);
+};
+
+template<>
+struct QtSharedPointer::ExternalRefCountWithCustomDeleter<const AutoMultiHashAccess, QtSharedPointer::NormalDeleter>{
+    typedef const void* DestroyerFn;
+    static constexpr char safetyCheckDeleter = 0;
+    static constexpr char deleter = 0;
+    static ExternalRefCountData* create(const AutoMultiHashAccess*, QtSharedPointer::NormalDeleter, DestroyerFn);
+};
+
 class AutoSetAccess : public AbstractSetAccess, public AbstractNestedSequentialAccess {
-    AutoHashAccess m_hashAccess;
+    template<typename, typename, typename, bool, bool, bool, typename...>
+    friend struct qtjambi_ContainerIterator_cast;
+    QSharedPointer<AutoHashAccess> m_hashAccess;
     QSharedPointer<QtMetaContainerPrivate::QMetaSequenceInterface> m_metaSequenceInterface;
 protected:
     AutoSetAccess(const AutoSetAccess&);
@@ -2622,6 +4028,7 @@ public:
     void assign(void*, const void* ) override;
     void assign(JNIEnv * env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other) override;
     QMetaType registerContainer(QByteArrayView containerTypeName) override;
+    static constexpr jboolean (&iteratorEquals)(JNIEnv *, const void*, AbstractSequentialConstIteratorAccess::IteratorType, const ConstContainerAndAccessInfo&) = AutoHashAccess::iteratorEquals;
     void dispose() override;
     AutoSetAccess* clone() override;
     const QObject* getOwner(const void* container) override;
@@ -2642,11 +4049,13 @@ public:
     jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override;
     void insert(JNIEnv * env, const ContainerInfo& container, jobject value) override;
+    void insert(void* container, const void* entry) override;
     void intersect(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;
     jboolean intersects(JNIEnv * env, const void* container, jobject other) override;
     jboolean equal(JNIEnv * env, const void* container, jobject other) override;
     jboolean remove(JNIEnv * env, const ContainerInfo& container, jobject value) override;
     void reserve(JNIEnv * env, const ContainerInfo& container, qsizetype newSize) override;
+    void reserve(void* container, qsizetype size) override;
     qsizetype size(JNIEnv * env, const void* container) override;
     qsizetype size(const void* container) override;
     void subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override;

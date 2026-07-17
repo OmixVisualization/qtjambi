@@ -219,6 +219,30 @@ public final class QtUtilities {
     public interface CharSupplier{ char getAsChar(); }
     
     /**
+     * Equivalent to {@link java.util.function.Consumer} with byte argument.
+     */
+    @FunctionalInterface
+    public static interface ByteConsumer{ void accept(byte t); }
+    
+    /**
+     * Equivalent to {@link java.util.function.Consumer} with byte argument.
+     */
+    @FunctionalInterface
+    public static interface ShortConsumer{ void accept(short t); }
+    
+    /**
+     * Equivalent to {@link java.util.function.Consumer} with byte argument.
+     */
+    @FunctionalInterface
+    public static interface CharConsumer{ void accept(char t); }
+    
+    /**
+     * Equivalent to {@link java.util.function.Consumer} with byte argument.
+     */
+    @FunctionalInterface
+    public static interface FloatConsumer{ void accept(float t); }
+    
+    /**
      * Equivalent to {@link java.util.function.Supplier}.
      */
     @FunctionalInterface

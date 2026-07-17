@@ -2091,6 +2091,11 @@ template<> QExplicitlySharedDataPointer<QGraphsLinePrivate>::~QExplicitlySharedD
         }
         since: [6,11]
     }
+
+    ObjectType{
+        name: "QLogValueAxis"
+        since: [6,12]
+    }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QAbstractDataProxy' set to non-final, as it is extended by other classes"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QAbstract3DSeries' set to non-final, as it is extended by other classes"}

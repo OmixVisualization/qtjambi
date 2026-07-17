@@ -1515,7 +1515,7 @@ bool Parser::parseDeclarator(DeclaratorAST *&node, bool iteratorFor) {
                 //ast->parameter_declaration_clause = CreateNode<ParameterDeclarationClauseAST>(_M_pool);
             }else{
                 ExpressionAST *node = nullptr;
-                if(parseCommaExpression(node)){
+                if(parseCommaExpression(node, false, '}')){
                     //ast->parameter_declaration_clause = CreateNode<ParameterDeclarationClauseAST>(_M_pool);
                     if (token_stream.lookAhead() != '}') {
                         token_stream.rewind(index);
@@ -1537,7 +1537,7 @@ bool Parser::parseDeclarator(DeclaratorAST *&node, bool iteratorFor) {
             token_stream.nextToken();
 
             ExpressionAST *expr = nullptr;
-            parseCommaExpression(expr);
+            parseCommaExpression(expr, false, ']');
 
             ADVANCE(']', "]")
 
@@ -1662,7 +1662,7 @@ label1: {
             token_stream.nextToken();
 
             ExpressionAST *expr = nullptr;
-            parseCommaExpression(expr);
+            parseCommaExpression(expr, false, ']');
 
             ADVANCE(']', "]")
 
@@ -2793,7 +2793,7 @@ bool Parser::parseInitDeclarator(InitDeclaratorAST *&node, bool noBrackets) {
         InitDeclaratorAST *ast = CreateNode<InitDeclaratorAST>(_M_pool);
         ast->initializer = CreateNode<InitializerAST>(_M_pool);
         if (token_stream.lookAhead() != '}') {
-            parseCommaExpression(ast->initializer->expression);
+            parseCommaExpression(ast->initializer->expression, false, '}');
         }
         UPDATE_POS(ast, start, token_stream.cursor());
         node = ast;
@@ -2903,7 +2903,7 @@ bool Parser::parseMemInitializer(MemInitializerAST *&node) {
     ExpressionAST *expr = nullptr;
     if(token_stream.lookAhead()=='{'){
         ADVANCE('{', "{")
-        parseCommaExpression(expr);
+        parseCommaExpression(expr, false, '}');
         ADVANCE('}', "}")
     }else{
         ADVANCE('(', "(")
@@ -3224,7 +3224,7 @@ bool Parser::parseStatement(StatementAST *&node) {
             ExpressionAST *expr = nullptr;
             if(token_stream.lookAhead()=='{'){
                 token_stream.nextToken();
-                if(token_stream.lookAhead() != '}' && !parseCommaExpression(expr)){
+                if(token_stream.lookAhead() != '}' && !parseCommaExpression(expr, false, '}')){
                     token_stream.rewind(start);
                     return false;
                 }
@@ -4256,7 +4256,7 @@ bool Parser::parseInitializerListExpression(ExpressionAST *&) {
         token_stream.nextToken();
         if(token_stream.lookAhead()!='}'){
             ExpressionAST *commaNode = nullptr;
-            if(!parseCommaExpression(commaNode)){
+            if(!parseCommaExpression(commaNode, false, '}')){
                 token_stream.rewind(start);
                 return false;
             }
@@ -4587,7 +4587,7 @@ bool Parser::parsePostfixExpression(ExpressionAST *&node) {
             ExpressionAST *expr = nullptr;
             if(token_stream.lookAhead() == '{'){
                 CHECK('{');
-                parseCommaExpression(expr);
+                parseCommaExpression(expr, false, '}');
                 CHECK('}');
             }else{
                 CHECK('(');
@@ -4709,7 +4709,7 @@ L_no_rewind:
             && (token_stream.lookAhead() == '(' || token_stream.lookAhead() == '{')) {
         bool paren = token_stream.lookAhead() == '(';
         token_stream.nextToken(); // skip '('
-        if(token_stream.lookAhead() != (paren ? ')' : '}') && !parseCommaExpression(expr)){
+        if(token_stream.lookAhead() != (paren ? ')' : '}') && !parseCommaExpression(expr, false, (paren ? 0 : '}'))){
             token_stream.rewind(start);
             return false;
         }
@@ -5014,7 +5014,7 @@ bool Parser::parseNewInitializer(NewInitializerAST *&node) {
     if (token_stream.lookAhead() == '{') {
         CHECK('{');
         ast = CreateNode<NewInitializerAST>(_M_pool);
-        parseCommaExpression(ast->expression);
+        parseCommaExpression(ast->expression, false, '}');
         CHECK('}');
     }else{
         CHECK('(');
@@ -5477,7 +5477,7 @@ bool Parser::parseExpression(ExpressionAST *&node, bool templArgs) {
     return parseCommaExpression(node, templArgs);
 }
 
-bool Parser::parseCommaExpression(ExpressionAST *&node, bool templArgs) {
+bool Parser::parseCommaExpression(ExpressionAST *&node, bool templArgs, char closingExptected) {
     std::size_t start = token_stream.cursor();
 
     if (!parseAssignmentExpression(node, templArgs))
@@ -5490,6 +5490,8 @@ bool Parser::parseCommaExpression(ExpressionAST *&node, bool templArgs) {
     while (token_stream.lookAhead() == ',') {
         std::size_t op = token_stream.cursor();
         token_stream.nextToken();
+        if (closingExptected!=0 && token_stream.lookAhead() == closingExptected)
+            break;
 
         if(token_stream.lookAhead() == Token_ellipsis){
             BinaryExpressionAST *ast = CreateNode<BinaryExpressionAST>(_M_pool);

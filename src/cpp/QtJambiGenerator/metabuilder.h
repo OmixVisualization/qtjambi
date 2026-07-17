@@ -132,6 +132,7 @@ class MetaBuilder {
         void setupConstructorAvailability(MetaClass *meta_class);
         void setupEquals(MetaClass *meta_class);
         void setupBeginEnd(MetaClass *meta_class);
+        void setupIterator(MetaClass *meta_class);
         void setupTextStreamFunctions(MetaClass *meta_class);
         void setupComparable(MetaClass *meta_class);
 

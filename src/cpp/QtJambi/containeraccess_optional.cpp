@@ -406,17 +406,50 @@ jobject OptionalAccess::first(JNIEnv * env, const void* container) {
 void OptionalAccess::setFirst(JNIEnv *env, void* container, jobject value) {
     bool& hasValue = *reinterpret_cast<bool*>(reinterpret_cast<char*>(container)+m_offset);
     if(value){
-        if(!hasValue)
+        if(!hasValue){
             m_keyMetaType.construct(container);
+            hasValue = true;
+        }
         jvalue jv;
         jv.l = value;
         m_keyExternalToInternalConverter(env, nullptr, jv, container, jValueType::l);
-        hasValue = true;
-    }else{
-        if(hasValue)
-            m_keyMetaType.destruct(container);
+    }else if(hasValue){
+        m_keyMetaType.destruct(container);
         hasValue = false;
     }
+}
+
+const void* OptionalAccess::first(const void* container) {
+    return *reinterpret_cast<const bool*>(reinterpret_cast<const char*>(container)+m_offset) ? container : nullptr;
+}
+
+void* OptionalAccess::first(void* container) {
+    return *reinterpret_cast<const bool*>(reinterpret_cast<const char*>(container)+m_offset) ? container : nullptr;
+}
+
+void OptionalAccess::setFirst(void* container, const void* value) {
+    bool& hasValue = *reinterpret_cast<bool*>(reinterpret_cast<char*>(container)+m_offset);
+    if(value){
+        if(!hasValue){
+            m_keyMetaType.construct(container);
+            hasValue = true;
+        }
+        m_keyMetaType.construct(container, value);
+    }else if(hasValue){
+        m_keyMetaType.destruct(container);
+        hasValue = false;
+    }
+}
+
+const void* OptionalAccess::second(const void*) {
+    return nullptr;
+}
+
+void* OptionalAccess::second(void*) {
+    return nullptr;
+}
+
+void OptionalAccess::setSecond(void*, const void*) {
 }
 
 jobject OptionalAccess::second(JNIEnv *, const void*) {

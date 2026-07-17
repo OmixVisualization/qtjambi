@@ -43,12 +43,23 @@ QT_WARNING_DISABLE_DEPRECATED
 
 // emitting  (functionsInTargetLang writeFinalFunction)
 
-extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QSet_initialize
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QSet_initialize__Ljava_lang_Class_2JLjava_lang_Iterable_2
 (JNIEnv * env, jobject _this, jclass elementType, QtJambiNativeID elementMetaType, jobject other)
 {
     QTJAMBI_TRY{
         QTJAMBI_NATIVE_METHOD_CALL("QSet<T>::initialize()")
         CoreAPI::initializeQSet(env, _this, elementType, elementMetaType, other);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QSet_initialize__JJ
+    (JNIEnv * env, jobject _this, QtJambiNativeID beginId, QtJambiNativeID endId)
+{
+    QTJAMBI_TRY{
+        QTJAMBI_NATIVE_METHOD_CALL("QSet<T>::initialize()")
+        CoreAPI::initializeQSet(env, _this, beginId, endId);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
     }QTJAMBI_TRY_END

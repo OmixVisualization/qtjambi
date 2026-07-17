@@ -170,8 +170,6 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
     if(ftype->isFunctionPointer() && !java_class->typeEntry()->getUsing().isEmpty()){
         writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/FunctionPointer")), included);
     }
-    if(java_class->needJObjectWrapper())
-        writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/JObjectWrapper")), included);
     IncludeList list = java_class->typeEntry()->extraIncludes();
     std::sort(list.begin(), list.end());
     for(const Include& inc : std::as_const(list)){
@@ -294,8 +292,6 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
     writeInclude(s, java_class->typeEntry()->include(), included);
 
     writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/QtJambiAPI")), included);
-    if(java_class->needJObjectWrapper())
-        writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/JObjectWrapper")), included);
 
     IncludeList list = java_class->typeEntry()->extraIncludes();
     std::sort(list.begin(), list.end());
@@ -571,7 +567,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
             s  << "};" << Qt::endl << Qt::endl;
         }
 
-        bool needsAccess = false;
+        bool needsAccess = java_class->typeEntry()->isDestructorProtected();
         QList<MetaEnum *> protectedEnums;
         QList<const MetaFunction *> publicOverrideFunctions;
         QList<const MetaFunction *> virtualOverrideFunctions;

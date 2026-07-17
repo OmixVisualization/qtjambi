@@ -46,6 +46,230 @@ public class QList<T> extends AbstractList<T> implements Cloneable
     }
     
     /**
+     * <p>Java wrapper for Qt class <code>QList::iterator</code></p>
+     */
+    public static final class Iterator<T> extends io.qt.core.QSequentialIterator<T,QList<T>> implements Comparable<@NonNull Iterator<T>>
+    {
+        static {
+            QtJambi_LibraryUtilities.initialize();
+        }
+        
+        /**
+         * Creates and returns a copy of this object.
+         */
+        @Override
+        public final @NonNull Iterator<T> clone(){
+            return new Iterator<>(this);
+        }
+
+        public Iterator(Iterator<T> other){
+            super(other);
+        }
+
+        /**
+         * Compares this iterator with other object.
+         */
+        @Override
+        public int compareTo(@NonNull Iterator<T> other){
+            return super.compareTo(other);
+        }
+
+        /**
+         * Constructor for internal use only.
+         * @param p expected to be <code>null</code>.
+         * @hidden
+         */
+        @NativeAccess
+        private Iterator(QPrivateConstructor p) { super(p); } 
+        
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+		public final java.util.Iterator<T> descendingIterator() {
+			return super.descendingIterator();
+		}
+        
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+		public final java.util.ListIterator<T> bidirectionalIterator() {
+			return super.bidirectionalIterator();
+		}
+    }
+    
+    /**
+     * <p>Java wrapper for Qt class <code>QList::const_iterator</code></p>
+     */
+    public static final class ConstIterator<T> extends io.qt.core.QSequentialConstIterator<T,QList<T>> implements Comparable<@NonNull ConstIterator<T>>
+    {
+		static {
+            QtJambi_LibraryUtilities.initialize();
+        }
+        
+        /**
+         * Creates and returns a copy of this object.
+         */
+        @Override
+        public final @NonNull ConstIterator<T> clone(){
+            return new ConstIterator<>(this);
+        }
+
+        public ConstIterator(ConstIterator<T> other){
+            super(other);
+        }
+        
+        public ConstIterator(Iterator<T> other){
+            super(other);
+        }
+
+        /**
+         * Compares this iterator with other object.
+         */
+        @Override
+        public int compareTo(@NonNull ConstIterator<T> other){
+            return super.compareTo(other);
+        }
+
+        /**
+         * Constructor for internal use only.
+         * @param p expected to be <code>null</code>.
+         * @hidden
+         */
+        @NativeAccess
+        private ConstIterator(QPrivateConstructor p) { super(p); }
+        
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+		public final java.util.Iterator<T> descendingIterator() {
+			return super.descendingIterator();
+		}
+        
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+		public final java.util.ListIterator<T> bidirectionalIterator() {
+			return super.bidirectionalIterator();
+		}
+    }
+    
+    /**
+     * <p>Java wrapper for Qt class <code>QList::reverse_iterator</code></p>
+     */
+    public static final class ReverseIterator<T> extends io.qt.core.QSequentialIterator<T,QList<T>> implements Comparable<@NonNull ReverseIterator<T>>
+    {
+        static {
+            QtJambi_LibraryUtilities.initialize();
+        }
+        
+        /**
+         * Creates and returns a copy of this object.
+         */
+        @Override
+        public final @NonNull ReverseIterator<T> clone(){
+            return new ReverseIterator<>(this);
+        }
+
+        public ReverseIterator(ReverseIterator<T> other){
+            super(other);
+        }
+
+        /**
+         * Compares this iterator with other object.
+         */
+        @Override
+        public int compareTo(@NonNull ReverseIterator<T> other){
+            return super.compareTo(other);
+        }
+
+        /**
+         * Constructor for internal use only.
+         * @param p expected to be <code>null</code>.
+         * @hidden
+         */
+        @NativeAccess
+        private ReverseIterator(QPrivateConstructor p) { super(p); } 
+        
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+		public final java.util.Iterator<T> descendingIterator() {
+			return super.descendingIterator();
+		}
+        
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+		public final java.util.ListIterator<T> bidirectionalIterator() {
+			return super.bidirectionalIterator();
+		}
+    }
+    
+    /**
+     * <p>Java wrapper for Qt class <code>QList::const_reverse_iterator</code></p>
+     */
+    public static final class ConstReverseIterator<T> extends io.qt.core.QSequentialConstIterator<T,QList<T>> implements Comparable<@NonNull ConstReverseIterator<T>>
+    {
+        static {
+            QtJambi_LibraryUtilities.initialize();
+        }
+        
+        /**
+         * Creates and returns a copy of this object.
+         */
+        @Override
+        public final @NonNull ConstReverseIterator<T> clone(){
+            return new ConstReverseIterator<>(this);
+        }
+
+        public ConstReverseIterator(ConstReverseIterator<T> other){
+            super(other);
+        }
+        
+        public ConstReverseIterator(ReverseIterator<T> other){
+            super(other);
+        }
+
+        /**
+         * Compares this iterator with other object.
+         */
+        @Override
+        public int compareTo(@NonNull ConstReverseIterator<T> other){
+            return super.compareTo(other);
+        }
+
+        /**
+         * Constructor for internal use only.
+         * @param p expected to be <code>null</code>.
+         * @hidden
+         */
+        @NativeAccess
+        private ConstReverseIterator(QPrivateConstructor p) { super(p); } 
+        
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+		public final java.util.Iterator<T> descendingIterator() {
+			return super.descendingIterator();
+		}
+        
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+		public final java.util.ListIterator<T> bidirectionalIterator() {
+			return super.bidirectionalIterator();
+		}
+    }
+    
+    /**
      * Constructor for internal use only.
      * @param p expected to be <code>null</code>.
      * @hidden
@@ -82,7 +306,9 @@ public class QList<T> extends AbstractList<T> implements Cloneable
     public QList(@Nullable Class<T> elementType) {
 		super(null);
 		QMetaType metaType = QMetaType.fromType(elementType);
-		initialize(elementType, QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
+		initialize(elementType, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(metaType, "Argument 'metaType': null not expected.")),
+				null);
 	}
     
     /**
@@ -94,7 +320,9 @@ public class QList<T> extends AbstractList<T> implements Cloneable
 	public QList(@Nullable Class<T> elementType, T @StrictNonNull...elements) {
 		super(null);
 		QMetaType metaType = QMetaType.fromType(elementType);
-		initialize(elementType, QtJambi_LibraryUtilities.internal.nativeId(metaType), elements.length==0 ? null : Arrays.asList(elements));
+		initialize(elementType, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(metaType, "Argument 'metaType': null not expected.")),
+				elements.length==0 ? null : Arrays.asList(elements));
 	}
     
     /**
@@ -104,7 +332,9 @@ public class QList<T> extends AbstractList<T> implements Cloneable
      */
 	public QList(@StrictNonNull QMetaType metaType) {
 		super(null);
-		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
+		initialize(null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(metaType, "Argument 'metaType': null not expected.")),
+				null);
 	}
 	
 	/**
@@ -115,7 +345,9 @@ public class QList<T> extends AbstractList<T> implements Cloneable
 	@SafeVarargs
 	public QList(@StrictNonNull QMetaType metaType, T @StrictNonNull...elements) {
 		super(null);
-		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), elements.length==0 ? null : Arrays.asList(elements));
+		initialize(null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(metaType, "Argument 'metaType': null not expected.")),
+				elements.length==0 ? null : Arrays.asList(elements));
 	}
     
     /**
@@ -166,14 +398,18 @@ public class QList<T> extends AbstractList<T> implements Cloneable
 			initialize(null, 0, other);
 		}else {
 			QMetaType metaType = findElementMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
-			initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
+			initialize(null, 
+					QtJambi_LibraryUtilities.internal.checkedNativeId(metaType),
+					other);
 		}
     }
     
     @NativeAccess
     QList(QMetaType elementMetaType, Collection<T> other) {
 		super(null);
-		initialize(elementMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(elementMetaType), other);
+		initialize(null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(elementMetaType, "Argument 'elementMetaType': null not expected.")),
+				other);
 	}
 
     /**
@@ -183,16 +419,94 @@ public class QList<T> extends AbstractList<T> implements Cloneable
      */
     public QList(@StrictNonNull Iterable<? extends T> iterable) {
 		super(null);
+		Objects.requireNonNull(iterable, "Argument 'iterable': null not expected.");
 		QMetaType metaType;
 		if(iterable instanceof AbstractSpan) {
 			AbstractSpan<? extends T> span = (AbstractSpan<? extends T>)iterable;
-			metaType = span.elementMetaType();
+			metaType = span.elementType();
 		}else if(iterable instanceof Collection) {
 			metaType = findElementMetaType((Collection<?>)iterable);
+		}else if(iterable instanceof QRegularExpressionMatchIterator) {
+			metaType = QMetaType.fromType(QRegularExpressionMatch.class);
+		}else if(iterable instanceof QDirIterator) {
+			metaType = new QMetaType(QMetaType.Type.QString);
+		}else if(iterable instanceof AbstractIterator) {
+	    	initialize(QtJambi_LibraryUtilities.internal.nativeId((AbstractIterator<?,?>)iterable), 0, 0);
+	    	return;
 		}else {
-			throw new IllegalArgumentException("Cannot create QList from unknown iterable");
+			List<T> container = new ArrayList<>();
+			for (T t : iterable) {
+				container.add(t);
+			}
+			metaType = findElementMetaType(container);
 		}
-		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), iterable);
+		initialize(null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(metaType),
+				iterable);
+    }
+    
+    /**
+     * Creating a container with given content.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#QList">QList::<wbr>QList(InputIterator,InputIterator)</a></code></p>
+     * @param begin
+     * @param end
+     */
+	public <Container extends QtObjectInterface, InputIterator extends QSequentialConstIterator<T,Container>> QList(@StrictNonNull InputIterator begin, @StrictNonNull InputIterator end) {
+    	super(null);
+    	Objects.requireNonNull(begin, "Argument 'begin': null not expected.");
+    	Objects.requireNonNull(end, "Argument 'end': null not expected.");
+    	initialize(QtJambi_LibraryUtilities.internal.nativeId(begin), QtJambi_LibraryUtilities.internal.nativeId(end), 0);
+    }
+    
+    /**
+     * Creating a container with given content.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#QList">QList::<wbr>QList(InputIterator,InputIterator)</a></code></p>
+     * @param begin
+     * @param end
+     */
+	public <K,Container extends QtObjectInterface, InputIterator extends QAssociativeConstIterator<K,T,Container>> QList(@StrictNonNull InputIterator begin, @StrictNonNull InputIterator end) {
+    	super(null);
+    	Objects.requireNonNull(begin, "Argument 'begin': null not expected.");
+    	Objects.requireNonNull(end, "Argument 'end': null not expected.");
+    	initialize(QtJambi_LibraryUtilities.internal.nativeId(begin), QtJambi_LibraryUtilities.internal.nativeId(end), 0);
+    }
+	
+	public static <T,Container extends QtObjectInterface, InputIterator extends QSequentialConstIterator<T,Container>> QList<T> of(@StrictNonNull InputIterator begin, @StrictNonNull InputIterator end) {
+    	return new QList<>(begin, end);
+    }
+	
+	public static <K,T,Container extends QtObjectInterface, InputIterator extends QAssociativeConstIterator<K,T,Container>> QList<T> of(@StrictNonNull InputIterator begin, @StrictNonNull InputIterator end) {
+    	return new QList<>(begin, end);
+    }
+	
+	public static <K,T,Container extends QtObjectInterface, InputIterator extends QAssociativeConstIterator<K,T,Container>> QList<T> ofValues(@StrictNonNull InputIterator begin, @StrictNonNull InputIterator end) {
+    	return new QList<>(begin, end);
+    }
+	
+	private <Key,V,Container extends QtObjectInterface> QList(QAssociativeConstIterator<Key,V,Container> begin, QAssociativeConstIterator<Key,V,Container> end, int associativeMapMode) {
+    	super(null);
+    	Objects.requireNonNull(begin, "Argument 'begin': null not expected.");
+    	Objects.requireNonNull(end, "Argument 'end': null not expected.");
+    	initialize(QtJambi_LibraryUtilities.internal.nativeId(begin), QtJambi_LibraryUtilities.internal.nativeId(end), associativeMapMode);
+    }
+	
+	private <Key,V,Container extends QtObjectInterface> QList(QSequentialConstPairIterator<Key,V,Container> begin, QSequentialConstPairIterator<Key,V,Container> end, int associativeMapMode) {
+    	super(null);
+    	Objects.requireNonNull(begin, "Argument 'begin': null not expected.");
+    	Objects.requireNonNull(end, "Argument 'end': null not expected.");
+    	initialize(QtJambi_LibraryUtilities.internal.nativeId(begin), QtJambi_LibraryUtilities.internal.nativeId(end), associativeMapMode);
+    }
+	
+	public static <T,K,Container extends QtObjectInterface, InputIterator extends QAssociativeConstIterator<T,K,Container>> QList<T> ofKeys(@StrictNonNull InputIterator begin, @StrictNonNull InputIterator end) {
+		return new QList<>(begin, end, -1);
+    }
+	
+	public static <K,T,Container extends QtObjectInterface, InputIterator extends QAssociativeConstIterator<K,T,Container>> QList<QPair<K,T>> ofKeyValuePairs(@StrictNonNull InputIterator begin, @StrictNonNull InputIterator end) {
+		return new QList<>(begin, end, 1);
+    }
+	
+	public static <K,T,Container extends QtObjectInterface, InputIterator extends QSequentialConstPairIterator<K,T,Container>> QList<QPair<K,T>> of(@StrictNonNull InputIterator begin, @StrictNonNull InputIterator end) {
+		return new QList<>(begin, end, 1);
     }
     
     /**
@@ -218,6 +532,9 @@ public class QList<T> extends AbstractList<T> implements Cloneable
 
     @QtUninvokable
     private native void initialize(Class<?> elementType, long elementMetaType, Iterable<? extends T> other);
+
+    @QtUninvokable
+    private native void initialize(long begin, long end, int associativeMapMode);
     
     /**
      * Creates and returns a copy of this object.
@@ -341,52 +658,160 @@ public class QList<T> extends AbstractList<T> implements Cloneable
     private native int count(long __this__nativeId, T t);
 
     /**
-     * Provides a mutable C++ iterator to the containers begin.
+     * Provides a mutable C++ iterator to the container's begin.
      * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#begin">QList::<wbr>begin()</a></code></p>
      * @return begin
      */
     @QtUninvokable
-    protected final @NonNull QSequentialIterator<T> begin() {
+    public final @NonNull Iterator<T> begin() {
         return begin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private native QSequentialIterator<T> begin(long __this__nativeId);
+    private native Iterator<T> begin(long __this__nativeId);
 
     /**
-     * Provides a mutable C++ iterator to the containers end.
+     * Provides a mutable C++ iterator to the container's end.
      * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#end">QList::<wbr>end()</a></code></p>
      * @return end
      */
     @QtUninvokable
-    protected final @NonNull QSequentialIterator<T> end() {
+    public final @NonNull Iterator<T> end() {
         return end(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private native QSequentialIterator<T> end(long __this__nativeId);
+    private native Iterator<T> end(long __this__nativeId);
 
     /**
-     * Provides a constant C++ iterator to the containers begin.
+     * Provides a constant C++ iterator to the container's begin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#cbegin">QList::<wbr>cbegin()const</a></code></p>
+     * @return begin
+     */
+    @QtUninvokable
+    public final @NonNull ConstIterator<T> cbegin() {
+    	return constBegin();
+    }
+
+    /**
+     * Provides a constant C++ iterator to the container's begin.
      * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#constBegin">QList::<wbr>constBegin()const</a></code></p>
      * @return begin
      */
     @QtUninvokable
-    protected final @NonNull QSequentialConstIterator<T> constBegin() {
+    public final @NonNull ConstIterator<T> constBegin() {
         return constBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private native QSequentialConstIterator<T> constBegin(long __this__nativeId);
+    private native ConstIterator<T> constBegin(long __this__nativeId);
 
     /**
-     * Provides a constant C++ iterator to the containers end.
+     * Provides a constant C++ iterator to the container's end.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#cend">QList::<wbr>cend()const</a></code></p>
+     * @return end
+     */
+    @QtUninvokable
+    public final @NonNull ConstIterator<T> cend() {
+    	return constEnd();
+    }
+
+    /**
+     * Provides a constant C++ iterator to the container's end.
      * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#constEnd">QList::<wbr>constEnd()const</a></code></p>
      * @return end
      */
     @QtUninvokable
-    protected final @NonNull QSequentialConstIterator<T> constEnd() {
+    public final @NonNull ConstIterator<T> constEnd() {
         return constEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private native QSequentialConstIterator<T> constEnd(long __this__nativeId);
+    private native ConstIterator<T> constEnd(long __this__nativeId);
+
+    /**
+     * Provides a mutable C++ iterator to the container's reverse begin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#rbegin">QList::<wbr>rbegin()</a></code></p>
+     * @return reverse begin
+     */
+    @QtUninvokable
+    public final @NonNull ReverseIterator<T> rbegin() {
+    	return reverseBegin();
+    }
+
+    /**
+     * Provides a mutable C++ iterator to the container's reverse begin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#rbegin">QList::<wbr>rbegin()</a></code></p>
+     * @return reverse begin
+     */
+    @QtUninvokable
+    public final @NonNull ReverseIterator<T> reverseBegin() {
+        return reverseBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+
+    /**
+     * Provides a mutable C++ iterator to the container's reverse end.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#rend">QList::<wbr>rend()</a></code></p>
+     * @return reverse end
+     */
+    @QtUninvokable
+    public final @NonNull ReverseIterator<T> rend() {
+    	return reverseEnd();
+    }
+
+    /**
+     * Provides a mutable C++ iterator to the container's reverse end.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#rend">QList::<wbr>rend()</a></code></p>
+     * @return reverse end
+     */
+    @QtUninvokable
+    public final @NonNull ReverseIterator<T> reverseEnd() {
+        return reverseEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+    
+    private native ReverseIterator<T> reverseBegin(long nativeId);
+    
+    private native ReverseIterator<T> reverseEnd(long nativeId);
+
+    /**
+     * Provides a constant C++ iterator to the container's reverse begin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#crbegin">QList::<wbr>crbegin()const</a></code></p>
+     * @return reverse begin
+     */
+    @QtUninvokable
+    public final @NonNull ConstReverseIterator<T> crbegin() {
+    	return constReverseBegin();
+    }
+
+    /**
+     * Provides a constant C++ iterator to the container's reverse begin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#crbegin">QList::<wbr>crbegin()const</a></code></p>
+     * @return reverse begin
+     */
+    @QtUninvokable
+    public final @NonNull ConstReverseIterator<T> constReverseBegin() {
+        return constReverseBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+
+    /**
+     * Provides a constant C++ iterator to the container's reverse end.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#crend">QList::<wbr>crend()const</a></code></p>
+     * @return reverse end
+     */
+    @QtUninvokable
+    public final @NonNull ConstReverseIterator<T> crend() {
+    	return constReverseEnd();
+    }
+
+    /**
+     * Provides a constant C++ iterator to the container's reverse end.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#crend">QList::<wbr>crend()const</a></code></p>
+     * @return reverse end
+     */
+    @QtUninvokable
+    public final @NonNull ConstReverseIterator<T> constReverseEnd() {
+        return constReverseEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+
+    private native ConstReverseIterator<T> constReverseBegin(long nativeId);
+    
+    private native ConstReverseIterator<T> constReverseEnd(long nativeId);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#endsWith">QList::<wbr>endsWith(T)const</a></code></p>
@@ -1063,7 +1488,7 @@ public class QList<T> extends AbstractList<T> implements Cloneable
     private native void readFrom(long __this__nativeId, long stream);
     
     @io.qt.QtUninvokable
-    final QMetaType elementMetaType() {
+    public final QMetaType elementMetaType() {
         return elementMetaType(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @io.qt.QtUninvokable

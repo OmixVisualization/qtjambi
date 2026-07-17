@@ -1484,23 +1484,24 @@ struct TreeRangeWrapper : std::vector<typename TreeRangeData<has_itemAccess,Args
 private:
     void initialize(JNIEnv* env){
         if constexpr(rowType==RowType::Range){
-            auto elementNestedContainerAccess = m_data.elementNestedContainerAccess();
-            if(elementNestedContainerAccess->isSequential()){
-                AbstractSequentialAccess* sequentialElementAccess = static_cast<AbstractSequentialAccess*>(elementNestedContainerAccess.get());
-                auto containerIter = m_data.containerAccess()->constElementIterator(m_data.container());
-                while(containerIter->hasNext()){
-                    const void* data = containerIter->next();
-                    *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, sequentialElementAccess->size(data));
+            if(auto elementNestedContainerAccess = m_data.elementNestedContainerAccess()){
+                if(elementNestedContainerAccess->isSequential()){
+                    AbstractSequentialAccess* sequentialElementAccess = static_cast<AbstractSequentialAccess*>(elementNestedContainerAccess.get());
+                    auto containerIter = m_data.containerAccess()->constElementIterator(m_data.container());
+                    while(containerIter->hasNext()){
+                        const void* data = containerIter->next();
+                        *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, sequentialElementAccess->size(data));
+                    }
+                }else if(elementNestedContainerAccess->isAssociative()){
+                    AbstractAssociativeAccess* associativeElementAccess = static_cast<AbstractAssociativeAccess*>(elementNestedContainerAccess.get());
+                    auto containerIter = m_data.containerAccess()->constElementIterator(m_data.container());
+                    while(containerIter->hasNext()){
+                        const void* data = containerIter->next();
+                        *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, associativeElementAccess->size(data));
+                    }
+                }else if(elementNestedContainerAccess->isPair()){
+                    *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, 2);
                 }
-            }else if(elementNestedContainerAccess->isAssociative()){
-                AbstractAssociativeAccess* associativeElementAccess = static_cast<AbstractAssociativeAccess*>(elementNestedContainerAccess.get());
-                auto containerIter = m_data.containerAccess()->constElementIterator(m_data.container());
-                while(containerIter->hasNext()){
-                    const void* data = containerIter->next();
-                    *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, associativeElementAccess->size(data));
-                }
-            }else if(elementNestedContainerAccess->isPair()){
-                *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, 2);
             }
         }
         auto javaIter = m_data.containerAccess()->constElementIterator(m_data.container());
@@ -1545,13 +1546,14 @@ private:
                     }
                     if constexpr(rowType==RowType::Range){
                         if(container){
-                            auto elementNestedContainerAccess = m_data.elementNestedContainerAccess();
-                            if(elementNestedContainerAccess->isSequential()){
-                                *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, static_cast<AbstractSequentialAccess*>(elementNestedContainerAccess.get())->size(container));
-                            }else if(elementNestedContainerAccess->isAssociative()){
-                                *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, static_cast<AbstractAssociativeAccess*>(elementNestedContainerAccess.get())->size(container));
-                            }else if(elementNestedContainerAccess->isPair()){
-                                *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, 2);
+                            if(auto elementNestedContainerAccess = m_data.elementNestedContainerAccess()){
+                                if(elementNestedContainerAccess->isSequential()){
+                                    *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, static_cast<AbstractSequentialAccess*>(elementNestedContainerAccess.get())->size(container));
+                                }else if(elementNestedContainerAccess->isAssociative()){
+                                    *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, static_cast<AbstractAssociativeAccess*>(elementNestedContainerAccess.get())->size(container));
+                                }else if(elementNestedContainerAccess->isPair()){
+                                    *m_data.m_treeColumnCount = qMax(*m_data.m_treeColumnCount, 2);
+                                }
                             }
                         }
                     }
@@ -2886,14 +2888,15 @@ public:
                 return this->itemModel().QAbstractItemModel::roleNames();
             }
         }else if(AbstractSequentialAccess* listAccess = m_data.model()->containerAccess().get()){
-            QSharedPointer<AbstractContainerAccess> elementNestedContainerAccess{listAccess->elementNestedContainerAccess(), &containerDisposer};
-            if(MultiRole::isMultiRole(listAccess->elementMetaType(), elementNestedContainerAccess.get())){
-                return this->itemModel().QAbstractItemModel::roleNames();
-            }else if (const QMetaObject* mo = listAccess->elementMetaType().metaObject()){
-                return this->roleNamesForMetaObject(this->itemModel(), *mo);
-            }else if(elementNestedContainerAccess->isSequential()){
-                if (const QMetaObject* mo = static_cast<AbstractSequentialAccess*>(elementNestedContainerAccess.get())->elementMetaType().metaObject()){
+            if(QSharedPointer<AbstractContainerAccess> elementNestedContainerAccess{listAccess->elementNestedContainerAccess(), &containerDisposer}){
+                if(MultiRole::isMultiRole(listAccess->elementMetaType(), elementNestedContainerAccess.get())){
+                    return this->itemModel().QAbstractItemModel::roleNames();
+                }else if (const QMetaObject* mo = listAccess->elementMetaType().metaObject()){
                     return this->roleNamesForMetaObject(this->itemModel(), *mo);
+                }else if(elementNestedContainerAccess->isSequential()){
+                    if (const QMetaObject* mo = static_cast<AbstractSequentialAccess*>(elementNestedContainerAccess.get())->elementMetaType().metaObject()){
+                        return this->roleNamesForMetaObject(this->itemModel(), *mo);
+                    }
                 }
             }
         }
@@ -3696,6 +3699,106 @@ public:
     }
 #endif //QT_VERSION >= QT_VERSION_CHECK(6,11,0)
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,12,0)
+    void interfaceVersion(int &versionNumber) const {
+        versionNumber = QT_VERSION;
+    }
+
+    void sort(int column, Qt::SortOrder order)    {
+        Q_UNUSED(column)
+        Q_UNUSED(order)
+        /*if constexpr (isMutable() && std::is_swappable_v<row_type>) {
+            if (rowCount({}) < 2 || column >= columnCount({}))
+                return;
+            Compare compare(this, column, order);
+            if (!compare.checkComparable())
+                return;
+
+            this->beginLayoutChange();
+            QScopeGuard endLayoutChange([this]{ this->endLayoutChange(); });
+            that().sortImpl([&compare](const auto &leftRow, const auto &rightRow) {
+                if (auto anyInvalid = Compare::compareInvalid(leftRow, rightRow))
+                    return *anyInvalid;
+                return row_traits::for_element_at(leftRow, compare.m_index.column(),
+                                                  [&rightRow, &compare](const auto &leftItem){
+                                                      return row_traits::for_element_at(rightRow, compare.m_index.column(),
+                                                                                        [&leftItem, &compare](const auto &rightItem){
+                                                                                            // Called by std::stable_sort. Since "column" is a runtime value, we
+                                                                                            // can't statically assert that lhs and rhs are of the same type.
+                                                                                            if constexpr (std::is_same_v<decltype(leftItem), decltype(rightItem)>) {
+                                                                                                if (auto anyInvalid = Compare::compareInvalid(leftItem, rightItem))
+                                                                                                    return *anyInvalid;
+                                                                                                return compare(QRangeModelDetails::refTo(leftItem),
+                                                                                                               QRangeModelDetails::refTo(rightItem));
+                                                                                            } else {
+                                                                                                Q_UNREACHABLE();
+                                                                                            }
+                                                                                            return false;
+                                                                                        });
+                                                  });
+            });
+        }*/
+    }
+
+    QModelIndexList match(const QModelIndex &start, int role, const QVariant &value,
+                          int hits, Qt::MatchFlags flags) const    {
+        Q_UNUSED(start)
+        Q_UNUSED(role)
+        Q_UNUSED(value)
+        Q_UNUSED(hits)
+        Q_UNUSED(flags)
+        // return that().matchImpl(start, role,
+        //                         QRangeModelImplBase::convertMatchValue(value, flags), hits, flags);
+        return {};
+    }
+
+    Qt::DropActions adjustSupportedDragActions(Qt::DropActions dragActions){
+        if constexpr (!isMutable())
+            dragActions &= ~Qt::MoveAction;
+        return dragActions;
+    }
+
+    Qt::DropActions adjustSupportedDropActions(Qt::DropActions dropActions)    {
+        if constexpr (!isMutable())
+            dropActions = Qt::IgnoreAction;
+
+        return dropActions;
+    }
+
+    QStringList mimeTypes() const    {
+        // using ItemType = QRangeModelDetails::wrapped_t<typename row_traits::item_type>;
+        // if constexpr (QRangeModelDetails::item_access<ItemType>::hasMimeTypes)
+        //     return QRangeModelDetails::QRangeModelItemAccess<ItemType>::mimeTypes();
+        // else if constexpr (QRangeModelDetails::hasMimeTypes<wrapped_row_type>)
+        //     return QRangeModelDetails::QRangeModelRowOptions<wrapped_row_type>::mimeTypes();
+        // else
+            return this->itemModel().QAbstractItemModel::mimeTypes();
+    }
+    bool canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column,
+                         const QModelIndex &parent) const{
+        Q_UNUSED(data)
+        Q_UNUSED(action)
+        Q_UNUSED(row)
+        Q_UNUSED(column)
+        Q_UNUSED(parent)
+        return false;
+    }
+    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column,
+                      const QModelIndex &parent){
+        Q_UNUSED(data)
+        Q_UNUSED(action)
+        Q_UNUSED(row)
+        Q_UNUSED(column)
+        Q_UNUSED(parent)
+        return false;
+    }
+    QMimeData *mimeData(const QModelIndexList &indexes) const{
+        Q_UNUSED(indexes)
+        return nullptr;
+    }
+
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,12,0)
+
     ModelData m_data;
     Protocol m_protocol;
     std::unique_ptr<QGenericTableItemModelImpl<GenericTable>> m_owner;
@@ -3729,6 +3832,18 @@ public:
 #if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
     using MultiData = Override<QRangeModelImplBase::MultiData, &Self::multiData>;
     using SetAutoConnectPolicy = Override<QRangeModelImplBase::SetAutoConnectPolicy, &Self::setAutoConnectPolicy>;
+#endif
+#if QT_VERSION >= QT_VERSION_CHECK(6,12,0)
+    using InterfaceVersion = Override<QRangeModelImplBase::InterfaceVersion, &Self::interfaceVersion>;
+    using Sort = Override<QRangeModelImplBase::Sort, &Self::sort>;
+    using Match = Override<QRangeModelImplBase::Match, &Self::match>;
+    using AdjustSupportedDragActions = Override<QRangeModelImplBase::AdjustSupportedDragActions, &Self::adjustSupportedDragActions>;
+    using AdjustSupportedDropActions = Override<QRangeModelImplBase::AdjustSupportedDropActions, &Self::adjustSupportedDropActions>;
+
+    using MimeTypes = Override<QRangeModelImplBase::MimeTypes, &Self::mimeTypes>;
+    using CanDropMimeData = Override<QRangeModelImplBase::CanDropMimeData, &Self::canDropMimeData>;
+    using DropMimeData = Override<QRangeModelImplBase::DropMimeData, &Self::dropMimeData>;
+    using MimeData = Override<QRangeModelImplBase::MimeData, &Self::mimeData>;
 #endif
 private:
 };

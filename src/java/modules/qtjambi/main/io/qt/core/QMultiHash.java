@@ -29,21 +29,10 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.BiPredicate;
-import java.util.function.Predicate;
+import java.util.*;
+import java.util.function.*;
 
-import io.qt.NativeAccess;
-import io.qt.NonNull;
-import io.qt.Nullable;
-import io.qt.QNoImplementationException;
-import io.qt.QNoNativeResourcesException;
-import io.qt.QtUninvokable;
-import io.qt.StrictNonNull;
+import io.qt.*;
 
 /**
  * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qmultihash.html">QMultiHash</a></code></p>
@@ -52,6 +41,184 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
 {
 	static {
     	QtJambi_LibraryUtilities.initialize();
+    }
+    
+    /**
+     * <p>Java wrapper for Qt class <code>QMap::iterator</code></p>
+     */
+    public static final class Iterator<Key,T> extends io.qt.core.QAssociativeIterator<Key,T,QMultiHash<Key,T>>
+    {
+        static {
+            QtJambi_LibraryUtilities.initialize();
+        }
+        
+        /**
+         * Creates and returns a copy of this object.
+         */
+        @Override
+        public final @NonNull Iterator<Key,T> clone(){
+            return new Iterator<>(this);
+        }
+
+        private Iterator(Iterator<Key,T> other){
+            super(other);
+        }
+
+        /**
+         * Constructor for internal use only.
+         * @param p expected to be <code>null</code>.
+         * @hidden
+         */
+        @NativeAccess
+        private Iterator(QPrivateConstructor p) { super(p); } 
+    }
+    
+    /**
+     * <p>Java wrapper for Qt class <code>QMap::const_iterator</code></p>
+     */
+    public static final class ConstIterator<Key,T> extends io.qt.core.QAssociativeConstIterator<Key,T,QMultiHash<Key,T>>
+    {
+        static {
+            QtJambi_LibraryUtilities.initialize();
+        }
+        
+        /**
+         * Creates and returns a copy of this object.
+         */
+        @Override
+        public final @NonNull ConstIterator<Key,T> clone(){
+            return new ConstIterator<>(this);
+        }
+
+        public ConstIterator(ConstIterator<Key,T> other){
+            super(other);
+        }
+        
+        public ConstIterator(Iterator<Key,T> other){
+            super(other);
+        }
+
+        /**
+         * Constructor for internal use only.
+         * @param p expected to be <code>null</code>.
+         * @hidden
+         */
+        @NativeAccess
+        private ConstIterator(QPrivateConstructor p) { super(p); } 
+    }
+    
+    /**
+     * <p>Java wrapper for Qt class <code>QMap::key_iterator</code></p>
+     */
+    public static final class KeyIterator<Key> extends QSequentialConstIterator<Key,QMultiHash<Key,?>>
+    {
+        static {
+            QtJambi_LibraryUtilities.initialize();
+        }
+        
+        /**
+         * Creates and returns a copy of this object.
+         */
+        @Override
+        public final @NonNull KeyIterator<Key> clone(){
+            return new KeyIterator<>(this);
+        }
+
+        public KeyIterator(KeyIterator<Key> other){
+            super(other);
+        }
+        
+        public <T> KeyIterator(ConstIterator<Key,T> other){
+        	super(other, false);
+        }
+        
+        public <T> KeyIterator(Iterator<Key,T> other){
+            super(other);
+        }
+
+        /**
+         * Constructor for internal use only.
+         * @param p expected to be <code>null</code>.
+         * @hidden
+         */
+        @NativeAccess
+        private KeyIterator(QPrivateConstructor p) { super(p); } 
+    }
+    
+    /**
+     * <p>Java wrapper for Qt class <code>QMap::key_value_iterator</code></p>
+     */
+    public static final class KeyValueIterator<Key,T> extends QSequentialPairIterator<Key,T,QMultiHash<Key,T>>
+    {
+        static {
+            QtJambi_LibraryUtilities.initialize();
+        }
+        
+        /**
+         * Creates and returns a copy of this object.
+         */
+        @Override
+        public final @NonNull KeyValueIterator<Key,T> clone(){
+            return new KeyValueIterator<>(this);
+        }
+
+        public KeyValueIterator(KeyValueIterator<Key,T> other){
+            super(other);
+        }
+
+        public KeyValueIterator(Iterator<Key,T> other){
+            super(other);
+        }
+
+        /**
+         * Constructor for internal use only.
+         * @param p expected to be <code>null</code>.
+         * @hidden
+         */
+        @NativeAccess
+        private KeyValueIterator(QPrivateConstructor p) { super(p); } 
+    }
+    
+    /**
+     * <p>Java wrapper for Qt class <code>QMap::const_key_value_iterator</code></p>
+     */
+    public static final class ConstKeyValueIterator<Key,T> extends QSequentialConstPairIterator<Key,T,QMultiHash<Key,T>>
+    {
+        static {
+            QtJambi_LibraryUtilities.initialize();
+        }
+        
+        /**
+         * Creates and returns a copy of this object.
+         */
+        @Override
+        public final @NonNull ConstKeyValueIterator<Key,T> clone(){
+            return new ConstKeyValueIterator<>(this);
+        }
+
+        public ConstKeyValueIterator(ConstKeyValueIterator<Key,T> other){
+            super(other);
+        }
+        
+        public ConstKeyValueIterator(KeyValueIterator<Key,T> other){
+            super(other);
+        }
+
+        public ConstKeyValueIterator(ConstIterator<Key,T> other){
+            super(other);
+        }
+        
+        public ConstKeyValueIterator(Iterator<Key,T> other){
+            super(other);
+        }
+
+        /**
+         * Constructor for internal use only.
+         * @param p expected to be <code>null</code>.
+         * @hidden
+         */
+        @NativeAccess
+        private ConstKeyValueIterator(QPrivateConstructor p) { super(p); } 
     }
 
     /**
@@ -124,7 +291,9 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
 		super(null);
 		QMetaType keyMetaType = QMetaType.fromType(keyType);
 		QMetaType valueMetaType = QMetaType.fromType(valueType);
-		initialize(keyType, QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueType, QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
+		initialize(keyType, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(keyMetaType),
+				valueType, QtJambi_LibraryUtilities.internal.checkedNativeId(valueMetaType), null);
 	}
     
     /**
@@ -138,7 +307,10 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
 			initialize(null, 0, null, 0, other);
 		}else {
 			QPair<QMetaType, QMetaType> metaTypes = QMultiMap.findMapMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
-			initialize(metaTypes.first.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.first), metaTypes.second.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.second), other);
+			initialize(metaTypes.first.javaType(), 
+					QtJambi_LibraryUtilities.internal.checkedNativeId(metaTypes.first), 
+					metaTypes.second.javaType(), 
+					QtJambi_LibraryUtilities.internal.checkedNativeId(metaTypes.second), other);
 		}
 	}
     
@@ -151,7 +323,11 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
 	public QMultiHash(Class<Key> keyType, QMetaType valueMetaType) {
 		super(null);
 		QMetaType keyMetaType = QMetaType.fromType(keyType);
-		initialize(keyMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
+		initialize(null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(keyMetaType),
+				null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(valueMetaType, "Argument 'valueMetaType': null not expected.")), 
+				null);
 	}
     
     /**
@@ -163,7 +339,9 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
 	public QMultiHash(QMetaType keyMetaType, Class<T> valueType) {
 		super(null);
 		QMetaType valueMetaType = QMetaType.fromType(valueType);
-		initialize(keyMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueType, QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
+		initialize(null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(keyMetaType, "Argument 'keyMetaType': null not expected.")),
+				valueType, QtJambi_LibraryUtilities.internal.checkedNativeId(valueMetaType), null);
 	}
     
     /**
@@ -174,11 +352,31 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      */
 	public QMultiHash(QMetaType keyMetaType, QMetaType valueMetaType) {
 		super(null);
-		initialize(keyMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
+		initialize(null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(keyMetaType, "Argument 'keyMetaType': null not expected.")),
+				null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(valueMetaType, "Argument 'valueMetaType': null not expected.")),
+				null);
 	}
+	
+    /**
+     * Creating a container with given content.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#QMultiHash">QMultiHash::<wbr>QMultiHash(InputIterator,InputIterator)</code></a></p>
+     * @param begin
+     * @param end
+     */
+	public <Container extends QtObjectInterface, InputIterator extends QAssociativeConstIterator<Key,T,Container>> QMultiHash(@StrictNonNull InputIterator begin, @StrictNonNull InputIterator end) {
+    	super(null);
+    	Objects.requireNonNull(begin, "Argument 'begin': null not expected.");
+    	Objects.requireNonNull(end, "Argument 'end': null not expected.");
+    	initialize(QtJambi_LibraryUtilities.internal.nativeId(begin), QtJambi_LibraryUtilities.internal.nativeId(end));
+    }
     
     @QtUninvokable
     private native void initialize(Class<?> keyType, long keyMetaType, Class<?> valueType, long valueMetaType, Map<?,?> other);
+
+    @QtUninvokable
+    private native void initialize(long begin, long end);
     
     /**
      * Creates and returns a copy of this object.
@@ -192,7 +390,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#capacity">QMultiHash::<wbr>capacity()const</a></code></p>
      */
     @QtUninvokable
-    public final int capacity()    {
+    public final int capacity() {
         return capacity(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -202,7 +400,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#clear">QMultiHash::<wbr>clear()</a></code></p>
      */
     @QtUninvokable
-    public final void clear()    {
+    public final void clear() {
     	clear(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -212,7 +410,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#contains">QMultiHash::<wbr>contains(Key)const</a></code></p>
      */
     @QtUninvokable
-    public final boolean contains(Key key)    {
+    public final boolean contains(Key key) {
         try{
         	return contains(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
@@ -228,7 +426,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#count-1">QMultiHash::<wbr>count()const</a></code></p>
      */
     @QtUninvokable
-    public final int count()    {
+    public final int count() {
         return size();
     }
 
@@ -236,7 +434,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#count">QMultiHash::<wbr>count(Key)const</a></code></p>
      */
     @QtUninvokable
-    public final int count(Key key)    {
+    public final int count(Key key) {
         try{
         	return count(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
@@ -249,69 +447,100 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
     private native int count(long __this__nativeId, Key key);
     
     /**
-     * Provides a mutable C++ iterator to the containers begin.
+     * Provides a mutable C++ iterator to the container's begin.
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#begin">QMultiHash::<wbr>begin()</a></code></p>
      * @return begin
      */
 	@QtUninvokable
-    protected final io.qt.core.QAssociativeIterator<Key,T> begin()    {
+	public final @NonNull Iterator<Key,T> begin() {
         return begin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 	@QtUninvokable
-    private native io.qt.core.QAssociativeIterator<Key,T> begin(long __this__nativeId);
+    private native Iterator<Key,T> begin(long __this__nativeId);
 
     /**
-     * Provides a mutable C++ iterator to the containers end.
+     * Provides a mutable C++ iterator to the container's end.
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#end">QMultiHash::<wbr>end()</a></code></p>
      * @return end
      */
     @QtUninvokable
-    protected final io.qt.core.QAssociativeIterator<Key,T> end()    {
+    public final @NonNull Iterator<Key,T> end() {
         return end(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private native io.qt.core.QAssociativeIterator<Key,T> end(long __this__nativeId);
+    private native Iterator<Key,T> end(long __this__nativeId);
     
     /**
-     * Provides a constant C++ iterator to the containers begin.
+     * Provides a constant C++ iterator to the container's begin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#cbegin">QMultiHash::<wbr>cbegin()const</a></code></p>
+     * @return begin
+     */
+	@QtUninvokable
+    public final @NonNull ConstIterator<Key,T> cbegin() {
+		return constBegin();
+	}
+    
+    /**
+     * Provides a constant C++ iterator to the container's begin.
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#constBegin">QMultiHash::<wbr>constBegin()const</a></code></p>
      * @return begin
      */
 	@QtUninvokable
-    protected final io.qt.core.QAssociativeConstIterator<Key,T> constBegin()    {
+    public final @NonNull ConstIterator<Key,T> constBegin() {
         return constBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 	@QtUninvokable
-    private native io.qt.core.QAssociativeConstIterator<Key,T> constBegin(long __this__nativeId);
+    private native ConstIterator<Key,T> constBegin(long __this__nativeId);
 
     /**
-     * Provides a constant C++ iterator to the containers end.
+     * Provides a constant C++ iterator to the container's end.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#cend">QMultiHash::<wbr>cend()const</a></code></p>
+     * @return end
+     */
+    @QtUninvokable
+    public final @NonNull ConstIterator<Key,T> cend() {
+    	return constEnd();
+    }
+
+    /**
+     * Provides a constant C++ iterator to the container's end.
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#constEnd">QMultiHash::<wbr>constEnd()const</a></code></p>
      * @return end
      */
     @QtUninvokable
-    protected final io.qt.core.QAssociativeConstIterator<Key,T> constEnd()    {
+    public final @NonNull ConstIterator<Key,T> constEnd() {
         return constEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private native io.qt.core.QAssociativeConstIterator<Key,T> constEnd(long __this__nativeId);
+    private native ConstIterator<Key,T> constEnd(long __this__nativeId);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#find">QMultiHash::<wbr>find(Key)const</a></code></p>
      * @return iterator
      */
     @QtUninvokable
-    public final io.qt.core.QAssociativeConstIterator<Key,T> find(Key key)    {
+    public final @NonNull ConstIterator<Key,T> constFind(Key key) {
+        return constFind(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+    }
+    @QtUninvokable
+    private native ConstIterator<Key,T> constFind(long __this__nativeId, Key key);
+
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#find">QMultiHash::<wbr>find(Key)</a></code></p>
+     * @return iterator
+     */
+    @QtUninvokable
+    public final @NonNull Iterator<Key,T> find(Key key) {
         return find(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     }
     @QtUninvokable
-    private native io.qt.core.QAssociativeConstIterator<Key,T> find(long __this__nativeId, Key key);
+    private native Iterator<Key,T> find(long __this__nativeId, Key key);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#insert">QMultiHash::<wbr>insert(Key,T)</a></code></p>
      */
     @QtUninvokable
-    public final void insert(Key key, T value)    {
+    public final void insert(Key key, T value) {
         try{
         	insert(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
@@ -327,7 +556,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#isEmpty">QMultiHash::<wbr>isEmpty()const</a></code></p>
      */
     @QtUninvokable
-    public final boolean isEmpty()    {
+    public final boolean isEmpty() {
         return size()==0;
     }
 
@@ -361,7 +590,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
 	 * @return list of keys
 	 */
     @QtUninvokable
-    public final QList<Key> keys()    {
+    public final QList<Key> keys() {
         return keys(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -371,7 +600,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#keys-1">QMultiHash::<wbr>keys(T)const</a></code></p>
 	 */
     @QtUninvokable
-    public final QList<Key> keys(T value)    {
+    public final QList<Key> keys(T value) {
         try{
         	return keysForValue(QtJambi_LibraryUtilities.internal.nativeId(this), value);
     	}catch(QNoNativeResourcesException e) {
@@ -387,7 +616,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#removeIf">QMultiHash::<wbr>removeIf(Predicate)</a></code></p>
 	 */
     @QtUninvokable
-    public final int removeIf(Predicate<Key> predicate)    {
+    public final int removeIf(Predicate<Key> predicate) {
     	List<Key> keys = new ArrayList<>();
     	final long nativeId = QtJambi_LibraryUtilities.internal.nativeId(this);
     	for(Key key : keys(nativeId)) {
@@ -405,10 +634,10 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#removeIf">QMultiHash::<wbr>removeIf(Predicate)</a></code></p>
 	 */
     @QtUninvokable
-    public final int removeIf(BiPredicate<Key,T> predicate)    {
+    public final int removeIf(BiPredicate<Key,T> predicate) {
     	List<QPair<Key,T>> pairs = new ArrayList<>();
     	final long nativeId = QtJambi_LibraryUtilities.internal.nativeId(this);
-    	for(QPair<Key,T> pair : constBegin(nativeId)) {
+    	for(QPair<Key,T> pair : constKeyValueBegin(nativeId)) {
     		if(predicate.test(pair.first, pair.second))
     			pairs.add(pair);
     	}
@@ -423,7 +652,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#remove">QMultiHash::<wbr>remove(Key)</a></code></p>
 	 */
     @QtUninvokable
-    public final int removeAll(Object key)    {
+    public final int removeAll(Object key) {
         try{
         	return remove(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
@@ -444,7 +673,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#reserve">QMultiHash::<wbr>reserve(int)</a></code></p>
 	 */
     @QtUninvokable
-    public final void reserve(int size)    {
+    public final void reserve(int size) {
     	reserve(QtJambi_LibraryUtilities.internal.nativeId(this), size);
     }
     @QtUninvokable
@@ -454,7 +683,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#size">QMultiHash::<wbr>size()const</a></code></p>
 	 */
     @QtUninvokable
-    public final int size()    {
+    public final int size() {
         return size(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -472,7 +701,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#take">QMultiHash::<wbr>take(Key)</a></code></p>
 	 */
     @QtUninvokable
-    public final T take(Key key)    {
+    public final T take(Key key) {
         try{
         	return take(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
@@ -488,7 +717,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#uniqueKeys">QMultiHash::<wbr>uniqueKeys()const</a></code></p>
 	 */
     @QtUninvokable
-    public final QList<Key> uniqueKeys()    {
+    public final QList<Key> uniqueKeys() {
         return uniqueKeys(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -498,7 +727,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#unite-1">QMultiHash::<wbr>unite(const QHash&lt;Key, T> &amp;)</a></code></p>
 	 */
     @QtUninvokable
-    public final void unite(QHash<? super Key,? super T> other)    {
+    public final void unite(QHash<? super Key,? super T> other) {
         unite(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
     
@@ -506,7 +735,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#unite">QMultiHash::<wbr>unite(const QMultiHash&lt;Key, T> &amp;)</a></code></p>
 	 */
     @QtUninvokable
-    public final void unite(java.util.Map<? super Key,? extends java.util.Collection<? super T>> other)    {
+    public final void unite(java.util.Map<? super Key,? extends java.util.Collection<? super T>> other) {
         unite(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
     @QtUninvokable
@@ -524,7 +753,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#value-1">QMultiHash::<wbr>value(Key,T)</a></code></p>
 	 */
     @QtUninvokable
-    public final T value(Key key, T defaultValue)    {
+    public final T value(Key key, T defaultValue) {
         try{
         	return value(QtJambi_LibraryUtilities.internal.nativeId(this), key, defaultValue);
     	}catch(QNoNativeResourcesException e) {
@@ -541,7 +770,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * @see Map#values()
      */
     @QtUninvokable
-    public final java.util.List<java.util.List<T>> values()    {
+    public final java.util.List<java.util.List<T>> values() {
     	long id = QtJambi_LibraryUtilities.internal.nativeId(this);
     	java.util.List<java.util.List<T>> result = new java.util.ArrayList<>();
         for(Object key : uniqueKeys(id)) {
@@ -554,7 +783,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#values">QMultiHash::<wbr>values()const</a></code></p>
 	 */
     @QtUninvokable
-    public final QList<T> listOfValues()    {
+    public final QList<T> listOfValues() {
         return values(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -564,7 +793,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#values-1">QMultiHash::<wbr>values(Key)const</a></code></p>
 	 */
     @QtUninvokable
-    public final QList<T> values(Key key)    {
+    public final QList<T> values(Key key) {
         try{
         	return valuesKey(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
@@ -580,7 +809,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#count">QMultiHash::<wbr>count(Key,T)const</a></code></p>
 	 */
     @QtUninvokable
-    public final int count(Key key, T value)    {
+    public final int count(Key key, T value) {
         try{
         	return count(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
@@ -595,7 +824,22 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#find">QMultiHash::<wbr>find(Key,T)const</a></code></p>
 	 */
     @QtUninvokable
-    public final io.qt.core.QAssociativeConstIterator<Key,T> find(Key key, T value)    {
+    public final @NonNull ConstIterator<Key,T> constFind(Key key, T value) {
+        try{
+        	return constFind(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, value);
+        }
+    }
+    private static native <Key,T> ConstIterator<Key,T> constFind(long __this__nativeId, Key key, T value);
+
+	/**
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#find">QMultiHash::<wbr>find(Key,T)</a></code></p>
+	 */
+    @QtUninvokable
+    public final @NonNull Iterator<Key,T> find(Key key, T value) {
         try{
         	return find(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
@@ -604,13 +848,13 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
     		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, value);
         }
     }
-    private static native <Key,T> io.qt.core.QAssociativeConstIterator<Key,T> find(long __this__nativeId, Key key, T value);
+    private static native <Key,T> Iterator<Key,T> find(long __this__nativeId, Key key, T value);
     
 	/**
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#remove-1">QMultiHash::<wbr>remove(Key,T)</a></code></p>
 	 */
     @QtUninvokable
-    public final int removeAll(Key key, T value)    {
+    public final int removeAll(Key key, T value) {
     	try{
     		return remove(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
@@ -625,22 +869,22 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#replace">QMultiHash::<wbr>replace(Key,T)</a></code></p>
 	 */
     @QtUninvokable
-    public final void replaceOne(Key key, T value)    {
+    public final void replaceOne(Key key, T value) {
         try{
-        	replaceOne(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
+        	replace(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
     		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, value);
         }
     }
-    private static native <Key,T> void replaceOne(long __this__nativeId, Key key, T value);
+    private static native <Key,T> void replace(long __this__nativeId, Key key, T value);
     
 	/**
      * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#contains">QMultiHash::<wbr>contains(Key,T)const</a></code></p>
 	 */
     @QtUninvokable
-    public final boolean contains(Key key, T value)    {
+    public final boolean contains(Key key, T value) {
         try{
         	return contains(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
@@ -828,14 +1072,14 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
     private native void readFrom(long __this__nativeId, long stream);
 
     @io.qt.QtUninvokable
-    final QMetaType keyMetaType() {
+    public final QMetaType keyMetaType() {
     	return keyMetaType(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @io.qt.QtUninvokable
     private native QMetaType keyMetaType(long __this_nativeId);
     
     @io.qt.QtUninvokable
-    final QMetaType valueMetaType() {
+    public final QMetaType valueMetaType() {
     	return valueMetaType(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @io.qt.QtUninvokable
@@ -2051,4 +2295,76 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
 	}
     @QtUninvokable
     private native boolean detach(long __this__nativeId);
+    
+    /**
+     * Provides a mutable C++ iterator to the container's keyValueBegin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#keyValueBegin">QMultiHash::<wbr>keyValueBegin()</a></code></p>
+     * @return keyValueBegin
+     */
+	@QtUninvokable
+	public final @NonNull KeyValueIterator<Key,T> keyValueBegin() {
+        return keyValueBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+    @QtUninvokable
+    private native KeyValueIterator<Key,T> keyValueBegin(long __this__nativeId);
+
+    /**
+     * Provides a mutable C++ iterator to the container's keyValueEnd.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#keyValueEnd">QMultiHash::<wbr>keyValueEnd()</a></code></p>
+     * @return keyValueEnd
+     */
+    @QtUninvokable
+    public final @NonNull KeyValueIterator<Key,T> keyValueEnd() {
+        return keyValueEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+    @QtUninvokable
+    private native KeyValueIterator<Key,T> keyValueEnd(long __this__nativeId);
+    
+    /**
+     * Provides a constant C++ iterator to the container's constKeyValueBegin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#constKeyValueBegin">QMultiHash::<wbr>constKeyValueBegin()const</a></code></p>
+     * @return constKeyValueBegin
+     */
+	@QtUninvokable
+    public final @NonNull ConstKeyValueIterator<Key,T> constKeyValueBegin() {
+        return constKeyValueBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+    @QtUninvokable
+    private native ConstKeyValueIterator<Key,T> constKeyValueBegin(long __this__nativeId);
+
+    /**
+     * Provides a constant C++ iterator to the container's constKeyValueEnd.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#constEnd">QMultiHash::<wbr>constKeyValueEnd()const</a></code></p>
+     * @return constKeyValueEnd
+     */
+    @QtUninvokable
+    public final @NonNull ConstKeyValueIterator<Key,T> constKeyValueEnd() {
+        return constKeyValueEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+    @QtUninvokable
+    private native ConstKeyValueIterator<Key,T> constKeyValueEnd(long __this__nativeId);
+    
+    /**
+     * Provides a mutable C++ iterator to the container's keyBegin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#keyBegin">QMultiHash::<wbr>keyBegin()const</a></code></p>
+     * @return keyBegin
+     */
+	@QtUninvokable
+	public final @NonNull KeyIterator<Key> keyBegin() {
+        return keyBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+    @QtUninvokable
+    private native KeyIterator<Key> keyBegin(long __this__nativeId);
+
+    /**
+     * Provides a mutable C++ iterator to the container's keyEnd.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#keyEnd">QMultiHash::<wbr>keyEnd()const</a></code></p>
+     * @return keyEnd
+     */
+    @QtUninvokable
+    public final @NonNull KeyIterator<Key> keyEnd() {
+        return keyEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+    @QtUninvokable
+    private native KeyIterator<Key> keyEnd(long __this__nativeId);
 }

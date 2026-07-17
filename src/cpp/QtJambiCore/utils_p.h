@@ -34,10 +34,14 @@
 
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/JavaAPI>
+#include <QtJambi/CoreAPI>
+#include <QtJambi/ContainerAPI>
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,2,0)
 #include <QtCore/qpropertyprivate.h>
 #endif
+#include <QtCore/QCborMap>
+#include <QtCore/QCborArray>
 
 struct BigIntegerValue{
     quint64 value;
@@ -407,4 +411,4 @@ QtPrivate::QPropertyObserverCallback qtjambi_get_signal_callback(JNIEnv *, QUnty
 Q_ASSERT(source->is##Type());\
 Abstract##Type##Access* target = static_cast<Abstract##Type##Access*>(source);
 
-#endif // QTJAMBICORE_UTILS_H
+#endif // UTILS_P_H

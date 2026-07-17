@@ -33,3 +33,8 @@ include(../QtJambi/configure.pri)
 
 QT = core gui widgets charts
 
+win32-g++* {
+    CONFIG(debug, debug|release) {
+        QMAKE_CXXFLAGS += -O3
+    }
+}

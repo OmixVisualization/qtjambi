@@ -33,6 +33,22 @@
 #include <QtXml/QtXml>
 #include <QtJambi/Global>
 
+#if !defined(QTJAMBI_GENERATOR_RUNNING)
+namespace QtJambiPrivate{
+bool is_shared_with(const QDomNodeList& container, const QDomNodeList& other);
+
+template<typename Container, bool>
+struct ContainerSharedInfo;
+
+template<>
+struct ContainerSharedInfo<QDomNodeList,false>{
+    static constexpr bool is_shared = true;
+    using Fn = bool(&)(const QDomNodeList&,const QDomNodeList&);
+    static constexpr Fn isSharedWith = is_shared_with;
+};
+}
+#endif
+
 inline size_t qHash(const QDomNamedNodeMap &value, size_t seed = 0);
 
 inline size_t qHash(const QDomNode &value, size_t seed = 0)

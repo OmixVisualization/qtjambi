@@ -244,13 +244,13 @@ public class QStack<T> extends QList<T> implements Queue<T>
         int idx = lastIndexOf(o);
         return idx>=0 && idx<size() ? remove(idx)!=null : false;
     }
-
+    
     /**
      * @see Deque#descendingIterator()
      */
     @QtUninvokable
     public final java.util.@NonNull Iterator<T> descendingIterator() {
-    	return constEnd().toJavaDescendingIterator();
+		return AbstractIterator.descendingIterator(constEnd());
     }
 
     /**

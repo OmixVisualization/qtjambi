@@ -34,6 +34,7 @@ include(../QtJambi/configure.pri)
 HEADERS += \
     future_p.h \
     hashes.h \
+    iterators_p.h \
     qtjambi_cast.h \
     range_p.h \
     range_p_p.h \
@@ -70,12 +71,7 @@ CONFIG+=no_private_qt_headers_warning
     HEADERS += pch_p.h
 }
 
-win32-arm64-msvc* | win32-msvc*: {
-    QMAKE_CXXFLAGS += /bigobj
-}
-
 win32-g++* {
-    QMAKE_CXXFLAGS += -Wa,-mbig-obj -g0
     CONFIG(debug, debug|release) {
         QMAKE_CXXFLAGS += -O3
     }

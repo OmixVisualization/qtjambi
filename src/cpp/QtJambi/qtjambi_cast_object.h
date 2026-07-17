@@ -93,8 +93,7 @@ struct qtjambi_jobject_plain_cast{
             && !(std::is_same_v<JniType, jstring> && (std::is_same_v<NativeType, QByteArray>
                                                       || std::is_same_v<NativeType, QByteArrayView>))){
             if constexpr(std::is_same_v<JniType, jobjectArray> || std::is_same_v<JniType, jbyteArray>){
-                constexpr bool hasStringAPI = is_complete_v<value_range_converter<JniType, char, true, JniType, NativeType_c, Args...>>;
-                Q_STATIC_ASSERT_X(hasStringAPI, "Cannot cast without including <QtJambi/ArrayCast>");
+                QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/ArrayCast, is_complete_v<value_range_converter<JniType, char, true, JniType, NativeType_c, Args...>>);
                 if constexpr(forward){
                     return value_range_converter<JniType, char, true, JniType, NativeType_c, Args...>::toJavaArray(ref_ptr<is_pointer, NativeType_c>::ref(in), arg_pointer<Args>::ref(args)...);
                 }else{
@@ -236,8 +235,7 @@ template<bool forward,
          template<typename T> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
          typename T, typename... Args>
 static constexpr auto find_qtjambi_jobject_template1_cast() {
-    constexpr bool hasCastImpl = is_complete_v< qtjambi_jobject_template1_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, T, Args...> >;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/Template1Cast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/Template1Cast, is_complete_v< qtjambi_jobject_template1_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, T, Args...> >);
     return qtjambi_jobject_template1_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, T, Args...>{};
 }
 
@@ -259,8 +257,7 @@ template<bool forward,
          template<typename K, typename T> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
          typename K, typename T, typename... Args>
 static constexpr auto find_qtjambi_jobject_template2_cast() {
-    constexpr bool hasCastImpl = is_complete_v< qtjambi_jobject_template2_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, K, T, Args...> >;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/Template2Cast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/Template2Cast, is_complete_v< qtjambi_jobject_template2_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, K, T, Args...> >);
     return qtjambi_jobject_template2_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, K, T, Args...>{};
 }
 
@@ -282,8 +279,7 @@ template<bool forward,
          template<typename K, typename T, typename A> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
          typename K, typename T, typename A, typename... Args>
 static constexpr auto find_qtjambi_jobject_template3_cast() {
-    constexpr bool hasCastImpl = is_complete_v< qtjambi_jobject_template3_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, K, T, A, Args...> >;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/Template3Cast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/Template3Cast, is_complete_v< qtjambi_jobject_template3_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, K, T, A, Args...> >);
     return qtjambi_jobject_template3_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, K, T, A, Args...>{};
 }
 
@@ -305,8 +301,7 @@ template<bool forward,
          template<typename K, typename T, typename A, typename B> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
          typename K, typename T, typename A, typename B, typename... Args>
 static constexpr auto find_qtjambi_jobject_template4_cast() {
-    constexpr bool hasCastImpl = is_complete_v< qtjambi_jobject_template4_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, K, T, A, B, Args...> >;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/Template4Cast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/Template4Cast, is_complete_v< qtjambi_jobject_template4_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, K, T, A, B, Args...> >);
     return qtjambi_jobject_template4_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, K, T, A, B, Args...>{};
 }
 
@@ -328,8 +323,7 @@ template<bool forward,
          template<typename K, typename T, typename A, typename B, typename C> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
          typename K, typename T, typename A, typename B, typename C, typename... Args>
 static constexpr auto find_qtjambi_jobject_template5_cast() {
-    constexpr bool hasCastImpl = is_complete_v< qtjambi_jobject_template5_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, K, T, A, B, C, Args...> >;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/Template5Cast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/Template5Cast, is_complete_v< qtjambi_jobject_template5_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, K, T, A, B, C, Args...> >);
     return qtjambi_jobject_template5_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, K, T, A, B, C, Args...>{};
 }
 
@@ -345,8 +339,7 @@ struct qtjambi_jobject_std_array_cast;
 
 template<bool forward, typename JniType, typename T, size_t N, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
 constexpr auto qtjambi_jobject_std_array_cast_decider(){
-    constexpr bool hasCastImpl = is_complete_v<qtjambi_jobject_std_array_cast<forward, JniType, T, N, is_pointer, is_const, is_reference, is_rvalue, Args...>>;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/ArrayCast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/ArrayCast, is_complete_v<qtjambi_jobject_std_array_cast<forward, JniType, T, N, is_pointer, is_const, is_reference, is_rvalue, Args...>>);
     return qtjambi_jobject_std_array_cast<forward, JniType, T, N, is_pointer, is_const, is_reference, is_rvalue, Args...>{};
 };
 
@@ -362,8 +355,7 @@ struct qtjambi_jobject_span_cast;
 
 template<bool forward, typename JniType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename T, std::size_t E, template<typename,std::size_t> typename Span, bool t_is_const, typename... Args>
 constexpr auto qtjambi_jobject_span_cast_decider(){
-    constexpr bool hasCastImpl = is_complete_v<qtjambi_jobject_span_cast<forward, JniType, is_pointer, is_const, is_reference, is_rvalue, T, E, Span, t_is_const, Args...>>;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/ArrayCast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/ArrayCast, is_complete_v<qtjambi_jobject_span_cast<forward, JniType, is_pointer, is_const, is_reference, is_rvalue, T, E, Span, t_is_const, Args...>>);
     return qtjambi_jobject_span_cast<forward, JniType, is_pointer, is_const, is_reference, is_rvalue, T, E, Span, t_is_const, Args...>{};
 };
 
@@ -567,8 +559,7 @@ template<bool forward,
          typename NativeType,
          bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
 constexpr auto qtjambi_jobject_model_cast_decider(){
-    constexpr bool hasCastImpl = is_complete_v<qtjambi_jobject_model_cast<forward, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>>;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/ModelCast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/ModelCast, is_complete_v<qtjambi_jobject_model_cast<forward, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>>);
     return qtjambi_jobject_model_cast<forward, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>{};
 };
 
@@ -969,8 +960,7 @@ struct qtjambi_string_cast{
                         }
                     }
                     if(!result){
-                        constexpr bool hasStringAPI = is_complete_v<convert_jstring_to_qchars<NativeType,NativeType>>;
-                        Q_STATIC_ASSERT_X(hasStringAPI, "Cannot cast without including <QtJambi/StringAPI>");
+                        QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/StringAPI, is_complete_v<convert_jstring_to_qchars<NativeType,NativeType>>);
                         result = create<NativeType>(convert_jstring_to_qchars<NativeType,NativeType>::convert(env, cast_var_args<Args...>::scope(args...), qtjambi_to_jstring<JniType>::cast(env, in)));
                     }
                     cast_var_args<Args...>::scope(args...).addDeletion(result);
@@ -1008,8 +998,7 @@ struct qtjambi_string_cast{
                                     }
                                 }
                             }
-                            constexpr bool hasStringAPI = is_complete_v<convert_jstring_to_qchars<NativeType,NativeType>>;
-                            Q_STATIC_ASSERT_X(hasStringAPI, "Cannot cast without including <QtJambi/StringAPI>");
+                            QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/StringAPI, is_complete_v<convert_jstring_to_qchars<NativeType,NativeType>>);
                             return convert_jstring_to_qchars<NativeType,NativeType>::convert(env, cast_var_args<Args...>::scope(args...), qtjambi_to_jstring<JniType>::cast(env, in));
                         }
                     }else{
@@ -1253,8 +1242,7 @@ struct qtjambi_string_cast{
                         }
                     }
                     if(!result){
-                        constexpr bool hasStringAPI = is_complete_v<convert_jstring_to_chars<NativeType,NativeType>>;
-                        Q_STATIC_ASSERT_X(hasStringAPI, "Cannot cast without including <QtJambi/StringAPI>");
+                        QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/StringAPI, is_complete_v<convert_jstring_to_chars<NativeType,NativeType>>);
                         result = create<NativeType>(convert_jstring_to_chars<NativeType,NativeType>::convert(env, cast_var_args<Args...>::scope(args...), qtjambi_to_jstring<JniType>::cast(env, in)));
                     }
                     cast_var_args<Args...>::scope(args...).addDeletion(result);
@@ -1311,8 +1299,7 @@ struct qtjambi_string_cast{
                                     }
                                 }
                             }
-                            constexpr bool hasStringAPI = is_complete_v<convert_jstring_to_chars<NativeType,NativeType>>;
-                            Q_STATIC_ASSERT_X(hasStringAPI, "Cannot cast without including <QtJambi/StringAPI>");
+                            QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/StringAPI, is_complete_v<convert_jstring_to_chars<NativeType,NativeType>>);
                             return convert_jstring_to_chars<NativeType,NativeType>::convert(env, cast_var_args<Args...>::scope(args...), qtjambi_to_jstring<JniType>::cast(env, in));
                         }
                     }else{
@@ -1324,8 +1311,7 @@ struct qtjambi_string_cast{
                                                                       || std::is_same_v<NativeType, std::byte>) && is_pointer){
                 Q_STATIC_ASSERT_X(is_const, "Cannot cast jstring to non-const char*");
                 Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast to const char* without scope.");
-                constexpr bool hasStringAPI = is_complete_v<convert_jstring_to_chars<NativeType,const char*>>;
-                Q_STATIC_ASSERT_X(hasStringAPI, "Cannot cast without including <QtJambi/StringAPI>");
+                QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/StringAPI, is_complete_v<convert_jstring_to_chars<NativeType,const char*>>);
                 const char* array = convert_jstring_to_chars<NativeType,const char*>::convert(env, cast_var_args<Args...>::scope(args...), in);
                 if constexpr(std::is_same_v<NativeType, QLatin1Char>){
                     return reinterpret_cast<const QLatin1Char*>(array);
@@ -1338,8 +1324,7 @@ struct qtjambi_string_cast{
                                                                       || std::is_same_v<NativeType, char16_t>) && is_pointer){
                 Q_STATIC_ASSERT_X(is_const, "Cannot cast jstring to non-const QChar*");
                 Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast to const QChar* without scope.");
-                constexpr bool hasStringAPI = is_complete_v<convert_jstring_to_qchars<NativeType,const NativeType*>>;
-                Q_STATIC_ASSERT_X(hasStringAPI, "Cannot cast without including <QtJambi/StringAPI>");
+                QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/StringAPI, is_complete_v<convert_jstring_to_qchars<NativeType,const NativeType*>>);
                 return convert_jstring_to_qchars<NativeType,const NativeType*>::convert(env, cast_var_args<Args...>::scope(args...), in);
             }else{
                 Q_STATIC_ASSERT_X(is_const, "Cannot cast jstring to unknown type");

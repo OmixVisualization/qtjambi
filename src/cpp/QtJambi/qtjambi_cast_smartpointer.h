@@ -190,8 +190,7 @@ template<bool forward, template<typename> class Pointer, bool p_is_pointer, bool
          template<typename T> class NativeType, bool c_is_const,
          typename T, bool t_is_pointer, bool t_is_const, bool t_is_reference, typename... Args>
 static constexpr auto find_qtjambi_shared_pointer_sequential_container_cast(){
-    constexpr bool hasCastImpl = is_complete_v< qtjambi_shared_pointer_sequential_container_cast<forward, Pointer, p_is_pointer, p_is_const, p_is_reference, p_is_rvalue, NativeType, c_is_const, T, t_is_pointer, t_is_const, t_is_reference, Args...> >;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/ContainerCast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/ContainerCast, is_complete_v< qtjambi_shared_pointer_sequential_container_cast<forward, Pointer, p_is_pointer, p_is_const, p_is_reference, p_is_rvalue, NativeType, c_is_const, T, t_is_pointer, t_is_const, t_is_reference, Args...> >);
     return qtjambi_shared_pointer_sequential_container_cast<forward, Pointer, p_is_pointer, p_is_const, p_is_reference, p_is_rvalue, NativeType, c_is_const, T, t_is_pointer, t_is_const, t_is_reference, Args...>{};
 }
 
@@ -234,8 +233,7 @@ template<bool forward, template<typename> class Pointer, bool p_is_pointer, bool
          typename K, bool k_is_pointer, bool k_is_const, bool k_is_reference,
          typename T, bool t_is_pointer, bool t_is_const, bool t_is_reference, typename... Args>
 static constexpr auto find_qtjambi_shared_pointer_associative_container_cast(){
-    constexpr bool hasCastImpl = is_complete_v< qtjambi_shared_pointer_associative_container_cast<forward, Pointer, p_is_pointer, p_is_const, p_is_reference, p_is_rvalue, NativeType, c_is_const, K, k_is_pointer, k_is_const, k_is_reference, T, t_is_pointer, t_is_const, t_is_reference, Args...> >;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/ContainerCast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/ContainerCast, is_complete_v< qtjambi_shared_pointer_associative_container_cast<forward, Pointer, p_is_pointer, p_is_const, p_is_reference, p_is_rvalue, NativeType, c_is_const, K, k_is_pointer, k_is_const, k_is_reference, T, t_is_pointer, t_is_const, t_is_reference, Args...> >);
     return qtjambi_shared_pointer_associative_container_cast<forward, Pointer, p_is_pointer, p_is_const, p_is_reference, p_is_rvalue, NativeType, c_is_const, K, k_is_pointer, k_is_const, k_is_reference, T, t_is_pointer, t_is_const, t_is_reference, Args...>{};
 }
 

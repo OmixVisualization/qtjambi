@@ -179,6 +179,11 @@ TypeSystem{
                 }
             }
             ModifyFunction{
+                signature: "ListIterator<RangeGetter,true,RangeType>(RangeGetter&&)"
+                remove: RemoveFlag.All
+                since: [6,12]
+            }
+            ModifyFunction{
                 signature: "ListIterator(QList<T>)"
                 ModifyArgument{
                     index: 1
@@ -784,6 +789,7 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
             ModifyFunction{
                 signature: "operator ExecutableItem()const"
                 rename: "endif"
+                noImplicitArguments: true
             }
         }
         ObjectType{
@@ -791,6 +797,7 @@ private static native io.qt.tasktree.@NonNull GroupItem onGroupDoneImpl(java.uti
             ModifyFunction{
                 signature: "operator ExecutableItem()const"
                 rename: "endif"
+                noImplicitArguments: true
             }
         }
         ObjectType{

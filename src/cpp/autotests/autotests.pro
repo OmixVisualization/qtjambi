@@ -44,6 +44,9 @@ INCLUDEPATH += ../
 
 HEADERS += \
     bindableowner.h \
+    containerconverter.h \
+    containerfactory.h \
+    containerreferences.h \
     containers.h \
     enums.h\
     abstractclass.h \
@@ -53,6 +56,7 @@ HEADERS += \
     injectedcode.h \
     interfaces.h \
     internal.h \
+    mapfactory.h \
     messagehandler.h \
     metaobjectqtmetacast.h \
     namespace.h \
@@ -63,7 +67,6 @@ HEADERS += \
     smartpointertest.h \
     testdialog.h \
     threadfactory.h \
-    tulip.h \
     variants.h \
     general.h \
     memorymanagement.h \
@@ -75,12 +78,20 @@ HEADERS += \
 
 SOURCES += \
     bindableowner.cpp \
+    cast.cpp \
+    containercast.cpp \
+    containercast2.cpp \
+    containercast3.cpp \
+    containerconverter.cpp \
+    containerfactory.cpp \
+    containerreferences.cpp \
     containers.cpp \
     destruction.cpp \
     exceptiontest.cpp \
     global.cpp \
     injectedcode.cpp \
     interfaces.cpp \
+    mapfactory.cpp \
     performancetests.cpp \
     polymorphictype.cpp \
     smartpointertest.cpp \
@@ -91,17 +102,12 @@ SOURCES += \
     settingstest.cpp \
     multisignaltest.cpp \
     threadfactory.cpp \
-    tulip.cpp \
     variants.cpp \
     debugtools.cpp
-win32-arm64-msvc* | win32-msvc*: {
-    QMAKE_CXXFLAGS += /bigobj
-}
 
 win32-g++* {
-    QMAKE_CXXFLAGS += -Wa,-mbig-obj
     CONFIG(debug, debug|release) {
-        QMAKE_CXXFLAGS += -O3
+        QMAKE_CXXFLAGS += -O2
     }
 }
 

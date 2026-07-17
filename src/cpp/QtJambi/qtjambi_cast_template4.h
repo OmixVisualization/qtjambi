@@ -31,6 +31,7 @@
 #define QTJAMBI_CAST_TEMPLATE4_H
 
 #include "qtjambi_cast.h"
+#include "containerapi.h"
 
 namespace QtJambiPrivate {
 
@@ -60,19 +61,30 @@ struct qtjambi_jobject_template4_cast<forward,
         if constexpr(forward){
             Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasJNIEnv, "Cannot cast to jobject without JNIEnv.");
             NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-            jobject list = QtJambiAPI::newJavaHashMap(env, jint(_in.size()));
-            for (auto it = _in.cbegin(); it != _in.cend(); ++it) {
-                const auto& _first = it->first;
-                const auto& _second = it->second;
-                jobject first = qtjambi_cast_with_args<jobject>(_first, std::forward<Args>(args)...);
-                jobject second = qtjambi_cast_with_args<jobject>(_second, std::forward<Args>(args)...);
-                QtJambiAPI::putJavaMap(env, list, first, second);
+            if constexpr(std::is_same_v<A, typename std::map<K, T>::key_compare> && std::is_same_v<B, typename std::map<K, T>::allocator_type>){
+                return qtjambi_cast_with_args<Out>(QMap<K,T>(std::move(_in)), std::forward<Args>(args)...);
+            }else{
+                jobject list = QtJambiAPI::newJavaHashMap(env, jint(_in.size()));
+                for (auto it = _in.cbegin(); it != _in.cend(); ++it) {
+                    const auto& _first = it->first;
+                    const auto& _second = it->second;
+                    jobject first = qtjambi_cast_with_args<jobject>(_first, std::forward<Args>(args)...);
+                    jobject second = qtjambi_cast_with_args<jobject>(_second, std::forward<Args>(args)...);
+                    QtJambiAPI::putJavaMap(env, list, first, second);
+                }
+                return list;
             }
-            return list;
         }else{
             if(!in)
                 return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(nullptr, args...);
             NativeType map;
+            if constexpr(std::is_same_v<A, typename std::map<K, T>::key_compare> && std::is_same_v<B, typename std::map<K, T>::allocator_type>){
+                QMap<K,T>* pointer{nullptr};
+                if (ContainerAPI::getAsQMap<K,T>(env, in, pointer)) {
+                    map = pointer->toStdMap();
+                    return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(std::move(map), args...);
+                }
+            }
             jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
             while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
                 jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);
@@ -104,19 +116,30 @@ struct qtjambi_jobject_template4_cast<forward,
         if constexpr(forward){
             Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasJNIEnv, "Cannot cast to jobject without JNIEnv.");
             NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-            jobject list = QtJambiAPI::newJavaHashMap(env, jint(_in.size()));
-            for (auto it = _in.cbegin(); it != _in.cend(); ++it) {
-                const auto& _first = it->first;
-                const auto& _second = it->second;
-                jobject first = qtjambi_cast_with_args<jobject>(_first, std::forward<Args>(args)...);
-                jobject second = qtjambi_cast_with_args<jobject>(_second, std::forward<Args>(args)...);
-                QtJambiAPI::putJavaMap(env, list, first, second);
+            if constexpr(std::is_same_v<A, typename std::multimap<K, T>::key_compare> && std::is_same_v<B, typename std::multimap<K, T>::allocator_type>){
+                return qtjambi_cast_with_args<Out>(QMultiMap<K,T>(std::move(_in)), std::forward<Args>(args)...);
+            }else{
+                jobject list = QtJambiAPI::newJavaHashMap(env, jint(_in.size()));
+                for (auto it = _in.cbegin(); it != _in.cend(); ++it) {
+                    const auto& _first = it->first;
+                    const auto& _second = it->second;
+                    jobject first = qtjambi_cast_with_args<jobject>(_first, std::forward<Args>(args)...);
+                    jobject second = qtjambi_cast_with_args<jobject>(_second, std::forward<Args>(args)...);
+                    QtJambiAPI::putJavaMap(env, list, first, second);
+                }
+                return list;
             }
-            return list;
         }else{
             if(!in)
                 return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(nullptr, args...);
             NativeType map;
+            if constexpr(std::is_same_v<A, typename std::multimap<K, T>::key_compare> && std::is_same_v<B, typename std::multimap<K, T>::allocator_type>){
+                QMultiMap<K,T>* pointer{nullptr};
+                if (ContainerAPI::getAsQMultiMap<K,T>(env, in, pointer)) {
+                    map = pointer->toStdMultiMap();
+                    return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(std::move(map), args...);
+                }
+            }
             jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
             while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
                 jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);

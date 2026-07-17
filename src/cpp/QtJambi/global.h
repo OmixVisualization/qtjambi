@@ -35,43 +35,17 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qhashfunctions.h>
 
-//TODO: rewrite
-#if defined(Q_OS_WIN)
-#  if !defined(QTJAMBI_EXPORT) && !defined(QT_QTJAMBI_IMPORT)
-#    define QTJAMBI_EXPORT
-#    define QTJAMBI_STATIC_EXPORT __declspec(dllimport)
-#  elif defined(QT_QTJAMBI_IMPORT)
-#    if defined(QTJAMBI_EXPORT)
-#      undef QTJAMBI_EXPORT
-#    endif
-#    define QTJAMBI_EXPORT __declspec(dllimport)
-#    define QTJAMBI_STATIC_EXPORT
-#  elif defined(QTJAMBI_EXPORT)
-#    undef QTJAMBI_EXPORT
-#    define QTJAMBI_EXPORT __declspec(dllexport)
-#    define QTJAMBI_STATIC_EXPORT
-#  endif
-#elif defined (QT_VISIBILITY_AVAILABLE)
-#  if !defined(QTJAMBI_EXPORT) && !defined(QT_QTJAMBI_IMPORT)
-#    define QTJAMBI_EXPORT
-#    define QTJAMBI_STATIC_EXPORT
-#  elif defined(QT_QTJAMBI_IMPORT)
-#    if defined(QTJAMBI_EXPORT)
-#      undef QTJAMBI_EXPORT
-#    endif
-#    define QTJAMBI_EXPORT
-#    define QTJAMBI_STATIC_EXPORT
-#  elif defined(QTJAMBI_EXPORT)
-#    undef QTJAMBI_EXPORT
-#    define QTJAMBI_EXPORT __attribute__((visibility("default")))
-#    define QTJAMBI_STATIC_EXPORT
+#if defined(QT_SHARED) || !defined(QT_STATIC)
+#  if defined(QTJAMBI_BUILD_LIB)
+#    define QTJAMBI_EXPORT Q_DECL_EXPORT
+#    define QTJAMBI_TEMPLATE_EXPORT
+#  else
+#    define QTJAMBI_EXPORT Q_DECL_IMPORT
+#    define QTJAMBI_TEMPLATE_EXPORT Q_DECL_IMPORT
 #  endif
 #else
-# if defined(QTJAMBI_EXPORT)
-#   undef QTJAMBI_EXPORT
-# endif
 #  define QTJAMBI_EXPORT
-#    define QTJAMBI_STATIC_EXPORT
+#  define QTJAMBI_TEMPLATE_EXPORT
 #endif
 
 #  include <jni.h>

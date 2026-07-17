@@ -55,6 +55,7 @@ import io.qt.QtUninvokable;
 import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QDeclarableSignals;
+import io.qt.core.QElapsedTimer;
 import io.qt.core.QEvent;
 import io.qt.core.QInstanceMemberSignals;
 import io.qt.core.QMetaMethod;
@@ -63,12 +64,12 @@ import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QStaticMemberSignals;
 import io.qt.core.QThread;
+import io.qt.core.QTimer;
 import io.qt.core.Qt;
+import io.qt.core.QObject.Signal0;
 import io.qt.gui.*;
 import io.qt.gui.QColor;
 import io.qt.widgets.*;
-import io.qt.widgets.QWidget;
-import io.qt.widgets.QWizard;
 
 @SuppressWarnings("unused")
 public class TestSignals extends ApplicationInitializer{
@@ -813,6 +814,67 @@ public class TestSignals extends ApplicationInitializer{
 		Assert.assertEquals(1, count.get());
 		StaticSender.signal.emit();
 		Assert.assertEquals(1, count.get());
+    }
+
+    private static class SenderTester extends QObject {
+        final Signal0 signal = new Signal0();
+
+        public boolean is_null, is_valid;
+
+        public QElapsedTimer timeouted;
+
+        public long msec = 0L;
+
+        public SenderTester() {
+            timeouted = new QElapsedTimer();
+            timeouted.start();
+        }
+
+        public void checkSender() {
+            is_null = this.sender() == null;
+            is_valid = this.sender() == this;
+        }
+
+        public void emitSignal() {
+            signal.emit();
+        }
+
+        void timeoutSlot() {
+            msec = timeouted.elapsed();
+        }
+    }
+
+    @Test
+    public void run_senderNotNull() {
+        SenderTester tester = new SenderTester();
+        tester.signal.connect(tester::checkSender);
+
+        tester.emitSignal();
+
+        assertTrue(!tester.is_null);
+        assertTrue(tester.is_valid);
+    }
+
+    @Test
+    public void test_timeout() {
+        SenderTester tester = new SenderTester();
+        QTimer.singleShot(1000, tester::timeoutSlot);
+
+        ApplicationInitializer.runGC();
+
+        try {
+            while (tester.timeouted.elapsed() < 1500) {
+                QApplication.processEvents();
+                // We can sleep a bit here
+                Thread.sleep(50);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+
+        assertTrue("tester.msec >= 1000 took " + tester.msec, tester.msec >= 1000);
+        assertTrue("tester.msec <= 1500 took " + tester.msec, tester.msec <= 1500);
     }
 
     public static void main(String args[]) {

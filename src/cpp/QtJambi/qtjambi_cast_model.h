@@ -34,6 +34,8 @@
 
 #include "qtjambi_cast_util.h"
 #include "qtjambiapi_model.h"
+#include "containeraccess_sequential.h"
+#include "qtjambi_cast_template1.h"
 
 namespace QtJambiPrivate {
 
@@ -147,6 +149,17 @@ struct qtjambi_jobject_model_cast<forward, QModelRoleDataSpan, is_pointer, is_co
     }
 };
 
+template<typename T>
+struct QModelListExport{};
 }
+
+#if defined(Q_CC_MSVC) || defined(_LIBCPP_VERSION) || !defined(Q_OS_WIN)
+extern template class QTJAMBI_TEMPLATE_EXPORT QSpanAccess<QModelIndex>;
+extern template class QTJAMBI_TEMPLATE_EXPORT QSpanAccess<const QModelIndex>;
+extern template class QTJAMBI_TEMPLATE_EXPORT QListAccess<QModelIndex>;
+extern template class QTJAMBI_TEMPLATE_EXPORT QSpanAccess<QPersistentModelIndex>;
+extern template class QTJAMBI_TEMPLATE_EXPORT QSpanAccess<const QPersistentModelIndex>;
+extern template class QTJAMBI_TEMPLATE_EXPORT QListAccess<QPersistentModelIndex>;
+#endif
 
 #endif // QTJAMBI_CAST_MODEL_H

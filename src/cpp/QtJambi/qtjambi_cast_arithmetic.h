@@ -506,6 +506,9 @@ template<class O, class T, class I, typename... Args>
 struct qtjambi_jobject_arithmetic_array_cast : decltype(qtjambi_cast_array<O,T,I,Args...>()){
 };
 
+template<typename NativeType>
+struct qtjambi_find_iterator;
+
 template<bool forward, typename JniType, typename NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
 struct qtjambi_jobject_arithmetic_cast{
     typedef std::conditional_t<is_const, std::add_const_t<NativeType>, NativeType> NativeType_c;
@@ -554,8 +557,7 @@ struct qtjambi_jobject_arithmetic_cast{
                     if constexpr(sizeof(NativeType)==sizeof(jbyte)){
                         if constexpr(is_const){
                             if constexpr(is_pointer || is_reference){
-                                constexpr bool hasStringAPI = is_complete_v<convert_jstring_to_chars<NativeType,const char*>>;
-                                Q_STATIC_ASSERT_X(hasStringAPI, "Cannot cast without including <QtJambi/StringAPI>");
+                                QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/StringAPI, is_complete_v<convert_jstring_to_chars<NativeType,const char*>>);
                                 const char* array = convert_jstring_to_chars<NativeType,const char*>::convert(env, cast_var_args<Args...>::scope(args...), in);
                                 if constexpr(is_pointer){
                                     return reinterpret_cast<const NativeType*>(array);
@@ -583,8 +585,7 @@ struct qtjambi_jobject_arithmetic_cast{
                     }else if constexpr(sizeof(NativeType)==sizeof(jchar)){
                         if constexpr(is_const){
                             if constexpr(is_pointer || is_reference){
-                                constexpr bool hasStringAPI = is_complete_v<convert_jstring_to_qchars<NativeType,const char16_t*>>;
-                                Q_STATIC_ASSERT_X(hasStringAPI, "Cannot cast without including <QtJambi/StringAPI>");
+                                QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/StringAPI, is_complete_v<convert_jstring_to_qchars<NativeType,const char16_t*>>);
                                 const char16_t* array = convert_jstring_to_qchars<NativeType,const char16_t*>::convert(env, cast_var_args<Args...>::scope(args...), in);
                                 if constexpr(is_pointer){
                                     return reinterpret_cast<const NativeType*>(array);
@@ -684,29 +685,43 @@ struct qtjambi_jobject_arithmetic_cast{
                 }
             }else{
                 if constexpr(is_pointer || is_reference){
-                    Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast to pointer or reference without scope.");
+                    if constexpr(is_pointer && !cast_var_args<Args...>::hasScope && is_complete_v<qtjambi_find_iterator<NativeType>>){
+                        NativeType* result = qtjambi_find_iterator<NativeType>::function(env, in);
+                        if(result){
+                            return result;
+                        }else if constexpr(!cast_var_args<Args...>::hasScope){
+                            JavaException::raiseError(env, "Cannot cast to pointer or reference without scope." QTJAMBI_STACKTRACEINFO );
+                        }
+                    }else{
+                        Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast to pointer or reference without scope.");
+                    }
                     NativeType* result = create<NativeType>(NativeType(0));
                     cast_var_args<Args...>::scope(args...).addDeletion(result);
                     if constexpr(std::is_same_v<NativeType,bool>){
                         *result = NativeType(QtJambiAPI::fromJavaBooleanObject(env, in));
                     }else if constexpr(std::is_integral_v<NativeType>){
                         Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const integer reference");
-                        Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const integer pointer");
+                        if constexpr(!is_pointer || is_const)
+                            JavaException::raiseError(env, "Cannot cast jobject to non-const integer pointer" QTJAMBI_STACKTRACEINFO );
                         if constexpr(sizeof(NativeType)==sizeof(jbyte)){
                             Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const char&");
-                            Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const char*");
+                            if constexpr(!is_pointer || is_const)
+                                JavaException::raiseError(env, "Cannot cast jobject to non-const char*" QTJAMBI_STACKTRACEINFO );
                             *result = NativeType(QtJambiAPI::fromJavaByteObject(env, in));
                         }else if constexpr(sizeof(NativeType)==sizeof(jshort)){
                             Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const short&");
-                            Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const short*");
+                            if constexpr(!is_pointer || is_const)
+                                JavaException::raiseError(env, "Cannot cast jobject to non-const short*" QTJAMBI_STACKTRACEINFO );
                             *result = NativeType(QtJambiAPI::fromJavaShortObject(env, in));
                         }else if constexpr(sizeof(NativeType)==sizeof(jint)){
                             Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const int&");
-                            Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const int*");
+                            if constexpr(!is_pointer || is_const)
+                                JavaException::raiseError(env, "Cannot cast jobject to non-const int*" QTJAMBI_STACKTRACEINFO );
                             *result = NativeType(QtJambiAPI::fromJavaIntegerObject(env, in));
                         }else if constexpr(sizeof(NativeType)==sizeof(jlong)){
                             Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const long long&");
-                            Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const long long*");
+                            if constexpr(!is_pointer || is_const)
+                                JavaException::raiseError(env, "Cannot cast jobject to non-const long long*" QTJAMBI_STACKTRACEINFO );
                             *result = NativeType(QtJambiAPI::fromJavaLongObject(env, in));
                         }else{
                             Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
@@ -714,26 +729,31 @@ struct qtjambi_jobject_arithmetic_cast{
                     }else if constexpr(std::is_floating_point_v<NativeType>){
                         if constexpr(sizeof(NativeType)==sizeof(jfloat)){
                             Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const float&");
-                            Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const float*");
+                            if constexpr(!is_pointer || is_const)
+                                JavaException::raiseError(env, "Cannot cast jobject to non-const float*" QTJAMBI_STACKTRACEINFO );
                             *result = NativeType(QtJambiAPI::fromJavaFloatObject(env, in));
                         }else if constexpr(sizeof(NativeType)==sizeof(jdouble)){
                             Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const double&");
-                            Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const double*");
+                            if constexpr(!is_pointer || is_const)
+                                JavaException::raiseError(env, "Cannot cast jobject to non-const double*" QTJAMBI_STACKTRACEINFO );
                             *result = NativeType(QtJambiAPI::fromJavaDoubleObject(env, in));
                         }else{
                             Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
                         }
                     }else if constexpr(std::is_same_v<NativeType,QChar>){
                         Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const QChar&");
-                        Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const QChar*");
+                        if constexpr(!is_pointer || is_const)
+                            JavaException::raiseError(env, "Cannot cast jobject to non-const QChar*" QTJAMBI_STACKTRACEINFO );
                         *result = NativeType(QtJambiAPI::fromJavaCharacterObject(env, in));
                     }else if constexpr(std::is_same_v<NativeType,QLatin1Char>){
                         Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const QLatin1Char&");
-                        Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const QLatin1Char*");
+                        if constexpr(!is_pointer || is_const)
+                            JavaException::raiseError(env, "Cannot cast jobject to non-const QLatin1Char*" QTJAMBI_STACKTRACEINFO );
                         *result = NativeType(QtJambiAPI::fromJavaByteObject(env, in));
                     }else if constexpr(std::is_same_v<NativeType,std::byte>){
                         Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast jobject to non-const std::byte&");
-                        Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast jobject to non-const std::byte*");
+                        if constexpr(!is_pointer || is_const)
+                            JavaException::raiseError(env, "Cannot cast jobject to non-const std::byte*" QTJAMBI_STACKTRACEINFO );
                         *result = NativeType(QtJambiAPI::fromJavaByteObject(env, in));
                     }else{
                         Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");

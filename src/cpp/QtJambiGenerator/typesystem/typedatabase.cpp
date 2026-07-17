@@ -262,6 +262,8 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
     ContainerTypeEntry* stringListEntry(nullptr);
     {
         addType(new AutoTypeEntry());
+        addType(new JNIEnvTypeEntry("JNIEnv"));
+        addType(new JNIEnvTypeEntry("JNIEnv_"));
         {
             StringTypeEntry *e = new StringTypeEntry("QString");
             e->setCodeGeneration(generate ? TypeEntry::GenerateAll : TypeEntry::GenerateForSubclass);
@@ -463,6 +465,11 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
         addType(new ContainerTypeEntry("std::vector", ContainerTypeEntry::std_vector));
         addType(new ContainerTypeEntry("std::array", ContainerTypeEntry::std_array));
         {
+            ContainerTypeEntry* entry = new ContainerTypeEntry("QVulkanInfoVector", ContainerTypeEntry::QVulkanInfoVectorContainer);
+            entry->setInclude(Include(Include::IncludePath, "QtGui/qvulkaninstance.h"));
+            addType(entry);
+        }
+        {
             ContainerTypeEntry* entry = new ContainerTypeEntry("QList", ContainerTypeEntry::ListContainer);
             entry->setInclude(Include(Include::IncludePath, "QtCore/QList"));
             entry->addExtraInclude(Include(Include::IncludePath, "QtCore/QQueue"));
@@ -656,7 +663,7 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
             enumType->setFlags(new FlagsTypeEntry("AllocationOptions"));
             addType(enumType);
             IteratorTypeEntry * iteratorEntry = createListIterator(entry, false);
-            iteratorEntry->setIsPointer(true);
+            iteratorEntry->setIsComparable(true);
             iteratorEntry->setInclude(Include(Include::IncludePath, "QtCore/QVector"));
             iteratorEntry->addExtraInclude(Include(Include::IncludePath, "QtCore/QStack"));
         }
@@ -1083,6 +1090,12 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
             cronoType->setCodeGeneration(TypeEntry::GenerateNothing);
             addType(cronoType);
             cronoType = new ContainerTypeEntry("std::chrono::time_point", ContainerTypeEntry::std_chrono_template);
+            cronoType->setCodeGeneration(TypeEntry::GenerateNothing);
+            addType(cronoType);
+            cronoType = new ContainerTypeEntry("QKeyValueIterator", ContainerTypeEntry::QKeyValueIterator);
+            cronoType->setCodeGeneration(TypeEntry::GenerateNothing);
+            addType(cronoType);
+            cronoType = new ContainerTypeEntry("std::reverse_iterator", ContainerTypeEntry::std_reverse_iterator);
             cronoType->setCodeGeneration(TypeEntry::GenerateNothing);
             addType(cronoType);
         }

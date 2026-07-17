@@ -241,6 +241,7 @@ inline size_t qHash(const QCollator &value, size_t seed = 0)
     return seed;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 12, 0)
 inline bool operator==(const QCollator &value1, const QCollator &value2)
 {
     return value1.locale()==value2.locale()
@@ -248,6 +249,7 @@ inline bool operator==(const QCollator &value1, const QCollator &value2)
             && value1.numericMode()==value2.numericMode()
             && value1.ignorePunctuation()==value2.ignorePunctuation();
 }
+#endif
 
 inline size_t qHash(const QDeadlineTimer &value, size_t seed = 0)
 {

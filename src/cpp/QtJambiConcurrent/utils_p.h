@@ -1,11 +1,169 @@
 #ifndef UTILS_P_H
 #define UTILS_P_H
 
+#include <QtJambi/QtJambiAPI>
 #include <QtJambi/FutureAPI>
 #include <QtConcurrent/QtConcurrent>
 #include <QtJambi/CoreAPI>
+#include <QtJambi/ContainerAPI>
 #include <QtJambi/JavaAPI>
 #include <QtJambi/FutureCast>
+
+template<typename V>
+struct IteratorPrivate : QSharedData{
+    typedef V value_type;
+    IteratorPrivate(JNIEnv* env, jobject iteratorObject, const void* iterator, AbstractSequentialConstIteratorAccess* access)
+        : QSharedData(), m_iteratorObject(env, iteratorObject),
+        m_iterator(access->createContainer(iterator)),
+        m_access(access), m_read(false), m_current() {}
+    IteratorPrivate(const IteratorPrivate& other)
+        : QSharedData(), m_iteratorObject(other.m_iteratorObject),
+        m_iterator(other.m_iterator && other.m_access ? other.m_access->createContainer(other.iterator()) : nullptr),
+        m_access(other.m_access),
+        m_read(other.m_read),
+        m_current(other.m_current) {}
+    ~IteratorPrivate(){
+        if(m_iterator && m_access)
+            m_access->deleteContainer(m_iterator);
+    }
+    void* iterator() { return m_iterator; }
+    const void* iterator() const { return m_iterator; }
+    JObjectWrapper m_iteratorObject;
+    void* m_iterator;
+    AbstractSequentialConstIteratorAccess* m_access;
+    mutable bool m_read;
+    mutable value_type m_current;
+};
+
+template<typename V, bool isBidirectionalIterator = false, bool canLess = false, bool canDistance = false>
+class Iterator{
+public:
+    typedef std::conditional_t<canDistance && isBidirectionalIterator, std::random_access_iterator_tag, std::conditional_t<isBidirectionalIterator,std::bidirectional_iterator_tag,std::forward_iterator_tag>> iterator_category;
+    typedef qptrdiff difference_type;
+    typedef V value_type;
+    typedef const value_type *pointer;
+    typedef const value_type &reference;
+
+    Iterator(JNIEnv* env, jobject iteratorObject, const void* iterator, AbstractSequentialConstIteratorAccess* access)
+        : d(new IteratorPrivate<V>(env, iteratorObject, iterator, access)) {}
+    Iterator() = default;
+    Iterator(const Iterator& other) = default;
+    Iterator(Iterator&& other) = default;
+    Iterator& operator=(Iterator&& other) = default;
+    Iterator& operator=(const Iterator& other) = default;
+    ~Iterator() = default;
+
+    Iterator& operator ++(){
+        d.detach();
+        d->m_access->advance(d->m_iterator, 1);
+        d->m_read = false;
+        return *this;
+    }
+
+    template<bool _isBidirectionalIterator = isBidirectionalIterator, std::enable_if_t<_isBidirectionalIterator, bool> = true>
+    Iterator& operator--(){
+        d.detach();
+        d->m_access->advance(d->m_iterator, -1);
+        d->m_read = false;
+        return *this;
+    }
+
+    template<bool _isBidirectionalIterator = isBidirectionalIterator, std::enable_if_t<_isBidirectionalIterator, bool> = true>
+    Iterator& operator-=(size_t n){
+        d.detach();
+        d->m_access->advance(d->m_iterator, -n);
+        d->m_read = false;
+        return *this;
+    }
+
+    Iterator& operator+=(size_t n){
+        d.detach();
+        d->m_access->advance(d->m_iterator, n);
+        d->m_read = false;
+        return *this;
+    }
+
+    template<bool _canDistance = canDistance, std::enable_if_t<_canDistance, bool> = false>
+    size_t operator-(const Iterator& other) const{
+        return d->m_access->distance(other.d->m_iterator, d->m_iterator).value_or(0);
+    }
+
+    reference operator*() const{
+        if(!d->m_read){
+            d->m_read = true;
+            if(d->m_access->isValid(d->m_iterator).value_or(false)){
+                if(JniEnvironment env{200}){
+                    d->m_current = qtjambi_cast<V>(env, d->m_access->value(env, d->m_iterator));
+                }
+            }else{
+                d->m_current = V{};
+            }
+        }
+        return d->m_current;
+    }
+    pointer operator->() const{
+        return &operator*();
+    }
+    inline operator pointer() const { return operator->(); }
+    template<bool _canLess = canLess, std::enable_if_t<_canLess, bool> = true>
+    bool operator<(const Iterator& o) const{
+        return d->m_access->lessThan(d->m_iterator, o.d->m_iterator).value();
+    }
+    bool operator==(const Iterator& o) const{
+        return d && o.d && d->m_iterator && o.d->m_iterator && d->m_access->equals(d->m_iterator, o.d->m_iterator);
+    }
+    inline bool operator!=(const Iterator& o) const {
+        return !(*this == o);
+    }
+private:
+    QExplicitlySharedDataPointer<IteratorPrivate<V>> d;
+};
+
+template<typename Fun>
+void applyOnIterators(JNIEnv *__jni_env,
+                      jobject begin,
+                      Fun&& fun){
+    QPair<void*,AbstractContainerAccess*> begin_info = ContainerAPI::fromJavaOwner(__jni_env, begin);
+    Q_ASSERT(begin_info.second->isSequentialConstIterator());
+    AbstractSequentialConstIteratorAccess* beginAccess = static_cast<AbstractSequentialConstIteratorAccess*>(begin_info.second);
+    if(beginAccess->canDistance()){
+        if(beginAccess->isBidirectionalIterator()){
+            if(beginAccess->canLess()){
+                Iterator<JObjectWrapper,true,true,true> __qt_begin(__jni_env, begin, begin_info.first, beginAccess);
+                std::forward<Fun>(fun)(std::move(__qt_begin));
+            }else{
+                Iterator<JObjectWrapper,true,false,true> __qt_begin(__jni_env, begin, begin_info.first, beginAccess);
+                std::forward<Fun>(fun)(std::move(__qt_begin));
+            }
+        }else{
+            if(beginAccess->canLess()){
+                Iterator<JObjectWrapper,false,true,true> __qt_begin(__jni_env, begin, begin_info.first, beginAccess);
+                std::forward<Fun>(fun)(std::move(__qt_begin));
+            }else{
+                Iterator<JObjectWrapper,false,false,true> __qt_begin(__jni_env, begin, begin_info.first, beginAccess);
+                std::forward<Fun>(fun)(std::move(__qt_begin));
+            }
+        }
+    }else{
+        if(beginAccess->isBidirectionalIterator()){
+            if(beginAccess->canLess()){
+                Iterator<JObjectWrapper,true,true,false> __qt_begin(__jni_env, begin, begin_info.first, beginAccess);
+                std::forward<Fun>(fun)(std::move(__qt_begin));
+            }else{
+                Iterator<JObjectWrapper,true,false,false> __qt_begin(__jni_env, begin, begin_info.first, beginAccess);
+                std::forward<Fun>(fun)(std::move(__qt_begin));
+            }
+        }else{
+            if(beginAccess->canLess()){
+                Iterator<JObjectWrapper,false,true,false> __qt_begin(__jni_env, begin, begin_info.first, beginAccess);
+                std::forward<Fun>(fun)(std::move(__qt_begin));
+            }else{
+                Iterator<JObjectWrapper,false,false,false> __qt_begin(__jni_env, begin, begin_info.first, beginAccess);
+                std::forward<Fun>(fun)(std::move(__qt_begin));
+            }
+        }
+    }
+}
 
 template<typename V>
 struct JavaSequence{

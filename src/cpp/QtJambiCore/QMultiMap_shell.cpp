@@ -39,12 +39,23 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "utils_p.h"
 #include <QtJambi/Cast>
 
-extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMultiMap_initialize
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMultiMap_initialize__Ljava_lang_Class_2JLjava_lang_Class_2JLjava_util_Map_2
 (JNIEnv * env, jobject _this, jclass keyType, QtJambiNativeID keyMetaType, jclass valueType, QtJambiNativeID valueMetaType, jobject other)
 {
     QTJAMBI_TRY{
         QTJAMBI_NATIVE_METHOD_CALL("QMultiMap<K,V>::initialize()")
         CoreAPI::initializeQMultiMap(env, _this, keyType, keyMetaType, valueType, valueMetaType, other);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMultiMap_initialize__JJ
+    (JNIEnv * env, jobject _this, QtJambiNativeID beginId, QtJambiNativeID endId)
+{
+    QTJAMBI_TRY{
+        QTJAMBI_NATIVE_METHOD_CALL("QMultiMap<K,V>::initialize()")
+        CoreAPI::initializeQMultiMap(env, _this, beginId, endId);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
     }QTJAMBI_TRY_END
@@ -163,6 +174,126 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_constEnd__J
     return result;
 }
 
+// QMultiMap<Key, T>::keyValueBegin()
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_keyValueBegin__J
+    (JNIEnv *__jni_env,
+     jobject _this,
+     QtJambiNativeID __this_nativeId)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiMap<Key, T>::keyValueBegin()", container.first)
+        QTJAMBI_CONTAINER_CAST(MultiMap, containerAccess, container.second);
+
+        result = containerAccess->keyValueBegin(__jni_env, ExtendedContainerInfo{_this, container.first, __this_nativeId});
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+// QMultiMap<Key, T>::keyValueEnd()
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_keyValueEnd__J
+    (JNIEnv *__jni_env,
+     jobject _this,
+     QtJambiNativeID __this_nativeId)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiMap<Key, T>::keyValueEnd()", container.first)
+        QTJAMBI_CONTAINER_CAST(MultiMap, containerAccess, container.second);
+
+        result = containerAccess->keyValueEnd(__jni_env, ExtendedContainerInfo{_this, container.first, __this_nativeId});
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+// QMultiMap<Key, T>::constKeyValueBegin() const
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_constKeyValueBegin__J
+    (JNIEnv *__jni_env,
+     jobject _this,
+     QtJambiNativeID __this_nativeId)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiMap<Key, T>::constKeyValueBegin() const", container.first)
+        QTJAMBI_CONTAINER_CAST(MultiMap, containerAccess, container.second);
+
+        result = containerAccess->constKeyValueBegin(__jni_env, ConstExtendedContainerInfo{_this, container.first, __this_nativeId});
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+// QMultiMap<Key, T>::constKeyValueEnd() const
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_constKeyValueEnd__J
+    (JNIEnv *__jni_env,
+     jobject _this,
+     QtJambiNativeID __this_nativeId)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiMap<Key, T>::constKeyValueEnd() const", container.first)
+        QTJAMBI_CONTAINER_CAST(MultiMap, containerAccess, container.second);
+
+        result = containerAccess->constKeyValueEnd(__jni_env, ConstExtendedContainerInfo{_this, container.first, __this_nativeId});
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+// QMultiMap<Key, T>::keyBegin() const
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_keyBegin__J
+    (JNIEnv *__jni_env,
+     jobject _this,
+     QtJambiNativeID __this_nativeId)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiMap<Key, T>::keyBegin() const", container.first)
+        QTJAMBI_CONTAINER_CAST(MultiMap, containerAccess, container.second);
+
+        result = containerAccess->keyBegin(__jni_env, ConstExtendedContainerInfo{_this, container.first, __this_nativeId});
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+// QMultiMap<Key, T>::keyEnd() const
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_keyEnd__J
+    (JNIEnv *__jni_env,
+     jobject _this,
+     QtJambiNativeID __this_nativeId)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiMap<Key, T>::keyEnd() const", container.first)
+        QTJAMBI_CONTAINER_CAST(MultiMap, containerAccess, container.second);
+
+        result = containerAccess->keyEnd(__jni_env, ConstExtendedContainerInfo{_this, container.first, __this_nativeId});
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
 // QMultiMap<Key, T>::clear()
 extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QMultiMap_clear__J
 (JNIEnv *__jni_env,
@@ -224,6 +355,27 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QMultiMap_count__JLjava_lang_O
 }
 
 // QMultiMap<Key, T>::find(const Key & k) const
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_constFind__JLjava_lang_Object_2
+    (JNIEnv *__jni_env,
+     jobject _this,
+     QtJambiNativeID __this_nativeId,
+     jobject t0)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiMap<Key, T>::find(const Key & k) const", container.first)
+        QTJAMBI_CONTAINER_CAST(MultiMap, containerAccess, container.second);
+
+        result = containerAccess->constFind(__jni_env, ConstExtendedContainerInfo{_this, container.first, __this_nativeId}, t0);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+// QMultiMap<Key, T>::find(const Key & k)
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_find__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
@@ -234,10 +386,10 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_find__JLjava_lang
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiMap<Key, T>::find(const Key & k) const", container.first)
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiMap<Key, T>::find(const Key & k)", container.first)
         QTJAMBI_CONTAINER_CAST(MultiMap, containerAccess, container.second);
 
-        result = containerAccess->constFind(__jni_env, ConstExtendedContainerInfo{_this, container.first, __this_nativeId}, t0);
+        result = containerAccess->find(__jni_env, ExtendedContainerInfo{_this, container.first, __this_nativeId}, t0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -408,11 +560,11 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_lastKey__J
 }
 
 // QMultiMap<Key, T>::lowerBound(const Key & k) const
-extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_lowerBound__JLjava_lang_Object_2
-(JNIEnv *__jni_env,
- jobject _this,
- QtJambiNativeID __this_nativeId,
- jobject t0)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_constLowerBound__JLjava_lang_Object_2
+    (JNIEnv *__jni_env,
+     jobject _this,
+     QtJambiNativeID __this_nativeId,
+     jobject t0)
 {
     jobject result{nullptr};
     QTJAMBI_TRY{
@@ -425,10 +577,52 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_lowerBound__JLjav
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
-    return result;
+        return result;
 }
 
 // QMultiMap<Key, T>::upperBound(const Key & k) const
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_constUpperBound__JLjava_lang_Object_2
+    (JNIEnv *__jni_env,
+     jobject _this,
+     QtJambiNativeID __this_nativeId,
+     jobject t0)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiMap<Key, T>::upperBound(const Key & k) const", container.first)
+        QTJAMBI_CONTAINER_CAST(MultiMap, containerAccess, container.second);
+
+        result = containerAccess->constUpperBound(__jni_env, ConstExtendedContainerInfo{_this, container.first, __this_nativeId}, t0);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+// QMultiMap<Key, T>::lowerBound(const Key & k)
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_lowerBound__JLjava_lang_Object_2
+(JNIEnv *__jni_env,
+ jobject _this,
+ QtJambiNativeID __this_nativeId,
+ jobject t0)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiMap<Key, T>::lowerBound(const Key & k)", container.first)
+        QTJAMBI_CONTAINER_CAST(MultiMap, containerAccess, container.second);
+
+        result = containerAccess->lowerBound(__jni_env, ExtendedContainerInfo{_this, container.first, __this_nativeId}, t0);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+
+// QMultiMap<Key, T>::upperBound(const Key & k)
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_upperBound__JLjava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
@@ -439,10 +633,10 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_upperBound__JLjav
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiMap<Key, T>::upperBound(const Key & k) const", container.first)
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiMap<Key, T>::upperBound(const Key & k)", container.first)
         QTJAMBI_CONTAINER_CAST(MultiMap, containerAccess, container.second);
 
-        result = containerAccess->constUpperBound(__jni_env, ConstExtendedContainerInfo{_this, container.first, __this_nativeId}, t0);
+        result = containerAccess->upperBound(__jni_env, ExtendedContainerInfo{_this, container.first, __this_nativeId}, t0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -679,6 +873,28 @@ extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QMultiMap_count__JLjava_lang_O
 }
 
 // QMultiMap<Key, T>::find(const Key & k, const T & value) const
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_constFind__JLjava_lang_Object_2Ljava_lang_Object_2
+    (JNIEnv *__jni_env,
+     jobject _this,
+     QtJambiNativeID __this_nativeId,
+     jobject t0,
+     jobject k1)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiMap<Key, T>::find(const Key & k, const T & value) const", container.first)
+        QTJAMBI_CONTAINER_CAST(MultiMap, containerAccess, container.second);
+
+        result = containerAccess->constFind(__jni_env, ConstExtendedContainerInfo{_this, container.first, __this_nativeId}, t0, k1);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+// QMultiMap<Key, T>::find(const Key & k, const T & value)
 extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_find__JLjava_lang_Object_2Ljava_lang_Object_2
 (JNIEnv *__jni_env,
  jobject _this,
@@ -690,10 +906,10 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QMultiMap_find__JLjava_lang
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiMap<Key, T>::find(const Key & k, const T & value) const", container.first)
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QMultiMap<Key, T>::find(const Key & k, const T & value)", container.first)
         QTJAMBI_CONTAINER_CAST(MultiMap, containerAccess, container.second);
 
-        result = containerAccess->constFind(__jni_env, ConstExtendedContainerInfo{_this, container.first, __this_nativeId}, t0, k1);
+        result = containerAccess->find(__jni_env, ExtendedContainerInfo{_this, container.first, __this_nativeId}, t0, k1);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END

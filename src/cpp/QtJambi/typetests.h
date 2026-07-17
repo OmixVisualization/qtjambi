@@ -37,6 +37,12 @@
 #include <QtCore/QDataStream>
 #include "global.h"
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+#define QT610_EXTRA_ARG(ARG) , ARG
+#else
+#define QT610_EXTRA_ARG(ARG)
+#endif
+
 QT_WARNING_DISABLE_DEPRECATED
 
 template<typename T>
@@ -97,453 +103,322 @@ template<typename T>
 constexpr bool is_destructible_v = is_destructible<T>::value;
 
 template<class T1, class T2>
-struct is_default_constructible<std::pair<T1,T2>> : std::conditional<is_default_constructible_v<T1> && is_default_constructible_v<T2>, std::true_type, std::false_type>::type{};
+struct is_default_constructible<std::pair<T1,T2>> : std::bool_constant<is_default_constructible_v<T1> && is_default_constructible_v<T2>>{};
 template<class T1, class T2>
-struct is_copy_constructible<std::pair<T1,T2>> : std::conditional<is_copy_constructible_v<T1> && is_copy_constructible_v<T2>, std::true_type, std::false_type>::type{};
+struct is_copy_constructible<std::pair<T1,T2>> : std::bool_constant<is_copy_constructible_v<T1> && is_copy_constructible_v<T2>>{};
 template<class T1, class T2>
-struct is_move_constructible<std::pair<T1,T2>> : std::conditional<is_move_constructible_v<T1> && is_move_constructible_v<T2>, std::true_type, std::false_type>::type{};
+struct is_move_constructible<std::pair<T1,T2>> : std::bool_constant<is_move_constructible_v<T1> && is_move_constructible_v<T2>>{};
 template<class T1, class T2>
-struct is_copy_assignable<std::pair<T1,T2>> : std::conditional<is_copy_assignable_v<T1> && is_copy_assignable_v<T2>, std::true_type, std::false_type>::type{};
+struct is_copy_assignable<std::pair<T1,T2>> : std::bool_constant<is_copy_assignable_v<T1> && is_copy_assignable_v<T2>>{};
 template<class T1, class T2>
-struct is_move_assignable<std::pair<T1,T2>> : std::conditional<is_move_assignable_v<T1> && is_move_assignable_v<T2>, std::true_type, std::false_type>::type{};
+struct is_move_assignable<std::pair<T1,T2>> : std::bool_constant<is_move_assignable_v<T1> && is_move_assignable_v<T2>>{};
 template<class T1, class T2>
-struct is_destructible<std::pair<T1,T2>> : std::conditional<is_destructible_v<T1> && is_destructible_v<T2>, std::true_type, std::false_type>::type{};
+struct is_destructible<std::pair<T1,T2>> : std::bool_constant<is_destructible_v<T1> && is_destructible_v<T2>>{};
 
-template<class T, class = decltype(qobject_interface_iid<T*>())>
-std::true_type  supports_IID_test(const T&);
-std::false_type supports_IID_test(...);
+#ifdef Q_COMPILER_CONCEPTS
+#define BI_OPERATOR_TEST_CONCEPT(operator_name, operator_sign)\
+    template<typename, class T1, class T2 = T1> concept supports_##operator_name##_impl = requires(T1 t1, T2 t2){t1 operator_sign t2;};
+#define PREFIX_OPERATOR_TEST_CONCEPT(operator_name, operator_sign)\
+    template<typename, class T> concept supports_##operator_name##_impl = requires(T t){operator_sign t;};
+#define SUFFIX_OPERATOR_TEST_CONCEPT(operator_name, operator_sign)\
+template<typename, class T> concept supports_##operator_name##_impl = requires(T t){t operator_sign;};
+#define CONSTRUCTOR_TEST_CONCEPT(function_name)\
+template<typename, class T, typename...Args> concept supports_##function_name##_impl = requires(Args... args){T(args...);};
+#define MEMBER_METHOD_TEST_CONCEPT(function_name)\
+    template<typename, class T, typename...Args> concept supports_##function_name##_impl = requires(T t, Args... args){t.function_name(args...);};
+#define STATIC_FIELD_TEST_CONCEPT(name)\
+template<typename, class T> concept supports_##name##_impl = requires(T t){T::name;};
+#define TYPENAME_TEST_CONCEPT(name)\
+template<typename, class T> concept supports_##name##_impl = requires(T t){T::name;};
+#define GLOBAL_METHOD_TEST_CONCEPT(function_name)\
+    template<typename, typename...Args> concept supports_##function_name##_impl = requires(Args... args){function_name(args...);};
+#define TEMPLATE_METHOD_TEST_CONCEPT(function_name)\
+    template<typename, typename...Args> concept supports_##function_name##_impl = requires(){function_name<Args...>();};
+#else
+#define BI_OPERATOR_TEST_CONCEPT(operator_name, operator_sign)\
+    template<typename, class T1, class T2 = T1> struct supports_##operator_name##_impl : std::false_type {};\
+    template<class T1, class T2> struct supports_##operator_name##_impl<std::void_t<decltype(std::declval<T1>() operator_sign std::declval<T2>())>, T1, T2> : std::true_type {};
+#define PREFIX_OPERATOR_TEST_CONCEPT(operator_name, operator_sign)\
+    template<typename, class T> struct supports_##operator_name##_impl : std::false_type {};\
+    template<class T> struct supports_##operator_name##_impl<std::void_t<decltype(operator_sign std::declval<T>())>,T> : std::true_type {};
+#define SUFFIX_OPERATOR_TEST_CONCEPT(operator_name, operator_sign)\
+template<typename, class T> struct supports_##operator_name##_impl : std::false_type {};\
+    template<class T> struct supports_##operator_name##_impl<std::void_t<decltype(std::declval<T>()operator_sign)>,T> : std::true_type {};
+#define MEMBER_METHOD_TEST_CONCEPT(function_name)\
+    template<typename, class T, typename...Args> struct supports_##function_name##_impl : std::false_type {};\
+    template<class T, typename...Args> struct supports_##function_name##_impl<std::void_t<decltype(std::declval<T&>().function_name(std::declval<Args>()...))>, T, Args...> : std::true_type {};
+#define CONSTRUCTOR_TEST_CONCEPT(function_name)\
+template<typename, class T, typename...Args> struct supports_##function_name##_impl : std::false_type {};\
+    template<class T, typename...Args> struct supports_##function_name##_impl<std::void_t<decltype(T(std::declval<Args>()...))>, T, Args...> : std::true_type {};
+#define STATIC_FIELD_TEST_CONCEPT(name)\
+template<typename, class T> struct supports_##name##_impl : std::false_type {};\
+    template<class T> struct supports_##name##_impl<std::void_t<decltype(T::name)>, T> : std::true_type {};
+#define TYPENAME_TEST_CONCEPT(name)\
+template<typename, class T> struct supports_##name##_impl : std::false_type {};\
+    template<class T> struct supports_##name##_impl<std::void_t<typename T::name>, T> : std::true_type {};
+#define GLOBAL_METHOD_TEST_CONCEPT(function_name)\
+    template<typename, typename...Args> struct supports_##function_name##_impl : std::false_type {};\
+    template<typename...Args> struct supports_##function_name##_impl<std::void_t<decltype(function_name(std::declval<Args>()...))>, Args...> : std::true_type {};
+#define TEMPLATE_METHOD_TEST_CONCEPT(function_name)\
+    template<typename, typename...Args> struct supports_##function_name##_impl : std::false_type {};\
+    template<typename...Args> struct supports_##function_name##_impl<std::void_t<decltype(function_name<Args...>())>, Args...> : std::true_type {};
+#endif
 
-template<class T> struct supports_IID : decltype(supports_IID_test(std::declval<T>())){};
+#define BI_OPERATOR_TEST(operator_name, operator_sign)\
+    BI_OPERATOR_TEST_CONCEPT(operator_name, operator_sign)\
+    template<class T1, class T2 = T1> struct supports_##operator_name : supports_##operator_name##_impl<void,T1,T2>{};\
+    template<> struct supports_##operator_name<void> : std::false_type{};\
+    template<class T> struct supports_##operator_name<T,void> : std::false_type{};\
+    template<class T> struct supports_##operator_name<void,T> : std::false_type{};\
+    template<class T1, class T2 = T1> static constexpr bool supports_##operator_name##_v = supports_##operator_name<T1,T2>::value;
 
-template<class T, class = decltype(std::declval<T>() == std::declval<T>() )>
-std::true_type  supports_equal_test(const T&);
-std::false_type supports_equal_test(...);
+#define PREFIX_OPERATOR_TEST(operator_name, operator_sign)\
+    PREFIX_OPERATOR_TEST_CONCEPT(operator_name, operator_sign)\
+    template<class T> struct supports_##operator_name : supports_##operator_name##_impl<void,T>{};\
+    template<class T> static constexpr bool supports_##operator_name##_v = supports_##operator_name<T>::value;
 
-template<class T> struct supports_equal : decltype(supports_equal_test(std::declval<T>())){};
-template<class T, bool> struct supports_equal_conditional : decltype(supports_equal_test(std::declval<T>())){};
-template<class T> struct supports_equal_conditional<T,false> : std::false_type{};
-template<class T> struct supports_equal<QList<T>> : supports_equal_conditional<QList<int>,supports_equal<T>::value>{};
-template<class T> struct supports_equal<QQueue<T>> : supports_equal_conditional<QQueue<int>,supports_equal<T>::value>{};
-template<class T> struct supports_equal<QStack<T>> : supports_equal_conditional<QStack<int>,supports_equal<T>::value>{};
-template<class T> struct supports_equal<QSet<T>> : supports_equal_conditional<QSet<int>,supports_equal<T>::value>{};
-template<class T1, class T2> struct supports_equal<std::pair<T1,T2>> : supports_equal_conditional<std::pair<int,int>, supports_equal<T1>::value && supports_equal<T2>::value>{};
-template<class T1, class T2> struct supports_equal<QMap<T1,T2>> : supports_equal_conditional<QMap<int,int>, supports_equal<T1>::value && supports_equal<T2>::value>{};
-template<class T1, class T2> struct supports_equal<QHash<T1,T2>> : supports_equal_conditional<QHash<int,int>, supports_equal<T1>::value && supports_equal<T2>::value>{};
-template<class T1, class T2> struct supports_equal<QMultiMap<T1,T2>> : supports_equal_conditional<QMultiMap<int,int>, supports_equal<T1>::value && supports_equal<T2>::value>{};
-template<class T1, class T2> struct supports_equal<QMultiHash<T1,T2>> : supports_equal_conditional<QMultiHash<int,int>, supports_equal<T1>::value && supports_equal<T2>::value>{};
-template<typename T, typename Alloc> struct supports_equal<std::vector<T, Alloc>> : supports_equal_conditional<std::vector<int,Alloc>,supports_equal<T>::value>{};
-template<typename T, typename Alloc> struct supports_equal<std::list<T, Alloc>> : supports_equal_conditional<std::list<int,Alloc>,supports_equal<T>::value>{};
-template<class T1, class T2, typename Compare, typename Alloc> struct supports_equal<std::map<T1,T2,Compare,Alloc>> : supports_equal_conditional<std::map<int,int,Compare,Alloc>,supports_equal<T1>::value && supports_equal<T2>::value>{};
-template<class T1, class T2, typename Compare, typename Alloc> struct supports_equal<std::multimap<T1,T2,Compare,Alloc>> : supports_equal_conditional<std::multimap<int,int,Compare,Alloc>,supports_equal<T1>::value && supports_equal<T2>::value>{};
-template<> struct supports_equal<void> : std::false_type{};
-template<class T> struct supports_equal<T*> : std::true_type{};
+#define SUFFIX_OPERATOR_TEST(operator_name, operator_sign)\
+SUFFIX_OPERATOR_TEST_CONCEPT(operator_name, operator_sign)\
+    template<class T> struct supports_##operator_name : supports_##operator_name##_impl<void,T>{};\
+    template<class T> static constexpr bool supports_##operator_name##_v = supports_##operator_name<T>::value;
 
-template<class T, class = decltype(std::declval<T>() < std::declval<T>() )>
-std::true_type  supports_less_than_test(const T&);
-std::false_type supports_less_than_test(...);
+#define MEMBER_METHOD_TEST(function_name)\
+    MEMBER_METHOD_TEST_CONCEPT(function_name)\
+    template<typename T, typename...Args> struct supports_##function_name : supports_##function_name##_impl<void,T,Args...>{};\
+    template<typename T, typename...Args> static constexpr bool supports_##function_name##_v = supports_##function_name<T,Args...>::value;
 
-template<class T> struct supports_less_than : decltype(supports_less_than_test(std::declval<T>())){};
-template<class T, bool> struct supports_less_than_conditional : decltype(supports_less_than_test(std::declval<T>())){};
-template<class T> struct supports_less_than_conditional<T,false> : std::false_type{};
-template<class T> struct supports_less_than<QList<T>> : supports_less_than_conditional<QList<int>,supports_less_than<T>::value>{};
-template<class T> struct supports_less_than<QQueue<T>> : supports_less_than_conditional<QQueue<int>,supports_less_than<T>::value>{};
-template<class T> struct supports_less_than<QStack<T>> : supports_less_than_conditional<QStack<int>,supports_less_than<T>::value>{};
-template<class T> struct supports_less_than<QSet<T>> : supports_less_than_conditional<QSet<int>,supports_less_than<T>::value>{};
-template<class T1, class T2> struct supports_less_than<std::pair<T1,T2>> : supports_less_than_conditional<std::pair<int,int>, supports_less_than<T1>::value && supports_less_than<T2>::value>{};
-template<class T1, class T2> struct supports_less_than<QMap<T1,T2>> : supports_less_than_conditional<QMap<int,int>, supports_less_than<T1>::value && supports_less_than<T2>::value>{};
-template<class T1, class T2> struct supports_less_than<QHash<T1,T2>> : supports_less_than_conditional<QHash<int,int>, supports_less_than<T1>::value && supports_less_than<T2>::value>{};
-template<class T1, class T2> struct supports_less_than<QMultiMap<T1,T2>> : supports_less_than_conditional<QMultiMap<int,int>, supports_less_than<T1>::value && supports_less_than<T2>::value>{};
-template<class T1, class T2> struct supports_less_than<QMultiHash<T1,T2>> : supports_less_than_conditional<QMultiHash<int,int>, supports_less_than<T1>::value && supports_less_than<T2>::value>{};
-template<typename T, typename Alloc> struct supports_less_than<std::vector<T, Alloc>> : supports_less_than_conditional<std::vector<int,Alloc>,supports_less_than<T>::value>{};
-template<typename T, typename Alloc> struct supports_less_than<std::list<T, Alloc>> : supports_less_than_conditional<std::list<int,Alloc>,supports_less_than<T>::value>{};
-template<class T1, class T2, typename Compare, typename Alloc> struct supports_less_than<std::map<T1,T2,Compare,Alloc>> : supports_less_than_conditional<std::map<int,int,Compare,Alloc>,supports_less_than<T1>::value && supports_less_than<T2>::value>{};
-template<class T1, class T2, typename Compare, typename Alloc> struct supports_less_than<std::multimap<T1,T2,Compare,Alloc>> : supports_less_than_conditional<std::multimap<int,int,Compare,Alloc>,supports_less_than<T1>::value && supports_less_than<T2>::value>{};
-template<> struct supports_less_than<void> : std::false_type{};
-template<class T> struct supports_less_than<T*> : std::true_type{};
+#define CONSTRUCTOR_TEST(function_name)\
+    CONSTRUCTOR_TEST_CONCEPT(function_name)\
+    template<typename T, typename...Args> struct supports_##function_name : supports_##function_name##_impl<void,T,Args...>{};\
+    template<typename T, typename...Args> static constexpr bool supports_##function_name##_v = supports_##function_name<T,Args...>::value;
 
-template<class T, class = decltype(qHash(std::declval<T>()))>
-std::true_type  supports_qHash_test(const T&);
-std::false_type supports_qHash_test(...);
+#define STATIC_FIELD_TEST(name)\
+STATIC_FIELD_TEST_CONCEPT(name)\
+    template<typename T> struct supports_##name : supports_##name##_impl<void,T>{};\
+    template<typename T> static constexpr bool supports_##name##_v = supports_##name<T>::value;
 
-template<class T> struct supports_qHash : decltype(supports_qHash_test(std::declval<T>())){};
-template<class T, bool> struct supports_qHash_conditional : decltype(supports_qHash_test(std::declval<T>())){};
-template<class T> struct supports_qHash_conditional<T,false> : std::false_type{};
-template<class T> struct supports_qHash<QList<T>> : supports_qHash_conditional<QList<int>,supports_qHash<T>::value>{};
-template<class T> struct supports_qHash<QQueue<T>> : supports_qHash_conditional<QQueue<int>,supports_qHash<T>::value>{};
-template<class T> struct supports_qHash<QStack<T>> : supports_qHash_conditional<QStack<int>,supports_qHash<T>::value>{};
-template<class T> struct supports_qHash<QSet<T>> : supports_qHash_conditional<QSet<int>,supports_qHash<T>::value>{};
-template<class T1, class T2> struct supports_qHash<std::pair<T1,T2>> : supports_qHash_conditional<std::pair<int,int>, supports_qHash<T1>::value && supports_qHash<T2>::value>{};
-template<class T1, class T2> struct supports_qHash<QMap<T1,T2>> : supports_qHash_conditional<QMap<int,int>, supports_qHash<T1>::value && supports_qHash<T2>::value>{};
-template<class T1, class T2> struct supports_qHash<QHash<T1,T2>> : supports_qHash_conditional<QHash<int,int>, supports_qHash<T1>::value && supports_qHash<T2>::value>{};
-template<class T1, class T2> struct supports_qHash<QMultiMap<T1,T2>> : supports_qHash_conditional<QMultiMap<int,int>, supports_qHash<T1>::value && supports_qHash<T2>::value>{};
-template<class T1, class T2> struct supports_qHash<QMultiHash<T1,T2>> : supports_qHash_conditional<QMultiHash<int,int>, supports_qHash<T1>::value && supports_qHash<T2>::value>{};
-template<typename T, typename Alloc> struct supports_qHash<std::vector<T, Alloc>> : supports_qHash_conditional<std::vector<int,Alloc>,supports_qHash<T>::value>{};
-template<typename T, typename Alloc> struct supports_qHash<std::list<T, Alloc>> : supports_qHash_conditional<std::list<int,Alloc>,supports_qHash<T>::value>{};
-template<class T1, class T2, typename Compare, typename Alloc> struct supports_qHash<std::map<T1,T2,Compare,Alloc>> : supports_qHash_conditional<std::map<int,int,Compare,Alloc>,supports_qHash<T1>::value && supports_qHash<T2>::value>{};
-template<class T1, class T2, typename Compare, typename Alloc> struct supports_qHash<std::multimap<T1,T2,Compare,Alloc>> : supports_qHash_conditional<std::multimap<int,int,Compare,Alloc>,supports_qHash<T1>::value && supports_qHash<T2>::value>{};
-template<> struct supports_qHash<void> : std::false_type{};
+#define TYPENAME_TEST(name)\
+TYPENAME_TEST_CONCEPT(name)\
+    template<typename T> struct supports_##name : supports_##name##_impl<void,T>{};\
+    template<typename T> static constexpr bool supports_##name##_v = supports_##name<T>::value;
+
+#define GLOBAL_METHOD_TEST(function_name)\
+    GLOBAL_METHOD_TEST_CONCEPT(function_name)\
+    template<typename...Args> struct supports_##function_name : supports_##function_name##_impl<void,Args...>{};\
+    template<> struct supports_##function_name<void> : std::false_type{};\
+    template<typename...Args> static constexpr bool supports_##function_name##_v = supports_##function_name<Args...>::value;
+
+#define TEMPLATE_METHOD_TEST(function_name)\
+    TEMPLATE_METHOD_TEST_CONCEPT(function_name)\
+    template<typename...Args> struct supports_##function_name : supports_##function_name##_impl<void,Args...>{};\
+    template<> struct supports_##function_name<void> : std::false_type{};\
+    template<typename...Args> static constexpr bool supports_##function_name##_v = supports_##function_name<Args...>::value;
+
+#define CONDITIONAL_CONTAINER_TEST_BASE(function_name)\
+    template<class T> struct supports_##function_name<QList<T>> : supports_##function_name##_conditional<QList<int>,supports_##function_name<T>::value>{};\
+    template<class T> struct supports_##function_name<QQueue<T>> : supports_##function_name##_conditional<QQueue<int>,supports_##function_name<T>::value>{};\
+    template<class T> struct supports_##function_name<QStack<T>> : supports_##function_name##_conditional<QStack<int>,supports_##function_name<T>::value>{};\
+    template<class T> struct supports_##function_name<QSet<T>> : supports_##function_name##_conditional<QSet<int>,supports_##function_name<T>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<std::pair<T1,T2>> : supports_##function_name##_conditional<std::pair<int,int>, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<QMap<T1,T2>> : supports_##function_name##_conditional<QMap<int,int>, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<QHash<T1,T2>> : supports_##function_name##_conditional<QHash<int,int>, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<QMultiMap<T1,T2>> : supports_##function_name##_conditional<QMultiMap<int,int>, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<QMultiHash<T1,T2>> : supports_##function_name##_conditional<QMultiHash<int,int>, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<typename T, typename Alloc> struct supports_##function_name<std::vector<T, Alloc>> : supports_##function_name##_conditional<std::vector<int,Alloc>,supports_##function_name<T>::value>{};\
+    template<typename T, typename Alloc> struct supports_##function_name<std::list<T, Alloc>> : supports_##function_name##_conditional<std::list<int,Alloc>,supports_##function_name<T>::value>{};\
+    template<class T1, class T2, typename Compare, typename Alloc> struct supports_##function_name<std::map<T1,T2,Compare,Alloc>> : supports_##function_name##_conditional<std::map<int,int,Compare,Alloc>,supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2, typename Compare, typename Alloc> struct supports_##function_name<std::multimap<T1,T2,Compare,Alloc>> : supports_##function_name##_conditional<std::multimap<int,int,Compare,Alloc>,supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T> struct supports_##function_name<const QList<T>&> : supports_##function_name##_conditional<const QList<int>&,supports_##function_name<T>::value>{};\
+    template<class T> struct supports_##function_name<const QQueue<T>&> : supports_##function_name##_conditional<const QQueue<int>&,supports_##function_name<T>::value>{};\
+    template<class T> struct supports_##function_name<const QStack<T>&> : supports_##function_name##_conditional<const QStack<int>&,supports_##function_name<T>::value>{};\
+    template<class T> struct supports_##function_name<const QSet<T>&> : supports_##function_name##_conditional<const QSet<int>&,supports_##function_name<T>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<const std::pair<T1,T2>&> : supports_##function_name##_conditional<const std::pair<int,int>&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<const QMap<T1,T2>&> : supports_##function_name##_conditional<const QMap<int,int>&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<const QHash<T1,T2>&> : supports_##function_name##_conditional<const QHash<int,int>&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<const QMultiMap<T1,T2>&> : supports_##function_name##_conditional<const QMultiMap<int,int>&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<const QMultiHash<T1,T2>&> : supports_##function_name##_conditional<const QMultiHash<int,int>&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<typename T, typename Alloc> struct supports_##function_name<const std::vector<T, Alloc>&> : supports_##function_name##_conditional<const std::vector<int,Alloc>&, supports_##function_name<T>::value>{};\
+    template<typename T, typename Alloc> struct supports_##function_name<const std::list<T, Alloc>&> : supports_##function_name##_conditional<const std::list<int,Alloc>&, supports_##function_name<T>::value>{};\
+    template<class T1, class T2, typename Compare, typename Alloc> struct supports_##function_name<const std::map<T1,T2,Compare,Alloc>&> : supports_##function_name##_conditional<const std::map<int,int,Compare,Alloc>&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2, typename Compare, typename Alloc> struct supports_##function_name<const std::multimap<T1,T2,Compare,Alloc>&> : supports_##function_name##_conditional<const std::multimap<int,int,Compare,Alloc>&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T> struct supports_##function_name<QList<T>&> : supports_##function_name##_conditional<QList<int>&,supports_##function_name<T>::value>{};\
+    template<class T> struct supports_##function_name<QQueue<T>&> : supports_##function_name##_conditional<QQueue<int>&,supports_##function_name<T>::value>{};\
+    template<class T> struct supports_##function_name<QStack<T>&> : supports_##function_name##_conditional<QStack<int>&,supports_##function_name<T>::value>{};\
+    template<class T> struct supports_##function_name<QSet<T>&> : supports_##function_name##_conditional<QSet<int>&,supports_##function_name<T>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<std::pair<T1,T2>&> : supports_##function_name##_conditional<std::pair<int,int>&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<QMap<T1,T2>&> : supports_##function_name##_conditional<QMap<int,int>&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<QHash<T1,T2>&> : supports_##function_name##_conditional<QHash<int,int>&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<QMultiMap<T1,T2>&> : supports_##function_name##_conditional<QMultiMap<int,int>&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<QMultiHash<T1,T2>&> : supports_##function_name##_conditional<QMultiHash<int,int>&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<typename T, typename Alloc> struct supports_##function_name<std::vector<T, Alloc>&> : supports_##function_name##_conditional<std::vector<int,Alloc>&, supports_##function_name<T>::value>{};\
+    template<typename T, typename Alloc> struct supports_##function_name<std::list<T, Alloc>&> : supports_##function_name##_conditional<std::list<int,Alloc>&, supports_##function_name<T>::value>{};\
+    template<class T1, class T2, typename Compare, typename Alloc> struct supports_##function_name<std::map<T1,T2,Compare,Alloc>&> : supports_##function_name##_conditional<std::map<int,int,Compare,Alloc>&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2, typename Compare, typename Alloc> struct supports_##function_name<std::multimap<T1,T2,Compare,Alloc>&> : supports_##function_name##_conditional<std::multimap<int,int,Compare,Alloc>&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T> struct supports_##function_name<QList<T>&&> : supports_##function_name##_conditional<QList<int>&&,supports_##function_name<T>::value>{};\
+    template<class T> struct supports_##function_name<QQueue<T>&&> : supports_##function_name##_conditional<QQueue<int>&&,supports_##function_name<T>::value>{};\
+    template<class T> struct supports_##function_name<QStack<T>&&> : supports_##function_name##_conditional<QStack<int>&&,supports_##function_name<T>::value>{};\
+    template<class T> struct supports_##function_name<QSet<T>&&> : supports_##function_name##_conditional<QSet<int>&&,supports_##function_name<T>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<std::pair<T1,T2>&&> : supports_##function_name##_conditional<std::pair<int,int>&&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<QMap<T1,T2>&&> : supports_##function_name##_conditional<QMap<int,int>&&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<QHash<T1,T2>&&> : supports_##function_name##_conditional<QHash<int,int>&&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<QMultiMap<T1,T2>&&> : supports_##function_name##_conditional<QMultiMap<int,int>&&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2> struct supports_##function_name<QMultiHash<T1,T2>&&> : supports_##function_name##_conditional<QMultiHash<int,int>&&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<typename T, typename Alloc> struct supports_##function_name<std::vector<T, Alloc>&&> : supports_##function_name##_conditional<std::vector<int,Alloc>&&, supports_##function_name<T>::value>{};\
+    template<typename T, typename Alloc> struct supports_##function_name<std::list<T, Alloc>&&> : supports_##function_name##_conditional<std::list<int,Alloc>&&, supports_##function_name<T>::value>{};\
+    template<class T1, class T2, typename Compare, typename Alloc> struct supports_##function_name<std::map<T1,T2,Compare,Alloc>&&> : supports_##function_name##_conditional<std::map<int,int,Compare,Alloc>&&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+    template<class T1, class T2, typename Compare, typename Alloc> struct supports_##function_name<std::multimap<T1,T2,Compare,Alloc>&&> : supports_##function_name##_conditional<std::multimap<int,int,Compare,Alloc>&&, supports_##function_name<T1>::value && supports_##function_name<T2>::value>{};\
+
+#define CONDITIONAL_CONTAINER_TEST(function_name)\
+    template<class T, bool> struct supports_##function_name##_conditional : supports_##function_name##_impl<void,T>{};\
+    template<class T> struct supports_##function_name##_conditional<T,false> : std::false_type{};\
+    CONDITIONAL_CONTAINER_TEST_BASE(function_name)
+
+#define CONDITIONAL_BI_OPERATOR_TEST(operator_name)\
+    template<class T, bool> struct supports_##operator_name##_conditional : supports_##operator_name##_impl<void,T>{};\
+    template<class T> struct supports_##operator_name##_conditional<T,false> : std::false_type{};\
+    CONDITIONAL_CONTAINER_TEST_BASE(operator_name)\
+    template<class T1, class T2> struct supports_##operator_name<T1*, T2*> : std::true_type{};
+
+BI_OPERATOR_TEST(assign,=)
+BI_OPERATOR_TEST(equal,==)
+CONDITIONAL_BI_OPERATOR_TEST(equal)
+BI_OPERATOR_TEST(less_than,<)
+CONDITIONAL_BI_OPERATOR_TEST(less_than)
+BI_OPERATOR_TEST(greater_than,<)
+CONDITIONAL_BI_OPERATOR_TEST(greater_than)
+BI_OPERATOR_TEST(less_or_eual,<=)
+CONDITIONAL_BI_OPERATOR_TEST(less_or_eual)
+BI_OPERATOR_TEST(greater_or_eual,<=)
+CONDITIONAL_BI_OPERATOR_TEST(greater_or_eual)
+
+BI_OPERATOR_TEST(not_equal,!=)
+BI_OPERATOR_TEST(add,+)
+BI_OPERATOR_TEST(subtract,-)
+BI_OPERATOR_TEST(multiply,*)
+BI_OPERATOR_TEST(divide,/)
+BI_OPERATOR_TEST(add_assign,+=)
+BI_OPERATOR_TEST(subtract_assign,-=)
+BI_OPERATOR_TEST(multiply_assign,*=)
+BI_OPERATOR_TEST(divide_assign,/=)
+BI_OPERATOR_TEST(or_assign,|=)
+BI_OPERATOR_TEST(and_assign,&=)
+BI_OPERATOR_TEST(xor_assign,^=)
+BI_OPERATOR_TEST(rem_assign,%=)
+BI_OPERATOR_TEST(or,|)
+BI_OPERATOR_TEST(and,&)
+BI_OPERATOR_TEST(xor,^)
+BI_OPERATOR_TEST(rem,%)
+BI_OPERATOR_TEST(exclusive_or,||)
+BI_OPERATOR_TEST(exclusive_and,&&)
+PREFIX_OPERATOR_TEST(not,!)
+PREFIX_OPERATOR_TEST(invert,~)
+
+#ifdef Q_COMPILER_CONCEPTS
+template<typename, class T1, class T2 = T1> concept supports_subscribe_impl = requires(T1 t1, T2 t2){t1[t2];};
+#else
+template<typename, class T1, class T2> struct supports_subscribe_impl : std::false_type {};
+template<class T1, class T2> struct supports_subscribe_impl<std::void_t<decltype(std::declval<T1>()[std::declval<T2>()])>, T1, T2> : std::true_type {};
+#endif
+template<class T1, class T2> struct supports_subscribe : supports_subscribe_impl<void,T1,T2>{};
+template<class T1, class T2>
+static constexpr bool supports_subscribe_v = supports_subscribe<T1,T2>::value;
+
+BI_OPERATOR_TEST(streamin,<<)
+BI_OPERATOR_TEST(streamout,>>)
+
+GLOBAL_METHOD_TEST(qHash)
+CONDITIONAL_CONTAINER_TEST(qHash)
 template<class T> struct supports_qHash<T*> : std::true_type{};
 
-template<typename T, class = decltype( operator << (std::declval<QDebug>(), std::declval<T>()) )>
-std::true_type  supports_debugstream_test(const T&);
-std::false_type supports_debugstream_test(...);
-
-template<typename T> struct supports_debugstream : decltype(supports_debugstream_test(std::declval<T>())){};
-template<class T, bool> struct supports_debugstream_conditional : decltype(supports_debugstream_test(std::declval<T>())){};
-template<class T> struct supports_debugstream_conditional<T,false> : std::false_type{};
-template<class T> struct supports_debugstream<QList<T>> : supports_debugstream_conditional<QList<int>,supports_debugstream<T>::value>{};
-template<class T> struct supports_debugstream<QQueue<T>> : supports_debugstream_conditional<QQueue<int>,supports_debugstream<T>::value>{};
-template<class T> struct supports_debugstream<QStack<T>> : supports_debugstream_conditional<QStack<int>,supports_debugstream<T>::value>{};
-template<class T> struct supports_debugstream<QSet<T>> : supports_debugstream_conditional<QSet<int>,supports_debugstream<T>::value>{};
-template<class T1, class T2> struct supports_debugstream<std::pair<T1,T2>> : supports_debugstream_conditional<std::pair<int,int>, supports_debugstream<T1>::value && supports_debugstream<T2>::value>{};
-template<class T1, class T2> struct supports_debugstream<QMap<T1,T2>> : supports_debugstream_conditional<QMap<int,int>, supports_debugstream<T1>::value && supports_debugstream<T2>::value>{};
-template<class T1, class T2> struct supports_debugstream<QHash<T1,T2>> : supports_debugstream_conditional<QHash<int,int>, supports_debugstream<T1>::value && supports_debugstream<T2>::value>{};
-template<class T1, class T2> struct supports_debugstream<QMultiMap<T1,T2>> : supports_debugstream_conditional<QMultiMap<int,int>, supports_debugstream<T1>::value && supports_debugstream<T2>::value>{};
-template<class T1, class T2> struct supports_debugstream<QMultiHash<T1,T2>> : supports_debugstream_conditional<QMultiHash<int,int>, supports_debugstream<T1>::value && supports_debugstream<T2>::value>{};
-template<typename T, typename Alloc> struct supports_debugstream<std::vector<T, Alloc>> : supports_debugstream_conditional<std::vector<int,Alloc>,supports_debugstream<T>::value>{};
-template<typename T, typename Alloc> struct supports_debugstream<std::list<T, Alloc>> : supports_debugstream_conditional<std::list<int,Alloc>,supports_debugstream<T>::value>{};
-template<class T1, class T2, typename Compare, typename Alloc> struct supports_debugstream<std::map<T1,T2,Compare,Alloc>> : supports_debugstream_conditional<std::map<int,int,Compare,Alloc>,supports_debugstream<T1>::value && supports_debugstream<T2>::value>{};
-template<class T1, class T2, typename Compare, typename Alloc> struct supports_debugstream<std::multimap<T1,T2,Compare,Alloc>> : supports_debugstream_conditional<std::multimap<int,int,Compare,Alloc>,supports_debugstream<T1>::value && supports_debugstream<T2>::value>{};
+template<typename, class T> struct supports_debugstream_impl : supports_streamin<QDebug&,T>{};
+template<class T> struct supports_debugstream : supports_debugstream_impl<void,T>{};
 template<> struct supports_debugstream<void> : std::false_type{};
-
-template<typename T, class = decltype( std::declval<QDataStream&>() << std::declval<T>() ), class = decltype( std::declval<QDataStream&>() >> std::declval<T&>() )>
-std::true_type  supports_stream_operators_test(T&&);
-std::false_type supports_stream_operators_test(...);
-
-template<typename T> struct supports_stream_operators : decltype(supports_stream_operators_test(std::declval<T>())){};
-template<class T, bool> struct supports_stream_operators_conditional : decltype(supports_stream_operators_test(std::declval<T>())){};
-template<class T> struct supports_stream_operators_conditional<T,false> : std::false_type{};
-template<class T> struct supports_stream_operators<QList<T>> : supports_stream_operators_conditional<QList<int>,supports_stream_operators<T>::value>{};
-template<class T> struct supports_stream_operators<QQueue<T>> : supports_stream_operators_conditional<QQueue<int>,supports_stream_operators<T>::value>{};
-template<class T> struct supports_stream_operators<QStack<T>> : supports_stream_operators_conditional<QStack<int>,supports_stream_operators<T>::value>{};
-template<class T> struct supports_stream_operators<QSet<T>> : supports_stream_operators_conditional<QSet<int>,supports_stream_operators<T>::value>{};
-template<class T1, class T2> struct supports_stream_operators<std::pair<T1,T2>> : supports_stream_operators_conditional<std::pair<int,int>, supports_stream_operators<T1>::value && supports_stream_operators<T2>::value>{};
-template<class T1, class T2> struct supports_stream_operators<QMap<T1,T2>> : supports_stream_operators_conditional<QMap<int,int>, supports_stream_operators<T1>::value && supports_stream_operators<T2>::value>{};
-template<class T1, class T2> struct supports_stream_operators<QHash<T1,T2>> : supports_stream_operators_conditional<QHash<int,int>, supports_stream_operators<T1>::value && supports_stream_operators<T2>::value>{};
-template<class T1, class T2> struct supports_stream_operators<QMultiMap<T1,T2>> : supports_stream_operators_conditional<QMultiMap<int,int>, supports_stream_operators<T1>::value && supports_stream_operators<T2>::value>{};
-template<class T1, class T2> struct supports_stream_operators<QMultiHash<T1,T2>> : supports_stream_operators_conditional<QMultiHash<int,int>, supports_stream_operators<T1>::value && supports_stream_operators<T2>::value>{};
-template<typename T, typename Alloc> struct supports_stream_operators<std::vector<T, Alloc>> : supports_stream_operators_conditional<std::vector<int,Alloc>,supports_stream_operators<T>::value>{};
-template<typename T, typename Alloc> struct supports_stream_operators<std::list<T, Alloc>> : supports_stream_operators_conditional<std::list<int,Alloc>,supports_stream_operators<T>::value>{};
-template<class T1, class T2, typename Compare, typename Alloc> struct supports_stream_operators<std::map<T1,T2,Compare,Alloc>> : supports_stream_operators_conditional<std::map<int,int,Compare,Alloc>,supports_stream_operators<T1>::value && supports_stream_operators<T2>::value>{};
-template<class T1, class T2, typename Compare, typename Alloc> struct supports_stream_operators<std::multimap<T1,T2,Compare,Alloc>> : supports_stream_operators_conditional<std::multimap<int,int,Compare,Alloc>,supports_stream_operators<T1>::value && supports_stream_operators<T2>::value>{};
-template<> struct supports_stream_operators<void> : std::false_type{};
-
-template<class T, class = decltype( ++std::declval<T>() )>
-std::true_type  supports_increment_test(const T&);
-std::false_type supports_increment_test(...);
-
-template<class T> struct supports_increment : decltype(supports_increment_test(std::declval<T>())){};
-template<> struct supports_increment<void> : std::false_type{};
-
-std::true_type is_bidirectional_iterator_test(const std::bidirectional_iterator_tag&);
-std::false_type is_bidirectional_iterator_test(...);
-template<class T> struct is_bidirectional_iterator : decltype(is_bidirectional_iterator_test(std::declval<typename std::iterator_traits<T>::iterator_category>())){};
-template<> struct is_bidirectional_iterator<void> : std::false_type{};
-
-template<class T, class = decltype( --std::declval<T>() )>
-std::true_type supports_decrement_test(const T&);
-std::false_type supports_decrement_test(...);
-
-template<class T> struct supports_decrement : decltype(supports_decrement_test(std::declval<T>())){};
-template<> struct supports_decrement<void> : std::false_type{};
-
-template<typename T, class = decltype(std::declval<T>().firstKey() )>
-std::true_type  supports_firstKey_test(const T&);
-std::false_type supports_firstKey_test(...);
-template<typename T> struct supports_firstKey : decltype(supports_firstKey_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().lastKey() )>
-std::true_type  supports_lastKey_test(const T&);
-std::false_type supports_lastKey_test(...);
-template<typename T> struct supports_lastKey : decltype(supports_lastKey_test(std::declval<T>())){};
-
-template<template<typename K, typename T> class Container, typename K, typename T, class = decltype(std::declval<Container<K,T>>().key(std::declval<T>()) )>
-std::true_type  supports_map_key_by_value_test(const Container<T,K>&,const K&,const T&);
-std::false_type supports_map_key_by_value_test(...);
-template<template<typename K, typename T> class Container, typename K, typename T> struct supports_map_key_by_value : decltype(supports_map_key_by_value_test(std::declval<Container<K,T>>(),std::declval<K>(),std::declval<T>())){};
-
-template<template<typename K, typename T> class Container, typename K, typename T, class = decltype(std::declval<Container<K,T>>().keys(std::declval<T>()) )>
-std::true_type  supports_map_keys_by_value_test(const Container<T,K>&,const K&,const T&);
-std::false_type supports_map_keys_by_value_test(...);
-template<template<typename K, typename T> class Container, typename K, typename T> struct supports_map_keys_by_value : decltype(supports_map_keys_by_value_test(std::declval<Container<K,T>>(),std::declval<K>(),std::declval<T>())){};
-
-template<template<typename K, typename T> class Container, typename K, typename T, class = decltype(std::declval<Container<K,T>>().value(std::declval<K>(),std::declval<T>()) )>
-std::true_type  supports_map_value_test(const Container<T,K>&,const K&,const T&);
-std::false_type supports_map_value_test(...);
-template<template<typename K, typename T> class Container, typename K, typename T> struct supports_map_value : decltype(supports_map_value_test(std::declval<Container<K,T>>(),std::declval<K>(),std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().keys() )>
-std::true_type  supports_keys_test(const T&);
-std::false_type supports_keys_test(...);
-template<typename T> struct supports_keys : decltype(supports_keys_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().values() )>
-std::true_type  supports_values_test(const T&);
-std::false_type supports_values_test(...);
-template<typename T> struct supports_values : decltype(supports_values_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().key() )>
-std::true_type  supports_key_test(const T&);
-std::false_type supports_key_test(...);
-template<typename T> struct supports_key : decltype(supports_key_test(std::declval<T>())){};
-
 template<typename T>
-constexpr bool supports_key_v = supports_key<T>::value;
+constexpr bool supports_debugstream_v = supports_debugstream<T>::value;
+CONDITIONAL_CONTAINER_TEST(debugstream)
 
-template<typename T, class = decltype(std::declval<T>().value() )>
-std::true_type  supports_value_test(const T&);
-std::false_type supports_value_test(...);
-template<typename T> struct supports_value : decltype(supports_value_test(std::declval<T>())){};
+template<typename, class T> struct supports_stream_operators_impl : std::conjunction<supports_streamin<QDataStream&,const T&>, supports_streamout<QDataStream&,T&>>{};
+template<class T> struct supports_stream_operators : supports_stream_operators_impl<void,T>{};
+template<> struct supports_stream_operators<void> : std::false_type{};
+template<typename T>
+constexpr bool supports_stream_operators_v = supports_stream_operators<T>::value;
+CONDITIONAL_CONTAINER_TEST(stream_operators)
 
-template<template<typename K, typename T> class Container, typename K, typename T, class = decltype(std::declval<Container<K,T>>().values(std::declval<K>()) )>
-std::true_type  supports_map_values_by_key_test(const Container<T,K>&,const K&,const T&);
-std::false_type supports_map_values_by_key_test(...);
-template<template<typename K, typename T> class Container, typename K, typename T> struct supports_map_values_by_key : decltype(supports_map_values_by_key_test(std::declval<Container<K,T>>(),std::declval<K>(),std::declval<T>())){};
+PREFIX_OPERATOR_TEST(increment,++)
+PREFIX_OPERATOR_TEST(decrement,--)
+PREFIX_OPERATOR_TEST(deref,*)
+PREFIX_OPERATOR_TEST(ref,&)
+SUFFIX_OPERATOR_TEST(suffix_increment,++)
+SUFFIX_OPERATOR_TEST(suffix_decrement,--)
 
-template<template<typename K, typename T> class Container, typename K, typename T, class = decltype(std::declval<Container<K,T>>().insert(std::declval<K>(),std::declval<T>()) )>
-std::true_type  supports_map_insert_test(const Container<T,K>&,const K&,const T&);
-std::false_type supports_map_insert_test(...);
-template<template<typename K, typename T> class Container, typename K, typename T> struct supports_map_insert : decltype(supports_map_insert_test(std::declval<Container<K,T>>(),std::declval<K>(),std::declval<T>())){};
+MEMBER_METHOD_TEST(firstKey)
+MEMBER_METHOD_TEST(lastKey)
+MEMBER_METHOD_TEST(isSharedWith)
+MEMBER_METHOD_TEST(key)
+MEMBER_METHOD_TEST(keys)
+MEMBER_METHOD_TEST(value)
+MEMBER_METHOD_TEST(values)
+MEMBER_METHOD_TEST(isBegin)
+MEMBER_METHOD_TEST(isEnd)
+MEMBER_METHOD_TEST(isValid)
+MEMBER_METHOD_TEST(initialEnd)
+MEMBER_METHOD_TEST(initialBegin)
+CONSTRUCTOR_TEST(new)
 
-template<template<typename K, typename T> class Container, typename K, typename T, class = decltype(std::declval<Container<K,T>>().remove(std::declval<K>()) )>
-std::true_type  supports_map_remove_test(const Container<T,K>&,const K&,const T&);
-std::false_type supports_map_remove_test(...);
-template<template<typename K, typename T> class Container, typename K, typename T> struct supports_map_remove : decltype(supports_map_remove_test(std::declval<Container<K,T>>(),std::declval<K>(),std::declval<T>())){};
+TEMPLATE_METHOD_TEST(qobject_interface_iid)
 
-template<template<typename K, typename T> class Container, typename K, typename T, class = decltype(std::declval<Container<K,T>>().take(std::declval<K>()) )>
-std::true_type  supports_map_take_test(const Container<T,K>&,const K&,const T&);
-std::false_type supports_map_take_test(...);
-template<template<typename K, typename T> class Container, typename K, typename T> struct supports_map_take : decltype(supports_map_take_test(std::declval<Container<K,T>>(),std::declval<K>(),std::declval<T>())){};
+MEMBER_METHOD_TEST(lowerBound)
+MEMBER_METHOD_TEST(upperBound)
+MEMBER_METHOD_TEST(size)
+MEMBER_METHOD_TEST(at)
+MEMBER_METHOD_TEST(remove)
+MEMBER_METHOD_TEST(replace)
+MEMBER_METHOD_TEST(find)
+MEMBER_METHOD_TEST(constFind)
+MEMBER_METHOD_TEST(take)
+MEMBER_METHOD_TEST(insert)
+MEMBER_METHOD_TEST(clear)
+MEMBER_METHOD_TEST(begin)
+MEMBER_METHOD_TEST(constBegin)
+MEMBER_METHOD_TEST(keyBegin)
+MEMBER_METHOD_TEST(keyValueBegin)
+MEMBER_METHOD_TEST(constKeyValueBegin)
+MEMBER_METHOD_TEST(rbegin)
+MEMBER_METHOD_TEST(crbegin)
+MEMBER_METHOD_TEST(end)
+MEMBER_METHOD_TEST(constEnd)
+MEMBER_METHOD_TEST(rend)
+MEMBER_METHOD_TEST(crend)
+MEMBER_METHOD_TEST(keyEnd)
+MEMBER_METHOD_TEST(keyValueEnd)
+MEMBER_METHOD_TEST(constKeyValueEnd)
+MEMBER_METHOD_TEST(constReverseBegin)
+MEMBER_METHOD_TEST(constReverseEnd)
+MEMBER_METHOD_TEST(reverseBegin)
+MEMBER_METHOD_TEST(reverseEnd)
+MEMBER_METHOD_TEST(first)
+MEMBER_METHOD_TEST(last)
+MEMBER_METHOD_TEST(constFirst)
+MEMBER_METHOD_TEST(constLast)
+MEMBER_METHOD_TEST(count)
+MEMBER_METHOD_TEST(unite)
+MEMBER_METHOD_TEST(capacity)
+MEMBER_METHOD_TEST(contains)
+MEMBER_METHOD_TEST(reserve)
+MEMBER_METHOD_TEST(uniqueKeys)
+MEMBER_METHOD_TEST(isDetached)
 
-template<template<typename K, typename T> class Container, typename K, typename T, class = decltype(std::declval<Container<K,T>>().lowerBound(std::declval<T>()) )>
-std::true_type  supports_map_lower_bound_test(const Container<T,K>&,const K&,const T&);
-std::false_type supports_map_lower_bound_test(...);
-template<template<typename K, typename T> class Container, typename K, typename T> struct supports_map_lower_bound : decltype(supports_map_lower_bound_test(std::declval<Container<K,T>>(),std::declval<K>(),std::declval<T>())){};
-
-template<template<typename K, typename T> class Container, typename K, typename T, class = decltype(std::declval<Container<K,T>>().upperBound(std::declval<T>()) )>
-std::true_type  supports_map_upper_bound_test(const Container<T,K>&,const K&,const T&);
-std::false_type supports_map_upper_bound_test(...);
-template<template<typename K, typename T> class Container, typename K, typename T> struct supports_map_upper_bound : decltype(supports_map_upper_bound_test(std::declval<Container<K,T>>(),std::declval<K>(),std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().size() )>
-std::true_type  supports_size_test(const T&);
-std::false_type supports_size_test(...);
-template<typename T> struct supports_size : decltype(supports_size_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().at(std::declval<int>()) )>
-std::true_type  supports_at_test(const T&);
-std::false_type supports_at_test(...);
-template<typename T> struct supports_at : decltype(supports_at_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().takeAt(std::declval<int>()) )>
-std::true_type  supports_take_at_test(const T&);
-std::false_type supports_take_at_test(...);
-template<typename T> struct supports_take_at : decltype(supports_take_at_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().remove(std::declval<int>()) )>
-std::true_type  supports_remove_index_test(const T&);
-std::false_type supports_remove_index_test(...);
-template<typename T> struct supports_remove_index : decltype(supports_remove_index_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().remove(std::declval<int>(),std::declval<int>()) )>
-std::true_type  supports_remove_index_N_test(const T&);
-std::false_type supports_remove_index_N_test(...);
-template<typename T> struct supports_remove_index_N : decltype(supports_remove_index_N_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().value(std::declval<int>()) )>
-std::true_type  supports_value_at_test(const T&);
-std::false_type supports_value_at_test(...);
-template<typename T> struct supports_value_at : decltype(supports_value_at_test(std::declval<T>())){};
-
-template<typename T, typename C, class = decltype(std::declval<T>().value(std::declval<int>(),std::declval<C>()) )>
-std::true_type  supports_value_with_default_test(const T&,const C&);
-std::false_type supports_value_with_default_test(...);
-template<typename T, typename C> struct supports_value_with_default : decltype(supports_value_with_default_test(std::declval<T>(),std::declval<C>())){};
-
-template<typename T, typename C, class = decltype(std::declval<T>().append(std::declval<C>()) )>
-std::true_type  supports_append_test(const T&,const C&);
-std::false_type supports_append_test(...);
-template<typename T, typename C> struct supports_append : decltype(supports_append_test(std::declval<T>(),std::declval<C>())){};
-
-template<typename T, typename C, class = decltype(std::declval<T>().replace(std::declval<int>(),std::declval<C>()) )>
-std::true_type  supports_replace_test(const T&,const C&);
-std::false_type supports_replace_test(...);
-template<typename T, typename C> struct supports_replace : decltype(supports_replace_test(std::declval<T>(),std::declval<C>())){};
-
-template<typename T, typename C, class = decltype(std::declval<T>().prepend(std::declval<C>()) )>
-std::true_type  supports_prepend_test(const T&,const C&);
-std::false_type supports_prepend_test(...);
-template<typename T, typename C> struct supports_prepend : decltype(supports_prepend_test(std::declval<T>(),std::declval<C>())){};
-
-template<typename T, typename C, class = decltype(std::declval<T>().removeOne(std::declval<C>()) )>
-std::true_type  supports_removeOne_test(const T&,const C&);
-std::false_type supports_removeOne_test(...);
-template<typename T, typename C> struct supports_removeOne : decltype(supports_removeOne_test(std::declval<T>(),std::declval<C>())){};
-
-template<typename T, typename C, class = decltype(std::declval<T>().remove(std::declval<C>()) )>
-std::true_type  supports_removeElement_test(const T&,const C&);
-std::false_type supports_removeElement_test(...);
-template<typename T, typename C> struct supports_removeElement : decltype(supports_removeElement_test(std::declval<T>(),std::declval<C>())){};
-
-template<typename T, typename C, class = decltype(std::declval<T>().removeAll(std::declval<C>()) )>
-std::true_type  supports_removeAll_test(const T&,const C&);
-std::false_type supports_removeAll_test(...);
-template<typename T, typename C> struct supports_removeAll : decltype(supports_removeAll_test(std::declval<T>(),std::declval<C>())){};
-
-template<typename T, typename C, class = decltype(std::declval<T>().insert(std::declval<int>(),std::declval<C>()) )>
-std::true_type  supports_insert_test(const T&,const C&);
-std::false_type supports_insert_test(...);
-template<typename T, typename C> struct supports_insert : decltype(supports_insert_test(std::declval<T>(),std::declval<C>())){};
-
-template<typename T, typename C, class = decltype(std::declval<T>().insert(std::declval<int>(),std::declval<int>(),std::declval<C>()) )>
-std::true_type  supports_insertN_test(const T&,const C&);
-std::false_type supports_insertN_test(...);
-template<typename T, typename C> struct supports_insertN : decltype(supports_insertN_test(std::declval<T>(),std::declval<C>())){};
-
-template<typename T, typename C, class = decltype(std::declval<T>().fill(std::declval<C>(),std::declval<int>()) )>
-std::true_type  supports_fill_test(const T&,const C&);
-std::false_type supports_fill_test(...);
-template<typename T, typename C> struct supports_fill : decltype(supports_fill_test(std::declval<T>(),std::declval<C>())){};
-
-template<typename T, class = decltype(std::declval<T>().mid(std::declval<int>(),std::declval<int>()) )>
-std::true_type  supports_mid_test(const T&);
-std::false_type supports_mid_test(...);
-template<typename T> struct supports_mid : decltype(supports_mid_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().squeeze() )>
-std::true_type  supports_squeeze_test(const T&);
-std::false_type supports_squeeze_test(...);
-template<typename T> struct supports_squeeze : decltype(supports_squeeze_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().clear() )>
-std::true_type  supports_clear_test(const T&);
-std::false_type supports_clear_test(...);
-template<typename T> struct supports_clear : decltype(supports_clear_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().begin() )>
-std::true_type  supports_begin_test(const T&);
-std::false_type supports_begin_test(...);
-template<typename T> struct supports_begin : decltype(supports_begin_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().first() )>
-std::true_type  supports_first_test(const T&);
-std::false_type supports_first_test(...);
-template<typename T> struct supports_first : decltype(supports_first_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().last() )>
-std::true_type  supports_last_test(const T&);
-std::false_type supports_last_test(...);
-template<typename T> struct supports_last : decltype(supports_last_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().unite(std::declval<T>()) )>
-std::true_type  supports_unite_test(const T&);
-std::false_type supports_unite_test(...);
-template<typename T> struct supports_unite : decltype(supports_unite_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().move(std::declval<int>(),std::declval<int>()) )>
-std::true_type  supports_move_test(const T&);
-std::false_type supports_move_test(...);
-template<typename T> struct supports_move : decltype(supports_move_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().capacity() )>
-std::true_type  supports_capacity_test(const T&);
-std::false_type supports_capacity_test(...);
-template<typename T> struct supports_capacity : decltype(supports_capacity_test(std::declval<T>())){};
-
-template<typename T, typename C, class = decltype(std::declval<T>().contains(std::declval<C>()) )>
-std::true_type  supports_contains_test(const T&, const C&);
-std::false_type supports_contains_test(...);
-template<typename T, typename C> struct supports_contains : decltype(supports_contains_test(std::declval<T>(), std::declval<C>())){};
-
-template<typename T, typename C, typename C2, class = decltype(std::declval<T>().contains(std::declval<C>(), std::declval<C2>()) )>
-std::true_type  supports_contains_key_value_test(const T&, const C&, const C2&);
-std::false_type supports_contains_key_value_test(...);
-template<typename T, typename C, typename C2> struct supports_contains_key_value : decltype(supports_contains_key_value_test(std::declval<T>(), std::declval<C>(), std::declval<C2>())){};
-
-template<typename T, typename C, typename C2, class = decltype(std::declval<T>().find(std::declval<C>(), std::declval<C2>()) )>
-std::true_type  supports_find_key_value_test(const T&, const C&, const C2&);
-std::false_type supports_find_key_value_test(...);
-template<typename T, typename C, typename C2> struct supports_find_key_value : decltype(supports_find_key_value_test(std::declval<T>(), std::declval<C>(), std::declval<C2>())){};
-
-template<typename T, typename C, typename C2, class = decltype(std::declval<T>().remove(std::declval<C>(), std::declval<C2>()) )>
-std::true_type  supports_remove_key_value_test(const T&, const C&, const C2&);
-std::false_type supports_remove_key_value_test(...);
-template<typename T, typename C, typename C2> struct supports_remove_key_value : decltype(supports_remove_key_value_test(std::declval<T>(), std::declval<C>(), std::declval<C2>())){};
-
-template<typename T, typename C, typename C2, class = decltype(std::declval<T>().replace(std::declval<C>(), std::declval<C2>()) )>
-std::true_type  supports_replace_key_value_test(const T&, const C&, const C2&);
-std::false_type supports_replace_key_value_test(...);
-template<typename T, typename C, typename C2> struct supports_replace_key_value : decltype(supports_replace_key_value_test(std::declval<T>(), std::declval<C>(), std::declval<C2>())){};
-
-template<typename T, typename C, typename C2, class = decltype(std::declval<T>().count(std::declval<C>(), std::declval<C2>()) )>
-std::true_type  supports_count_key_value_test(const T&, const C&, const C2&);
-std::false_type supports_count_key_value_test(...);
-template<typename T, typename C, typename C2> struct supports_count_key_value : decltype(supports_count_key_value_test(std::declval<T>(), std::declval<C>(), std::declval<C2>())){};
-
-template<typename T, typename C, class = decltype(std::declval<T>().count(std::declval<C>()) )>
-std::true_type  supports_count_elements_test(const T&, const C&);
-std::false_type supports_count_elements_test(...);
-template<typename T, typename C> struct supports_count_elements : decltype(supports_count_elements_test(std::declval<T>(), std::declval<C>())){};
-
-template<typename T, typename C, class = decltype(std::declval<T>().endsWith(std::declval<C>()) )>
-std::true_type  supports_endsWith_test(const T&, const C&);
-std::false_type supports_endsWith_test(...);
-template<typename T, typename C> struct supports_endsWith : decltype(supports_endsWith_test(std::declval<T>(), std::declval<C>())){};
-
-template<typename T, typename C, class = decltype(std::declval<T>().startsWith(std::declval<C>()) )>
-std::true_type  supports_startsWith_test(const T&, const C&);
-std::false_type supports_startsWith_test(...);
-template<typename T, typename C> struct supports_startsWith : decltype(supports_startsWith_test(std::declval<T>(), std::declval<C>())){};
-
-template<typename T, typename C, class = decltype(std::declval<T>().indexOf(std::declval<C>()) )>
-std::true_type  supports_indexOf_test(const T&, const C&);
-std::false_type supports_indexOf_test(...);
-template<typename T, typename C> struct supports_indexOf : decltype(supports_indexOf_test(std::declval<T>(), std::declval<C>())){};
-
-template<typename T, typename C, class = decltype(std::declval<T>().lastIndexOf(std::declval<C>()) )>
-std::true_type  supports_lastIndexOf_test(const T&, const C&);
-std::false_type supports_lastIndexOf_test(...);
-template<typename T, typename C> struct supports_lastIndexOf : decltype(supports_lastIndexOf_test(std::declval<T>(), std::declval<C>())){};
-
-template<typename T, class = decltype(std::declval<T>().resize(std::declval<int>()) )>
-std::true_type  supports_resize_test(const T&);
-std::false_type supports_resize_test(...);
-template<typename T> struct supports_resize : decltype(supports_resize_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().reserve(std::declval<int>()) )>
-std::true_type  supports_reserve_test(const T&);
-std::false_type supports_reserve_test(...);
-template<typename T> struct supports_reserve : decltype(supports_reserve_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().end() )>
-std::true_type  supports_end_test(const T&);
-std::false_type supports_end_test(...);
-template<typename T> struct supports_end : decltype(supports_end_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().uniqueKeys() )>
-std::true_type  supports_uniqueKeys_test(const T&);
-std::false_type supports_uniqueKeys_test(...);
-template<typename T> struct supports_uniqueKeys : decltype(supports_uniqueKeys_test(std::declval<T>())){};
-
-template<template<typename K, typename T> class Container, typename K, typename T, class = decltype(std::declval<Container<K,T>>().find(std::declval<K>(),std::declval<T>()) )>
-std::true_type  supports_map_find_key_value_test(const Container<T,K>&);
-std::false_type supports_map_find_key_value_test(...);
-template<template<typename K, typename T> class Container, typename K, typename T> struct supports_map_find_key_value : decltype(supports_map_find_key_value_test(std::declval<Container<K,T>>())){};
-
-template<typename T, class = decltype(std::declval<T>().intersects(std::declval<T>()) )>
-std::true_type  supports_intersects_test(const T&);
-std::false_type supports_intersects_test(...);
-template<typename T> struct supports_intersects : decltype(supports_intersects_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().intersect(std::declval<T>()) )>
-std::true_type  supports_intersect_test(const T&);
-std::false_type supports_intersect_test(...);
-template<typename T> struct supports_intersect : decltype(supports_intersect_test(std::declval<T>())){};
-
-template<typename T, class = decltype(std::declval<T>().isDetached() )>
-std::true_type  is_shared_data_test(const T&);
-std::false_type is_shared_data_test(...);
-template<typename T> struct is_shared_data : decltype(is_shared_data_test(std::declval<T>())){};
+TYPENAME_TEST(iterator)
+TYPENAME_TEST(const_iterator)
+TYPENAME_TEST(reverse_iterator)
+TYPENAME_TEST(const_reverse_iterator)
+TYPENAME_TEST(key_value_iterator)
+TYPENAME_TEST(const_key_value_iterator)
+TYPENAME_TEST(key_iterator)
+TYPENAME_TEST(sentinel)
+TYPENAME_TEST(iterator_category)
+TYPENAME_TEST(value_type)
+TYPENAME_TEST(difference_type)
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct supports_map_sort : supports_less_than<K>{};
@@ -553,6 +428,65 @@ struct supports_map_sort<QHash,K,T> : supports_qHash<K>{};
 
 template<typename K, typename T>
 struct supports_map_sort<QMultiHash,K,T> : supports_qHash<K>{};
+
+
+template<template<typename K, typename T> class Container, typename K, typename T>
+constexpr bool supports_map_sort_v = supports_map_sort<Container,K,T>::value;
+
+template<typename Iterator, bool support = supports_iterator_category_v<std::iterator_traits<Iterator>>>
+struct is_random_access_iterator : std::is_convertible<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>{
+};
+
+template<typename Iterator>
+struct is_random_access_iterator<Iterator,false> : std::false_type{
+};
+
+template<typename Iterator>
+constexpr bool is_random_access_iterator_v = is_random_access_iterator<Iterator>::value;
+
+template<typename Iterator, bool support = supports_iterator_category_v<std::iterator_traits<Iterator>>>
+struct is_bidirectional_iterator : std::is_convertible<typename std::iterator_traits<Iterator>::iterator_category, std::bidirectional_iterator_tag>{
+};
+
+template<typename Iterator>
+struct is_bidirectional_iterator<Iterator,false> : std::false_type{
+};
+
+template<typename Iterator>
+constexpr bool is_bidirectional_iterator_v = is_bidirectional_iterator<Iterator>::value;
+
+template<typename Iterator, bool support = supports_iterator_category_v<std::iterator_traits<Iterator>>>
+struct is_forward_iterator : std::is_convertible<typename std::iterator_traits<Iterator>::iterator_category, std::forward_iterator_tag>{
+};
+
+template<typename Iterator>
+struct is_forward_iterator<Iterator,false> : std::false_type{
+};
+
+template<typename Iterator>
+constexpr bool is_forward_iterator_v = is_forward_iterator<Iterator>::value;
+
+template<typename Iterator, bool support = supports_iterator_category_v<std::iterator_traits<Iterator>>>
+struct is_output_iterator : std::is_convertible<typename std::iterator_traits<Iterator>::iterator_category, std::output_iterator_tag>{
+};
+
+template<typename Iterator>
+struct is_output_iterator<Iterator,false> : std::false_type{
+};
+
+template<typename Iterator>
+constexpr bool is_output_iterator_v = is_output_iterator<Iterator>::value;
+
+template<typename Iterator, bool support = supports_iterator_category_v<std::iterator_traits<Iterator>>>
+struct is_input_iterator : std::is_convertible<typename std::iterator_traits<Iterator>::iterator_category, std::input_iterator_tag>{
+};
+
+template<typename Iterator>
+struct is_input_iterator<Iterator,false> : std::false_type{
+};
+
+template<typename Iterator>
+constexpr bool is_input_iterator_v = is_input_iterator<Iterator>::value;
 
 template<typename T>
 struct qtjambi_type;

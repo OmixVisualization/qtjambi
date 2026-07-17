@@ -31,12 +31,69 @@
 
 TEMPLATE = subdirs
 
-SUBDIRS =  functionpointers QtJambi modules
-
+SUBDIRS = functionpointers QtJambi
 QtJambi.depends = functionpointers
 
-modules.file = modules.pro
-modules.depends = QtJambi
+contains(QTJAMBI_MODULE, QtJambiCore) {
+    for(MOD, QTJAMBI_MODULE) {
+        exists($$member(MOD,0)/$$member(MOD,0).pro):{
+            SUBDIRS += $$MOD
+            equals(MOD, QtJambiCore) {
+                eval($${MOD}.depends = QtJambi)
+            }else{
+                eval($${MOD}.depends = QtJambiCore)
+            }
+        }
+    }
+
+    contains(QTJAMBI_MODULE, QtJambiQml) {
+        SUBDIRS += jarimport
+        jarimport.depends = QtJambiQml
+    }
+
+    contains(QTJAMBI_MODULE, QtJambiAxBase) {
+        SUBDIRS += QtJambiActiveX
+        QtJambiActiveX.depends = QtJambiWidgets
+    }
+
+    greaterThan(QT_MAJOR_VERSION, 5) {
+        greaterThan(QT_MAJOR_VERSION, 6) | greaterThan(QT_MINOR_VERSION, 5){
+        contains(QTJAMBI_MODULE, QtJambiGui-private) {
+            SUBDIRS += QtJambiGuiRhi
+            QtJambiGuiRhi.depends = QtJambiGui
+            SUBDIRS += QtJambiGuiVulkan
+            QtJambiGuiVulkan.depends = QtJambiGui
+        }
+        }
+    }
+
+    greaterThan(QT_MAJOR_VERSION, 6) {
+        contains(QTJAMBI_MODULE, QtJambiGui-private) {
+            SUBDIRS += QtJambiGuiQpa
+            QtJambiGuiQpa.depends = QtJambiGui
+        }
+    }
+
+    !android:!ios {
+        contains(QTJAMBI_MODULE, QtJambiDesigner-private) {
+            SUBDIRS += QtJambiUIC
+            QtJambiUIC.depends = QtJambiWidgets
+        }
+        SUBDIRS += QtJambiLauncher
+        QtJambiLauncher.depends = QtJambiCore
+
+        SUBDIRS += QtJambiGenerator
+        QtJambiGenerator.file = QtJambiGenerator/QtJambiGenerator.pro
+        contains(QTJAMBI_MODULE, QtJambiGeneratorExec) {
+            SUBDIRS += QtJambiGeneratorExec
+            QtJambiGeneratorExec.file = QtJambiGenerator/QtJambiGeneratorExec.pro
+            QtJambiGeneratorExec.depends = QtJambiGenerator
+        }
+    }
+
+    SUBDIRS += QtJambiPlugin
+    QtJambiPlugin.depends = QtJambiCore
+}
 
 contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
     # Qt was configued with both debug and release libs

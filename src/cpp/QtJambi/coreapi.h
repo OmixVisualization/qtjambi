@@ -73,6 +73,10 @@ namespace CoreAPI{
 
 QTJAMBI_EXPORT jobject convertQObjectToJavaObjectCppOwnership(JNIEnv *env, const QObject *qt_object, const std::type_info& typeId);
 
+#if 0
+QTJAMBI_EXPORT void manageJSOwnership(JNIEnv *env, const QObject* context, QVariant& variant);
+#endif
+
 QTJAMBI_EXPORT bool isJObjectWrappedMetaType(const QMetaType& metaType);
 
 QTJAMBI_EXPORT bool isNativeWrapperMetaType(const QMetaType& metaType);
@@ -199,9 +203,11 @@ QTJAMBI_EXPORT void unregisterDependentInterface(JNIEnv *env, jobject dependentO
 
 QTJAMBI_EXPORT void unregisterDependentObject(JNIEnv *env, jobject dependentObject, jobject owner);
 
+QTJAMBI_EXPORT void initializeIterator(JNIEnv * env, jobject _this, jobject other, jboolean targetConst);
+
 QTJAMBI_EXPORT void initializeQList(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaType, jobject other);
 
-QTJAMBI_EXPORT void initializeQSet(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaType, jobject other);
+QTJAMBI_EXPORT void initializeQList(JNIEnv *env, jobject object, QtJambiNativeID beginId, QtJambiNativeID endId, int associativeMapMode);
 
 QTJAMBI_EXPORT void registerQProperty(JNIEnv *env, QtJambiNativeID __object_nativeId, QtJambiNativeID property);
 
@@ -212,6 +218,18 @@ QTJAMBI_EXPORT void initializeQMultiHash(JNIEnv *env, jobject object, jclass key
 QTJAMBI_EXPORT void initializeQMap(JNIEnv *env, jobject object, jclass keyType, QtJambiNativeID keyMetaType, jclass valueType, QtJambiNativeID valueMetaType, jobject other);
 
 QTJAMBI_EXPORT void initializeQMultiMap(JNIEnv *env, jobject object, jclass keyType, QtJambiNativeID keyMetaType, jclass valueType, QtJambiNativeID valueMetaType, jobject other);
+
+QTJAMBI_EXPORT void initializeQSet(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaType, jobject other);
+
+QTJAMBI_EXPORT void initializeQSet(JNIEnv *env, jobject object, QtJambiNativeID beginId, QtJambiNativeID endId);
+
+QTJAMBI_EXPORT void initializeQHash(JNIEnv *env, jobject object, QtJambiNativeID beginId, QtJambiNativeID endId);
+
+QTJAMBI_EXPORT void initializeQMultiHash(JNIEnv *env, jobject object, QtJambiNativeID beginId, QtJambiNativeID endId);
+
+QTJAMBI_EXPORT void initializeQMap(JNIEnv *env, jobject object, QtJambiNativeID beginId, QtJambiNativeID endId);
+
+QTJAMBI_EXPORT void initializeQMultiMap(JNIEnv *env, jobject object, QtJambiNativeID beginId, QtJambiNativeID endId);
 
 QTJAMBI_EXPORT jobject fromDestroyedQObject(JNIEnv *env, QObject* object);
 
@@ -262,7 +280,6 @@ jobject convertEnumToJavaObject(JNIEnv *env, E qt_enum)
 struct QtJambiSpan{
     const void* begin = nullptr;
     qsizetype size = 0;
-    QTJAMBI_EXPORT static void deleter(void* ptr,bool);
 };
 
 struct ManagedSpanData{
@@ -278,7 +295,6 @@ public:
     ManagedSpan(QSharedPointer<ManagedSpanData>&& _data);
     ManagedSpan(const ManagedSpan&);
     void commit(JNIEnv* env);
-    static void deleter(void* ptr,bool);
 protected:
     template<typename Data>
     Data* data(){

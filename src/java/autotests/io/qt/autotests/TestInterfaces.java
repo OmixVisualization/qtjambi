@@ -29,77 +29,23 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static io.qt.autotests.generated.ContainerFactory.*;
+import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
-import io.qt.QInterfaceCannotBeSubclassedException;
-import io.qt.QMissingVirtualOverridingException;
-import io.qt.QNoNativeResourcesException;
-import io.qt.QtArgument;
-import io.qt.QtFinalOverride;
-import io.qt.QtObject;
-import io.qt.QtObjectInterface;
-import io.qt.QtUninvokable;
-import io.qt.QtUtilities;
-import io.qt.autotests.generated.FunctionalTest;
-import io.qt.autotests.generated.General;
-import io.qt.autotests.generated.NameSpace;
-import io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.InterfaceA;
-import io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.ObjectC;
-import io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.ObjectD;
-import io.qt.autotests.generated.TestAbstractClass;
-import io.qt.autotests.generated.TestInterface;
-import io.qt.autotests.generated.TestPrivateInterface;
-import io.qt.autotests.generated.Tulip;
-import io.qt.core.QCoreApplication;
-import io.qt.core.QEasingCurve;
-import io.qt.core.QEvent;
-import io.qt.core.QEventLoop;
-import io.qt.core.QFactoryInterface;
-import io.qt.core.QList;
-import io.qt.core.QMetaObject;
-import io.qt.core.QMetaType;
-import io.qt.core.QObject;
-import io.qt.core.QPointF;
-import io.qt.core.QRectF;
-import io.qt.core.QRunnable;
-import io.qt.core.QSize;
-import io.qt.core.QSizeF;
-import io.qt.core.QThread;
-import io.qt.core.QTimer;
-import io.qt.core.QVariant;
-import io.qt.gui.QAbstractUndoItem;
-import io.qt.gui.QColor;
-import io.qt.gui.QGuiApplication;
-import io.qt.gui.QPaintDevice;
-import io.qt.gui.QPaintEngine;
-import io.qt.gui.QPaintEngineState;
-import io.qt.gui.QPainter;
-import io.qt.gui.QPainterPath;
-import io.qt.gui.QPixmap;
-import io.qt.gui.QScrollPrepareEvent;
-import io.qt.gui.QSurface;
-import io.qt.gui.QSurfaceFormat;
-import io.qt.internal.TestUtility;
-import io.qt.widgets.QApplication;
-import io.qt.widgets.QGraphicsItem;
-import io.qt.widgets.QGraphicsScene;
-import io.qt.widgets.QGraphicsView;
-import io.qt.widgets.QStyleOptionGraphicsItem;
-import io.qt.widgets.QWidget;
+import io.qt.*;
+import io.qt.autotests.generated.*;
+import static io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.*;
+import io.qt.internal.*;
+import io.qt.core.*;
+import io.qt.gui.*;
+import io.qt.widgets.*;
 
 public class TestInterfaces extends ApplicationInitializer {
 	
@@ -885,7 +831,7 @@ public class TestInterfaces extends ApplicationInitializer {
 	
 	@Test
 	public void test_manyEasingFunctions() {
-		QList<QEasingCurve.EasingFunction> container = Tulip.createListOfEasingFunctions();
+		QList<QEasingCurve.EasingFunction> container = createListOfEasingFunctions();
     	Assert.assertTrue(container!=null);
     	Assert.assertEquals(1, container.size());
     	TreeMap<Integer,Double> calls = new TreeMap<>();
@@ -904,7 +850,7 @@ public class TestInterfaces extends ApplicationInitializer {
     	Thread.yield();
     	QCoreApplication.processEvents();
     	System.gc();
-    	Tulip.testEasingFunctions(container);
+    	testEasingFunctions(container);
         Assert.assertEquals(100, calls.size());
         for (int i = 0; i < calls.size(); i++) {
         	Assert.assertEquals(i+1, calls.get(i).intValue());

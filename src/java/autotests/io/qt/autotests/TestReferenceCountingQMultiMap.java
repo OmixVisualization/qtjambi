@@ -1,21 +1,13 @@
 package io.qt.autotests;
 
+import static io.qt.autotests.generated.MapFactory.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.*;
 
-import io.qt.autotests.generated.General;
-import io.qt.autotests.generated.Tulip;
-import io.qt.core.QCoreApplication;
-import io.qt.core.QEvent;
-import io.qt.core.QMultiMap;
-import io.qt.core.QObject;
-import io.qt.core.QRunnable;
-import io.qt.widgets.QGraphicsEllipseItem;
-import io.qt.widgets.QGraphicsItem;
-import io.qt.widgets.QGraphicsPathItem;
-import io.qt.widgets.QWidgetItem;
+import io.qt.autotests.generated.*;
+import io.qt.core.*;
+import io.qt.widgets.*;
 
 public class TestReferenceCountingQMultiMap extends ApplicationInitializer {
 	
@@ -340,7 +332,7 @@ public class TestReferenceCountingQMultiMap extends ApplicationInitializer {
     public void test_cpp_QMultiMap_value_QObject() throws InterruptedException {
     	AtomicInteger counter = new AtomicInteger();
     	{
-	    	QMultiMap<String,QObject> container = Tulip.createStringMultiMapOfObjects();
+	    	QMultiMap<String,QObject> container = createStringMultiMapOfObjects();
 	    	for(int i=0; i<COUNT; ++i) {
 	    		QObject object = new QObject();
 	    		General.internalAccess.registerCleaner(object, counter::incrementAndGet);
@@ -374,7 +366,7 @@ public class TestReferenceCountingQMultiMap extends ApplicationInitializer {
     public void test_cpp_QMultiMap_value_QRunnable() throws InterruptedException {
     	AtomicInteger counter = new AtomicInteger();
     	{
-	    	QMultiMap<String,QRunnable> container = Tulip.createStringMultiMapOfRunnables();
+	    	QMultiMap<String,QRunnable> container = createStringMultiMapOfRunnables();
 	    	for(int i=0; i<COUNT; ++i) {
 	    		QRunnable object = new QRunnable() { @Override public void run() {} };
 	    		container.insert(""+i, object);

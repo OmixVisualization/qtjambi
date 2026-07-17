@@ -3027,14 +3027,14 @@ void QmlTypeSystemReaderPrivate::parseIteratorType(const QString& nameSpace, Ite
                 containerType = static_cast<ComplexTypeEntry*>(tmp);
             }
             std::unique_ptr<IteratorTypeEntry> entry(new IteratorTypeEntry(name, containerType));
-            entry->setGenericClass(element->getGenericClass());
             entry->setIsConst(element->getIsConst());
-            entry->setTargetTypeSystem(m_defaultPackage);
+            parseAttributesOfComplexType(element, entry.get());
+            QList<AbstractObject*> unhandledElements = parseChildrenOfComplexType(nameSpace, element, entry.get());
+            for(AbstractObject* childElement : qAsConst(unhandledElements)){
+                TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(childElement->metaObject()->className(), element->metaObject()->className()));
+            }
             ReportHandler::debugTypes("Adding to TypeDatabase(2): " + entry->name());
             m_database->addType(entry.release());
-            for(AbstractObject* item2 : element->childrenList()){
-                TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), element->metaObject()->className()));
-            }
         }catch(const TypesystemException& exn){
             TypesystemException::raise(QStringLiteral(u"%1 in type %2").arg(QLatin1String(exn.what()), name));
         }

@@ -56,7 +56,6 @@
 #include <QtJambi/Cast>
 #include <QtJambi/Template1Cast>
 #include <QtJambi/FutureCast>
-#include <QtJambi/utils_p.h>
 #include "future_p.h"
 
 // QFutureWatcher:
@@ -586,6 +585,7 @@ void initialize_meta_info_QFutureInterface(){
                                                                                    ,ConstructorInfo{&__qt_construct_QFutureWatcher_QObject_ptr, "Lio/qt/core/QObject;"}
                                                                                });
     }
+    registerIteratorTypeInfo<QFuture<QVariant>, QFuture<QVariant>::const_iterator>( "QFuture::const_iterator", "io/qt/core/QFuture$ConstIterator");
 #endif //QT_CONFIG(future)
 
 }

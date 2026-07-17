@@ -1322,9 +1322,9 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		mySetProperty(-1, "qtjambi.builddir", null, new File(platformBuildDir, "qtjambi").getAbsolutePath(), true);
 		mySetProperty(-1, "qtjambi.test.builddir", null, new File(platformBuildDir, "tests").getAbsolutePath(), true);
 		if(Objects.equals(osInfo.os(), osInfo.crossOS()) && Objects.equals(osInfo.arch(), osInfo.crossArch())) {
-			mySetProperty(-1, "generator.builddir", null, new File(new File(platformBuildDir, "generator"), "QtJambiGenerator").getAbsolutePath(), true);
+			mySetProperty(-1, "generator.builddir", null, new File(platformBuildDir, "generator").getAbsolutePath(), true);
 		}else {
-			mySetProperty(-1, "generator.builddir", null, new File(new File(platformBuildDir, "qtjambi"), "QtJambiGenerator").getAbsolutePath(), true);
+			mySetProperty(-1, "generator.builddir", null, new File(platformBuildDir, "qtjambi").getAbsolutePath(), true);
 		}
 		
 		if(testConf==null){

@@ -39,6 +39,7 @@
 #include "utils_p.h"
 #include "registryutil_p.h"
 #include "objectdata.h"
+#include "coreapi.h"
 
 enum class QtJambiNativeID : jlong;
 
@@ -416,16 +417,16 @@ public:
                                                                            const InterfaceOffsetInfo& interfaceOffsetInfo);
     static QSharedPointer<QtJambiLink> createLinkForOwnedObject(JNIEnv *env, jobject java, void *ptr,
                                                                        LINK_NAME_ARG(const char* qt_name)
-                                                                       QtJambiNativeID owner, PtrDeleterFunction destructor_function);
+                                                                       const QSharedPointer<QtJambiLink>& owner, PtrDeleterFunction destructor_function);
     static QSharedPointer<QtJambiLink> createLinkForOwnedObject(JNIEnv *env, jobject java, void *ptr,
                                                                        LINK_NAME_ARG(const char* qt_name)
-                                                                       QtJambiNativeID owner);
+                                                                       const QSharedPointer<QtJambiLink>& owner);
     static QSharedPointer<QtJambiLink> createLinkForNativeObject(JNIEnv *env, jobject java, void *ptr,
                                                                        LINK_NAME_ARG(const char* qt_name)
-                                                                       QtJambiNativeID owner, AbstractContainerAccess* containerAccess);
+                                                                       const QSharedPointer<QtJambiLink>& owner, AbstractContainerAccess* containerAccess);
     static QSharedPointer<QtJambiLink> createLinkForNativeObject(JNIEnv *env, jobject java, void *ptr,
                                                                        LINK_NAME_ARG(const char* qt_name)
-                                                                       QtJambiNativeID owner, PtrDeleterFunction destructor_function, AbstractContainerAccess* containerAccess);
+                                                                       const QSharedPointer<QtJambiLink>& owner, PtrDeleterFunction destructor_function, AbstractContainerAccess* containerAccess);
     static QSharedPointer<QtJambiLink> createLinkForSmartPointerToObject(JNIEnv *env, jobject java,
                                                                          LINK_NAME_ARG(const char* qt_name)
                                                                          SafeBool created_by_java, SafeBool is_shell,
@@ -1127,6 +1128,7 @@ private:
     friend struct DependencyManagerObjectData;
     friend class AbstractPointerToQObjectLink;
     friend QtSharedPointer::ExternalRefCountWithCustomDeleter<QtJambiLink, QtSharedPointer::NormalDeleter>;
+    friend QtSharedPointer::ExternalRefCountWithCustomDeleter<const QtJambiLink, QtSharedPointer::NormalDeleter>;
     friend jobject CoreAPI::metaObjectCast(JNIEnv *env, jobject object, jclass targetType);
 };
 
@@ -1136,6 +1138,14 @@ struct QtSharedPointer::ExternalRefCountWithCustomDeleter<QtJambiLink, QtSharedP
     static constexpr char safetyCheckDeleter = 0;
     static constexpr char deleter = 0;
     static ExternalRefCountData* create(QtJambiLink*, QtSharedPointer::NormalDeleter, DestroyerFn);
+};
+
+template<>
+struct QtSharedPointer::ExternalRefCountWithCustomDeleter<const QtJambiLink, QtSharedPointer::NormalDeleter>{
+    typedef const void* DestroyerFn;
+    static constexpr char safetyCheckDeleter = 0;
+    static constexpr char deleter = 0;
+    static ExternalRefCountData* create(const QtJambiLink*, QtSharedPointer::NormalDeleter, DestroyerFn);
 };
 
 namespace QtJambiPrivate{
@@ -1239,7 +1249,9 @@ struct SmartPointerUtility<std::weak_ptr>{
     static constexpr auto SharedPointerFlag = QtJambiLink::Flag::shared_ptr;
     static constexpr auto WeakPointerFlag = QtJambiLink::Flag::weak_ptr;
 };
+
 }//namespace QtJambiPrivate
+
 
 class QtJambiLinkScope : public QtJambiScope{
 public:

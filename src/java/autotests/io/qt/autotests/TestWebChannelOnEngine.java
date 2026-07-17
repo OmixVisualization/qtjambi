@@ -57,7 +57,6 @@ public class TestWebChannelOnEngine extends ApplicationInitializer {
 //        QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.OpenGLRhi);
     	QtUtilities.initializePackage("io.qt.webengine.widgets");
         QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
-        ApplicationInitializer.testInitializeWithWidgets();
     	assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
     	boolean found = false;
     	try {
@@ -68,6 +67,7 @@ public class TestWebChannelOnEngine extends ApplicationInitializer {
 		}
     	assumeTrue("QWebEngineView not available.", found);
     	QtWebEngineQuick.initialize();
+        ApplicationInitializer.testInitializeWithWidgets();
     	assumeTrue("global share context not available.", QOpenGLContext.globalShareContext()!=null);
     	QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.PluginsEnabled, true);
         QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.DnsPrefetchEnabled, true);

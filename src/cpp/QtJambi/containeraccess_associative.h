@@ -37,71 +37,59 @@ namespace QtJambiPrivate {
 typedef bool (*IsAssociativeContainerFunction)(JNIEnv *, jobject, const std::type_info&, const QMetaType&, const std::type_info&, const QMetaType&, void*& pointer);
 typedef bool (*IsAssociativeContainerAccessFunction)(JNIEnv *, jobject, const QMetaType&, const QMetaType&, void*& pointer, AbstractContainerAccess*& access);
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
-struct AssociativeContainerBegin{
-    static jobject function(JNIEnv *env, const ExtendedContainerInfo&) {
-        JavaException::raiseUnsupportedOperationException(env, "begin()" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
+#define UNSUPPORTED_RETURN(Struct,R,msg)\
+template<template<typename K, typename T> class Container, typename K, typename T>\
+struct Struct<Container,K,T,false>{\
+    template<typename...Args>\
+    static R function(JNIEnv * env,Args&&...) {\
+        JavaException::raiseUnsupportedOperationException(env, #msg QTJAMBI_STACKTRACEINFO );\
+    }\
 };
+#define UNSUPPORTED_VOID(Struct,msg) UNSUPPORTED_RETURN(Struct,void,msg)
 
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerBegin<Container, K, T, true>{
-    static jobject function(JNIEnv *env, const ExtendedContainerInfo& ptr) {
-        Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        return ::qtjambi_cast<jobject>(env, ptr.nativeId, container->begin());
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
-struct AssociativeContainerConstBegin{
-    static jobject function(JNIEnv *env, const ConstExtendedContainerInfo&) {
-        JavaException::raiseUnsupportedOperationException(env, "constBegin()" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerConstBegin<Container, K, T, true>{
-    static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr) {
-        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        return ::qtjambi_cast<jobject>(env, ptr.nativeId, container->constBegin());
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_capacity_v<const Container<K,T>> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerCapacity{
-    static qsizetype function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "capacity()" QTJAMBI_STACKTRACEINFO );
-        return 0;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerCapacity<Container, K, T, true>{
     static qsizetype function(JNIEnv *, const void* ptr) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
         return container->capacity();
     }
 };
+UNSUPPORTED_RETURN(AssociativeContainerCapacity,qsizetype,capacity)
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_reserve_v<Container<K,T>,qsizetype> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerReserve{
-    static void function(JNIEnv *env, const ContainerInfo&, qsizetype) {
-        JavaException::raiseUnsupportedOperationException(env, "reserve(size)" QTJAMBI_STACKTRACEINFO );
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerReserve<Container, K, T, true>{
     static void function(JNIEnv *, const ContainerInfo& ptr, qsizetype size) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
         container->reserve(size);
     }
+    static void function(void* ptr, qsizetype size) {
+        Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
+        container->reserve(size);
+    }
+};
+template<template<typename K, typename T> class Container, typename K, typename T>
+struct AssociativeContainerReserve<Container,K,T,false>{
+    static void function(JNIEnv * env,...) {
+        JavaException::raiseUnsupportedOperationException(env, "reserve" QTJAMBI_STACKTRACEINFO );
+    }
+    static void function(void*,...) {
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_contains_v<const Container<K,T>,const K&> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerContains{
+    static jboolean function(JNIEnv * env, const void* ptr, jobject object) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return container->contains(qtjambi_cast<K>(env, object));
+    }
+    static bool function(const void* ptr, const void* object) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return container->contains(*reinterpret_cast<const K*>(object));
+    }
+};
+
+template<template<typename K, typename T> class Container, typename K, typename T>
+struct AssociativeContainerContains<Container, K, T,false>{
     static jboolean function(JNIEnv * env, ...) {
         JavaException::raiseUnsupportedOperationException(env, "contains(key)" QTJAMBI_STACKTRACEINFO );
         return false;
@@ -111,188 +99,62 @@ struct AssociativeContainerContains{
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerContains<Container, K, T, true>{
-    static jboolean function(JNIEnv * env, const void* ptr, jobject object) {
-        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-        return container->contains(::qtjambi_cast<K>(env, object));
-    }
-    static bool function(const void* ptr, const void* object) {
-        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-        return container->contains(*reinterpret_cast<const K*>(object));
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_count_v<const Container<K,T>,const K&> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerCountObject{
-    static qsizetype function(JNIEnv * env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "count(key)" QTJAMBI_STACKTRACEINFO );
-        return 0;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerCountObject<Container, K, T, true>{
     static qsizetype function(JNIEnv * env, const void* ptr, jobject object) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-        return container->count(::qtjambi_cast<K>(env, object));
+        return container->count(qtjambi_cast<K>(env, object));
     }
 };
+UNSUPPORTED_RETURN(AssociativeContainerCountObject,qsizetype,count)
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
-struct AssociativeContainerEnd{
-    static jobject function(JNIEnv *env, const ExtendedContainerInfo&) {
-        JavaException::raiseUnsupportedOperationException(env, "end()" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerEnd<Container, K, T, true>{
-    static jobject function(JNIEnv *env, const ExtendedContainerInfo& ptr) {
-        Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        return ::qtjambi_cast<jobject>(env, ptr.nativeId, container->end());
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
-struct AssociativeContainerConstEnd{
-    static jobject function(JNIEnv *env, const ConstExtendedContainerInfo&) {
-        JavaException::raiseUnsupportedOperationException(env, "constEnd()" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerConstEnd<Container, K, T, true>{
-    static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr) {
-        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        return ::qtjambi_cast<jobject>(env, ptr.nativeId, container->constEnd());
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
-struct AssociativeContainerFindPair{
-    static jobject function(JNIEnv *env, const ExtendedContainerInfo&, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "find(key,value)" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerFindPair<Container, K, T, true>{
-    static jobject function(JNIEnv *env, const ExtendedContainerInfo& ptr, jobject key) {
-        Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        return ::qtjambi_cast<jobject>(env, ptr.nativeId, container->find(::qtjambi_cast<K>(env, key)));
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
-struct AssociativeContainerConstFindPair{
-    static jobject function(JNIEnv *env, const ConstExtendedContainerInfo&, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "constFind(key,value)" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerConstFindPair<Container, K, T, true>{
-    static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr, jobject key) {
-        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        return ::qtjambi_cast<jobject>(env, ptr.nativeId, container->constFind(::qtjambi_cast<K>(env, key)));
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_first_v<const Container<K,T>> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerFirst{
-    static jobject function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "first()" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerFirst<Container, K, T, true>{
     static jobject function(JNIEnv *env, const void* ptr) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
         return ::qtjambi_cast<jobject>(env, container->first());
     }
 };
+UNSUPPORTED_RETURN(AssociativeContainerFirst,jobject,first)
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_last_v<const Container<K,T>> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerLast{
-    static jobject function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "last()" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerLast<Container, K, T, true>{
     static jobject function(JNIEnv *env, const void* ptr) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
         return ::qtjambi_cast<jobject>(env, container->last());
     }
 };
+UNSUPPORTED_RETURN(AssociativeContainerLast,jobject,last)
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_firstKey_v<const Container<K,T>> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerFirstKey{
-    static jobject function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "firstKey()" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerFirstKey<Container, K, T, true>{
     static jobject function(JNIEnv *env, const void* ptr) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
         return ::qtjambi_cast<jobject>(env, container->firstKey());
     }
 };
+UNSUPPORTED_RETURN(AssociativeContainerFirstKey,jobject,firstKey)
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_lastKey_v<const Container<K,T>> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerLastKey{
-    static jobject function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "lastKey()" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerLastKey<Container, K, T, true>{
     static jobject function(JNIEnv *env, const void* ptr) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
         return ::qtjambi_cast<jobject>(env, container->lastKey());
     }
 };
+UNSUPPORTED_RETURN(AssociativeContainerLastKey,jobject,lastKey)
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value && supports_equal<T>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_key_v<const Container<K,T>,T,const K&> && supports_equal_v<T> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerKey{
-    static jobject function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "key(value, defaultKey)" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerKey<Container, K, T, true>{
     static jobject function(JNIEnv *env, const void* ptr, jobject value, jobject defaultKey) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-        return ::qtjambi_cast<jobject>(env, container->key(::qtjambi_cast<T>(env, value), ::qtjambi_cast<K>(env, defaultKey)));
+        return ::qtjambi_cast<jobject>(env, container->key(qtjambi_cast<T>(env, value), qtjambi_cast<K>(env, defaultKey)));
     }
 };
+UNSUPPORTED_RETURN(AssociativeContainerKey,jobject,key)
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_keys_v<const Container<K,T>> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerKeys{
-    static ContainerAndAccessInfo function(JNIEnv *env, const ConstContainerInfo&) {
-        JavaException::raiseUnsupportedOperationException(env, "keys()" QTJAMBI_STACKTRACEINFO );
-        return {};
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerKeys<Container, K, T, true>{
     static ContainerAndAccessInfo function(JNIEnv *env, const ConstContainerInfo& ptr) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
         ContainerAndAccessInfo result;
@@ -302,17 +164,10 @@ struct AssociativeContainerKeys<Container, K, T, true>{
         return result;
     }
 };
+UNSUPPORTED_RETURN(AssociativeContainerKeys,ContainerAndAccessInfo,keys)
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_keys_by_value<Container,K,T>::value && supports_map_sort<Container,K,T>::value && supports_equal<K>::value && supports_equal<T>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_keys_v<const Container<K,T>,const T&> && supports_equal_v<T> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerKeysForValue{
-    static ContainerAndAccessInfo function(JNIEnv *env, const ConstContainerInfo&, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "keys(value)" QTJAMBI_STACKTRACEINFO );
-        return {};
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerKeysForValue<Container, K, T, true>{
     static ContainerAndAccessInfo function(JNIEnv *env, const ConstContainerInfo& ptr, jobject value) {
         ContainerAndAccessInfo result;
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
@@ -322,6 +177,7 @@ struct AssociativeContainerKeysForValue<Container, K, T, true>{
         return result;
     }
 };
+UNSUPPORTED_RETURN(AssociativeContainerKeysForValue,ContainerAndAccessInfo,keys)
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 template<typename K, typename T>
@@ -332,7 +188,7 @@ struct AssociativeContainerKeysForValue<QMultiHash, K, T, true>{
         QList<K> _keys;
         typename QMultiHash<K,T>::const_iterator i = reinterpret_cast<const QMultiHash<K,T> *>(container)->begin();
         typename QMultiHash<K,T>::const_iterator end = reinterpret_cast<const QMultiHash<K,T> *>(container)->end();
-        T _qvalue = ::qtjambi_cast<T>(env, value);
+        const T& _qvalue = ::qtjambi_cast<T>(env, value);
         while (i != end) {
             if(i.value() == _qvalue)
                 _keys.append(i.key());
@@ -346,49 +202,8 @@ struct AssociativeContainerKeysForValue<QMultiHash, K, T, true>{
 };
 #endif
 
-
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
-struct AssociativeContainerLowerBound{
-    static jobject function(JNIEnv *env, const ConstExtendedContainerInfo&, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "lowerBounds(value)" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerLowerBound<Container, K, T, true>{
-    static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr, jobject key) {
-        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        return ::qtjambi_cast<jobject>(env, ptr.nativeId, container->lowerBound(::qtjambi_cast<K>(env, key)));
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
-struct AssociativeContainerUpperBound{
-    static jobject function(JNIEnv *env, const ConstExtendedContainerInfo&, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "upperBounds(value)" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerUpperBound<Container, K, T, true>{
-    static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr, jobject key) {
-        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        return ::qtjambi_cast<jobject>(env, ptr.nativeId, container->upperBound(::qtjambi_cast<K>(env, key)));
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T, IsAssociativeContainerFunction isContainer, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value && supports_equal<T>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, IsAssociativeContainerFunction isContainer, bool = supports_equal_v<K> && supports_equal_v<T> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerEquals{
-    static jboolean function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "operator==(map)" QTJAMBI_STACKTRACEINFO );
-        return false;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T, IsAssociativeContainerFunction isContainer>
-struct AssociativeContainerEquals<Container, K, T, isContainer, true>{
     static jboolean function(JNIEnv * env, const void* ptr, jobject other) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
         std::unique_ptr<Container<K,T> > __qt_scoped_pointer;
@@ -402,7 +217,7 @@ struct AssociativeContainerEquals<Container, K, T, isContainer, true>{
                     jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);
                     jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);
                     jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);
-                    __qt_other_pointer->insert( ::qtjambi_cast<K>(env, key), ::qtjambi_cast<T>(env, val));
+                    __qt_other_pointer->insert( qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, val));
                 }
             }
         }else{
@@ -414,19 +229,16 @@ struct AssociativeContainerEquals<Container, K, T, isContainer, true>{
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
-struct AssociativeContainerSize{
-    static qsizetype function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "size()" QTJAMBI_STACKTRACEINFO );
-        return 0;
-    }
-    static qsizetype function(const void*) {
-        return 0;
+template<template<typename K, typename T> class Container, typename K, typename T, IsAssociativeContainerFunction isContainer>
+struct AssociativeContainerEquals<Container, K, T, isContainer, false>{
+    static jboolean function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "operator==(map)" QTJAMBI_STACKTRACEINFO );
+        return false;
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerSize<Container, K, T, true>{
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_size_v<const Container<K,T>> && supports_map_sort_v<Container,K,T>>
+struct AssociativeContainerSize{
     static qsizetype function(JNIEnv *, const void* ptr) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
         return container->size();
@@ -437,16 +249,18 @@ struct AssociativeContainerSize<Container, K, T, true>{
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
-struct AssociativeContainerUniqueKeys{
-    static ContainerAndAccessInfo function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "uniqueKeys()" QTJAMBI_STACKTRACEINFO );
-        return {};
+template<template<typename K, typename T> class Container, typename K, typename T>
+struct AssociativeContainerSize<Container, K, T, false>{
+    static qsizetype function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "size()" QTJAMBI_STACKTRACEINFO );
+    }
+    static qsizetype function(const void*) {
+        return 0;
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerUniqueKeys<Container, K, T, true>{
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_uniqueKeys_v<const Container<K,T>> && supports_map_sort_v<Container,K,T>>
+struct AssociativeContainerUniqueKeys{
     static ContainerAndAccessInfo function(JNIEnv *env, const ConstContainerInfo& ptr) {
         ContainerAndAccessInfo result;
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
@@ -456,23 +270,13 @@ struct AssociativeContainerUniqueKeys<Container, K, T, true>{
         return result;
     }
 };
+UNSUPPORTED_RETURN(AssociativeContainerUniqueKeys,ContainerAndAccessInfo,uniqueKeys)
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_value_v<Container<K,T>&, const K&, const T&> && supports_equal_v<T> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerValue{
-    static jobject function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "value(key)" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-    static const void* function(const void*, ...) {
-        return nullptr;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerValue<Container, K, T, true>{
     static jobject function(JNIEnv * env, const void* ptr, jobject key, jobject defaultValue) {
-            const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return ::qtjambi_cast<jobject>(env, container->value(::qtjambi_cast<K>(env, key), ::qtjambi_cast<T>(env, defaultValue)));
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return ::qtjambi_cast<jobject>(env, container->value(::qtjambi_cast<K>(env, key), ::qtjambi_cast<T>(env, defaultValue)));
     }
     static const void* function(const void* ptr, const void* key, const void* defaultValue) {
         const Container<K,T> &container = *static_cast<const Container<K,T> *>(ptr);
@@ -486,16 +290,18 @@ struct AssociativeContainerValue<Container, K, T, true>{
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
-struct AssociativeContainerValues{
-    static ContainerAndAccessInfo function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "values()" QTJAMBI_STACKTRACEINFO );
-        return {};
+template<template<typename K, typename T> class Container, typename K, typename T>
+struct AssociativeContainerValue<Container, K, T, false>{
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "value(key)" QTJAMBI_STACKTRACEINFO );
+    }
+    static const void* function(const void*, ...) {
+        return nullptr;
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerValues<Container, K, T, true>{
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_values_v<const Container<K,T>> && supports_map_sort_v<Container,K,T>>
+struct AssociativeContainerValues{
     static ContainerAndAccessInfo function(JNIEnv * env, const ConstContainerInfo& ptr) {
         ContainerAndAccessInfo result;
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
@@ -505,72 +311,50 @@ struct AssociativeContainerValues<Container, K, T, true>{
         return result;
     }
 };
+UNSUPPORTED_RETURN(AssociativeContainerValues,ContainerAndAccessInfo,values)
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_values_v<const Container<K,T>,const K&> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerValuesKey{
-    static ContainerAndAccessInfo function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "values(key)" QTJAMBI_STACKTRACEINFO );
-        return {};
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerValuesKey<Container, K, T, true>{
     static ContainerAndAccessInfo function(JNIEnv * env, const ConstContainerInfo& ptr, jobject key) {
         ContainerAndAccessInfo result;
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        result.container = new QList<T>(container->values(::qtjambi_cast<K>(env, key)));
+        result.container = new QList<T>(container->values(qtjambi_cast<K>(env, key)));
         result.access = QListAccess<T>::newInstance();
         result.object = ContainerAPI::objectFromQList(env, result.container, result.access);
         return result;
     }
 };
+UNSUPPORTED_RETURN(AssociativeContainerValuesKey,ContainerAndAccessInfo,values)
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_clear_v<Container<K,T>> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerClear{
-    static void function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "clear()" QTJAMBI_STACKTRACEINFO );
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerClear<Container, K, T, true>{
     static void function(JNIEnv * __jni_env, const ContainerInfo& ptr) {
         Q_UNUSED(__jni_env)
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
         container->clear();
     }
 };
+UNSUPPORTED_VOID(AssociativeContainerClear,clear)
 
 template<typename T, bool = supports_less_than<T>::value>
 struct AssociativeContainerElementLessThan{
-    static bool function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "key1 < key2" QTJAMBI_STACKTRACEINFO );
-        return false;
+    static bool function(JNIEnv * __jni_env, jobject value1, jobject value2) {
+        return qtjambi_cast<T>(__jni_env, value1) < qtjambi_cast<T>(__jni_env, value2);
     }
 };
 
 template<typename T>
-struct AssociativeContainerElementLessThan<T, true>{
-    static bool function(JNIEnv * __jni_env, jobject value1, jobject value2) {
-        return ::qtjambi_cast<T>(__jni_env, value1) < ::qtjambi_cast<T>(__jni_env, value2);
+struct AssociativeContainerElementLessThan<T, false>{
+    static bool function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "key1 < key2" QTJAMBI_STACKTRACEINFO );
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_insert_v<Container<K,T>,const K&,const T&> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerInsert{
-    static void function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "insert(key,value)" QTJAMBI_STACKTRACEINFO );
-    }
-    static void function(void*, ...) {
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerInsert<Container, K, T, true>{
     static void function(JNIEnv * __jni_env, const ContainerInfo& ptr, jobject key, jobject value) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        container->insert(::qtjambi_cast<K>(__jni_env, key), ::qtjambi_cast<T>(__jni_env, value));
+        container->insert(qtjambi_cast<K>(__jni_env, key), qtjambi_cast<T>(__jni_env, value));
     }
     static void function(void* ptr, const void* key, const void* value) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
@@ -578,47 +362,35 @@ struct AssociativeContainerInsert<Container, K, T, true>{
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
-struct AssociativeContainerRemove{
-    static qsizetype function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "remove(key)" QTJAMBI_STACKTRACEINFO );
-        return 0;
+template<template<typename K, typename T> class Container, typename K, typename T>
+struct AssociativeContainerInsert<Container, K, T, false>{
+    static void function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "insert(key,value)" QTJAMBI_STACKTRACEINFO );
+    }
+    static void function(void*, ...) {
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerRemove<Container, K, T, true>{
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_remove_v<Container<K,T>,const K&> && supports_map_sort_v<Container,K,T>>
+struct AssociativeContainerRemove{
     static qsizetype function(JNIEnv * __jni_env, const ContainerInfo& ptr, jobject key) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        return container->remove(::qtjambi_cast<K>(__jni_env, key));
+        return container->remove(qtjambi_cast<K>(__jni_env, key));
     }
 };
+UNSUPPORTED_RETURN(AssociativeContainerRemove,qsizetype,remove)
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value && is_default_constructible_v<T>>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_take_v<Container<K,T>,const K&> && is_default_constructible_v<T> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerTake{
-    static jobject function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "take(key)" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerTake<Container, K, T, true>{
     static jobject function(JNIEnv * env, const ContainerInfo& ptr, jobject key) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        return ::qtjambi_cast<jobject>(env, container->take(::qtjambi_cast<K>(env, key)));
+        return ::qtjambi_cast<jobject>(env, container->take(qtjambi_cast<K>(env, key)));
     }
 };
+UNSUPPORTED_RETURN(AssociativeContainerTake,jobject,take)
 
-template<template<typename K, typename T> class Container, typename K, typename T, IsAssociativeContainerAccessFunction isContainer, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, IsAssociativeContainerAccessFunction isContainer, bool = supports_unite_v<const Container<K,T>, const Container<K,T>&> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerUnite{
-    static void function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "unite(map)" QTJAMBI_STACKTRACEINFO );
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T, IsAssociativeContainerAccessFunction isContainer>
-struct AssociativeContainerUnite<Container, K, T, isContainer, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, ContainerAndAccessInfo& other) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
         std::unique_ptr<Container<K,T> > __qt_scoped_pointer;
@@ -637,7 +409,7 @@ struct AssociativeContainerUnite<Container, K, T, isContainer, true>{
                     jobject iterator2 = QtJambiAPI::iteratorOfJavaIterable(env, valCollection);
                     while(QtJambiAPI::hasJavaIteratorNext(env, iterator2)) {
                         jobject val = QtJambiAPI::nextOfJavaIterator(env, iterator2);
-                        __qt_other_pointer->insert(::qtjambi_cast<K>(env, key), ::qtjambi_cast<T>(env, val));
+                        __qt_other_pointer->insert(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, val));
                     }
                 }
             }
@@ -649,117 +421,59 @@ struct AssociativeContainerUnite<Container, K, T, isContainer, true>{
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value && supports_equal<T>::value>
-struct AssociativeContainerContainsPair{
-    static jboolean function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "contains(key,value)" QTJAMBI_STACKTRACEINFO );
-        return false;
+template<template<typename K, typename T> class Container, typename K, typename T, IsAssociativeContainerAccessFunction isContainer>
+struct AssociativeContainerUnite<Container, K, T, isContainer, false>{
+    static void function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "unite(map)" QTJAMBI_STACKTRACEINFO );
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerContainsPair<Container, K, T, true>{
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_contains_v<const Container<K,T>,const K&,const T&> && supports_equal_v<T> && supports_map_sort_v<Container,K,T>>
+struct AssociativeContainerContainsPair{
     static jboolean function(JNIEnv * env, const void* ptr, jobject key, jobject object) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-        return container->contains(::qtjambi_cast<K>(env, key), ::qtjambi_cast<T>(env, object));
+        return container->contains(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, object));
     }
 };
+UNSUPPORTED_RETURN(AssociativeContainerContainsPair,jboolean,contains)
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value && supports_equal<T>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_count_v<const Container<K,T>,const K&,const T&> && supports_equal_v<T> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerCountPair{
-    static qsizetype function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "count(key,value)" QTJAMBI_STACKTRACEINFO );
-        return 0;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerCountPair<Container, K, T, true>{
     static qsizetype function(JNIEnv * env, const void* ptr, jobject key, jobject object) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-        return container->count(::qtjambi_cast<K>(env, key), ::qtjambi_cast<T>(env, object));
+        return container->count(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, object));
     }
 };
+UNSUPPORTED_RETURN(AssociativeContainerCountPair,qsizetype,count)
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value && supports_equal<T>::value>
-struct AssociativeContainerFindPairs{
-    static jobject function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "find(key,value)" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerFindPairs<Container, K, T, true>{
-    static jobject function(JNIEnv *env, const ExtendedContainerInfo& ptr, jobject key, jobject object) {
-        Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        return ::qtjambi_cast<jobject>(env, ptr.nativeId, container->find(::qtjambi_cast<K>(env, key), ::qtjambi_cast<T>(env, object)));
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value && supports_equal<T>::value>
-struct AssociativeContainerConstFindPairs{
-    static jobject function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "constFind(key,value)" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerConstFindPairs<Container, K, T, true>{
-    static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr, jobject key, jobject object) {
-        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr.container);
-        return ::qtjambi_cast<jobject>(env, ptr.nativeId, container->constFind(::qtjambi_cast<K>(env, key), ::qtjambi_cast<T>(env, object)));
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value && supports_equal<T>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_remove_v<Container<K,T>,const K&,const T&> && supports_equal_v<T> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerRemovePair{
-    static qsizetype function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "remove(key,value)" QTJAMBI_STACKTRACEINFO );
-        return 0;
-    }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerRemovePair<Container, K, T, true>{
     static qsizetype function(JNIEnv * env, const ContainerInfo& ptr, jobject key, jobject object) {
         Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        return container->remove(::qtjambi_cast<K>(env, key), ::qtjambi_cast<T>(env, object));
+        return container->remove(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, object));
     }
 };
+UNSUPPORTED_RETURN(AssociativeContainerRemovePair,qsizetype,remove)
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value && supports_equal<T>::value>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_replace_v<Container<K,T>,const K&,const T&> && supports_equal_v<T> && supports_map_sort_v<Container,K,T>>
 struct AssociativeContainerReplacePair{
-    static void function(JNIEnv *env, ...) {
-        JavaException::raiseUnsupportedOperationException(env, "replace(key,value)" QTJAMBI_STACKTRACEINFO );
+    static void function(JNIEnv * env, const ContainerInfo& ptr, jobject key, jobject object) {
+        Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
+        container->replace(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, object));
     }
+};
+UNSUPPORTED_VOID(AssociativeContainerReplacePair,replace)
+
+template<template<typename K, typename T> class Container, typename K, typename T, bool isPointer, bool = is_copy_constructible_v<K> && is_copy_constructible_v<T> && is_default_constructible_v<K> && is_default_constructible_v<T> && is_copy_constructible_v<Container<K,T>> && supports_map_sort_v<Container,K,T>>
+struct CloneAssociativeContainer{
+    static constexpr CopyFunction function = nullptr;
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
-struct AssociativeContainerReplacePair<Container, K, T, true>{
-    static void function(JNIEnv * env, const ContainerInfo& ptr, jobject key, jobject object) {
-        Container<K,T> *container = static_cast<Container<K,T> *>(ptr.container);
-        container->replace(::qtjambi_cast<K>(env, key), ::qtjambi_cast<T>(env, object));
-    }
+struct CloneAssociativeContainer<Container,K,T,false,true>{
+    static void* clone(const void* ptr) { return new Container<K,T>(*reinterpret_cast<const Container<K,T>*>(ptr)); }
+    static constexpr CopyFunction function = &clone;
 };
-
- template<template<typename K, typename T> class Container, typename K, typename T, bool isPointer, bool = is_copy_constructible_v<K> && is_copy_constructible_v<T> && is_default_constructible<K>::value && is_default_constructible_v<T> && is_copy_constructible_v<Container<K,T>>>
- struct CloneAssociativeContainer{
-     static constexpr CopyFunction function = nullptr;
- };
-
- template<template<typename K, typename T> class Container, typename K, typename T>
- struct CloneAssociativeContainer<Container,K,T,false,true>{
-     static void* clone(const void* ptr) { return new Container<K,T>(*reinterpret_cast<const Container<K,T>*>(ptr)); }
-     static constexpr CopyFunction function = &clone;
- };
-
- template<template<typename K, typename T> class Container, typename K, typename T>
- struct DeleteAssociativeContainer{
-     static void del(void* ptr,bool) { delete reinterpret_cast<Container<K,T>*>(ptr); }
-     static constexpr PtrDeleterFunction function = &del;
- };
 
 template<typename K, typename T, typename Super>
 class OwnerFunctionAssociativeAccess : public Super{
@@ -1075,6 +789,35 @@ struct AssociativeAccessSuperclassDecider<K,T,Super,/*isMulti*/true,true,true>{
     typedef ReferenceCountingAssociativeMultiMapAccess<K,T,Super> type;
 };
 
+#undef UNSUPPORTED_VOID
+#undef UNSUPPORTED_RETURN
+
+template<typename T>
+struct QMapExport;
+template<typename T>
+struct QMultiMapExport;
+template<typename T>
+struct QHashExport;
+template<typename T>
+struct QMultiHashExport;
+template<typename T>
+struct QPairExport;
+
+template<template<typename> class ExportTest, typename K, typename T, typename...Args>
+struct AssociativeAccessExportTest;
+
+template<template<typename> class ExportTest, typename K, typename T>
+struct AssociativeAccessExportTest<ExportTest, K,T> : std::true_type{};
+
+template<template<typename> class ExportTest, bool is_same, typename K, typename T, typename...Args>
+struct AssociativeAccessExportCond : AssociativeAccessExportTest<ExportTest, K, T, Args...>{};
+
+template<template<typename> class ExportTest, typename K, typename T, typename...Args>
+struct AssociativeAccessExportCond<ExportTest, true, K, T, Args...> : is_complete<ExportTest<T>>{};
+
+template<template<typename> class ExportTest, typename K, typename T, typename K2, typename T2, typename...Args>
+struct AssociativeAccessExportTest<ExportTest, K,T,K2,T2,Args...> : AssociativeAccessExportCond<ExportTest, std::is_same_v<K,K2> && std::is_same_v<T,T2>, K, T, Args...> {};
+
 } // namespace QtJambiPrivate
 
 
@@ -1082,16 +825,110 @@ struct AssociativeAccessSuperclassDecider<K,T,Super,/*isMulti*/true,true,true>{
 template<typename K, typename T>
 class QMapAccess : public QtJambiPrivate::AssociativeAccessSuperclassDecider<K,T,AbstractMapAccess>::type{
     typedef typename QtJambiPrivate::AssociativeAccessSuperclassDecider<K,T,AbstractMapAccess>::type Super;
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/QMap, QtJambiPrivate::AssociativeAccessExportTest<QtJambiPrivate::QMapExport, K,T,
+                                                                                                   qint32,qint32,
+                                                                                                   qint32,QVariant,
+                                                                                                   QString,QString,
+                                                                                                   QString,QVariant,
+                                                                                                   QByteArray,QByteArray,
+                                                                                                   QByteArray,QVariant
+                                                                                                   >::value);
+    using Container = QMap<K,T>;
+
+    static constexpr bool supports_map_sort = QtJambiPrivate::supports_map_sort_v<QMap,K,T>;
+
+    ~QMapAccess() override {}
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::const_iterator, Container>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        return QtJambiAPI::convertMapIteratorToJavaObject(env,
+                                                          new Iterator(std::move(iter)),
+                                                          QtJambiAPI::deletePointer<Iterator>,
+                                                          QAssociativeConstIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::iterator, QtJambiPrivate::ContainerRef<Container>>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        QSharedPointer<QtJambiPrivate::ContainerRefPrivate> owner = iter.storage().reference();
+        return QtJambiPrivate::convertMapIteratorToJavaObject(env,
+                                                              owner,
+                                                              new Iterator(std::move(iter)),
+                                                              QtJambiAPI::deletePointer<Iterator>,
+                                                              QAssociativeIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::key_iterator, Container>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        return QtJambiAPI::convertMapKeyIteratorToJavaObject(env,
+                                                             new Iterator(std::move(iter)),
+                                                             QtJambiAPI::deletePointer<Iterator>,
+                                                             QSequentialConstIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::const_key_value_iterator, Container>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        return QtJambiAPI::convertMapKeyValueIteratorToJavaObject(env,
+                                                                  new Iterator(std::move(iter)),
+                                                                  QtJambiAPI::deletePointer<Iterator>,
+                                                                  QSequentialConstIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::key_value_iterator, QtJambiPrivate::ContainerRef<Container>>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        QSharedPointer<QtJambiPrivate::ContainerRefPrivate> owner = iter.storage().reference();
+        return QtJambiPrivate::convertMapKeyValueIteratorToJavaObject(env,
+                                                                      owner,
+                                                                      new Iterator(std::move(iter)),
+                                                                      QtJambiAPI::deletePointer<Iterator>,
+                                                                      QSequentialIteratorAccess<Iterator,Container>::newInstance());
+    }
 protected:
     QMapAccess(){}
 public:
-    static AbstractMapAccess* newInstance(){
+    static QMapAccess<K, T>* newInstance(){
         static QMapAccess<K, T> instance;
         return &instance;
     }
 
     AbstractMapAccess* clone() override{
         return this;
+    }
+
+    auto constBegin(const void* container) const {
+        return std::cbegin(*static_cast<const QMap<K,T> *>(container));
+    }
+
+    auto constEnd(const void* container) const {
+        return std::cend(*static_cast<const QMap<K,T> *>(container));
+    }
+
+    auto begin(void* container) const {
+        return std::begin(*static_cast<QMap<K,T> *>(container));
+    }
+
+    auto end(void* container) const {
+        return std::end(*static_cast<QMap<K,T> *>(container));
+    }
+
+    template<typename Iter>
+    bool isBegin(const void* container, const Iter& iter)const{
+        return iter==constBegin(container);
+    }
+
+    template<typename Iter>
+    bool isEnd(const void* container, const Iter& iter)const{
+        return iter==constEnd(container);
+    }
+
+    template<typename Iter>
+    bool isValid(const void* container, const Iter& iter)const{
+        if constexpr(QtJambiPrivate::supports_less_than_v<Iter>){
+            auto end = constEnd(container);
+            auto begin = constBegin(container);
+            return (begin<iter || begin==iter) && iter<end;
+        }else{
+            return !isEnd(container, iter);
+        }
     }
 
     bool isDetached(const void* container) override{
@@ -1247,16 +1084,120 @@ public:
         return QtJambiPrivate::AssociativeContainerCountObject<QMap, K, T>::function(env, container, key);
     }
 
-    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
-        return QtJambiPrivate::AssociativeContainerConstEnd<QMap, K, T>::function(env, container);
+    jobject begin(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::begin(container), container, ptr));
     }
 
-    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
-        return QtJambiPrivate::AssociativeContainerConstBegin<QMap, K, T>::function(env, container);
+    jobject end(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::end(container), container, ptr));
     }
 
-    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override {
-        return QtJambiPrivate::AssociativeContainerConstFindPair<QMap, K, T>::function(env, container, key);
+    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::cend(container), container, ptr));
+    }
+
+    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::cbegin(container), container, ptr));
+    }
+
+    jobject keyEnd(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.keyEnd(), container, ptr));
+    }
+
+    jobject keyBegin(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.keyBegin(), container, ptr));
+    }
+
+    jobject constKeyValueEnd(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.constKeyValueEnd(), container, ptr));
+    }
+
+    jobject constKeyValueBegin(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.constKeyValueBegin(), container, ptr));
+    }
+
+    jobject keyValueEnd(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.keyValueEnd(), container, ptr));
+    }
+
+    jobject keyValueBegin(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.keyValueBegin(), container, ptr));
+    }
+
+    jobject find(JNIEnv * env, const ExtendedContainerInfo& ptr, jobject key) override {
+        if constexpr(QtJambiPrivate::supports_find_v<Container,const K&> && supports_map_sort){
+            Container &container = *static_cast<Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.find(qtjambi_cast<K>(env, key)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            JavaException::raiseUnsupportedOperationException(env, "QMap<K,T>::find(K)" QTJAMBI_STACKTRACEINFO );
+        }
+    }
+
+    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& ptr, jobject key) override {
+        if constexpr(QtJambiPrivate::supports_find_v<const Container,const K&> && supports_map_sort){
+            const Container &container = *static_cast<const Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.find(qtjambi_cast<K>(env, key)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            JavaException::raiseUnsupportedOperationException(env, "QMap<K,T>::find(K)const" QTJAMBI_STACKTRACEINFO );
+        }
+    }
+
+    jobject constUpperBound(JNIEnv * env, const ConstExtendedContainerInfo& ptr, jobject key) override {
+        if constexpr(QtJambiPrivate::supports_upperBound_v<const Container,const K&> && supports_map_sort){
+            const Container &container = *static_cast<const Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.upperBound(qtjambi_cast<K>(env, key)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            JavaException::raiseUnsupportedOperationException(env, "QMap<K,T>::upperBound(K)const" QTJAMBI_STACKTRACEINFO );
+        }
+    }
+
+    jobject constLowerBound(JNIEnv * env, const ConstExtendedContainerInfo& ptr, jobject key) override {
+        if constexpr(QtJambiPrivate::supports_lowerBound_v<const Container,const K&> && supports_map_sort){
+            const Container &container = *static_cast<const Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.lowerBound(qtjambi_cast<K>(env, key)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            JavaException::raiseUnsupportedOperationException(env, "QMap<K,T>::lowerBound(K)const" QTJAMBI_STACKTRACEINFO );
+        }
+    }
+
+    jobject upperBound(JNIEnv * env, const ExtendedContainerInfo& ptr, jobject key) override {
+        if constexpr(QtJambiPrivate::supports_upperBound_v<const Container,const K&> && supports_map_sort){
+            Container &container = *static_cast<Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.upperBound(qtjambi_cast<K>(env, key)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            JavaException::raiseUnsupportedOperationException(env, "QMap<K,T>::upperBound(K)" QTJAMBI_STACKTRACEINFO );
+        }
+    }
+
+    jobject lowerBound(JNIEnv * env, const ExtendedContainerInfo& ptr, jobject key) override {
+        if constexpr(QtJambiPrivate::supports_lowerBound_v<const Container,const K&> && supports_map_sort){
+            Container &container = *static_cast<Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.lowerBound(qtjambi_cast<K>(env, key)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            JavaException::raiseUnsupportedOperationException(env, "QMap<K,T>::lowerBound(K)" QTJAMBI_STACKTRACEINFO );
+        }
     }
 
     jobject first(JNIEnv * env, const void* container) override {
@@ -1287,10 +1228,6 @@ public:
         return QtJambiPrivate::AssociativeContainerLastKey<QMap, K, T>::function(env, container);
     }
 
-    jobject constLowerBound(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override {
-        return QtJambiPrivate::AssociativeContainerLowerBound<QMap, K, T>::function(env, container, key);
-    }
-
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
         return QtJambiPrivate::AssociativeContainerEquals<QMap, K, T, ContainerAPI::getAsQMap>::function(env, container, other);
     }
@@ -1301,10 +1238,6 @@ public:
 
     qsizetype size(const void* container) override {
         return QtJambiPrivate::AssociativeContainerSize<QMap, K, T>::function(container);
-    }
-
-    jobject constUpperBound(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override {
-        return QtJambiPrivate::AssociativeContainerUpperBound<QMap, K, T>::function(env, container, key);
     }
 
     jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override {
@@ -1321,18 +1254,6 @@ public:
 
     bool keyLessThan(JNIEnv *env, jobject key1, jobject key2) override {
         return QtJambiPrivate::AssociativeContainerElementLessThan<K>::function(env, key1, key2);
-    }
-
-    jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override {
-        return QtJambiPrivate::AssociativeContainerBegin<QMap, K, T>::function(env, container);
-    }
-
-    jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override {
-        return QtJambiPrivate::AssociativeContainerEnd<QMap, K, T>::function(env, container);
-    }
-
-    jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key) override {
-        return QtJambiPrivate::AssociativeContainerFindPair<QMap, K, T>::function(env, container, key);
     }
 
     void clear(JNIEnv * env, const ContainerInfo& container) override {
@@ -1593,19 +1514,113 @@ public:
     }
 };
 
+class QUrl;
+
 template<typename K, typename T>
 class QMultiMapAccess : public QtJambiPrivate::AssociativeAccessSuperclassDecider<K,T,AbstractMultiMapAccess>::type{
     typedef typename QtJambiPrivate::AssociativeAccessSuperclassDecider<K,T,AbstractMultiMapAccess>::type Super;
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/QMultiMap, QtJambiPrivate::AssociativeAccessExportTest<QtJambiPrivate::QMultiMapExport, K,T,
+                                                                        qint32,QString,
+                                                                        QString,QUrl,
+                                                                        QString,QVariant,
+                                                                        QByteArray,QByteArray
+                                                                        >::value);
+    using Container = QMultiMap<K,T>;
+
+    static constexpr bool supports_map_sort = QtJambiPrivate::supports_map_sort_v<QMultiMap,K,T>;
+
+    ~QMultiMapAccess() override {}
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::const_iterator, Container>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        return QtJambiAPI::convertMultiMapIteratorToJavaObject(env,
+                                                          new Iterator(std::move(iter)),
+                                                          QtJambiAPI::deletePointer<Iterator>,
+                                                          QAssociativeConstIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::iterator, QtJambiPrivate::ContainerRef<Container>>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        QSharedPointer<QtJambiPrivate::ContainerRefPrivate> owner = iter.storage().reference();
+        return QtJambiPrivate::convertMultiMapIteratorToJavaObject(env,
+                                                                   owner,
+                                                                   new Iterator(std::move(iter)),
+                                                                   QtJambiAPI::deletePointer<Iterator>,
+                                                                   QAssociativeIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::key_iterator, Container>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        return QtJambiAPI::convertMultiMapKeyIteratorToJavaObject(env,
+                                                             new Iterator(std::move(iter)),
+                                                             QtJambiAPI::deletePointer<Iterator>,
+                                                             QSequentialConstIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::const_key_value_iterator, Container>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        return QtJambiAPI::convertMultiMapKeyValueIteratorToJavaObject(env,
+                                                                  new Iterator(std::move(iter)),
+                                                                  QtJambiAPI::deletePointer<Iterator>,
+                                                                  QSequentialConstIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::key_value_iterator, QtJambiPrivate::ContainerRef<Container>>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        QSharedPointer<QtJambiPrivate::ContainerRefPrivate> owner = iter.storage().reference();
+        return QtJambiPrivate::convertMultiMapKeyValueIteratorToJavaObject(env,
+                                                                           owner,
+                                                                           new Iterator(std::move(iter)),
+                                                                           QtJambiAPI::deletePointer<Iterator>,
+                                                                           QSequentialIteratorAccess<Iterator,Container>::newInstance());
+    }
 protected:
     QMultiMapAccess(){}
 public:
-    static AbstractMultiMapAccess* newInstance(){
+    static QMultiMapAccess<K, T>* newInstance(){
         static QMultiMapAccess<K, T> instance;
         return &instance;
     }
 
     AbstractMultiMapAccess* clone() override{
         return this;
+    }
+
+    auto constBegin(const void* container) const {
+        return std::cbegin(*static_cast<const QMultiMap<K,T> *>(container));
+    }
+
+    auto constEnd(const void* container) const {
+        return std::cend(*static_cast<const QMultiMap<K,T> *>(container));
+    }
+
+    auto begin(void* container) const {
+        return std::begin(*static_cast<QMultiMap<K,T> *>(container));
+    }
+
+    auto end(void* container) const {
+        return std::end(*static_cast<QMultiMap<K,T> *>(container));
+    }
+
+    template<typename Iter>
+    bool isBegin(const void* container, const Iter& iter)const{
+        return iter==constBegin(container);
+    }
+
+    template<typename Iter>
+    bool isEnd(const void* container, const Iter& iter)const{
+        return iter==constEnd(container);
+    }
+
+    template<typename Iter>
+    bool isValid(const void* container, const Iter& iter)const{
+        if constexpr(QtJambiPrivate::supports_less_than_v<Iter>){
+            auto end = constEnd(container);
+            auto begin = constBegin(container);
+            return (begin<iter || begin==iter) && iter<end;
+        }else{
+            return !isEnd(container, iter);
+        }
     }
 
     bool isDetached(const void* container) override{
@@ -1765,20 +1780,145 @@ public:
         return QtJambiPrivate::AssociativeContainerCountObject<QMultiMap, K, T>::function(env, container, key);
     }
 
-    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
-        return QtJambiPrivate::AssociativeContainerConstEnd<QMultiMap, K, T>::function(env, container);
+    jobject begin(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::begin(container), container, ptr));
     }
 
-    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
-        return QtJambiPrivate::AssociativeContainerConstBegin<QMultiMap, K, T>::function(env, container);
+    jobject end(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::end(container), container, ptr));
     }
 
-    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override {
-        return QtJambiPrivate::AssociativeContainerConstFindPair<QMultiMap, K, T>::function(env, container, key);
+    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::cend(container), container, ptr));
     }
 
-    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key, jobject value) override {
-        return QtJambiPrivate::AssociativeContainerConstFindPairs<QMultiMap, K, T>::function(env, container, key, value);
+    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        using Container = QMultiMap<K,T>;
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::cbegin(container), container, ptr));
+    }
+
+    jobject keyEnd(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.keyEnd(), container, ptr));
+    }
+
+    jobject keyBegin(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.keyBegin(), container, ptr));
+    }
+
+    jobject constKeyValueEnd(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.constKeyValueEnd(), container, ptr));
+    }
+
+    jobject constKeyValueBegin(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.constKeyValueBegin(), container, ptr));
+    }
+
+    jobject keyValueEnd(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.keyValueEnd(), container, ptr));
+    }
+
+    jobject keyValueBegin(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.keyValueBegin(), container, ptr));
+    }
+
+    jobject find(JNIEnv * env, const ExtendedContainerInfo& ptr, jobject key) override {
+        if constexpr(QtJambiPrivate::supports_find_v<Container,const K&> && supports_map_sort){
+            Container &container = *static_cast<Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.find(qtjambi_cast<K>(env, key)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            JavaException::raiseUnsupportedOperationException(env, "QMultiMap<K,T>::find(K)" QTJAMBI_STACKTRACEINFO );
+        }
+    }
+
+    jobject find(JNIEnv * env, const ExtendedContainerInfo& ptr, jobject key, jobject value) override {
+        if constexpr(QtJambiPrivate::supports_find_v<Container,const K&,const T&> && supports_map_sort){
+            Container &container = *static_cast<Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.find(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, value)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            Q_UNUSED(value)
+            JavaException::raiseUnsupportedOperationException(env, "QMultiMap<K,T>::find(K,T)" QTJAMBI_STACKTRACEINFO );
+        }
+    }
+
+    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& ptr, jobject key) override {
+        if constexpr(QtJambiPrivate::supports_find_v<const Container,const K&> && supports_map_sort){
+            const Container &container = *static_cast<const Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.find(qtjambi_cast<K>(env, key)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            JavaException::raiseUnsupportedOperationException(env, "QMultiMap<K,T>::find(K)const" QTJAMBI_STACKTRACEINFO );
+        }
+    }
+
+    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& ptr, jobject key, jobject value) override {
+        if constexpr(QtJambiPrivate::supports_find_v<const Container,const K&,const T&> && supports_map_sort){
+            const Container &container = *static_cast<const Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.find(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, value)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            Q_UNUSED(value)
+            JavaException::raiseUnsupportedOperationException(env, "QMultiMap<K,T>::find(K,T)const" QTJAMBI_STACKTRACEINFO );
+        }
+    }
+
+    jobject constUpperBound(JNIEnv * env, const ConstExtendedContainerInfo& ptr, jobject key) override {
+        if constexpr(QtJambiPrivate::supports_upperBound_v<const Container,const K&> && supports_map_sort){
+            const Container &container = *static_cast<const Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.upperBound(qtjambi_cast<K>(env, key)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            JavaException::raiseUnsupportedOperationException(env, "QMultiMap<K,T>::upperBound(K)const" QTJAMBI_STACKTRACEINFO );
+        }
+    }
+
+    jobject constLowerBound(JNIEnv * env, const ConstExtendedContainerInfo& ptr, jobject key) override {
+        if constexpr(QtJambiPrivate::supports_lowerBound_v<const Container,const K&> && supports_map_sort){
+            const Container &container = *static_cast<const Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.lowerBound(qtjambi_cast<K>(env, key)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            JavaException::raiseUnsupportedOperationException(env, "QMultiMap<K,T>::lowerBound(K)const" QTJAMBI_STACKTRACEINFO );
+        }
+    }
+
+    jobject upperBound(JNIEnv * env, const ExtendedContainerInfo& ptr, jobject key) override {
+        if constexpr(QtJambiPrivate::supports_upperBound_v<const Container,const K&> && supports_map_sort){
+            Container &container = *static_cast<Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.upperBound(qtjambi_cast<K>(env, key)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            JavaException::raiseUnsupportedOperationException(env, "QMultiMap<K,T>::upperBound(K)" QTJAMBI_STACKTRACEINFO );
+        }
+    }
+
+    jobject lowerBound(JNIEnv * env, const ExtendedContainerInfo& ptr, jobject key) override {
+        if constexpr(QtJambiPrivate::supports_lowerBound_v<const Container,const K&> && supports_map_sort){
+            Container &container = *static_cast<Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.lowerBound(qtjambi_cast<K>(env, key)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            JavaException::raiseUnsupportedOperationException(env, "QMultiMap<K,T>::lowerBound(K)" QTJAMBI_STACKTRACEINFO );
+        }
     }
     jobject first(JNIEnv * env, const void* container) override {
         return QtJambiPrivate::AssociativeContainerFirst<QMultiMap, K, T>::function(env, container);
@@ -1808,10 +1948,6 @@ public:
         return QtJambiPrivate::AssociativeContainerLastKey<QMultiMap, K, T>::function(env, container);
     }
 
-    jobject constLowerBound(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override {
-        return QtJambiPrivate::AssociativeContainerLowerBound<QMultiMap, K, T>::function(env, container, key);
-    }
-
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
         return QtJambiPrivate::AssociativeContainerEquals<QMultiMap, K, T, ContainerAPI::getAsQMultiMap>::function(env, container, other);
     }
@@ -1830,10 +1966,6 @@ public:
 
     ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container, jobject key) override {
         return QtJambiPrivate::AssociativeContainerValuesKey<QMultiMap, K, T>::function(env, container, key);
-    }
-
-    jobject constUpperBound(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override {
-        return QtJambiPrivate::AssociativeContainerUpperBound<QMultiMap, K, T>::function(env, container, key);
     }
 
     jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override {
@@ -1858,22 +1990,6 @@ public:
 
     bool keyLessThan(JNIEnv *env, jobject key1, jobject key2) override {
         return QtJambiPrivate::AssociativeContainerElementLessThan<K>::function(env, key1, key2);
-    }
-
-    jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override {
-        return QtJambiPrivate::AssociativeContainerBegin<QMultiMap, K, T>::function(env, container);
-    }
-
-    jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override {
-        return QtJambiPrivate::AssociativeContainerEnd<QMultiMap, K, T>::function(env, container);
-    }
-
-    jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key) override {
-        return QtJambiPrivate::AssociativeContainerFindPair<QMultiMap, K, T>::function(env, container, key);
-    }
-
-    jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key, jobject value) override {
-        return QtJambiPrivate::AssociativeContainerFindPairs<QMultiMap, K, T>::function(env, container, key, value);
     }
 
     qsizetype remove(JNIEnv * env, const ContainerInfo& container,jobject key, jobject _value) override {
@@ -2212,16 +2328,107 @@ public:
 template<typename K, typename T>
 class QHashAccess : public QtJambiPrivate::AssociativeAccessSuperclassDecider<K,T,AbstractHashAccess>::type{
     typedef typename QtJambiPrivate::AssociativeAccessSuperclassDecider<K,T,AbstractHashAccess>::type Super;
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/QHash, QtJambiPrivate::AssociativeAccessExportTest<QtJambiPrivate::QHashExport, K,T,
+                                                                        qint32,QByteArray,
+                                                                        QString,QVariant,
+                                                                        QByteArray,QByteArray
+                                                                        >::value);
+    using Container = QHash<K,T>;
+
+    static constexpr bool supports_map_sort = QtJambiPrivate::supports_map_sort_v<QHash,K,T>;
+
+    ~QHashAccess() override {}
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::const_iterator, Container>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        return QtJambiAPI::convertHashIteratorToJavaObject(env,
+                                                          new Iterator(std::move(iter)),
+                                                          QtJambiAPI::deletePointer<Iterator>,
+                                                          QAssociativeConstIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::iterator, QtJambiPrivate::ContainerRef<Container>>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        QSharedPointer<QtJambiPrivate::ContainerRefPrivate> owner = iter.storage().reference();
+        return QtJambiPrivate::convertHashIteratorToJavaObject(env,
+                                                               owner,
+                                                               new Iterator(std::move(iter)),
+                                                               QtJambiAPI::deletePointer<Iterator>,
+                                                               QAssociativeIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::key_iterator, Container>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        return QtJambiAPI::convertHashKeyIteratorToJavaObject(env,
+                                                             new Iterator(std::move(iter)),
+                                                             QtJambiAPI::deletePointer<Iterator>,
+                                                             QSequentialConstIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::const_key_value_iterator, Container>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        return QtJambiAPI::convertHashKeyValueIteratorToJavaObject(env,
+                                                                  new Iterator(std::move(iter)),
+                                                                  QtJambiAPI::deletePointer<Iterator>,
+                                                                  QSequentialConstIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::key_value_iterator, QtJambiPrivate::ContainerRef<Container>>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        QSharedPointer<QtJambiPrivate::ContainerRefPrivate> owner = iter.storage().reference();
+        return QtJambiPrivate::convertHashKeyValueIteratorToJavaObject(env,
+                                                                       owner,
+                                                                       new Iterator(std::move(iter)),
+                                                                       QtJambiAPI::deletePointer<Iterator>,
+                                                                       QSequentialIteratorAccess<Iterator,Container>::newInstance());
+    }
 protected:
     QHashAccess(){}
 public:
-    static AbstractHashAccess* newInstance(){
+    static QHashAccess<K, T>* newInstance(){
         static QHashAccess<K, T> instance;
         return &instance;
     }
 
     AbstractHashAccess* clone() override{
         return this;
+    }
+
+    auto constBegin(const void* container) const {
+        return std::cbegin(*static_cast<const QHash<K,T> *>(container));
+    }
+
+    auto constEnd(const void* container) const {
+        return std::cend(*static_cast<const QHash<K,T> *>(container));
+    }
+
+    auto begin(void* container) const {
+        return std::begin(*static_cast<QHash<K,T> *>(container));
+    }
+
+    auto end(void* container) const {
+        return std::end(*static_cast<QHash<K,T> *>(container));
+    }
+
+    template<typename Iter>
+    bool isBegin(const void* container, const Iter& iter)const{
+        return iter==constBegin(container);
+    }
+
+    template<typename Iter>
+    bool isEnd(const void* container, const Iter& iter)const{
+        return iter==constEnd(container);
+    }
+
+    template<typename Iter>
+    bool isValid(const void* container, const Iter& iter)const{
+        if constexpr(QtJambiPrivate::supports_less_than_v<Iter>){
+            auto end = constEnd(container);
+            auto begin = constBegin(container);
+            return (begin<iter || begin==iter) && iter<end;
+        }else{
+            return !isEnd(container, iter);
+        }
     }
 
     bool isDetached(const void* container) override{
@@ -2383,16 +2590,75 @@ public:
         return QtJambiPrivate::AssociativeContainerCountObject<QHash, K, T>::function(env, container, key);
     }
 
-    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
-        return QtJambiPrivate::AssociativeContainerConstEnd<QHash, K, T>::function(env, container);
+    jobject begin(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::begin(container), container, ptr));
+    }
+    jobject end(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::end(container), container, ptr));
     }
 
-    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
-        return QtJambiPrivate::AssociativeContainerConstBegin<QHash, K, T>::function(env, container);
+    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::cend(container), container, ptr));
     }
 
-    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override {
-        return QtJambiPrivate::AssociativeContainerConstFindPair<QHash, K, T>::function(env, container, key);
+    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::cbegin(container), container, ptr));
+    }
+
+    jobject keyEnd(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.keyEnd(), container, ptr));
+    }
+
+    jobject keyBegin(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.keyBegin(), container, ptr));
+    }
+
+    jobject constKeyValueEnd(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.constKeyValueEnd(), container, ptr));
+    }
+
+    jobject constKeyValueBegin(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.constKeyValueBegin(), container, ptr));
+    }
+
+    jobject keyValueEnd(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.keyValueEnd(), container, ptr));
+    }
+
+    jobject keyValueBegin(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.keyValueBegin(), container, ptr));
+    }
+
+    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& ptr, jobject key) override {
+        if constexpr(QtJambiPrivate::supports_find_v<const Container,const K&> && supports_map_sort){
+            const Container &container = *static_cast<const Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.find(qtjambi_cast<K>(env, key)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            JavaException::raiseUnsupportedOperationException(env, "QHash<K,T>::find(K)const" QTJAMBI_STACKTRACEINFO );
+        }
+    }
+
+    jobject find(JNIEnv * env, const ExtendedContainerInfo& ptr, jobject key) override {
+        if constexpr(QtJambiPrivate::supports_find_v<Container,const K&> && supports_map_sort){
+            Container &container = *static_cast<Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.find(qtjambi_cast<K>(env, key)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            JavaException::raiseUnsupportedOperationException(env, "QHash<K,T>::find(K)" QTJAMBI_STACKTRACEINFO );
+        }
     }
 
     jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override {
@@ -2429,16 +2695,6 @@ public:
 
     ContainerAndAccessInfo values(JNIEnv * env, const ConstContainerInfo& container) override {
         return QtJambiPrivate::AssociativeContainerValues<QHash, K, T>::function(env, container);
-    }
-
-    jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override {
-        return QtJambiPrivate::AssociativeContainerBegin<QHash, K, T>::function(env, container);
-    }
-    jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override {
-        return QtJambiPrivate::AssociativeContainerEnd<QHash, K, T>::function(env, container);
-    }
-    jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key) override {
-        return QtJambiPrivate::AssociativeContainerFindPair<QHash, K, T>::function(env, container, key);
     }
     void clear(JNIEnv * env, const ContainerInfo& container) override {
         QtJambiPrivate::AssociativeContainerClear<QHash, K, T>::function(env, container);
@@ -2624,6 +2880,9 @@ public:
     void reserve(JNIEnv * env, const ContainerInfo& container, qsizetype newSize) override {
         QtJambiPrivate::AssociativeContainerReserve<QHash, K, T>::function(env, container, newSize);
     }
+    void reserve(void* container, qsizetype newSize) override {
+        QtJambiPrivate::AssociativeContainerReserve<QHash, K, T>::function(container, newSize);
+    }
 private:
     template<bool _isConst>
     class KeyValueIterator : public AbstractHashAccess::KeyValueIterator{
@@ -2696,21 +2955,111 @@ public:
     std::unique_ptr<AbstractHashAccess::KeyValueIterator> keyValueIterator(void* container) override {
         return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator<false>(this, *reinterpret_cast<QHash<K,T>*>(container)));
     }
- };
+};
 
 template<typename K, typename T>
- class QMultiHashAccess : public QtJambiPrivate::AssociativeAccessSuperclassDecider<K,T,AbstractMultiHashAccess>::type{
+class QMultiHashAccess : public QtJambiPrivate::AssociativeAccessSuperclassDecider<K,T,AbstractMultiHashAccess>::type{
     typedef typename QtJambiPrivate::AssociativeAccessSuperclassDecider<K,T,AbstractMultiHashAccess>::type Super;
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/QMultiHash, QtJambiPrivate::AssociativeAccessExportTest<QtJambiPrivate::QMultiHashExport, K,T,
+                                                                        qint16,QByteArray,
+                                                                        QByteArray,QByteArray
+                                                                        >::value);
+    using Container = QMultiHash<K,T>;
+
+    static constexpr bool supports_map_sort = QtJambiPrivate::supports_map_sort_v<QMultiHash,K,T>;
+
+    ~QMultiHashAccess() override {}
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::const_iterator, Container>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        return QtJambiAPI::convertMultiHashIteratorToJavaObject(env,
+                                                          new Iterator(std::move(iter)),
+                                                          QtJambiAPI::deletePointer<Iterator>,
+                                                          QAssociativeConstIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::iterator, QtJambiPrivate::ContainerRef<Container>>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        QSharedPointer<QtJambiPrivate::ContainerRefPrivate> owner = iter.storage().reference();
+        return QtJambiPrivate::convertMultiHashIteratorToJavaObject(env,
+                                                                    owner,
+                                                                    new Iterator(std::move(iter)),
+                                                                    QtJambiAPI::deletePointer<Iterator>,
+                                                                    QAssociativeIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::key_iterator, Container>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        return QtJambiAPI::convertMultiHashKeyIteratorToJavaObject(env,
+                                                             new Iterator(std::move(iter)),
+                                                             QtJambiAPI::deletePointer<Iterator>,
+                                                             QSequentialConstIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::const_key_value_iterator, Container>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        return QtJambiAPI::convertMultiHashKeyValueIteratorToJavaObject(env,
+                                                                  new Iterator(std::move(iter)),
+                                                                  QtJambiAPI::deletePointer<Iterator>,
+                                                                  QSequentialConstIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::key_value_iterator, QtJambiPrivate::ContainerRef<Container>>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        QSharedPointer<QtJambiPrivate::ContainerRefPrivate> owner = iter.storage().reference();
+        return QtJambiPrivate::convertMultiHashKeyValueIteratorToJavaObject(env,
+                                                                            owner,
+                                                                            new Iterator(std::move(iter)),
+                                                                            QtJambiAPI::deletePointer<Iterator>,
+                                                                            QSequentialIteratorAccess<Iterator,Container>::newInstance());
+    }
 protected:
     QMultiHashAccess(){}
 public:
-    static AbstractMultiHashAccess* newInstance(){
+    static QMultiHashAccess<K, T>* newInstance(){
         static QMultiHashAccess<K, T> instance;
         return &instance;
     }
 
     AbstractMultiHashAccess* clone() override{
         return this;
+    }
+
+    auto constBegin(const void* container) const {
+        return std::cbegin(*static_cast<const QMultiHash<K,T> *>(container));
+    }
+
+    auto constEnd(const void* container) const {
+        return std::cend(*static_cast<const QMultiHash<K,T> *>(container));
+    }
+
+    auto begin(void* container) const {
+        return std::begin(*static_cast<QMultiHash<K,T> *>(container));
+    }
+
+    auto end(void* container) const {
+        return std::end(*static_cast<QMultiHash<K,T> *>(container));
+    }
+
+    template<typename Iter>
+    bool isBegin(const void* container, const Iter& iter)const{
+        return iter==constBegin(container);
+    }
+
+    template<typename Iter>
+    bool isEnd(const void* container, const Iter& iter)const{
+        return iter==constEnd(container);
+    }
+
+    template<typename Iter>
+    bool isValid(const void* container, const Iter& iter)const{
+        if constexpr(QtJambiPrivate::supports_less_than_v<Iter>){
+            auto end = constEnd(container);
+            auto begin = constBegin(container);
+            return (begin<iter || begin==iter) && iter<end;
+        }else{
+            return !isEnd(container, iter);
+        }
     }
 
     bool isDetached(const void* container) override{
@@ -2865,17 +3214,96 @@ public:
     qsizetype count(JNIEnv * env, const void* container, jobject key) override {
         return QtJambiPrivate::AssociativeContainerCountObject<QMultiHash, K, T>::function(env, container, key);
     }
-    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
-        return QtJambiPrivate::AssociativeContainerConstEnd<QMultiHash, K, T>::function(env, container);
+    jobject begin(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::begin(container), container, ptr));
     }
-    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
-        return QtJambiPrivate::AssociativeContainerConstBegin<QMultiHash, K, T>::function(env, container);
+    jobject end(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::end(container), container, ptr));
     }
-    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key) override {
-        return QtJambiPrivate::AssociativeContainerConstFindPair<QMultiHash, K, T>::function(env, container, key);
+    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::cbegin(container), container, ptr));
     }
-    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key, jobject value) override {
-        return QtJambiPrivate::AssociativeContainerConstFindPairs<QMultiHash, K, T>::function(env, container, key, value);
+    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::cend(container), container, ptr));
+    }
+
+    jobject keyEnd(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.keyEnd(), container, ptr));
+    }
+
+    jobject keyBegin(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.keyBegin(), container, ptr));
+    }
+
+    jobject constKeyValueEnd(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.constKeyValueEnd(), container, ptr));
+    }
+
+    jobject constKeyValueBegin(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.constKeyValueBegin(), container, ptr));
+    }
+
+    jobject keyValueEnd(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.keyValueEnd(), container, ptr));
+    }
+
+    jobject keyValueBegin(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(container.keyValueBegin(), container, ptr));
+    }
+
+    jobject find(JNIEnv * env, const ExtendedContainerInfo& ptr, jobject key) override {
+        if constexpr(QtJambiPrivate::supports_find_v<Container,const K&> && supports_map_sort){
+            Container &container = *static_cast<Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.find(qtjambi_cast<K>(env, key)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            JavaException::raiseUnsupportedOperationException(env, "QMultiHash<K,T>::find(K)" QTJAMBI_STACKTRACEINFO );
+        }
+    }
+
+    jobject find(JNIEnv * env, const ExtendedContainerInfo& ptr, jobject key, jobject value) override {
+        if constexpr(QtJambiPrivate::supports_find_v<Container,const K&,const T&> && supports_map_sort){
+            Container &container = *static_cast<Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.find(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, value)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            Q_UNUSED(value)
+            JavaException::raiseUnsupportedOperationException(env, "QMultiHash<K,T>::find(K,T)" QTJAMBI_STACKTRACEINFO );
+        }
+    }
+
+    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& ptr, jobject key) override {
+        if constexpr(QtJambiPrivate::supports_find_v<const Container,const K&> && supports_map_sort){
+            const Container &container = *static_cast<const Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.find(qtjambi_cast<K>(env, key)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            JavaException::raiseUnsupportedOperationException(env, "QMultiHash<K,T>::find(K)const" QTJAMBI_STACKTRACEINFO );
+        }
+    }
+    jobject constFind(JNIEnv * env, const ConstExtendedContainerInfo& ptr, jobject key, jobject value) override {
+        if constexpr(QtJambiPrivate::supports_find_v<const Container,const K&,const T&> && supports_map_sort){
+            const Container &container = *static_cast<const Container *>(ptr.container);
+            return convertIterator(env, ContainerIterator(container.find(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, value)), container, ptr));
+        }else{
+            Q_UNUSED(ptr)
+            Q_UNUSED(key)
+            Q_UNUSED(value)
+            JavaException::raiseUnsupportedOperationException(env, "QMultiHash<K,T>::find(K,T)const" QTJAMBI_STACKTRACEINFO );
+        }
     }
     jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override {
         return QtJambiPrivate::AssociativeContainerKey<QMultiHash, K, T>::function(env, container, value, defaultKey);
@@ -2889,8 +3317,11 @@ public:
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
         return QtJambiPrivate::AssociativeContainerEquals<QMultiHash, K, T, ContainerAPI::getAsQMultiHash>::function(env, container, other);
     }
-    void reserve(JNIEnv * env,const ContainerInfo&,qsizetype) override {
-        JavaException::raiseUnsupportedOperationException(env, "QMultiHash::reserve(size)" QTJAMBI_STACKTRACEINFO );
+    void reserve(JNIEnv * env,const ContainerInfo& container,qsizetype newSize) override {
+        QtJambiPrivate::AssociativeContainerReserve<QMultiHash, K, T>::function(env, container, newSize);
+    }
+    void reserve(void* container, qsizetype newSize) override {
+        QtJambiPrivate::AssociativeContainerReserve<QMultiHash, K, T>::function(container, newSize);
     }
     qsizetype size(JNIEnv * env, const void* container) override {
         return QtJambiPrivate::AssociativeContainerSize<QMultiHash, K, T>::function(env, container);
@@ -2919,18 +3350,6 @@ public:
     }
     qsizetype count(JNIEnv *env, const void* container, jobject key, jobject value) override {
         return QtJambiPrivate::AssociativeContainerCountPair<QMultiHash, K, T>::function(env, container, key, value);
-    }
-    jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override {
-        return QtJambiPrivate::AssociativeContainerBegin<QMultiHash, K, T>::function(env, container);
-    }
-    jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override {
-        return QtJambiPrivate::AssociativeContainerEnd<QMultiHash, K, T>::function(env, container);
-    }
-    jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key) override {
-        return QtJambiPrivate::AssociativeContainerFindPair<QMultiHash, K, T>::function(env, container, key);
-    }
-    jobject find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key, jobject value) override {
-        return QtJambiPrivate::AssociativeContainerFindPairs<QMultiHash, K, T>::function(env, container, key, value);
     }
     void clear(JNIEnv * env, const ContainerInfo& container) override {
         QtJambiPrivate::AssociativeContainerClear<QMultiHash, K, T>::function(env, container);
@@ -3263,10 +3682,16 @@ public:
 template<typename K, typename T>
 class QPairAccess : public AbstractPairAccess{
     typedef AbstractMapAccess Super;
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/QPair, QtJambiPrivate::AssociativeAccessExportTest<QtJambiPrivate::QPairExport, K,T,
+                                                                        qint32,qint32,
+                                                                        QVariant,QVariant
+                                                                        >::value);
+    using Container = QPair<K,T>;
+    ~QPairAccess() override {}
 protected:
     QPairAccess(){}
 public:
-    static AbstractPairAccess* newInstance(){
+    static QPairAccess<K, T>* newInstance(){
         static QPairAccess<K, T> instance;
         return &instance;
     }
@@ -3330,24 +3755,46 @@ public:
         return alignof(QPair<K,T>);
     }
     void* constructContainer(void* placement) override {
-        return new(placement) QPair<K,T>();
+        if constexpr(QtJambiPrivate::is_default_constructible_v<K> && QtJambiPrivate::is_default_constructible_v<T>){
+            return new(placement) QPair<K,T>();
+        }else{
+            Q_UNUSED(placement)
+            return nullptr;
+        }
     }
 
     void* constructContainer(void* placement, const void* copyOf) override {
-        return new(placement) QPair<K,T>(*reinterpret_cast<const QPair<K,T>*>(copyOf));
+        if constexpr(QtJambiPrivate::is_copy_constructible_v<K> && QtJambiPrivate::is_copy_constructible_v<T>){
+            return new(placement) QPair<K,T>(*reinterpret_cast<const QPair<K,T>*>(copyOf));
+        }else{
+            Q_UNUSED(placement)
+            Q_UNUSED(copyOf)
+            return nullptr;
+        }
     }
     void* constructContainer(JNIEnv *, void* placement, const ConstContainerAndAccessInfo& copyOf) override {
         return constructContainer(placement, copyOf.container);
     }
     void* constructContainer(void* placement, void* move) override {
-        return new(placement) QPair<K,T>(std::move(*reinterpret_cast<const QPair<K,T>*>(move)));
+        if constexpr(QtJambiPrivate::is_move_constructible_v<K> && QtJambiPrivate::is_move_constructible_v<T>){
+            return new(placement) QPair<K,T>(std::move(*reinterpret_cast<const QPair<K,T>*>(move)));
+        }else{
+            Q_UNUSED(placement)
+            Q_UNUSED(move)
+            return nullptr;
+        }
     }
     void* constructContainer(JNIEnv *, void* placement, const ContainerAndAccessInfo& move) override {
         return constructContainer(placement, move.container);
     }
     bool destructContainer(void* container) override {
-        reinterpret_cast<QPair<K,T>*>(container)->~QPair<K,T>();
-        return true;
+        if constexpr(QtJambiPrivate::is_destructible_v<K> && QtJambiPrivate::is_destructible_v<T>){
+            reinterpret_cast<QPair<K,T>*>(container)->~QPair<K,T>();
+            return true;
+        }else{
+            Q_UNUSED(container)
+            return false;
+        }
     }
 
     QMetaType registerContainer(QByteArrayView containerTypeName) override {
@@ -3356,22 +3803,47 @@ public:
 
     jobject first(JNIEnv * env, const void* container) override {
         const QPair<K,T> *pair = static_cast<const QPair<K,T> *>(container);
-        return ::qtjambi_cast<jobject>(env, pair->first);
+        return qtjambi_cast<jobject>(env, pair->first);
     }
 
     jobject second(JNIEnv * env, const void* container) override {
         const QPair<K,T> *pair = static_cast<const QPair<K,T> *>(container);
-        return ::qtjambi_cast<jobject>(env, pair->second);
+        return qtjambi_cast<jobject>(env, pair->second);
     }
 
     void setFirst(JNIEnv * env, void* container, jobject first) override {
         QPair<K,T> *pair = static_cast<QPair<K,T> *>(container);
-        pair->first = ::qtjambi_cast<K>(env, first);
+        pair->first = qtjambi_cast<K>(env, first);
     }
 
     void setSecond(JNIEnv * env, void* container, jobject second) override {
         QPair<K,T> *pair = static_cast<QPair<K,T> *>(container);
-        pair->second = ::qtjambi_cast<T>(env, second);
+        pair->second = qtjambi_cast<T>(env, second);
+    }
+
+    const void* first(const void* container) override{
+        const QPair<K,T> *pair = static_cast<const QPair<K,T> *>(container);
+        return &pair->first;
+    }
+    const void* second(const void* container) override{
+        const QPair<K,T> *pair = static_cast<const QPair<K,T> *>(container);
+        return &pair->second;
+    }
+    void* first(void* container) override{
+        QPair<K,T> *pair = static_cast<QPair<K,T> *>(container);
+        return &pair->first;
+    }
+    void* second(void* container) override{
+        QPair<K,T> *pair = static_cast<QPair<K,T> *>(container);
+        return &pair->second;
+    }
+    void setFirst(void* container, const void* first) override{
+        QPair<K,T> *pair = static_cast<QPair<K,T> *>(container);
+        pair->first = *reinterpret_cast<const K*>(first);
+    }
+    void setSecond(void* container, const void* second) override{
+        QPair<K,T> *pair = static_cast<QPair<K,T> *>(container);
+        pair->second = *reinterpret_cast<const T*>(second);
     }
 public:
     QPair<const void*,const void*> elements(const void* container) override {

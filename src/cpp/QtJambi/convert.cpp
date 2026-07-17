@@ -28,13 +28,16 @@
 ****************************************************************************/
 
 #include "pch_p.h"
-#include "containerapi.h"
-#include "registryutil_p.h"
 #include "qtjambi_cast_object.h"
 #include "qtjambi_cast_template1.h"
 #include "qtjambi_cast_container.h"
 #include "qtjambi_cast_template2.h"
 #include "qtjambi_cast_model.h"
+#include "containeraccess_export_list.h"
+#include "containeraccess_export_stringlist.h"
+#include "containeraccess_export_bytearraylist.h"
+#include "containeraccess_export_map.h"
+#include "containeraccess_export_hash.h"
 
 const char* getQtNameByFunctional(QByteArrayView java_name);
 
@@ -1364,9 +1367,6 @@ QVariant QtJambiAPI::convertJavaObjectToQVariant(JNIEnv *env, jobject java_objec
         QMetaType firstMetaType(first ? getMetaTypeIdForObject(env, first) : QMetaType(QMetaType::Nullptr));
         QMetaType secondMetaType(second ? getMetaTypeIdForObject(env, second) : QMetaType(QMetaType::Nullptr));
         if(firstMetaType.isValid() && secondMetaType.isValid()){
-#if defined(QTJAMBI_GENERIC_ACCESS)
-            using namespace ContainerAccessAPI;
-#endif
             AbstractContainerAccess* containerAccess = createContainerAccess(AssociativeContainerType::QPair, firstMetaType, secondMetaType);
             if(!containerAccess){
                 QByteArrayView firstType = firstMetaType.name();
@@ -3865,3 +3865,53 @@ jobject CoreAPI::convertQObjectToJavaObjectCppOwnership(JNIEnv *env, const QObje
     else
         return convertQObjectToJavaObjectOfClass(env, qt_object, className, nullptr, NativeToJavaConversionMode::CppOwnership);
 }
+
+#if 0
+static QmlAPI::ConvertToVariant fnConvertToVariant = nullptr;
+
+void QmlAPI::setConvertToVariant(ConvertToVariant fct){
+    if(!fnConvertToVariant)
+        fnConvertToVariant = fct;
+}
+
+QVariant CoreAPI::convertVariant(JNIEnv *env, const QObject* context, jobject java_object){
+    if(fnConvertToVariant && Java::QtCore::QObject::isInstanceOf(env, java_object)){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
+            QVariant result = fnConvertToVariant(context, link->qobject());
+            if(result.isValid()){
+                if(isQmlJavaScriptOwnership(link->qobject())){
+                    link->setCppOwnership(env);
+                }
+                return result;
+            }
+        }
+    }
+    return QtJambiAPI::convertJavaObjectToQVariant(env, java_object);
+}
+
+QMap<int,QVariant> CoreAPI::convertItemData(JNIEnv *env, const QObject* context, jobject java_object){
+    QMap<int,QVariant> result = qtjambi_cast<QMap<int, QVariant>>(env, java_object);
+    if(fnConvertToVariant){
+        for(QMap<int,QVariant>::iterator iter = result.begin(), end = result.end(); iter!=end; ++iter){
+            if(::isNativeWrapperMetaType(iter.value().metaType())){
+                if(QObject* obj = iter.value().value<QObject*>()){
+                    QVariant result = fnConvertToVariant(context, obj);
+                    if(result.isValid())
+                        iter.value() = result;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+void CoreAPI::manageJSOwnership(JNIEnv *env, const QObject* context, QVariant& variant){
+    if(fnConvertToVariant && ::isNativeWrapperMetaType(variant.metaType())){
+        if(QObject* obj = variant.value<QObject*>()){
+            QVariant result = fnConvertToVariant(context, obj);
+            if(result.isValid())
+                variant = result;
+        }
+    }
+}
+#endif

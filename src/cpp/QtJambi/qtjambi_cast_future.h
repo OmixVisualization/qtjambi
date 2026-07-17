@@ -135,17 +135,16 @@ struct FutureInterfaceTypeTest{
         return false;
 #endif
     };
-    static constexpr QtJambiAPI::FutureInterfaceTypeTest fn = &test;
 };
 
 template<>
 struct FutureInterfaceTypeTest<QVariant>{
-    static constexpr QtJambiAPI::FutureInterfaceTypeTest fn = &QtJambiAPI::isVariantFutureInterface;
+    static inline auto test = QtJambiAPI::isVariantFutureInterface;
 };
 
 template<>
 struct FutureInterfaceTypeTest<void>{
-    static constexpr QtJambiAPI::FutureInterfaceTypeTest fn = &QtJambiAPI::isVoidFutureInterface;
+    static inline auto test = QtJambiAPI::isVoidFutureInterface;
 };
 
 template<typename TargetType, typename SourceType>
@@ -161,7 +160,7 @@ QFutureInterface<TargetType> convert_future_interface(JNIEnv *env, const QFuture
                 QSharedPointer<QFutureInterfaceBase>(new QFutureInterface<TargetType>(result)),
                 &copy_future_interface_results<TargetType,SourceType>,
                 &copy_future_interface_results<SourceType,TargetType>,
-                FutureInterfaceTypeTest<TargetType>::fn)){
+                FutureInterfaceTypeTest<TargetType>::test)){
             if constexpr (std::is_same_v<void, TargetType>){
                 if(QFutureInterface<TargetType>* newResult = QtJambiAPI::asVoidFutureInterface(availableResult)){
                     return *newResult;
@@ -651,6 +650,7 @@ struct qtjambi_jobject_future_cast<forward,
 
 }
 
+#if !defined(__GLIBCXX__) || !defined(Q_OS_WIN)
 extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QPromise<QVariant>&>(JNIEnv *, QPromise<QVariant>&);
 extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QPromise<void>&>(JNIEnv *, QPromise<void>&);
 
@@ -669,5 +669,6 @@ extern template QTJAMBI_EXPORT const QFuture<JObjectWrapper>& qtjambi_cast<const
 extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QFuture<JObjectWrapper>>(JNIEnv *, QFuture<JObjectWrapper>&&);
 extern template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QFuture<JObjectWrapper>&>(JNIEnv *, const QFuture<JObjectWrapper>&);
 #endif
+#endif // !defined(__GLIBCXX__) || !defined(Q_OS_WIN)
 
 #endif // QTJAMBI_CAST_FUTURE_H

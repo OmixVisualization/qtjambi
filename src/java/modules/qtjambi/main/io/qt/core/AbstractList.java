@@ -42,11 +42,14 @@ abstract class AbstractList<T> extends AbstractSequentialContainer<T> implements
 		super(p);
 	}
     
+    @Override
+    public abstract AbstractList<T> clone();
+    
     @QtUninvokable
-	protected abstract QSequentialIterator<T> begin();
+	protected abstract QSequentialIterator<T,? extends AbstractList<T>> begin();
 
     @QtUninvokable
-    protected abstract QSequentialIterator<T> end();
+    protected abstract QSequentialIterator<T,? extends AbstractList<T>> end();
     
     public abstract void removeAt(int i);
     
@@ -97,81 +100,59 @@ abstract class AbstractList<T> extends AbstractSequentialContainer<T> implements
 	    return listIterator(0);
 	}
 	
-	private static class ListIterator<T> implements java.util.ListIterator<T>{
-		private final AbstractList<T> list;
-		private QSequentialConstIterator<T> current;
-    	private QSequentialConstIterator<T> begin;
-    	private QSequentialConstIterator<T> end;
-    	private int icursor;
-    	private boolean hasNext;
-    	private boolean hasPrevious;
+	private class Iterator implements java.util.Iterator<T>{
+    	int icursor;
     	
-    	ListIterator(AbstractList<T> list, int index){
-    		this.list = list;
-    		initialize(index);
+    	Iterator(int index){
+    		icursor = index;
     	}
     	
-    	private void initialize(int index){
-    		begin = list.begin();
-    		current = list.begin();
-    		end = list.end();
-    		icursor = 0;
-			for (int i = 0; i < index && end!=null && !current.equals(end); i++) {
-				current.increment();
-				icursor++;
-			}
-			hasNext = end!=null && !current.equals(end);
-			hasPrevious = begin!=null && !current.equals(begin);
-		}
-        
         @Override
-        public boolean hasNext() {
-        	return hasNext;
+        public final boolean hasNext() {
+    		int size = size();
+        	return icursor >= 0 && icursor<size;
         }
 
         @Override
-        public T next() {
-        	if(!hasNext())
+        public final T next() {
+        	try {
+	        	T e = get(icursor);
+	        	++icursor;
+	            return e;
+        	} catch (IndexOutOfBoundsException e) {
                 throw new NoSuchElementException();
-        	checkModification();
-        	T e = current._value();
-        	current.increment();
-        	hasNext = end!=null && !current.equals(end);
-        	hasPrevious = begin!=null && !current.equals(begin);
-        	icursor++;
-            return e;
+            }
         }
         
         @Override
-        public T previous() {
-        	if(!hasPrevious())
-                throw new NoSuchElementException();
-        	checkModification();
-        	current.decrement();
-        	hasNext = end!=null && !current.equals(end);
-        	hasPrevious = begin!=null && !current.equals(begin);
-        	T e = current._value();
-        	icursor--;
-            return e;
-        }
-        
-        @Override
-        public void remove() {
-        	checkModification();
+        public final void remove() {
         	if(icursor==0)
         		throw new IndexOutOfBoundsException(-1);
-        	list.remove(icursor-1);
-        	initialize(icursor-1);
+        	AbstractList.this.remove(--icursor);
+        }
+	}
+	
+	private final class ListIterator extends Iterator implements java.util.ListIterator<T>{
+    	ListIterator(int index){
+    		super(index);
+    	}
+    	
+        @Override
+        public T previous() {
+        	try {
+	        	--icursor;
+	        	T e = get(icursor);
+	            return e;
+	    	} catch (IndexOutOfBoundsException e) {
+	            throw new NoSuchElementException();
+	        }
         }
         
 		@Override
         public void set(T e) {
-        	checkModification();
         	if(icursor==0)
         		throw new IndexOutOfBoundsException(-1);
-        	current.decrement();
-        	((QSequentialIterator<T>)current).setValue(e);
-        	current.increment();
+        	AbstractList.this.set(icursor-1, e);
         }
         
         @Override
@@ -186,20 +167,15 @@ abstract class AbstractList<T> extends AbstractSequentialContainer<T> implements
         
         @Override
         public boolean hasPrevious() {
-        	return hasPrevious;
+    		int size = size();
+        	return icursor>0 && size>0;
         }
         
         @Override
         public void add(T e) {
-        	checkModification();
-        	list.add(icursor, e);
-        	initialize(icursor+1);
+        	AbstractList.this.add(icursor, e);
+        	++icursor;
         }
-        
-		void checkModification() {
-//        	if(!end.equals(citer.end()))
-//    		throw new IllegalMonitorStateException();
-		}
 	}
 	
     /**
@@ -209,7 +185,7 @@ abstract class AbstractList<T> extends AbstractSequentialContainer<T> implements
 	@Override
     @QtUninvokable
 	public final java.util.ListIterator<T> listIterator(int index) {
-		return new ListIterator<>(this, index);
+		return new ListIterator(index);
 	}
 	
     /**

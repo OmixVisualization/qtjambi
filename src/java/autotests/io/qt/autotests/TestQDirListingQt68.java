@@ -29,6 +29,7 @@
 package io.qt.autotests;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -51,10 +52,45 @@ public class TestQDirListingQt68 extends ApplicationInitializer {
     public void test() throws IllegalAccessException {
 		QDirIterator dirIterator = new QDirIterator(QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath), QDir.Filter.NoDotAndDotDot.combined(QDir.Filter.AllEntries));
 		QDirListing listing = new QDirListing(QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath));
+		QDirListing.Sentinel end = listing.constEnd();
+		for(QDirListing.ConstIterator iter = listing.constBegin(); !iter.equals(end); iter.advance()){
+			Assert.assertTrue(dirIterator.hasNext());
+			Assert.assertEquals(dirIterator.next(), iter.get().absoluteFilePath());
+		}
+		dirIterator = new QDirIterator(QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath), QDir.Filter.NoDotAndDotDot.combined(QDir.Filter.AllEntries));
+		for(DirEntry entry : listing) {
+			Assert.assertTrue(dirIterator.hasNext());
+			Assert.assertEquals(dirIterator.next(), entry.absoluteFilePath());			
+		}
 		Iterator<DirEntry> iterator = listing.iterator();
+		dirIterator = new QDirIterator(QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath), QDir.Filter.NoDotAndDotDot.combined(QDir.Filter.AllEntries));
 		while(iterator.hasNext()) {
 			Assert.assertTrue(dirIterator.hasNext());
 			Assert.assertEquals(dirIterator.next(), iterator.next().absoluteFilePath());
+		}
+		listing = new QDirListing(QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath));
+		QDirListing.ConstIterator iter = listing.constBegin();
+		QDirListing.DirEntry entry = iter.get();
+		listing.dispose();
+		Assert.assertTrue(iter.isDisposed());
+		Assert.assertTrue(entry.isDisposed());
+		listing = new QDirListing(QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath));
+		iter = listing.constBegin();
+		end = listing.constEnd();
+		try {
+			end.get();
+			Assert.assertFalse("NoSuchElementException expected to be thrown.", true);
+		} catch (NoSuchElementException e) {
+		}
+		try {
+			end.advance();
+			Assert.assertFalse("UnsupportedOperationException expected to be thrown.", true);
+		} catch (UnsupportedOperationException e) {
+		}
+		try {
+			end.advance(-1);
+			Assert.assertFalse("UnsupportedOperationException expected to be thrown.", true);
+		} catch (UnsupportedOperationException e) {
 		}
     }
     

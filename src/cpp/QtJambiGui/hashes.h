@@ -54,6 +54,19 @@ inline bool operator <(const QPoint& p1, const QPoint& p2){
 inline bool operator <(const QColor& c1, const QColor& c2){
     return quint64(c1.rgba64())<quint64(c2.rgba64());
 }
+
+namespace QtJambiPrivate{
+    bool is_shared_with(const QRegion& container, const QRegion& other);
+    template<typename Container, bool>
+    struct ContainerSharedInfo;
+
+    template<>
+    struct ContainerSharedInfo<QRegion,false>{
+        static constexpr bool is_shared = true;
+        using Fn = bool(&)(const QRegion&,const QRegion&);
+        static constexpr Fn isSharedWith = is_shared_with;
+    };
+}
 #endif
 
 inline size_t qHash(const QPixmap &value, size_t seed = 0)
@@ -249,6 +262,7 @@ inline size_t qHash(const QPolygonF &polygon, size_t seed = 0)
     return seed;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 12, 0)
 inline size_t qHash(const QVector2D &vec, size_t seed = 0)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
@@ -287,6 +301,7 @@ inline size_t qHash(const QVector4D &vec, size_t seed = 0)
     seed = hash(seed, vec.w());
     return seed;
 }
+#endif
 
 inline size_t qHash(const QFontMetrics &value, size_t seed = 0)
 {

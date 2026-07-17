@@ -421,8 +421,6 @@ QByteArray QtJambiAPI::typeName(const std::type_info& typeId){
     return typeName;
 }
 
-bool isQmlJavaScriptOwnership(QObject * obj);
-
 void QtJambiAPI::setJavaOwnershipForTopLevelObject(JNIEnv *env, QObject* qobject)
 {
     if(qobject && !qobject->parent() && !isQmlJavaScriptOwnership(qobject)){
@@ -679,6 +677,10 @@ void *QtJambiAPI::fromNativeId(QtJambiNativeID nativeId, const std::type_info& t
         return nullptr;
     QtJambiLink * link = reinterpret_cast<QtJambiLink *>(nativeId);
     QtJambiAPI::checkDanglingPointer(nullptr, link);
+    // if(Q_UNLIKELY(link->containerAccess() && link->containerAccess()->isSequentialConstIterator())){
+    //     AbstractSequentialConstIteratorAccess* access = static_cast<AbstractSequentialConstIteratorAccess*>(link->containerAccess());
+    //     return access->asIterator(link->pointer());
+    // }
     return link->typedPointer(typeId);
 }
 

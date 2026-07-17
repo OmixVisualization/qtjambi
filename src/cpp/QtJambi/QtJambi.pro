@@ -95,10 +95,21 @@ SOURCES += \
     utils.cpp
 
 HEADERS += \
-    QtJambiArrayAPI \
     androidapi.h \
     containeraccess.h \
     containeraccess_associative.h \
+    containeraccess_export_bytearraylist.h \
+    containeraccess_export_hash.h \
+    containeraccess_export_list.h \
+    containeraccess_export_map.h \
+    containeraccess_export_multihash.h \
+    containeraccess_export_multimap.h \
+    containeraccess_export_objectlist.h \
+    containeraccess_export_pair.h \
+    containeraccess_export_set.h \
+    containeraccess_export_stringlist.h \
+    containeraccess_export_variantlist.h \
+    containeraccess_iterator.h \
     containeraccess_p.h \
     containeraccess_sequential.h \
     containerapi.h \
@@ -177,17 +188,6 @@ HEADERS += \
     utils.h \
     utils_p.h
 
-defined(QTJAMBI_GENERIC_ACCESS):{
-HEADERS += \
-    containeraccess_hash.h \
-    containeraccess_list.h \
-    containeraccess_map.h \
-    containeraccess_multihash.h \
-    containeraccess_multimap.h \
-    containeraccess_pair.h \
-    containeraccess_set.h
-}
-
 CONFIG(debug, debug|release) {
     QTJAMBICONF = debug
 }else{
@@ -208,12 +208,7 @@ greaterThan(QT_MAJOR_VERSION, 5):{
 }
 QMAKE_RESOURCE_FLAGS += -no-compress
 
-win32-arm64-msvc* | win32-msvc*: {
-    QMAKE_CXXFLAGS += /bigobj
-}
-
 win32-g++* {
-    QMAKE_CXXFLAGS += -Wa,-mbig-obj
     CONFIG(debug, debug|release) {
         QMAKE_CXXFLAGS += -O3
     }
@@ -241,7 +236,7 @@ linux-clang* | linux-g++* | freebsd-clang* | freebsd-g++* | netbsd-clang* | netb
 QMAKE_CXXFLAGS += -Wall -fexceptions -fnon-call-exceptions
 }
 
-DEFINES += QTJAMBI_EXPORT=
+DEFINES += QTJAMBI_BUILD_LIB=
 
 INSTALL_HEADERS.path = $$QTJAMBI_PLATFORM_BUILDDIR/include/QtJambi
 ALLFILES = $$files(*)

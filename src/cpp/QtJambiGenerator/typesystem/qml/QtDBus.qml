@@ -1574,7 +1574,7 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "template<> struct QtJambiPrivate::supports_qHash<QDBusReply<QMap<QString, QVariant> >> : std::false_type{};"}
+            Text{content: "template<> struct QtJambiPrivate::supports_qHash<const QDBusReply<QMap<QString, QVariant>>&> : std::false_type{};"}
         }
 
         EnumType{

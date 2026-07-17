@@ -30,6 +30,7 @@
 #ifndef QTJAMBI_CAST_CONTAINER_H
 #define QTJAMBI_CAST_CONTAINER_H
 
+#include "qtjambi_cast_iterator.h"
 #include "containeraccess_associative.h"
 #include "qtjambiapi_smartpointer.h"
 #include "qtjambiapi_container.h"
@@ -162,7 +163,7 @@ struct qtjambi_jobject_sequential_container_cast<forward,\
                                                                     cast_var_args<Args...>::relatedNativeID(args...),\
                                                                     ref_ptr<is_pointer, NativeType_c>::ref(in),\
                                                                     CloneContainer<TYPE,T, is_pointer && !is_const>::function,\
-                                                                    DeleteContainer<TYPE,T>::function,\
+                                                                    &QtJambiAPI::deletePointer<TYPE<T>>,\
                                                                     LISTTYPE(TYPE)\
                                                                     SUPERTYPE##Access<T>::newInstance()\
                                                                     );\
@@ -302,44 +303,34 @@ struct qtjambi_shared_pointer_associative_container_cast;
 #define QTJAMBI_CONTAINER2_CASTER(TYPE)\
 template<bool forward, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,\
          typename K, typename T, typename... Args>\
-    struct qtjambi_jobject_associative_container_cast<forward,\
-                                                      TYPE, is_pointer, is_const, is_reference, is_rvalue,\
-                                                      K, T, Args...>{\
-        typedef TYPE<K,T> NativeType;\
-        typedef std::conditional_t<is_const, std::add_const_t<NativeType>, NativeType> NativeType_c;\
-        typedef std::conditional_t<is_reference, std::conditional_t<is_rvalue, std::add_rvalue_reference_t<NativeType_c>, std::add_lvalue_reference_t<NativeType_c>>, NativeType_c> NativeType_cr;\
-        typedef std::conditional_t<is_pointer, std::add_pointer_t<NativeType_c>, NativeType_cr> NativeType_in;\
-        typedef std::conditional_t<is_pointer, std::add_pointer_t<NativeType_c>, NativeType_cr> NativeType_out;\
-        typedef std::conditional_t<forward, NativeType_in, jobject> In;\
-        typedef std::conditional_t<forward, jobject, NativeType_out> Out;\
-    \
-        static Out cast(In in, Args... args){\
-            auto env = cast_var_args<Args...>::env(args...);\
-            if constexpr(forward){\
-                Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasJNIEnv, "Cannot cast to jobject without JNIEnv.");\
-                return  QtJambiAPI::convert##TYPE##ToJavaObject(env,\
-                                                                cast_var_args<Args...>::relatedNativeID(args...),\
-                                                                ref_ptr<is_pointer, NativeType_c>::ref(in),\
-                                                                CloneAssociativeContainer<TYPE,K,T, is_pointer && !is_const>::function,\
-                                                                DeleteAssociativeContainer<TYPE,K,T>::function,\
-                                                                TYPE##Access<K,T>::newInstance()\
-                                                               );\
+struct qtjambi_jobject_associative_container_cast<forward,\
+                                                  TYPE, is_pointer, is_const, is_reference, is_rvalue,\
+                                                  K, T, Args...>{\
+    typedef TYPE<K,T> NativeType;\
+    typedef std::conditional_t<is_const, std::add_const_t<NativeType>, NativeType> NativeType_c;\
+    typedef std::conditional_t<is_reference, std::conditional_t<is_rvalue, std::add_rvalue_reference_t<NativeType_c>, std::add_lvalue_reference_t<NativeType_c>>, NativeType_c> NativeType_cr;\
+    typedef std::conditional_t<is_pointer, std::add_pointer_t<NativeType_c>, NativeType_cr> NativeType_in;\
+    typedef std::conditional_t<is_pointer, std::add_pointer_t<NativeType_c>, NativeType_cr> NativeType_out;\
+    typedef std::conditional_t<forward, NativeType_in, jobject> In;\
+    typedef std::conditional_t<forward, jobject, NativeType_out> Out;\
+\
+    static Out cast(In in, Args... args){\
+        auto env = cast_var_args<Args...>::env(args...);\
+        if constexpr(forward){\
+            Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasJNIEnv, "Cannot cast to jobject without JNIEnv.");\
+            return  QtJambiAPI::convert##TYPE##ToJavaObject(env,\
+                                                            cast_var_args<Args...>::relatedNativeID(args...),\
+                                                            ref_ptr<is_pointer, NativeType_c>::ref(in),\
+                                                            CloneAssociativeContainer<TYPE,K,T, is_pointer && !is_const>::function,\
+                                                            QtJambiAPI::deletePointer<TYPE<K,T>>,\
+                                                            TYPE##Access<K,T>::newInstance()\
+                                                           );\
         }else{\
                 if constexpr(is_pointer || is_reference){\
                     NativeType* pointer{nullptr};\
                     if(in){\
                         if (!ContainerAPI::getAs##TYPE<K,T>(env, in, pointer)) {\
-                            if constexpr(!is_reference && !is_pointer){\
-                                NativeType result;\
-                                jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);\
-                                while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {\
-                                    jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);\
-                                    jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);\
-                                    jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);\
-                                    result.insert(qtjambi_cast_with_args<K>(key, std::forward<Args>(args)...), qtjambi_cast_with_args<T>(val, std::forward<Args>(args)...));\
-                            }\
-                                return result;\
-                        }else if constexpr(cast_var_args<Args...>::hasScope){\
+                            if constexpr(cast_var_args<Args...>::hasScope){\
                                 if(is_const){\
                                     pointer = create<NativeType>();\
                                     cast_var_args<Args...>::scope(args...).addDeletion(pointer);\
@@ -355,19 +346,17 @@ template<bool forward, bool is_pointer, bool is_const, bool is_reference, bool i
                                     jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);\
                                     pointer->insert(qtjambi_cast_with_args<K>(key, std::forward<Args>(args)...), qtjambi_cast_with_args<T>(val, std::forward<Args>(args)...));\
                             }\
-                        }else {\
-                                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? QtJambiAPI::getObjectClassName(env, in) : QStringLiteral("null"), QLatin1String(QtJambiAPI::typeName(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );\
                         }\
                     }\
                 }\
-                    return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(pointer, args...);\
+                return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(pointer, args...);\
             }else{\
                     if(!in)\
-                    return {};\
+                        return {};\
                     NativeType* pointer{nullptr};\
                     if (ContainerAPI::getAs##TYPE<K,T>(env, in, pointer)) {\
                         return *pointer;\
-                } else {\
+                    } else {\
                         NativeType map;\
                         jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);\
                         while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {\
@@ -376,7 +365,7 @@ template<bool forward, bool is_pointer, bool is_const, bool is_reference, bool i
                             jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);\
                             map.insert(qtjambi_cast_with_args<K>(key, std::forward<Args>(args)...), qtjambi_cast_with_args<T>(val, std::forward<Args>(args)...));\
                     }\
-                        return map;\
+                    return map;\
                 }\
             }\
         }\
@@ -387,61 +376,61 @@ template<bool forward, template<typename> class Pointer, bool p_is_pointer, bool
          bool c_is_const,\
          typename K, bool k_is_pointer, bool k_is_const, bool k_is_reference,\
          typename T, bool t_is_pointer, bool t_is_const, bool t_is_reference, typename... Args>\
-    struct qtjambi_shared_pointer_associative_container_cast<forward,\
-                                                             Pointer, p_is_pointer, p_is_const, p_is_reference, p_is_rvalue,\
-                                                             TYPE, c_is_const,\
-                                                             K, k_is_pointer, k_is_const, k_is_reference,\
-                                                             T, t_is_pointer, t_is_const, t_is_reference, Args...>{\
-        typedef std::conditional_t<k_is_pointer, std::add_pointer_t<K>, K> K_ptr;\
-        typedef std::conditional_t<k_is_const, std::add_const_t<K_ptr>, K_ptr> K_const;\
-        typedef std::conditional_t<k_is_reference, std::add_lvalue_reference_t<K_const>, K_const> K_content;\
-        typedef std::conditional_t<t_is_pointer, std::add_pointer_t<T>, T> T_ptr;\
-        typedef std::conditional_t<t_is_const, std::add_const_t<T_ptr>, T_ptr> T_const;\
-        typedef std::conditional_t<t_is_reference, std::add_lvalue_reference_t<T_const>, T_const> T_content;\
-        typedef TYPE<K_content,T_content> Container;\
-        typedef std::conditional_t<c_is_const, std::add_const_t<Container>, Container> C_content;\
-        typedef Pointer<C_content> NativeType;\
-        typedef std::conditional_t<p_is_const, std::add_const_t<NativeType>, NativeType> NativeType_c;\
-    \
-        typedef std::conditional_t<p_is_reference, std::conditional_t<p_is_rvalue, std::add_rvalue_reference_t<NativeType_c>, std::add_lvalue_reference_t<NativeType_c>>, NativeType_c> NativeType_cr;\
-        typedef std::conditional_t<p_is_pointer, std::add_pointer_t<NativeType_c>, NativeType_cr> NativeType_in;\
-        typedef std::conditional_t<p_is_pointer, std::add_pointer_t<NativeType_c>, std::conditional_t<p_is_reference, std::add_lvalue_reference_t<NativeType_c>, NativeType_c>> NativeType_out;\
-        typedef std::conditional_t<forward, NativeType_in, jobject> In;\
-        typedef std::conditional_t<forward, jobject, NativeType_out> Out;\
-    \
-        static Out cast(In in, Args... args){\
-            auto env = cast_var_args<Args...>::env(args...);\
-            if constexpr(forward){\
-                return QtJambiAPI::convert##TYPE##ToJavaObject(env,\
-                                                               *reinterpret_cast<const Pointer<char>*>(&deref_ptr<p_is_pointer, NativeType_c>::deref(in)),\
-                                                               TYPE##Access<K_content,T_content>::newInstance()\
-                                                               );\
+struct qtjambi_shared_pointer_associative_container_cast<forward,\
+                                                         Pointer, p_is_pointer, p_is_const, p_is_reference, p_is_rvalue,\
+                                                         TYPE, c_is_const,\
+                                                         K, k_is_pointer, k_is_const, k_is_reference,\
+                                                         T, t_is_pointer, t_is_const, t_is_reference, Args...>{\
+    typedef std::conditional_t<k_is_pointer, std::add_pointer_t<K>, K> K_ptr;\
+    typedef std::conditional_t<k_is_const, std::add_const_t<K_ptr>, K_ptr> K_const;\
+    typedef std::conditional_t<k_is_reference, std::add_lvalue_reference_t<K_const>, K_const> K_content;\
+    typedef std::conditional_t<t_is_pointer, std::add_pointer_t<T>, T> T_ptr;\
+    typedef std::conditional_t<t_is_const, std::add_const_t<T_ptr>, T_ptr> T_const;\
+    typedef std::conditional_t<t_is_reference, std::add_lvalue_reference_t<T_const>, T_const> T_content;\
+    typedef TYPE<K_content,T_content> Container;\
+    typedef std::conditional_t<c_is_const, std::add_const_t<Container>, Container> C_content;\
+    typedef Pointer<C_content> NativeType;\
+    typedef std::conditional_t<p_is_const, std::add_const_t<NativeType>, NativeType> NativeType_c;\
+\
+    typedef std::conditional_t<p_is_reference, std::conditional_t<p_is_rvalue, std::add_rvalue_reference_t<NativeType_c>, std::add_lvalue_reference_t<NativeType_c>>, NativeType_c> NativeType_cr;\
+    typedef std::conditional_t<p_is_pointer, std::add_pointer_t<NativeType_c>, NativeType_cr> NativeType_in;\
+    typedef std::conditional_t<p_is_pointer, std::add_pointer_t<NativeType_c>, std::conditional_t<p_is_reference, std::add_lvalue_reference_t<NativeType_c>, NativeType_c>> NativeType_out;\
+    typedef std::conditional_t<forward, NativeType_in, jobject> In;\
+    typedef std::conditional_t<forward, jobject, NativeType_out> Out;\
+\
+    static Out cast(In in, Args... args){\
+        auto env = cast_var_args<Args...>::env(args...);\
+        if constexpr(forward){\
+            return QtJambiAPI::convert##TYPE##ToJavaObject(env,\
+                                                           *reinterpret_cast<const Pointer<char>*>(&deref_ptr<p_is_pointer, NativeType_c>::deref(in)),\
+                                                           TYPE##Access<K_content,T_content>::newInstance()\
+                                                           );\
         }else{\
-                if (!in)\
+            if (!in)\
                 return pointer_ref_or_clone_decider<p_is_pointer, p_is_const, p_is_reference, NativeType, Args...>::convert(nullptr, args...);\
-                if (ContainerAPI::test##TYPE<K_content,T_content>(env, in)) {\
-                    NativeType pointer = QtJambiAPI::convertJavaObjectToSmartPointer<Pointer,C_content>(env, in);\
-                    return pointer_ref_or_clone_decider<p_is_pointer, p_is_const, p_is_reference, NativeType, Args...>::convert(std::move(pointer), args...);\
+            if (ContainerAPI::test##TYPE<K_content,T_content>(env, in)) {\
+                NativeType pointer = QtJambiAPI::convertJavaObjectToSmartPointer<Pointer,C_content>(env, in);\
+                return pointer_ref_or_clone_decider<p_is_pointer, p_is_const, p_is_reference, NativeType, Args...>::convert(std::move(pointer), args...);\
             } else {\
-                    typedef IntermediateAssociativeContainer<TYPE,K_content,T_content,Args...> IContainer;\
-                    NativeType pointer;\
-                    Container* map;\
-                    if(c_is_const){\
-                        map = create<Container>();\
-                        pointer.reset(map);\
+                typedef IntermediateAssociativeContainer<TYPE,K_content,T_content,Args...> IContainer;\
+                NativeType pointer;\
+                Container* map;\
+                if(c_is_const){\
+                    map = create<Container>();\
+                    pointer.reset(map);\
                 }else{\
-                        IContainer* imap = create<IContainer>(in, args...);\
-                        map = imap;\
-                        pointer = Pointer<IContainer>(imap);\
+                    IContainer* imap = create<IContainer>(in, args...);\
+                    map = imap;\
+                    pointer = Pointer<IContainer>(imap);\
                 }\
-                    jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);\
-                    while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {\
-                        jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);\
-                        jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);\
-                        jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);\
-                        map->insert(qtjambi_cast_with_args<K_content>(key, std::forward<Args>(args)...), qtjambi_cast_with_args<T_content>(val, std::forward<Args>(args)...));\
+                jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);\
+                while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {\
+                    jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);\
+                    jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);\
+                    jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);\
+                    map->insert(qtjambi_cast_with_args<K_content>(key, std::forward<Args>(args)...), qtjambi_cast_with_args<T_content>(val, std::forward<Args>(args)...));\
                 }\
-                    return pointer_ref_or_clone_decider<p_is_pointer, p_is_const, p_is_reference, NativeType, Args...>::convert(std::move(pointer), args...);\
+                return pointer_ref_or_clone_decider<p_is_pointer, p_is_const, p_is_reference, NativeType, Args...>::convert(std::move(pointer), args...);\
             }\
         }\
     }\

@@ -770,19 +770,23 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QSet,
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QSequentialIterator,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;Lio/qt/QtObject;)
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Lio/qt/QtConstructInPlace;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QAssociativeIterator,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;Lio/qt/QtObject;)
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Lio/qt/QtConstructInPlace;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QSequentialConstIterator,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;Lio/qt/QtObject;)
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Lio/qt/QtConstructInPlace;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QAssociativeConstIterator,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;Lio/qt/QtObject;)
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Lio/qt/QtConstructInPlace;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt/core,QByteArray)
@@ -824,7 +828,97 @@ QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt/core,QObject)
                                     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;Lio/qt/QtObject;)
                                     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Lio/qt/QtObject$QPrivateConstructor;Lio/qt/core/QList;)
                                     )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QConstSpan$ConstIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QSpan$Iterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QConstSpan$ConstReverseIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QSpan$ReverseIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
 #endif
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QList$ConstIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QList$Iterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QList$ConstReverseIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QList$ReverseIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QSet$ConstIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QSet$Iterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMap$ConstIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMap$Iterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QHash$ConstIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QHash$Iterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMultiMap$ConstIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMultiMap$Iterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMultiHash$ConstIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMultiHash$Iterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMap$ConstKeyValueIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMap$KeyValueIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QHash$ConstKeyValueIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QHash$KeyValueIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMultiMap$ConstKeyValueIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMultiMap$KeyValueIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMultiHash$ConstKeyValueIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMultiHash$KeyValueIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMap$KeyIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QHash$KeyIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMultiMap$KeyIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QMultiHash$KeyIterator,
+                                    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+                                    )
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFunctionPointer,)
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFunctionPointerUtil,
                                      QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(createProxy,(Ljava/lang/Class;)Lio/qt/QtObjectInterface;)
@@ -963,6 +1057,10 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,ArithmeticException,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,UnsupportedOperationException,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)
 )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,NoSuchElementException,
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)
+                                )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,ClassCastException,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)

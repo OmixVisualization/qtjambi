@@ -43,6 +43,36 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
 	static {
     	QtJambi_LibraryUtilities.initialize();
     }
+    
+    /**
+     * <p>Java wrapper for Qt class <code>QSet::const_iterator</code></p>
+     */
+    public static final class ConstIterator<T> extends io.qt.core.QSequentialConstIterator<T,QSet<T>>
+    {
+        static {
+            QtJambi_LibraryUtilities.initialize();
+        }
+        
+        /**
+         * Creates and returns a copy of this object.
+         */
+        @Override
+        public final @NonNull ConstIterator<T> clone(){
+            return new ConstIterator<>(this);
+        }
+
+        public ConstIterator(ConstIterator<T> other){
+            super(other);
+        }
+
+        /**
+         * Constructor for internal use only.
+         * @param p expected to be <code>null</code>.
+         * @hidden
+         */
+        @NativeAccess
+        private ConstIterator(QPrivateConstructor p) { super(p); } 
+    }
 
     /**
      * Constructor for internal use only.
@@ -62,7 +92,9 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
 	public QSet(@Nullable Class<T> elementType) {
 		super(null);
 		QMetaType metaType = QMetaType.fromType(elementType);
-		initialize(elementType, QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
+		initialize(elementType, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(metaType, "Argument 'metaType': null not expected.")), 
+				null);
 	}
 	
     /**
@@ -81,8 +113,23 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
      */
 	public QSet(@StrictNonNull QMetaType metaType) {
 		super(null);
-		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
+		initialize(null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(metaType, "Argument 'metaType': null not expected.")),
+				null);
 	}
+    
+    /**
+     * Creating a container with given content.
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#QSet">QSet::<wbr>QSet(InputIterator,InputIterator)</a></code></p>
+     * @param begin
+     * @param end
+     */
+	public <Container extends QtObjectInterface, InputIterator extends QSequentialConstIterator<T,Container>> QSet(@StrictNonNull InputIterator begin, @StrictNonNull InputIterator end) {
+    	super(null);
+    	Objects.requireNonNull(begin, "Argument 'begin': null not expected.");
+    	Objects.requireNonNull(end, "Argument 'end': null not expected.");
+    	initialize(QtJambi_LibraryUtilities.internal.nativeId(begin), QtJambi_LibraryUtilities.internal.nativeId(end));
+    }
     
     /**
      * Creating a container with given content.
@@ -92,16 +139,36 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
     public QSet(@StrictNonNull Collection<? extends T> other) {
         super(null);
 		QMetaType metaType = QList.findElementMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
-		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
+		initialize(null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(metaType, "Argument 'metaType': null not expected.")),
+				other);
     }
     
-    private QSet(QMetaType metaType, Collection<? extends T> other) {
+    /**
+     * Creating a container with given content.
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#QSet">QSet::<wbr>QSet(const QSet&lt;T> &amp;)</a></code></p>
+     * @param other container
+     */
+    public QSet(@StrictNonNull Iterable<? extends T> other) {
         super(null);
-		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
+		QMetaType metaType = QList.findElementMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
+		initialize(null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(metaType, "Argument 'metaType': null not expected.")),
+				other);
+    }
+    
+    private QSet(QMetaType metaType, Iterable<? extends T> other) {
+        super(null);
+		initialize(null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(metaType, "Argument 'metaType': null not expected.")),
+				other);
     }
     
     @QtUninvokable
-    private native void initialize(Class<?> elementType, long elementMetaType, Collection<? extends T> other);
+    private native void initialize(Class<?> elementType, long elementMetaType, Iterable<? extends T> other);
+
+    @QtUninvokable
+    private native void initialize(long begin, long end);
     
     /**
      * Creates and returns a copy of this object.
@@ -112,16 +179,36 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
 	}
     
     /**
-     * Provides a constant C++ iterator to the containers begin.
+     * Provides a constant C++ iterator to the container's begin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#begin">QSet::begin()const</a></code></p>
+     * @return begin
+     */
+    @QtUninvokable
+    public final @NonNull ConstIterator<T> begin()    {
+        return constBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+    
+    /**
+     * Provides a constant C++ iterator to the container's begin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#cbegin">QSet::cbegin()const</a></code></p>
+     * @return begin
+     */
+    @QtUninvokable
+    public final @NonNull ConstIterator<T> cbegin()    {
+        return constBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+    
+    /**
+     * Provides a constant C++ iterator to the container's begin.
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#constBegin">QSet::constBegin()const</a></code></p>
      * @return begin
      */
     @QtUninvokable
-    protected final @NonNull QSequentialConstIterator<T> constBegin()    {
+    public final @NonNull ConstIterator<T> constBegin()    {
         return constBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private native QSequentialConstIterator<T> constBegin(long __this__nativeId);
+    private native ConstIterator<T> constBegin(long __this__nativeId);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#capacity">QSet::<wbr>capacity()const</a></code></p>
@@ -173,16 +260,36 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
     }
 
     /**
-     * Provides a constant C++ iterator to the containers end.
+     * Provides a constant C++ iterator to the container's end.
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#end">QSet::end()const</a></code></p>
+     * @return end
+     */
+    @QtUninvokable
+    public final @NonNull ConstIterator<T> end()    {
+        return constEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+
+    /**
+     * Provides a constant C++ iterator to the container's end.
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#cend">QSet::cend()const</a></code></p>
+     * @return end
+     */
+    @QtUninvokable
+    public final @NonNull ConstIterator<T> cend()    {
+        return constEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+
+    /**
+     * Provides a constant C++ iterator to the container's end.
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#constEnd">QSet::constEnd()const</a></code></p>
      * @return end
      */
     @QtUninvokable
-    protected final @NonNull QSequentialConstIterator<T> constEnd()    {
+    public final @NonNull ConstIterator<T> constEnd()    {
         return constEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private native QSequentialConstIterator<T> constEnd(long __this__nativeId);
+    private native ConstIterator<T> constEnd(long __this__nativeId);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#insert">QSet::<wbr>insert(T)</a></code></p>
@@ -257,7 +364,7 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
         Objects.requireNonNull(predicate, "Argument 'predicate': null not expected.");
         boolean removed = false;
         QSet<T> clone = clone();
-        final Iterator<T> each = clone.iterator();
+        final java.util.Iterator<T> each = clone.iterator();
         while (each.hasNext()) {
         	T value = each.next();
             if (predicate.test(value)) {
@@ -430,7 +537,7 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
     private native void readFrom(long __this__nativeId, long stream);
     
     @io.qt.QtUninvokable
-    final QMetaType elementMetaType() {
+    public final QMetaType elementMetaType() {
     	return elementMetaType(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @io.qt.QtUninvokable

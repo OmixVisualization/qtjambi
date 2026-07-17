@@ -80,7 +80,7 @@ class Parser {
         bool parseCastExpression(ExpressionAST *&node);
         bool parseClassSpecifier(TypeSpecifierAST *&node);
         bool parseForwardDeclarationSpecifier(TypeSpecifierAST *&node);
-        bool parseCommaExpression(ExpressionAST *&node, bool templArgs = false);
+        bool parseCommaExpression(ExpressionAST *&node, bool templArgs = false, char closingExptected = 0);
         bool parseCompoundStatement(StatementAST *&node);
         bool parseCondition(ConditionAST *&node, bool initRequired = true);
         bool parseConditionalExpression(ExpressionAST *&node, bool templArgs = false);

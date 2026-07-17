@@ -31,6 +31,7 @@
 #define QTJAMBI_CAST_TEMPLATE1_H
 
 #include "qtjambi_cast.h"
+#include "qtjambiapi.h"
 
 QT_WARNING_DISABLE_GCC("-Wstrict-aliasing")
 QT_WARNING_DISABLE_DEPRECATED
@@ -218,8 +219,7 @@ template<bool forward,
          template<typename T> class Future, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
          typename T, typename... Args>
 constexpr auto qtjambi_jobject_future_cast_decider(){
-    constexpr bool hasCastImpl = is_complete_v<qtjambi_jobject_future_cast<forward,Future,is_pointer,is_const,is_reference,is_rvalue,T,Args...>>;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/FutureCast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/FutureCast, is_complete_v<qtjambi_jobject_future_cast<forward,Future,is_pointer,is_const,is_reference,is_rvalue,T,Args...>>);
     return qtjambi_jobject_future_cast<forward,Future,is_pointer,is_const,is_reference,is_rvalue,T,Args...>{};
 };
 
@@ -285,8 +285,7 @@ struct qtjambi_smart_pointer_cast;
 
 template<bool forward, class JniType, template<typename> class Pointer, bool p_is_pointer, bool p_is_const, bool p_is_reference, bool p_is_rvalue, typename T, typename... Args>
 static constexpr auto find_qtjambi_smart_pointer_cast() {
-    constexpr bool hasCastImpl = is_complete_v< qtjambi_smart_pointer_cast<forward, JniType, Pointer, p_is_pointer, p_is_const, p_is_reference, p_is_rvalue, T, Args...> >;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/SmartPointerCast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/SmartPointerCast, is_complete_v< qtjambi_smart_pointer_cast<forward, JniType, Pointer, p_is_pointer, p_is_const, p_is_reference, p_is_rvalue, T, Args...> >);
     return qtjambi_smart_pointer_cast<forward, JniType, Pointer, p_is_pointer, p_is_const, p_is_reference, p_is_rvalue, T, Args...>{};
 }
 
@@ -490,8 +489,7 @@ struct qtjambi_jobject_initializer_list_cast;
 
 template<bool forward, typename JniType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename T, typename... Args>
 constexpr auto qtjambi_jobject_initializer_list_cast_decider(){
-    constexpr bool hasCastImpl = is_complete_v<qtjambi_jobject_initializer_list_cast<forward, JniType, is_pointer, is_const, is_reference, is_rvalue, T, Args...>>;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/ArrayCast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/ArrayCast, is_complete_v<qtjambi_jobject_initializer_list_cast<forward, JniType, is_pointer, is_const, is_reference, is_rvalue, T, Args...>>);
     return qtjambi_jobject_initializer_list_cast<forward, JniType, is_pointer, is_const, is_reference, is_rvalue, T, Args...>{};
 };
 
@@ -513,8 +511,7 @@ template<bool forward,
          template<typename T> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
          typename T, typename... Args>
 static constexpr auto find_qtjambi_jobject_sequential_container_cast() {
-    constexpr bool hasCastImpl = is_complete_v< qtjambi_jobject_sequential_container_cast<forward, NativeType, is_pointer, is_const, is_reference, is_rvalue, T, Args...> >;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/ContainerCast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/ContainerCast, is_complete_v< qtjambi_jobject_sequential_container_cast<forward, NativeType, is_pointer, is_const, is_reference, is_rvalue, T, Args...> >);
     return qtjambi_jobject_sequential_container_cast<forward, NativeType, is_pointer, is_const, is_reference, is_rvalue, T, Args...>{};
 }
 

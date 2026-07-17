@@ -29,27 +29,10 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.NavigableSet;
-import java.util.Objects;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.function.BiPredicate;
-import java.util.function.Predicate;
+import java.util.*;
+import java.util.function.*;
 
-import io.qt.NativeAccess;
-import io.qt.NonNull;
-import io.qt.Nullable;
-import io.qt.QNoImplementationException;
-import io.qt.QNoNativeResourcesException;
-import io.qt.QtUninvokable;
-import io.qt.StrictNonNull;
+import io.qt.*;
 
 /**
  * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qmultimap.html">QMultiMap</a></code></p>
@@ -59,7 +42,185 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	static {
     	QtJambi_LibraryUtilities.initialize();
     }
+    
+    /**
+     * <p>Java wrapper for Qt class <code>QMap::iterator</code></p>
+     */
+    public static final class Iterator<Key,T> extends QAssociativeIterator<Key,T,QMultiMap<Key,T>>
+    {
+        static {
+            QtJambi_LibraryUtilities.initialize();
+        }
+        
+        /**
+         * Creates and returns a copy of this object.
+         */
+        @Override
+        public final @NonNull Iterator<Key,T> clone(){
+            return new Iterator<>(this);
+        }
 
+        public Iterator(Iterator<Key,T> other){
+            super(other);
+        }
+
+        /**
+         * Constructor for internal use only.
+         * @param p expected to be <code>null</code>.
+         * @hidden
+         */
+        @NativeAccess
+        private Iterator(QPrivateConstructor p) { super(p); } 
+    }
+    
+    /**
+     * <p>Java wrapper for Qt class <code>QMap::const_iterator</code></p>
+     */
+    public static final class ConstIterator<Key,T> extends QAssociativeConstIterator<Key,T,QMultiMap<Key,T>>
+    {
+        static {
+            QtJambi_LibraryUtilities.initialize();
+        }
+        
+        /**
+         * Creates and returns a copy of this object.
+         */
+        @Override
+        public final @NonNull ConstIterator<Key,T> clone(){
+            return new ConstIterator<>(this);
+        }
+
+        public ConstIterator(ConstIterator<Key,T> other){
+            super(other);
+        }
+        
+        public ConstIterator(Iterator<Key,T> other){
+            super(other);
+        }
+
+        /**
+         * Constructor for internal use only.
+         * @param p expected to be <code>null</code>.
+         * @hidden
+         */
+        @NativeAccess
+        private ConstIterator(QPrivateConstructor p) { super(p); } 
+    }
+    
+    /**
+     * <p>Java wrapper for Qt class <code>QMap::key_iterator</code></p>
+     */
+    public static final class KeyIterator<Key> extends QSequentialConstIterator<Key,QMultiMap<Key,?>>
+    {
+        static {
+            QtJambi_LibraryUtilities.initialize();
+        }
+        
+        /**
+         * Creates and returns a copy of this object.
+         */
+        @Override
+        public final @NonNull KeyIterator<Key> clone(){
+            return new KeyIterator<>(this);
+        }
+
+        public KeyIterator(KeyIterator<Key> other){
+            super(other);
+        }
+
+        public <T> KeyIterator(ConstIterator<Key,T> other){
+        	super(other, false);
+        }
+
+        public <T> KeyIterator(Iterator<Key,T> other){
+            super(other);
+        }
+
+        /**
+         * Constructor for internal use only.
+         * @param p expected to be <code>null</code>.
+         * @hidden
+         */
+        @NativeAccess
+        private KeyIterator(QPrivateConstructor p) { super(p); } 
+    }
+    
+    /**
+     * <p>Java wrapper for Qt class <code>QMap::key_value_iterator</code></p>
+     */
+    public static final class KeyValueIterator<Key,T> extends QSequentialPairIterator<Key,T,QMultiMap<Key,T>>
+    {
+        static {
+            QtJambi_LibraryUtilities.initialize();
+        }
+        
+        /**
+         * Creates and returns a copy of this object.
+         */
+        @Override
+        public final @NonNull KeyValueIterator<Key,T> clone(){
+            return new KeyValueIterator<>(this);
+        }
+
+        public KeyValueIterator(KeyValueIterator<Key,T> other){
+            super(other);
+        }
+
+        public KeyValueIterator(Iterator<Key,T> other){
+            super(other);
+        }
+
+        /**
+         * Constructor for internal use only.
+         * @param p expected to be <code>null</code>.
+         * @hidden
+         */
+        @NativeAccess
+        private KeyValueIterator(QPrivateConstructor p) { super(p); } 
+    }
+    
+    /**
+     * <p>Java wrapper for Qt class <code>QMap::const_key_value_iterator</code></p>
+     */
+    public static final class ConstKeyValueIterator<Key,T> extends QSequentialConstPairIterator<Key,T,QMultiMap<Key,T>>
+    {
+        static {
+            QtJambi_LibraryUtilities.initialize();
+        }
+        
+        /**
+         * Creates and returns a copy of this object.
+         */
+        @Override
+        public final @NonNull ConstKeyValueIterator<Key,T> clone(){
+            return new ConstKeyValueIterator<>(this);
+        }
+
+        public ConstKeyValueIterator(ConstKeyValueIterator<Key,T> other){
+            super(other);
+        }
+        
+        public ConstKeyValueIterator(KeyValueIterator<Key,T> other){
+            super(other);
+        }
+
+        public ConstKeyValueIterator(ConstIterator<Key,T> other){
+            super(other);
+        }
+        
+        public ConstKeyValueIterator(Iterator<Key,T> other){
+            super(other);
+        }
+
+        /**
+         * Constructor for internal use only.
+         * @param p expected to be <code>null</code>.
+         * @hidden
+         */
+        @NativeAccess
+        private ConstKeyValueIterator(QPrivateConstructor p) { super(p); } 
+    }
+    
     /**
      * Constructor for internal use only.
      * @param p expected to be <code>null</code>.
@@ -130,7 +291,9 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 		super(null);
 		QMetaType keyMetaType = QMetaType.fromType(keyType);
 		QMetaType valueMetaType = QMetaType.fromType(valueType);
-		initialize(keyType, QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueType, QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
+		initialize(keyType, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(keyMetaType),
+				valueType, QtJambi_LibraryUtilities.internal.checkedNativeId(valueMetaType), null);
 	}
     
     /**
@@ -144,7 +307,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 			initialize(null, 0, null, 0, other);
 		}else {
 			QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(Objects.requireNonNull(other, "Argument 'other': null not expected."));
-			initialize(metaTypes.first.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.first), metaTypes.second.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.second), other);
+			initialize(metaTypes.first.javaType(), QtJambi_LibraryUtilities.internal.checkedNativeId(metaTypes.first), metaTypes.second.javaType(), QtJambi_LibraryUtilities.internal.checkedNativeId(metaTypes.second), other);
 		}
 	}
     
@@ -157,7 +320,11 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	public QMultiMap(Class<Key> keyType, QMetaType valueMetaType) {
 		super(null);
 		QMetaType keyMetaType = QMetaType.fromType(keyType);
-		initialize(keyType, QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
+		initialize(keyType, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(keyMetaType),
+				null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(valueMetaType, "Argument 'valueMetaType': null not expected.")), 
+				null);
 	}
     
     /**
@@ -169,7 +336,10 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	public QMultiMap(QMetaType keyMetaType, Class<T> valueType) {
 		super(null);
 		QMetaType valueMetaType = QMetaType.fromType(valueType);
-		initialize(keyMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
+		initialize(null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(keyMetaType, "Argument 'keyMetaType': null not expected.")),
+				null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(valueMetaType), null);
 	}
     
     /**
@@ -180,11 +350,31 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      */
 	public QMultiMap(QMetaType keyMetaType, QMetaType valueMetaType) {
 		super(null);
-		initialize(keyMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
+		initialize(null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(keyMetaType, "Argument 'keyMetaType': null not expected.")),
+				null, 
+				QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(valueMetaType, "Argument 'valueMetaType': null not expected.")), 
+				null);
 	}
+	
+    /**
+     * Creating a container with given content.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#QMultiMap">QMultiMap::<wbr>QMultiMap(InputIterator,InputIterator)</code></a></p>
+     * @param begin
+     * @param end
+     */
+	public <Container extends QtObjectInterface, InputIterator extends QAssociativeConstIterator<Key,T,Container>> QMultiMap(@StrictNonNull InputIterator begin, @StrictNonNull InputIterator end) {
+    	super(null);
+    	Objects.requireNonNull(begin, "Argument 'begin': null not expected.");
+    	Objects.requireNonNull(end, "Argument 'end': null not expected.");
+    	initialize(QtJambi_LibraryUtilities.internal.nativeId(begin), QtJambi_LibraryUtilities.internal.nativeId(end));
+    }
     
     @QtUninvokable
     private native void initialize(Class<?> keyType, long keyMetaType, Class<?> valueType, long valueMetaType, Map<?,?> other);
+
+    @QtUninvokable
+    private native void initialize(long begin, long end);
     
     /**
      * Creates and returns a copy of this object.
@@ -199,7 +389,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#clear">QMultiMap::<wbr>clear()</a></code></p>
      */
     @QtUninvokable
-    public final void clear()    {
+    public final void clear() {
     	clear(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -209,7 +399,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#contains">QMultiMap::<wbr>contains(Key)const</a></code></p>
      */
     @QtUninvokable
-    public final boolean contains(Key key)    {
+    public final boolean contains(Key key) {
         try{
         	return contains(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
@@ -225,7 +415,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#count-1">QMultiMap::<wbr>count()const</a></code></p>
      */
     @QtUninvokable
-    public final int count()    {
+    public final int count() {
         return size();
     }
 
@@ -233,7 +423,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#count">QMultiMap::<wbr>count(Key)const</a></code></p>
      */
     @QtUninvokable
-    public final int count(Key key)    {
+    public final int count(Key key) {
         try{
         	return count(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
@@ -246,59 +436,96 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
     private native int count(long __this__nativeId, Key key);
     
     /**
-     * Provides a mutable C++ iterator to the containers begin.
+     * Provides a mutable C++ iterator to the container's begin.
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#begin">QMultiMap::<wbr>begin()</a></code></p>
      * @return begin
      */
 	@QtUninvokable
-    protected final io.qt.core.QAssociativeIterator<Key,T> begin()    {
+	public final @NonNull Iterator<Key,T> begin() {
         return begin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 	@QtUninvokable
-    private native io.qt.core.QAssociativeIterator<Key,T> begin(long __this__nativeId);
+    private native Iterator<Key,T> begin(long __this__nativeId);
 
     /**
-     * Provides a mutable C++ iterator to the containers end.
+     * Provides a mutable C++ iterator to the container's end.
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#end">QMultiMap::<wbr>end()</a></code></p>
      * @return end
      */
     @QtUninvokable
-    protected final io.qt.core.QAssociativeIterator<Key,T> end()    {
+    public final @NonNull Iterator<Key,T> end() {
         return end(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private native io.qt.core.QAssociativeIterator<Key,T> end(long __this__nativeId);
+    private native Iterator<Key,T> end(long __this__nativeId);
     
     /**
-     * Provides a constant C++ iterator to the containers begin.
+     * Provides a constant C++ iterator to the container's begin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#cbegin">QMultiMap::<wbr>cbegin()const</a></code></p>
+     * @return begin
+     */
+	@QtUninvokable
+	public final @NonNull ConstIterator<Key,T> cbegin() {
+		return constBegin();
+	}
+    
+    /**
+     * Provides a constant C++ iterator to the container's begin.
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#constBegin">QMultiMap::<wbr>constBegin()const</a></code></p>
      * @return begin
      */
 	@QtUninvokable
-    protected final io.qt.core.QAssociativeConstIterator<Key,T> constBegin()    {
+	public final @NonNull ConstIterator<Key,T> constBegin() {
         return constBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 	@QtUninvokable
-    private native io.qt.core.QAssociativeConstIterator<Key,T> constBegin(long __this__nativeId);
+    private native ConstIterator<Key,T> constBegin(long __this__nativeId);
 
     /**
-     * Provides a constant C++ iterator to the containers end.
+     * Provides a constant C++ iterator to the container's end.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#cend">QMultiMap::<wbr>cend()const</a></code></p>
+     * @return end
+     */
+    @QtUninvokable
+    public final @NonNull ConstIterator<Key,T> cend() {
+    	return constEnd();
+    }
+
+    /**
+     * Provides a constant C++ iterator to the container's end.
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#constEnd">QMultiMap::<wbr>constEnd()const</a></code></p>
      * @return end
      */
     @QtUninvokable
-    protected final io.qt.core.QAssociativeConstIterator<Key,T> constEnd()    {
+    public final @NonNull ConstIterator<Key,T> constEnd() {
         return constEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
-    private native io.qt.core.QAssociativeConstIterator<Key,T> constEnd(long __this__nativeId);
+    private native ConstIterator<Key,T> constEnd(long __this__nativeId);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#find">QMultiMap::<wbr>find(Key)const</a></code></p>
      * @return iterator
      */
     @QtUninvokable
-    public final io.qt.core.QAssociativeConstIterator<Key,T> find(Key key)    {
+    public final @NonNull ConstIterator<Key,T> constFind(Key key) {
+        try{
+        	return constFind(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QSet.handleException(e, keyMetaType(), key);
+        }
+    }
+    @QtUninvokable
+    private native ConstIterator<Key,T> constFind(long __this__nativeId, Key key);
+
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#find">QMultiMap::<wbr>find(Key)</a></code></p>
+     * @return iterator
+     */
+    @QtUninvokable
+    public final @NonNull Iterator<Key,T> find(Key key) {
         try{
         	return find(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
@@ -308,13 +535,13 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
         }
     }
     @QtUninvokable
-    private native io.qt.core.QAssociativeConstIterator<Key,T> find(long __this__nativeId, Key key);
+    private native Iterator<Key,T> find(long __this__nativeId, Key key);
 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#first-1">QMultiMap::<wbr>first()const</a></code></p>
      */
     @QtUninvokable
-    public final T first()    {
+    public final T first() {
         return first(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -324,7 +551,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#firstKey">QMultiMap::<wbr>firstKey()const</a></code></p>
      */
     @QtUninvokable
-    public final Key firstKey()    {
+    public final Key firstKey() {
         return firstKey(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -334,7 +561,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#insert">QMultiMap::<wbr>insert(Key,T)</a></code></p>
      */
     @QtUninvokable
-    public final void insert(Key key, T value)    {
+    public final void insert(Key key, T value) {
         try{
         	insert(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
@@ -350,7 +577,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#isEmpty">QMultiMap::<wbr>isEmpty()const</a></code></p>
      */
     @QtUninvokable
-    public final boolean isEmpty()    {
+    public final boolean isEmpty() {
         return size()==0;
     }
 
@@ -366,7 +593,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#key">QMultiMap::<wbr>key(T,Key)const</a></code></p>
      */
     @QtUninvokable
-    public final Key key(T value, Key defaultKey)    {
+    public final Key key(T value, Key defaultKey) {
         try{
         	return key(QtJambi_LibraryUtilities.internal.nativeId(this), value, defaultKey);
     	}catch(QNoNativeResourcesException e) {
@@ -384,7 +611,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	 * @return list of keys
 	 */
     @QtUninvokable
-    public final QList<Key> keys()    {
+    public final QList<Key> keys() {
         return keys(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -394,7 +621,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#keys-1">QMultiMap::<wbr>keys(T)const</a></code></p>
 	 */
     @QtUninvokable
-    public final QList<Key> keys(T value)    {
+    public final QList<Key> keys(T value) {
         try{
         	return keysForValue(QtJambi_LibraryUtilities.internal.nativeId(this), value);
     	}catch(QNoNativeResourcesException e) {
@@ -410,7 +637,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#last-1">QMultiMap::<wbr>last()const</a></code></p>
 	 */
     @QtUninvokable
-    public final T last()    {
+    public final T last() {
         return last(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -420,7 +647,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#lastKey">QMultiMap::<wbr>lastKey()const</a></code></p>
 	 */
     @QtUninvokable
-    public final Key lastKey()    {
+    public final Key lastKey() {
         return lastKey(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -430,9 +657,9 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#lowerBound">QMultiMap::<wbr>lowerBound(Key)const</a></code></p>
 	 */
     @QtUninvokable
-    public final io.qt.core.QAssociativeConstIterator<Key,T> lowerBound(Key key)    {
+    public final @NonNull ConstIterator<Key,T> constLowerBound(Key key) {
         try{
-        	return lowerBound(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+        	return constLowerBound(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
@@ -440,13 +667,13 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
         }
     }
     @QtUninvokable
-    private native io.qt.core.QAssociativeConstIterator<Key,T> lowerBound(long __this__nativeId, Key key);
+    private native ConstIterator<Key,T> constLowerBound(long __this__nativeId, Key key);
 
 	/**
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#removeIf">QMultiMap::<wbr>removeIf(Predicate)</a></code></p>
 	 */
     @QtUninvokable
-    public final int removeIf(Predicate<Key> predicate)    {
+    public final int removeIf(Predicate<Key> predicate) {
     	List<Key> keys = new ArrayList<>();
     	final long nativeId = QtJambi_LibraryUtilities.internal.nativeId(this);
     	for(Key key : keys(nativeId)) {
@@ -464,10 +691,10 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#removeIf">QMultiMap::<wbr>removeIf(Predicate)</a></code></p>
 	 */
     @QtUninvokable
-    public final int removeIf(BiPredicate<Key,T> predicate)    {
+    public final int removeIf(BiPredicate<Key,T> predicate) {
     	List<QPair<Key,T>> pairs = new ArrayList<>();
     	final long nativeId = QtJambi_LibraryUtilities.internal.nativeId(this);
-    	for(QPair<Key,T> pair : constBegin(nativeId)) {
+    	for(QPair<Key,T> pair : constKeyValueBegin(nativeId)) {
     		if(predicate.test(pair.first, pair.second))
     			pairs.add(pair);
     	}
@@ -482,7 +709,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#remove">QMultiMap::<wbr>remove(Key)</a></code></p>
 	 */
     @QtUninvokable
-    public final int removeAll(Object key)    {
+    public final int removeAll(Object key) {
         try{
         	return remove(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
@@ -503,7 +730,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#size">QMultiMap::size()const</a></code></p>
 	 */
     @QtUninvokable
-    public final int size()    {
+    public final int size() {
         return size(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -513,7 +740,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#take">QMultiMap::<wbr>take(Key)</a></code></p>
 	 */
     @QtUninvokable
-    public final T take(Key key)    {
+    public final T take(Key key) {
     	try {
     		return take(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
@@ -529,7 +756,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#uniqueKeys">QMultiMap::<wbr>uniqueKeys()const</a></code></p>
 	 */
     @QtUninvokable
-    public final QList<Key> uniqueKeys()    {
+    public final QList<Key> uniqueKeys() {
         return uniqueKeys(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -539,7 +766,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#unite-1">QMultiMap::<wbr>unite(const QMap&lt;Key, T> &amp;)const</a></code></p>
 	 */
     @QtUninvokable
-    public final void unite(QMap<? super Key,? super T> other)    {
+    public final void unite(QMap<? super Key,? super T> other) {
         unite(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
 
@@ -547,7 +774,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#unite">QMultiMap::<wbr>unite(const QMultiMap&lt;Key, T> &amp;)const</a></code></p>
 	 */
     @QtUninvokable
-    public final void unite(java.util.Map<? super Key,? extends java.util.Collection<? super T>> other)    {
+    public final void unite(java.util.Map<? super Key,? extends java.util.Collection<? super T>> other) {
         unite(QtJambi_LibraryUtilities.internal.nativeId(this), other);
     }
     @QtUninvokable
@@ -557,11 +784,43 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#upperBound">QMultiMap::<wbr>upperBound(Key)const</a></code></p>
 	 */
     @QtUninvokable
-    public final io.qt.core.QAssociativeConstIterator<Key,T> upperBound(Key key)    {
-        return upperBound(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+    public final @NonNull ConstIterator<Key,T> constUpperBound(Key key) {
+        return constUpperBound(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     }
     @QtUninvokable
-    private native io.qt.core.QAssociativeConstIterator<Key,T> upperBound(long __this__nativeId, Key key);
+    private native ConstIterator<Key,T> constUpperBound(long __this__nativeId, Key key);
+
+	/**
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#upperBound">QMultiMap::<wbr>upperBound(Key)</a></code></p>
+	 */
+    @QtUninvokable
+    public final @NonNull Iterator<Key,T> upperBound(Key key) {
+        try{
+        	return upperBound(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QSet.handleException(e, keyMetaType(), key);
+        }
+    }
+    @QtUninvokable
+    private native Iterator<Key,T> upperBound(long __this__nativeId, Key key);
+
+	/**
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#lowerBound">QMultiMap::<wbr>lowerBound(Key)</a></code></p>
+	 */
+    @QtUninvokable
+    public final @NonNull Iterator<Key,T> lowerBound(Key key) {
+        try{
+        	return lowerBound(QtJambi_LibraryUtilities.internal.nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QSet.handleException(e, keyMetaType(), key);
+        }
+    }
+    @QtUninvokable
+    private native Iterator<Key,T> lowerBound(long __this__nativeId, Key key);
 
 	/**
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#value">QMultiMap::<wbr>value(Key)const</a></code></p>
@@ -575,7 +834,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#value">QMultiMap::<wbr>value(Key,T)const</a></code></p>
 	 */
     @QtUninvokable
-    public final T value(Key key, T defaultValue)    {
+    public final T value(Key key, T defaultValue) {
         try{
         	return value(QtJambi_LibraryUtilities.internal.nativeId(this), key, defaultValue);
     	}catch(QNoNativeResourcesException e) {
@@ -606,7 +865,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#values">QMultiMap::<wbr>values()const</a></code></p>
 	 */
     @QtUninvokable
-    public final QList<T> listOfValues()    {
+    public final QList<T> listOfValues() {
         return values(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -616,7 +875,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#values-1">QMultiMap::<wbr>values(Key)const</a></code></p>
 	 */
     @QtUninvokable
-    public final QList<T> values(Key key)    {
+    public final QList<T> values(Key key) {
         try{
         	return valuesKey(QtJambi_LibraryUtilities.internal.nativeId(this), key);
     	}catch(QNoNativeResourcesException e) {
@@ -632,7 +891,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#contains-1">QMultiMap::<wbr>contains(Key,T)const</a></code></p>
 	 */
     @QtUninvokable
-    public final boolean contains(Key key, T value)    {
+    public final boolean contains(Key key, T value) {
         try{
         	return contains(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
@@ -648,7 +907,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#count-1">QMultiMap::<wbr>count(Key,T)const</a></code></p>
 	 */
     @QtUninvokable
-    public final int count(Key key, T value)    {
+    public final int count(Key key, T value) {
         try{
         	return count(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
@@ -664,7 +923,23 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#find-2">QMultiMap::<wbr>find(Key,T)const</a></code></p>
 	 */
     @QtUninvokable
-    public final io.qt.core.QAssociativeConstIterator<Key,T> find(Key key, T value)    {
+    public final @NonNull ConstIterator<Key,T> constFind(Key key, T value) {
+        try{
+        	return constFind(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, value);
+        }
+    }
+    @QtUninvokable
+    private static native <Key,T> ConstIterator<Key,T> constFind(long __this__nativeId, Key key, T value);
+
+	/**
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#find-2">QMultiMap::<wbr>find(Key,T)</a></code></p>
+	 */
+    @QtUninvokable
+    public final @NonNull Iterator<Key,T> find(Key key, T value) {
         try{
         	return find(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
@@ -674,13 +949,13 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
         }
     }
     @QtUninvokable
-    private static native <Key,T> io.qt.core.QAssociativeConstIterator<Key,T> find(long __this__nativeId, Key key, T value);
+    private static native <Key,T> Iterator<Key,T> find(long __this__nativeId, Key key, T value);
     
 	/**
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#remove-1">QMultiMap::<wbr>remove(Key,T)</a></code></p>
 	 */
     @QtUninvokable
-    public final int removeAll(Key key, T value)    {
+    public final int removeAll(Key key, T value) {
     	try{
     		return remove(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
@@ -696,7 +971,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#replace">QMultiMap::<wbr>replace(Key,T)</a></code></p>
 	 */
     @QtUninvokable
-    public final void replaceOne(Key key, T value)    {
+    public final void replaceOne(Key key, T value) {
         try{
         	replace(QtJambi_LibraryUtilities.internal.nativeId(this), key, value);
     	}catch(QNoNativeResourcesException e) {
@@ -894,14 +1169,14 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
     private native void readFrom(long __this__nativeId, long stream);
     
     @io.qt.QtUninvokable
-    final QMetaType keyMetaType() {
+    public final QMetaType keyMetaType() {
     	return keyMetaType(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @io.qt.QtUninvokable
     private native QMetaType keyMetaType(long __this_nativeId);
     
     @io.qt.QtUninvokable
-    final QMetaType valueMetaType() {
+    public final QMetaType valueMetaType() {
     	return valueMetaType(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @io.qt.QtUninvokable
@@ -2181,24 +2456,24 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
     @Override
     @QtUninvokable
 	public final Entry<Key, List<T>> lowerEntry(Key key) {
-    	QAssociativeConstIterator<Key,T> iterator = find(key);
+    	ConstIterator<Key,T> iterator = constFind(key);
 		if(iterator.isValid()) {
 			if(iterator.equals(constBegin()))
 				return null;
 	    	if(!iterator.equals(constEnd()))
-	    		iterator.decrement();
+	    		iterator.advance(-1);
 		}else {
-			iterator = lowerBound(key);
-			if(!iterator.isValid())
-				return null;
+			iterator = constLowerBound(key);
 		}
+		if(!iterator.isValid())
+			return null;
 		List<T> values = new ArrayList<>();
-		Key _key = iterator.checkedKey();
+		Key _key = iterator.key();
 		Comparator<? super Key> comparator = comparator();
-		for(; comparator.compare(_key, iterator.checkedKey())==0 && !iterator.equals(constEnd()); iterator.increment()) {
-			values.add(iterator.checkedValue());
+		for(; comparator.compare(_key, iterator.key())==0 && !iterator.equals(constEnd()); iterator.advance()) {
+			values.add(iterator.value());
 		}
-		return new AbstractMap.SimpleImmutableEntry<>(iterator.checkedKey(), values);
+		return new AbstractMap.SimpleImmutableEntry<>(iterator.key(), values);
 	}
 
     /**
@@ -2209,18 +2484,18 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	@Override
     @QtUninvokable
 	public final Key lowerKey(Key key) {
-    	QAssociativeConstIterator<Key,T> iterator = find(key);
+    	ConstIterator<Key,T> iterator = constFind(key);
 		if(iterator.isValid()) {
 			if(iterator.equals(constBegin()))
 				return null;
 	    	if(!iterator.equals(constEnd()))
-	    		iterator.decrement();
+	    		iterator.advance(-1);
 		}else {
-			iterator = lowerBound(key);
-			if(!iterator.isValid())
-				return null;
+			iterator = constLowerBound(key);
 		}
-    	return iterator.checkedKey();
+		if(!iterator.isValid())
+			return null;
+    	return iterator.key();
 	}
 
     /**
@@ -2232,11 +2507,11 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	@Override
     @QtUninvokable
 	public final Entry<Key, List<T>> floorEntry(Key key) {
-		QAssociativeConstIterator<Key,T> iterator = lowerBound(key);
+		ConstIterator<Key,T> iterator = constLowerBound(key);
     	if(!iterator.isValid())
     		return null;
     	else {
-    		Key lb = iterator.checkedKey();
+    		Key lb = iterator.key();
     		return new AbstractMap.SimpleImmutableEntry<>(lb, values(lb));
     	}
 	}
@@ -2249,7 +2524,11 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	@Override
     @QtUninvokable
 	public final Key floorKey(Key key) {
-    	return lowerBound(key).key().orElse(null);
+		ConstIterator<Key,T> iterator = constLowerBound(key);
+    	if(!iterator.isValid())
+    		return null;
+    	else
+    		return iterator.key();
 	}
 
     /**
@@ -2261,12 +2540,12 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	@Override
     @QtUninvokable
 	public final Entry<Key, List<T>> ceilingEntry(Key key) {
-		QAssociativeConstIterator<Key, T> iterator = find(key);
+		ConstIterator<Key, T> iterator = constFind(key);
 		if(!iterator.isValid())
-			iterator = upperBound(key);
+			iterator = constUpperBound(key);
     	if(!iterator.isValid())
     		return null;
-		Key lb = iterator.checkedKey();
+		Key lb = iterator.key();
 		return new AbstractMap.SimpleImmutableEntry<>(lb, values(lb));
 	}
 
@@ -2278,10 +2557,12 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	@Override
     @QtUninvokable
 	public final Key ceilingKey(Key key) {
-		QAssociativeConstIterator<Key, T> iterator = find(key);
+		ConstIterator<Key, T> iterator = constFind(key);
 		if(!iterator.isValid())
-			iterator = upperBound(key);
-		return iterator.key().orElse(null);
+			iterator = constUpperBound(key);
+    	if(!iterator.isValid())
+    		return null;
+		return iterator.key();
 	}
 
     /**
@@ -2293,11 +2574,11 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	@Override
     @QtUninvokable
 	public final Entry<Key, List<T>> higherEntry(Key key) {
-		QAssociativeConstIterator<Key,T> iterator = upperBound(key);
+		ConstIterator<Key,T> iterator = constUpperBound(key);
     	if(!iterator.isValid())
     		return null;
     	else {
-    		Key lb = iterator.checkedKey();
+    		Key lb = iterator.key();
     		return new AbstractMap.SimpleImmutableEntry<>(lb, values(lb));
     	}
 	}
@@ -2310,7 +2591,11 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	@Override
     @QtUninvokable
 	public final Key higherKey(Key key) {
-		return upperBound(key).key().orElse(null);
+		ConstIterator<Key,T> iterator = constUpperBound(key);
+    	if(!iterator.isValid())
+    		return null;
+    	else
+    		return iterator.key();
 	}
 
     /**
@@ -2321,11 +2606,11 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	@Override
     @QtUninvokable
 	public final Entry<Key, List<T>> firstEntry() {
-		if(isEmpty())
+		ConstIterator<Key,T> iterator = constBegin();
+		if(!iterator.isValid())
 			return null;
 		else {
-			QAssociativeConstIterator<Key,T> iterator = constBegin();
-			Key lb = iterator.checkedKey();
+			Key lb = iterator.key();
     		return new AbstractMap.SimpleImmutableEntry<>(lb, values(lb));
 		}
 	}
@@ -2341,9 +2626,11 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 		if(isEmpty())
 			return null;
 		else {
-			QAssociativeConstIterator<Key,T> iterator = constEnd();
-			iterator.decrement();
-			Key lb = iterator.checkedKey();
+			ConstIterator<Key,T> iterator = constEnd();
+			iterator.advance(-1);
+			if(!iterator.isValid())
+				return null;
+			Key lb = iterator.key();
     		return new AbstractMap.SimpleImmutableEntry<>(lb, values(lb));
 		}
 	}
@@ -2428,17 +2715,17 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	public final QMultiMap<Key,T> subMap(Key fromKey, boolean fromInclusive, Key toKey, boolean toInclusive) {
 		QMultiMap<Key,T> map = this.clone();
 		map.clear();
-		QAssociativeConstIterator<Key,T> k2 = lowerBound(toKey);
+		ConstIterator<Key,T> k2 = constLowerBound(toKey);
 		if(k2.isValid()) {
-			QAssociativeConstIterator<Key,T> k1 = lowerBound(fromKey);
+			ConstIterator<Key,T> k1 = constLowerBound(fromKey);
 			if(!fromInclusive) {
-				k1.increment();
+				k1.advance();
 			}
-			for(; !k1.equals(k2); k1.increment()) {
-				map.insert(k1.checkedKey(), k1.checkedValue());
+			for(; !k1.equals(k2); k1.advance()) {
+				map.insert(k1.key(), k1.value());
 			}
 			if(toInclusive) {
-				map.insert(k2.checkedKey(), k2.checkedValue());
+				map.insert(k2.key(), k2.value());
 			}
 		}
 		return map;
@@ -2451,15 +2738,15 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	@Override
     @QtUninvokable
     public final QMultiMap<Key,T> headMap(Key toKey, boolean inclusive) {
-		QAssociativeConstIterator<Key,T> k = lowerBound(toKey);
+		ConstIterator<Key,T> k = constLowerBound(toKey);
 		QMultiMap<Key,T> map = this.clone();
 		map.clear();
 		if(k.isValid()) {
-			for(QAssociativeConstIterator<Key,T> iterator = constBegin(); !iterator.equals(k); iterator.increment()) {
-				map.insert(iterator.checkedKey(), iterator.checkedValue());
+			for(ConstIterator<Key,T> iterator = constBegin(); !iterator.equals(k); iterator.advance()) {
+				map.insert(iterator.key(), iterator.value());
 			}
 			if(inclusive) {
-				map.insert(k.checkedKey(), k.checkedValue());
+				map.insert(k.key(), k.value());
 			}
 		}
 		return map;
@@ -2472,16 +2759,16 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	@Override
     @QtUninvokable
 	public final QMultiMap<Key,T> tailMap(Key fromKey, boolean inclusive) {
-		QAssociativeConstIterator<Key,T> k = lowerBound(fromKey);
-		QAssociativeConstIterator<Key,T> end = constEnd();
+		ConstIterator<Key,T> k = constLowerBound(fromKey);
+		ConstIterator<Key,T> end = constEnd();
 		QMultiMap<Key,T> map = this.clone();
 		map.clear();
 		if(!k.equals(end)) {
 			if(!inclusive) {
-				k.increment();
+				k.advance();
 			}
-			for(;!k.equals(end); k.increment()) {
-				map.insert(k.checkedKey(), k.checkedValue());
+			for(;!k.equals(end); k.advance()) {
+				map.insert(k.key(), k.value());
 			}
 		}
 		return map;
@@ -2536,4 +2823,76 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	}
 	@QtUninvokable
     private native boolean detach(long __this__nativeId);
+    
+    /**
+     * Provides a mutable C++ iterator to the container's keyValueBegin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#keyValueBegin">QMultiMap::<wbr>keyValueBegin()</a></code></p>
+     * @return keyValueBegin
+     */
+	@QtUninvokable
+	public final @NonNull KeyValueIterator<Key,T> keyValueBegin() {
+        return keyValueBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+    @QtUninvokable
+    private native KeyValueIterator<Key,T> keyValueBegin(long __this__nativeId);
+
+    /**
+     * Provides a mutable C++ iterator to the container's keyValueEnd.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#keyValueEnd">QMultiMap::<wbr>keyValueEnd()</a></code></p>
+     * @return keyValueEnd
+     */
+    @QtUninvokable
+    public final @NonNull KeyValueIterator<Key,T> keyValueEnd() {
+        return keyValueEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+    @QtUninvokable
+    private native KeyValueIterator<Key,T> keyValueEnd(long __this__nativeId);
+    
+    /**
+     * Provides a constant C++ iterator to the container's constKeyValueBegin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#constKeyValueBegin">QMultiMap::<wbr>constKeyValueBegin()const</a></code></p>
+     * @return constKeyValueBegin
+     */
+	@QtUninvokable
+    public final @NonNull ConstKeyValueIterator<Key,T> constKeyValueBegin() {
+        return constKeyValueBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+    @QtUninvokable
+    private native ConstKeyValueIterator<Key,T> constKeyValueBegin(long __this__nativeId);
+
+    /**
+     * Provides a constant C++ iterator to the container's constKeyValueEnd.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#constEnd">QMultiMap::<wbr>constKeyValueEnd()const</a></code></p>
+     * @return constKeyValueEnd
+     */
+    @QtUninvokable
+    public final @NonNull ConstKeyValueIterator<Key,T> constKeyValueEnd() {
+        return constKeyValueEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+    @QtUninvokable
+    private native ConstKeyValueIterator<Key,T> constKeyValueEnd(long __this__nativeId);
+    
+    /**
+     * Provides a mutable C++ iterator to the container's keyBegin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#keyBegin">QMultiMap::<wbr>keyBegin()const</a></code></p>
+     * @return keyBegin
+     */
+	@QtUninvokable
+	public final @NonNull KeyIterator<Key> keyBegin() {
+        return keyBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+    @QtUninvokable
+    private native KeyIterator<Key> keyBegin(long __this__nativeId);
+
+    /**
+     * Provides a mutable C++ iterator to the container's keyEnd.
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#keyEnd">QMultiMap::<wbr>keyEnd()const</a></code></p>
+     * @return keyEnd
+     */
+    @QtUninvokable
+    public final @NonNull KeyIterator<Key> keyEnd() {
+        return keyEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
+    }
+    @QtUninvokable
+    private native KeyIterator<Key> keyEnd(long __this__nativeId);
 }

@@ -1,5 +1,7 @@
 package io.qt.autotests;
 
+import static io.qt.autotests.generated.ContainerFactory.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +9,6 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.autotests.generated.Tulip;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QList;
 import io.qt.core.QObject;
@@ -37,7 +38,7 @@ public class TestContainerPerformance extends ApplicationInitializer{
 				list.append(object);
 			}
 			long t2 = System.currentTimeMillis();
-			Tulip.consumeIntList(list);
+			consumeIntList(list);
 			long t3 = System.currentTimeMillis();
 			list.dispose();
 			tdiff1 = t2 - t1;
@@ -52,7 +53,7 @@ public class TestContainerPerformance extends ApplicationInitializer{
 				jlist.add(object);
 			}
 			long t2 = System.currentTimeMillis();
-			Tulip.consumeIntList(jlist);
+			consumeIntList(jlist);
 			long t3 = System.currentTimeMillis();
 			tdiff2 = t2 - t1;
 			tdiffc2 = t3 - t2;
@@ -61,7 +62,7 @@ public class TestContainerPerformance extends ApplicationInitializer{
 		System.out.println("fill ArrayList<Integer> performance: "+tdiff2+"ms");
 		System.out.println("consume QList<int> performance: "+tdiffc1+"ms");
 		System.out.println("consume ArrayList<Integer> performance: "+tdiffc2+"ms");
-//		System.out.println("native QList<int> performance: "+Tulip.fillIntList(CAPACITY)+"ms");
+//		System.out.println("native QList<int> performance: "+fillIntList(CAPACITY)+"ms");
 		System.out.println();
 	}
 	
@@ -79,7 +80,7 @@ public class TestContainerPerformance extends ApplicationInitializer{
 				list.append(object);
 			}
 			long t2 = System.currentTimeMillis();
-			Tulip.consumeStringList(list);
+			consumeStringList(list);
 			long t3 = System.currentTimeMillis();
 			list.dispose();
 			tdiff1 = t2 - t1;
@@ -95,7 +96,7 @@ public class TestContainerPerformance extends ApplicationInitializer{
 			}
 //			QList<String> list = new QList<>(jlist);
 			long t2 = System.currentTimeMillis();
-			Tulip.consumeStringList(jlist);
+			consumeStringList(jlist);
 			long t3 = System.currentTimeMillis();
 //			list.dispose();
 			tdiff2 = t2 - t1;
@@ -153,7 +154,7 @@ public class TestContainerPerformance extends ApplicationInitializer{
 				list.append(object);
 			}
 			long t2 = System.currentTimeMillis();
-			Tulip.consumeQObjectList(list);
+			consumeQObjectList(list);
 			long t3 = System.currentTimeMillis();
 			list.dispose();
 			tdiff1 = t2 - t1;
@@ -169,7 +170,7 @@ public class TestContainerPerformance extends ApplicationInitializer{
 			}
 //			QList<Integer> list = new QList<>(jlist);
 			long t2 = System.currentTimeMillis();
-			Tulip.consumeQObjectList(jlist);
+			consumeQObjectList(jlist);
 			long t3 = System.currentTimeMillis();
 //			list.dispose();
 			tdiff2 = t2 - t1;

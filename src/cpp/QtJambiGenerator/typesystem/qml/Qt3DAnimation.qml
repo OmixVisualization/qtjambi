@@ -140,23 +140,15 @@ TypeSystem{
         Rejection{functionName: "cend"}
         Rejection{functionName: "crbegin"}
         Rejection{functionName: "crend"}
-        ModifyFunction{
-            signature: "begin() const"
-            access: Modification.Protected
-        }
-        ModifyFunction{
-            signature: "end() const"
-            access: Modification.Protected
-        }
-
         IteratorType{
             name: "iterator"
-            isConst: true
+            javaName: "QAnimationClipData$Iterator"
+            isConst: false
         }
 
         IteratorType{
             name: "const_iterator"
-            isConst: true
+            javaName: "QAnimationClipData$ConstIterator"
         }
     }
     
@@ -281,17 +273,9 @@ TypeSystem{
         Rejection{functionName: "cend"}
         Rejection{functionName: "crbegin"}
         Rejection{functionName: "crend"}
-        ModifyFunction{
-            signature: "begin() const"
-            access: Modification.Protected
-        }
-        ModifyFunction{
-            signature: "end() const"
-            access: Modification.Protected
-        }
-
         IteratorType{
             name: "const_iterator"
+            javaName: "QChannel$ConstIterator"
         }
     }
     
@@ -304,18 +288,9 @@ TypeSystem{
         Rejection{functionName: "cend"}
         Rejection{functionName: "crbegin"}
         Rejection{functionName: "crend"}
-
         IteratorType{
             name: "const_iterator"
-        }
-
-        ModifyFunction{
-            signature: "begin() const"
-            access: Modification.Protected
-        }
-        ModifyFunction{
-            signature: "end() const"
-            access: Modification.Protected
+            javaName: "QChannelComponent$ConstIterator"
         }
         ModifyFunction{
             signature: "insertKeyFrame(int,Qt3DAnimation::QKeyFrame)"

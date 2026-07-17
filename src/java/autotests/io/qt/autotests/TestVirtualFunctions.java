@@ -44,15 +44,19 @@ import io.qt.autotests.generated.AbstractClass;
 import io.qt.autotests.generated.AnotherNonAbstractSubclass;
 import io.qt.autotests.generated.FunctionalTest;
 import io.qt.autotests.generated.SetupLayout;
+import io.qt.autotests.generated.SpinBoxHandler;
 import io.qt.autotests.generated.TestInterfaceObject;
 import io.qt.core.QObject;
 import io.qt.core.QRect;
 import io.qt.core.QSize;
+import io.qt.core.QString;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QImage;
 import io.qt.gui.QPaintDevice;
 import io.qt.gui.QPaintEngine;
 import io.qt.gui.QPainter;
+import io.qt.gui.QValidator;
+import io.qt.widgets.QDoubleSpinBox;
 import io.qt.widgets.QLayoutItem;
 import io.qt.widgets.QProxyStyle;
 import io.qt.widgets.QPushButton;
@@ -458,6 +462,60 @@ public class TestVirtualFunctions extends ApplicationInitializer {
     @Test
     public void testOverriddenAbstract() {
     	new Style();
+    }
+
+    static class MySpinBox extends QDoubleSpinBox {
+
+        public String receivedString;
+        public int receivedPos;
+
+        @Override
+        public void fixup(QString input) {
+            receivedString = input.toString();
+            input.assign("As aught of ");
+            input.append(receivedString.substring(2, 8));
+            input.append(" birth");
+        }
+
+        @Override
+        public QValidator.State validate(QValidator.QValidationData data)
+        {
+            receivedString = data.string;
+            receivedPos = data.position;
+
+            data.string = "The " + data.string.substring(9, 13) + " where Death has set his seal";
+            data.position += 13;
+
+            return QValidator.State.Acceptable;
+        }
+
+
+    }
+
+    @Test 
+    public void testVirtualCallToFixup() {
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
+        MySpinBox spinBox = new MySpinBox();
+        SpinBoxHandler handler = new SpinBoxHandler();
+
+        handler.tryFixup(spinBox, "Immortal love, forever full");
+
+        assertEquals("Immortal love, forever full", spinBox.receivedString);
+        assertEquals("As aught of mortal birth", handler.my_returned_string());
+    }
+
+    @Test 
+    public void testVirtualCallToValidate() {
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
+        MySpinBox spinBox = new MySpinBox();
+        SpinBoxHandler handler = new SpinBoxHandler();
+
+        handler.tryValidate(spinBox, "Immortal love, forever full", 15);
+        assertEquals("Immortal love, forever full", spinBox.receivedString);
+        assertEquals(15, spinBox.receivedPos);
+        assertEquals("The love where Death has set his seal", handler.my_returned_string());
+        assertEquals(28, handler.my_returned_pos());
+        assertEquals(QValidator.State.Acceptable, handler.my_returned_state());
     }
 
     public static void main(String args[]) {

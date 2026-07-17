@@ -376,12 +376,18 @@ class QHttpServer___ {
 
     @QtUninvokable
     public <A,B> QHttpServerRouterRule route(@NonNull String pathPattern, io.qt.core.QMetaObject.@NonNull Slot2<A,B> viewHandler) {
+        if(pathPattern!=null && viewHandler instanceof ResponderViewHandler) {
+            return router().addRule(createHttpServerRouterRule(pathPattern, createRouterHandler((ResponderViewHandler)viewHandler)));
+        }
         InvokableTypeInfo info = type(viewHandler, null);
         return route(pathPattern, viewHandler, info);
     }
 
     @QtUninvokable
     public <A,B,C> QHttpServerRouterRule route(@NonNull String pathPattern, io.qt.core.QMetaObject.@NonNull Slot3<A,B,C> viewHandler) {
+        if(pathPattern!=null && viewHandler instanceof GenericViewHandler) {
+            return router().addRule(createHttpServerRouterRule(pathPattern, createRouterHandler((GenericViewHandler)viewHandler)));
+        }
         InvokableTypeInfo info = type(viewHandler, null);
         return route(pathPattern, viewHandler, info);
     }
@@ -430,12 +436,18 @@ class QHttpServer___ {
 
     @QtUninvokable
     public <A,R> QHttpServerRouterRule route(@NonNull String pathPattern, io.qt.core.QMetaObject.@NonNull Method1<A,R> viewHandler) {
+        if(pathPattern!=null && viewHandler instanceof SimpleViewHandler<?>) {
+            return router().addRule(createHttpServerRouterRule(pathPattern, createRouterHandler((SimpleViewHandler<?>)viewHandler)));
+        }
         InvokableTypeInfo info = type(viewHandler, null);
         return route(pathPattern, viewHandler, info);
     }
 
     @QtUninvokable
     public <A,B,R> QHttpServerRouterRule route(@NonNull String pathPattern, io.qt.core.QMetaObject.@NonNull Method2<A,B,R> viewHandler) {
+        if(pathPattern!=null && viewHandler instanceof RequestViewHandler<?>) {
+            return router().addRule(createHttpServerRouterRule(pathPattern, createRouterHandler((RequestViewHandler<?>)viewHandler)));
+        }
         InvokableTypeInfo info = type(viewHandler, null);
         return route(pathPattern, viewHandler, info);
     }
@@ -496,12 +508,18 @@ class QHttpServer___ {
 
     @QtUninvokable
     public <A,B> QHttpServerRouterRule route(@NonNull String pathPattern, io.qt.core.@Nullable QObject context, io.qt.core.QMetaObject.@NonNull Slot2<A,B> viewHandler) {
+        if(pathPattern!=null && context!=null && viewHandler instanceof ResponderViewHandler) {
+            return router().addRule(createHttpServerRouterRule(pathPattern, createRouterHandler((ResponderViewHandler)viewHandler), context));
+        }
         InvokableTypeInfo info = type(viewHandler, context);
         return route(pathPattern, viewHandler, info);
     }
 
     @QtUninvokable
     public <A,B,C> QHttpServerRouterRule route(@NonNull String pathPattern, io.qt.core.@Nullable QObject context, io.qt.core.QMetaObject.@NonNull Slot3<A,B,C> viewHandler) {
+        if(context!=null && pathPattern!=null && viewHandler instanceof GenericViewHandler) {
+            return router().addRule(createHttpServerRouterRule(pathPattern, createRouterHandler((GenericViewHandler)viewHandler), context));
+        }
         InvokableTypeInfo info = type(viewHandler, context);
         return route(pathPattern, viewHandler, info);
     }
@@ -550,12 +568,18 @@ class QHttpServer___ {
 
     @QtUninvokable
     public <A,R> QHttpServerRouterRule route(@NonNull String pathPattern, io.qt.core.@Nullable QObject context, io.qt.core.QMetaObject.@NonNull Method1<A,R> viewHandler) {
+        if(context!=null && pathPattern!=null && viewHandler instanceof SimpleViewHandler<?>) {
+            return router().addRule(createHttpServerRouterRule(pathPattern, createRouterHandler((SimpleViewHandler<?>)viewHandler), context));
+        }
         InvokableTypeInfo info = type(viewHandler, context);
         return route(pathPattern, viewHandler, info);
     }
 
     @QtUninvokable
     public <A,B,R> QHttpServerRouterRule route(@NonNull String pathPattern, io.qt.core.@Nullable QObject context, io.qt.core.QMetaObject.@NonNull Method2<A,B,R> viewHandler) {
+        if(context!=null && pathPattern!=null && viewHandler instanceof RequestViewHandler<?>) {
+            return router().addRule(createHttpServerRouterRule(pathPattern, createRouterHandler((RequestViewHandler<?>)viewHandler), context));
+        }
         InvokableTypeInfo info = type(viewHandler, context);
         return route(pathPattern, viewHandler, info);
     }
@@ -616,12 +640,18 @@ class QHttpServer___ {
 
     @QtUninvokable
     public <A,B> QHttpServerRouterRule route(@NonNull String pathPattern, io.qt.httpserver.QHttpServerRequest.@NonNull Methods methods, io.qt.core.@Nullable QObject context, io.qt.core.QMetaObject.@NonNull Slot2<A,B> viewHandler) {
+        if(pathPattern!=null && methods!=null && context!=null && viewHandler instanceof ResponderViewHandler) {
+            return router().addRule(createHttpServerRouterRule(pathPattern, methods, createRouterHandler((ResponderViewHandler)viewHandler), context));
+        }
         InvokableTypeInfo info = type(viewHandler, context);
         return route(pathPattern, methods, viewHandler, info);
     }
 
     @QtUninvokable
     public <A,B,C> QHttpServerRouterRule route(@NonNull String pathPattern, io.qt.httpserver.QHttpServerRequest.@NonNull Methods methods, io.qt.core.@Nullable QObject context, io.qt.core.QMetaObject.@NonNull Slot3<A,B,C> viewHandler) {
+        if(methods!=null && context!=null && pathPattern!=null && viewHandler instanceof GenericViewHandler) {
+            return router().addRule(createHttpServerRouterRule(pathPattern, methods, createRouterHandler((GenericViewHandler)viewHandler), context));
+        }
         InvokableTypeInfo info = type(viewHandler, context);
         return route(pathPattern, methods, viewHandler, info);
     }
@@ -670,12 +700,18 @@ class QHttpServer___ {
 
     @QtUninvokable
     public <A,R> QHttpServerRouterRule route(@NonNull String pathPattern, io.qt.httpserver.QHttpServerRequest.@NonNull Methods methods, io.qt.core.@Nullable QObject context, io.qt.core.QMetaObject.@NonNull Method1<A,R> viewHandler) {
+        if(context!=null && methods!=null && pathPattern!=null && viewHandler instanceof SimpleViewHandler<?>) {
+            return router().addRule(createHttpServerRouterRule(pathPattern, methods, createRouterHandler((SimpleViewHandler<?>)viewHandler), context));
+        }
         InvokableTypeInfo info = type(viewHandler, context);
         return route(pathPattern, methods, viewHandler, info);
     }
 
     @QtUninvokable
     public <A,B,R> QHttpServerRouterRule route(@NonNull String pathPattern, io.qt.httpserver.QHttpServerRequest.@NonNull Methods methods, io.qt.core.@Nullable QObject context, io.qt.core.QMetaObject.@NonNull Method2<A,B,R> viewHandler) {
+        if(context!=null && methods!=null && pathPattern!=null && viewHandler instanceof RequestViewHandler<?>) {
+            return router().addRule(createHttpServerRouterRule(pathPattern, methods, createRouterHandler((RequestViewHandler<?>)viewHandler), context));
+        }
         InvokableTypeInfo info = type(viewHandler, context);
         return route(pathPattern, methods, viewHandler, info);
     }
@@ -736,12 +772,18 @@ class QHttpServer___ {
 
     @QtUninvokable
     public <A,B> QHttpServerRouterRule route(@NonNull String pathPattern, io.qt.httpserver.QHttpServerRequest.@NonNull Methods methods, io.qt.core.QMetaObject.@NonNull Slot2<A,B> viewHandler) {
+        if(pathPattern!=null && methods!=null && viewHandler instanceof ResponderViewHandler) {
+            return router().addRule(createHttpServerRouterRule(pathPattern, methods, createRouterHandler((ResponderViewHandler)viewHandler)));
+        }
         InvokableTypeInfo info = type(viewHandler, null);
         return route(pathPattern, methods, viewHandler, info);
     }
 
     @QtUninvokable
     public <A,B,C> QHttpServerRouterRule route(@NonNull String pathPattern, io.qt.httpserver.QHttpServerRequest.@NonNull Methods methods, io.qt.core.QMetaObject.@NonNull Slot3<A,B,C> viewHandler) {
+        if(methods!=null && pathPattern!=null && viewHandler instanceof GenericViewHandler) {
+            return router().addRule(createHttpServerRouterRule(pathPattern, methods, createRouterHandler((GenericViewHandler)viewHandler)));
+        }
         InvokableTypeInfo info = type(viewHandler, null);
         return route(pathPattern, methods, viewHandler, info);
     }
@@ -790,12 +832,18 @@ class QHttpServer___ {
 
     @QtUninvokable
     public <A,R> QHttpServerRouterRule route(@NonNull String pathPattern, io.qt.httpserver.QHttpServerRequest.@NonNull Methods methods, io.qt.core.QMetaObject.@NonNull Method1<A,R> viewHandler) {
+        if(methods!=null && pathPattern!=null && viewHandler instanceof SimpleViewHandler<?>) {
+            return router().addRule(createHttpServerRouterRule(pathPattern, methods, createRouterHandler((SimpleViewHandler<?>)viewHandler)));
+        }
         InvokableTypeInfo info = type(viewHandler, null);
         return route(pathPattern, methods, viewHandler, info);
     }
 
     @QtUninvokable
     public <A,B,R> QHttpServerRouterRule route(@NonNull String pathPattern, io.qt.httpserver.QHttpServerRequest.@NonNull Methods methods, io.qt.core.QMetaObject.@NonNull Method2<A,B,R> viewHandler) {
+        if(methods!=null && pathPattern!=null && viewHandler instanceof RequestViewHandler<?>) {
+            return router().addRule(createHttpServerRouterRule(pathPattern, methods, createRouterHandler((RequestViewHandler<?>)viewHandler)));
+        }
         InvokableTypeInfo info = type(viewHandler, null);
         return route(pathPattern, methods, viewHandler, info);
     }

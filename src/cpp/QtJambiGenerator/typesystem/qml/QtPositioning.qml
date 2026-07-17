@@ -391,24 +391,18 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = nullptr;\n"+
-                                  "if(%in){\n"+
-                                  "    %out = Java::QtPositioning::QNmeaPositionInfoSource$Result::newInstance(\n"+
-                                  "    %env, qtjambi_cast<jobject>(%env, %3), %4);\n"+
-                                  "}"}
+                    Text{content: String.raw`jobject %out = %in ? Java::QtPositioning::QNmeaPositionInfoSource$Result::newInstance(%env, qtjambi_cast<jobject>(%env, %3), %4) : nullptr;`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "bool %out = false;\n"+
-                                  "if(%in){\n"+
-                                  "    if(%3){\n"+
-                                  "        jobject __java_%3 = Java::QtPositioning::QNmeaPositionInfoSource$Result::info(%env, %in);\n"+
-                                  "        *%3 = qtjambi_cast<QGeoPositionInfo>(%env, __java_%3);\n"+
-                                  "    }\n"+
-                                  "    if(%4){\n"+
-                                  "        *%4 = Java::QtPositioning::QNmeaPositionInfoSource$Result::hasFix(%env, %in);\n"+
-                                  "    }\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        %out = %in;
+                        if(%out){
+                            if(%3)
+                                *%3 = qtjambi_cast<QGeoPositionInfo>(%env, Java::QtPositioning::QNmeaPositionInfoSource$Result::info(%env, %in));
+                            if(%4)
+                                *%4 = Java::QtPositioning::QNmeaPositionInfoSource$Result::hasFix(%env, %in);
+                        }`}
                 }
             }
             ModifyArgument{

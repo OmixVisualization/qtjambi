@@ -29,106 +29,137 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import org.junit.*;
 
-import org.junit.Assume;
-import org.junit.BeforeClass;
-
-import io.qt.QtUtilities;
-import io.qt.core.QByteArray;
-import io.qt.core.QCoreApplication;
-import io.qt.gui.QImage;
-import io.qt.gui.QImage.Format;
-import io.qt.gui.QImageReader;
+import io.qt.*;
+import io.qt.core.*;
+import io.qt.gui.*;
+import io.qt.gui.QImage.*;
 
 public class TestQImage extends ApplicationInitializer {
 	
+	private static Set<String> imageFormats = new TreeSet<>();
+	
 	@BeforeClass
     public static void testInitialize() throws Exception {
+		if(QtUtilities.isAvailableQtLibrary("Svg"))
+			QtUtilities.loadQtLibrary("Svg");
+		QList<QByteArray> list = QImageReader.supportedImageFormats();
+		for(QByteArray ba : list) {
+			imageFormats.add(ba.toString().toLowerCase());
+		}
     	ApplicationInitializer.testInitializeWithWidgets();
     }
+	
+	@Test
+	public void testSupportsPNGImageFormats() {
+		assertTrue("Qt unexpectedly does not support png", imageFormats.contains("png"));
+	}
+	
+	@Test
+	public void testSupportsGIFImageFormats() {
+		assertTrue("Qt unexpectedly does not support gif", imageFormats.contains("gif"));
+	}
+	
+	@Test
+	public void testSupportsJPGImageFormats() {
+		assertTrue("Qt unexpectedly does not support jpg", imageFormats.contains("jpg"));	// aka "jpeg"
+	}
+	
+	@Test
+	public void testSupportsICOImageFormats() {
+		assertTrue("Qt unexpectedly does not support ico", imageFormats.contains("ico"));
+	}
+	
+	@Test
+	public void testSupportsBMPImageFormats() {
+		assertTrue("Qt unexpectedly does not support bmp", imageFormats.contains("bmp"));
+	}
+	
+	@Test
+	public void testSupportsPBMImageFormats() {
+		assertTrue("Qt unexpectedly does not support pbm", imageFormats.contains("pbm"));
+	}
+	
+	@Test
+	public void testSupportsPGMImageFormats() {
+		assertTrue("Qt unexpectedly does not support pgm", imageFormats.contains("pgm"));
+	}
+	
+	@Test
+	public void testSupportsPPMImageFormats() {
+		assertTrue("Qt unexpectedly does not support ppm", imageFormats.contains("ppm"));
+	}
+	
+	@Test
+	public void testSupportsXBMImageFormats() {
+		assertTrue("Qt unexpectedly does not support xbm", imageFormats.contains("xbm"));
+	}
+	
+	@Test
+	public void testSupportsXPMImageFormats() {
+		assertTrue("Qt unexpectedly does not support xpm", imageFormats.contains("xpm"));
+	}
+	
+	@Test
+	public void testSupportsSVGImageFormats() {
+		Assume.assumeTrue("QtSvg unavailable", QtUtilities.isAvailableQtLibrary("Svg"));
+		assertTrue("Qt unexpectedly does not support svg", imageFormats.contains("svg"));
+	}
 
-	private QImage qimage32;
-	private QImage qimage64PNG;
-	private QImage sample;
-	private QImage mandelbrot;
-	private QImage blueAngleJPG;
-	private QImage anSVGImage;
-	private QImage anotherSVGImage;
-	private String qimage64Path = ":/qt-project.org/qmessagebox/images/qtlogo-64.png";
-	private String blueAngleJPGPath = ":io/qt/autotests/blue_angle_swirl.jpg";
-	private String anSVGImagePath = ":io/qt/autotests/Logo-ubuntu_cof-orange-hex.svg";
-	private String anotherSVGImagePath = ":io/qt/autotests/svg-cards.svg";
+	private final String qimage64Path = ":/qt-project.org/qmessagebox/images/qtlogo-64.png";
+	private final String blueAngleJPGPath = ":io/qt/autotests/blue_angle_swirl.jpg";
+	private final String anSVGImagePath = ":io/qt/autotests/Logo-ubuntu_cof-orange-hex.svg";
+	private final String anotherSVGImagePath = ":io/qt/autotests/svg-cards.svg";
+	private final String mandelbrotURL = ":io/qt/autotests/mandelbrot.png";
 	
-	@org.junit.BeforeClass
-	public static void init() {
-		// Diagnostic information to help locate trouble
-		QtUtilities.initializePackage("io.qt.svg");
-		String s;
-		s = QCoreApplication.applicationDirPath();
-		System.out.println("QCoreApplication.applicationDirPath()=" + s);
-		s = QCoreApplication.applicationFilePath();
-		System.out.println("QCoreApplication.applicationFilePath()=" + s);
-		List<String> libraryPathList = QCoreApplication.libraryPaths();
-		for(String libraryPathElement : libraryPathList)
-		    System.out.println("QCoreApplication.libraryPaths(): " + libraryPathElement);
-		// We should re-validate this "." as the choice of the current working directory of
-		//  the JUnitTest should not influence the results without good reason.
-		//QAbstractFileEngine.addSearchPathForResourceEngine(".");
-		System.out.println(QImageReader.supportedImageFormats());
-	}
-	
-	@org.junit.Before
-	public void setUp() throws Exception {
-		qimage32 = new QImage(":io/qt/autotests/svgcards-example.png");
-		qimage64PNG = new QImage();
-		sample = new QImage(3, 3, Format.Format_Indexed8);
-		mandelbrot = new QImage(":io/qt/autotests/mandelbrot.png");
-		blueAngleJPG = new QImage();
-		anSVGImage = new QImage();
-		anotherSVGImage = new QImage();
-	}
-	
-	@org.junit.After
-	public void tearDown() throws Exception {
-		qimage32 = null;
-		qimage64PNG = null;
-		sample = null;
-		mandelbrot = null;
-		blueAngleJPG = null;
-		anSVGImage = null;
-		anotherSVGImage = null;
-	}
-	
-	@org.junit.Test
+	@Test
 	public void testBasic() {
-		assertFalse(qimage32.isNull());
-		assertFalse(qimage32.isGrayscale());
-		assertEquals(32, mandelbrot.depth());
+		QImage image = new QImage(":io/qt/autotests/svgcards-example.png");
+		assertFalse(image.isNull());
+		assertFalse(image.isGrayscale());
+		assertEquals(418, image.width());
+		assertEquals(356, image.height());
+		assertEquals(Format.Format_ARGB32, image.format());
+		QImage imageFromBytes = new QImage(image.bits(), image.width(), image.height(), image.format());
+		QImage imageFromBuffer = new QImage(image.bytes(), image.width(), image.height(), image.format());
+		assertEquals(imageFromBytes, image);
+		assertEquals(imageFromBuffer, image);
 	}
 	
-	@org.junit.Test()
+	@Test
 	public void testLoadPNG() {
-		assertTrue(qimage64PNG.load(qimage64Path));
+		QImage image = new QImage();
+		assertTrue(image.load(qimage64Path));
+		assertEquals(Format.Format_Indexed8, image.format());
 	}
 	
-	@org.junit.Test
+	@Test
 	public void testLoadJPG() {
-		assertTrue(blueAngleJPG.load(blueAngleJPGPath));
+		QImage image = new QImage();
+		assertTrue(image.load(blueAngleJPGPath));
+		assertEquals(Format.Format_RGB32, image.format());
+		QImage imageFromBytes = new QImage(image.bits(), image.width(), image.height(), image.format());
+		QImage imageFromBuffer = new QImage(image.bytes(), image.width(), image.height(), image.format());
+		assertEquals(imageFromBytes, image);
+		assertEquals(imageFromBuffer, image);
 	}
 	
-	@org.junit.Test
+	@Test
 	public void testLoadSVGSmall() {
 		Assume.assumeTrue("Need to support SVG", QImageReader.supportedImageFormats().contains(new QByteArray("svg")));
-		assertTrue(anSVGImage.load(anSVGImagePath));
+		QImage image = new QImage();
+		assertTrue(image.load(anSVGImagePath));
+		assertEquals(Format.Format_ARGB32_Premultiplied, image.format());
+		QImage imageFromBytes = new QImage(image.bits(), image.width(), image.height(), image.format());
+		QImage imageFromBuffer = new QImage(image.bytes(), image.width(), image.height(), image.format());
+		assertEquals(imageFromBytes, image);
+		assertEquals(imageFromBuffer, image);
 	}
 	
-//	@org.junit.Ignore
 	/**
 	 * The following test makes the JVM crash.
 	 *
@@ -137,33 +168,41 @@ public class TestQImage extends ApplicationInitializer {
 	 *  QApplication/QCoreApplication.  So far for me on Linux this test is not
 	 *  crashing.
 	 */
-	@org.junit.Test
+	@Test
 	public void testLoadSVGBig() {
 		Assume.assumeTrue("Need to support SVG", QImageReader.supportedImageFormats().contains(new QByteArray("svg")));
-		assertTrue(anotherSVGImage.load(anotherSVGImagePath));
+		QImage image = new QImage();
+		assertTrue(image.load(anotherSVGImagePath));
+		assertEquals(Format.Format_ARGB32_Premultiplied, image.format());
+		QImage imageFromBytes = new QImage(image.bits(), image.width(), image.height(), image.format());
+		QImage imageFromBuffer = new QImage(image.bytes(), image.width(), image.height(), image.format());
+		assertEquals(imageFromBytes, image);
+		assertEquals(imageFromBuffer, image);
 	}
 	
-	@org.junit.Test
-	public void testDimensions() {
-		assertEquals(418, qimage32.width());
-		assertEquals(356, qimage32.height());
-	}
-	
-	@org.junit.Test
+	@Test
 	public void testConvertToFormat() {
-		assertEquals(Format.Format_RGB32, mandelbrot.format());
-		mandelbrot = mandelbrot.convertToFormat(Format.Format_Mono);
-		assertEquals(Format.Format_Mono, mandelbrot.format());
+		QImage image = new QImage(mandelbrotURL);
+		assertEquals(32, image.depth());
+		assertEquals(Format.Format_RGB32, image.format());
+		QImage monoMandelbrot = image.convertToFormat(Format.Format_Mono);
+		assertEquals(Format.Format_Mono, monoMandelbrot.format());
+		assertEquals(Format.Format_RGB32, image.format());
+		QImage imageFromBytes = new QImage(image.bits(), image.width(), image.height(), image.format());
+		QImage imageFromBuffer = new QImage(image.bytes(), image.width(), image.height(), image.format());
+		assertEquals(imageFromBytes, image);
+		assertEquals(imageFromBuffer, image);
 	}
 	
-	@org.junit.Test
+	@Test
 	public void testSetPixel() {
 		List<Integer> colors = new ArrayList<Integer>();
 		
 		colors.add(5);
 		colors.add(10);
 		colors.add(15);
-		
+
+		QImage sample = new QImage(3, 3, Format.Format_Indexed8);
 		sample.setColorTable(colors);
 		
 		// x, y, color index in the color table 
@@ -173,5 +212,28 @@ public class TestQImage extends ApplicationInitializer {
 		assertEquals(15, sample.pixel(2, 2));
 		assertEquals( 5, sample.pixel(0, 0));
 	}
+
+    @Test
+    public void testXPM() {
+        // Check that const char *[] is handled properly by the generated code
+java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "run_XPMConstructors() BEGIN");
+        String qt_plastique_radio[] = { "13 13 2 1", "X c #000000", ". c #ffffff", "....XXXXX....", "..XX.....XX..", ".X.........X.", ".X.........X.", "X...........X", "X...........X",
+                "X...........X", "X...........X", "X...........X", ".X.........X.", ".X.........X.", "..XX.....XX..", "....XXXXX...." };
+
+        QImage img = new QImage(qt_plastique_radio);
+        assertEquals(img.width(), 13);
+        assertEquals(img.height(), 13);
+java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "run_XPMConstructors() QIMAGE TESTING");
+
+        assertEquals(img.pixel(2, 1), 0xff000000);
+        assertEquals(img.pixel(0, 0), 0xffffffff);
+
+java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "run_XPMConstructors() QPIXMAP TESTING");
+        QPixmap pm = new QPixmap(qt_plastique_radio);
+        QImage img2 = pm.toImage();
+        assertEquals(img2.pixel(2, 1), 0xff000000);
+        assertEquals(img2.pixel(12, 12), 0xffffffff);
+java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "run_XPMConstructors() END");
+    }
 	
 }

@@ -2356,9 +2356,6 @@ QMetaType CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectAr
 {
     QTJAMBI_JNI_LOCAL_FRAME(env, 64);
     using namespace RegistryAPI;
-#if defined(QTJAMBI_GENERIC_ACCESS)
-    using namespace ContainerAccessAPI;
-#endif
     QByteArray templateName;
     QMetaType registeredMetaType = qtjambiMetaType(env, containerType, instantiations, &templateName);
     if(registeredMetaType==RegistryAPI::registerMetaType<JObjectWrapper>("JObjectWrapper")
@@ -2642,20 +2639,6 @@ QMetaType CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectAr
                                                                   memberNestedContainerAccess,
                                                                   memberOwnerFunction);
             }
-#if defined(QTJAMBI_GENERIC_ACCESS)
-            switch(type){
-            case SequentialContainerType::QSet:
-                containerAccess = checkContainerAccess(env, containerAccess->isSpan() ? static_cast<AbstractSetAccess*>(containerAccess) : nullptr);
-                break;
-            case SequentialContainerType::QStack:
-            case SequentialContainerType::QQueue:
-            case SequentialContainerType::QList:
-                containerAccess = checkContainerAccess(env, containerAccess->isList() ? static_cast<AbstractListAccess*>(containerAccess) : nullptr);
-                break;
-            default:
-                break;
-            }
-#endif //defined(QTJAMBI_GENERIC_ACCESS)
             QMetaType metaType;
             for(QByteArray& name : names){
                 metaType = containerAccess->registerContainer(name);
@@ -2843,26 +2826,6 @@ QMetaType CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectAr
                                                 memberNestedContainerAccess2,
                                                 memberOwnerFunction2);
             }
-#if defined(QTJAMBI_GENERIC_ACCESS)
-            switch(type){
-            case AssociativeContainerType::QMap:
-                containerAccess = checkContainerAccess(env, containerAccess->isMap() ? static_cast<AbstractMapAccess*>(containerAccess) : nullptr);
-                break;
-            case AssociativeContainerType::QMultiMap:
-                containerAccess = checkContainerAccess(env, containerAccess->isMultiMap() ? static_cast<AbstractMultiMapAccess*>(containerAccess) : nullptr);
-                break;
-            case AssociativeContainerType::QHash:
-                containerAccess = checkContainerAccess(env, containerAccess->isHash() ? static_cast<AbstractHashAccess*>(containerAccess) : nullptr);
-                break;
-            case AssociativeContainerType::QMultiHash:
-                containerAccess = checkContainerAccess(env, containerAccess->isMultiHash() ? static_cast<AbstractMultiHashAccess*>(containerAccess) : nullptr);
-                break;
-            default:
-                containerAccess = containerAccess->isPair() ? static_cast<AbstractPairAccess*>(containerAccess) : nullptr;
-                QtJambiAPI::checkNullPointer(env, containerAccess);
-                break;
-            }
-#endif //defined(QTJAMBI_GENERIC_ACCESS)
             QMetaType id;
             for(QByteArray& name : names){
                 id = containerAccess->registerContainer(name);
@@ -3207,12 +3170,4 @@ void ManagedSpan::commit(JNIEnv* env){
     ManagedSpanData* data = d.data();
     if(data && data->commitFunction)
         data->commitFunction(data, env);
-}
-
-void ManagedSpan::deleter(void* ptr,bool) {
-    delete reinterpret_cast<ManagedSpan*>(ptr);
-}
-
-void QtJambiSpan::deleter(void* ptr,bool) {
-    delete reinterpret_cast<QtJambiSpan*>(ptr);
 }

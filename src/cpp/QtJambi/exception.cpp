@@ -273,6 +273,10 @@ void JavaException::raiseUnsupportedOperationException(JNIEnv* env, QAnyStringVi
     JavaException::raise<Java::Runtime::UnsupportedOperationException>(QTJAMBI_STACKTRACEINFO_DECL_USE(env, message));
 }
 
+void JavaException::raiseNoSuchElementException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL ){
+    JavaException::raise<Java::Runtime::NoSuchElementException>(QTJAMBI_STACKTRACEINFO_DECL_USE(env, message));
+}
+
 void JavaException::raiseIndexOutOfBoundsException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL ){
     JavaException::raise<Java::Runtime::IndexOutOfBoundsException>(QTJAMBI_STACKTRACEINFO_DECL_USE(env, message));
 }

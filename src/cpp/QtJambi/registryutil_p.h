@@ -88,6 +88,7 @@ NewContainerAccessFunction getContainerAccessFactory(const std::type_info& typeI
 bool isPolymorphicBase(const std::type_info& typeId);
 QPair<size_t,size_t> getValueSizeAndAlignment(const std::type_info& typeId);
 QPair<size_t,size_t> getShellSizeAndAlignment(const std::type_info& typeId);
+QPair<const char*,const char*> iteratorJavaType(const std::type_info& containerTypeId, const std::type_info& iteratorTypeId);
 
 enum class EntryTypes
 {
@@ -103,7 +104,8 @@ enum class EntryTypes
     ValueTypeInfo,
     SpecialTypeInfo,
     StringTypeInfo,
-    PrimitiveTypeInfo
+    PrimitiveTypeInfo,
+    IteratorTypeInfo
 };
 EntryTypes getEntryType(const std::type_info& typeId);
 
@@ -140,7 +142,7 @@ jclass resolveClass(JNIEnv *env, const char *className, jobject classLoader = nu
 
 const char * getJavaInterfaceName(const std::type_info& typeId);
 QMap<QString,QPair<size_t,size_t>> getRegisteredTypeSizesAndAlignments();
-void registerTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, EntryTypes entryTypes);
+void registerTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, EntryTypes entryTypes, bool registerJavaToQtType = true);
 void registerTypeAlias(const std::type_info& typeId, const char *qt_name, const char *java_name);
 void registerContainerTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, const char *java_interface);
 void registerMetaType(const std::type_info& typeId,
@@ -214,7 +216,6 @@ QSharedPointer<AbstractContainerAccess> findContainerAccess(const QMetaType& met
 const char* getPersistentByteArray(QByteArray&& typeName);
 const char* getPersistentByteArray(QByteArrayView typeName);
 const QMetaObject* metaobjectByMetaTypeInterface(const QtPrivate::QMetaTypeInterface* iface);
-bool isQmlJavaScriptOwnership(QObject * obj);
 
 struct JQObjectWrapperPrivate;
 

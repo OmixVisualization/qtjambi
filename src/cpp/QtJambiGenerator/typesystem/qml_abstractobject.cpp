@@ -70,6 +70,16 @@ QVersionNumber toVersion(const QVariant &v, int fill){
         }
     }else if(v.userType()==QMetaType::fromType<QString>().id()){
         version = QVersionNumber::fromString(v.toString());
+        QList<int> segments = version.segments();
+        switch(v.toString().count(u'.')){
+        case 1:
+            version = QVersionNumber(segments[0], fill, fill);
+            break;
+        case 2:
+            version = QVersionNumber(segments[0], segments[1], fill);
+            break;
+        default: break;
+        }
     }else if(v.userType()==QMetaType::fromType<QVersionNumber>().id()){
         version = v.value<QVersionNumber>();
     }else{

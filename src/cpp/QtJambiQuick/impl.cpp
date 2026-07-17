@@ -251,37 +251,37 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_quick_QSGGeometry_setPoint2D
 
 template<typename T, bool = std::is_pointer_v<T>>
 struct CastHelper{
-    static constexpr T cast(jlong image) {return reinterpret_cast<T>(image);}
+    static constexpr T cast(JNIEnv *env, jobject image) {return reinterpret_cast<T>(QtJambiAPI::convertQNativePointerToNative(env, image));}
 };
 
 template<typename T>
 struct CastHelper<T,false>{
-    static constexpr T cast(jlong image) {return static_cast<T>(image);}
+    static constexpr T cast(JNIEnv *env, jobject image) {return static_cast<T>(QtJambiAPI::convertQNativePointerToNative(env, image));}
 };
 
-QSGTexture * qtjambi_QSGVulkanTexture_fromNative(JNIEnv *, jlong image, jint layout, QQuickWindow* window, const QSize& size, QQuickWindow::CreateTextureOptions options){
-    return QNativeInterface::QSGVulkanTexture::fromNative(CastHelper<VkImage>::cast(image), VkImageLayout(layout), window, size, options);
+QSGTexture * qtjambi_QSGVulkanTexture_fromNative(JNIEnv *env, jobject image, jint layout, QQuickWindow* window, const QSize& size, QQuickWindow::CreateTextureOptions options){
+    return QNativeInterface::QSGVulkanTexture::fromNative(CastHelper<VkImage>::cast(env, image), VkImageLayout(layout), window, size, options);
 }
 
-QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *, jlong image, jint layout, const QSize& pixelSize, int sampleCount){
-    return QQuickRenderTarget::fromVulkanImage(CastHelper<VkImage>::cast(image), VkImageLayout(layout), pixelSize, sampleCount);
+QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jobject image, jint layout, const QSize& pixelSize, int sampleCount){
+    return QQuickRenderTarget::fromVulkanImage(CastHelper<VkImage>::cast(env, image), VkImageLayout(layout), pixelSize, sampleCount);
 }
 
-QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromPhysicalDevice(JNIEnv *, jlong physicalDevice){
-    return QQuickGraphicsDevice::fromPhysicalDevice(VkPhysicalDevice(physicalDevice));
+QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromPhysicalDevice(JNIEnv *env, jobject physicalDevice){
+    return QQuickGraphicsDevice::fromPhysicalDevice(VkPhysicalDevice(QtJambiAPI::convertQNativePointerToNative(env, physicalDevice)));
 }
 
-QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromDeviceObjects(JNIEnv *, jlong physicalDevice, jlong device, int queueFamilyIndex, int queueIndex){
-    return QQuickGraphicsDevice::fromDeviceObjects(VkPhysicalDevice(physicalDevice), VkDevice(device), queueFamilyIndex, queueIndex);
+QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromDeviceObjects(JNIEnv *env, jobject physicalDevice, jobject device, int queueFamilyIndex, int queueIndex){
+    return QQuickGraphicsDevice::fromDeviceObjects(VkPhysicalDevice(QtJambiAPI::convertQNativePointerToNative(env, physicalDevice)), VkDevice(QtJambiAPI::convertQNativePointerToNative(env, device)), queueFamilyIndex, queueIndex);
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
-QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *, jlong image, jint layout, jint format, const QSize& pixelSize, int sampleCount){
-    return QQuickRenderTarget::fromVulkanImage(CastHelper<VkImage>::cast(image), VkImageLayout(layout), VkFormat(format), pixelSize, sampleCount);
+QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jobject image, jint layout, jint format, const QSize& pixelSize, int sampleCount){
+    return QQuickRenderTarget::fromVulkanImage(CastHelper<VkImage>::cast(env, image), VkImageLayout(layout), VkFormat(format), pixelSize, sampleCount);
 }
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *, jlong image, jint layout, jint format, jint viewFormat, const QSize& pixelSize, int sampleCount, int arraySize, QQuickRenderTarget::Flags flags){
-    return QQuickRenderTarget::fromVulkanImage(CastHelper<VkImage>::cast(image), VkImageLayout(layout), VkFormat(format), VkFormat(viewFormat), pixelSize, sampleCount, arraySize, flags);
+QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jobject image, jint layout, jint format, jint viewFormat, const QSize& pixelSize, int sampleCount, int arraySize, QQuickRenderTarget::Flags flags){
+    return QQuickRenderTarget::fromVulkanImage(CastHelper<VkImage>::cast(env, image), VkImageLayout(layout), VkFormat(format), VkFormat(viewFormat), pixelSize, sampleCount, arraySize, flags);
 }
 #endif
 #endif

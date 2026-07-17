@@ -96,6 +96,7 @@ public:
     Q_NORETURN static void raiseError(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
     Q_NORETURN static void raiseRuntimeException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
     Q_NORETURN static void raiseUnsupportedOperationException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
+    Q_NORETURN static void raiseNoSuchElementException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
     Q_NORETURN static void raiseIndexOutOfBoundsException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL );
     Q_NORETURN static void raiseQThreadAffinityException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL , jobject t1, QThread* t2, QThread* t3);
     template<typename Exn>

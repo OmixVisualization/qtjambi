@@ -99,7 +99,7 @@ public class TestQThreadDeletion extends ApplicationInitializer {
 			if(qthreadFinished.received())
     			break;
     		Thread.yield();
-    		Thread.sleep(100);
+    		Thread.sleep(200);
     		runGC();
     		QCoreApplication.processEvents();
     		QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
@@ -114,7 +114,7 @@ public class TestQThreadDeletion extends ApplicationInitializer {
     			break;
     		}
     		Thread.yield();
-    		Thread.sleep(100);
+    		Thread.sleep(200);
     		runGC();
     		QCoreApplication.processEvents();
     		QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
@@ -130,7 +130,7 @@ public class TestQThreadDeletion extends ApplicationInitializer {
     			break;
     		}
     		Thread.yield();
-    		Thread.sleep(100);
+    		Thread.sleep(200);
     		runGC();
     		QCoreApplication.processEvents();
     		QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
@@ -145,7 +145,7 @@ public class TestQThreadDeletion extends ApplicationInitializer {
     			break;
     		}
     		Thread.yield();
-    		Thread.sleep(100);
+    		Thread.sleep(200);
     		runGC();
     		QCoreApplication.processEvents();
     		QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
@@ -158,7 +158,7 @@ public class TestQThreadDeletion extends ApplicationInitializer {
     			break;
     		}
     		Thread.yield();
-    		Thread.sleep(100);
+    		Thread.sleep(200);
     		runGC();
     		QCoreApplication.processEvents();
     		QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());

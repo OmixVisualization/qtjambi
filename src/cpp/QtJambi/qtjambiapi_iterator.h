@@ -31,6 +31,7 @@
 #define QTJAMBIAPI_ITERATOR_H
 
 #include "global.h"
+#include "typetests.h"
 
 class AbstractSequentialConstIteratorAccess;
 class AbstractAssociativeConstIteratorAccess;
@@ -39,17 +40,146 @@ class AbstractAssociativeIteratorAccess;
 enum class QtJambiNativeID : jlong;
 
 namespace QtJambiAPI {
-QTJAMBI_EXPORT jobject convertQSequentialIteratorToJavaObject(JNIEnv *env,
-                                                              QtJambiNativeID owner,
+QTJAMBI_EXPORT jobject convertIteratorToJavaObject(JNIEnv *env,
+                                                   jobject owner,
+                                                   void* iteratorPtr,
+                                                   PtrDeleterFunction destructor_function,
+                                                   AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertIteratorToJavaObject(JNIEnv *env,
+                                                   jobject owner,
+                                                   void* iteratorPtr,
+                                                   PtrDeleterFunction destructor_function,
+                                                   AbstractAssociativeConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertIteratorToJavaObject(JNIEnv *env,
+                                                   QtJambiNativeID owner,
+                                                   void* iteratorPtr,
+                                                   PtrDeleterFunction destructor_function,
+                                                   AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertIteratorToJavaObject(JNIEnv *env,
+                                                   QtJambiNativeID owner,
+                                                   void* iteratorPtr,
+                                                   PtrDeleterFunction destructor_function,
+                                                   AbstractAssociativeConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertIteratorToJavaObject(JNIEnv *env,
+                                                   void* iteratorPtr,
+                                                   PtrDeleterFunction destructor_function,
+                                                   AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertIteratorToJavaObject(JNIEnv *env,
+                                                   void* iteratorPtr,
+                                                   PtrDeleterFunction destructor_function,
+                                                   AbstractAssociativeConstIteratorAccess* access);
+
+QTJAMBI_EXPORT jobject convertListIteratorToJavaObject(JNIEnv *env,
+                                                       void* iteratorPtr,
+                                                       PtrDeleterFunction destructor_function,
+                                                       AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertListReverseIteratorToJavaObject(JNIEnv *env,
+                                                       void* iteratorPtr,
+                                                       PtrDeleterFunction destructor_function,
+                                                       AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertSpanIteratorToJavaObject(JNIEnv *env,
+                                                       void* iteratorPtr,
+                                                       PtrDeleterFunction destructor_function,
+                                                       AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertSpanReverseIteratorToJavaObject(JNIEnv *env,
+                                                       void* iteratorPtr,
+                                                       PtrDeleterFunction destructor_function,
+                                                       AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertSetIteratorToJavaObject(JNIEnv *env,
+                                                      void* iteratorPtr,
+                                                      PtrDeleterFunction destructor_function,
+                                                      AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertMapIteratorToJavaObject(JNIEnv *env,
+                                                      void* iteratorPtr,
+                                                      PtrDeleterFunction destructor_function,
+                                                      AbstractAssociativeConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertHashIteratorToJavaObject(JNIEnv *env,
+                                                       void* iteratorPtr,
+                                                       PtrDeleterFunction destructor_function,
+                                                       AbstractAssociativeConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertMultiMapIteratorToJavaObject(JNIEnv *env,
+                                                      void* iteratorPtr,
+                                                      PtrDeleterFunction destructor_function,
+                                                      AbstractAssociativeConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertMultiHashIteratorToJavaObject(JNIEnv *env,
+                                                       void* iteratorPtr,
+                                                       PtrDeleterFunction destructor_function,
+                                                       AbstractAssociativeConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertMapKeyIteratorToJavaObject(JNIEnv *env,
+                                                         void* iteratorPtr,
+                                                         PtrDeleterFunction destructor_function,
+                                                         AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertHashKeyIteratorToJavaObject(JNIEnv *env,
+                                                       void* iteratorPtr,
+                                                       PtrDeleterFunction destructor_function,
+                                                       AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertMultiMapKeyIteratorToJavaObject(JNIEnv *env,
+                                                           void* iteratorPtr,
+                                                           PtrDeleterFunction destructor_function,
+                                                           AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertMultiHashKeyIteratorToJavaObject(JNIEnv *env,
+                                                            void* iteratorPtr,
+                                                            PtrDeleterFunction destructor_function,
+                                                            AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertMapKeyValueIteratorToJavaObject(JNIEnv *env,
                                                               void* iteratorPtr,
                                                               PtrDeleterFunction destructor_function,
                                                               AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertHashKeyValueIteratorToJavaObject(JNIEnv *env,
+                                                       void* iteratorPtr,
+                                                       PtrDeleterFunction destructor_function,
+                                                       AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertMultiMapKeyValueIteratorToJavaObject(JNIEnv *env,
+                                                           void* iteratorPtr,
+                                                           PtrDeleterFunction destructor_function,
+                                                           AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertMultiHashKeyValueIteratorToJavaObject(JNIEnv *env,
+                                                            void* iteratorPtr,
+                                                            PtrDeleterFunction destructor_function,
+                                                            AbstractSequentialConstIteratorAccess* access);
 
-QTJAMBI_EXPORT jobject convertQAssociativeIteratorToJavaObject(JNIEnv *env,
-                                                               QtJambiNativeID owner,
-                                                               void* iteratorPtr,
-                                                               PtrDeleterFunction destructor_function,
-                                                               AbstractAssociativeConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertIteratorToJavaObject(JNIEnv *env,
+                                                   const std::type_info& containerTypeId,
+                                                   const std::type_info& iteratorTypeId,
+                                                   jobject owner,
+                                                   void* iteratorPtr,
+                                                   PtrDeleterFunction destructor_function,
+                                                   AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertIteratorToJavaObject(JNIEnv *env,
+                                                   const std::type_info& containerTypeId,
+                                                   const std::type_info& iteratorTypeId,
+                                                   jobject owner,
+                                                   void* iteratorPtr,
+                                                   PtrDeleterFunction destructor_function,
+                                                   AbstractAssociativeConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertIteratorToJavaObject(JNIEnv *env,
+                                                   const std::type_info& containerTypeId,
+                                                   const std::type_info& iteratorTypeId,
+                                                   QtJambiNativeID owner,
+                                                   void* iteratorPtr,
+                                                   PtrDeleterFunction destructor_function,
+                                                   AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertIteratorToJavaObject(JNIEnv *env,
+                                                   const std::type_info& containerTypeId,
+                                                   const std::type_info& iteratorTypeId,
+                                                   QtJambiNativeID owner,
+                                                   void* iteratorPtr,
+                                                   PtrDeleterFunction destructor_function,
+                                                   AbstractAssociativeConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertIteratorToJavaObject(JNIEnv *env,
+                                                   const std::type_info& containerTypeId,
+                                                   const std::type_info& iteratorTypeId,
+                                                   void* iteratorPtr,
+                                                   PtrDeleterFunction destructor_function,
+                                                   AbstractSequentialConstIteratorAccess* access);
+QTJAMBI_EXPORT jobject convertIteratorToJavaObject(JNIEnv *env,
+                                                   const std::type_info& containerTypeId,
+                                                   const std::type_info& iteratorTypeId,
+                                                   void* iteratorPtr,
+                                                   PtrDeleterFunction destructor_function,
+                                                   AbstractAssociativeConstIteratorAccess* access);
+
+
 }
 
 #endif // QTJAMBIAPI_ITERATOR_H

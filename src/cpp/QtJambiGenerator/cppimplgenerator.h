@@ -67,9 +67,9 @@ class CppImplGenerator : public CppGenerator {
 
         void write(QTextStream &s, const MetaFunctional *java_class, int nesting_level = 0) override;
 
-        void writeExtraIncludes(QTextStream &s, const MetaClass *java_class, QSet<QString>& dedupe, bool skipQtJambi = false);
+        void writeExtraIncludes(QTextStream &s, const MetaClass *java_class, IncludeList includes, QSet<QString>& dedupe, bool skipQtJambi = false);
 
-        void writeExtraIncludes(QTextStream &s, const MetaFunctional *java_class, QSet<QString>& dedupe, bool skipQtJambi = false);
+        void writeExtraIncludes(QTextStream &s, const MetaFunctional *java_class, IncludeList includes, QSet<QString>& dedupe, bool skipQtJambi = false);
 
         void writeAssignment(QTextStream &s,
                              const QString &destName, const QString &srcName,
@@ -156,6 +156,8 @@ class CppImplGenerator : public CppGenerator {
                                 const MetaFunction *java_function,
                                 const QList<MetaArgument *>& arguments,
                                 const MetaClass *java_class, bool isDeclarative);
+        void writeFinalIteratorFunctions(QTextStream &s,
+                                         const MetaClass *java_class);
         void writeFinalFunction(QTextStream &s,
                                 const MetaFunction *java_function,
                                 const MetaClass *java_class);
@@ -202,7 +204,6 @@ class CppImplGenerator : public CppGenerator {
                                       const MetaType *elementType,
                                       const QString& variable,
                                       Option option = NoOption,
-                                      const QString& iteratorName = "const_iterator",
                                       const QString& __jni_env = "__jni_env",
                                       const QString& qtjambi_scope = "",
                                       const QString& this_nativeId = "");
@@ -213,7 +214,6 @@ class CppImplGenerator : public CppGenerator {
                                       const MetaType *valueType,
                                       const QString& variable,
                                       Option option = NoOption,
-                                      const QString& iteratorName = "const_iterator",
                                       const QString& __jni_env = "__jni_env",
                                       const QString& qtjambi_scope = "",
                                       const QString& this_nativeId = "");

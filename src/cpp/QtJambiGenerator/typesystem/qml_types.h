@@ -424,27 +424,21 @@ private:
     Q_PROPERTY(bool disableNativeIdUsage READ getDisableNativeIdUsage WRITE setDisableNativeIdUsage NOTIFY disableNativeIdUsageChanged)
 };
 
-class IteratorType : public AbstractType
+class IteratorType : public ComplexType
 {
     Q_OBJECT
     QML_ELEMENT
 public:
-    explicit IteratorType(QObject *parent = nullptr):AbstractType{parent}{}
-    bool getGenericClass() const;
-    void setGenericClass(bool newGenericClass);
+    explicit IteratorType(QObject *parent = nullptr):ComplexType{parent}{}
 
     bool getIsConst() const;
     void setIsConst(bool newIsConst);
 
 signals:
-    void genericClassChanged();
-
     void isConstChanged();
 
 private:
-    bool genericClass = false;
     bool isConst = true;
-    Q_PROPERTY(bool genericClass READ getGenericClass WRITE setGenericClass NOTIFY genericClassChanged)
     Q_PROPERTY(bool isConst READ getIsConst WRITE setIsConst NOTIFY isConstChanged)
 };
 

@@ -48,12 +48,23 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "utils_p.h"
 #include <QtJambi/Cast>
 
-extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QList_initialize
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QList_initialize__Ljava_lang_Class_2JLjava_lang_Iterable_2
 (JNIEnv * env, jobject _this, jclass elementType, QtJambiNativeID elementMetaType, jobject other)
 {
     QTJAMBI_TRY{
         QTJAMBI_NATIVE_METHOD_CALL("QList<T>::initialize()")
         CoreAPI::initializeQList(env, _this, elementType, elementMetaType, other);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QList_initialize__JJI
+    (JNIEnv * env, jobject _this, QtJambiNativeID beginId, QtJambiNativeID endId, jint associativeMapMode)
+{
+    QTJAMBI_TRY{
+        QTJAMBI_NATIVE_METHOD_CALL("QList<T>::initialize()")
+        CoreAPI::initializeQList(env, _this, beginId, endId, associativeMapMode);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
     }QTJAMBI_TRY_END
@@ -215,6 +226,78 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QList_constEnd__J
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
     return result;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QList_constReverseBegin
+    (JNIEnv *env,
+     jobject _this,
+     QtJambiNativeID __this_nativeId)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(env, container.first, typeid(QList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QList<T>::crbegin()const", container.first)
+        QTJAMBI_CONTAINER_CAST(List, containerAccess, container.second);
+        result = containerAccess->constReverseBegin(env, {_this, container.first, __this_nativeId});
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QList_constReverseEnd
+    (JNIEnv *env,
+     jobject _this,
+     QtJambiNativeID __this_nativeId)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(env, container.first, typeid(QList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QList<T>::crend()const", container.first)
+        QTJAMBI_CONTAINER_CAST(List, containerAccess, container.second);
+        result = containerAccess->constReverseEnd(env, {_this, container.first, __this_nativeId});
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QList_reverseBegin
+    (JNIEnv *env,
+     jobject _this,
+     QtJambiNativeID __this_nativeId)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(env, container.first, typeid(QList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QList<T>::rbegin()", container.first)
+        QTJAMBI_CONTAINER_CAST(List, containerAccess, container.second);
+        result = containerAccess->reverseBegin(env, {_this, container.first, __this_nativeId});
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QList_reverseEnd
+    (JNIEnv *env,
+     jobject _this,
+     QtJambiNativeID __this_nativeId)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(env, container.first, typeid(QList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QList<T>::rend()", container.first)
+        QTJAMBI_CONTAINER_CAST(List, containerAccess, container.second);
+        result = containerAccess->reverseEnd(env, {_this, container.first, __this_nativeId});
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+        return result;
 }
 
 // QList<T>::clear()

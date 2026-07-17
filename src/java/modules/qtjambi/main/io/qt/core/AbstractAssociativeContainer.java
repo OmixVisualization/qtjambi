@@ -29,6 +29,7 @@
 ****************************************************************************/
 package io.qt.core;
 
+import java.util.AbstractSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -37,6 +38,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import io.qt.NonNull;
 import io.qt.QtUninvokable;
 
 /**
@@ -58,32 +60,60 @@ abstract class AbstractAssociativeContainer<Key,T> extends AbstractContainer<T> 
 	public abstract QList<Key> keys();
 
     /**
-     * Provides a mutable C++ iterator to the containers begin.
+     * Provides a mutable C++ iterator to the container's begin.
      * @return begin
      */
     @QtUninvokable
-    protected abstract QAssociativeIterator<Key,T> begin();
+    protected abstract QAssociativeIterator<Key,T,? extends AbstractAssociativeContainer<Key,T>> begin();
 
     /**
-     * Provides a mutable C++ iterator to the containers end.
+     * Provides a mutable C++ iterator to the container's end.
      * @return end
      */
     @QtUninvokable
-	protected abstract QAssociativeIterator<Key,T> end();
+	protected abstract QAssociativeIterator<Key,T,? extends AbstractAssociativeContainer<Key,T>> end();
 
     /**
-     * Provides a constant C++ iterator to the containers begin.
+     * Provides a constant C++ iterator to the container's begin.
      * @return begin
      */
     @QtUninvokable
-    protected abstract QAssociativeConstIterator<Key,T> constBegin();
+    protected abstract QAssociativeConstIterator<Key,T,? extends AbstractAssociativeContainer<Key,T>> constBegin();
 
     /**
-     * Provides a constant C++ iterator to the containers end.
+     * Provides a constant C++ iterator to the container's end.
      * @return end
      */
     @QtUninvokable
-	protected abstract QAssociativeConstIterator<Key,T> constEnd();
+	protected abstract QAssociativeConstIterator<Key,T,? extends AbstractAssociativeContainer<Key,T>> constEnd();
+
+    /**
+     * Provides a mutable C++ iterator to the container's key-value-begin.
+     * @return begin
+     */
+    @QtUninvokable
+    protected abstract QSequentialPairIterator<Key,T,? extends AbstractAssociativeContainer<Key,T>> keyValueBegin();
+
+    /**
+     * Provides a mutable C++ iterator to the container's key-value-end.
+     * @return end
+     */
+    @QtUninvokable
+	protected abstract QSequentialPairIterator<Key,T,? extends AbstractAssociativeContainer<Key,T>> keyValueEnd();
+
+    /**
+     * Provides a constant C++ iterator to the container's key-value-begin.
+     * @return begin
+     */
+    @QtUninvokable
+    protected abstract QSequentialConstPairIterator<Key,T,? extends AbstractAssociativeContainer<Key,T>> constKeyValueBegin();
+
+    /**
+     * Provides a constant C++ iterator to the container's key-value-end.
+     * @return end
+     */
+    @QtUninvokable
+	protected abstract QSequentialConstPairIterator<Key,T,? extends AbstractAssociativeContainer<Key,T>> constKeyValueEnd();
 
     /**
      * Copies all of the mappings from the specified map to this map.
@@ -103,7 +133,7 @@ abstract class AbstractAssociativeContainer<Key,T> extends AbstractContainer<T> 
 	@Override
     @QtUninvokable
 	public final Iterator<QPair<Key,T>> iterator() {
-		return constBegin().iterator();
+		return AbstractIterator.iterator(constKeyValueBegin());
 	}
 	
 	/**
@@ -119,7 +149,7 @@ abstract class AbstractAssociativeContainer<Key,T> extends AbstractContainer<T> 
 	@Override
     @QtUninvokable
 	public final Set<Entry<Key, T>> entrySet() {
-		return new Set<Entry<Key, T>>(){
+		return new AbstractSet<Entry<Key, T>>(){
 			@Override
 		    @QtUninvokable
 			public int size() {
@@ -236,7 +266,7 @@ abstract class AbstractAssociativeContainer<Key,T> extends AbstractContainer<T> 
 	}
 	
 	static <K> Set<K> keySet(QList<K> keys) {
-		return new Set<K>(){
+		return new AbstractSet<K>(){
 			@Override
 		    @QtUninvokable
 			public int size() {
@@ -351,5 +381,21 @@ abstract class AbstractAssociativeContainer<Key,T> extends AbstractContainer<T> 
                 return sb.append('}').toString();
             sb.append(';').append(' ');
         }
+    }
+    
+    /**
+     * Returns a range object that allows iteration over this container as key/value pairs.
+     */
+    @QtUninvokable
+    public final @NonNull QKeyVaueRange<Key, T> asConstKeyValueRange(){
+    	return new QKeyVaueRange<>(this::constKeyValueBegin);
+    }
+    
+    /**
+     * Returns a range object that allows iteration over this container as key/value pairs.
+     */
+    @QtUninvokable
+    public final @NonNull QKeyVaueRange<Key, T> asKeyValueRange(){
+    	return new QKeyVaueRange<>(this::keyValueBegin);
     }
 }

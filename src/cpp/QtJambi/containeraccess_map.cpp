@@ -30,6 +30,11 @@
 ****************************************************************************/
 
 #include "pch_p.h"
+#include "qtjambi_cast.h"
+#include "containeraccess_export_map.h"
+#include "containeraccess_export_list.h"
+#include "containeraccess_export_bytearraylist.h"
+#include "containeraccess_export_stringlist.h"
 
 QT_WARNING_DISABLE_GCC("-Winaccessible-base")
 QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
@@ -88,16 +93,84 @@ void* AutoMapAccess::constructContainer(void* result, void* container) {
     return new(result) MapDataPointer(std::move(d));
 }
 
-AutoMapAccess::iterator AutoMapAccess::begin(const void* container) {
+AutoMapAccess::key_iterator AutoMapAccess::keyBegin(const void* container) {
     if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container)){
+        return key_iterator(begin(*d), m_offset1);
+    }else{
+        return {};
+    }
+}
+
+AutoMapAccess::key_iterator AutoMapAccess::keyEnd(const void* container) {
+    if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container)){
+        return key_iterator(end(*d), m_offset1);
+    }else{
+        return {};
+    }
+}
+
+AutoMapAccess::const_key_value_iterator AutoMapAccess::keyValueBegin(const void* container) {
+    if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container)){
+        return const_key_value_iterator(begin(*d), m_offset1, m_offset2);
+    }else{
+        return {};
+    }
+}
+
+AutoMapAccess::const_key_value_iterator AutoMapAccess::keyValueEnd(const void* container) {
+    if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container)){
+        return const_key_value_iterator(end(*d), m_offset1, m_offset2);
+    }else{
+        return {};
+    }
+}
+
+AutoMapAccess::key_value_iterator AutoMapAccess::keyValueBegin(void* container) {
+    if(MapDataPointer& d = *reinterpret_cast<MapDataPointer*>(container)){
+        detach(d);
+        return key_value_iterator(begin(*d), m_offset1, m_offset2);
+    }else{
+        return {};
+    }
+}
+
+AutoMapAccess::key_value_iterator AutoMapAccess::keyValueEnd(void* container) {
+    if(MapDataPointer& d = *reinterpret_cast<MapDataPointer*>(container)){
+        detach(d);
+        return key_value_iterator(end(*d), m_offset1, m_offset2);
+    }else{
+        return {};
+    }
+}
+
+AutoMapAccess::const_iterator AutoMapAccess::begin(const void* container) {
+    if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container)){
+        return const_iterator(begin(*d), m_offset1, m_offset2);
+    }else{
+        return {};
+    }
+}
+
+AutoMapAccess::const_iterator AutoMapAccess::end(const void* container) {
+    if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container)){
+        return const_iterator(end(*d), m_offset1, m_offset2);
+    }else{
+        return {};
+    }
+}
+
+AutoMapAccess::iterator AutoMapAccess::begin(void* container) {
+    if(MapDataPointer& d = *reinterpret_cast<MapDataPointer*>(container)){
+        detach(d);
         return iterator(begin(*d), m_offset1, m_offset2);
     }else{
         return {};
     }
 }
 
-AutoMapAccess::iterator AutoMapAccess::end(const void* container) {
-    if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container)){
+AutoMapAccess::iterator AutoMapAccess::end(void* container) {
+    if(MapDataPointer& d = *reinterpret_cast<MapDataPointer*>(container)){
+        detach(d);
         return iterator(end(*d), m_offset1, m_offset2);
     }else{
         return {};
@@ -117,11 +190,11 @@ void AutoMapAccess::debugStream(QDebug &dbg, const void *ptr){
     QtPrivate::printAssociativeContainer(dbg, "QMap", ConstContainer{ptr, this});
 }
 
-void* AutoMapAccess::TreeNode::data(qsizetype offset){
+char* AutoMapAccess::TreeNode::data(qsizetype offset){
     return reinterpret_cast<char*>(this)+offset;
 }
 
-const void* AutoMapAccess::TreeNode::data(qsizetype offset) const{
+const char* AutoMapAccess::TreeNode::data(qsizetype offset) const{
     return reinterpret_cast<const char*>(this)+offset;
 }
 
@@ -168,7 +241,6 @@ AutoMapAccess::node_iterator AutoMapAccess::node_iterator::operator--(int){
     return iter;
 }
 
-AutoMapAccess::iterator::iterator() {}
 AutoMapAccess::iterator::iterator(node_iterator iter, size_t offset1, size_t offset2)
     : m_iter(iter), m_offset1(offset1), m_offset2(offset2){}
 
@@ -193,13 +265,203 @@ AutoMapAccess::iterator AutoMapAccess::iterator::operator--(int){
 bool AutoMapAccess::iterator::operator==(const iterator& right) const{
     return m_iter==right.m_iter;
 }
-void* AutoMapAccess::iterator::key()const{
-    return m_iter->data(m_offset1);
+bool AutoMapAccess::iterator::operator==(const key_iterator& right) const{
+    return m_iter==right.m_iter;
 }
-void* AutoMapAccess::iterator::value()const{
-    return m_iter->data(m_offset2);
+bool AutoMapAccess::iterator::operator==(const const_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::iterator::operator==(const key_value_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::iterator::operator==(const const_key_value_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+const char& AutoMapAccess::iterator::key()const{
+    return *m_iter->data(m_offset1);
+}
+const char& AutoMapAccess::iterator::value()const{
+    return *m_iter->data(m_offset2);
+}
+char& AutoMapAccess::iterator::key(){
+    return *m_iter->data(m_offset1);
+}
+char& AutoMapAccess::iterator::value(){
+    return *m_iter->data(m_offset2);
 }
 
+AutoMapAccess::const_iterator::const_iterator(node_iterator iter, size_t offset1, size_t offset2)
+    : m_iter(iter), m_offset1(offset1), m_offset2(offset2){}
+
+AutoMapAccess::const_iterator::const_iterator(const iterator& other)
+    : m_iter(other.m_iter), m_offset1(other.m_offset1), m_offset2(other.m_offset2){
+}
+
+AutoMapAccess::const_iterator& AutoMapAccess::const_iterator::operator++(){
+    ++m_iter;
+    return *this;
+}
+AutoMapAccess::const_iterator AutoMapAccess::const_iterator::operator++(int){
+    const_iterator _this = *this;
+    ++m_iter;
+    return _this;
+}
+AutoMapAccess::const_iterator& AutoMapAccess::const_iterator::operator--(){
+    --m_iter;
+    return *this;
+}
+AutoMapAccess::const_iterator AutoMapAccess::const_iterator::operator--(int){
+    const_iterator _this = *this;
+    --m_iter;
+    return _this;
+}
+bool AutoMapAccess::const_iterator::operator==(const const_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::const_iterator::operator==(const key_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::const_iterator::operator==(const iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::const_iterator::operator==(const key_value_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::const_iterator::operator==(const const_key_value_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+const char& AutoMapAccess::const_iterator::key()const{
+    return *m_iter->data(m_offset1);
+}
+const char& AutoMapAccess::const_iterator::value()const{
+    return *m_iter->data(m_offset2);
+}
+
+AutoMapAccess::key_iterator::key_iterator(node_iterator iter, size_t offset1)
+    : m_iter(iter), m_offset1(offset1){}
+
+AutoMapAccess::key_iterator& AutoMapAccess::key_iterator::operator++(){
+    ++m_iter;
+    return *this;
+}
+AutoMapAccess::key_iterator AutoMapAccess::key_iterator::operator++(int){
+    key_iterator _this = *this;
+    ++m_iter;
+    return _this;
+}
+AutoMapAccess::key_iterator& AutoMapAccess::key_iterator::operator--(){
+    --m_iter;
+    return *this;
+}
+AutoMapAccess::key_iterator AutoMapAccess::key_iterator::operator--(int){
+    key_iterator _this = *this;
+    --m_iter;
+    return _this;
+}
+bool AutoMapAccess::key_iterator::operator==(const key_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::key_iterator::operator==(const const_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::key_iterator::operator==(const iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::key_iterator::operator==(const key_value_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::key_iterator::operator==(const const_key_value_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+const char& AutoMapAccess::key_iterator::operator*()const{
+    return *m_iter->data(m_offset1);
+}
+
+AutoMapAccess::key_value_iterator::key_value_iterator(node_iterator iter, size_t offset1, size_t offset2)
+    : m_iter(iter), m_offset1(offset1), m_offset2(offset2){}
+
+AutoMapAccess::key_value_iterator& AutoMapAccess::key_value_iterator::operator++(){
+    ++m_iter;
+    return *this;
+}
+AutoMapAccess::key_value_iterator AutoMapAccess::key_value_iterator::operator++(int){
+    key_value_iterator _this = *this;
+    ++m_iter;
+    return _this;
+}
+AutoMapAccess::key_value_iterator& AutoMapAccess::key_value_iterator::operator--(){
+    --m_iter;
+    return *this;
+}
+AutoMapAccess::key_value_iterator AutoMapAccess::key_value_iterator::operator--(int){
+    key_value_iterator _this = *this;
+    --m_iter;
+    return _this;
+}
+bool AutoMapAccess::key_value_iterator::operator==(const iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::key_value_iterator::operator==(const key_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::key_value_iterator::operator==(const const_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::key_value_iterator::operator==(const key_value_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::key_value_iterator::operator==(const const_key_value_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+std::pair<const char&,const char&> AutoMapAccess::key_value_iterator::operator*()const{
+    return {*m_iter->data(m_offset1),*m_iter->data(m_offset2)};
+}
+std::pair<const char&,char&> AutoMapAccess::key_value_iterator::operator*(){
+    return {*m_iter->data(m_offset1),*m_iter->data(m_offset2)};
+}
+
+AutoMapAccess::const_key_value_iterator::const_key_value_iterator(node_iterator iter, size_t offset1, size_t offset2)
+    : m_iter(iter), m_offset1(offset1), m_offset2(offset2){}
+
+AutoMapAccess::const_key_value_iterator::const_key_value_iterator(const key_value_iterator& other)
+    : m_iter(other.m_iter), m_offset1(other.m_offset1), m_offset2(other.m_offset2){}
+
+AutoMapAccess::const_key_value_iterator& AutoMapAccess::const_key_value_iterator::operator++(){
+    ++m_iter;
+    return *this;
+}
+AutoMapAccess::const_key_value_iterator AutoMapAccess::const_key_value_iterator::operator++(int){
+    const_key_value_iterator _this = *this;
+    ++m_iter;
+    return _this;
+}
+AutoMapAccess::const_key_value_iterator& AutoMapAccess::const_key_value_iterator::operator--(){
+    --m_iter;
+    return *this;
+}
+AutoMapAccess::const_key_value_iterator AutoMapAccess::const_key_value_iterator::operator--(int){
+    const_key_value_iterator _this = *this;
+    --m_iter;
+    return _this;
+}
+bool AutoMapAccess::const_key_value_iterator::operator==(const const_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::const_key_value_iterator::operator==(const key_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::const_key_value_iterator::operator==(const iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::const_key_value_iterator::operator==(const key_value_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+bool AutoMapAccess::const_key_value_iterator::operator==(const const_key_value_iterator& right) const{
+    return m_iter==right.m_iter;
+}
+std::pair<const char&,const char&> AutoMapAccess::const_key_value_iterator::operator*()const{
+    return {*m_iter->data(m_offset1),*m_iter->data(m_offset2)};
+}
 
 bool AutoMapAccess::node_iterator::operator==(const node_iterator& right) const{
     if(node==nullptr){
@@ -281,12 +543,12 @@ qsizetype AutoMapAccess::erase(MapData& data, const void* key, const void* value
     node_iterator i = find(data, key);
     node_iterator end1 = end(data);
     while(i != end1){
-        if(m_valueMetaType.compare(value, i->data(m_offset2))==0){
+        if(m_valueMetaType.equals(value, i->data(m_offset2))){
             erase(data, i);
             return 1 + erase(data, key, value);
         }
         ++i;
-        if(m_keyMetaType.compare(key, i->data(m_offset1))!=0)
+        if(!m_keyMetaType.equals(key, i->data(m_offset1)))
             break;
     }
     return 0;
@@ -981,7 +1243,7 @@ QPair<AutoMapAccess::TreeNode*,AutoMapAccess::TreeNode*> AutoMapAccess::eqrange(
                 if(_end==next)
                     break;
                 nodekey = next->data(m_offset1);
-            }while(m_keyMetaType.compare(nodekey, key)==0);
+            }while(m_keyMetaType.equals(nodekey, key));
 
             node_iterator bgn(begin(data));
             node_iterator prev(__rt);
@@ -991,7 +1253,7 @@ QPair<AutoMapAccess::TreeNode*,AutoMapAccess::TreeNode*> AutoMapAccess::eqrange(
                     break;
                 --prev;
                 nodekey = prev->data(m_offset1);
-            }while(m_keyMetaType.compare(nodekey, key)==0);
+            }while(m_keyMetaType.equals(nodekey, key));
 
             return {__rt, next.data()};
         }
@@ -1017,7 +1279,7 @@ QPair<AutoMapAccess::TreeNode*,AutoMapAccess::TreeNode*> AutoMapAccess::eqrange(
                 if(end==next)
                     break;
                 nodekey = next->data(m_offset1);
-            }while(m_keyMetaType.compare(nodekey, key)==0);
+            }while(m_keyMetaType.equals(nodekey, key));
 
             node_iterator begin(data.header.parent);
             node_iterator prev(pnode);
@@ -1027,7 +1289,7 @@ QPair<AutoMapAccess::TreeNode*,AutoMapAccess::TreeNode*> AutoMapAccess::eqrange(
                     break;
                 --prev;
                 nodekey = prev->data(m_offset1);
-            }while(m_keyMetaType.compare(nodekey, key)==0);
+            }while(m_keyMetaType.equals(nodekey, key));
 
             return {pnode, next.data()};
         }
@@ -1044,7 +1306,7 @@ AutoMapAccess::node_iterator AutoMapAccess::find(const MapData& data, const void
 #else
             && found!=end(data).data()
 #endif
-        && m_keyMetaType.compare(found->data(m_offset1), key)==0) {
+        && m_keyMetaType.equals(found->data(m_offset1), key)) {
         return found;
     }
     return end(data);
@@ -1347,7 +1609,7 @@ AutoMapAccess::node_iterator AutoMapAccess::begin(const MapData& data){
 void AutoMapAccess::insertOrAssign(MapData& data, const void* key, const void* value){
 #if defined(Q_CC_MSVC)
     TreeFindResult loc = findLowerBound(data, key);
-    if (!isMulti() && loc.bound && !loc.bound->isNil && m_keyMetaType.compare(loc.bound->data(m_offset1), key)==0) {
+    if (!isMulti() && loc.bound && !loc.bound->isNil && m_keyMetaType.equals(loc.bound->data(m_offset1), key)) {
         m_valueMetaType.destruct(loc.bound->data(m_offset2));
         m_valueMetaType.construct(loc.bound->data(m_offset2), value);
     }else{
@@ -1367,7 +1629,7 @@ void AutoMapAccess::insertOrAssign(MapData& data, const void* key, const void* v
     }
 #else
     TreeNode* lowerBound = findLowerBound(data, key);
-    if (!isMulti() && lowerBound && lowerBound!=end(data).data() && m_keyMetaType.compare(lowerBound->data(m_offset1), key)==0) {
+    if (!isMulti() && lowerBound && lowerBound!=end(data).data() && m_keyMetaType.equals(lowerBound->data(m_offset1), key)) {
         m_valueMetaType.destruct(lowerBound->data(m_offset2));
         m_valueMetaType.construct(lowerBound->data(m_offset2), value);
     }else{
@@ -1420,7 +1682,7 @@ void AutoMapAccess::insertOrAssign(MapData& data, const void* key, const void* v
 void AutoMapAccess::insertOrAssign(MapData& data, const void* key, JNIEnv *env, jobject value){
 #if defined(Q_CC_MSVC)
     TreeFindResult loc = findLowerBound(data, key);
-    if (!isMulti() && loc.bound && !loc.bound->isNil && m_keyMetaType.compare(loc.bound->data(m_offset1), key)==0) {
+    if (!isMulti() && loc.bound && !loc.bound->isNil && m_keyMetaType.equals(loc.bound->data(m_offset1), key)) {
         jvalue jv;
         jv.l = value;
         void* target = loc.bound->data(m_offset2);
@@ -1446,7 +1708,7 @@ void AutoMapAccess::insertOrAssign(MapData& data, const void* key, JNIEnv *env, 
     }
 #else
     TreeNode* lowerBound = findLowerBound(data, key);
-    if (!isMulti() && lowerBound && lowerBound!=end(data).data() && m_keyMetaType.compare(lowerBound->data(m_offset1), key)==0) {
+    if (!isMulti() && lowerBound && lowerBound!=end(data).data() && m_keyMetaType.equals(lowerBound->data(m_offset1), key)) {
         m_valueMetaType.destruct(lowerBound->data(m_offset2));
         m_valueMetaType.construct(lowerBound->data(m_offset2), value);
     }else{
@@ -1510,7 +1772,7 @@ qsizetype AutoMapAccess::copyIfNotEquivalentTo(MapData& data, const MapData& cop
     node_iterator cend(end(copyFrom));
     while(iter != cend){
         const void* theirKey = iter->data(m_offset1);
-        if (m_keyMetaType.compare(key, theirKey)==0) {
+        if (m_keyMetaType.equals(key, theirKey)) {
             ++result;
         }else{
             const void* theirValue = iter->data(m_offset2);
@@ -1528,7 +1790,7 @@ qsizetype AutoMapAccess::copyIfNotEquivalentTo(MapData& data, const MapData& cop
     while(iter != cend){
         const void* theirKey = iter->data(m_offset1);
         const void* theirValue = iter->data(m_offset2);
-        if (m_keyMetaType.compare(key, theirKey)==0 && m_valueMetaType.compare(value, theirValue)==0) {
+        if (m_keyMetaType.equals(key, theirKey) && m_valueMetaType.equals(value, theirValue)) {
             ++result;
         }else{
             const void* theirValue = iter->data(m_offset2);
@@ -2018,44 +2280,78 @@ bool AutoMapAccess::contains(const void* container, const void* key)
 
 jobject AutoMapAccess::begin(JNIEnv * env, const ExtendedContainerInfo& container)
 {
-    return createIterator(env, container.nativeId, iterator(begin(detach(*reinterpret_cast<MapDataPointer*>(container.container))), m_offset1, m_offset2));
+    iterator iter = begin(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
 }
 
 jobject AutoMapAccess::end(JNIEnv * env, const ExtendedContainerInfo& container)
 {
-    return createIterator(env, container.nativeId, iterator(end(detach(*reinterpret_cast<MapDataPointer*>(container.container))), m_offset1, m_offset2));
+    iterator iter = end(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
 }
 
 jobject AutoMapAccess::find(JNIEnv * env, const ExtendedContainerInfo& container, jobject key)
 {
-    if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
+    if(MapDataPointer& d = *reinterpret_cast<MapDataPointer*>(container.container)){
         jvalue jv;
         jv.l = key;
         QtJambiScope scope;
         void* akey = nullptr;
         if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
-            return createIterator(env, container.nativeId, iterator(find(*d, akey), m_offset1, m_offset2));
+            detach(d);
+            iterator iter(find(*d, akey), m_offset1, m_offset2);
+            return createIterator(env, ContainerIterator(std::move(iter), this, container));
         }
     }
     return end(env, container);
 }
 
+jobject AutoMapAccess::keyBegin(JNIEnv * env, const ConstExtendedContainerInfo& container)
+{
+    key_iterator iter = keyBegin(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
+}
+
+jobject AutoMapAccess::keyEnd(JNIEnv * env, const ConstExtendedContainerInfo& container)
+{
+    key_iterator iter = keyEnd(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
+}
+
+jobject AutoMapAccess::keyValueBegin(JNIEnv * env, const ExtendedContainerInfo& container)
+{
+    key_value_iterator iter = keyValueBegin(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
+}
+
+jobject AutoMapAccess::keyValueEnd(JNIEnv * env, const ExtendedContainerInfo& container)
+{
+    key_value_iterator iter = keyValueEnd(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
+}
+
+jobject AutoMapAccess::constKeyValueBegin(JNIEnv * env, const ConstExtendedContainerInfo& container)
+{
+    const_key_value_iterator iter = constKeyValueBegin(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
+}
+
+jobject AutoMapAccess::constKeyValueEnd(JNIEnv * env, const ConstExtendedContainerInfo& container)
+{
+    const_key_value_iterator iter = constKeyValueEnd(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
+}
+
 jobject AutoMapAccess::constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container)
 {
-    if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
-        return createConstIterator(env, container.nativeId, iterator(begin(*d), m_offset1, m_offset2));
-    }else{
-        return constEnd(env, container);
-    }
+    const_iterator iter = begin(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
 }
 
 jobject AutoMapAccess::constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container)
 {
-    if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
-        return createConstIterator(env, container.nativeId, iterator(end(*d), m_offset1, m_offset2));
-    }else{
-        return createConstIterator(env, container.nativeId, iterator());
-    }
+    const_iterator iter = end(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
 }
 
 jobject AutoMapAccess::constFind(JNIEnv * env, const ConstExtendedContainerInfo& container, jobject key)
@@ -2066,7 +2362,8 @@ jobject AutoMapAccess::constFind(JNIEnv * env, const ConstExtendedContainerInfo&
         QtJambiScope scope;
         void* akey = nullptr;
         if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
-            return createConstIterator(env, container.nativeId, iterator(find(*d, akey), m_offset1, m_offset2));
+            const_iterator iter(find(*d, akey), m_offset1, m_offset2);
+            return createIterator(env, ContainerIterator(std::move(iter), this, container));
         }
     }
     return constEnd(env, container);
@@ -2080,7 +2377,8 @@ jobject AutoMapAccess::constLowerBound(JNIEnv * env, const ConstExtendedContaine
         QtJambiScope scope;
         void* akey = nullptr;
         if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
-            return createConstIterator(env, container.nativeId, iterator(node_iterator(findLowerBound(*d, akey)), m_offset1, m_offset2));
+            const_iterator iter(node_iterator(findLowerBound(*d, akey)), m_offset1, m_offset2);
+            return createIterator(env, ContainerIterator(std::move(iter), this, container));
         }
     }
     return constEnd(env, container);
@@ -2094,10 +2392,43 @@ jobject AutoMapAccess::constUpperBound(JNIEnv * env, const ConstExtendedContaine
         QtJambiScope scope;
         void* akey = nullptr;
         if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
-            return createConstIterator(env, container.nativeId, iterator(findUpperBound(*d, akey), m_offset1, m_offset2));
+            const_iterator iter(node_iterator(findUpperBound(*d, akey)), m_offset1, m_offset2);
+            return createIterator(env, ContainerIterator(std::move(iter), this, container));
         }
     }
     return constEnd(env, container);
+}
+
+jobject AutoMapAccess::lowerBound(JNIEnv * env, const ExtendedContainerInfo& container, jobject key)
+{
+    if(MapDataPointer& d = *reinterpret_cast<MapDataPointer*>(container.container)){
+        jvalue jv;
+        jv.l = key;
+        QtJambiScope scope;
+        void* akey = nullptr;
+        if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
+            detach(d);
+            iterator iter(node_iterator(findLowerBound(*d, akey)), m_offset1, m_offset2);
+            return createIterator(env, ContainerIterator(std::move(iter), this, container));
+        }
+    }
+    return end(env, container);
+}
+
+jobject AutoMapAccess::upperBound(JNIEnv * env, const ExtendedContainerInfo& container, jobject key)
+{
+    if(MapDataPointer& d = *reinterpret_cast<MapDataPointer*>(container.container)){
+        jvalue jv;
+        jv.l = key;
+        QtJambiScope scope;
+        void* akey = nullptr;
+        if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
+            detach(d);
+            iterator iter(node_iterator(findUpperBound(*d, akey)), m_offset1, m_offset2);
+            return createIterator(env, ContainerIterator(std::move(iter), this, container));
+        }
+    }
+    return end(env, container);
 }
 
 bool AutoMapAccess::keyLessThan(JNIEnv * env, jobject key1, jobject key2)
@@ -2167,26 +2498,7 @@ bool AutoMapAccess::destructContainer(void* container){
 
 qsizetype AutoMapAccess::count(JNIEnv *env, const void* container, jobject key)
 {
-    qsizetype result = 0;
-    if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container)){
-        jvalue jv;
-        jv.l = key;
-        QtJambiScope scope;
-        void* akey = nullptr;
-        if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
-            node_iterator i = find(*d, akey);
-            node_iterator _end = end(*d);
-            while(i!=_end){
-                ++result;
-                const void* trykey = i->data(m_offset1);
-                auto cmp = m_keyMetaType.compare(trykey, akey);
-                if(cmp!=0)
-                    break;
-                ++i;
-            }
-        }
-    }
-    return result;
+    return contains(env, container, key) ? 1 : 0;
 }
 
 jobject AutoMapAccess::first(JNIEnv * env, const void* container)
@@ -2259,7 +2571,7 @@ jobject AutoMapAccess::key(JNIEnv *env, const void* container, jobject value, jo
             node_iterator iter = begin(*d);
             while(iter!=end1){
                 const void* value1 = iter->data(m_offset2);
-                if(m_valueMetaType.compare(value1, avalue)==0){
+                if(m_valueMetaType.equals(value1, avalue)){
                     jvalue jv;
                     jv.l = nullptr;
                     m_keyInternalToExternalConverter(env, nullptr, iter->data(m_offset1), jv, true);
@@ -2325,6 +2637,140 @@ void AutoMapAccess::assign(void* container, const void* other)
     }
 }
 
+jboolean AutoMapAccess::iteratorEquals(JNIEnv *, const void* ptr, AbstractSequentialConstIteratorAccess::IteratorType iteratorType, const ConstContainerAndAccessInfo& ptr2){
+    if(ptr2.access->isSequentialConstIterator() && ptr2.access->isAutoAccess()){
+        AbstractSequentialConstIteratorAccess::IteratorType iteratorType2 = static_cast<AbstractSequentialConstIteratorAccess*>(ptr2.access)->iteratorType();
+        switch(iteratorType){
+        case AbstractSequentialConstIteratorAccess::IteratorType::const_iterator: {
+            using Iter1 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_iterator>;
+            switch(iteratorType2){
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_key_value_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_key_value_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::key_value_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, key_value_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            default:
+                break;
+            }
+        }break;
+        case AbstractSequentialConstIteratorAccess::IteratorType::iterator: {
+            using Iter1 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, iterator>;
+            switch(iteratorType2){
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_key_value_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_key_value_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::key_value_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, key_value_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            default:
+                break;
+            }
+        }break;
+        case AbstractSequentialConstIteratorAccess::IteratorType::const_key_value_iterator: {
+            using Iter1 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_key_value_iterator>;
+            switch(iteratorType2){
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_key_value_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_key_value_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::key_value_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, key_value_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            default:
+                break;
+            }
+        }break;
+        case AbstractSequentialConstIteratorAccess::IteratorType::key_value_iterator: {
+            using Iter1 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, key_value_iterator>;
+            switch(iteratorType2){
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_key_value_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_key_value_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::key_value_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, key_value_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            default:
+                break;
+            }
+        }break;
+        default:
+            break;
+        }
+    }
+    return false;
+}
+
+void* AutoMapAccess::asIterator(void* iter, AbstractSequentialConstIteratorAccess::IteratorType iteratorType){
+    switch(iteratorType){
+    case AbstractSequentialConstIteratorAccess::IteratorType::const_iterator: {
+        using Iterator = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_iterator>;
+        return &reinterpret_cast<Iterator*>(iter)->iterator();
+    }break;
+    case AbstractSequentialConstIteratorAccess::IteratorType::iterator: {
+        using Iterator = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, iterator>;
+        return &reinterpret_cast<Iterator*>(iter)->iterator();
+    }break;
+    case AbstractSequentialConstIteratorAccess::IteratorType::const_key_value_iterator: {
+        using Iterator = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_key_value_iterator>;
+        return &reinterpret_cast<Iterator*>(iter)->iterator();
+    }break;
+    case AbstractSequentialConstIteratorAccess::IteratorType::key_value_iterator: {
+        using Iterator = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, key_value_iterator>;
+        return &reinterpret_cast<Iterator*>(iter)->iterator();
+    }break;
+    default:
+        return nullptr;
+    }
+}
+
+bool AutoMapAccess::findIterator(const void* iter, AbstractSequentialConstIteratorAccess::IteratorType iteratorType, const std::type_info& typeId, void* output){
+    Q_UNUSED(iter)
+    Q_UNUSED(iteratorType)
+    Q_UNUSED(typeId)
+    Q_UNUSED(output)
+    return false;
+}
+
 IsBiContainerFunction AutoMapAccess::getIsBiContainerFunction(){
     return ContainerAPI::getAsQMap;
 }
@@ -2351,11 +2797,11 @@ bool AutoMapAccess::equal(const void* a, const void* b){
         while(iter1!=end1 && iter2!=end2){
             const void* key1 = iter1->data(m_offset1);
             const void* key2 = iter2->data(m_offset1);
-            if(m_keyMetaType.compare(key1, key2)!=0)
+            if(!m_keyMetaType.equals(key1, key2))
                 return false;
             const void* value1 = iter1->data(m_offset2);
             const void* value2 = iter2->data(m_offset2);
-            if(m_valueMetaType.compare(value1, value2)!=0)
+            if(!m_valueMetaType.equals(value1, value2))
                 return false;
             ++iter1;
             ++iter2;
@@ -2389,14 +2835,14 @@ jboolean AutoMapAccess::equal(JNIEnv *env, const void* container, jobject other)
                     if(!m_keyExternalToInternalConverter(env, &scope, _value, _qvaluePtr, jValueType::l))
                         return false;
                     const void* key = iter1->data(m_offset1);
-                    if(m_keyMetaType.compare(key, _qvaluePtr)!=0)
+                    if(!m_keyMetaType.equals(key, _qvaluePtr))
                         return false;
                     _value.l = QtJambiAPI::valueOfJavaMapEntry(env, entry);
                     _qvaluePtr = nullptr;
                     if(!m_valueExternalToInternalConverter(env, &scope, _value, _qvaluePtr, jValueType::l))
                         return false;
                     void* value = iter1->data(m_offset2);
-                    if(m_valueMetaType.compare(value, _qvaluePtr)!=0)
+                    if(!m_valueMetaType.equals(value, _qvaluePtr))
                         return false;
                     ++iter1;
                 }
@@ -2706,9 +3152,6 @@ QtMetaContainerPrivate::QMetaAssociationInterface* AutoMapAccess::createMetaAsso
 
 ContainerAndAccessInfo AutoMapAccess::keys(JNIEnv *env, const ConstContainerInfo& container)
 {
-#if defined(QTJAMBI_GENERIC_ACCESS)
-    using namespace ContainerAccessAPI;
-#endif
     ContainerAndAccessInfo result;
     AbstractListAccess* listAccess{nullptr};
     {
@@ -2734,7 +3177,6 @@ ContainerAndAccessInfo AutoMapAccess::keys(JNIEnv *env, const ConstContainerInfo
         }
     }
     if(listAccess){
-        CHECK_CONTAINER_ACCESS(env, listAccess)
         result.container = listAccess->createContainer();
         result.object = ContainerAPI::objectFromQList(env, result.container, listAccess);
         result.access = listAccess;
@@ -2761,9 +3203,6 @@ ContainerAndAccessInfo AutoMapAccess::keys(JNIEnv *env, const ConstContainerInfo
 
 ContainerAndAccessInfo AutoMapAccess::keys(JNIEnv *env, const ConstContainerInfo& container, jobject value)
 {
-#if defined(QTJAMBI_GENERIC_ACCESS)
-    using namespace ContainerAccessAPI;
-#endif
     ContainerAndAccessInfo result;
     AbstractListAccess* listAccess{nullptr};
     {
@@ -2789,7 +3228,6 @@ ContainerAndAccessInfo AutoMapAccess::keys(JNIEnv *env, const ConstContainerInfo
         }
     }
     if(listAccess){
-        CHECK_CONTAINER_ACCESS(env, listAccess)
         result.container = listAccess->createContainer();
         result.object = ContainerAPI::objectFromQList(env, result.container, listAccess);
         result.access = listAccess;
@@ -2806,7 +3244,7 @@ ContainerAndAccessInfo AutoMapAccess::keys(JNIEnv *env, const ConstContainerInfo
                 node_iterator iter1 = begin(*d);
                 jvalue jv;
                 while(iter1!=end1){
-                    if(m_valueMetaType.compare(_qvaluePtr, iter1->data(m_offset2))==0){
+                    if(m_valueMetaType.equals(_qvaluePtr, iter1->data(m_offset2))){
                         if(listAccess->append(result.container, iter1->data(m_offset1))){
                             idx++;
                         }else{
@@ -2870,9 +3308,6 @@ jobject AutoMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject
 
 ContainerAndAccessInfo AutoMapAccess::values(JNIEnv *env, const ConstContainerInfo& container)
 {
-#if defined(QTJAMBI_GENERIC_ACCESS)
-    using namespace ContainerAccessAPI;
-#endif
     ContainerAndAccessInfo result;
     AbstractListAccess* listAccess{nullptr};
     {
@@ -2898,7 +3333,6 @@ ContainerAndAccessInfo AutoMapAccess::values(JNIEnv *env, const ConstContainerIn
         }
     }
     if(listAccess){
-        CHECK_CONTAINER_ACCESS(env, listAccess)
         result.container = listAccess->createContainer();
         result.object = ContainerAPI::objectFromQList(env, result.container, listAccess);
         result.access = listAccess;
@@ -2922,79 +3356,51 @@ ContainerAndAccessInfo AutoMapAccess::values(JNIEnv *env, const ConstContainerIn
     return result;
 }
 
-jobject AutoMapAccess::createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iter)
+jobject AutoMapAccess::createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_iterator>&& iter)
 {
-    AutoAssociativeConstIteratorAccess<AbstractAssociativeConstIteratorAccess>* containerAccess = createAutoAssociativeConstIteratorAccess(m_valueInternalToExternalConverter,
-            [](auto*,void*ptr){
-                iterator& cursor = *reinterpret_cast<iterator*>(ptr);
-                ++cursor;
-            },
-            [](auto*,void*ptr){
-                iterator& cursor = *reinterpret_cast<iterator*>(ptr);
-                --cursor;
-            },
-            [](auto*,const void*ptr)->const void*{
-                const iterator& cursor = *reinterpret_cast<const iterator*>(ptr);
-                return cursor.value();
-            },
-            nullptr,
-            [](auto*,const void*ptr1,const void*ptr2)->bool{
-                const iterator& n1 = *reinterpret_cast<const iterator*>(ptr1);
-                const iterator& n2 = *reinterpret_cast<const iterator*>(ptr2);
-                return n1==n2;
-            },
-            m_keyInternalToExternalConverter,
-            [](auto*,const void*ptr)->const void*{
-                const iterator& cursor = *reinterpret_cast<const iterator*>(ptr);
-                return cursor.key();
-            },
-            m_keyMetaType,
-            m_valueMetaType,
-            /*offsets not required*/ 0, 0
-        );
-    return QtJambiAPI::convertQAssociativeIteratorToJavaObject(env, ownerId, new iterator(std::move(iter)), [](void* ptr,bool){
-            delete reinterpret_cast<iterator*>(ptr);
-        }, containerAccess);
+    using Iter = std::remove_reference_t<decltype(iter)>;
+    return QtJambiAPI::convertMapIteratorToJavaObject(env,
+                                                      new Iter(std::move(iter)),
+                                                      &QtJambiAPI::deletePointer<Iter>,
+                                                      new AutoAssociativeConstIteratorAccess<AutoMapAccess,ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_iterator>>(m_valueInternalToExternalConverter,m_keyInternalToExternalConverter,m_keyMetaType,m_valueMetaType));
 }
 
-jobject AutoMapAccess::createIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iter)
+jobject AutoMapAccess::createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, iterator>&& iter)
 {
-    AbstractAssociativeIteratorAccess* containerAccess = new AutoAssociativeIteratorAccess(m_valueInternalToExternalConverter,
-            [](AutoAssociativeIteratorAccess*, void*ptr){
-                iterator& cursor = *reinterpret_cast<iterator*>(ptr);
-                ++cursor;
-            },
-            [](AutoAssociativeIteratorAccess*, void*ptr){
-                iterator& cursor = *reinterpret_cast<iterator*>(ptr);
-                --cursor;
-            },
-            [](AutoAssociativeIteratorAccess*, const void*ptr)->const void*{
-                const iterator& cursor = *reinterpret_cast<const iterator*>(ptr);
-                return cursor.value();
-            },
-            nullptr,
-            [](AutoAssociativeIteratorAccess*, const void*ptr1,const void*ptr2)->bool{
-                const iterator& n1 = *reinterpret_cast<const iterator*>(ptr1);
-                const iterator& n2 = *reinterpret_cast<const iterator*>(ptr2);
-                return n1==n2;
-            },
-            m_keyInternalToExternalConverter,
-            [](AutoAssociativeIteratorAccess*, const void*ptr)->const void*{
-                const iterator& cursor = *reinterpret_cast<const iterator*>(ptr);
-                return cursor.key();
-            },
-            m_valueExternalToInternalConverter,
-            [](AutoAssociativeIteratorAccess*, void*ptr)->void*{
-                iterator& cursor = *reinterpret_cast<iterator*>(ptr);
-                return cursor.value();
-            },
-            m_keyMetaType,
-            m_valueMetaType,
-            /*offsets not required*/ 0, 0
-        );
-    return QtJambiAPI::convertQAssociativeIteratorToJavaObject(env, ownerId, new iterator(std::move(iter)), [](void* ptr,bool){
-            delete reinterpret_cast<iterator*>(ptr);
-        }, containerAccess);
+    using Iter = std::remove_reference_t<decltype(iter)>;
+    QSharedPointer<QtJambiLink> link = iter.storage().link();
+    return QtJambiPrivate::convertMapIteratorToJavaObject(env, link,
+                                                          new Iter(std::move(iter)),
+                                                          &QtJambiAPI::deletePointer<Iter>,
+                                                          new AutoAssociativeIteratorAccess<AutoMapAccess,ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, iterator>>(m_valueInternalToExternalConverter,m_valueExternalToInternalConverter,m_keyInternalToExternalConverter,m_keyMetaType,m_valueMetaType));
+}
+
+jobject AutoMapAccess::createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, key_value_iterator>&& iter)
+{
+    using Iter = std::remove_reference_t<decltype(iter)>;
+    QSharedPointer<QtJambiLink> link = iter.storage().link();
+    return QtJambiPrivate::convertMapKeyValueIteratorToJavaObject(env, link,
+                                                                  new Iter(std::move(iter)),
+                                                                  &QtJambiAPI::deletePointer<Iter>,
+                                                                  new AutoAssociativeIteratorAccess<AutoMapAccess,ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMapAccess>, key_value_iterator>,AbstractSequentialConstIteratorAccess::IteratorType::key_value_iterator>(m_valueInternalToExternalConverter,m_valueExternalToInternalConverter,m_keyInternalToExternalConverter,m_keyMetaType,m_valueMetaType));
+}
+
+jobject AutoMapAccess::createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_key_value_iterator>&& iter)
+{
+    using Iter = std::remove_reference_t<decltype(iter)>;
+    return QtJambiAPI::convertMapKeyValueIteratorToJavaObject(env,
+                                                              new Iter(std::move(iter)),
+                                                              &QtJambiAPI::deletePointer<Iter>,
+                                                              new AutoAssociativeConstIteratorAccess<AutoMapAccess,ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, const_key_value_iterator>,AbstractSequentialConstIteratorAccess::IteratorType::const_key_value_iterator>(m_valueInternalToExternalConverter,m_keyInternalToExternalConverter,m_keyMetaType,m_valueMetaType));
+}
+
+jobject AutoMapAccess::createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, key_iterator>&& iter)
+{
+    using Iter = std::remove_reference_t<decltype(iter)>;
+    return QtJambiAPI::convertMapKeyIteratorToJavaObject(env,
+                                                         new Iter(std::move(iter)),
+                                                         &QtJambiAPI::deletePointer<Iter>,
+                                                         new AutoAssociativeConstIteratorAccess<AutoMapAccess,ContainerIterator<QtJambiPrivate::ContainerClone<AutoMapAccess>, key_iterator>,AbstractSequentialConstIteratorAccess::IteratorType::key_iterator>(m_valueInternalToExternalConverter,m_keyInternalToExternalConverter,m_keyMetaType,m_valueMetaType));
 }
 
 size_t AutoMapAccess::sizeOf() const {
@@ -3405,4 +3811,577 @@ jobject NestedPointersRCAutoMapAccess::take(JNIEnv *env, const ContainerInfo& co
     jobject result = AutoMapAccess::take(env, container, key);
     updateRC(env, container);
     return result;
+}
+
+#if defined(Q_CC_MSVC) || defined(_LIBCPP_VERSION) || !defined(Q_OS_WIN)
+template class QTJAMBI_EXPORT QMapAccess<qint32,qint32>;
+template class QTJAMBI_EXPORT QMapAccess<qint32,QVariant>;
+template class QTJAMBI_EXPORT QMapAccess<QString,QString>;
+template class QTJAMBI_EXPORT QMapAccess<QString,QVariant>;
+template class QTJAMBI_EXPORT QMapAccess<QByteArray,QByteArray>;
+template class QTJAMBI_EXPORT QMapAccess<QByteArray,QVariant>;
+#endif
+
+AbstractMapAccess* createMapAccess(const QMetaType& memberMetaType1, const QMetaType& memberMetaType2){
+#if defined(Q_CC_MSVC) || defined(_LIBCPP_VERSION) || !defined(Q_OS_WIN)
+    switch(memberMetaType1.id()){
+    case QMetaType::Type::Bool:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Char:
+    case QMetaType::SChar:
+    case QMetaType::UChar:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Short:
+    case QMetaType::UShort:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Int:
+    case QMetaType::UInt:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            return QMapAccess<qint32,qint32>::newInstance();
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            return QMapAccess<qint32,QVariant>::newInstance();
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Double:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Float:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::QChar:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Char16:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Char32:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::QString:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            return QMapAccess<QString,QString>::newInstance();
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            return QMapAccess<QString,QVariant>::newInstance();
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::QByteArray:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            return QMapAccess<QByteArray,QByteArray>::newInstance();
+        case QMetaType::QVariant:
+            return QMapAccess<QByteArray,QVariant>::newInstance();
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::QVariant:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::QObjectStar:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    default:
+        break;
+    }
+#else
+    Q_UNUSED(memberMetaType1)
+    Q_UNUSED(memberMetaType2)
+#endif
+    return nullptr;
 }

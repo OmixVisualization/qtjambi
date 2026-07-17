@@ -38,7 +38,7 @@
 #include <QtJambi/RegistryAPI>
 
 namespace QtJambiPrivate {
-template<> struct supports_qHash<QSignalSpy> : supports_qHash<QList<QList<QVariant>>>{};
+template<> struct supports_qHash<const QSignalSpy&> : supports_qHash<const QList<QList<QVariant>>&>{};
 }
 
 namespace QtMetaContainerPrivate {

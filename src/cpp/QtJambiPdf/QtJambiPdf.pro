@@ -36,3 +36,8 @@ QT = core pdf
 HEADERS += \
     hashes.h
 
+win32-g++* {
+    CONFIG(debug, debug|release) {
+        QMAKE_CXXFLAGS += -O3
+    }
+}

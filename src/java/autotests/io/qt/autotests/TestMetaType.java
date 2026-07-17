@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
 
 import java.io.*;
 import java.net.*;
-import java.util.Map;
+import java.util.*;
 
 import org.junit.*;
 
@@ -40,7 +40,7 @@ import io.qt.*;
 import io.qt.autotests.generated.*;
 import io.qt.core.*;
 import io.qt.gui.*;
-import io.qt.qml.QJSValue;
+import io.qt.qml.*;
 import io.qt.widgets.*;
 
 public class TestMetaType extends ApplicationInitializer {
@@ -48,6 +48,92 @@ public class TestMetaType extends ApplicationInitializer {
 	@BeforeClass
     public static void testInitialize() throws Exception {
 		testInitializeWithWidgets();
+    }
+	
+    @Test
+    public void testQVariant() {
+    	assertEquals(QMetaType.Type.Int.value(), QMetaType.qMetaTypeId(int.class));
+    	assertEquals(QMetaType.Type.LongLong.value(), QMetaType.qMetaTypeId(long.class));
+    	assertEquals(QMetaType.Type.Bool.value(), QMetaType.qMetaTypeId(boolean.class));
+    	assertEquals(QMetaType.Type.Short.value(), QMetaType.qMetaTypeId(short.class));
+    	assertEquals(QMetaType.Type.SChar.value(), QMetaType.qMetaTypeId(byte.class));
+    	assertEquals(QMetaType.Type.Double.value(), QMetaType.qMetaTypeId(double.class));
+    	assertEquals(QMetaType.Type.Float.value(), QMetaType.qMetaTypeId(float.class));
+    	assertEquals(QMetaType.Type.QChar.value(), QMetaType.qMetaTypeId(char.class));
+    	assertEquals(QMetaType.Type.Int.value(), QMetaType.qMetaTypeId(Integer.class));
+    	assertEquals(QMetaType.Type.LongLong.value(), QMetaType.qMetaTypeId(Long.class));
+    	assertEquals(QMetaType.Type.Bool.value(), QMetaType.qMetaTypeId(Boolean.class));
+    	assertEquals(QMetaType.Type.Short.value(), QMetaType.qMetaTypeId(Short.class));
+    	assertEquals(QMetaType.Type.SChar.value(), QMetaType.qMetaTypeId(Byte.class));
+    	assertEquals(QMetaType.Type.Double.value(), QMetaType.qMetaTypeId(Double.class));
+    	assertEquals(QMetaType.Type.Float.value(), QMetaType.qMetaTypeId(Float.class));
+    	assertEquals(QMetaType.Type.QChar.value(), QMetaType.qMetaTypeId(Character.class));
+    	assertEquals(QMetaType.Type.QBitArray.value(), QMetaType.qMetaTypeId(QBitArray.class));
+    	assertEquals(QMetaType.Type.QByteArray.value(), QMetaType.qMetaTypeId(QByteArray.class));
+    	assertEquals(QMetaType.Type.QBrush.value(), QMetaType.qMetaTypeId(QBrush.class));
+    	assertEquals(QMetaType.Type.QBitmap.value(), QMetaType.qMetaTypeId(QBitmap.class));
+    	assertEquals(QMetaType.Type.QCborArray.value(), QMetaType.qMetaTypeId(QCborArray.class));
+    	assertEquals(QMetaType.Type.QCborMap.value(), QMetaType.qMetaTypeId(QCborMap.class));
+    	assertEquals(QMetaType.Type.QCborValue.value(), QMetaType.qMetaTypeId(QCborValue.class));
+    	assertEquals(QMetaType.Type.QColor.value(), QMetaType.qMetaTypeId(QColor.class));
+    	assertEquals(QMetaType.Type.QCursor.value(), QMetaType.qMetaTypeId(QCursor.class));
+    	assertEquals(QMetaType.Type.QDate.value(), QMetaType.qMetaTypeId(QDate.class));
+    	assertEquals(QMetaType.Type.QDateTime.value(), QMetaType.qMetaTypeId(QDateTime.class));
+    	assertEquals(QMetaType.Type.QEasingCurve.value(), QMetaType.qMetaTypeId(QEasingCurve.class));
+    	assertEquals(QMetaType.Type.QFont.value(), QMetaType.qMetaTypeId(QFont.class));
+    	assertEquals(QMetaType.Type.QIcon.value(), QMetaType.qMetaTypeId(QIcon.class));
+    	assertEquals(QMetaType.Type.QImage.value(), QMetaType.qMetaTypeId(QImage.class));
+    	assertEquals(QMetaType.Type.QJsonArray.value(), QMetaType.qMetaTypeId(QJsonArray.class));
+    	assertEquals(QMetaType.Type.QJsonDocument.value(), QMetaType.qMetaTypeId(QJsonDocument.class));
+    	assertEquals(QMetaType.Type.QJsonObject.value(), QMetaType.qMetaTypeId(QJsonObject.class));
+    	assertEquals(QMetaType.Type.QJsonValue.value(), QMetaType.qMetaTypeId(QJsonValue.class));
+    	assertEquals(QMetaType.Type.QKeySequence.value(), QMetaType.qMetaTypeId(QKeySequence.class));
+    	assertEquals(QMetaType.Type.QLine.value(), QMetaType.qMetaTypeId(QLine.class));
+    	assertEquals(QMetaType.Type.QLineF.value(), QMetaType.qMetaTypeId(QLineF.class));
+    	assertEquals(QMetaType.Type.QLocale.value(), QMetaType.qMetaTypeId(QLocale.class));
+    	assertEquals(QMetaType.Type.QMatrix4x4.value(), QMetaType.qMetaTypeId(QMatrix4x4.class));
+    	assertEquals(QMetaType.Type.QModelIndex.value(), QMetaType.qMetaTypeId(QModelIndex.class));
+    	assertEquals(QMetaType.Type.QPalette.value(), QMetaType.qMetaTypeId(QPalette.class));
+    	assertEquals(QMetaType.Type.QPen.value(), QMetaType.qMetaTypeId(QPen.class));
+    	assertEquals(QMetaType.Type.QPersistentModelIndex.value(), QMetaType.qMetaTypeId(QPersistentModelIndex.class));
+    	assertEquals(QMetaType.Type.QPixmap.value(), QMetaType.qMetaTypeId(QPixmap.class));
+    	assertEquals(QMetaType.Type.QPoint.value(), QMetaType.qMetaTypeId(QPoint.class));
+    	assertEquals(QMetaType.Type.QPointF.value(), QMetaType.qMetaTypeId(QPointF.class));
+    	assertEquals(QMetaType.Type.QPolygon.value(), QMetaType.qMetaTypeId(QPolygon.class));
+    	assertEquals(QMetaType.Type.QPolygonF.value(), QMetaType.qMetaTypeId(QPolygonF.class));
+    	assertEquals(QMetaType.Type.QQuaternion.value(), QMetaType.qMetaTypeId(QQuaternion.class));
+    	assertEquals(QMetaType.Type.QRect.value(), QMetaType.qMetaTypeId(QRect.class));
+    	assertEquals(QMetaType.Type.QRectF.value(), QMetaType.qMetaTypeId(QRectF.class));
+    	assertEquals(QMetaType.Type.QRegion.value(), QMetaType.qMetaTypeId(QRegion.class));
+    	assertEquals(QMetaType.Type.QRegularExpression.value(), QMetaType.qMetaTypeId(QRegularExpression.class));
+    	assertEquals(QMetaType.Type.QQuaternion.value(), QMetaType.qMetaTypeId(QQuaternion.class));
+    	assertEquals(QMetaType.Type.QSize.value(), QMetaType.qMetaTypeId(QSize.class));
+    	assertEquals(QMetaType.Type.QSizeF.value(), QMetaType.qMetaTypeId(QSizeF.class));
+    	assertEquals(QMetaType.Type.QSizePolicy.value(), QMetaType.qMetaTypeId(QSizePolicy.class));
+    	assertEquals(QMetaType.Type.QString.value(), QMetaType.qMetaTypeId(String.class));
+    	assertEquals(QMetaType.Type.QTextFormat.value(), QMetaType.qMetaTypeId(QTextFormat.class));
+    	assertEquals(QMetaType.Type.QTextLength.value(), QMetaType.qMetaTypeId(QTextLength.class));
+    	assertEquals(QMetaType.Type.QTime.value(), QMetaType.qMetaTypeId(QTime.class));
+    	assertEquals(QMetaType.Type.QTransform.value(), QMetaType.qMetaTypeId(QTransform.class));
+    	assertEquals(QMetaType.Type.QUrl.value(), QMetaType.qMetaTypeId(QUrl.class));
+    	assertEquals(QMetaType.Type.QUuid.value(), QMetaType.qMetaTypeId(QUuid.class));
+    	assertEquals(QMetaType.Type.QVector2D.value(), QMetaType.qMetaTypeId(QVector2D.class));
+    	assertEquals(QMetaType.Type.QVector3D.value(), QMetaType.qMetaTypeId(QVector3D.class));
+    	assertEquals(QMetaType.Type.QVector4D.value(), QMetaType.qMetaTypeId(QVector4D.class));
+    	assertEquals(QMetaType.Type.QVariant.value(), QMetaType.qMetaTypeId(QVariant.class));
+    	assertEquals(QMetaType.Type.QObjectStar.value(), QMetaType.qMetaTypeId(QObject.class));
+    	assertEquals(QMetaType.Type.Nullptr.value(), QMetaType.qMetaTypeId(null));
+    	assertEquals("JObjectWrapper", QMetaType.fromType(Object.class).name().toString());
+    	assertEquals("JCollectionWrapper", QMetaType.fromType(List.class).name().toString());
+    	assertEquals("JMapWrapper", QMetaType.fromType(Map.class).name().toString());
+    	assertEquals("java::lang::Enum", QMetaType.fromType(Enum.class).name().toString());
+    	assertEquals("QWidget*", QMetaType.fromType(QWidget.class).name().toString());
+    	assertEquals(new QSize(5, 5), QVariant.convert(new QSizeF(5, 5), QSize.class));
+    	assertEquals(new QLine(6, 5, 8, 1), QVariant.convert(new QLineF(5.8, 5.2, 8.3, 1.2), QLine.class));
+    	ContainerReferences c = new ContainerReferences();
+    	assertEquals(new QMetaType(QMetaType.Type.QStringList), QMetaType.fromObject(c.listRef()));
+    	assertEquals(new QMetaType(QMetaType.Type.QByteArrayList), QMetaType.fromObject(c.byteArrayListRef()));
+    	c.dispose();
     }
 	
 	@Test

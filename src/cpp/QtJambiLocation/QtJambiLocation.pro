@@ -40,3 +40,9 @@ HEADERS += \
 
 SOURCES += \
     impl.cpp
+
+win32-g++* {
+    CONFIG(debug, debug|release) {
+        QMAKE_CXXFLAGS += -O3
+    }
+}

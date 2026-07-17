@@ -1905,6 +1905,12 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
             name: "Error"
         }
     }
+
+    ObjectType{
+        name: "QSslKeyingMaterial"
+        ppCondition: "QT_CONFIG(ssl)"
+        since: [6, 12]
+    }
     
     ObjectType{
         name: "QSslSocket"
@@ -3357,7 +3363,35 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
         EnumType{
             name: "WellKnownHeader"
         }
+        ModifyFunction{
+            signature: "rangeValues(bool*)const"
+            ModifyArgument{
+                index: 0
+                replaceType: "io.qt.core.@Nullable QList<io.qt.network.@NonNull QHttpHeaderRange>"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = %1 ? qtjambi_cast<jobject>(%env, std::move(%in)) : nullptr;"}
+                }
+            }
+            ModifyArgument{
+                index: 1
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        bool %in = false;
+                        bool* %out = &%in;
+                        `}
+                }
+            }
+            since: [6,12]
+        }
         since: 6.7
+    }
+
+    ValueType{
+        name: "QHttpHeaderRange"
+        since: [6, 12]
     }
 
     ObjectType{

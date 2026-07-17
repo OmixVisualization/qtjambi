@@ -114,6 +114,56 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "probe(QRhi::Implementation,QRhiInitParams*)"
+            ModifyArgument{
+                index: 2
+                NoNullPointer{}
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "%1"}
+                ArgumentMap{index: 2; metaName: "%2"}
+                Text{content: String.raw`
+                            io.qt.core.QCoreApplication app = io.qt.core.QCoreApplication.instance();
+                            if(app==null) {
+                                throw new IllegalStateException("Cannot create QRhi before initializing QGuiApplication.");
+                            }
+                            if(!(app instanceof io.qt.gui.QGuiApplication)) {
+                                throw new IllegalStateException("Cannot create QRhi without QGuiApplication (instead of "+app.getClass().getName().replace('$', '.')+").");
+                            }
+                            switch(%1) {
+                            case D3D11:
+                                if(!(%2 instanceof QRhiD3D11InitParams))
+                                    throw new IllegalArgumentException("QRhiD3D11InitParams expected as argument '%2'");
+                                break;
+                            case D3D12:
+                                if(!(%2 instanceof QRhiD3D12InitParams))
+                                    throw new IllegalArgumentException("QRhiD3D12InitParams expected as argument '%2'");
+                                break;
+                            case Metal:
+                                if(!(%2 instanceof QRhiMetalInitParams))
+                                    throw new IllegalArgumentException("QRhiMetalInitParams expected as argument '%2'");
+                                break;
+                            case Null:
+                                if(!(%2 instanceof QRhiNullInitParams))
+                                    throw new IllegalArgumentException("QRhiNullInitParams expected as argument '%2'");
+                                break;
+                            case OpenGLES2:
+                                if(!(%2 instanceof QRhiGles2InitParams))
+                                    throw new IllegalArgumentException("QRhiGles2InitParams expected as argument '%2'");
+                                break;
+                            case Vulkan:
+                                if(!(%2 instanceof QRhiVulkanInitParams))
+                                    throw new IllegalArgumentException("QRhiVulkanInitParams expected as argument '%2'");
+                                break;
+                            default:
+                                break;
+                            }
+                    `}
+            }
+        }
+        ModifyFunction{
             signature: "create(QRhi::Implementation,QRhiInitParams*,QRhi::Flags,QRhiNativeHandles*)"
             ModifyArgument{
                 index: 0
@@ -122,13 +172,63 @@ TypeSystem{
                     ownership: Ownership.Java
                 }
             }
+            ModifyArgument{
+                index: 2
+                NoNullPointer{}
+            }
             InjectCode{
                 target: CodeClass.Java
-                position: Position.End
-                Text{content: "if(__qt_return_value!=null){\n"+
-                              "    __qt_return_value.__rc_params = params;\n"+
-                              "    __qt_return_value.__rc_importDevice = importDevice;\n"+
-                              "}"}
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "%1"}
+                ArgumentMap{index: 2; metaName: "%2"}
+                ArgumentMap{index: 4; metaName: "%4"}
+                Text{content: String.raw`
+                            io.qt.core.QCoreApplication app = io.qt.core.QCoreApplication.instance();
+                            if(app==null) {
+                                throw new IllegalStateException("Cannot create QRhi before initializing QGuiApplication.");
+                            }
+                            if(!(app instanceof io.qt.gui.QGuiApplication)) {
+                                throw new IllegalStateException("Cannot create QRhi without QGuiApplication (instead of "+app.getClass().getName().replace('$', '.')+").");
+                            }
+                            switch(%1) {
+                            case D3D11:
+                                if(!(%2 instanceof QRhiD3D11InitParams))
+                                    throw new IllegalArgumentException("QRhiD3D11InitParams expected as argument '%2'");
+                                if(!(%4==null || %4 instanceof QRhiD3D11NativeHandles))
+                                    throw new IllegalArgumentException("QRhiD3D11NativeHandles expected as argument '%4'");
+                                break;
+                            case D3D12:
+                                if(!(%2 instanceof QRhiD3D12InitParams))
+                                    throw new IllegalArgumentException("QRhiD3D12InitParams expected as argument '%2'");
+                                if(!(%4==null || %4 instanceof QRhiD3D12NativeHandles))
+                                    throw new IllegalArgumentException("QRhiD3D12NativeHandles expected as argument '%4'");
+                                break;
+                            case Metal:
+                                if(!(%2 instanceof QRhiMetalInitParams))
+                                    throw new IllegalArgumentException("QRhiMetalInitParams expected as argument '%2'");
+                                if(!(%4==null || %4 instanceof QRhiMetalNativeHandles))
+                                    throw new IllegalArgumentException("QRhiMetalNativeHandles expected as argument '%4'");
+                                break;
+                            case Null:
+                                if(!(%2 instanceof QRhiNullInitParams))
+                                    throw new IllegalArgumentException("QRhiNullInitParams expected as argument '%2'");
+                                break;
+                            case OpenGLES2:
+                                if(!(%2 instanceof QRhiGles2InitParams))
+                                    throw new IllegalArgumentException("QRhiGles2InitParams expected as argument '%2'");
+                                if(!(%4==null || %4 instanceof QRhiGles2NativeHandles))
+                                    throw new IllegalArgumentException("QRhiGles2NativeHandles expected as argument '%4'");
+                                break;
+                            case Vulkan:
+                                if(!(%2 instanceof QRhiVulkanInitParams))
+                                    throw new IllegalArgumentException("QRhiVulkanInitParams expected as argument '%2'");
+                                if(!(%4==null || %4 instanceof QRhiVulkanNativeHandles))
+                                    throw new IllegalArgumentException("QRhiVulkanNativeHandles expected as argument '%4'");
+                                break;
+                            default:
+                                break;
+                            }
+                    `}
             }
         }
         ModifyFunction{
@@ -140,13 +240,125 @@ TypeSystem{
                     ownership: Ownership.Java
                 }
             }
+            ModifyArgument{
+                index: 2
+                NoNullPointer{}
+            }
             InjectCode{
                 target: CodeClass.Java
-                position: Position.End
-                Text{content: "if(__qt_return_value!=null){\n"+
-                              "    __qt_return_value.__rc_params = params;\n"+
-                              "    __qt_return_value.__rc_importDevice = importDevice;\n"+
-                              "}"}
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "%1"}
+                ArgumentMap{index: 2; metaName: "%2"}
+                ArgumentMap{index: 4; metaName: "%4"}
+                Text{content: String.raw`
+                            io.qt.core.QCoreApplication app = io.qt.core.QCoreApplication.instance();
+                            if(app==null) {
+                                throw new IllegalStateException("Cannot create QRhi before initializing QGuiApplication.");
+                            }
+                            if(!(app instanceof io.qt.gui.QGuiApplication)) {
+                                throw new IllegalStateException("Cannot create QRhi without QGuiApplication (instead of "+app.getClass().getName().replace('$', '.')+").");
+                            }
+                            switch(%1) {
+                            case D3D11:
+                                if(!(%2 instanceof QRhiD3D11InitParams))
+                                    throw new IllegalArgumentException("QRhiD3D11InitParams expected as argument '%2'");
+                                if(!(%4==null || %4 instanceof QRhiD3D11NativeHandles))
+                                    throw new IllegalArgumentException("QRhiD3D11NativeHandles expected as argument '%4'");
+                                break;
+                            case D3D12:
+                                if(!(%2 instanceof QRhiD3D12InitParams))
+                                    throw new IllegalArgumentException("QRhiD3D12InitParams expected as argument '%2'");
+                                if(!(%4==null || %4 instanceof QRhiD3D12NativeHandles))
+                                    throw new IllegalArgumentException("QRhiD3D12NativeHandles expected as argument '%4'");
+                                break;
+                            case Metal:
+                                if(!(%2 instanceof QRhiMetalInitParams))
+                                    throw new IllegalArgumentException("QRhiMetalInitParams expected as argument '%2'");
+                                if(!(%4==null || %4 instanceof QRhiMetalNativeHandles))
+                                    throw new IllegalArgumentException("QRhiMetalNativeHandles expected as argument '%4'");
+                                break;
+                            case Null:
+                                if(!(%2 instanceof QRhiNullInitParams))
+                                    throw new IllegalArgumentException("QRhiNullInitParams expected as argument '%2'");
+                                break;
+                            case OpenGLES2:
+                                if(!(%2 instanceof QRhiGles2InitParams))
+                                    throw new IllegalArgumentException("QRhiGles2InitParams expected as argument '%2'");
+                                if(!(%4==null || %4 instanceof QRhiGles2NativeHandles))
+                                    throw new IllegalArgumentException("QRhiGles2NativeHandles expected as argument '%4'");
+                                break;
+                            case Vulkan:
+                                if(!(%2 instanceof QRhiVulkanInitParams))
+                                    throw new IllegalArgumentException("QRhiVulkanInitParams expected as argument '%2'");
+                                if(!(%4==null || %4 instanceof QRhiVulkanNativeHandles))
+                                    throw new IllegalArgumentException("QRhiVulkanNativeHandles expected as argument '%4'");
+                                break;
+                            default:
+                                break;
+                            }
+                    `}
+            }
+            since: [6,10]
+        }
+        ModifyFunction{
+            signature: "enumerateAdapters(QRhi::Implementation,QRhiInitParams*,QRhiNativeHandles*)"
+            ModifyArgument{
+                index: 2
+                NoNullPointer{}
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "%1"}
+                ArgumentMap{index: 2; metaName: "%2"}
+                ArgumentMap{index: 3; metaName: "%3"}
+                Text{content: String.raw`
+                            io.qt.core.QCoreApplication app = io.qt.core.QCoreApplication.instance();
+                            if(app==null) {
+                                throw new IllegalStateException("Cannot create QRhi before initializing QGuiApplication.");
+                            }
+                            if(!(app instanceof io.qt.gui.QGuiApplication)) {
+                                throw new IllegalStateException("Cannot create QRhi without QGuiApplication (instead of "+app.getClass().getName().replace('$', '.')+").");
+                            }
+                            switch(%1) {
+                            case D3D11:
+                                if(!(%2 instanceof QRhiD3D11InitParams))
+                                    throw new IllegalArgumentException("QRhiD3D11InitParams expected as argument '%2'");
+                                if(!(%3==null || %3 instanceof QRhiD3D11NativeHandles))
+                                    throw new IllegalArgumentException("QRhiD3D11NativeHandles expected as argument '%3'");
+                                break;
+                            case D3D12:
+                                if(!(%2 instanceof QRhiD3D12InitParams))
+                                    throw new IllegalArgumentException("QRhiD3D12InitParams expected as argument '%2'");
+                                if(!(%3==null || %3 instanceof QRhiD3D12NativeHandles))
+                                    throw new IllegalArgumentException("QRhiD3D12NativeHandles expected as argument '%3'");
+                                break;
+                            case Metal:
+                                if(!(%2 instanceof QRhiMetalInitParams))
+                                    throw new IllegalArgumentException("QRhiMetalInitParams expected as argument '%2'");
+                                if(!(%3==null || %3 instanceof QRhiMetalNativeHandles))
+                                    throw new IllegalArgumentException("QRhiMetalNativeHandles expected as argument '%3'");
+                                break;
+                            case Null:
+                                if(!(%2 instanceof QRhiNullInitParams))
+                                    throw new IllegalArgumentException("QRhiNullInitParams expected as argument '%2'");
+                                break;
+                            case OpenGLES2:
+                                if(!(%2 instanceof QRhiGles2InitParams))
+                                    throw new IllegalArgumentException("QRhiGles2InitParams expected as argument '%2'");
+                                if(!(%3==null || %3 instanceof QRhiGles2NativeHandles))
+                                    throw new IllegalArgumentException("QRhiGles2NativeHandles expected as argument '%3'");
+                                break;
+                            case Vulkan:
+                                if(!(%2 instanceof QRhiVulkanInitParams))
+                                    throw new IllegalArgumentException("QRhiVulkanInitParams expected as argument '%2'");
+                                if(!(%3==null || %3 instanceof QRhiVulkanNativeHandles))
+                                    throw new IllegalArgumentException("QRhiVulkanNativeHandles expected as argument '%3'");
+                                break;
+                            default:
+                                break;
+                            }
+                    `}
             }
             since: [6,10]
         }
@@ -281,12 +493,6 @@ TypeSystem{
                 }
             }
             since: 6.9
-        }
-        InjectCode{
-            target: CodeClass.Java
-            position: Position.Beginning
-            Text{content: "private io.qt.gui.rhi.QRhiInitParams __rc_params;\n"+
-                          "private io.qt.gui.rhi.QRhiNativeHandles __rc_importDevice;"}
         }
     }
     ObjectType{
@@ -868,6 +1074,20 @@ if(%out_buffer.size()<array.size()*4)
                 ReplaceDefaultExpression{expression: "noDynamicOffsets"}
             }
         }
+        ModifyFunction{
+            signature: "drawIndexedIndirect(QRhiBuffer*,quint32,quint32,quint32)"
+            ModifyArgument{
+                index: 4
+                RemoveDefaultExpression{}
+            }
+        }
+        ModifyFunction{
+            signature: "drawIndirect(QRhiBuffer*,quint32,quint32,quint32)"
+            ModifyArgument{
+                index: 4
+                RemoveDefaultExpression{}
+            }
+        }
         InjectCode{
             target: CodeClass.Java
             position: Position.End
@@ -1408,9 +1628,33 @@ public final void setLuminanceInNits(float minLuminance, float maxLuminance) {
     }
     ObjectType{
         name: "QRhiVulkanQueueSubmitParams"
-        since: 6.9
+        ppCondition: "QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)"
+    }
+    ObjectType{
+        name: "QRhiVulkanInitParams"
+        ppCondition: "QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)"
+    }
+    ObjectType{
+        name: "QRhiVulkanNativeHandles"
+        ppCondition: "QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)"
+    }
+    ObjectType{
+        name: "QRhiVulkanCommandBufferNativeHandles"
+        ppCondition: "QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)"
+    }
+    ObjectType{
+        name: "QRhiVulkanRenderPassNativeHandles"
+        ppCondition: "QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)"
     }
 
+    ObjectType{
+        name: "QRhiIndexedIndirectDrawCommand"
+        //since: [6,10]
+    }
+    ObjectType{
+        name: "QRhiIndirectDrawCommand"
+        //since: [6,10]
+    }
     ObjectType{
         name: "QRhiAdapter"
         since: [6,10]

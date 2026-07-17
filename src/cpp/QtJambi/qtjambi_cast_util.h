@@ -96,8 +96,8 @@ struct jni_type_decider_impl{
     static constexpr bool isPrimitive = false;
     typedef jobject JType;
     typedef jobjectArray JArrayType;
-    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptional;
-    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptional;
+    static inline auto readJavaOptional = QtJambiAPI::readJavaOptional;
+    static inline auto newJavaOptional = QtJambiAPI::newJavaOptional;
 };
 
 template<typename T>
@@ -112,8 +112,8 @@ struct jni_type_decider_impl<bool, std::is_integral_v<bool>, std::is_floating_po
     static constexpr bool isPrimitive = true;
     typedef jboolean JType;
     typedef jbooleanArray JArrayType;
-    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptional;
-    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptional;
+    static inline auto readJavaOptional = QtJambiAPI::readJavaOptional;
+    static inline auto newJavaOptional = QtJambiAPI::newJavaOptional;
 };
 
 template<>
@@ -121,8 +121,8 @@ struct jni_type_decider_impl<QChar, std::is_integral_v<QChar>, std::is_floating_
     static constexpr bool isPrimitive = true;
     typedef jchar JType;
     typedef jcharArray JArrayType;
-    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptional;
-    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptional;
+    static inline auto readJavaOptional = QtJambiAPI::readJavaOptional;
+    static inline auto newJavaOptional = QtJambiAPI::newJavaOptional;
 };
 
 template<>
@@ -130,8 +130,8 @@ struct jni_type_decider_impl<wchar_t, std::is_integral_v<wchar_t>, std::is_float
     static constexpr bool isPrimitive = true;
     typedef jchar JType;
     typedef jcharArray JArrayType;
-    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptional;
-    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptional;
+    static inline auto readJavaOptional = QtJambiAPI::readJavaOptional;
+    static inline auto newJavaOptional = QtJambiAPI::newJavaOptional;
 };
 
 template<>
@@ -139,8 +139,8 @@ struct jni_type_decider_impl<char16_t, std::is_integral_v<char16_t>, std::is_flo
     static constexpr bool isPrimitive = true;
     typedef jchar JType;
     typedef jcharArray JArrayType;
-    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptional;
-    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptional;
+    static inline auto readJavaOptional = QtJambiAPI::readJavaOptional;
+    static inline auto newJavaOptional = QtJambiAPI::newJavaOptional;
 };
 
 template<typename T>
@@ -148,8 +148,8 @@ struct jni_type_decider_impl<T, true, false, sizeof(jbyte)>{
     static constexpr bool isPrimitive = true;
     typedef jbyte JType;
     typedef jbyteArray JArrayType;
-    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptional;
-    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptional;
+    static inline auto readJavaOptional = QtJambiAPI::readJavaOptional;
+    static inline auto newJavaOptional = QtJambiAPI::newJavaOptional;
 };
 
 template<typename T>
@@ -157,8 +157,8 @@ struct jni_type_decider_impl<T, true, false, sizeof(jshort)>{
     static constexpr bool isPrimitive = true;
     typedef jshort JType;
     typedef jshortArray JArrayType;
-    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptional;
-    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptional;
+    static inline auto readJavaOptional = QtJambiAPI::readJavaOptional;
+    static inline auto newJavaOptional = QtJambiAPI::newJavaOptional;
 };
 
 template<typename T>
@@ -166,16 +166,16 @@ struct jni_type_decider_impl<T, true, false, sizeof(jint)>{
     static constexpr bool isPrimitive = true;
     typedef jint JType;
     typedef jintArray JArrayType;
-    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptionalInt;
-    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptionalInt;
+    static inline auto readJavaOptional = QtJambiAPI::readJavaOptionalInt;
+    static inline auto newJavaOptional = QtJambiAPI::newJavaOptionalInt;
 };
 
 template<typename T>
 struct jni_type_decider_impl<T, true, false, sizeof(jlong)>{
     typedef jlong JType;
     typedef jlongArray JArrayType;
-    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptionalLong;
-    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptionalLong;
+    static inline auto readJavaOptional = QtJambiAPI::readJavaOptionalLong;
+    static inline auto newJavaOptional = QtJambiAPI::newJavaOptionalLong;
 };
 
 template<typename T>
@@ -183,8 +183,8 @@ struct jni_type_decider_impl<T, false, true, sizeof(jdouble)>{
     static constexpr bool isPrimitive = true;
     typedef jdouble JType;
     typedef jdoubleArray JArrayType;
-    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptionalDouble;
-    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptionalDouble;
+    static inline auto readJavaOptional = QtJambiAPI::readJavaOptionalDouble;
+    static inline auto newJavaOptional = QtJambiAPI::newJavaOptionalDouble;
 };
 
 template<typename T>
@@ -192,8 +192,8 @@ struct jni_type_decider_impl<T, false, true, sizeof(jfloat)>{
     static constexpr bool isPrimitive = true;
     typedef jfloat JType;
     typedef jfloatArray JArrayType;
-    static constexpr auto readJavaOptional = QtJambiAPI::readJavaOptional;
-    static constexpr auto newJavaOptional = QtJambiAPI::newJavaOptional;
+    static inline auto readJavaOptional = QtJambiAPI::readJavaOptional;
+    static inline auto newJavaOptional = QtJambiAPI::newJavaOptional;
 };
 
 template<bool is_reference,typename O>
@@ -209,7 +209,7 @@ struct ptr2ref<false,O>{
 
 template<typename O>
 struct ptr2ref<true,O>{
-    static constexpr auto value = &QtJambiAPI::checkedAddressOf<O>;
+    static inline auto value = &QtJambiAPI::checkedAddressOf<O>;
 };
 
 template<bool is_pointer,typename O>
@@ -648,8 +648,7 @@ struct qtjambi_jobject_arithmetic_cast;
 
 template<bool forward, typename JniType, typename NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
 static constexpr auto find_qtjambi_jobject_arithmetic_cast() {
-    constexpr bool hasCastImpl = is_complete_v<qtjambi_jobject_arithmetic_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>>;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/ArithmeticCast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/ArithmeticCast, is_complete_v<qtjambi_jobject_arithmetic_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>>);
     return qtjambi_jobject_arithmetic_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>{};
 }
 
@@ -1060,29 +1059,6 @@ struct qtjambi_cast_enabled_test;
 template<typename... Args>
 struct qtjambi_cast_enabled_test : qtjambi_cast_enabled_spread_test<sizeof...(Args), Args...>{
 };
-
-template<typename T>
-struct container_registry;
-
-template<typename T>
-struct empty_container_registry{
-    Q_NORETURN static QMetaType register_container(QByteArrayView, AbstractContainerAccess*){
-        throw "Cannot register container";
-    }
-};
-
-template<typename T>
-static constexpr auto find_container_registry(){
-    if constexpr(is_complete_v< container_registry<T> >){
-        return container_registry<T>{};
-    }else{
-        Q_STATIC_ASSERT_X(false && std::is_reference_v<T>, "Cannot cast without including <QtJambi/RegistryAPI>");
-        return empty_container_registry<T>{};
-    }
-}
-
-template<typename T>
-using container_registry_impl = decltype(find_container_registry<T>());
 
 } // namespace QtJambiPrivate
 

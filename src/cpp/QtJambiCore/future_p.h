@@ -359,6 +359,16 @@ inline auto futurevoid_createCancelHandlerSupplier(JNIEnv * env, jobject functio
     };
 }
 
+namespace QtJambiPrivate{
+template<typename T>
+struct ContainerSharedInfo<QFuture<T>,false>{
+    static constexpr bool is_shared = true;
+    static bool isSharedWith(const QFuture<T>& container, const QFuture<T>& other){
+        return CoreAPI::futureInterface(container)==CoreAPI::futureInterface(other);
+    }
+};
+}
+
 namespace QtPrivate
 {
 

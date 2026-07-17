@@ -62,18 +62,18 @@ abstract class AbstractContainer<T> extends QtObject implements Cloneable{
     }
 	
     /**
-     * Provides a constant C++ iterator to the containers begin.
+     * Provides a constant C++ iterator to the container's begin.
      * @return begin
      */
     @QtUninvokable
-    protected abstract AbstractIterator<T> constBegin();
+    protected abstract AbstractIterator<T,? extends AbstractContainer<T>> constBegin();
 
     /**
-     * Provides a constant C++ iterator to the containers end.
+     * Provides a constant C++ iterator to the container's end.
      * @return end
      */
     @QtUninvokable
-	protected abstract AbstractIterator<T> constEnd();
+	protected abstract AbstractIterator<T,? extends AbstractContainer<T>> constEnd();
 
 	/**
      * {@inheritDoc}

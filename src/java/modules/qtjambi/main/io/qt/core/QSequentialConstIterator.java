@@ -29,11 +29,10 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.Iterator;
+import java.util.*;
+import java.util.function.*;
 
-import io.qt.NativeAccess;
-import io.qt.QtObject;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
  * <p>Java-iterable wrapper for Qt's constant iterator types:</p>
@@ -49,42 +48,102 @@ import io.qt.QtUninvokable;
  * @see QSet#constEnd()
  * @see #iterator()
  */
-public class QSequentialConstIterator<T> extends AbstractIterator<T> implements java.lang.Iterable<T> {
+public class QSequentialConstIterator<T,Container extends QtObjectInterface> extends AbstractIterator<T,Container> implements Iterable<T>, Supplier<T> {
 
 	static {
     	QtJambi_LibraryUtilities.initialize();
     }
     
 	@NativeAccess
-	QSequentialConstIterator(QPrivateConstructor c, QtObject owner) { 
-    	super(c, owner);
+	protected QSequentialConstIterator(QtConstructInPlace p) { 
+    	super(p);
 	}
 	
-    /**
-     * {@inheritDoc}
-     */
-	@Override
-    @QtUninvokable
-    public boolean equals(Object other) {
-		if (other instanceof QSequentialConstIterator) {
-			return super.equals(other);
-		}
-    	return false;
-    }
-
+	@NativeAccess
+	protected QSequentialConstIterator(QPrivateConstructor c) { 
+    	super(c);
+	}
+	
+	protected QSequentialConstIterator(QSequentialConstIterator<T,Container> other) { 
+    	super(other, false, false);
+	}
+	
+	protected QSequentialConstIterator(QSequentialIterator<T,Container> other) { 
+    	super(other, true, false);
+	}
+	
+	/**
+	 * KeyIterator constructor
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	QSequentialConstIterator(QAssociativeConstIterator other, boolean targetConst) { 
+    	super(other, targetConst, true);
+	}
+	
+	/**
+	 * KeyIterator constructor
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	QSequentialConstIterator(QAssociativeConstIterator other) { 
+    	super(other, true, true);
+	}
+	
     /**
      * Returns a Java iterator between this and the container's end.
      */
     @QtUninvokable
     public final Iterator<T> iterator(){
-    	return toJavaIterator();
+    	if(canCopy())
+    		return iterator(clone());
+    	else
+    		return iterator(this, false);
     }
     
     /**
      * Returns a descending Java iterator between this and the container's end.
      */
     @QtUninvokable
-	public final java.util.Iterator<T> descendingIterator() {
-    	return toJavaDescendingIterator();
+	protected Iterator<T> descendingIterator() {
+    	if(canCopy())
+    		return descendingIterator(clone());
+    	else
+    		return descendingIterator(this, false);
     }
+	
+	/**
+     * Returns a Java bidirectional iterator between this and the container's end.
+     */
+    @QtUninvokable
+    protected ListIterator<T> bidirectionalIterator(){
+    	if(canCopy()) {
+			return bidirectionalIterator(clone());
+    	}else{
+    		return bidirectionalIterator(this);
+		}
+    }
+    
+	/**
+     * Creates and returns a copy of this object.
+     */
+    @Override
+	public @NonNull QSequentialConstIterator<T,Container> clone(){
+		return new QSequentialConstIterator<>(this);
+	}
+    
+    /**
+	 * Returns the value at iterator's position in the container.
+	 * @throws NoSuchElementException in case of <code>end</code>.
+	 */
+    @QtUninvokable
+	public final T get() {
+		return validValue();
+	}
+    
+    /**
+	 * Returns the value type of the iterator.
+	 */
+    @QtUninvokable
+	public final QMetaType elementMetaType() {
+    	return super.valueType();
+	}
 }

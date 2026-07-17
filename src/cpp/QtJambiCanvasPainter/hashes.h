@@ -101,28 +101,65 @@ inline size_t qHash(const QCanvasBrush &value, size_t seed = 0)
 {
     switch(value.type()) {
     case QCanvasBrush::BrushType::LinearGradient:
+#if QT_VERSION < QT_VERSION_CHECK(6, 12, 0)
         return qHash(reinterpret_cast<const QCanvasLinearGradient &>(value), seed);
+#else
+        return qHash(value.as<QCanvasLinearGradient>(), seed);
+#endif
     case QCanvasBrush::BrushType::RadialGradient:
+#if QT_VERSION < QT_VERSION_CHECK(6, 12, 0)
         return qHash(reinterpret_cast<const QCanvasRadialGradient &>(value), seed);
+#else
+        return qHash(value.as<QCanvasRadialGradient>(), seed);
+#endif
     case QCanvasBrush::BrushType::ConicalGradient:
+#if QT_VERSION < QT_VERSION_CHECK(6, 12, 0)
         return qHash(reinterpret_cast<const QCanvasConicalGradient &>(value), seed);
+#else
+        return qHash(value.as<QCanvasConicalGradient>(), seed);
+#endif
     case QCanvasBrush::BrushType::BoxGradient:
+#if QT_VERSION < QT_VERSION_CHECK(6, 12, 0)
         return qHash(reinterpret_cast<const QCanvasBoxGradient &>(value), seed);
+#else
+        return qHash(value.as<QCanvasBoxGradient>(), seed);
+#endif
     case QCanvasBrush::BrushType::BoxShadow:
+#if QT_VERSION < QT_VERSION_CHECK(6, 12, 0)
         return qHash(reinterpret_cast<const QCanvasBoxShadow &>(value), seed);
+#else
+        return qHash(value.as<QCanvasBoxShadow>(), seed);
+#endif
     case QCanvasBrush::BrushType::ImagePattern:
+#if QT_VERSION < QT_VERSION_CHECK(6, 12, 0)
         return qHash(reinterpret_cast<const QCanvasImagePattern &>(value), seed);
+#else
+        return qHash(value.as<QCanvasImagePattern>(), seed);
+#endif
     case QCanvasBrush::BrushType::GridPattern:
+#if QT_VERSION < QT_VERSION_CHECK(6, 12, 0)
         return qHash(reinterpret_cast<const QCanvasGridPattern &>(value), seed);
+#else
+        return qHash(value.as<QCanvasGridPattern>(), seed);
+#endif
     default:
+#if QT_VERSION < QT_VERSION_CHECK(6, 12, 0)
         if(value.type()>=QCanvasBrush::BrushType::Custom){
             return qHash(reinterpret_cast<const QCanvasCustomBrush &>(value), seed);
         }else{
             return seed;
         }
+#else
+        if(value.type()>=QCanvasBrush::BrushType::Custom){
+            return qHash(value.as<QCanvasCustomBrush>(), seed);
+        }else{
+            return seed;
+        }
+#endif
     }
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 12, 0)
 inline bool operator==(const QCanvasBrush& v1, const QCanvasBrush& v2){
     if(v1.type()==v2.type()){
         switch(v1.type()){
@@ -150,5 +187,6 @@ inline bool operator==(const QCanvasBrush& v1, const QCanvasBrush& v2){
     }
     return false;
 }
+#endif
 
 #endif // QTJAMBICANVASPAINTER_HASHES_H

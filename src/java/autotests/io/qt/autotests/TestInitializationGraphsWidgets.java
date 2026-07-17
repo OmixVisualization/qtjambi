@@ -33,11 +33,16 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.qt.core.QTimer;
+import io.qt.graphs.QSurface3DSeries;
+import io.qt.graphs.QSurfaceDataArray;
+import io.qt.graphs.QSurfaceDataItem;
+import io.qt.graphs.QSurfaceDataRow;
 import io.qt.graphs.widgets.Q3DSurfaceWidgetItem;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QIcon;
 import io.qt.quick.widgets.QQuickWidget;
 import io.qt.widgets.QApplication;
+import io.qt.widgets.QWidget;
 
 public class TestInitializationGraphsWidgets extends UnitTestInitializer {
     @Test
@@ -46,11 +51,28 @@ public class TestInitializationGraphsWidgets extends UnitTestInitializer {
     	QApplication.initialize(new String[0]);
     	QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
     	{
-	    	QQuickWidget window = new QQuickWidget();
+    		QQuickWidget window = new QQuickWidget();
 	    	Q3DSurfaceWidgetItem item = new Q3DSurfaceWidgetItem();
 	    	item.setWidget(window);
+	    	window.setMinimumSize(256, 256);
+	    	
+	    	QSurfaceDataArray data = new QSurfaceDataArray();
+	        QSurfaceDataRow dataRow1 = new QSurfaceDataRow();
+	        QSurfaceDataRow dataRow2 = new QSurfaceDataRow();
+
+	        dataRow1.add(new QSurfaceDataItem(0.0f, 0.1f, 0.5f));
+	        dataRow1.add(new QSurfaceDataItem(1.0f, 0.5f, 0.5f));
+	        dataRow2.add(new QSurfaceDataItem(0.0f, 1.8f, 1.0f));
+	        dataRow2.add(new QSurfaceDataItem(1.0f, 1.2f, 1.0f));
+	        data.add(dataRow1);
+	        data.add(dataRow2);
+
+	        QSurface3DSeries series = new QSurface3DSeries();
+	        series.dataProxy().resetArray(data);
+	        item.addSeries(series);
+	        
 	    	window.show();
-	    	QTimer.singleShot(500, QApplication.instance(), QApplication::quit);
+	    	QTimer.singleShot(1500, window, QWidget::close);
 	    	QApplication.exec();
     	}
     	QApplication.shutdown();

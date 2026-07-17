@@ -1,23 +1,14 @@
 package io.qt.autotests;
 
+import static io.qt.autotests.generated.ContainerFactory.*;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
-import io.qt.autotests.generated.General;
-import io.qt.autotests.generated.Tulip;
-import io.qt.core.QCoreApplication;
-import io.qt.core.QEasingCurve;
-import io.qt.core.QEvent;
-import io.qt.core.QHash;
-import io.qt.core.QList;
-import io.qt.core.QMetaType;
-import io.qt.core.QSet;
-import io.qt.gui.QTextCursor;
-import io.qt.gui.QTextDocument;
+import io.qt.autotests.generated.*;
+import io.qt.core.*;
+import io.qt.gui.*;
 
 public class TestReferenceCountingQHashNested extends ApplicationInitializer {
 	
@@ -52,7 +43,7 @@ public class TestReferenceCountingQHashNested extends ApplicationInitializer {
 	    	}
 			QList<QList<QEasingCurve.EasingFunction>> values = container.values();
 	    	for(QList<QEasingCurve.EasingFunction> list : values) {
-    			Tulip.testEasingFunctions(list);
+    			testEasingFunctions(list);
     			list.dispose();
     			list = null;
 	    	}

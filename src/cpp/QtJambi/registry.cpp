@@ -35,7 +35,14 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "pch_p.h"
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qmetaobject_p.h>
-#include "containeraccess_associative.h"
+#include "containeraccess_export_stringlist.h"
+#include "containeraccess_export_variantlist.h"
+#include "containeraccess_export_bytearraylist.h"
+#include "containeraccess_export_hash.h"
+#include "containeraccess_export_pair.h"
+#include "containeraccess_export_map.h"
+#include "containeraccess_export_list.h"
+#include "qtjambi_cast_template2.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
 #define qAsConst std::as_const
@@ -82,7 +89,7 @@ void registerTypeAlias(const std::type_info& typeId, const char *qt_name, const 
     }
 }
 
-void registerTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, EntryTypes entryTypes)
+void registerTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, EntryTypes entryTypes, bool registerJavaToQtType)
 {
     QtJambiStorage* storage = getQtJambiStorage();
     {
@@ -95,7 +102,8 @@ void registerTypeInfo(const std::type_info& typeId, const char *qt_name, const c
         if(!storage->typeJavaNameHash().contains(unique_id(typeId))){
             storage->typeJavaNameHash().insert(unique_id(typeId), java_name);
         }
-        storage->javaNameTypeHash()[java_name].append(&typeId);
+        if(registerJavaToQtType)
+            storage->javaNameTypeHash()[java_name].append(&typeId);
         if(entryTypes!=EntryTypes::Unspecific)
             storage->entryTypesHash().insert(unique_id(typeId), entryTypes);
         if(entryTypes==EntryTypes::FunctionPointerTypeInfo
@@ -120,7 +128,7 @@ void RegistryAPI::registerNativeInterface(const char* className, QPair<const cha
 }
 
 bool registeredNativeInterface(JNIEnv* env, jclass cls, QPair<const char*, int>& nameAndRevision){
-    QtJambiStorage* storage = getQtJambiStorage();
+    const QtJambiStorage* storage = getQtJambiStorage();
     {
         QByteArray className = QtJambiAPI::getClassNameJNI(env, cls);
         QReadLocker locker(storage->registryLock());
@@ -170,7 +178,7 @@ void RegistryAPI::registerIID(const std::type_info& typeId, const char *interfac
 
 const char * registeredInterfaceID(const std::type_info& typeId)
 {
-    QtJambiStorage* storage = getQtJambiStorage();
+    const QtJambiStorage* storage = getQtJambiStorage();
     {
         QReadLocker locker(storage->registryLock());
         return storage->javaClassIIDHash().value(storage->typeJavaNameHash().value(unique_id(typeId), nullptr));
@@ -179,7 +187,7 @@ const char * registeredInterfaceID(const std::type_info& typeId)
 
 const char * registeredInterfaceIDForClassName(QByteArrayView className)
 {
-    QtJambiStorage* storage = getQtJambiStorage();
+    const QtJambiStorage* storage = getQtJambiStorage();
     {
         QReadLocker locker(storage->registryLock());
         return storage->javaClassIIDHash().value(className);
@@ -221,7 +229,7 @@ void RegistryAPI::registerInterfaceValueTypeInfo(const std::type_info& typeId, c
     }
 }
 
-void RegistryAPI::registerFunctionalTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, bool isFunctionPointer, const QMetaType& metaType,
+void RegistryAPI::registerFunctionalTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, bool isFunctionPointer, QMetaType&& metaType, QMetaType&& nativeMetaType,
                                              size_t size, size_t alignment, size_t sizeOfShell, size_t alignmentOfShell, FunctionalResolver resolver, uint returnScopes,
                                              RegistryAPI::DestructorFn destructor, std::initializer_list<ConstructorInfo> constructors,
                                              PtrDeleterFunction deleter, std::initializer_list<FunctionInfo> virtualFunctions)
@@ -234,7 +242,7 @@ void RegistryAPI::registerFunctionalTypeInfo(const std::type_info& typeId, const
     {
         QWriteLocker locker(storage->registryLock());
         storage->javaNameByMetaTypes().insert(metaTypeId, java_name);
-        storage->metaTypesByJavaTypeNames().insert(java_name, META_TYPE_ACCESS(metaType).iface());
+        storage->metaTypesByJavaTypeNames().insert(java_name, metaType.iface());
     }
     if(sizeOfShell>0)
         registerSizeOfShell(typeId, sizeOfShell, alignmentOfShell);
@@ -246,6 +254,10 @@ void RegistryAPI::registerFunctionalTypeInfo(const std::type_info& typeId, const
         registerDeleter(typeId, deleter);
     if(virtualFunctions.size()>0)
         registerFunctionInfos(typeId, virtualFunctions);
+    if(nativeMetaType.isValid()){
+        QWriteLocker locker(storage->registryLock());
+        storage->metaTypeByNativeMetaType().insert(std::move(nativeMetaType), std::move(metaType));
+    }
 }
 
 void RegistryAPI::registerQObjectTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name)
@@ -261,6 +273,25 @@ void RegistryAPI::registerObjectTypeInfo(const std::type_info& typeId, const cha
 void RegistryAPI::registerValueTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name)
 {
     registerTypeInfo(typeId, qt_name, java_name, EntryTypes::ValueTypeInfo);
+}
+
+void RegistryAPI::registerIteratorTypeInfo(const std::type_info& containerTypeId, const std::type_info& iteratorTypeId, const char *qt_name, const char *java_name)
+{
+    QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QWriteLocker locker(storage->registryLock());
+        storage->containersIteratorJavaNames()[unique_id(containerTypeId)][unique_id(iteratorTypeId)] = QPair<const char*,const char*>{qt_name,java_name};
+    }
+    registerTypeInfo(iteratorTypeId, qt_name, java_name, EntryTypes::IteratorTypeInfo);
+}
+
+QPair<const char*,const char*> iteratorJavaType(const std::type_info& containerTypeId, const std::type_info& iteratorTypeId)
+{
+    const QtJambiStorage* storage = getQtJambiStorage();
+    {
+        QReadLocker locker(storage->registryLock());
+        return storage->containersIteratorJavaNames()[unique_id(containerTypeId)][unique_id(iteratorTypeId)];
+    }
 }
 
 void RegistryAPI::registerEnumTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name)
@@ -2293,33 +2324,6 @@ FunctionalResolver registeredFunctionalResolver(const std::type_info& typeId){
     return nullptr;
 }
 
-static QmlAPI::QmlReportDestruction qmlReportDestructionFunction = nullptr;
-
-static QmlAPI::GetQmlOwnership fnGetQmlOwnership = nullptr;
-
-void QtJambiAPI::DeclarativeUtil::reportDestruction(QObject * obj){
-    if(qmlReportDestructionFunction)
-        qmlReportDestructionFunction(obj);
-}
-
-void QmlAPI::setQmlReportDestruction(QmlReportDestruction fct){
-    if(!qmlReportDestructionFunction)
-        qmlReportDestructionFunction = fct;
-}
-
-void QmlAPI::setGetQmlOwnership(GetQmlOwnership fct){
-    if(!fnGetQmlOwnership)
-        fnGetQmlOwnership = fct;
-}
-
-bool isQmlJavaScriptOwnership(QObject * obj){
-    return fnGetQmlOwnership && fnGetQmlOwnership(obj).testFlag(QmlAPI::JavaScriptOwnership);
-}
-
-bool isQmlExplicitCppOwnership(QObject * obj){
-    return fnGetQmlOwnership && fnGetQmlOwnership(obj)==(QmlAPI::CppOwnership | QmlAPI::ExplicitSet);
-}
-
 void registerJavaClassForCustomMetaType(JNIEnv *env, const QMetaType& metaType, jclass javaClass, bool isJObjectWrapped){
     int metaTypeId = metaType.id();
     const QtPrivate::QMetaTypeInterface * iface = META_TYPE_ACCESS(metaType).iface();
@@ -2996,9 +3000,6 @@ void unregisterGlobalClassPointer(jclass& cls){
 bool getFunctions(JNIEnv *env, const QMetaType& elementType, QtJambiUtils::QHashFunction& hashFunction, QtJambiUtils::InternalToExternalConverter& internalToExternalConverter, QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter);
 
 QMetaType QmlAPI::registerMetaType(JNIEnv *env, SequentialContainerType containerType, const QMetaType& elementType){
-#if defined(QTJAMBI_GENERIC_ACCESS)
-    using namespace ContainerAccessAPI;
-#endif
     QMetaType result;
     auto containerAcess = createContainerAccess(containerType, elementType);
     AbstractListAccess* listAccess{nullptr};

@@ -15660,17 +15660,13 @@ class QByteArrayView___ extends QByteArray {
         if(data==null){
             initialize_native(this);
         }else {
-            Long[] pointerOut = {null};
             if(offset+length>data.length)
                 length = data.length-offset;
-            initialize_native(this, data, offset, length, pointerOut);
-            if(pointerOut[0]!=null)
-                __rcSource = new Purger(this, pointerOut[0], Purger.Mode.Bytes);
+            __rcSource = new Purger(this, initialize_native(this, data, offset, length), Purger.Mode.Bytes);
         }
     }
 
-    private native static void initialize_native(QByteArrayView instance, byte[] data, int offset, int length,
-            Long[] pointerOut);
+    private native static long initialize_native(QByteArrayView instance, byte[] data, int offset, int length);
 
     private native static void purgeBytes(long pointer);
 
@@ -15682,14 +15678,11 @@ class QByteArrayView___ extends QByteArray {
         if(data==null){
             initialize_native(this);
         }else{
-            Long[] pointerOut = {null};
-            initialize_native(this, data, pointerOut);
-            if(pointerOut[0]!=null)
-                __rcSource = new Purger(this, pointerOut[0], Purger.Mode.String);
+            __rcSource = new Purger(this, initialize_native(this, data), Purger.Mode.String);
         }
     }
 
-    private native static void initialize_native(QByteArrayView instance, String data, Long[] pointerOut);
+    private native static long initialize_native(QByteArrayView instance, String data);
 
     private native static void purgeString(long pointer);
 
@@ -15704,17 +15697,13 @@ class QByteArrayView___ extends QByteArray {
             initialize_native(this, data, data.position(), data.limit()-data.position());
             __rcSource = data;
         }else {
-            Long[] pointerOut = {null};
-            initialize_native(this, data, pointerOut);
-            if(pointerOut[0]!=null)
-                __rcSource = new Purger(this, pointerOut[0], Purger.Mode.Buffer);
+            __rcSource = new Purger(this, initialize_native(this, data), Purger.Mode.Buffer);
         }
     }
 
-    private native static void initialize_native(QByteArrayView instance, java.nio.ByteBuffer data, int offset,
-            int length);
+    private native static void initialize_native(QByteArrayView instance, java.nio.ByteBuffer data, int offset, int length);
 
-    private native static void initialize_native(QByteArrayView instance, java.nio.ByteBuffer data, Long[] pointerOut);
+    private native static long initialize_native(QByteArrayView instance, java.nio.ByteBuffer data);
 
     private native static void purgeBuffer(long pointer);
 
@@ -15725,7 +15714,9 @@ class QByteArrayView___ extends QByteArray {
         super((QPrivateConstructor)null);
         if(data!=null) {
             initialize_native(this, data);
-            __rcSource = data;
+            QByteArray clone = data.clone();
+            __rcSource = clone;
+            QtUtilities.getSignalOnDispose(this).connect(clone::dispose);
         }else {
             initialize_native(this);
         }
@@ -21050,6 +21041,61 @@ class QMetaObject___ {
          */
         public final boolean disconnect(@StrictNonNull Slot0 slot) {
             return removeConnectionToSlotObject(slot);
+        }
+
+        /**
+         * Initializes a connection to the <i>slot</i> of <i>receiver</i>.
+         *
+         * @param <Receiver>     The type of the receiver
+         * @param receiver       the target receiver
+         * @param slot           the slot to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are
+         *                                             incompatible.
+         */
+        public final <Receiver> QMetaObject.@NonNull Connection connect(@StrictNonNull Receiver receiver,
+                @StrictNonNull Slot1<Receiver> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(receiver, slot, connectionType);
+        }
+
+        /**
+         * Removes the connection to the given <i>slot</i> of <i>receiver</i>.
+         *
+         * @param <Receiver> The type of the receiver
+         * @param receiver   the target receiver
+         * @param slot       the slot to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code>
+         *         otherwise.
+         */
+        public final <Receiver> boolean disconnect(@StrictNonNull Receiver receiver,
+                @StrictNonNull Slot1<Receiver> slot) {
+            return removeConnectionToSlotObject(receiver, slot);
+        }
+
+        /**
+         * Initializes a connection to the <i>signal</i>.
+         *
+         * @param signal         the signal to be connected
+         * @param connectionType type of connection
+         * @return connection if successful or <code>null</code> otherwise
+         * @throws io.qt.QMisfittingSignatureException Raised if their signatures are
+         *                                             incompatible.
+         */
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable0 signal,
+                Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSignalObject((AbstractSignal) signal, connectionType);
+        }
+
+        /**
+         * Removes the connection to the given <i>signal</i>.
+         *
+         * @param signal the signal to be disconnected
+         * @return <code>true</code> if successfully disconnected, or <code>false</code>
+         *         otherwise.
+         */
+        public final boolean disconnect(@StrictNonNull Connectable0 signal) {
+            return removeConnectionToSignalObject((AbstractSignal) signal);
         }
     }
 
@@ -50392,6 +50438,40 @@ class QFutureInterface__ {
 
 class QFuture__ {
      /**
+      * <p>QFuture::ConstIterator class provides an STL-style const iterator for QFuture</p>
+      * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qfuture-constiterator.html">QFuture::const_iterator</a></code></p>
+      */
+     public static final class ConstIterator<T> extends io.qt.core.QSequentialConstIterator<T,QFuture<T>>
+         implements java.lang.Cloneable
+     {
+         static {
+             QtJambi_LibraryUtilities.initialize();
+         }
+
+
+         /**
+          * Creates and returns a copy of this object.
+          */
+         @Override
+         public @NonNull ConstIterator<T> clone(){
+             return new ConstIterator<>(this);
+         }
+
+         private ConstIterator(ConstIterator<T> other){
+             super(other);
+         }
+
+         /**
+          * Constructor for internal use only.
+          * @param p expected to be <code>null</code>.
+          * @hidden
+          */
+         @NativeAccess
+         private ConstIterator(QPrivateConstructor p) { super(p); }
+
+     }
+
+     /**
       * <p>Similar to <code>Runnable</code> but potentially throwing exception.</p>
       * @see java.lang.Runnable
       */
@@ -51600,3 +51680,4 @@ class QVariantAnimation__ {
      }
      private static native void registerAnimationInterpolatorF(FloatInterpolator interpolator);
 }// class
+

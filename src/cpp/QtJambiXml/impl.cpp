@@ -37,3 +37,23 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/xml,QDomDocument$Result,
 )
 }
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+class tst_QDom{
+public:
+    inline static bool isSharedWith(const QDomNodeList& container, const QDomNodeList& other){
+        return container.impl==other.impl;
+    }
+};
+
+bool QtJambiPrivate::is_shared_with(const QDomNodeList& container, const QDomNodeList& other){
+    return tst_QDom::isSharedWith(container, other);
+}
+#else
+bool QtJambiPrivate::is_shared_with(const QDomNodeList& container, const QDomNodeList& other){
+    struct DomNodeList{
+        QDomNodeListPrivate* impl;
+    };
+    return reinterpret_cast<const DomNodeList&>(container).impl==reinterpret_cast<const DomNodeList&>(other).impl;
+}
+#endif

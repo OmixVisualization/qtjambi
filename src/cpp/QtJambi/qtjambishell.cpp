@@ -1599,22 +1599,6 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
     QTJAMBI_JNI_LOCAL_FRAME(env, 64);
     jclass objectClass = env->GetObjectClass(object);
     jobject nativeLink = QtJambiLink::getNativeLink(env, object);
-#if defined(QTJAMBI_GENERIC_ACCESS)
-    if(!containerAccess){
-    }else if(containerAccess->isList()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractListAccess*>(containerAccess));
-    }else if(containerAccess->isSet()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractSetAccess*>(containerAccess));
-    }else if(containerAccess->isHash()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractHashAccess*>(containerAccess));
-    }else if(containerAccess->isMap()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractMapAccess*>(containerAccess));
-    }else if(containerAccess->isMultiHash()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractMultiHashAccess*>(containerAccess));
-    }else if(containerAccess->isMultiMap()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractMultiMapAccess*>(containerAccess));
-    }
-#endif //defined(QTJAMBI_GENERIC_ACCESS)
     Q_ASSERT(containerAccess);
 
     if(env->IsSameObject(objectClass, callingClass)){
@@ -1867,22 +1851,6 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
     QTJAMBI_JNI_LOCAL_FRAME(env, 64);
     jclass objectClass = env->GetObjectClass(object);
     jobject nativeLink = QtJambiLink::getNativeLink(env, object);
-#if defined(QTJAMBI_GENERIC_ACCESS)
-    if(!containerAccess){
-    }else if(containerAccess->isList()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractListAccess*>(containerAccess));
-    }else if(containerAccess->isSet()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractSetAccess*>(containerAccess));
-    }else if(containerAccess->isHash()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractHashAccess*>(containerAccess));
-    }else if(containerAccess->isMap()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractMapAccess*>(containerAccess));
-    }else if(containerAccess->isMultiHash()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractMultiHashAccess*>(containerAccess));
-    }else if(containerAccess->isMultiMap()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractMultiMapAccess*>(containerAccess));
-    }
-#endif //defined(QTJAMBI_GENERIC_ACCESS)
     Q_ASSERT(containerAccess);
 
     if(env->IsSameObject(objectClass, callingClass)){
@@ -2124,22 +2092,6 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
     QTJAMBI_JNI_LOCAL_FRAME(env, 64);
     jclass objectClass = env->GetObjectClass(object);
     jobject nativeLink = QtJambiLink::getNativeLink(env, object);
-#if defined(QTJAMBI_GENERIC_ACCESS)
-    if(!containerAccess){
-    }else if(containerAccess->isList()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractListAccess*>(containerAccess));
-    }else if(containerAccess->isSet()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractSetAccess*>(containerAccess));
-    }else if(containerAccess->isHash()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractHashAccess*>(containerAccess));
-    }else if(containerAccess->isMap()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractMapAccess*>(containerAccess));
-    }else if(containerAccess->isMultiHash()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractMultiHashAccess*>(containerAccess));
-    }else if(containerAccess->isMultiMap()){
-        containerAccess = checkContainerAccess(env, static_cast<AbstractMultiMapAccess*>(containerAccess));
-    }
-#endif //defined(QTJAMBI_GENERIC_ACCESS)
     Q_ASSERT(containerAccess);
 
     if(env->IsSameObject(objectClass, callingClass)){

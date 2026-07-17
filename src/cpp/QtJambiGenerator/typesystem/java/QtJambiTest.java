@@ -570,11 +570,6 @@ class QTest__{
         if(init!=null) {
             init.accept(testClass.getSimpleName(), args);
             io.qt.core.QCoreApplication.setAttribute(io.qt.core.Qt.ApplicationAttribute.AA_Use96Dpi, true);
-            if(io.qt.widgets.QApplication.instance()!=null) {
-                try {
-                    io.qt.widgets.QApplication.setNavigationMode(io.qt.core.Qt.NavigationMode.NavigationModeNone);
-                } catch (QNoImplementationException e) {}
-            }
         }else {
             String[] newArgs = new String[args.length+1];
             newArgs[0] = testClass.getSimpleName();

@@ -141,6 +141,15 @@ private:
     const EnumTypeEntry* m_enumType;
 };
 
+class IteratorTypeEntry : public QtJambiTypeEntry{
+public:
+    IteratorTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size, size_t value_align);
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const override;
+    bool convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jobject& output) const override;
+    bool convertToNative(JNIEnv *env, jobject input, void * output) const override;
+};
+
 class AbstractSimpleTypeEntry : public QtJambiTypeEntry{
 public:
     AbstractSimpleTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size, size_t value_align);
@@ -150,6 +159,14 @@ private:
 };
 
 class QCborValueRefTypeEntry : public AbstractSimpleTypeEntry{
+public:
+    using AbstractSimpleTypeEntry::AbstractSimpleTypeEntry;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override;
+    bool convertToNative(JNIEnv *env, jobject input, void * output) const override;
+private:
+};
+
+class QJsonValueRefTypeEntry : public AbstractSimpleTypeEntry{
 public:
     using AbstractSimpleTypeEntry::AbstractSimpleTypeEntry;
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output) const override;

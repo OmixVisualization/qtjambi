@@ -64,7 +64,7 @@ struct ArrayFactory{
 
 template<>
 struct ArrayFactory<jintArray>{
-    static constexpr auto converterFunction = QtJambiAPI::toJIntArray;
+    static inline auto converterFunction = QtJambiAPI::toJIntArray;
     template<bool persistent, typename T, bool isConst = std::is_const<T>::value>
     struct NativeFactory{
         Q_STATIC_ASSERT_X(sizeof(T)==sizeof(jint), "T* cannot be cast to jint*");
@@ -74,7 +74,7 @@ struct ArrayFactory<jintArray>{
 
 template<>
 struct ArrayFactory<jbyteArray>{
-    static constexpr auto converterFunction = QtJambiAPI::toJByteArray;
+    static inline auto converterFunction = QtJambiAPI::toJByteArray;
     template<bool persistent, typename T, bool isConst = std::is_const<T>::value>
     struct NativeFactory{
         Q_STATIC_ASSERT_X(sizeof(T)==sizeof(jbyte), "T* cannot be cast to jbyte*");
@@ -84,7 +84,7 @@ struct ArrayFactory<jbyteArray>{
 
 template<>
 struct ArrayFactory<jshortArray>{
-    static constexpr auto converterFunction = QtJambiAPI::toJShortArray;
+    static inline auto converterFunction = QtJambiAPI::toJShortArray;
     template<bool persistent, typename T, bool isConst = std::is_const<T>::value>
     struct NativeFactory{
         Q_STATIC_ASSERT_X(sizeof(T)==sizeof(jshort), "T* cannot be cast to jshort*");
@@ -94,7 +94,7 @@ struct ArrayFactory<jshortArray>{
 
 template<>
 struct ArrayFactory<jlongArray>{
-    static constexpr auto converterFunction = QtJambiAPI::toJLongArray;
+    static inline auto converterFunction = QtJambiAPI::toJLongArray;
     template<bool persistent, typename T, bool isConst = std::is_const<T>::value>
     struct NativeFactory{
         Q_STATIC_ASSERT_X(sizeof(T)==sizeof(jlong), "T* cannot be cast to jlong*");
@@ -104,7 +104,7 @@ struct ArrayFactory<jlongArray>{
 
 template<>
 struct ArrayFactory<jcharArray>{
-    static constexpr auto converterFunction = QtJambiAPI::toJCharArray;
+    static inline auto converterFunction = QtJambiAPI::toJCharArray;
     template<bool persistent, typename T, bool isConst = std::is_const<T>::value>
     struct NativeFactory{
         Q_STATIC_ASSERT_X(sizeof(T)==sizeof(jchar), "T* cannot be cast to jchar*");
@@ -114,7 +114,7 @@ struct ArrayFactory<jcharArray>{
 
 template<>
 struct ArrayFactory<jbooleanArray>{
-    static constexpr auto converterFunction = QtJambiAPI::toJBooleanArray;
+    static inline auto converterFunction = QtJambiAPI::toJBooleanArray;
     template<bool persistent, typename T, bool isConst = std::is_const<T>::value>
     struct NativeFactory{
         Q_STATIC_ASSERT_X(sizeof(T)==sizeof(jboolean) || sizeof(T)==sizeof(bool), "T* cannot be cast to jboolean*");
@@ -124,7 +124,7 @@ struct ArrayFactory<jbooleanArray>{
 
 template<>
 struct ArrayFactory<jdoubleArray>{
-    static constexpr auto converterFunction = QtJambiAPI::toJDoubleArray;
+    static inline auto converterFunction = QtJambiAPI::toJDoubleArray;
     template<bool persistent, typename T, bool isConst = std::is_const<T>::value>
     struct NativeFactory{
         Q_STATIC_ASSERT_X(sizeof(T)==sizeof(jdouble), "T* cannot be cast to jdouble*");
@@ -134,7 +134,7 @@ struct ArrayFactory<jdoubleArray>{
 
 template<>
 struct ArrayFactory<jfloatArray>{
-    static constexpr auto converterFunction = QtJambiAPI::toJFloatArray;
+    static inline auto converterFunction = QtJambiAPI::toJFloatArray;
     typedef jfloat ElementType;
 
     template<bool persistent, typename T, bool isConst = std::is_const<T>::value>
@@ -442,7 +442,7 @@ struct qtjambi_jobject_span_cast{
                                                                              const Span<Tconst,E>& _span = *reinterpret_cast<const Span<Tconst,E>*>(ptr);
                                                                              return new QList<T>(_span.begin(), _span.end());
                                                                          },
-                                                                         DeleteContainer<QList,T>::function,
+                                                                         &QtJambiAPI::deletePointer<QList<T>>,
                                                                          QListAccess<T>::newInstance(),
                                                                          t_is_const);
                 }else{
@@ -467,8 +467,6 @@ struct qtjambi_jobject_span_cast{
                 }
             }
         }else{
-            Q_STATIC_ASSERT_X(!is_reference || is_const, "Cannot cast to non-const QSpan<T,E>&");
-            Q_STATIC_ASSERT_X(!is_pointer || is_const, "Cannot cast to non-const QSpan<T,E>*");
             if constexpr(is_pointer){
                 if(!in)
                     return nullptr;
@@ -480,11 +478,18 @@ struct qtjambi_jobject_span_cast{
                     return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(std::move(span), args...);
                 }else{
                     UnlimitedSpan span = value_range_converter<TArray, T, t_is_const, JniType, UnlimitedSpan, Args...>::toNativeContainer(in, jsize(E), arg_pointer<Args>::ref(args)...);
-                    if constexpr(is_pointer || is_reference){
+                    if constexpr(is_pointer){
+                        Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast span pointer without scope.");
                         NativeType* result = new NativeType(span.template first<E>());
-                        return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(result, args...);
+                        cast_var_args<Args...>::scope(args...).addDeletion(result);
+                        return result;
+                    }else if constexpr(is_reference){
+                        Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast span reference without scope.");
+                        NativeType* result = new NativeType(span.template first<E>());
+                        cast_var_args<Args...>::scope(args...).addDeletion(result);
+                        return *result;
                     }else{
-                        return span.template first<E>();
+                        return NativeType(span.template first<E>());
                     }
                 }
             }else{
@@ -541,12 +546,21 @@ struct qtjambi_jobject_span_cast{
                             if(data.second<E){
                                 JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast span of size %1 to %2").arg(QString::number(data.second), QLatin1String(QtJambiAPI::typeName(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
                             }
-                            if constexpr(is_pointer || is_reference){
+                            if constexpr(is_pointer){
+                                Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast span pointer without scope.");
                                 NativeType* result = new NativeType(reinterpret_cast<typename NativeType::iterator>(data.first), E);
-                                return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, NativeType, Args...>::convert(result, args...);
+                                cast_var_args<Args...>::scope(args...).addDeletion(result);
+                                return result;
+                            }else if constexpr(is_reference){
+                                Q_STATIC_ASSERT_X(cast_var_args<Args...>::hasScope, "Cannot cast span reference without scope.");
+                                NativeType* result = new NativeType(reinterpret_cast<typename NativeType::iterator>(data.first), E);
+                                cast_var_args<Args...>::scope(args...).addDeletion(result);
+                                return *result;
                             }else{
                                 return NativeType(reinterpret_cast<typename NativeType::iterator>(data.first), E);
                             }
+                        }else{
+                            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast span of size 0 to %1").arg(QLatin1String(QtJambiAPI::typeName(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
                         }
                     }
                     JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? QtJambiAPI::getObjectClassName(env, in) : QStringLiteral("null"), QLatin1String(QtJambiAPI::typeName(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
@@ -799,16 +813,14 @@ private:
             if constexpr(std::is_same_v<O,char>
                           || std::is_same_v<O,QLatin1Char>
                           || std::is_same_v<O,std::byte>){
-                constexpr bool hasStringAPI = is_complete_v<convert_jstring_to_chars<O,const O*>>;
-                Q_STATIC_ASSERT_X(hasStringAPI, "Cannot cast without including <QtJambi/StringAPI>");
+                QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/StringAPI, is_complete_v<convert_jstring_to_chars<O,const O*>>);
                 auto env = cast_var_args<arg_pointer_t<Args>...>::env(args...);
                 const O* array = convert_jstring_to_chars<O,const O*>::template convert<I,fixSize>(env, cast_var_args<arg_pointer_t<Args>...>::scope(args...), size, in);
                 return reinterpret_cast<Out*>(array);
             }else if constexpr(std::is_same_v<O,char16_t>
                                  || std::is_same_v<O,wchar_t>
                                  || std::is_same_v<O,QChar>){
-                constexpr bool hasStringAPI = is_complete_v<convert_jstring_to_qchars<O,const O*>>;
-                Q_STATIC_ASSERT_X(hasStringAPI, "Cannot cast without including <QtJambi/StringAPI>");
+                QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/StringAPI, is_complete_v<convert_jstring_to_qchars<O,const O*>>);
                 auto env = cast_var_args<arg_pointer_t<Args>...>::env(args...);
                 const O* array = convert_jstring_to_qchars<O,const O*>::template convert<I,fixSize>(env, cast_var_args<arg_pointer_t<Args>...>::scope(args...), size, in);
                 return reinterpret_cast<Out*>(array);
@@ -904,16 +916,14 @@ private:
             if constexpr(std::is_same_v<O,char>
                           || std::is_same_v<O,QLatin1Char>
                           || std::is_same_v<O,std::byte>){
-                constexpr bool hasStringAPI = is_complete_v<convert_jstring_to_chars<O,const O*>>;
-                Q_STATIC_ASSERT_X(hasStringAPI, "Cannot cast without including <QtJambi/StringAPI>");
+                QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/StringAPI, is_complete_v<convert_jstring_to_chars<O,const O*>>);
                 auto env = cast_var_args<arg_pointer_t<Args>...>::env(args...);
                 const O* array = convert_jstring_to_chars<O,const O*>::convert(env, cast_var_args<arg_pointer_t<Args>...>::scope(args...), in);
                 return reinterpret_cast<Out*>(array);
             }else if constexpr(std::is_same_v<O,char16_t>
                                  || std::is_same_v<O,wchar_t>
                                  || std::is_same_v<O,QChar>){
-                constexpr bool hasStringAPI = is_complete_v<convert_jstring_to_qchars<O,const O*>>;
-                Q_STATIC_ASSERT_X(hasStringAPI, "Cannot cast without including <QtJambi/StringAPI>");
+                QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/StringAPI, is_complete_v<convert_jstring_to_qchars<O,const O*>>);
                 auto env = cast_var_args<arg_pointer_t<Args>...>::env(args...);
                 const O* array = convert_jstring_to_qchars<O,const O*>::convert(env, cast_var_args<arg_pointer_t<Args>...>::scope(args...), in);
                 return reinterpret_cast<Out*>(array);
@@ -1049,8 +1059,7 @@ private:
             if constexpr(std::is_same_v<O,char>
                           || std::is_same_v<O,QLatin1Char>
                           || std::is_same_v<O,std::byte>){
-                constexpr bool hasStringAPI = is_complete_v<convert_jstring_to_chars<O,const O*>>;
-                Q_STATIC_ASSERT_X(hasStringAPI, "Cannot cast without including <QtJambi/StringAPI>");
+                QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/StringAPI, is_complete_v<convert_jstring_to_chars<O,const O*>>);
                 auto env = cast_var_args<arg_pointer_t<Args>...>::env(args...);
                 const O* array = convert_jstring_to_chars<O,const O*>::template convert<size_t,true,false>(env, cast_var_args<arg_pointer_t<Args>...>::scope(args...), size-1, in);
                 if constexpr(std::is_array_v<std::remove_reference_t<Out>>){
@@ -1061,8 +1070,7 @@ private:
             }else if constexpr(std::is_same_v<O,char16_t>
                                  || std::is_same_v<O,wchar_t>
                                  || std::is_same_v<O,QChar>){
-                constexpr bool hasStringAPI = is_complete_v<convert_jstring_to_qchars<O,const O*>>;
-                Q_STATIC_ASSERT_X(hasStringAPI, "Cannot cast without including <QtJambi/StringAPI>");
+                QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/StringAPI, is_complete_v<convert_jstring_to_qchars<O,const O*>>);
                 auto env = cast_var_args<arg_pointer_t<Args>...>::env(args...);
                 const O* array = convert_jstring_to_qchars<O,const O*>::template convert<size_t,true,false>(env, cast_var_args<arg_pointer_t<Args>...>::scope(args...), size-1, in);
                 if constexpr(std::is_array_v<std::remove_reference_t<Out>>){

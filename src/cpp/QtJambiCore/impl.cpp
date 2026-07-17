@@ -55,10 +55,13 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtJambi/Template1Cast>
 #include <QtJambi/ContainerCast>
 #include <QtJambi/Template2Cast>
+#include <QtJambi/QMap>
+#include <QtJambi/QHash>
 #include "future_p.h"
 #include "utils_p.h"
 #include "utils.h"
 #include "hashes.h"
+#include "iterators_p.h"
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qthread_p.h>
 #include <QtCore/private/qobject_p.h>
@@ -2541,9 +2544,12 @@ void __qt_construct_QUntypedPropertyBinding_QPropertyBindingPrivate(void* __qtja
     QTJAMBI_NATIVE_METHOD_CALL("construct QUntypedPropertyBinding(QPropertyBindingPrivate *)")
     jobject data0 = __java_arguments[0].l;
     QtPrivate::QPropertyBindingData * __qt_data0 = qtjambi_cast<QtPrivate::QPropertyBindingData * >(__jni_env, data0);
-    QUntypedPropertyBinding *__qt_this = new(__qtjambi_ptr) QUntypedPropertyBinding(__qt_data0 ? __qt_data0->binding() : nullptr);
+#if QT_VERSION >= QT_VERSION_CHECK(6,12,0)
+    new(__qtjambi_ptr) QPropertyBindingPrivatePtr(__qt_data0 ? __qt_data0->binding() : nullptr);
+#else
+    new(__qtjambi_ptr) QUntypedPropertyBinding(__qt_data0 ? __qt_data0->binding() : nullptr);
+#endif
     Q_UNUSED(__jni_object)
-    Q_UNUSED(__qt_this)
 }
 
 // QUntypedPropertyBinding::QUntypedPropertyBinding(QMetaType, const BindingFunctionVTable *, void *, const QPropertyBindingSourceLocation &)
@@ -4491,10 +4497,9 @@ void __qt_construct_QByteArrayView_Buffer_qsizetype(void* __qtjambi_ptr, JNIEnv*
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QByteArrayView(Buffer)")
     PersistentJBufferConstData* bufferData = new PersistentJBufferConstData(__jni_env, __java_arguments[0].l);
+    JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
     if(bufferData->size<char>()>0){
-        jobject address = qtjambi_cast<jobject>(__jni_env, jlong(bufferData));
-        __jni_env->SetObjectArrayElement(jobjectArray(__java_arguments[1].l), 0, address);
-        JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
+        __java_arguments[1].j = jlong(bufferData);
         new(__qtjambi_ptr) QByteArrayView(bufferData->data<char>(), bufferData->size<char>());
     }else{
         delete bufferData;
@@ -4504,21 +4509,22 @@ void __qt_construct_QByteArrayView_Buffer_qsizetype(void* __qtjambi_ptr, JNIEnv*
 }
 
 // QByteArrayView::QByteArrayView(Buffer,qsizetype)
-extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QByteArrayView_initialize_1native__Lio_qt_core_QByteArrayView_2Ljava_nio_ByteBuffer_2_3Ljava_lang_Long_2
+extern "C" JNIEXPORT jlong JNICALL Java_io_qt_core_QByteArrayView_initialize_1native__Lio_qt_core_QByteArrayView_2Ljava_nio_ByteBuffer_2
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
- jobject data, jobjectArray pointerOut)
+ jobject data)
 {
+    jvalue argument[2];
     QTJAMBI_NATIVE_METHOD_CALL("QByteArrayView::QByteArrayView(Buffer)")
     QTJAMBI_TRY{
-        jvalue argument[2];
         argument[0].l = data;
-        argument[1].l = pointerOut;
+        argument[1].j = 0;
         QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QByteArrayView_Buffer_qsizetype, sizeof(QByteArrayView), alignof(QByteArrayView), typeid(QByteArrayView), 0, false, argument);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
+    return argument[1].j;
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QByteArrayView_purgeBuffer__J(JNIEnv * __jni_env, jclass, jlong pointer){
@@ -4537,9 +4543,7 @@ void __qt_construct_QByteArrayView_String(void* __qtjambi_ptr, JNIEnv* __jni_env
     PersistentJ2CStringBuffer* bufferData = new PersistentJ2CStringBuffer(__jni_env, jstring(__java_arguments[0].l));
     JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
     if(bufferData->length()>0){
-        jobject address = qtjambi_cast<jobject>(__jni_env, jlong(bufferData));
-        __jni_env->SetObjectArrayElement(jobjectArray(__java_arguments[1].l), 0, address);
-        JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
+        __java_arguments[1].j = jlong(bufferData);
         new(__qtjambi_ptr) QByteArrayView(reinterpret_cast<const char*>(bufferData->data()), bufferData->length());
     }else{
         delete bufferData;
@@ -4549,21 +4553,22 @@ void __qt_construct_QByteArrayView_String(void* __qtjambi_ptr, JNIEnv* __jni_env
 }
 
 // QByteArrayView::QByteArrayView(String)
-extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QByteArrayView_initialize_1native__Lio_qt_core_QByteArrayView_2Ljava_lang_String_2_3Ljava_lang_Long_2
+extern "C" JNIEXPORT jlong JNICALL Java_io_qt_core_QByteArrayView_initialize_1native__Lio_qt_core_QByteArrayView_2Ljava_lang_String_2
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
- jstring data, jobjectArray pointerOut)
+ jstring data)
 {
+    jvalue argument[2];
     QTJAMBI_NATIVE_METHOD_CALL("QByteArrayView::QByteArrayView(String)")
     QTJAMBI_TRY{
-        jvalue argument[2];
         argument[0].l = data;
-        argument[1].l = pointerOut;
+        argument[1].j = 0;
         QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QByteArrayView_String, sizeof(QByteArrayView), alignof(QByteArrayView), typeid(QByteArrayView), 0, false, argument);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
+    return argument[1].j;
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QByteArrayView_purgeString__J(JNIEnv * __jni_env, jclass, jlong pointer){
@@ -4580,10 +4585,9 @@ void __qt_construct_QByteArrayView_byte_array_int(void* __qtjambi_ptr, JNIEnv* _
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QByteArrayView(byte[])")
     PersistentJConstByteArrayPointer* bufferData = new PersistentJConstByteArrayPointer(__jni_env, jbyteArray(__java_arguments[0].l));
+    JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
     if(bufferData->size()>0){
-        jobject address = qtjambi_cast<jobject>(__jni_env, jlong(bufferData));
-        __jni_env->SetObjectArrayElement(jobjectArray(__java_arguments[3].l), 0, address);
-        JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
+        __java_arguments[3].j = jlong(bufferData);
         new(__qtjambi_ptr) QByteArrayView(bufferData->pointer()+__java_arguments[1].i, __java_arguments[2].i<0 ? bufferData->size()-__java_arguments[1].i : qMin<jsize>(bufferData->size()-__java_arguments[1].i, __java_arguments[2].i));
     }else{
         delete bufferData;
@@ -4593,23 +4597,24 @@ void __qt_construct_QByteArrayView_byte_array_int(void* __qtjambi_ptr, JNIEnv* _
 }
 
 // QByteArrayView::QByteArrayView(byte[],int)
-extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QByteArrayView_initialize_1native__Lio_qt_core_QByteArrayView_2_3BII_3Ljava_lang_Long_2
+extern "C" JNIEXPORT jlong JNICALL Java_io_qt_core_QByteArrayView_initialize_1native__Lio_qt_core_QByteArrayView_2_3BII
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
- jbyteArray data, jint offset, jint length, jobjectArray pointerOut)
+ jbyteArray data, jint offset, jint length)
 {
+    jvalue argument[4];
     QTJAMBI_NATIVE_METHOD_CALL("QByteArrayView::QByteArrayView(byte[])")
     QTJAMBI_TRY{
-        jvalue argument[4];
         argument[0].l = data;
         argument[1].i = offset;
         argument[2].i = length;
-        argument[3].l = pointerOut;
+        argument[3].j = 0;
         QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QByteArrayView_byte_array_int, sizeof(QByteArrayView), alignof(QByteArrayView), typeid(QByteArrayView), 0, false, argument);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
+    return argument[3].j;
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QByteArrayView_purgeBytes__J(JNIEnv * __jni_env, jclass, jlong pointer){
@@ -5363,3 +5368,194 @@ void initialize_meta_info_QtCore(){
 #endif
 
 }
+
+class QJsonPrivate::Variant{
+public:
+    inline static bool isSharedWith(const QCborMap& container, const QCborMap& other){
+        return container.d==other.d;
+    }
+    inline static bool isSharedWith(const QCborArray& container, const QCborArray& other){
+        return container.d==other.d;
+    }
+};
+
+class QJsonPrivate::Value{
+public:
+    inline static bool isSharedWith(const QCborValue& container, const QCborValue& other){
+        return container.container==other.container;
+    }
+    inline static bool isSharedWith(const QJsonValue& container, const QJsonValue& other){
+        return container.value.container==other.value.container;
+    }
+    inline static bool isSharedWith(const QJsonValueConstRef& container, const QJsonValueConstRef& other){
+        return container.d==other.d;
+    }
+    inline static bool isSharedWith(const QJsonObject& container, const QJsonObject& other){
+        return container.o==other.o;
+    }
+    inline static bool isSharedWith(const QJsonArray& container, const QJsonArray& other){
+        return container.a==other.a;
+    }
+    inline static bool isSharedWith(const QJsonArray::Iterator& item, const QJsonArray::ConstIterator& begin, const QJsonArray::ConstIterator& end){
+        return item->a==begin->a && item->a==end->a;
+    }
+    inline static bool isSharedWith(const QJsonArray::ConstIterator& item, const QJsonArray::ConstIterator& begin, const QJsonArray::ConstIterator& end){
+        return item->a==begin->a && item->a==end->a;
+    }
+    inline static bool isSharedWith(const QJsonObject::Iterator& item, const QJsonObject::ConstIterator& begin, const QJsonObject::ConstIterator& end){
+        return item->o==begin->o && item->o==end->o;
+    }
+    inline static bool isSharedWith(const QJsonObject::ConstIterator& item, const QJsonObject::ConstIterator& begin, const QJsonObject::ConstIterator& end){
+        return item->o==begin->o && item->o==end->o;
+    }
+
+    inline static bool equals(const QJsonObject::Iterator& iter1, const QJsonObject::ConstIterator& iter2){
+        return iter1->o==iter2->o && iter1->index==iter2->index;
+    }
+    inline static bool equals(const QJsonObject::ConstIterator& iter1, const QJsonObject::Iterator& iter2){
+        return iter1->o==iter2->o && iter1->index==iter2->index;
+    }
+};
+
+class QCborContainerPrivate{
+public:
+    inline static bool isSharedWith(const QCborValueConstRef& container, const QCborValueConstRef& other){
+        return container.d==other.d;
+    }
+    inline static bool isSharedWith(const QCborValueRef& container, const QCborValueRef& other){
+        return container.d==other.d;
+    }
+    inline static bool isSharedWith(const QCborArray::Iterator& item, const QCborArray::ConstIterator& begin, const QCborArray::ConstIterator& end){
+        return isSharedWith(*item.operator->(), *begin.operator->()) && isSharedWith(*item.operator->(), *end.operator->());
+    }
+    inline static bool isSharedWith(const QCborArray::ConstIterator& item, const QCborArray::ConstIterator& begin, const QCborArray::ConstIterator& end){
+        return isSharedWith(*item.operator->(), *begin.operator->()) && isSharedWith(*item.operator->(), *end.operator->());
+    }
+    inline static bool isSharedWith(const QCborMap::Iterator& item, const QCborMap::ConstIterator& begin, const QCborMap::ConstIterator& end){
+        return isSharedWith(*item.operator->(), *begin.operator->()) && isSharedWith(*item.operator->(), *end.operator->());
+    }
+    inline static bool isSharedWith(const QCborMap::ConstIterator& item, const QCborMap::ConstIterator& begin, const QCborMap::ConstIterator& end){
+        return isSharedWith(*item.operator->(), *begin.operator->()) && isSharedWith(*item.operator->(), *end.operator->());
+    }
+    inline static void adapt(QCborMap::Iterator& iterator, const QCborMap& map){
+        iterator.operator->()->d = map.d.get();
+    }
+    inline static bool equals(const QCborMap::Iterator& iter1, const QCborMap::ConstIterator& iter2){
+        return iter1->d==iter2->d && iter1->i==iter2->i;
+    }
+    inline static bool equals(const QCborMap::ConstIterator& iter1, const QCborMap::Iterator& iter2){
+        return iter1->d==iter2->d && iter1->i==iter2->i;
+    }
+};
+
+namespace QtJambiPrivate{
+bool ContainerSharedInfo<QCborMap,false>::isSharedWith(const QCborMap& container, const QCborMap& other){
+    return QJsonPrivate::Variant::isSharedWith(container, other);
+}
+bool ContainerSharedInfo<QCborArray,false>::isSharedWith(const QCborArray& container, const QCborArray& other){
+    return QJsonPrivate::Variant::isSharedWith(container, other);
+}
+
+bool iterator_comparable<QJsonArray,QJsonArray::Iterator,QJsonArray::ConstIterator,QJsonArray::ConstIterator>::test(const QJsonArray::Iterator& item, const QJsonArray::ConstIterator& begin, const QJsonArray::ConstIterator& end){
+    return QJsonPrivate::Value::isSharedWith(item, begin, end);
+}
+bool iterator_comparable<QJsonArray,QJsonArray::ConstIterator,QJsonArray::ConstIterator,QJsonArray::ConstIterator>::test(const QJsonArray::ConstIterator& item, const QJsonArray::ConstIterator& begin, const QJsonArray::ConstIterator& end){
+    return QJsonPrivate::Value::isSharedWith(item, begin, end);
+}
+bool iterator_comparable<QJsonObject,QJsonObject::Iterator,QJsonObject::ConstIterator,QJsonObject::ConstIterator>::test(const QJsonObject::Iterator& item, const QJsonObject::ConstIterator& begin, const QJsonObject::ConstIterator& end){
+    return QJsonPrivate::Value::isSharedWith(item, begin, end);
+}
+bool iterator_comparable<QJsonObject,QJsonObject::ConstIterator,QJsonObject::ConstIterator,QJsonObject::ConstIterator>::test(const QJsonObject::ConstIterator& item, const QJsonObject::ConstIterator& begin, const QJsonObject::ConstIterator& end){
+    return QJsonPrivate::Value::isSharedWith(item, begin, end);
+}
+
+bool iterator_comparable<QCborArray,QCborArray::Iterator,QCborArray::ConstIterator,QCborArray::ConstIterator>::test(const QCborArray::Iterator& item, const QCborArray::ConstIterator& begin, const QCborArray::ConstIterator& end){
+    return QCborContainerPrivate::isSharedWith(item, begin, end);
+}
+bool iterator_comparable<QCborArray,QCborArray::ConstIterator,QCborArray::ConstIterator,QCborArray::ConstIterator>::test(const QCborArray::ConstIterator& item, const QCborArray::ConstIterator& begin, const QCborArray::ConstIterator& end){
+    return QCborContainerPrivate::isSharedWith(item, begin, end);
+}
+bool iterator_comparable<QCborMap,QCborMap::Iterator,QCborMap::ConstIterator,QCborMap::ConstIterator>::test(const QCborMap::Iterator& item, const QCborMap::ConstIterator& begin, const QCborMap::ConstIterator& end){
+    return QCborContainerPrivate::isSharedWith(item, begin, end);
+}
+bool iterator_comparable<QCborMap,QCborMap::ConstIterator,QCborMap::ConstIterator,QCborMap::ConstIterator>::test(const QCborMap::ConstIterator& item, const QCborMap::ConstIterator& begin, const QCborMap::ConstIterator& end){
+    return QCborContainerPrivate::isSharedWith(item, begin, end);
+}
+void adapt(QCborMap::Iterator& iterator, const QCborMap& map){
+    return QCborContainerPrivate::adapt(iterator, map);
+}
+bool equals(const QCborMap::Iterator& iter1, const QCborMap::ConstIterator& iter2){
+    return QCborContainerPrivate::equals(iter1, iter2);
+}
+bool equals(const QCborMap::ConstIterator& iter1, const QCborMap::Iterator& iter2){
+    return QCborContainerPrivate::equals(iter1, iter2);
+}
+bool equals(const QJsonObject::ConstIterator& iter1, const QJsonObject::Iterator& iter2){
+    return QJsonPrivate::Value::equals(iter1, iter2);
+}
+bool equals(const QJsonObject::Iterator& iter1, const QJsonObject::ConstIterator& iter2){
+    return QJsonPrivate::Value::equals(iter1, iter2);
+}
+
+bool is_shared_with(const QVersionNumber::const_iterator& item, const QVersionNumber::const_iterator& item2){
+    struct It{
+        const QVersionNumber *v;
+        qsizetype i;
+    };
+    return reinterpret_cast<const It&>(item).v==reinterpret_cast<const It&>(item2).v;
+}
+bool iterator_comparable<QVersionNumber,QVersionNumber::const_iterator,QVersionNumber::const_iterator,QVersionNumber::const_iterator>::test(const QVersionNumber::const_iterator& item, const QVersionNumber::const_iterator& begin, const QVersionNumber::const_iterator& end){
+    return is_shared_with(item, begin) && is_shared_with(item, end);
+}
+
+bool iterator_equals<QVersionNumber,QVersionNumber::const_iterator,QVersionNumber::const_iterator>::function(const QVersionNumber::const_iterator& a, const QVersionNumber::const_iterator& b){
+    return is_shared_with(a, b) && a==b;
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+void IteratorSequentialValue<ContainerIterator<QCborMap,QCborMap::key_value_iterator,ContainerRef<QCborMap>>,false,true>::function(JNIEnv * env, void* ptr, jobject newValue) {
+    ContainerIterator<QCborMap,QCborMap::key_value_iterator,ContainerRef<QCborMap>>& iterator = *static_cast<ContainerIterator<QCborMap,QCborMap::key_value_iterator,ContainerRef<QCborMap>>*>(ptr);
+    (*iterator).second = ::qtjambi_cast<const QCborValue&>(env, newValue);
+}
+
+void IteratorSequentialValue<ContainerIterator<QJsonObject,QJsonObject::key_value_iterator,ContainerRef<QJsonObject>>,false,true>::function(JNIEnv * env, void* ptr, jobject newValue) {
+    ContainerIterator<QJsonObject,QJsonObject::key_value_iterator,ContainerRef<QJsonObject>>& iterator = *static_cast<ContainerIterator<QJsonObject,QJsonObject::key_value_iterator,ContainerRef<QJsonObject>>*>(ptr);
+    (*iterator).second = ::qtjambi_cast<const QJsonValue&>(env, newValue);
+}
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+
+const QMetaType& getCborValueMetaType(){
+    static QMetaType type(QMetaType::fromType<QCborValue>());
+    return type;
+}
+const QMetaType& getCborValuePairMetaType(){
+    static QMetaType type(QMetaType::fromType<std::pair<QCborValue,QCborValue>>());
+    return type;
+}
+const QMetaType& getJsonValueMetaType(){
+    static QMetaType type(QMetaType::fromType<QJsonValue>());
+    return type;
+}
+const QMetaType& getJsonValuePairMetaType(){
+    static QMetaType type(QMetaType::fromType<std::pair<QString,QJsonValue>>());
+    return type;
+}
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+bool operator==(const QJsonObject::const_key_value_iterator& iter1, const QJsonObject::key_value_iterator& iter2){
+    return QtJambiPrivate::equals(iter1.base(), iter2.base());
+}
+
+bool operator==(const QJsonObject::key_value_iterator& iter1, const QJsonObject::const_key_value_iterator& iter2){
+    return QtJambiPrivate::equals(iter1.base(), iter2.base());
+}
+
+bool operator==(const QCborMap::const_key_value_iterator& iter1, const QCborMap::key_value_iterator& iter2){
+    return QtJambiPrivate::equals(iter1.base(), iter2.base());
+}
+
+bool operator==(const QCborMap::key_value_iterator& iter1, const QCborMap::const_key_value_iterator& iter2){
+    return QtJambiPrivate::equals(iter1.base(), iter2.base());
+}
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)

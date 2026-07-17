@@ -29,9 +29,10 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.NativeAccess;
-import io.qt.QtObject;
-import io.qt.QtUninvokable;
+import java.util.function.*;
+import java.util.*;
+
+import io.qt.*;
 
 /**
  * <p>Java-iterable wrapper for Qt's iterator types:</p>
@@ -43,34 +44,80 @@ import io.qt.QtUninvokable;
  * @see QList#begin()
  * @see QList#end()
  */
-public final class QSequentialIterator<T> extends QSequentialConstIterator<T>{
+public class QSequentialIterator<T,Container extends QtObjectInterface> extends QSequentialConstIterator<T,Container> implements Consumer<T>{
 	@NativeAccess
-    private QSequentialIterator(QPrivateConstructor c, QtObject owner) { 
-    	super(c, owner);
+	protected QSequentialIterator(QtConstructInPlace p) { 
+    	super(p);
+	}
+	
+	@NativeAccess
+	protected QSequentialIterator(QPrivateConstructor c) { 
+    	super(c);
+	}
+	
+	protected QSequentialIterator(QSequentialIterator<T,Container> other) { 
+    	super(other);
 	}
     
 	/**
 	 * Set the value at iterator's position in the container.
 	 * @param newValue the new value
 	 */
-    @QtUninvokable
-	public final boolean setValue(T newValue) {
+	@Deprecated(since = "QtJambi 6.11.2", forRemoval = true)
+	@QtUninvokable
+	private final boolean setValue(T newValue) {
     	return checkedSetValue(newValue);
     }
+	
+	/**
+	 * Set the value at iterator's position in the container.
+	 * @param newValue the new value
+	 */
+	@QtUninvokable
+	public final void set(T newValue) {
+		if(isValid()) {
+			setValue(QtJambi_LibraryUtilities.internal.nativeId(this), newValue);
+		}else {
+			throw new NoSuchElementException();
+		}
+	}
     
     /**
 	 * Specifies if this type is constant iterator.
 	 */
 	@Override
-	boolean isConstant() {
+	final boolean isConstant() {
 		return false;
 	}
 	
-	/**
+    /**
      * Returns a Java mutable iterator between this and the container's end.
+     * @deprecated Use {@link #bidirectionalIterator()} instead.
+     */
+	@Deprecated(since = "QtJambi 6.11.2", forRemoval = true)
+    @QtUninvokable
+    public final ListIterator<T> mutableIterator(){
+    	return bidirectionalIterator();
+    }
+	
+	/**
+     * Returns a Java bidirectional iterator between this and the container's end.
      */
     @QtUninvokable
-    public final java.util.ListIterator<T> mutableIterator(){
-    	return toMutableJavaIterator();
+    protected ListIterator<T> bidirectionalIterator(){
+		return bidirectionalIterator(this);
     }
+	
+	/**
+     * Creates and returns a copy of this object.
+     */
+    @Override
+	public @NonNull QSequentialIterator<T,Container> clone(){
+		return new QSequentialIterator<>(this);
+	}
+
+	@Override
+	public final void accept(T newValue) {
+		set(newValue);
+	}
 }

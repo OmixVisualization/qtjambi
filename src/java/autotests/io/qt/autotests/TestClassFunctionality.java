@@ -29,53 +29,16 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.lang.ref.*;
+import java.util.*;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
-import io.qt.QFlags;
-import io.qt.QNoImplementationException;
-import io.qt.QtEnumerator;
-import io.qt.QtFlagEnumerator;
-import io.qt.QtInvokable;
-import io.qt.QtObject;
-import io.qt.autotests.generated.General;
-import io.qt.autotests.generated.GraphicsSceneSubclass;
-import io.qt.autotests.generated.OrdinaryDestroyed;
-import io.qt.autotests.generated.OrdinarySuperclass;
-import io.qt.autotests.generated.QObjectDestroyed;
-import io.qt.autotests.generated.SpinBoxHandler;
-import io.qt.autotests.generated.SpinBoxSubclass;
-import io.qt.autotests.generated.TestDialog;
-import io.qt.core.QByteArray;
-import io.qt.core.QDate;
-import io.qt.core.QElapsedTimer;
-import io.qt.core.QEvent;
-import io.qt.core.QFileInfo;
-import io.qt.core.QMetaObject;
-import io.qt.core.QObject;
-import io.qt.core.QRect;
-import io.qt.core.QRectF;
-import io.qt.core.QResource;
-import io.qt.core.QSize;
-import io.qt.core.QString;
-import io.qt.core.QTimer;
-import io.qt.core.QUuid;
-import io.qt.core.Qt;
+import io.qt.*;
+import io.qt.autotests.generated.*;
+import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.widgets.*;
 
@@ -142,15 +105,8 @@ public class TestClassFunctionality extends ApplicationInitializer {
 
 		long t = System.currentTimeMillis();
 		while (t + 5000 > System.currentTimeMillis()) {
-		    // For some reason when we compile with ECJ this loop times out and then
-		    //  fails the: assertTrue(GraphicsSceneSubclassSubclass.items != null);
-		    // I tried again without using synchronized() here but am still seeing
-		    //   occasional random failures in this test.  So putting lock back in place.
-		    // Upped timeout from 2500 to 5000
-		    synchronized(GraphicsSceneSubclassSubclass.class) {
-	                if(GraphicsSceneSubclassSubclass.items != null)
-		            break;
-	            }
+            if(GraphicsSceneSubclassSubclass.items != null)
+            	break;
 		    QApplication.processEvents();
         }
 
@@ -210,142 +166,6 @@ public class TestClassFunctionality extends ApplicationInitializer {
         view.hide();
     }
 
-    static class TestQObject extends QObject {
-        private final Signal0 a = new Signal0();
-
-        public boolean slot_called = false;
-
-        public boolean signalIsNull() {
-            return a == null;
-        }
-
-        public boolean signalIsEqualTo(QMetaObject.AbstractSignal signal) {
-            return a == signal;
-        }
-
-        @SuppressWarnings("unused")
-		private void slot() {
-            slot_called = true;
-        }
-    }
-
-    @Test
-    public void testToString()
-    {
-        QByteArray ba = new QByteArray("Pretty flowers æøå");
-        assertEquals("Pretty flowers æøå", ba.toString());
-    }
-    
-    @Test
-    public void test_GC_versus_access_SplitOwnership() throws InterruptedException {
-    	Set<Integer> hashes = new HashSet<>();
-    	for (int i = 0; i < 50 && hashes.size()<=1; i++) {
-    		{
-				ApplicationInitializer.runGC();
-	    		QObject globalObject = OrdinaryDestroyed.getGlobalQObjectSplitOwnership();
-	    		assertTrue(globalObject!=null);
-	    		assertTrue(General.internalAccess.isSplitOwnership(globalObject));
-	    		hashes.add(System.identityHashCode(globalObject));
-	    		globalObject = null;
-    		}
-			Thread.yield();
-    		Thread.sleep(25);
-		}
-    	assertTrue("Expect to create more than one java objects for global QObject with split ownership.", hashes.size()>1);
-    }
-
-    @Test
-    public void testDestructionCppDelete_Ordinary(){
-    	DisposeCounter counter = new DisposeCounter();
-        OrdinarySubclass sc = new OrdinarySubclass(counter);
-        OrdinaryDestroyed.deleteFromCpp(sc);
-        assertEquals(1, counter.disposedCount());
-        assertTrue(sc.isDisposed());
-    }
-
-    @Test
-    public void testDestructionByVirtualDestructor_Ordinary(){
-    	DisposeCounter counter = new DisposeCounter();
-        OrdinarySuperclass sc = new OrdinarySubclass(counter);
-        OrdinaryDestroyed.deleteFromCppOther(sc);
-        assertEquals(1, counter.disposedCount());
-        assertTrue(sc.isDisposed());
-    }
-
-    @Test
-    public void testDestructionByDispose_QObject()
-    {
-        DisposeCounter counter = new DisposeCounter();
-        QObjectSubclass qobject = new QObjectSubclass(counter, null);
-        qobject.dispose();
-        assertEquals(1, counter.disposedCount());
-        assertTrue(qobject.isDisposed());
-    }
-
-    @Test
-    public void testDestructionByParent_QObject()
-    {
-        DisposeCounter counter = new DisposeCounter();
-        QObject parent = new QObject();
-        QObject qobject = new QObjectSubclass(counter, parent);
-        parent.dispose();
-        assertEquals(1, counter.disposedCount());
-        assertTrue(qobject.isDisposed());
-    }
-
-    @Test
-    public void testDestructionByDisposeLater_QObject()
-    {
-        DisposeCounter counter = new DisposeCounter();
-        QObject qobject = new QObjectSubclass(counter, null);
-        qobject.disposeLater();
-        QApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-
-        assertEquals(1, counter.disposedCount());
-        assertTrue(qobject.isDisposed());
-    }
-
-    @Test
-    public void testDestructionCppDelete_QObject()
-    {
-        DisposeCounter counter = new DisposeCounter();
-        QObjectSubclass qobject = new QObjectSubclass(counter, null);
-        QObjectDestroyed.deleteFromCpp(qobject);
-        assertEquals(1, counter.disposedCount());
-        assertTrue(qobject.isDisposed());
-    }
-
-    @Test
-    public void testDestructionByVirtualDestructor_QObject(){
-        DisposeCounter counter = new DisposeCounter();
-        QObject qobject = new QObjectSubclass(counter, null);
-        QObjectDestroyed.deleteFromCppOther(qobject);
-        assertEquals(1, counter.disposedCount());
-        assertTrue(qobject.isDisposed());
-    }
-    
-    @Test
-    public void testDestructionByJavaGC(){
-        DisposeCounter counter = new DisposeCounter();
-        {
-            new OrdinarySubclass(counter);
-        }
-        try {
-            for(int i = 0; i < 60; i++) {  
-                ApplicationInitializer.runGC();
-                synchronized(this) {
-                    if(counter.disposedCount() != 0)
-                        break;
-                }
-                Thread.sleep(10);
-            }
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-
-        assertEquals(1, counter.disposedCount());
-    }
-
 
     /**
      * Test that calling a private virtual function gives you an exception
@@ -365,38 +185,6 @@ public class TestClassFunctionality extends ApplicationInitializer {
         }
 
         assertTrue(gotException);
-    }
-
-    /*-------------------------------------------------------------------------
-     * Test that QObject.sender() returns something valid during
-     * a signal emittion...
-     */
-    private static class SenderTester extends QObject {
-        final Signal0 signal = new Signal0();
-
-        public boolean is_null, is_valid;
-
-        public QElapsedTimer timeouted;
-
-        public long msec = 0L;
-
-        public SenderTester() {
-            timeouted = new QElapsedTimer();
-            timeouted.start();
-        }
-
-        public void checkSender() {
-            is_null = this.sender() == null;
-            is_valid = this.sender() == this;
-        }
-
-        public void emitSignal() {
-            signal.emit();
-        }
-
-        void timeoutSlot() {
-            msec = timeouted.elapsed();
-        }
     }
     
 	@SuppressWarnings("unused")
@@ -524,17 +312,6 @@ public class TestClassFunctionality extends ApplicationInitializer {
     }
 
     @Test
-    public void run_senderNotNull() {
-        SenderTester tester = new SenderTester();
-        tester.signal.connect(tester::checkSender);
-
-        tester.emitSignal();
-
-        assertTrue(!tester.is_null);
-        assertTrue(tester.is_valid);
-    }
-
-    @Test
     public void run_cppAndJavaObjects() {
     	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         CustomEvent event1 = new CustomEvent("this is my stuff");
@@ -639,28 +416,6 @@ public class TestClassFunctionality extends ApplicationInitializer {
         dialog.hide();
     }
 
-    @Test
-    public void test_timeout() {
-        SenderTester tester = new SenderTester();
-        QTimer.singleShot(1000, tester::timeoutSlot);
-
-        ApplicationInitializer.runGC();
-
-        try {
-            while (tester.timeouted.elapsed() < 1500) {
-                QApplication.processEvents();
-                // We can sleep a bit here
-                Thread.sleep(50);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
-        }
-
-        assertTrue("tester.msec >= 1000 took " + tester.msec, tester.msec >= 1000);
-        assertTrue("tester.msec <= 1500 took " + tester.msec, tester.msec <= 1500);
-    }
-
 	@Test
     public void run_copyConstructor() {
 		QResource.addClassPath(".");
@@ -733,60 +488,6 @@ public class TestClassFunctionality extends ApplicationInitializer {
         } catch (IllegalArgumentException e) {
             assertEquals("Wrong number of elements in array. Found: 100, expected: 8", e.getMessage());
         }
-    }
-
-    static class MySpinBox extends QDoubleSpinBox {
-
-        public String receivedString;
-        public int receivedPos;
-
-        @Override
-        public void fixup(QString input) {
-            receivedString = input.toString();
-            input.assign("As aught of ");
-            input.append(receivedString.substring(2, 8));
-            input.append(" birth");
-        }
-
-        @Override
-        public QValidator.State validate(QValidator.QValidationData data)
-        {
-            receivedString = data.string;
-            receivedPos = data.position;
-
-            data.string = "The " + data.string.substring(9, 13) + " where Death has set his seal";
-            data.position += 13;
-
-            return QValidator.State.Acceptable;
-        }
-
-
-    }
-
-    @Test 
-    public void testVirtualCallToFixup() {
-    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
-        MySpinBox spinBox = new MySpinBox();
-        SpinBoxHandler handler = new SpinBoxHandler();
-
-        handler.tryFixup(spinBox, "Immortal love, forever full");
-
-        assertEquals("Immortal love, forever full", spinBox.receivedString);
-        assertEquals("As aught of mortal birth", handler.my_returned_string());
-    }
-
-    @Test 
-    public void testVirtualCallToValidate() {
-    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
-        MySpinBox spinBox = new MySpinBox();
-        SpinBoxHandler handler = new SpinBoxHandler();
-
-        handler.tryValidate(spinBox, "Immortal love, forever full", 15);
-        assertEquals("Immortal love, forever full", spinBox.receivedString);
-        assertEquals(15, spinBox.receivedPos);
-        assertEquals("The love where Death has set his seal", handler.my_returned_string());
-        assertEquals(28, handler.my_returned_pos());
-        assertEquals(QValidator.State.Acceptable, handler.my_returned_state());
     }
 
     @Test 
@@ -875,24 +576,6 @@ public class TestClassFunctionality extends ApplicationInitializer {
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestClassFunctionality.class.getName());
     }
-}
-
-class OrdinarySubclass extends OrdinaryDestroyed {
-    public OrdinarySubclass(DisposeCounter destroyCounter) {
-    	super(destroyCounter);
-    	io.qt.QtUtilities.getSignalOnDispose(this).connect(destroyCounter::onDisposed, Qt.ConnectionType.DirectConnection);
-    }
-}
-
-class QObjectSubclass extends QObjectDestroyed {
-    public QObjectSubclass(DisposeCounter counter, QObject parent) {
-        super(counter, parent);
-        destroyed.connect(counter::onDisposed, Qt.ConnectionType.DirectConnection);
-    }
-}
-
-class GeneralObject {
-    public String data;
 }
 
 class CustomEvent extends QEvent {

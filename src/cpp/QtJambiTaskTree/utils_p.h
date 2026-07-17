@@ -150,9 +150,14 @@ public:
                          SetupHandler &&setup,
                          DoneHandler &&done,
                          CallDone callDone)
-        : ExecutableItem(TaskHandler{taskAdapterConstructor(env, taskFactory, adapterFactory), &taskAdapterDestructor, &taskAdapterStarter,
+        : ExecutableItem(TaskHandler{taskAdapterConstructor(env, taskFactory, adapterFactory),
+#if QT_VERSION < QT_VERSION_CHECK(6,12,0)
+                                     &taskAdapterDestructor,
+#endif
+                                     &taskAdapterStarter,
                                      wrapSetup(std::forward<SetupHandler>(setup)),
-                                     wrapDone(std::forward<DoneHandler>(done)), callDone})
+                                     wrapDone(std::forward<DoneHandler>(done)),
+                                     callDone})
     {}
 
     struct TaskAdapter {
@@ -170,6 +175,16 @@ public:
 private:
     friend class When;
 
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,12,0)
+    static TaskAdapterCreator taskAdapterConstructor(JNIEnv* env, jobject taskFactory, jobject adapterFactory) {
+        return [taskFactory = JObjectWrapper(env, taskFactory), adapterFactory = JObjectWrapper(env, adapterFactory)]() -> std::shared_ptr<void> {
+            if(JniEnvironment env{128}){
+                return std::make_shared<TaskAdapter>(env, Java::Runtime::Supplier::get(env, taskFactory.object(env)), Java::Runtime::Supplier::get(env, adapterFactory.object(env)));
+            }else return std::shared_ptr<void>(nullptr);
+        };
+    }
+#else
     static TaskAdapterConstructor taskAdapterConstructor(JNIEnv* env, jobject taskFactory, jobject adapterFactory) {
         return [taskFactory = JObjectWrapper(env, taskFactory), adapterFactory = JObjectWrapper(env, adapterFactory)]() -> TaskAdapter* {
             if(JniEnvironment env{128}){
@@ -177,11 +192,10 @@ private:
             }else return nullptr;
         };
     }
-
     static void taskAdapterDestructor(TaskAdapterPtr voidAdapter) {
         delete static_cast<TaskAdapter *>(voidAdapter);
     }
-
+#endif
     static void taskAdapterStarter(TaskAdapterPtr voidAdapter, QTaskInterface *iface) {
         TaskAdapter *taskAdapter = static_cast<TaskAdapter *>(voidAdapter);
         std::invoke(taskAdapter->adapter, taskAdapter->task.get(), iface);
@@ -221,8 +235,11 @@ public:
     QVariant *activeStorage() const;
     const JObjectWrapper& structType() const;
 private:
+#if QT_VERSION >= QT_VERSION_CHECK(6,12,0)
+#else
     static StorageConstructor ctor(JNIEnv* env, jobject supplier);
     static StorageDestructor dtor();
+#endif
     JObjectWrapper m_structType;
 };
 } // namespace QtTaskTree

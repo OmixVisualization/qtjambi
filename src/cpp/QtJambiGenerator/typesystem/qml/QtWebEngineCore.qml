@@ -57,6 +57,22 @@ if(%in){
                 };
 }`}
     }
+
+    CodeTemplate{
+        name: "webc.comsumer2.function"
+        Text{content: String.raw`
+            Q_ASSERT(%in);
+            auto %out = [wrapper = JObjectWrapper(%env, %in)](%TYPE value){
+                            if(JniEnvironment env{200}){
+                                QTJAMBI_TRY{
+                                    jobject _value = qtjambi_cast<jobject>(env, value);
+                                    Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);
+                                }QTJAMBI_CATCH(const JavaException& exn){
+                                    exn.report(env);
+                                }QTJAMBI_TRY_END
+                            }
+                        };`}
+    }
     
     
     
@@ -508,6 +524,7 @@ if(%in){
                     }
                 }
             }
+            until: [6, 11]
         }
         ModifyFunction{
             signature: "runJavaScript(QString, quint32, const std::function<void(const QVariant &)> &)"
@@ -527,6 +544,75 @@ if(%in){
                     }
                 }
             }
+            until: [6, 11]
+        }
+        FunctionalType{
+            name: "Consumer"
+            using: "std::function<void(const QVariant&)>"
+            generate: false
+            since: [6, 12]
+        }
+        ModifyFunction{
+            signature: "runJavaScript<Functor,true>(QString,Functor&&)"
+            Instantiation{
+                Argument{
+                    type: "std::function<void(const QVariant&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    value: "true"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "java.util.function.Consumer<@Nullable Object>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        InsertTemplate{
+                            name: "webc.comsumer2.function"
+                            Replace{
+                                from: "%TYPE"
+                                to: "const QVariant &"
+                            }
+                        }
+                    }
+                }
+            }
+            since: [6, 12]
+        }
+        ModifyFunction{
+            signature: "runJavaScript<Functor,true>(QString,quint32,Functor&&)"
+            Instantiation{
+                Argument{
+                    type: "std::function<void(const QVariant&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    value: "true"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "java.util.function.Consumer<@Nullable Object>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        InsertTemplate{
+                            name: "webc.comsumer2.function"
+                            Replace{
+                                from: "%TYPE"
+                                to: "const QVariant &"
+                            }
+                        }
+                    }
+                }
+            }
+            since: [6, 12]
         }
         ModifyFunction{
             signature: "setDevToolsPage(QWebEnginePage*)"
@@ -604,7 +690,7 @@ if(%in){
                 ConversionRule{
                     codeClass: CodeClass.Shell
                     Text{content: String.raw`
-                        bool %out = %in;
+                        %out = %in;
                         if(%out && %in){
                             *%4 = qtjambi_cast<QString>(%env, %in);
                         }`}
@@ -1151,6 +1237,7 @@ bool operator==(const QWebEngineFullScreenRequest& arg1, const QWebEngineFullScr
                     }
                 }
             }
+            until: [6, 11]
         }
         ModifyFunction{
             signature: "runJavaScript(QString, quint32, const std::function<void(const QVariant &)> &)"
@@ -1170,6 +1257,75 @@ bool operator==(const QWebEngineFullScreenRequest& arg1, const QWebEngineFullScr
                     }
                 }
             }
+            until: [6, 11]
+        }
+        FunctionalType{
+            name: "Consumer"
+            using: "std::function<void(const QVariant&)>"
+            generate: false
+            since: [6, 12]
+        }
+        ModifyFunction{
+            signature: "runJavaScript<Functor,true>(QString,Functor&&)"
+            Instantiation{
+                Argument{
+                    type: "std::function<void(const QVariant&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    value: "true"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "java.util.function.Consumer<@Nullable Object>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        InsertTemplate{
+                            name: "webc.comsumer2.function"
+                            Replace{
+                                from: "%TYPE"
+                                to: "const QVariant &"
+                            }
+                        }
+                    }
+                }
+            }
+            since: [6, 12]
+        }
+        ModifyFunction{
+            signature: "runJavaScript<Functor,true>(QString,quint32,Functor&&)"
+            Instantiation{
+                Argument{
+                    type: "std::function<void(const QVariant&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    value: "true"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "java.util.function.Consumer<@Nullable Object>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        InsertTemplate{
+                            name: "webc.comsumer2.function"
+                            Replace{
+                                from: "%TYPE"
+                                to: "const QVariant &"
+                            }
+                        }
+                    }
+                }
+            }
+            since: [6, 12]
         }
         ModifyFunction{
             signature: "printToPdf(const std::function<void(const QByteArray &)> &)"

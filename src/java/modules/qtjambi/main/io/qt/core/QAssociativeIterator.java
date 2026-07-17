@@ -29,9 +29,9 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.NativeAccess;
-import io.qt.QtObject;
-import io.qt.QtUninvokable;
+import java.util.NoSuchElementException;
+
+import io.qt.*;
 
 /**
  * <p>Java-iterable wrapper for Qt's iterator types:</p>
@@ -52,27 +52,48 @@ import io.qt.QtUninvokable;
  * @see QMultiHash#begin()
  * @see QMultiHash#end()
  */
-public final class QAssociativeIterator<Key,T> extends QAssociativeConstIterator<Key,T>{
+public class QAssociativeIterator<Key,T,Container extends QtObjectInterface> extends QAssociativeConstIterator<Key,T,Container>{
     
 	@NativeAccess
-    private QAssociativeIterator(QPrivateConstructor c, QtObject owner) { 
-    	super(c, owner);
+	protected QAssociativeIterator(QtConstructInPlace p) { 
+    	super(p);
+	}
+	
+	@NativeAccess
+	protected QAssociativeIterator(QPrivateConstructor c) { 
+    	super(c);
+	}
+	
+	protected QAssociativeIterator(QAssociativeIterator<Key,T,Container> other) { 
+    	super(other);
 	}
     
 	/**
 	 * Set the value at iterator's position in the container.
 	 * @param newValue the new value
 	 */
-    @QtUninvokable
-	public final boolean setValue(T newValue) {
-    	return checkedSetValue(newValue);
-    }
+	@QtUninvokable
+	public final void setValue(T newValue) {
+		if(isValid()) {
+			setValue(QtJambi_LibraryUtilities.internal.nativeId(this), newValue);
+		}else {
+			throw new NoSuchElementException();
+		}
+	}
     
 	/**
 	 * Specifies if this type is constant iterator.
 	 */
     @Override
-	boolean isConstant() {
+	final boolean isConstant() {
 		return false;
+	}
+	
+	/**
+     * Creates and returns a copy of this object.
+     */
+    @Override
+	public @NonNull QAssociativeIterator<Key,T,Container> clone(){
+		return new QAssociativeIterator<>(this);
 	}
 }

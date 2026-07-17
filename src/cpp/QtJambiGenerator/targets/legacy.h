@@ -50,8 +50,6 @@
 
 #include <QtCore/qcompilerdetection.h>
 
-#define seed_seq initializer_list<uint>const
-
 #include <QtCore/qstringliteral.h>
 #undef QStringLiteral
 #define QStringLiteral QString

@@ -1496,6 +1496,10 @@ if(%in){
                 location: Include.Global
             }
             Include{
+                fileName: "QtJambi/QSpan"
+                location: Include.Global
+            }
+            Include{
                 fileName: "QtJambi/ArrayCast"
                 location: Include.Global
             }
@@ -1660,6 +1664,10 @@ if(%in){
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/JObjectWrapper"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/QSpan"
                 location: Include.Global
             }
             Include{

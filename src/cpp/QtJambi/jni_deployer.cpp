@@ -30,16 +30,18 @@
 ****************************************************************************/
 
 #include "pch_p.h"
-#include "qtjambi_cast_template2.h"
 #include "qtjambi_cast_container.h"
-#include "qtjambi_cast_arithmetic.h"
+#include "containeraccess_export_map.h"
+#include "containeraccess_export_list.h"
+#include "containeraccess_export_stringlist.h"
+#include "containeraccess_export_bytearraylist.h"
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 namespace QtJambiPrivate{
 template<>
-struct supports_qHash<QMap<QString,QPair<size_t,size_t>>> : std::false_type{};
+struct supports_qHash<const QMap<QString,QPair<size_t,size_t>>&> : std::false_type{};
 template<>
-struct supports_qHash<QList<QPair<size_t,size_t>>> : std::false_type{};
+struct supports_qHash<const QList<QPair<size_t,size_t>>&> : std::false_type{};
 }
 #endif
 

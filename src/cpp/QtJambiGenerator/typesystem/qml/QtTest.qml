@@ -313,6 +313,11 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
+            signature: "qCompare<T1,T2>(const T1*,const T2*,const char*,const char*,const char*,int)"
+            remove: RemoveFlag.All
+            since: [6,12]
+        }
+        ModifyFunction{
             signature: "qCompare<T>(std::nullptr_t,T*,const char*,const char*,const char*,int)"
             remove: RemoveFlag.All
         }

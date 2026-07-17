@@ -70,6 +70,7 @@ public class TestQtjambiCast extends ApplicationInitializer {
 		List<String> customJavaList = new ArrayList<>();
 		customJavaList.addAll(Arrays.asList("A", "B", "C", "D"));
 		String text = "TestQtjambiCast::test()";
+		String utf16Text = "U16 \u0554";
 		List<Object> list = new ArrayList<>();
 		List<Class<?>> types = Arrays.asList(
 				io.qt.widgets.QLabel.class, 
@@ -136,22 +137,15 @@ public class TestQtjambiCast extends ApplicationInitializer {
 				functional.getClass(),
 				customCList.getClass(),
 				QList.class,//60
-				text.getClass()
+				String.class,//QStringView
+				String.class,//std::string
+				String.class,//std::string_view
+				String.class,//std::u16string
+				String.class//std::u16string_view
 			);
-		QList<java.lang.Boolean> internalTests = General.start_qtjambi_cast_test(list, qObject, graphicsItem, gradient, functionalPointer, functional, customCList, customJavaList, text);
+		QList<java.lang.Boolean> internalTests = General.start_qtjambi_cast_test(list, qObject, graphicsItem, gradient, functionalPointer, functional, customCList, customJavaList, text, utf16Text);
 		
 		assertEquals(types.size(), list.size());
-		assertEquals("U8 \u00f6", list.get(list.size()-11));
-		assertEquals("U16 \u0554", list.get(list.size()-10));
-		assertEquals("U16 \ufb49", list.get(list.size()-9));
-		assertEquals(qObject, list.get(list.size()-8));
-		assertEquals(graphicsItem, list.get(list.size()-7));
-		assertEquals(gradient, list.get(list.size()-6));
-		assertEquals(functionalPointer, list.get(list.size()-5));
-		assertEquals(functional, list.get(list.size()-4));
-		assertEquals(customCList, list.get(list.size()-3));
-		assertEquals(customJavaList, list.get(list.size()-2));
-		assertEquals(text, list.get(list.size()-1));
 		
 		for (int i = 0; i < list.size() && i < types.size(); i++) {
 			assertTrue(list.get(i)!=null);
@@ -159,8 +153,28 @@ public class TestQtjambiCast extends ApplicationInitializer {
 			if(list.get(i) instanceof QtObjectInterface)
 				instances.add(new WeakReference<>((QtObjectInterface)list.get(i)));
 		}
+		
 		assertEquals(new Qt.ItemFlags(Qt.ItemFlag.ItemIsDropEnabled, Qt.ItemFlag.ItemIsEditable), list.get(7));
 		assertEquals(new Qt.ItemFlags(Qt.ItemFlag.ItemIsDropEnabled, Qt.ItemFlag.ItemIsEditable).value(), list.get(8));
+	
+		int c=list.size();
+		// following entries in oposite direction:
+		assertEquals(utf16Text, list.get(--c));//std::u16string_view
+		assertEquals(utf16Text, list.get(--c));//std::u16string
+		assertEquals(text, list.get(--c));//std::string_view
+		assertEquals(text, list.get(--c));//std::string
+		assertEquals(text, list.get(--c));//QStringView
+		assertEquals(customJavaList, list.get(--c));
+		assertEquals(customCList, list.get(--c));
+		assertEquals(functional, list.get(--c));
+		assertEquals(functionalPointer, list.get(--c));
+		assertEquals(gradient, list.get(--c));
+		assertEquals(graphicsItem, list.get(--c));
+		assertEquals(qObject, list.get(--c));
+		assertEquals("U16 \ufb49", list.get(--c));
+		assertEquals("U16 \u0554", list.get(--c));
+		assertEquals("U8 \u00f6", list.get(--c));
+		
 		assertEquals("start_qtjambi_cast_test has "+internalTests.count(false)+" fails", -1, internalTests.indexOf(false));
 	}	
 }

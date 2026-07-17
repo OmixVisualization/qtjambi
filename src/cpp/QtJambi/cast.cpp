@@ -48,6 +48,17 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "qtjambi_cast_template4.h"
 #include "qtjambi_cast_template5.h"
 #include "qtjambi_cast_time.h"
+#include "containeraccess_export_bytearraylist.h"
+#include "containeraccess_export_hash.h"
+#include "containeraccess_export_list.h"
+#include "containeraccess_export_map.h"
+#include "containeraccess_export_multihash.h"
+#include "containeraccess_export_multimap.h"
+#include "containeraccess_export_set.h"
+#include "containeraccess_export_stringlist.h"
+#include "containeraccess_export_variantlist.h"
+#include "containeraccess_export_objectlist.h"
+#include "containeraccess_export_pair.h"
 
 #if defined(Q_CC_CLANG) && defined(Q_OS_WIN)
 // this is nessesary due to a llvm clang bug with exported template classes
@@ -86,139 +97,527 @@ template QTJAMBI_EXPORT PointerArray<true,jdoubleArray,true,jdouble,true>::~Poin
 template QTJAMBI_EXPORT PointerArray<true,jbooleanArray,true,jboolean,true>::~PointerArray();
 #endif
 
-template jobject qtjambi_cast<jobject,Qt::InputMethodQuery&>(JNIEnv *, Qt::InputMethodQuery&);
-template jobject qtjambi_cast<jobject,Qt::ItemSelectionMode&>(JNIEnv *, Qt::ItemSelectionMode&);
+#if defined(_LIBCPP_VERSION) && defined(Q_OS_WIN)
+// this is nessesary due to a llvm clang bug with exported template classes
+template QTJAMBI_EXPORT QListAccess<bool>* QListAccess<bool>::newInstance();
+template QTJAMBI_EXPORT QListAccess<qint8>* QListAccess<qint8>::newInstance();
+template QTJAMBI_EXPORT QListAccess<qint16>* QListAccess<qint16>::newInstance();
+template QTJAMBI_EXPORT QListAccess<qint32>* QListAccess<qint32>::newInstance();
+template QTJAMBI_EXPORT QListAccess<qint64>* QListAccess<qint64>::newInstance();
+template QTJAMBI_EXPORT QListAccess<double>* QListAccess<double>::newInstance();
+template QTJAMBI_EXPORT QListAccess<float>* QListAccess<float>::newInstance();
+template QTJAMBI_EXPORT QListAccess<QChar>* QListAccess<QChar>::newInstance();
+template QTJAMBI_EXPORT QListAccess<char16_t>* QListAccess<char16_t>::newInstance();
+template QTJAMBI_EXPORT QListAccess<char32_t>* QListAccess<char32_t>::newInstance();
+template QTJAMBI_EXPORT QListAccess<QString>* QListAccess<QString>::newInstance();
+template QTJAMBI_EXPORT QListAccess<QByteArray>* QListAccess<QByteArray>::newInstance();
+template QTJAMBI_EXPORT QListAccess<QVariant>* QListAccess<QVariant>::newInstance();
+template QTJAMBI_EXPORT QListAccess<QObject*>* QListAccess<QObject*>::newInstance();
+template QTJAMBI_EXPORT QListAccess<QModelIndex>* QListAccess<QModelIndex>::newInstance();
+template QTJAMBI_EXPORT QListAccess<QPersistentModelIndex>* QListAccess<QPersistentModelIndex>::newInstance();
 
-template QStringList qtjambi_cast<QStringList,jobject&>(JNIEnv *, jobject&);
-template QStringList qtjambi_cast<QStringList,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
-template const QStringList& qtjambi_cast<const QStringList&,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
-template jobject qtjambi_cast<jobject,QStringList>(JNIEnv *, QStringList&&);
-template jobject qtjambi_cast<jobject,const QStringList&>(JNIEnv *, const QStringList&);
-template QList<QObject*> qtjambi_cast<QList<QObject*>,jobject&>(JNIEnv *, jobject&);
-template QList<QObject*> qtjambi_cast<QList<QObject*>,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
-template const QList<QObject*>& qtjambi_cast<const QList<QObject*>&,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
-template jobject qtjambi_cast<jobject,QList<QObject*>>(JNIEnv *, QList<QObject*>&&);
-template jobject qtjambi_cast<jobject,const QList<QObject*>&>(JNIEnv *, const QList<QObject*>&);
-template QList<QVariant> qtjambi_cast<QList<QVariant>,jobject&>(JNIEnv *, jobject&);
-template QList<QVariant> qtjambi_cast<QList<QVariant>,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
-template const QList<QVariant>& qtjambi_cast<const QList<QVariant>&,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
-template jobject qtjambi_cast<jobject,QList<QVariant>>(JNIEnv *, QList<QVariant>&&);
-template jobject qtjambi_cast<jobject,const QList<QVariant>&>(JNIEnv *, const QList<QVariant>&);
-template QList<JObjectWrapper> qtjambi_cast<QList<JObjectWrapper>,jobject&>(JNIEnv *, jobject&);
-template QList<JObjectWrapper> qtjambi_cast<QList<JObjectWrapper>,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
-template const QList<JObjectWrapper>& qtjambi_cast<const QList<JObjectWrapper>&,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
-template jobject qtjambi_cast<jobject,QList<JObjectWrapper>>(JNIEnv *, QList<JObjectWrapper>&&);
-template jobject qtjambi_cast<jobject,const QList<JObjectWrapper>&>(JNIEnv *, const QList<JObjectWrapper>&);
+template QTJAMBI_EXPORT QListAccess<bool>::QListAccess();
+template QTJAMBI_EXPORT QListAccess<qint8>::QListAccess();
+template QTJAMBI_EXPORT QListAccess<qint16>::QListAccess();
+template QTJAMBI_EXPORT QListAccess<qint32>::QListAccess();
+template QTJAMBI_EXPORT QListAccess<qint64>::QListAccess();
+template QTJAMBI_EXPORT QListAccess<double>::QListAccess();
+template QTJAMBI_EXPORT QListAccess<float>::QListAccess();
+template QTJAMBI_EXPORT QListAccess<QChar>::QListAccess();
+template QTJAMBI_EXPORT QListAccess<char16_t>::QListAccess();
+template QTJAMBI_EXPORT QListAccess<char32_t>::QListAccess();
+template QTJAMBI_EXPORT QListAccess<QString>::QListAccess();
+template QTJAMBI_EXPORT QListAccess<QByteArray>::QListAccess();
+template QTJAMBI_EXPORT QListAccess<QVariant>::QListAccess();
+template QTJAMBI_EXPORT QListAccess<QObject*>::QListAccess();
+template QTJAMBI_EXPORT QListAccess<QModelIndex>::QListAccess();
+template QTJAMBI_EXPORT QListAccess<QPersistentModelIndex>::QListAccess();
 
-template jobject qtjambi_cast<jobject,QPromise<QVariant>&>(JNIEnv *, QPromise<QVariant>&);
-template jobject qtjambi_cast<jobject,QPromise<void>&>(JNIEnv *, QPromise<void>&);
+template QTJAMBI_EXPORT QListAccess<bool>::~QListAccess();
+template QTJAMBI_EXPORT QListAccess<qint8>::~QListAccess();
+template QTJAMBI_EXPORT QListAccess<qint16>::~QListAccess();
+template QTJAMBI_EXPORT QListAccess<qint32>::~QListAccess();
+template QTJAMBI_EXPORT QListAccess<qint64>::~QListAccess();
+template QTJAMBI_EXPORT QListAccess<double>::~QListAccess();
+template QTJAMBI_EXPORT QListAccess<float>::~QListAccess();
+template QTJAMBI_EXPORT QListAccess<QChar>::~QListAccess();
+template QTJAMBI_EXPORT QListAccess<char16_t>::~QListAccess();
+template QTJAMBI_EXPORT QListAccess<char32_t>::~QListAccess();
+template QTJAMBI_EXPORT QListAccess<QString>::~QListAccess();
+template QTJAMBI_EXPORT QListAccess<QByteArray>::~QListAccess();
+template QTJAMBI_EXPORT QListAccess<QVariant>::~QListAccess();
+template QTJAMBI_EXPORT QListAccess<QObject*>::~QListAccess();
+template QTJAMBI_EXPORT QListAccess<QModelIndex>::~QListAccess();
+template QTJAMBI_EXPORT QListAccess<QPersistentModelIndex>::~QListAccess();
 
-template QFuture<QVariant> qtjambi_cast<QFuture<QVariant>,jobject&>(JNIEnv *, jobject&);
-template const QFuture<QVariant>& qtjambi_cast<const QFuture<QVariant>&,jobject&>(JNIEnv *, jobject&);
-template jobject qtjambi_cast<jobject,QFuture<QVariant>>(JNIEnv *, QFuture<QVariant>&&);
-template jobject qtjambi_cast<jobject,const QFuture<QVariant>&>(JNIEnv *, const QFuture<QVariant>&);
-template QFuture<void> qtjambi_cast<QFuture<void>,jobject&>(JNIEnv *, jobject&);
-template const QFuture<void>& qtjambi_cast<const QFuture<void>&,jobject&>(JNIEnv *, jobject&);
-template jobject qtjambi_cast<jobject,QFuture<void>>(JNIEnv *, QFuture<void>&&);
-template jobject qtjambi_cast<jobject,const QFuture<void>&>(JNIEnv *, const QFuture<void>&);
-template QFuture<JObjectWrapper> qtjambi_cast<QFuture<JObjectWrapper>,jobject&>(JNIEnv *, jobject&);
-template const QFuture<JObjectWrapper>& qtjambi_cast<const QFuture<JObjectWrapper>&,jobject&>(JNIEnv *, jobject&);
-template jobject qtjambi_cast<jobject,QFuture<JObjectWrapper>>(JNIEnv *, QFuture<JObjectWrapper>&&);
-template jobject qtjambi_cast<jobject,const QFuture<JObjectWrapper>&>(JNIEnv *, const QFuture<JObjectWrapper>&);
+template QTJAMBI_EXPORT QMapAccess<qint32,qint32>* QMapAccess<qint32,qint32>::newInstance();
+template QTJAMBI_EXPORT QMapAccess<qint32,QVariant>* QMapAccess<qint32,QVariant>::newInstance();
+template QTJAMBI_EXPORT QMapAccess<QString,QString>* QMapAccess<QString,QString>::newInstance();
+template QTJAMBI_EXPORT QMapAccess<QString,QVariant>* QMapAccess<QString,QVariant>::newInstance();
+template QTJAMBI_EXPORT QMapAccess<QByteArray,QByteArray>* QMapAccess<QByteArray,QByteArray>::newInstance();
+template QTJAMBI_EXPORT QMapAccess<QByteArray,QVariant>* QMapAccess<QByteArray,QVariant>::newInstance();
+template QTJAMBI_EXPORT QMapAccess<qint32,qint32>::QMapAccess();
+template QTJAMBI_EXPORT QMapAccess<qint32,QVariant>::QMapAccess();
+template QTJAMBI_EXPORT QMapAccess<QString,QString>::QMapAccess();
+template QTJAMBI_EXPORT QMapAccess<QString,QVariant>::QMapAccess();
+template QTJAMBI_EXPORT QMapAccess<QByteArray,QByteArray>::QMapAccess();
+template QTJAMBI_EXPORT QMapAccess<QByteArray,QVariant>::QMapAccess();
+template QTJAMBI_EXPORT QMapAccess<qint32,qint32>::~QMapAccess();
+template QTJAMBI_EXPORT QMapAccess<qint32,QVariant>::~QMapAccess();
+template QTJAMBI_EXPORT QMapAccess<QString,QString>::~QMapAccess();
+template QTJAMBI_EXPORT QMapAccess<QString,QVariant>::~QMapAccess();
+template QTJAMBI_EXPORT QMapAccess<QByteArray,QByteArray>::~QMapAccess();
+template QTJAMBI_EXPORT QMapAccess<QByteArray,QVariant>::~QMapAccess();
 
-template QVariant qtjambi_cast<QVariant,jobject&>(JNIEnv *, jobject&);
-template jobject qtjambi_cast<jobject,QVariant>(JNIEnv *, QVariant&&);
-template jobject qtjambi_cast<jobject,QVariant&>(JNIEnv *, QVariant&);
-template jobject qtjambi_cast<jobject,const QVariant&>(JNIEnv *, const QVariant&);
-template jobject qtjambi_cast<jobject,const QVariant*&>(JNIEnv *, const QVariant*&);
-template jobject qtjambi_cast<jcoreobject,QVariant>(JNIEnv *, QVariant&&);
-template jobject qtjambi_cast<jcoreobject,QVariant&>(JNIEnv *, QVariant&);
-template jobject qtjambi_cast<jcoreobject,QVariant*&>(JNIEnv *, QVariant*&);
-template jobject qtjambi_cast<jcoreobject,const QVariant&>(JNIEnv *, const QVariant&);
+template QTJAMBI_EXPORT QHashAccess<qint32,QByteArray>* QHashAccess<qint32,QByteArray>::newInstance();
+template QTJAMBI_EXPORT QHashAccess<QString,QVariant>* QHashAccess<QString,QVariant>::newInstance();
+template QTJAMBI_EXPORT QHashAccess<QByteArray,QByteArray>* QHashAccess<QByteArray,QByteArray>::newInstance();
+template QTJAMBI_EXPORT QHashAccess<qint32,QByteArray>::QHashAccess();
+template QTJAMBI_EXPORT QHashAccess<QString,QVariant>::QHashAccess();
+template QTJAMBI_EXPORT QHashAccess<QByteArray,QByteArray>::QHashAccess();
+template QTJAMBI_EXPORT QHashAccess<qint32,QByteArray>::~QHashAccess();
+template QTJAMBI_EXPORT QHashAccess<QString,QVariant>::~QHashAccess();
+template QTJAMBI_EXPORT QHashAccess<QByteArray,QByteArray>::~QHashAccess();
 
-template QString qtjambi_cast<QString,jstring&>(JNIEnv *, jstring&);
-template jstring qtjambi_cast<jstring,QString>(JNIEnv *, QString&&);
-template jstring qtjambi_cast<jstring,QString&>(JNIEnv *, QString&);
-template jstring qtjambi_cast<jstring,const QString&>(JNIEnv *, const QString&);
-template jobject qtjambi_cast<jcoreobject,QString>(JNIEnv *, QString&&);
-template jobject qtjambi_cast<jcoreobject,QString&>(JNIEnv *, QString&);
-template jobject qtjambi_cast<jcoreobject,QString*&>(JNIEnv *, QString*&);
-template jobject qtjambi_cast<jcoreobject,const QString&>(JNIEnv *, const QString&);
+template QTJAMBI_EXPORT QSetAccess<bool>* QSetAccess<bool>::newInstance();
+template QTJAMBI_EXPORT QSetAccess<qint8>* QSetAccess<qint8>::newInstance();
+template QTJAMBI_EXPORT QSetAccess<qint16>* QSetAccess<qint16>::newInstance();
+template QTJAMBI_EXPORT QSetAccess<qint32>* QSetAccess<qint32>::newInstance();
+template QTJAMBI_EXPORT QSetAccess<qint64>* QSetAccess<qint64>::newInstance();
+template QTJAMBI_EXPORT QSetAccess<double>* QSetAccess<double>::newInstance();
+template QTJAMBI_EXPORT QSetAccess<float>* QSetAccess<float>::newInstance();
+template QTJAMBI_EXPORT QSetAccess<QChar>* QSetAccess<QChar>::newInstance();
+template QTJAMBI_EXPORT QSetAccess<char16_t>* QSetAccess<char16_t>::newInstance();
+template QTJAMBI_EXPORT QSetAccess<char32_t>* QSetAccess<char32_t>::newInstance();
+template QTJAMBI_EXPORT QSetAccess<QString>* QSetAccess<QString>::newInstance();
+template QTJAMBI_EXPORT QSetAccess<QByteArray>* QSetAccess<QByteArray>::newInstance();
+template QTJAMBI_EXPORT QSetAccess<QObject*>* QSetAccess<QObject*>::newInstance();
+template QTJAMBI_EXPORT QSetAccess<bool>::QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<qint8>::QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<qint16>::QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<qint32>::QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<qint64>::QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<double>::QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<float>::QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<QChar>::QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<char16_t>::QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<char32_t>::QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<QString>::QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<QByteArray>::QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<QObject*>::QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<bool>::~QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<qint8>::~QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<qint16>::~QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<qint32>::~QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<qint64>::~QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<double>::~QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<float>::~QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<QChar>::~QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<char16_t>::~QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<char32_t>::~QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<QString>::~QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<QByteArray>::~QSetAccess();
+template QTJAMBI_EXPORT QSetAccess<QObject*>::~QSetAccess();
 
-template QStringView qtjambi_cast<QStringView,jstring&>(JNIEnv *, QtJambiScope&, jstring&);
-template jstring qtjambi_cast<jstring,QStringView>(JNIEnv *, QStringView&&);
-template jstring qtjambi_cast<jstring,QStringView&>(JNIEnv *, QStringView&);
-template jstring qtjambi_cast<jstring,const QStringView&>(JNIEnv *, const QStringView&);
+template QTJAMBI_EXPORT QSpanAccess<bool>* QSpanAccess<bool>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<qint8>* QSpanAccess<qint8>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<qint16>* QSpanAccess<qint16>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<qint32>* QSpanAccess<qint32>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<qint64>* QSpanAccess<qint64>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<double>* QSpanAccess<double>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<float>* QSpanAccess<float>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<QChar>* QSpanAccess<QChar>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<char16_t>* QSpanAccess<char16_t>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<char32_t>* QSpanAccess<char32_t>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<QString>* QSpanAccess<QString>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<QByteArray>* QSpanAccess<QByteArray>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<QVariant>* QSpanAccess<QVariant>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<QObject*>* QSpanAccess<QObject*>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<QModelIndex>* QSpanAccess<QModelIndex>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<QPersistentModelIndex>* QSpanAccess<QPersistentModelIndex>::newInstance();
 
-template QAnyStringView qtjambi_cast<QAnyStringView,jstring&>(JNIEnv *, QtJambiScope&, jstring&);
-template jstring qtjambi_cast<jstring,QAnyStringView>(JNIEnv *, QAnyStringView&&);
-template jstring qtjambi_cast<jstring,QAnyStringView&>(JNIEnv *, QAnyStringView&);
-template jstring qtjambi_cast<jstring,const QAnyStringView&>(JNIEnv *, const QAnyStringView&);
+template QTJAMBI_EXPORT QSpanAccess<bool>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<qint8>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<qint16>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<qint32>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<qint64>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<double>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<float>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<QChar>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<char16_t>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<char32_t>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<QString>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<QByteArray>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<QVariant>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<QObject*>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const bool>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const qint8>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const qint16>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const qint32>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const qint64>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const double>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const float>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const QChar>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const char16_t>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const char32_t>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const QString>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const QByteArray>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const QVariant>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const QObject*>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<QModelIndex>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const QModelIndex>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<QPersistentModelIndex>::QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const QPersistentModelIndex>::QSpanAccess();
 
-template QLatin1StringView qtjambi_cast<QLatin1StringView,jstring&>(JNIEnv *, QtJambiScope&, jstring&);
-template jstring qtjambi_cast<jstring,QLatin1StringView>(JNIEnv *, QLatin1StringView&&);
-template jstring qtjambi_cast<jstring,QLatin1StringView&>(JNIEnv *, QLatin1StringView&);
-template jstring qtjambi_cast<jstring,const QLatin1StringView&>(JNIEnv *, const QLatin1StringView&);
+template QTJAMBI_EXPORT QSpanAccess<bool>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<qint8>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<qint16>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<qint32>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<qint64>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<double>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<float>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<QChar>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<char16_t>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<char32_t>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<QString>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<QByteArray>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<QVariant>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<QObject*>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const bool>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const qint8>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const qint16>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const qint32>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const qint64>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const double>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const float>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const QChar>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const char16_t>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const char32_t>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const QString>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const QByteArray>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const QVariant>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const QObject*>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<QModelIndex>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const QModelIndex>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<QPersistentModelIndex>::~QSpanAccess();
+template QTJAMBI_EXPORT QSpanAccess<const QPersistentModelIndex>::~QSpanAccess();
 
-template QObject* qtjambi_cast<QObject*,jobject&>(JNIEnv *, jobject&);
-template jobject qtjambi_cast<jobject,QEvent*&>(JNIEnv *, QEvent*&);
-template jobject qtjambi_cast<jobject,QTimerEvent*&>(JNIEnv *, QTimerEvent*&);
-template jobject qtjambi_cast<jobject,QChildEvent*&>(JNIEnv *, QChildEvent*&);
+template QTJAMBI_EXPORT QSpanAccess<const bool>* QSpanAccess<const bool>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<const qint8>* QSpanAccess<const qint8>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<const qint16>* QSpanAccess<const qint16>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<const qint32>* QSpanAccess<const qint32>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<const qint64>* QSpanAccess<const qint64>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<const double>* QSpanAccess<const double>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<const float>* QSpanAccess<const float>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<const QChar>* QSpanAccess<const QChar>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<const char16_t>* QSpanAccess<const char16_t>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<const char32_t>* QSpanAccess<const char32_t>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<const QString>* QSpanAccess<const QString>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<const QByteArray>* QSpanAccess<const QByteArray>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<const QVariant>* QSpanAccess<const QVariant>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<const QObject*>* QSpanAccess<const QObject*>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<const QModelIndex>* QSpanAccess<const QModelIndex>::newInstance();
+template QTJAMBI_EXPORT QSpanAccess<const QPersistentModelIndex>* QSpanAccess<const QPersistentModelIndex>::newInstance();
 
-template jobject qtjambi_cast<jobject,const QMetaMethod&>(JNIEnv *, const QMetaMethod&);
-template jobject qtjambi_cast<jobject,const QMetaProperty&>(JNIEnv *, const QMetaProperty&);
-template jobject qtjambi_cast<jobject,const QMetaObject*&>(JNIEnv *, const QMetaObject*&);
+template QTJAMBI_EXPORT QMultiHashAccess<qint16,QByteArray>* QMultiHashAccess<qint16,QByteArray>::newInstance();
+template QTJAMBI_EXPORT QMultiHashAccess<QByteArray,QByteArray>* QMultiHashAccess<QByteArray,QByteArray>::newInstance();
+template QTJAMBI_EXPORT QMultiHashAccess<qint16,QByteArray>::QMultiHashAccess();
+template QTJAMBI_EXPORT QMultiHashAccess<QByteArray,QByteArray>::QMultiHashAccess();
+template QTJAMBI_EXPORT QMultiHashAccess<qint16,QByteArray>::~QMultiHashAccess();
+template QTJAMBI_EXPORT QMultiHashAccess<QByteArray,QByteArray>::~QMultiHashAccess();
 
-template jobject qtjambi_cast<jobject,QBindable<int>>(JNIEnv *, QBindable<int>&&);
-template jobject qtjambi_cast<jobject,QBindable<bool>>(JNIEnv *, QBindable<bool>&&);
-template jobject qtjambi_cast<jobject,QBindable<QString>>(JNIEnv *, QBindable<QString>&&);
-template jobject qtjambi_cast<jobject,QBindable<QByteArray>>(JNIEnv *, QBindable<QByteArray>&&);
-template jobject qtjambi_cast<jobject,QBindable<QObject*>>(JNIEnv *, QBindable<QObject*>&&);
-template jobject qtjambi_cast<jobject,QBindable<const QObject*>>(JNIEnv *, QBindable<const QObject*>&&);
-template jobject qtjambi_cast<jobject,QBindable<float>>(JNIEnv *, QBindable<float>&&);
-template jobject qtjambi_cast<jobject,QBindable<double>>(JNIEnv *, QBindable<double>&&);
+template QTJAMBI_EXPORT QMultiMapAccess<qint32,QString>* QMultiMapAccess<qint32,QString>::newInstance();
+template QTJAMBI_EXPORT QMultiMapAccess<QString,QUrl>* QMultiMapAccess<QString,QUrl>::newInstance();
+template QTJAMBI_EXPORT QMultiMapAccess<QString,QVariant>* QMultiMapAccess<QString,QVariant>::newInstance();
+template QTJAMBI_EXPORT QMultiMapAccess<QByteArray,QByteArray>* QMultiMapAccess<QByteArray,QByteArray>::newInstance();
+template QTJAMBI_EXPORT QMultiMapAccess<qint32,QString>::QMultiMapAccess();
+template QTJAMBI_EXPORT QMultiMapAccess<QString,QUrl>::QMultiMapAccess();
+template QTJAMBI_EXPORT QMultiMapAccess<QString,QVariant>::QMultiMapAccess();
+template QTJAMBI_EXPORT QMultiMapAccess<QByteArray,QByteArray>::QMultiMapAccess();
+template QTJAMBI_EXPORT QMultiMapAccess<qint32,QString>::~QMultiMapAccess();
+template QTJAMBI_EXPORT QMultiMapAccess<QString,QUrl>::~QMultiMapAccess();
+template QTJAMBI_EXPORT QMultiMapAccess<QString,QVariant>::~QMultiMapAccess();
+template QTJAMBI_EXPORT QMultiMapAccess<QByteArray,QByteArray>::~QMultiMapAccess();
+#endif
 
-template QUrl qtjambi_cast<QUrl,jobject&>(JNIEnv *, jobject&);
-template jobject qtjambi_cast<jobject,QUrl>(JNIEnv *, QUrl&&);
-template jobject qtjambi_cast<jobject,QUrl&>(JNIEnv *, QUrl&);
-template jobject qtjambi_cast<jobject,const QUrl&>(JNIEnv *, const QUrl&);
+#if !defined(__GLIBCXX__) || !defined(Q_OS_WIN)
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,Qt::InputMethodQuery&>(JNIEnv *, Qt::InputMethodQuery&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,Qt::ItemSelectionMode&>(JNIEnv *, Qt::ItemSelectionMode&);
 
-template QModelIndex qtjambi_cast<QModelIndex,jobject&>(JNIEnv *, jobject&);
-template jobject qtjambi_cast<jobject,QModelIndex>(JNIEnv *, QModelIndex&&);
-template jobject qtjambi_cast<jobject,QModelIndex&>(JNIEnv *, QModelIndex&);
-template jobject qtjambi_cast<jobject,const QModelIndex&>(JNIEnv *, const QModelIndex&);
+template QTJAMBI_EXPORT QStringList qtjambi_cast<QStringList,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT QStringList qtjambi_cast<QStringList,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
+template QTJAMBI_EXPORT const QStringList& qtjambi_cast<const QStringList&,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QStringList>(JNIEnv *, QStringList&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QStringList&>(JNIEnv *, const QStringList&);
+template QTJAMBI_EXPORT QList<QObject*> qtjambi_cast<QList<QObject*>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT QList<QObject*> qtjambi_cast<QList<QObject*>,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
+template QTJAMBI_EXPORT const QList<QObject*>& qtjambi_cast<const QList<QObject*>&,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<QObject*>>(JNIEnv *, QList<QObject*>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QList<QObject*>&>(JNIEnv *, const QList<QObject*>&);
+template QTJAMBI_EXPORT QList<QVariant> qtjambi_cast<QList<QVariant>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT QList<QVariant> qtjambi_cast<QList<QVariant>,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
+template QTJAMBI_EXPORT const QList<QVariant>& qtjambi_cast<const QList<QVariant>&,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<QVariant>>(JNIEnv *, QList<QVariant>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QList<QVariant>&>(JNIEnv *, const QList<QVariant>&);
+template QTJAMBI_EXPORT QList<JObjectWrapper> qtjambi_cast<QList<JObjectWrapper>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT QList<JObjectWrapper> qtjambi_cast<QList<JObjectWrapper>,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
+template QTJAMBI_EXPORT const QList<JObjectWrapper>& qtjambi_cast<const QList<JObjectWrapper>&,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<JObjectWrapper>>(JNIEnv *, QList<JObjectWrapper>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QList<JObjectWrapper>&>(JNIEnv *, const QList<JObjectWrapper>&);
 
-template jobject qtjambi_cast<jobject,QMargins>(JNIEnv *, QMargins&&);
-template jobject qtjambi_cast<jobject,QMarginsF>(JNIEnv *, QMarginsF&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QPromise<QVariant>&>(JNIEnv *, QPromise<QVariant>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QPromise<void>&>(JNIEnv *, QPromise<void>&);
 
-template jobject qtjambi_cast<jobject,QRect>(JNIEnv *, QRect&&);
-template jobject qtjambi_cast<jobject,const QRect&>(JNIEnv *, const QRect&);
-template jobject qtjambi_cast<jobject,QRectF>(JNIEnv *, QRectF&&);
-template jobject qtjambi_cast<jobject,const QRectF&>(JNIEnv *, const QRectF&);
-template jobject qtjambi_cast<jobject,QPoint>(JNIEnv *, QPoint&&);
-template jobject qtjambi_cast<jobject,const QPoint&>(JNIEnv *, const QPoint&);
-template jobject qtjambi_cast<jobject,QPointF>(JNIEnv *, QPointF&&);
-template jobject qtjambi_cast<jobject,const QPointF&>(JNIEnv *, const QPointF&);
-template jobject qtjambi_cast<jobject,QSize>(JNIEnv *, QSize&&);
-template jobject qtjambi_cast<jobject,const QSize&>(JNIEnv *, const QSize&);
-template jobject qtjambi_cast<jobject,QSizeF>(JNIEnv *, QSizeF&&);
-template jobject qtjambi_cast<jobject,const QSizeF&>(JNIEnv *, const QSizeF&);
+template QTJAMBI_EXPORT QFuture<QVariant> qtjambi_cast<QFuture<QVariant>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT const QFuture<QVariant>& qtjambi_cast<const QFuture<QVariant>&,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QFuture<QVariant>>(JNIEnv *, QFuture<QVariant>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QFuture<QVariant>&>(JNIEnv *, const QFuture<QVariant>&);
+template QTJAMBI_EXPORT QFuture<void> qtjambi_cast<QFuture<void>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT const QFuture<void>& qtjambi_cast<const QFuture<void>&,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QFuture<void>>(JNIEnv *, QFuture<void>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QFuture<void>&>(JNIEnv *, const QFuture<void>&);
+template QTJAMBI_EXPORT QFuture<JObjectWrapper> qtjambi_cast<QFuture<JObjectWrapper>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT const QFuture<JObjectWrapper>& qtjambi_cast<const QFuture<JObjectWrapper>&,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QFuture<JObjectWrapper>>(JNIEnv *, QFuture<JObjectWrapper>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QFuture<JObjectWrapper>&>(JNIEnv *, const QFuture<JObjectWrapper>&);
 
-template QList<QPointF> qtjambi_cast<QList<QPointF>,jobject&>(JNIEnv *, jobject&);
-template QList<QPointF> qtjambi_cast<QList<QPointF>,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
-template const QList<QPointF>& qtjambi_cast<const QList<QPointF>&,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
-template jobject qtjambi_cast<jobject,QList<QPointF>>(JNIEnv *, QList<QPointF>&&);
-template jobject qtjambi_cast<jobject,const QList<QPointF>&>(JNIEnv *, const QList<QPointF>&);
-template QList<QPoint> qtjambi_cast<QList<QPoint>,jobject&>(JNIEnv *, jobject&);
-template QList<QPoint> qtjambi_cast<QList<QPoint>,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
-template const QList<QPoint>& qtjambi_cast<const QList<QPoint>&,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
-template jobject qtjambi_cast<jobject,QList<QPoint>>(JNIEnv *, QList<QPoint>&&);
-template jobject qtjambi_cast<jobject,const QList<QPoint>&>(JNIEnv *, const QList<QPoint>&);
-template QList<QSize> qtjambi_cast<QList<QSize>,jobject&>(JNIEnv *, jobject&);
-template QList<QSize> qtjambi_cast<QList<QSize>,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
-template const QList<QSize>& qtjambi_cast<const QList<QSize>&,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
-template jobject qtjambi_cast<jobject,QList<QSize>>(JNIEnv *, QList<QSize>&&);
-template jobject qtjambi_cast<jobject,const QList<QSize>&>(JNIEnv *, const QList<QSize>&);
+template QTJAMBI_EXPORT QVariant qtjambi_cast<QVariant,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QVariant>(JNIEnv *, QVariant&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QVariant&>(JNIEnv *, QVariant&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QVariant&>(JNIEnv *, const QVariant&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QVariant*&>(JNIEnv *, const QVariant*&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jcoreobject,QVariant>(JNIEnv *, QVariant&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jcoreobject,QVariant&>(JNIEnv *, QVariant&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jcoreobject,QVariant*&>(JNIEnv *, QVariant*&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jcoreobject,const QVariant&>(JNIEnv *, const QVariant&);
+
+template QTJAMBI_EXPORT QString qtjambi_cast<QString,jstring&>(JNIEnv *, jstring&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,QString>(JNIEnv *, QString&&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,QString&>(JNIEnv *, QString&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,const QString&>(JNIEnv *, const QString&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jcoreobject,QString>(JNIEnv *, QString&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jcoreobject,QString&>(JNIEnv *, QString&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jcoreobject,QString*&>(JNIEnv *, QString*&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jcoreobject,const QString&>(JNIEnv *, const QString&);
+
+template QTJAMBI_EXPORT QStringView qtjambi_cast<QStringView,jstring&>(JNIEnv *, QtJambiScope&, jstring&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,QStringView>(JNIEnv *, QStringView&&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,QStringView&>(JNIEnv *, QStringView&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,const QStringView&>(JNIEnv *, const QStringView&);
+
+template QTJAMBI_EXPORT QAnyStringView qtjambi_cast<QAnyStringView,jstring&>(JNIEnv *, QtJambiScope&, jstring&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,QAnyStringView>(JNIEnv *, QAnyStringView&&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,QAnyStringView&>(JNIEnv *, QAnyStringView&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,const QAnyStringView&>(JNIEnv *, const QAnyStringView&);
+
+template QTJAMBI_EXPORT QLatin1StringView qtjambi_cast<QLatin1StringView,jstring&>(JNIEnv *, QtJambiScope&, jstring&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,QLatin1StringView>(JNIEnv *, QLatin1StringView&&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,QLatin1StringView&>(JNIEnv *, QLatin1StringView&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,const QLatin1StringView&>(JNIEnv *, const QLatin1StringView&);
+
+template QTJAMBI_EXPORT QObject* qtjambi_cast<QObject*,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QEvent*&>(JNIEnv *, QEvent*&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QTimerEvent*&>(JNIEnv *, QTimerEvent*&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QChildEvent*&>(JNIEnv *, QChildEvent*&);
+
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMetaMethod&>(JNIEnv *, const QMetaMethod&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMetaProperty&>(JNIEnv *, const QMetaProperty&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMetaObject*&>(JNIEnv *, const QMetaObject*&);
+
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QBindable<int>>(JNIEnv *, QBindable<int>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QBindable<bool>>(JNIEnv *, QBindable<bool>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QBindable<QString>>(JNIEnv *, QBindable<QString>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QBindable<QByteArray>>(JNIEnv *, QBindable<QByteArray>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QBindable<QObject*>>(JNIEnv *, QBindable<QObject*>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QBindable<const QObject*>>(JNIEnv *, QBindable<const QObject*>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QBindable<float>>(JNIEnv *, QBindable<float>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QBindable<double>>(JNIEnv *, QBindable<double>&&);
+
+template QTJAMBI_EXPORT QUrl qtjambi_cast<QUrl,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QUrl>(JNIEnv *, QUrl&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QUrl&>(JNIEnv *, QUrl&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QUrl&>(JNIEnv *, const QUrl&);
+
+template QTJAMBI_EXPORT QModelIndex qtjambi_cast<QModelIndex,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QModelIndex>(JNIEnv *, QModelIndex&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QModelIndex&>(JNIEnv *, QModelIndex&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QModelIndex&>(JNIEnv *, const QModelIndex&);
+
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMargins>(JNIEnv *, QMargins&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMarginsF>(JNIEnv *, QMarginsF&&);
+
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QRect>(JNIEnv *, QRect&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QRect&>(JNIEnv *, const QRect&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QRectF>(JNIEnv *, QRectF&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QRectF&>(JNIEnv *, const QRectF&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QPoint>(JNIEnv *, QPoint&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QPoint&>(JNIEnv *, const QPoint&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QPointF>(JNIEnv *, QPointF&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QPointF&>(JNIEnv *, const QPointF&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QSize>(JNIEnv *, QSize&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QSize&>(JNIEnv *, const QSize&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QSizeF>(JNIEnv *, QSizeF&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QSizeF&>(JNIEnv *, const QSizeF&);
+
+template QTJAMBI_EXPORT QList<QPointF> qtjambi_cast<QList<QPointF>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT QList<QPointF> qtjambi_cast<QList<QPointF>,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
+template QTJAMBI_EXPORT const QList<QPointF>& qtjambi_cast<const QList<QPointF>&,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<QPointF>>(JNIEnv *, QList<QPointF>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QList<QPointF>&>(JNIEnv *, const QList<QPointF>&);
+template QTJAMBI_EXPORT QList<QPoint> qtjambi_cast<QList<QPoint>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT QList<QPoint> qtjambi_cast<QList<QPoint>,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
+template QTJAMBI_EXPORT const QList<QPoint>& qtjambi_cast<const QList<QPoint>&,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<QPoint>>(JNIEnv *, QList<QPoint>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QList<QPoint>&>(JNIEnv *, const QList<QPoint>&);
+template QTJAMBI_EXPORT QList<QSize> qtjambi_cast<QList<QSize>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT QList<QSize> qtjambi_cast<QList<QSize>,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
+template QTJAMBI_EXPORT const QList<QSize>& qtjambi_cast<const QList<QSize>&,jobject&>(JNIEnv *, QtJambiScope&, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<QSize>>(JNIEnv *, QList<QSize>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QList<QSize>&>(JNIEnv *, const QList<QSize>&);
+
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const bool&>(JNIEnv *, const bool&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const qint8&>(JNIEnv *, const qint8&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const qint16&>(JNIEnv *, const qint16&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const qint32&>(JNIEnv *, const qint32&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const qint64&>(JNIEnv *, const qint64&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const double&>(JNIEnv *, const double&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const float&>(JNIEnv *, const float&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QChar&>(JNIEnv *, const QChar&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const char16_t&>(JNIEnv *, const char16_t&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const char32_t&>(JNIEnv *, const char32_t&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QString&>(JNIEnv *, const QString&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QByteArray&>(JNIEnv *, const QByteArray&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QObject*&>(JNIEnv *, const QObject*&);
+
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,bool&>(JNIEnv *, bool&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,qint8&>(JNIEnv *, qint8&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,qint16&>(JNIEnv *, qint16&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,qint32&>(JNIEnv *, qint32&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,qint64&>(JNIEnv *, qint64&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,double&>(JNIEnv *, double&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,float&>(JNIEnv *, float&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QChar&>(JNIEnv *, QChar&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,char16_t&>(JNIEnv *, char16_t&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,char32_t&>(JNIEnv *, char32_t&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QString&>(JNIEnv *, QString&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QByteArray&>(JNIEnv *, QByteArray&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QObject*&>(JNIEnv *, QObject*&);
+
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,bool>(JNIEnv *, bool&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,qint8>(JNIEnv *, qint8&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,qint16>(JNIEnv *, qint16&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,qint32>(JNIEnv *, qint32&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,qint64>(JNIEnv *, qint64&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,double>(JNIEnv *, double&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,float>(JNIEnv *, float&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QChar>(JNIEnv *, QChar&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,char16_t>(JNIEnv *, char16_t&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,char32_t>(JNIEnv *, char32_t&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QString>(JNIEnv *, QString&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QByteArray>(JNIEnv *, QByteArray&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QObject*>(JNIEnv *, QObject*&&);
+
+template QTJAMBI_EXPORT QByteArray qtjambi_cast<QByteArray,jstring&>(JNIEnv *, jstring&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,QByteArray>(JNIEnv *, QByteArray&&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,QByteArray&>(JNIEnv *, QByteArray&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,const QByteArray&>(JNIEnv *, const QByteArray&);
+
+template QTJAMBI_EXPORT QByteArray qtjambi_cast<QByteArray,jobject&>(JNIEnv *, jobject&);
+
+template QTJAMBI_EXPORT QByteArrayView qtjambi_cast<QByteArrayView,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QByteArrayView>(JNIEnv *, QByteArrayView&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QByteArrayView&>(JNIEnv *, QByteArrayView&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QByteArrayView&>(JNIEnv *, const QByteArrayView&);
+
+template QTJAMBI_EXPORT QByteArrayView qtjambi_cast<QByteArrayView,jstring&>(JNIEnv *, QtJambiScope&, jstring&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,QByteArrayView>(JNIEnv *, QByteArrayView&&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,QByteArrayView&>(JNIEnv *, QByteArrayView&);
+template QTJAMBI_EXPORT jstring qtjambi_cast<jstring,const QByteArrayView&>(JNIEnv *, const QByteArrayView&);
+
+template QTJAMBI_EXPORT QList<QByteArray> qtjambi_cast<QList<QByteArray>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<QByteArray>>(JNIEnv *, QList<QByteArray>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<QByteArray>&>(JNIEnv *, QList<QByteArray>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QList<QByteArray>&>(JNIEnv *, const QList<QByteArray>&);
+
+template QTJAMBI_EXPORT QList<QModelIndex> qtjambi_cast<QList<QModelIndex>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<QModelIndex>>(JNIEnv *, QList<QModelIndex>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<QModelIndex>&>(JNIEnv *, QList<QModelIndex>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QList<QModelIndex>&>(JNIEnv *, const QList<QModelIndex>&);
+template QTJAMBI_EXPORT QList<QPersistentModelIndex> qtjambi_cast<QList<QPersistentModelIndex>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<QPersistentModelIndex>>(JNIEnv *, QList<QPersistentModelIndex>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QList<QPersistentModelIndex>&>(JNIEnv *, QList<QPersistentModelIndex>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QList<QPersistentModelIndex>&>(JNIEnv *, const QList<QPersistentModelIndex>&);
+
+template QTJAMBI_EXPORT QMap<qint32,qint32> qtjambi_cast<QMap<qint32,qint32>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<qint32,qint32>>(JNIEnv *, QMap<qint32,qint32>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<qint32,qint32>&>(JNIEnv *, QMap<qint32,qint32>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMap<qint32,qint32>&>(JNIEnv *, const QMap<qint32,qint32>&);
+
+template QTJAMBI_EXPORT QMap<qint32,QVariant> qtjambi_cast<QMap<qint32,QVariant>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<qint32,QVariant>>(JNIEnv *, QMap<qint32,QVariant>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<qint32,QVariant>&>(JNIEnv *, QMap<qint32,QVariant>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMap<qint32,QVariant>&>(JNIEnv *, const QMap<qint32,QVariant>&);
+template QTJAMBI_EXPORT QMap<QString,QVariant> qtjambi_cast<QMap<QString,QVariant>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<QString,QVariant>>(JNIEnv *, QMap<QString,QVariant>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<QString,QVariant>&>(JNIEnv *, QMap<QString,QVariant>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMap<QString,QVariant>&>(JNIEnv *, const QMap<QString,QVariant>&);
+template QTJAMBI_EXPORT QMap<QByteArray,QVariant> qtjambi_cast<QMap<QByteArray,QVariant>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<QByteArray,QVariant>>(JNIEnv *, QMap<QByteArray,QVariant>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<QByteArray,QVariant>&>(JNIEnv *, QMap<QByteArray,QVariant>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMap<QByteArray,QVariant>&>(JNIEnv *, const QMap<QByteArray,QVariant>&);
+
+template QTJAMBI_EXPORT QMap<QString,QString> qtjambi_cast<QMap<QString,QString>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<QString,QString>>(JNIEnv *, QMap<QString,QString>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<QString,QString>&>(JNIEnv *, QMap<QString,QString>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMap<QString,QString>&>(JNIEnv *, const QMap<QString,QString>&);
+template QTJAMBI_EXPORT QMap<QByteArray,QByteArray> qtjambi_cast<QMap<QByteArray,QByteArray>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<QByteArray,QByteArray>>(JNIEnv *, QMap<QByteArray,QByteArray>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMap<QByteArray,QByteArray>&>(JNIEnv *, QMap<QByteArray,QByteArray>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMap<QByteArray,QByteArray>&>(JNIEnv *, const QMap<QByteArray,QByteArray>&);
+
+template QTJAMBI_EXPORT QHash<QString,QVariant> qtjambi_cast<QHash<QString,QVariant>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QHash<QString,QVariant>>(JNIEnv *, QHash<QString,QVariant>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QHash<QString,QVariant>&>(JNIEnv *, QHash<QString,QVariant>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QHash<QString,QVariant>&>(JNIEnv *, const QHash<QString,QVariant>&);
+
+template QTJAMBI_EXPORT QHash<QByteArray,QByteArray> qtjambi_cast<QHash<QByteArray,QByteArray>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QHash<QByteArray,QByteArray>>(JNIEnv *, QHash<QByteArray,QByteArray>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QHash<QByteArray,QByteArray>&>(JNIEnv *, QHash<QByteArray,QByteArray>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QHash<QByteArray,QByteArray>&>(JNIEnv *, const QHash<QByteArray,QByteArray>&);
+template QTJAMBI_EXPORT QHash<qint32,QByteArray> qtjambi_cast<QHash<qint32,QByteArray>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QHash<qint32,QByteArray>>(JNIEnv *, QHash<qint32,QByteArray>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QHash<qint32,QByteArray>&>(JNIEnv *, QHash<qint32,QByteArray>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QHash<qint32,QByteArray>&>(JNIEnv *, const QHash<qint32,QByteArray>&);
+
+template QTJAMBI_EXPORT QMultiHash<qint16,QByteArray> qtjambi_cast<QMultiHash<qint16,QByteArray>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiHash<qint16,QByteArray>>(JNIEnv *, QMultiHash<qint16,QByteArray>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiHash<qint16,QByteArray>&>(JNIEnv *, QMultiHash<qint16,QByteArray>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMultiHash<qint16,QByteArray>&>(JNIEnv *, const QMultiHash<qint16,QByteArray>&);
+template QTJAMBI_EXPORT QMultiHash<QByteArray,QByteArray> qtjambi_cast<QMultiHash<QByteArray,QByteArray>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiHash<QByteArray,QByteArray>>(JNIEnv *, QMultiHash<QByteArray,QByteArray>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiHash<QByteArray,QByteArray>&>(JNIEnv *, QMultiHash<QByteArray,QByteArray>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMultiHash<QByteArray,QByteArray>&>(JNIEnv *, const QMultiHash<QByteArray,QByteArray>&);
+
+template QTJAMBI_EXPORT QMultiMap<QString,QVariant> qtjambi_cast<QMultiMap<QString,QVariant>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiMap<QString,QVariant>>(JNIEnv *, QMultiMap<QString,QVariant>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiMap<QString,QVariant>&>(JNIEnv *, QMultiMap<QString,QVariant>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMultiMap<QString,QVariant>&>(JNIEnv *, const QMultiMap<QString,QVariant>&);
+
+template QTJAMBI_EXPORT QMultiMap<QString,QUrl> qtjambi_cast<QMultiMap<QString,QUrl>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiMap<QString,QUrl>>(JNIEnv *, QMultiMap<QString,QUrl>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiMap<QString,QUrl>&>(JNIEnv *, QMultiMap<QString,QUrl>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMultiMap<QString,QUrl>&>(JNIEnv *, const QMultiMap<QString,QUrl>&);
+
+template QTJAMBI_EXPORT QMultiMap<qint32,QVariant> qtjambi_cast<QMultiMap<qint32,QVariant>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiMap<qint32,QVariant>>(JNIEnv *, QMultiMap<qint32,QVariant>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiMap<qint32,QVariant>&>(JNIEnv *, QMultiMap<qint32,QVariant>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMultiMap<qint32,QVariant>&>(JNIEnv *, const QMultiMap<qint32,QVariant>&);
+
+template QTJAMBI_EXPORT QMultiMap<QByteArray,QByteArray> qtjambi_cast<QMultiMap<QByteArray,QByteArray>,jobject&>(JNIEnv *, jobject&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiMap<QByteArray,QByteArray>>(JNIEnv *, QMultiMap<QByteArray,QByteArray>&&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,QMultiMap<QByteArray,QByteArray>&>(JNIEnv *, QMultiMap<QByteArray,QByteArray>&);
+template QTJAMBI_EXPORT jobject qtjambi_cast<jobject,const QMultiMap<QByteArray,QByteArray>&>(JNIEnv *, const QMultiMap<QByteArray,QByteArray>&);
+#endif // !defined(__GLIBCXX__) || !defined(Q_OS_WIN)
 
 #ifndef QT_NO_DEBUG
 QT_WARNING_DISABLE_GCC("-Wstringop-overflow")
@@ -253,9 +652,172 @@ enum class EnumClass{
     None
 };
 
+namespace QtJambiPrivate{
+template<>
+struct iter_value_type<QDirListing,QDirListing::sentinel,false,false>{
+    using value_type = typename QDirListing::const_iterator::value_type;
+};
+
+template<>
+struct is_writable_iterator<QCborMap::Iterator,std::pair<QCborValueConstRef, QCborValueRef>> : std::true_type{};
+
+template<>
+struct qtjambi_iterator_mutable_test<QCborValueRef> : std::true_type {
+};
+
+template<>
+struct qtjambi_iterator_mutable_test<QJsonValueRef> : std::true_type {
+};
+
+template<typename,typename,bool,bool,bool,bool,bool>
+struct iter_value_type;
+
+template<typename Iter, bool cv, bool iv, bool v, bool r>
+struct iter_value_type<QJsonArray,Iter,false,cv,iv,v,r>{
+    using value_type = QJsonValue;
+};
+
+template<typename Iter, bool cv, bool iv, bool v, bool r>
+struct iter_value_type<QJsonObject,Iter,false,cv,iv,v,r>{
+    using value_type = QJsonValue;
+};
+
+template<typename Iter, bool cv, bool iv, bool v, bool r>
+struct iter_value_type<QCborArray,Iter,false,cv,iv,v,r>{
+    using value_type = QCborValue;
+};
+
+template<typename Iter, bool cv, bool iv, bool v, bool r>
+struct iter_value_type<QCborMap,Iter,false,cv,iv,v,r>{
+    using value_type = QCborValue;
+};
+
+template<typename Key, typename T, typename Iter QT610_EXTRA_ARG(class Traits), bool cv, bool iv, bool v, bool r>
+struct iter_value_type<QCborMap,QKeyValueIterator<Key,T,Iter QT610_EXTRA_ARG(Traits)>,false,cv,iv,v,r>{
+    using value_type = std::pair<QCborValue,QCborValue>;
+};
+
+template<typename Key, typename T, typename Iter QT610_EXTRA_ARG(class Traits), bool cv, bool iv, bool v, bool r>
+struct iter_value_type<QJsonObject,QKeyValueIterator<Key,T,Iter QT610_EXTRA_ARG(Traits)>,false,cv,iv,v,r>{
+    using value_type = std::pair<QString,QJsonValue>;
+};
+
+template<typename Storage, typename Key, typename T, typename Iter QT610_EXTRA_ARG(class Traits), bool cv, bool iv, bool v, bool r>
+struct iter_value_type<QCborMap,ContainerIterator<QCborMap,QKeyValueIterator<Key,T,Iter QT610_EXTRA_ARG(Traits)>,Storage>,false,cv,iv,v,r>{
+    using value_type = std::pair<QCborValue,QCborValue>;
+};
+
+template<typename Storage, typename Key, typename T, typename Iter QT610_EXTRA_ARG(class Traits), bool cv, bool iv, bool v, bool r>
+struct iter_value_type<QJsonObject,ContainerIterator<QCborMap,QKeyValueIterator<Key,T,Iter QT610_EXTRA_ARG(Traits)>,Storage>,false,cv,iv,v,r>{
+    using value_type = std::pair<QString,QJsonValue>;
+};
+
+template<typename Iterator, typename Storage>
+struct IteratorSequentialValueType<ContainerIterator<QCborArray,Iterator,Storage>,true>{
+    using type = QCborValue;
+    static const QMetaType& function() {
+        static QMetaType mt(QMetaType::fromType<type>());
+        return mt;
+    }
+};
+
+template<typename Iterator, typename Storage>
+struct IteratorSequentialValueType<ContainerIterator<QJsonArray,Iterator,Storage>,true>{
+    using type = QJsonValue;
+    static const QMetaType& function() {
+        static QMetaType mt(QMetaType::fromType<type>());
+        return mt;
+    }
+};
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+template<typename Storage>
+struct IteratorSequentialSetValue<ContainerIterator<QJsonObject,QJsonObject::key_value_iterator,Storage>>{
+    static bool function(void* ptr, const QVariant& value) {
+        ContainerIterator<QJsonObject,QJsonObject::key_value_iterator,Storage>& iterator = *static_cast<ContainerIterator<QJsonObject,QJsonObject::key_value_iterator,Storage>*>(ptr);
+        (*iterator).second = value.value<QJsonValue>();
+        return true;
+    }
+    template<typename T>
+    static bool function(void*, const T&) {
+        return false;
+    }
+};
+
+template<typename Storage>
+struct IteratorSequentialSetValue<ContainerIterator<QCborMap,QCborMap::key_value_iterator,Storage>>{
+    static bool function(void* ptr, const QVariant& value) {
+        ContainerIterator<QCborMap,QCborMap::key_value_iterator,Storage>& iterator = *static_cast<ContainerIterator<QCborMap,QCborMap::key_value_iterator,Storage>*>(ptr);
+        (*iterator).second = value.value<QCborValue>();
+        return true;
+    }
+    template<typename T>
+    static bool function(void*, const T&) {
+        return false;
+    }
+};
+
+template<>
+struct IteratorSequentialValueType<QCborMap::key_value_iterator,true>{
+    using type = std::pair<QCborValue,QCborValue>;
+    static const QMetaType& function() {
+        static QMetaType mt(QMetaType::fromType<type>());
+        return mt;
+    }
+};
+
+template<>
+struct IteratorSequentialValueType<QCborMap::const_key_value_iterator,true>{
+    using type = std::pair<QCborValue,QCborValue>;
+    static const QMetaType& function() {
+        static QMetaType mt(QMetaType::fromType<type>());
+        return mt;
+    }
+};
+
+template<>
+struct IteratorSequentialValueType<QJsonObject::const_key_value_iterator,true>{
+    using type = std::pair<QString,QJsonValue>;
+    static const QMetaType& function() {
+        static QMetaType mt(QMetaType::fromType<type>());
+        return mt;
+    }
+};
+
+template<>
+struct IteratorSequentialValueType<QJsonObject::key_value_iterator,true>{
+    using type = std::pair<QString,QJsonValue>;
+    static const QMetaType& function() {
+        static QMetaType mt(QMetaType::fromType<type>());
+        return mt;
+    }
+};
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+
+template<typename, bool>
+struct IteratorAssociativeValueType;
+
+template<typename Iterator, typename Storage>
+struct IteratorAssociativeValueType<ContainerIterator<QCborMap,Iterator,Storage>,true>{
+    using type = QCborValue;
+    static const QMetaType& function() {
+        static QMetaType mt(QMetaType::fromType<type>());
+        return mt;
+    }
+};
+
+template<typename Iterator, typename Storage>
+struct IteratorAssociativeValueType<ContainerIterator<QJsonObject,Iterator,Storage>,true>{
+    using type = QJsonValue;
+    static const QMetaType& function() {
+        static QMetaType mt(QMetaType::fromType<type>());
+        return mt;
+    }
+};
+}
+
 void test(JNIEnv *env){
     using namespace RegistryAPI;
-
     QtJambiScope scope;
     enum E{};
 
@@ -283,6 +845,229 @@ void test(JNIEnv *env){
         (void)qtjambi_cast<jstring>(env, array3);
     }
     {
+        // (void)qtjambi_cast<jobject>(env, std::map<EnumClass,UnknownClass>{});
+        // (void)qtjambi_cast<jobject>(env, std::multimap<EnumClass,UnknownClass>{});
+        // (void)qtjambi_cast<jobject>(env, QMap<EnumClass,UnknownClass>{});
+        // (void)qtjambi_cast<jobject>(env, QHash<EnumClass,UnknownClass>{});
+        // (void)qtjambi_cast<jobject>(env, QMultiMap<EnumClass,UnknownClass>{});
+        // (void)qtjambi_cast<jobject>(env, QMultiHash<EnumClass,UnknownClass>{});
+        // (void)qtjambi_cast<jobject>(env, QHash<UnknownClass,UnknownClass>{});
+        // (void)qtjambi_cast<jobject>(env, QMultiHash<UnknownClass,UnknownClass>{});
+    }
+    {
+        using Container = QList<int>;
+        Container list;
+        {
+            auto containerIterator = ContainerIterator(std::cbegin(list), std::as_const(list), QtJambiNativeID::Invalid);
+            constexpr bool is_shared1 = QtJambiPrivate::ContainerSharedInfo<std::remove_reference_t<decltype(list)>>::is_shared;
+            Q_STATIC_ASSERT(is_shared1);
+            using container_iterator_t = std::remove_reference_t<decltype(containerIterator)>;
+            constexpr bool is_shared2 = container_iterator_t::is_shared;
+            Q_STATIC_ASSERT(is_shared2);
+            constexpr bool is_same = std::is_same_v<container_iterator_t::storage_type,QList<int>>;
+            Q_STATIC_ASSERT(is_same);
+        }
+        {
+            auto containerIterator = ContainerIterator(std::cbegin(list), list, QtJambiNativeID::Invalid);
+            constexpr bool is_shared1 = QtJambiPrivate::ContainerSharedInfo<std::remove_reference_t<decltype(list)>>::is_shared;
+            Q_STATIC_ASSERT(is_shared1);
+            using container_iterator_t = std::remove_reference_t<decltype(containerIterator)>;
+            constexpr bool is_shared2 = container_iterator_t::is_shared;
+            Q_STATIC_ASSERT(is_shared2);
+            constexpr bool is_same = std::is_same_v<container_iterator_t::storage_type,QList<int>>;
+            Q_STATIC_ASSERT(is_same);
+        }
+        {
+            auto containerIterator = ContainerIterator(std::begin(list), list, QtJambiNativeID::Invalid);
+            constexpr bool is_shared1 = QtJambiPrivate::ContainerSharedInfo<std::remove_reference_t<decltype(list)>>::is_shared;
+            Q_STATIC_ASSERT(is_shared1);
+            using container_iterator_t = std::remove_reference_t<decltype(containerIterator)>;
+            constexpr bool is_shared2 = container_iterator_t::is_shared;
+            Q_STATIC_ASSERT(is_shared2);
+            constexpr bool is_same = std::is_same_v<container_iterator_t::storage_type,QtJambiPrivate::ContainerRef<QList<int>>>;
+            Q_STATIC_ASSERT(is_same);
+        }
+    }
+    {
+        using Container = QByteArray;
+        Container ba;
+        {
+            auto containerIterator = ContainerIterator(std::cbegin(ba), std::as_const(ba), QtJambiNativeID::Invalid);
+            constexpr bool is_shared1 = QtJambiPrivate::ContainerSharedInfo<std::remove_reference_t<decltype(ba)>>::is_shared;
+            Q_STATIC_ASSERT(is_shared1);
+            using container_iterator_t = std::remove_reference_t<decltype(containerIterator)>;
+            constexpr bool is_shared2 = container_iterator_t::is_shared;
+            Q_STATIC_ASSERT(is_shared2);
+            constexpr bool is_same = std::is_same_v<container_iterator_t::storage_type,QByteArray>;
+            Q_STATIC_ASSERT(is_same);
+        }
+        {
+            constexpr bool w1 = QtJambiPrivate::is_writable_iterator_of_container_v<QByteArray, decltype(std::cbegin(ba))>;
+            Q_STATIC_ASSERT(!w1);
+            constexpr bool w2 = QtJambiPrivate::is_writable_iterator_of_container_v<QByteArray, decltype(std::begin(ba))>;
+            Q_STATIC_ASSERT(w2);
+            auto containerIterator = ContainerIterator(std::cbegin(ba), ba, QtJambiNativeID::Invalid);
+            constexpr bool is_shared1 = QtJambiPrivate::ContainerSharedInfo<std::remove_reference_t<decltype(ba)>>::is_shared;
+            Q_STATIC_ASSERT(is_shared1);
+            using container_iterator_t = std::remove_reference_t<decltype(containerIterator)>;
+            constexpr bool is_shared2 = container_iterator_t::is_shared;
+            Q_STATIC_ASSERT(is_shared2);
+            constexpr bool is_same = std::is_same_v<container_iterator_t::storage_type,QByteArray>;
+            Q_STATIC_ASSERT(is_same);
+        }
+        {
+            auto containerIterator = ContainerIterator(std::begin(ba), ba, QtJambiNativeID::Invalid);
+            constexpr bool is_shared1 = QtJambiPrivate::ContainerSharedInfo<std::remove_reference_t<decltype(ba)>>::is_shared;
+            Q_STATIC_ASSERT(is_shared1);
+            using container_iterator_t = std::remove_reference_t<decltype(containerIterator)>;
+            constexpr bool is_shared2 = container_iterator_t::is_shared;
+            Q_STATIC_ASSERT(is_shared2);
+            constexpr bool is_same = std::is_same_v<container_iterator_t::storage_type,QtJambiPrivate::ContainerRef<QByteArray>>;
+            Q_STATIC_ASSERT(is_same);
+        }
+    }
+    {
+        using Container = QCborArray;
+        Container a;
+        (void)qtjambi_cast<jobject>(env, ContainerIterator(std::cbegin(a), std::as_const(a), QtJambiNativeID::Invalid));
+        (void)qtjambi_cast<jobject>(env, ContainerIterator(std::begin(a), a, QtJambiNativeID::Invalid));
+        ContainerIterator ci(a.cbegin(), std::as_const(a), QtJambiNativeID::Invalid);
+        ContainerIterator i(a.begin(), a, QtJambiNativeID::Invalid);
+        static_assert(std::is_same_v<decltype(ci.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+        static_assert(std::is_same_v<decltype(i.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+    }
+    {
+        using Container = QCborMap;
+        Container a;
+        (void)qtjambi_cast<jobject>(env, ContainerIterator(std::cbegin(a), std::as_const(a), QtJambiNativeID::Invalid));
+        (void)qtjambi_cast<jobject>(env, ContainerIterator(std::begin(a), a, QtJambiNativeID::Invalid));
+        ContainerIterator ci(a.constBegin(), std::as_const(a), QtJambiNativeID::Invalid);
+        ContainerIterator i(a.begin(), a, QtJambiNativeID::Invalid);
+        static_assert(std::is_same_v<decltype(ci.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+        static_assert(std::is_same_v<decltype(i.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+        ContainerIterator ckvi(a.constKeyValueBegin(), std::as_const(a), QtJambiNativeID::Invalid);
+        ContainerIterator kvi(a.keyValueBegin(), a, QtJambiNativeID::Invalid);
+        static_assert(std::is_same_v<decltype(ckvi.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+        static_assert(std::is_same_v<decltype(kvi.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+    }
+    {
+        using Container = QJsonArray;
+        Container a;
+        (void)qtjambi_cast<jobject>(env, ContainerIterator(std::cbegin(a), std::as_const(a), QtJambiNativeID::Invalid));
+        (void)qtjambi_cast<jobject>(env, ContainerIterator(std::begin(a), a, QtJambiNativeID::Invalid));
+        ContainerIterator ci(a.cbegin(), std::as_const(a), QtJambiNativeID::Invalid);
+        ContainerIterator i(a.begin(), a, QtJambiNativeID::Invalid);
+        static_assert(std::is_same_v<decltype(ci.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+        static_assert(std::is_same_v<decltype(i.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+    }
+    {
+        using Container = QJsonObject;
+        Container a;
+        (void)qtjambi_cast<jobject>(env, ContainerIterator(std::cbegin(a), std::as_const(a), QtJambiNativeID::Invalid));
+        (void)qtjambi_cast<jobject>(env, ContainerIterator(std::begin(a), a, QtJambiNativeID::Invalid));
+        QJsonObject::const_iterator iter1 = qtjambi_cast<Iterators::const_iterator<Container>>(env, jo);
+        Q_UNUSED(iter1)
+        QJsonObject::iterator iter2 = qtjambi_cast<Iterators::iterator<Container>>(QtJambiNativeID::Invalid);
+        Q_UNUSED(iter2)
+        ContainerIterator ci(a.constBegin(), std::as_const(a), QtJambiNativeID::Invalid);
+        ContainerIterator i(a.begin(), a, QtJambiNativeID::Invalid);
+        static_assert(std::is_same_v<decltype(ci.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+        static_assert(std::is_same_v<decltype(i.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+        ContainerIterator ckvi(a.constKeyValueBegin(), std::as_const(a), QtJambiNativeID::Invalid);
+        ContainerIterator kvi(a.keyValueBegin(), a, QtJambiNativeID::Invalid);
+        static_assert(std::is_same_v<decltype(ckvi.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+        static_assert(std::is_same_v<decltype(kvi.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+    }
+    {
+        using Container = QMap<QString,int>;
+        Container a;
+        ContainerIterator ci(a.constBegin(), std::as_const(a), QtJambiNativeID::Invalid);
+        ContainerIterator i(a.begin(), a, QtJambiNativeID::Invalid);
+        ContainerIterator ckvi(a.constKeyValueBegin(), std::as_const(a), QtJambiNativeID::Invalid);
+        ContainerIterator kvi(a.keyValueBegin(), a, QtJambiNativeID::Invalid);
+        ContainerIterator ki(a.keyBegin(), a, QtJambiNativeID::Invalid);
+        static_assert(std::is_same_v<decltype(ci.storage()), const Container&>);
+        static_assert(std::is_same_v<decltype(i.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+        static_assert(std::is_same_v<decltype(ckvi.storage()), const Container&>);
+        static_assert(std::is_same_v<decltype(ki.storage()), const Container&>);
+        static_assert(!QtJambiPrivate::is_writable_iterator_of_container_v<Container, typename Container::const_iterator>);
+        static_assert(QtJambiPrivate::is_writable_iterator_of_container_v<Container, typename Container::iterator>);
+        static_assert(!QtJambiPrivate::is_writable_iterator_of_container_v<Container, typename Container::const_key_value_iterator>);
+        static_assert(QtJambiPrivate::is_writable_iterator_of_container_v<Container, typename Container::key_value_iterator>);
+        static_assert(!QtJambiPrivate::qtjambi_sequential_iterator_mutable_test_v<typename Container::const_key_value_iterator>);
+        static_assert(QtJambiPrivate::qtjambi_sequential_iterator_mutable_test_v<typename Container::key_value_iterator>);
+        static_assert(!QtJambiPrivate::qtjambi_sequential_iterator_mutable_test_v<decltype(ckvi)>);
+        static_assert(QtJambiPrivate::qtjambi_sequential_iterator_mutable_test_v<decltype(kvi)>);
+        using KVIIteratorAccess = typename QtJambiPrivate::qtjambi_cast_impl<jobject,decltype(kvi)>::IteratorAccess;
+        static_assert(std::is_same_v<KVIIteratorAccess, QSequentialIteratorAccess<decltype(kvi),Container>>);
+        //static_assert(QtJambiPrivate::qtjambi_sequential_iterator_mutable_test_v<typename Container::key_value_iterator>);
+        static_assert(std::is_same_v<decltype(kvi.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+    }
+    {
+        using Container = QList<int>;
+        Container a;
+        ContainerIterator ci(a.cbegin(), std::as_const(a), QtJambiNativeID::Invalid);
+        ContainerIterator i(a.begin(), a, QtJambiNativeID::Invalid);
+        ContainerIterator cri(a.crbegin(), std::as_const(a), QtJambiNativeID::Invalid);
+        ContainerIterator ri(a.rbegin(), a, QtJambiNativeID::Invalid);
+        static_assert(std::is_same_v<decltype(ci.storage()), const Container&>);
+        static_assert(std::is_same_v<decltype(i.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+        static_assert(std::is_same_v<decltype(cri.storage()), const Container&>);
+        static_assert(std::is_same_v<decltype(ri.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+    }
+    {
+        using Container = QByteArray;
+        Container a;
+        ContainerIterator ci(a.cbegin(), std::as_const(a), QtJambiNativeID::Invalid);
+        ContainerIterator i(a.begin(), a, QtJambiNativeID::Invalid);
+        ContainerIterator cri(a.crbegin(), std::as_const(a), QtJambiNativeID::Invalid);
+        ContainerIterator ri(a.rbegin(), a, QtJambiNativeID::Invalid);
+        static_assert(std::is_same_v<decltype(ci.storage()), const Container&>);
+        static_assert(std::is_same_v<decltype(i.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+        static_assert(std::is_same_v<decltype(cri.storage()), const Container&>);
+        static_assert(std::is_same_v<decltype(ri.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+    }
+    {
+        using Container = QString;
+        Container a;
+        ContainerIterator ci(a.cbegin(), std::as_const(a), QtJambiNativeID::Invalid);
+        ContainerIterator i(a.begin(), a, QtJambiNativeID::Invalid);
+        ContainerIterator cri(a.crbegin(), std::as_const(a), QtJambiNativeID::Invalid);
+        ContainerIterator ri(a.rbegin(), a, QtJambiNativeID::Invalid);
+        static_assert(std::is_same_v<decltype(ci.storage()), const Container&>);
+        static_assert(std::is_same_v<decltype(i.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+        static_assert(std::is_same_v<decltype(cri.storage()), const Container&>);
+        static_assert(std::is_same_v<decltype(ri.storage()), const QtJambiPrivate::ContainerRef<Container>&>);
+    }
+    {
+        using Container = QMultiMap<qint32,QString>;
+        static_assert(QtJambiPrivate::supports_map_sort_v<QMultiMap,qint32,QString>);
+        static_assert(QtJambiPrivate::supports_find_v<const Container,const qint32&>);
+        static_assert(QtJambiPrivate::supports_find_v<Container,const qint32&>);
+        static_assert(QtJambiPrivate::supports_lowerBound_v<const Container,const qint32&>);
+        static_assert(QtJambiPrivate::supports_upperBound_v<const Container,const qint32&>);
+        static_assert(QtJambiPrivate::supports_lowerBound_v<Container,const qint32&>);
+        static_assert(QtJambiPrivate::supports_upperBound_v<Container,const qint32&>);
+    }
+    {
+        (void)qtjambi_cast<QByteArray::const_iterator>(QtJambiNativeID::Invalid);
+        (void)qtjambi_cast<QByteArray::iterator>(QtJambiNativeID::Invalid);
+        (void)qtjambi_cast<QString::const_iterator>(QtJambiNativeID::Invalid);
+        (void)qtjambi_cast<QString::iterator>(QtJambiNativeID::Invalid);
+        (void)qtjambi_cast<QByteArray::const_iterator>(env, QtJambiNativeID::Invalid);
+        (void)qtjambi_cast<QByteArray::iterator>(env, QtJambiNativeID::Invalid);
+        (void)qtjambi_cast<QString::const_iterator>(env, QtJambiNativeID::Invalid);
+        (void)qtjambi_cast<QString::iterator>(env, QtJambiNativeID::Invalid);
+        (void)qtjambi_cast<QByteArray::const_iterator>(env, jo);
+        (void)qtjambi_cast<QByteArray::iterator>(env, jo);
+        (void)qtjambi_cast<QString::const_iterator>(env, jo);
+        (void)qtjambi_cast<QString::iterator>(env, jo);
+    }
+    {
         std::string_view v = qtjambi_cast<std::string_view>(env, js);
         (void)qtjambi_cast<jstring>(env, std::move(v));
         (void)qtjambi_cast<jobject>(env, std::move(v));
@@ -291,6 +1076,89 @@ void test(JNIEnv *env){
         (void)qtjambi_cast<jstring>(env, std::move(s));
         (void)qtjambi_cast<jobject>(env, std::move(s));
         (void)qtjambi_cast<jbyteArray>(env, std::move(s));
+        {
+            auto containerIterator = ContainerIterator(std::cbegin(s), std::as_const(s), QtJambiNativeID::Invalid);
+            constexpr bool is_shared1 = QtJambiPrivate::ContainerSharedInfo<std::remove_reference_t<decltype(s)>>::is_shared;
+            Q_STATIC_ASSERT(!is_shared1);
+            // using container_iterator_t = std::remove_reference_t<decltype(containerIterator)>;
+            // constexpr bool is_shared2 = container_iterator_t::is_shared;
+            // Q_STATIC_ASSERT(!is_shared2);
+            // constexpr bool is_same = std::is_same_v<container_iterator_t::storage_type,QtJambiNativeID>;
+            // Q_STATIC_ASSERT(is_same);
+            (void)qtjambi_cast<jobject>(env, std::move(containerIterator));
+        }
+        {
+            auto containerIterator = ContainerIterator(std::begin(s), s, QtJambiNativeID::Invalid);
+            constexpr bool is_shared1 = QtJambiPrivate::ContainerSharedInfo<std::remove_reference_t<decltype(s)>>::is_shared;
+            Q_STATIC_ASSERT(!is_shared1);
+            // using container_iterator_t = std::remove_reference_t<decltype(containerIterator)>;
+            // constexpr bool is_shared2 = container_iterator_t::is_shared;
+            // Q_STATIC_ASSERT(!is_shared2);
+            // constexpr bool is_same = std::is_same_v<container_iterator_t::storage_type,QtJambiNativeID>;
+            // Q_STATIC_ASSERT(is_same);
+            (void)qtjambi_cast<jobject>(env, std::move(containerIterator));
+        }
+        {
+            QHash<int,QString>().constFind(int(1));
+            constexpr bool s = QtJambiPrivate::supports_constFind_v<const QHash<int,QString>,int>;
+            constexpr bool s2 = QtJambiPrivate::supports_map_sort_v<QHash,int,QString>;
+            Q_STATIC_ASSERT(s);
+            Q_STATIC_ASSERT(s2);
+        }
+    }
+    {
+        QDirListing l(".");
+        (void)qtjambi_cast<jobject>(env, ContainerIterator(l.begin(), l, QtJambiNativeID::Invalid));
+        (void)qtjambi_cast<jobject>(env, ContainerIterator(l.end(), l, QtJambiNativeID::Invalid));
+        (void)qtjambi_cast<jobject>(env, ContainerIterator(l.begin(), std::as_const(l), QtJambiNativeID::Invalid));
+        (void)qtjambi_cast<jobject>(env, ContainerIterator(l.end(), std::as_const(l), QtJambiNativeID::Invalid));
+        (void)qtjambi_cast<jobject>(env, QtJambiNativeID::Invalid, l.end());
+    }
+    {
+        constexpr bool s = QtJambiPrivate::supports_decrement_v<QSpan<int>::const_iterator&>;
+        Q_STATIC_ASSERT(s);
+        constexpr bool s2 = QtJambiPrivate::supports_decrement_v<QSpan<int>::iterator&>;
+        Q_STATIC_ASSERT(s2);
+        constexpr bool s3 = QtJambiPrivate::supports_less_than_v<QSpan<int>::const_iterator&>;
+        Q_STATIC_ASSERT(s3);
+        constexpr bool s4 = QtJambiPrivate::supports_less_than_v<QSpan<int>::iterator&>;
+        Q_STATIC_ASSERT(s4);
+        QSpan<int> sp;
+        auto containerIterator = ContainerIterator(std::cbegin(sp), sp, QtJambiNativeID::Invalid);
+        constexpr bool s5 = QtJambiPrivate::supports_decrement_v<decltype(containerIterator)&>;
+        Q_STATIC_ASSERT(s5);
+    }
+    {
+        QCborMap m;
+        (void)qtjambi_cast<jobject>(env, ContainerIterator(m.begin(), m, QtJambiNativeID::Invalid));
+        constexpr bool s5 = QtJambiPrivate::is_writable_iterator_of_container_v<QCborMap,QCborMap::Iterator>;
+        Q_STATIC_ASSERT(s5);
+        constexpr bool s6 = QtJambiPrivate::qtjambi_associative_iterator_mutable_test_v<QCborMap::Iterator>;
+        Q_STATIC_ASSERT(s6);
+    }
+    {
+        QCborArray m;
+        (void)qtjambi_cast<jobject>(env, ContainerIterator(m.begin(), m, QtJambiNativeID::Invalid));
+        constexpr bool s5 = QtJambiPrivate::is_writable_iterator_of_container_v<QCborArray,QCborArray::Iterator>;
+        Q_STATIC_ASSERT(s5);
+        constexpr bool s6 = QtJambiPrivate::qtjambi_sequential_iterator_mutable_test_v<QCborArray::Iterator>;
+        Q_STATIC_ASSERT(s6);
+    }
+    {
+        QJsonObject m;
+        (void)qtjambi_cast<jobject>(env, ContainerIterator(m.begin(), m, QtJambiNativeID::Invalid));
+        constexpr bool s5 = QtJambiPrivate::is_writable_iterator_of_container_v<QJsonObject,QJsonObject::Iterator>;
+        Q_STATIC_ASSERT(s5);
+        constexpr bool s6 = QtJambiPrivate::qtjambi_associative_iterator_mutable_test_v<QJsonObject::Iterator>;
+        Q_STATIC_ASSERT(s6);
+    }
+    {
+        QJsonArray m;
+        (void)qtjambi_cast<jobject>(env, ContainerIterator(m.begin(), m, QtJambiNativeID::Invalid));
+        constexpr bool s5 = QtJambiPrivate::is_writable_iterator_of_container_v<QJsonArray,QJsonArray::Iterator>;
+        Q_STATIC_ASSERT(s5);
+        constexpr bool s6 = QtJambiPrivate::qtjambi_sequential_iterator_mutable_test_v<QJsonArray::Iterator>;
+        Q_STATIC_ASSERT(s6);
     }
     {
         std::u16string_view v = qtjambi_cast<std::u16string_view>(env, js);
@@ -436,7 +1304,7 @@ void test(JNIEnv *env){
     {
         QByteArray s;
         (void)qtjambi_cast<jobject>(env, s);
-        (void)qtjambi_cast<jobject>(env, QtJambiNativeID::Invalid, s.constBegin());
+        (void)qtjambi_cast<jobject>(env, ContainerIterator(s.constBegin(), std::as_const(s), QtJambiNativeID::Invalid));
         (void)qtjambi_cast<jstring>(env, s);
         (void)qtjambi_cast<jstring>(env, &s);
 
@@ -557,8 +1425,15 @@ void test(JNIEnv *env){
         QDataStream stream;
         stream << list;
         stream >> list;
-        Q_STATIC_ASSERT(QtJambiPrivate::supports_stream_operators<QList<int>>::value);
-        Q_STATIC_ASSERT(!QtJambiPrivate::supports_stream_operators<QList<UnknownClass>>::value);
+        constexpr bool a = QtJambiPrivate::supports_streamin_v<QDataStream&,QList<int>>;
+        constexpr bool b = QtJambiPrivate::supports_streamout_v<QDataStream&,QList<int>&>;
+        constexpr bool c = QtJambiPrivate::supports_streamin_v<QDebug&,QList<int>>;
+        Q_STATIC_ASSERT(a);
+        Q_STATIC_ASSERT(b);
+        Q_STATIC_ASSERT(c);
+        Q_STATIC_ASSERT(QtJambiPrivate::supports_stream_operators_v<QList<int>>);
+        Q_STATIC_ASSERT(!QtJambiPrivate::supports_stream_operators_v<QList<UnknownClass>>);
+        Q_STATIC_ASSERT(QtJambiPrivate::supports_qobject_interface_iid_v<QFactoryInterface*>);
     }
     {
         QtJambiUtils::QHashFunction hashFunction1;

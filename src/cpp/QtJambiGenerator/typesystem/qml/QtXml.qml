@@ -521,9 +521,14 @@ TypeSystem{
     
     ValueType{
         name: "QDomNodeList"
-        IteratorType{
+        ValueType{
             name: "It"
-            genericClass: true
+            generate: false
+            since: 6.9
+        }
+        IteratorType{
+            name: "const_iterator"
+            javaName: "QDomNodeList$ConstIterator"
             since: 6.9
         }
         Rejection{functionName: "begin"}

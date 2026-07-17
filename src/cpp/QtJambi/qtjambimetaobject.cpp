@@ -691,7 +691,7 @@ public:
     QtJambiMetaObjectPrivate(QtJambiMetaObject *q);
     ~QtJambiMetaObjectPrivate();
 
-    void invokeJavaMethod(JNIEnv *env, QtJambiScope& scope, jobject object, const JMethodInfo& methodInfo, bool keepOwnership, void **_a, bool forceObjectType = false) const;
+    void invokeJavaMethod(JNIEnv *env, QtJambiScope& scope, jobject object, QObject* qobject, const JMethodInfo& methodInfo, bool keepOwnership, void **_a, bool forceObjectType = false) const;
     void invokeConstructor(JNIEnv *env, QtJambiScope& scope, const JConstructorInfo& methodInfo, void **_a) const;
     void invokeInPlaceConstructor(JNIEnv *env, QtJambiScope& scope, const JConstructorInfo& methodInfo, void **_a) const;
 
@@ -1460,9 +1460,7 @@ const QMetaObject * QtJambiMetaObjectPrivate::createQtJambiMetaObject(QtJambiMet
     return q;
 }
 
-bool isQmlExplicitCppOwnership(QObject * obj);
-
-void QtJambiMetaObjectPrivate::invokeJavaMethod(JNIEnv *env, QtJambiScope& scope, jobject object, const JMethodInfo& methodInfo, bool keepOwnership, void **_a, bool forceObjectType) const
+void QtJambiMetaObjectPrivate::invokeJavaMethod(JNIEnv *env, QtJambiScope& scope, jobject object, QObject* qobject, const JMethodInfo& methodInfo, bool keepOwnership, void **_a, bool forceObjectType) const
 {
     QTJAMBI_JNI_LOCAL_FRAME(env, 32+methodInfo.parameterTypeInfos.size());
     Q_ASSERT(methodInfo.methodId);
@@ -1578,18 +1576,28 @@ void QtJambiMetaObjectPrivate::invokeJavaMethod(JNIEnv *env, QtJambiScope& scope
     JavaException::check(env QTJAMBI_STACKTRACEINFO );
     if(_a[0]){
         if(!isVoid){
-            methodInfo.parameterTypeInfos[0].convertExternalToInternal(env, nullptr, returnValue, _a[0], jValueType(methodInfo.methodType));
-            if(!keepOwnership){
-                if(QMetaType(methodInfo.parameterTypeInfos[0].metaType()).flags() & (QMetaType::PointerToQObject)){
-                    QObject* qobject = *reinterpret_cast<QObject**>(_a[0]);
-                    if(qobject && !isQmlExplicitCppOwnership(qobject))
-                        QtJambiAPI::setCppOwnershipForTopLevelObject(env, qobject);
-                }else if(QMetaType(methodInfo.parameterTypeInfos[0].metaType()).flags() & QMetaType::IsPointer){
-                    void* pointer = *reinterpret_cast<void**>(_a[0]);
-                    if(pointer){
-                        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(pointer)){
-                            link->setCppOwnership(env);
-                            break;
+            const ParameterTypeInfo& returnTypeInfo = methodInfo.parameterTypeInfos[0];
+#if 0//QT_VERSION >= QT_VERSION_CHECK(6,12,0)
+            if(!keepOwnership && qobject && returnTypeInfo.metaType().id()==QMetaType::QVariant && methodInfo.methodType==JMethodType::l){
+                *reinterpret_cast<QVariant*>(_a[0]) = CoreAPI::convertVariant(env, qobject, returnValue.l);
+            }else
+#else
+            Q_UNUSED(qobject)
+#endif
+            {
+                returnTypeInfo.convertExternalToInternal(env, nullptr, returnValue, _a[0], jValueType(methodInfo.methodType));
+                if(!keepOwnership){
+                    if(returnTypeInfo.metaType().flags() & (QMetaType::PointerToQObject)){
+                        QObject* qobject = *reinterpret_cast<QObject**>(_a[0]);
+                        if(qobject && !isQmlExplicitCppOwnership(qobject))
+                            QtJambiAPI::setCppOwnershipForTopLevelObject(env, qobject);
+                    }else if(returnTypeInfo.metaType().flags() & QMetaType::IsPointer){
+                        void* pointer = *reinterpret_cast<void**>(_a[0]);
+                        if(pointer){
+                            for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(pointer)){
+                                link->setCppOwnership(env);
+                                break;
+                            }
                         }
                     }
                 }
@@ -2602,7 +2610,7 @@ int QtJambiMetaObject::invokeSignalOrSlot(JNIEnv *env, jobject object, QObject* 
                     }catch(const JavaException& exn){
                         __exceptionHandler.handle(env, exn, qobject);
                     }
-                    d->invokeJavaMethod(env, scope, signal_object, signal.emitMethodInfo, false, _a);
+                    d->invokeJavaMethod(env, scope, signal_object, nullptr, signal.emitMethodInfo, false, _a);
                 }
             }catch(const JavaException& exn){
                 __exceptionHandler.handle(env, exn, qobject);
@@ -2612,7 +2620,7 @@ int QtJambiMetaObject::invokeSignalOrSlot(JNIEnv *env, jobject object, QObject* 
         QtJambiScope scope(nullptr);
         MetaObjectExceptionHandler __exceptionHandler;
         try{
-            d->invokeJavaMethod(env, scope, object, d->m_methods[_id - d->m_signals.size()], false, _a);
+            d->invokeJavaMethod(env, scope, object, qobject, d->m_methods[_id - d->m_signals.size()], false, _a);
         }catch(const JavaException& exn){
             __exceptionHandler.handle(env, exn, qobject);
         }
@@ -2665,7 +2673,7 @@ int QtJambiMetaObject::readProperty(JNIEnv *env, jobject object, QObject* qobjec
         MetaObjectExceptionHandler __exceptionHandler;
         try{
             if(property.m_reader){
-                d->invokeJavaMethod(env, scope, object, property.m_reader, true, _a);
+                d->invokeJavaMethod(env, scope, object, qobject, property.m_reader, true, _a);
             }else if (property.m_QProperty_field && property.m_QProperty_field.propertyField && property.m_QProperty_field.valueMethod.methodId){
                 if(env->IsSameObject(object, nullptr)){
                     JavaException::raiseNullPointerException(env, QStringLiteral("Cannot read field \"%1.%2\" because object is null").arg(QtJambiAPI::getClassNamePrintable(env, d->m_clazz), property.m_QProperty_field.name) QTJAMBI_STACKTRACEINFO );
@@ -2676,7 +2684,7 @@ int QtJambiMetaObject::readProperty(JNIEnv *env, jobject object, QObject* qobjec
                 }else{
                     jobject qProperty = env->GetObjectField(object, property.m_QProperty_field.propertyField);
                     JavaException::check(env QTJAMBI_STACKTRACEINFO );
-                    d->invokeJavaMethod(env, scope, qProperty, property.m_QProperty_field.valueMethod, true, _a);
+                    d->invokeJavaMethod(env, scope, qProperty, nullptr, property.m_QProperty_field.valueMethod, true, _a);
                 }
             }else if (property.m_member){
                 if(property.m_member.isStatic){
@@ -2820,7 +2828,7 @@ int QtJambiMetaObject::writeProperty(JNIEnv *env, jobject object, QObject* qobje
                 // invokeJavaMethod expects a place holder for return value, but write property meta calls
                 // do not since all property writers return void by convention.
                 void *a[2] = { nullptr, _a[0] };
-                d->invokeJavaMethod(env, scope, object, property.m_writer, true, a);
+                d->invokeJavaMethod(env, scope, object, qobject, property.m_writer, true, a);
             }else if (property.m_QProperty_field && property.m_QProperty_field.propertyField && property.m_QProperty_field.setValueMethod.methodId){
                 if(env->IsSameObject(object, nullptr)){
                     JavaException::raiseNullPointerException(env, QStringLiteral("Cannot read field \"%1.%2\" because object is null").arg(QtJambiAPI::getClassNamePrintable(env, d->m_clazz), property.m_QProperty_field.name) QTJAMBI_STACKTRACEINFO );
@@ -2831,7 +2839,7 @@ int QtJambiMetaObject::writeProperty(JNIEnv *env, jobject object, QObject* qobje
                 }else{
                     jobject qProperty = env->GetObjectField(object, property.m_QProperty_field.propertyField);
                     void *a[2] = { nullptr, _a[0] };
-                    d->invokeJavaMethod(env, scope, qProperty, property.m_QProperty_field.setValueMethod, true, a, property.m_QProperty_field.valueMethod.methodType==JMethodType::l);
+                    d->invokeJavaMethod(env, scope, qProperty, nullptr, property.m_QProperty_field.setValueMethod, true, a, property.m_QProperty_field.valueMethod.methodType==JMethodType::l);
                 }
             }else if (property.m_member && property.m_member.member && property.m_member.canWrite){
                 if(property.m_member.isStatic){
@@ -2975,7 +2983,7 @@ int QtJambiMetaObject::resetProperty(JNIEnv *env, jobject object, QObject* qobje
         MetaObjectExceptionHandler __exceptionHandler;
         try{
             if(property.m_resetter){
-                d->invokeJavaMethod(env, scope, object, property.m_resetter, true, _a);
+                d->invokeJavaMethod(env, scope, object, qobject, property.m_resetter, true, _a);
             }
         }catch(const JavaException& exn){
             __exceptionHandler.handle(env, exn, qobject);
@@ -3012,7 +3020,7 @@ int QtJambiMetaObject::notifyProperty(JNIEnv *env, jobject object, QObject* qobj
                 }else{
                     jobject signal_object = env->GetObjectField(object, signal.signalField);
                     JavaException::check(env QTJAMBI_STACKTRACEINFO );
-                    d->invokeJavaMethod(env, scope, signal_object, signal.emitMethodInfo, true, _a);
+                    d->invokeJavaMethod(env, scope, signal_object, nullptr, signal.emitMethodInfo, true, _a);
                 }
             }
         }catch(const JavaException& exn){
@@ -3038,7 +3046,7 @@ int QtJambiMetaObject::bindableProperty(JNIEnv *env, jobject object, QObject* qo
         MetaObjectExceptionHandler __exceptionHandler;
         try{
             if(property.m_bindable){
-                d->invokeJavaMethod(env, scope, object, property.m_bindable, true, _a);
+                d->invokeJavaMethod(env, scope, object, qobject, property.m_bindable, true, _a);
             }else if (property.m_QProperty_field){
                 const QtJambiMetaObjectPrivate::Property& property = d->m_properties[_id];
                 if(env->IsSameObject(object, nullptr)){
@@ -3843,7 +3851,7 @@ JObjectWrapper QtJambiMetaObject::resolveExtraSignal(JNIEnv *env, jobject java_o
         {
             const QMetaObject* parentMetaObject = method.enclosingMetaObject();
             while(parentMetaObject && !convertedMetaObjects.contains(parentMetaObject)){
-                qtjambi_cast<jobject>(env, parentMetaObject);
+                (void)qtjambi_cast<jobject>(env, parentMetaObject);
                 convertedMetaObjects.insert(parentMetaObject);
                 parentMetaObject = parentMetaObject->superClass();
             }

@@ -30,6 +30,11 @@
 ****************************************************************************/
 
 #include "pch_p.h"
+#include "qtjambi_cast.h"
+#include "containeraccess_export_multimap.h"
+#include "containeraccess_export_list.h"
+#include "containeraccess_export_bytearraylist.h"
+#include "containeraccess_export_stringlist.h"
 
 QT_WARNING_DISABLE_GCC("-Winaccessible-base")
 QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
@@ -46,9 +51,6 @@ void AutoMultiMapAccess::dataStreamOut(QDataStream &s, const void *ptr){
 void AutoMultiMapAccess::debugStream(QDebug &dbg, const void *ptr){
     QtPrivate::printAssociativeContainer(dbg, "QMultiMap", ConstContainer{ptr, this});
 }
-
-void* AutoMultiMapAccess::constructContainer(JNIEnv* env, void* result, const ContainerAndAccessInfo& container) {return AutoMapAccess::constructContainer(env, result, container);}
-void* AutoMultiMapAccess::constructContainer(void* result, void* container) {return AutoMapAccess::constructContainer(result, container);}
 
 AutoMultiMapAccess::AutoMultiMapAccess(const AutoMultiMapAccess & other)
     : AbstractMultiMapAccess(), AutoMapAccess(other)
@@ -92,44 +94,15 @@ AutoMultiMapAccess::AutoMultiMapAccess(
 {
 }
 
-void* AutoMultiMapAccess::constructContainer(JNIEnv*env, void* result, const ConstContainerAndAccessInfo& container) {return AutoMapAccess::constructContainer(env, result, container);}
-void* AutoMultiMapAccess::constructContainer(void* result) {return AutoMapAccess::constructContainer(result);}
-void* AutoMultiMapAccess::constructContainer(void* result, const void* container) {return AutoMapAccess::constructContainer(result, container);}
-void AutoMultiMapAccess::assign(void* container, const void* other){AutoMapAccess::assign(container, other);}
-void AutoMultiMapAccess::assign(JNIEnv *env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other){AutoMapAccess::assign(env, container, other);}
-bool AutoMultiMapAccess::destructContainer(void* container) {return AutoMapAccess::destructContainer(container);}
-QMetaType AutoMultiMapAccess::registerContainer(QByteArrayView containerTypeName) {return AutoMapAccess::registerContainer(containerTypeName);}
+void* AutoMultiMapAccess::createContainer(const void* copy){
+    return AutoMapAccess::createContainer(copy);
+}
+
+void AutoMultiMapAccess::deleteContainer(void* deleteContainer){
+    return AutoMapAccess::deleteContainer(deleteContainer);
+}
+
 void AutoMultiMapAccess::dispose() {delete this;}
-const QMetaType& AutoMultiMapAccess::keyMetaType() {return AutoMapAccess::keyMetaType();}
-const QMetaType& AutoMultiMapAccess::valueMetaType() {return AutoMapAccess::valueMetaType();}
-AbstractContainerAccess::DataType AutoMultiMapAccess::keyType() {return AutoMapAccess::keyType();}
-AbstractContainerAccess::DataType AutoMultiMapAccess::valueType() {return AutoMapAccess::valueType();}
-AbstractContainerAccess* AutoMultiMapAccess::keyNestedContainerAccess() {return AutoMapAccess::keyNestedContainerAccess();}
-AbstractContainerAccess* AutoMultiMapAccess::valueNestedContainerAccess() {return AutoMapAccess::valueNestedContainerAccess();}
-bool AutoMultiMapAccess::hasKeyNestedContainerAccess() {return AutoMapAccess::hasKeyNestedContainerAccess();}
-bool AutoMultiMapAccess::hasKeyNestedPointers() {return AutoMapAccess::hasKeyNestedPointers();}
-bool AutoMultiMapAccess::hasValueNestedContainerAccess() {return AutoMapAccess::hasValueNestedContainerAccess();}
-bool AutoMultiMapAccess::hasValueNestedPointers() {return AutoMapAccess::hasValueNestedPointers();}
-const QSharedPointer<AbstractContainerAccess>& AutoMultiMapAccess::sharedKeyNestedContainerAccess() {return AutoMapAccess::sharedKeyNestedContainerAccess();}
-const QSharedPointer<AbstractContainerAccess>& AutoMultiMapAccess::sharedValueNestedContainerAccess() {return AutoMapAccess::sharedValueNestedContainerAccess();}
-void AutoMultiMapAccess::clear(JNIEnv *env, const ContainerInfo& container) {AutoMapAccess::clear(env, container);}
-jboolean AutoMultiMapAccess::contains(JNIEnv *env, const void* container, jobject key) {return AutoMapAccess::contains(env, container, key);}
-bool AutoMultiMapAccess::contains(const void* container, const void* key) {return AutoMapAccess::contains(container, key);}
-qsizetype AutoMultiMapAccess::count(JNIEnv *env, const void* container, jobject key) {return AutoMapAccess::count(env, container, key);}
-jobject AutoMultiMapAccess::begin(JNIEnv *env, const ExtendedContainerInfo& container) {return AutoMapAccess::begin(env, container);}
-jobject AutoMultiMapAccess::end(JNIEnv *env, const ExtendedContainerInfo& container) {return AutoMapAccess::end(env, container);}
-jobject AutoMultiMapAccess::find(JNIEnv *env, const ExtendedContainerInfo& container, jobject key) {return AutoMapAccess::find(env, container, key);}
-jobject AutoMultiMapAccess::constBegin(JNIEnv *env, const ConstExtendedContainerInfo& container) {return AutoMapAccess::constBegin(env, container);}
-jobject AutoMultiMapAccess::constEnd(JNIEnv *env, const ConstExtendedContainerInfo& container) {return AutoMapAccess::constEnd(env, container);}
-jobject AutoMultiMapAccess::constFind(JNIEnv *env, const ConstExtendedContainerInfo& container, jobject key) {return AutoMapAccess::constFind(env, container, key);}
-jobject AutoMultiMapAccess::first(JNIEnv *env, const void* container) {return AutoMapAccess::first(env, container);}
-jobject AutoMultiMapAccess::firstKey(JNIEnv *env, const void* container) {return AutoMapAccess::firstKey(env, container);}
-bool AutoMultiMapAccess::isDetached(const void* container){ return AutoMapAccess::isDetached(container); }
-void AutoMultiMapAccess::detach(const ContainerInfo& container){ AutoMapAccess::detach(container); }
-bool AutoMultiMapAccess::isSharedWith(const void* container, const void* container2){ return AutoMapAccess::isSharedWith(container, container2); }
-void AutoMultiMapAccess::swap(JNIEnv *env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){AutoMapAccess::swap(env, container, container2);}
-const QObject* AutoMultiMapAccess::getOwner(const void* container){ return AutoMapAccess::getOwner(container); }
-bool AutoMultiMapAccess::hasOwnerFunction(){ return AutoMapAccess::hasOwnerFunction(); }
 
 void AutoMultiMapAccess::insert(JNIEnv *env, const ContainerInfo& container, jobject key, jobject value){
     jvalue jv;
@@ -153,6 +126,42 @@ bool AutoMultiMapAccess::isMulti() const{
     return true;
 }
 
+AbstractMultiMapAccess* AutoMultiMapAccess::clone() {
+    return new AutoMultiMapAccess(*this);
+}
+
+void* AutoMultiMapAccess::constructContainer(JNIEnv* env, void* result, const ContainerAndAccessInfo& container) {return AutoMapAccess::constructContainer(env, result, container);}
+void* AutoMultiMapAccess::constructContainer(void* result, void* container) {return AutoMapAccess::constructContainer(result, container);}
+void* AutoMultiMapAccess::constructContainer(JNIEnv*env, void* result, const ConstContainerAndAccessInfo& container) {return AutoMapAccess::constructContainer(env, result, container);}
+void* AutoMultiMapAccess::constructContainer(void* result) {return AutoMapAccess::constructContainer(result);}
+void* AutoMultiMapAccess::constructContainer(void* result, const void* container) {return AutoMapAccess::constructContainer(result, container);}
+void AutoMultiMapAccess::assign(void* container, const void* other){AutoMapAccess::assign(container, other);}
+void AutoMultiMapAccess::assign(JNIEnv *env, const ContainerInfo& container, const ConstContainerAndAccessInfo& other){AutoMapAccess::assign(env, container, other);}
+bool AutoMultiMapAccess::destructContainer(void* container) {return AutoMapAccess::destructContainer(container);}
+QMetaType AutoMultiMapAccess::registerContainer(QByteArrayView containerTypeName) {return AutoMapAccess::registerContainer(containerTypeName);}
+const QMetaType& AutoMultiMapAccess::keyMetaType() {return AutoMapAccess::keyMetaType();}
+const QMetaType& AutoMultiMapAccess::valueMetaType() {return AutoMapAccess::valueMetaType();}
+AbstractContainerAccess::DataType AutoMultiMapAccess::keyType() {return AutoMapAccess::keyType();}
+AbstractContainerAccess::DataType AutoMultiMapAccess::valueType() {return AutoMapAccess::valueType();}
+AbstractContainerAccess* AutoMultiMapAccess::keyNestedContainerAccess() {return AutoMapAccess::keyNestedContainerAccess();}
+AbstractContainerAccess* AutoMultiMapAccess::valueNestedContainerAccess() {return AutoMapAccess::valueNestedContainerAccess();}
+bool AutoMultiMapAccess::hasKeyNestedContainerAccess() {return AutoMapAccess::hasKeyNestedContainerAccess();}
+bool AutoMultiMapAccess::hasKeyNestedPointers() {return AutoMapAccess::hasKeyNestedPointers();}
+bool AutoMultiMapAccess::hasValueNestedContainerAccess() {return AutoMapAccess::hasValueNestedContainerAccess();}
+bool AutoMultiMapAccess::hasValueNestedPointers() {return AutoMapAccess::hasValueNestedPointers();}
+const QSharedPointer<AbstractContainerAccess>& AutoMultiMapAccess::sharedKeyNestedContainerAccess() {return AutoMapAccess::sharedKeyNestedContainerAccess();}
+const QSharedPointer<AbstractContainerAccess>& AutoMultiMapAccess::sharedValueNestedContainerAccess() {return AutoMapAccess::sharedValueNestedContainerAccess();}
+void AutoMultiMapAccess::clear(JNIEnv *env, const ContainerInfo& container) {AutoMapAccess::clear(env, container);}
+jboolean AutoMultiMapAccess::contains(JNIEnv *env, const void* container, jobject key) {return AutoMapAccess::contains(env, container, key);}
+bool AutoMultiMapAccess::contains(const void* container, const void* key) {return AutoMapAccess::contains(container, key);}
+jobject AutoMultiMapAccess::first(JNIEnv *env, const void* container) {return AutoMapAccess::first(env, container);}
+jobject AutoMultiMapAccess::firstKey(JNIEnv *env, const void* container) {return AutoMapAccess::firstKey(env, container);}
+bool AutoMultiMapAccess::isDetached(const void* container){ return AutoMapAccess::isDetached(container); }
+void AutoMultiMapAccess::detach(const ContainerInfo& container){ AutoMapAccess::detach(container); }
+bool AutoMultiMapAccess::isSharedWith(const void* container, const void* container2){ return AutoMapAccess::isSharedWith(container, container2); }
+void AutoMultiMapAccess::swap(JNIEnv *env, const ContainerInfo& container, const ContainerAndAccessInfo& container2){AutoMapAccess::swap(env, container, container2);}
+const QObject* AutoMultiMapAccess::getOwner(const void* container){ return AutoMapAccess::getOwner(container); }
+bool AutoMultiMapAccess::hasOwnerFunction(){ return AutoMapAccess::hasOwnerFunction(); }
 std::unique_ptr<AbstractMapAccess::KeyValueIterator> AutoMultiMapAccess::keyValueIterator(const void* container) { return AutoMapAccess::keyValueIterator(container); }
 std::unique_ptr<AbstractMapAccess::KeyValueIterator> AutoMultiMapAccess::keyValueIterator(void* container) { return AutoMapAccess::keyValueIterator(container); }
 jobject AutoMultiMapAccess::key(JNIEnv *env, const void* container, jobject value, jobject defaultKey) { return AutoMapAccess::key(env, container, value, defaultKey); }
@@ -165,19 +174,201 @@ qsizetype AutoMultiMapAccess::remove(JNIEnv *env, const ContainerInfo& container
 qsizetype AutoMultiMapAccess::size(JNIEnv *env, const void* container) {return AutoMapAccess::size(env, container);}
 qsizetype AutoMultiMapAccess::size(const void* container)  {return AutoMapAccess::size(container);}
 jobject AutoMultiMapAccess::take(JNIEnv *env, const ContainerInfo& container, jobject key) {return AutoMapAccess::take(env, container, key);}
-jobject AutoMultiMapAccess::constLowerBound(JNIEnv *env, const ConstExtendedContainerInfo& container, jobject key) {return AutoMapAccess::constLowerBound(env, container, key);}
-jobject AutoMultiMapAccess::constUpperBound(JNIEnv *env, const ConstExtendedContainerInfo& container, jobject key) {return AutoMapAccess::constUpperBound(env, container, key);}
 jobject AutoMultiMapAccess::value(JNIEnv *env, const void* container, jobject key,jobject defaultValue) {return AutoMapAccess::value(env, container, key, defaultValue);}
 const void* AutoMultiMapAccess::value(const void* container, const void* key,const void* defaultValue) {return AutoMapAccess::value(container, key, defaultValue);}
 ContainerAndAccessInfo AutoMultiMapAccess::values(JNIEnv *env, const ConstContainerInfo& container) {return AutoMapAccess::values(env, container);}
 bool AutoMultiMapAccess::keyLessThan(JNIEnv *env, jobject k1, jobject k2) {return AutoMapAccess::keyLessThan(env, k1, k2);}
-AbstractMultiMapAccess* AutoMultiMapAccess::clone() {return new AutoMultiMapAccess(*this);}
+
+jobject AutoMultiMapAccess::createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, const_iterator>&& iter)
+{
+    using Iter = std::remove_reference_t<decltype(iter)>;
+    return QtJambiAPI::convertMultiMapIteratorToJavaObject(env,
+                                                           new Iter(std::move(iter)),
+                                                           &QtJambiAPI::deletePointer<Iter>,
+                                                           new AutoAssociativeConstIteratorAccess<AutoMultiMapAccess,Iter>(m_valueInternalToExternalConverter,m_keyInternalToExternalConverter,m_keyMetaType,m_valueMetaType));
+}
+
+jobject AutoMultiMapAccess::createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiMapAccess>, iterator>&& iter)
+{
+    using Iter = std::remove_reference_t<decltype(iter)>;
+    QSharedPointer<QtJambiLink> link = iter.storage().link();
+    return QtJambiPrivate::convertMultiMapIteratorToJavaObject(env, link,
+                                                               new Iter(std::move(iter)),
+                                                               &QtJambiAPI::deletePointer<Iter>,
+                                                               new AutoAssociativeIteratorAccess<AutoMultiMapAccess,Iter>(m_valueInternalToExternalConverter,m_valueExternalToInternalConverter,m_keyInternalToExternalConverter,m_keyMetaType,m_valueMetaType));
+}
+
+jobject AutoMultiMapAccess::createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiMapAccess>, key_value_iterator>&& iter)
+{
+    using Iter = std::remove_reference_t<decltype(iter)>;
+    QSharedPointer<QtJambiLink> link = iter.storage().link();
+    return QtJambiPrivate::convertMultiMapKeyValueIteratorToJavaObject(env, link,
+                                                                       new Iter(std::move(iter)),
+                                                                       &QtJambiAPI::deletePointer<Iter>,
+                                                                       new AutoAssociativeIteratorAccess<AutoMultiMapAccess,Iter,AbstractSequentialConstIteratorAccess::IteratorType::key_value_iterator>(m_valueInternalToExternalConverter,m_valueExternalToInternalConverter,m_keyInternalToExternalConverter,m_keyMetaType,m_valueMetaType));
+}
+
+jobject AutoMultiMapAccess::createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, const_key_value_iterator>&& iter)
+{
+    using Iter = std::remove_reference_t<decltype(iter)>;
+    return QtJambiAPI::convertMultiMapKeyValueIteratorToJavaObject(env, new Iter(std::move(iter)),
+                                                                   &QtJambiAPI::deletePointer<Iter>,
+                                                                   new AutoAssociativeConstIteratorAccess<AutoMultiMapAccess,Iter,AbstractSequentialConstIteratorAccess::IteratorType::const_key_value_iterator>(m_valueInternalToExternalConverter,m_keyInternalToExternalConverter,m_keyMetaType,m_valueMetaType));
+}
+
+jobject AutoMultiMapAccess::createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, key_iterator>&& iter)
+{
+    using Iter = std::remove_reference_t<decltype(iter)>;
+    return QtJambiAPI::convertMultiMapKeyIteratorToJavaObject(env, new Iter(std::move(iter)),
+                                                              &QtJambiAPI::deletePointer<Iter>,
+                                                              new AutoAssociativeConstIteratorAccess<AutoMultiMapAccess,Iter,AbstractSequentialConstIteratorAccess::IteratorType::key_iterator>(m_valueInternalToExternalConverter,m_keyInternalToExternalConverter,m_keyMetaType,m_valueMetaType));
+}
+
+jobject AutoMultiMapAccess::keyBegin(JNIEnv * env, const ConstExtendedContainerInfo& container)
+{
+    key_iterator iter = keyBegin(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
+}
+
+jobject AutoMultiMapAccess::keyEnd(JNIEnv * env, const ConstExtendedContainerInfo& container)
+{
+    key_iterator iter = keyEnd(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
+}
+
+jobject AutoMultiMapAccess::keyValueBegin(JNIEnv * env, const ExtendedContainerInfo& container)
+{
+    key_value_iterator iter = keyValueBegin(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
+}
+
+jobject AutoMultiMapAccess::keyValueEnd(JNIEnv * env, const ExtendedContainerInfo& container)
+{
+    key_value_iterator iter = keyValueEnd(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
+}
+
+jobject AutoMultiMapAccess::constKeyValueBegin(JNIEnv * env, const ConstExtendedContainerInfo& container)
+{
+    const_key_value_iterator iter = constKeyValueBegin(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
+}
+
+jobject AutoMultiMapAccess::constKeyValueEnd(JNIEnv * env, const ConstExtendedContainerInfo& container)
+{
+    const_key_value_iterator iter = constKeyValueEnd(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
+}
+
+jobject AutoMultiMapAccess::begin(JNIEnv *env, const ExtendedContainerInfo& container) {
+    iterator iter = begin(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
+}
+
+jobject AutoMultiMapAccess::end(JNIEnv *env, const ExtendedContainerInfo& container) {
+    iterator iter = end(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
+}
+
+jobject AutoMultiMapAccess::find(JNIEnv *env, const ExtendedContainerInfo& container, jobject key) {
+    if(MapDataPointer& d = *reinterpret_cast<MapDataPointer*>(container.container)){
+        jvalue jv;
+        jv.l = key;
+        QtJambiScope scope;
+        void* akey = nullptr;
+        if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
+            detach(d);
+            iterator iter(find(*d, akey), m_offset1, m_offset2);
+            return createIterator(env, ContainerIterator(std::move(iter), this, container));
+        }
+    }
+    return end(env, container);
+}
+
+jobject AutoMultiMapAccess::constBegin(JNIEnv *env, const ConstExtendedContainerInfo& container) {
+    const_iterator iter = begin(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
+}
+
+jobject AutoMultiMapAccess::constEnd(JNIEnv *env, const ConstExtendedContainerInfo& container) {
+    const_iterator iter = end(container.container);
+    return createIterator(env, ContainerIterator(std::move(iter), this, container));
+}
+
+jobject AutoMultiMapAccess::constFind(JNIEnv *env, const ConstExtendedContainerInfo& container, jobject key) {
+    if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
+        jvalue jv;
+        jv.l = key;
+        QtJambiScope scope;
+        void* akey = nullptr;
+        if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
+            const_iterator iter(find(*d, akey), m_offset1, m_offset2);
+            return createIterator(env, ContainerIterator(std::move(iter), this, container));
+        }
+    }
+    return constEnd(env, container);
+}
+
+jobject AutoMultiMapAccess::constLowerBound(JNIEnv *env, const ConstExtendedContainerInfo& container, jobject key) {
+    if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
+        jvalue jv;
+        jv.l = key;
+        QtJambiScope scope;
+        void* akey = nullptr;
+        if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
+            const_iterator iter(node_iterator(findLowerBound(*d, akey)), m_offset1, m_offset2);
+            return createIterator(env, ContainerIterator(std::move(iter), this, container));
+        }
+    }
+    return constEnd(env, container);
+}
+
+jobject AutoMultiMapAccess::constUpperBound(JNIEnv *env, const ConstExtendedContainerInfo& container, jobject key) {
+    if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
+        jvalue jv;
+        jv.l = key;
+        QtJambiScope scope;
+        void* akey = nullptr;
+        if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
+            const_iterator iter(node_iterator(findUpperBound(*d, akey)), m_offset1, m_offset2);
+            return createIterator(env, ContainerIterator(std::move(iter), this, container));
+        }
+    }
+    return constEnd(env, container);
+}
+
+jobject AutoMultiMapAccess::lowerBound(JNIEnv *env, const ExtendedContainerInfo& container, jobject key) {
+    if(MapDataPointer& d = *reinterpret_cast<MapDataPointer*>(container.container)){
+        jvalue jv;
+        jv.l = key;
+        QtJambiScope scope;
+        void* akey = nullptr;
+        if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
+            detach(d);
+            iterator iter(node_iterator(findLowerBound(*d, akey)), m_offset1, m_offset2);
+            return createIterator(env, ContainerIterator(std::move(iter), this, container));
+        }
+    }
+    return end(env, container);
+}
+
+jobject AutoMultiMapAccess::upperBound(JNIEnv *env, const ExtendedContainerInfo& container, jobject key) {
+    if(MapDataPointer& d = *reinterpret_cast<MapDataPointer*>(container.container)){
+        jvalue jv;
+        jv.l = key;
+        QtJambiScope scope;
+        void* akey = nullptr;
+        if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
+            detach(d);
+            iterator iter(node_iterator(findUpperBound(*d, akey)), m_offset1, m_offset2);
+            return createIterator(env, ContainerIterator(std::move(iter), this, container));
+        }
+    }
+    return end(env, container);
+}
 
 ContainerAndAccessInfo AutoMultiMapAccess::uniqueKeys(JNIEnv *env, const ConstContainerInfo& container)
 {
-#if defined(QTJAMBI_GENERIC_ACCESS)
-    using namespace ContainerAccessAPI;
-#endif
     ContainerAndAccessInfo result;
     auto containerAccess = createContainerAccess(
         env,
@@ -194,7 +385,6 @@ ContainerAndAccessInfo AutoMultiMapAccess::uniqueKeys(JNIEnv *env, const ConstCo
         );
     if(containerAccess && containerAccess->isList()){
         AbstractListAccess* listAccess = static_cast<AbstractListAccess*>(containerAccess);
-        CHECK_CONTAINER_ACCESS(env, listAccess)
         result.container = listAccess->createContainer();
         result.object = ContainerAPI::objectFromQList(env, result.container, listAccess);
         result.access = listAccess;
@@ -216,7 +406,7 @@ ContainerAndAccessInfo AutoMultiMapAccess::uniqueKeys(JNIEnv *env, const ConstCo
                 ++iter1;
                 while(iter1!=end1){
                     const void* key2 = iter1->data(m_offset1);
-                    if(m_keyMetaType.compare(key, key2)!=0)
+                    if(!m_keyMetaType.equals(key, key2))
                         break;
                     ++iter1;
                 }
@@ -257,9 +447,6 @@ void AutoMultiMapAccess::unite(JNIEnv *env, const ContainerInfo& container, Cont
 
 ContainerAndAccessInfo AutoMultiMapAccess::values(JNIEnv *env, const ConstContainerInfo& container, jobject key)
 {
-#if defined(QTJAMBI_GENERIC_ACCESS)
-    using namespace ContainerAccessAPI;
-#endif
     ContainerAndAccessInfo result;
     jvalue jv;
     jv.l = key;
@@ -281,7 +468,6 @@ ContainerAndAccessInfo AutoMultiMapAccess::values(JNIEnv *env, const ConstContai
             );
         if(containerAccess && containerAccess->isList()){
             AbstractListAccess* listAccess = static_cast<AbstractListAccess*>(containerAccess);
-            CHECK_CONTAINER_ACCESS(env, listAccess)
             result.container = listAccess->createContainer();
             result.object = ContainerAPI::objectFromQList(env, result.container, listAccess);
             result.access = listAccess;
@@ -294,7 +480,7 @@ ContainerAndAccessInfo AutoMultiMapAccess::values(JNIEnv *env, const ConstContai
                     do{
                         if(i!=begin1){
                             --i;
-                            if(m_keyMetaType.compare(akey, i->data(m_offset1))!=0){
+                            if(!m_keyMetaType.equals(akey, i->data(m_offset1))){
                                 ++i;
                                 break;
                             }
@@ -313,7 +499,7 @@ ContainerAndAccessInfo AutoMultiMapAccess::values(JNIEnv *env, const ConstContai
                     }
                     ++i;
                     if(i != end1){
-                        if(m_keyMetaType.compare(akey, i->data(m_offset1))!=0){
+                        if(!m_keyMetaType.equals(akey, i->data(m_offset1))){
                             break;
                         }
                     }
@@ -337,10 +523,10 @@ jboolean AutoMultiMapAccess::contains(JNIEnv *env, const void* container, jobjec
                 node_iterator i = AutoMapAccess::find(*d, akey);
                 node_iterator end1 = AutoMapAccess::end(*d);
                 while(i != end1){
-                    if(m_valueMetaType.compare(avalue, i->data(m_offset2))==0)
+                    if(m_valueMetaType.equals(avalue, i->data(m_offset2)))
                         return true;
                     ++i;
-                    if(m_keyMetaType.compare(akey, i->data(m_offset1))!=0)
+                    if(!m_keyMetaType.equals(akey, i->data(m_offset1)))
                         break;
                 }
             }
@@ -364,10 +550,10 @@ qsizetype AutoMultiMapAccess::count(JNIEnv *env, const void* container, jobject 
                 node_iterator i = AutoMapAccess::find(*d, akey);
                 node_iterator end1 = AutoMapAccess::end(*d);
                 while(i != end1){
-                    if(m_valueMetaType.compare(avalue, i->data(m_offset2))==0)
+                    if(m_valueMetaType.equals(avalue, i->data(m_offset2)))
                         ++c;
                     ++i;
-                    if(m_keyMetaType.compare(akey, i->data(m_offset1))!=0)
+                    if(!m_keyMetaType.equals(akey, i->data(m_offset1)))
                         break;
                 }
             }
@@ -376,24 +562,51 @@ qsizetype AutoMultiMapAccess::count(JNIEnv *env, const void* container, jobject 
     return c;
 }
 
+qsizetype AutoMultiMapAccess::count(JNIEnv *env, const void* container, jobject key) {
+    qsizetype result = 0;
+    if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container)){
+        jvalue jv;
+        jv.l = key;
+        QtJambiScope scope;
+        void* akey = nullptr;
+        if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
+            node_iterator i = find(*d, akey);
+            node_iterator _end = end(*d);
+            while(i!=_end){
+                ++result;
+                const void* trykey = i->data(m_offset1);
+                if(!m_keyMetaType.equals(trykey, akey)){
+                    --result;
+                    break;
+                }
+                ++i;
+            }
+        }
+    }
+    return result;
+}
+
 jobject AutoMultiMapAccess::find(JNIEnv *env, const ExtendedContainerInfo& container, jobject key, jobject value)
 {
-    jvalue jv;
-    jv.l = key;
-    void* akey = nullptr;
-    QtJambiScope scope;
-    if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
-        jv.l = value;
-        void* avalue = nullptr;
-        if(m_valueExternalToInternalConverter(env, &scope, jv, avalue, jValueType::l)){
-            if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
+    if(MapDataPointer& d = *reinterpret_cast<MapDataPointer*>(container.container)){
+        jvalue jv;
+        jv.l = key;
+        void* akey = nullptr;
+        QtJambiScope scope;
+        if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
+            jv.l = value;
+            void* avalue = nullptr;
+            if(m_valueExternalToInternalConverter(env, &scope, jv, avalue, jValueType::l)){
+                detach(d);
                 node_iterator i = AutoMapAccess::find(*d, akey);
                 node_iterator end1 = AutoMapAccess::end(*d);
                 while(i != end1){
-                    if(m_valueMetaType.compare(avalue, i->data(m_offset2))==0)
-                        return createIterator(env, container.nativeId, iterator(i, m_offset1, m_offset1));
+                    if(m_valueMetaType.equals(avalue, i->data(m_offset2))){
+                        iterator iter(i, m_offset1, m_offset2);
+                        return createIterator(env, ContainerIterator(std::move(iter), this, container));
+                    }
                     ++i;
-                    if(m_keyMetaType.compare(akey, i->data(m_offset1))!=0)
+                    if(!m_keyMetaType.equals(akey, i->data(m_offset1)))
                         break;
                 }
             }
@@ -404,28 +617,156 @@ jobject AutoMultiMapAccess::find(JNIEnv *env, const ExtendedContainerInfo& conta
 
 jobject AutoMultiMapAccess::constFind(JNIEnv *env, const ConstExtendedContainerInfo& container, jobject key, jobject value)
 {
-    jvalue jv;
-    jv.l = key;
-    void* akey = nullptr;
-    QtJambiScope scope;
-    if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
-        jv.l = value;
-        void* avalue = nullptr;
-        if(m_valueExternalToInternalConverter(env, &scope, jv, avalue, jValueType::l)){
-            if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
+    if(const MapDataPointer& d = *reinterpret_cast<const MapDataPointer*>(container.container)){
+        jvalue jv;
+        jv.l = key;
+        void* akey = nullptr;
+        QtJambiScope scope;
+        if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
+            jv.l = value;
+            void* avalue = nullptr;
+            if(m_valueExternalToInternalConverter(env, &scope, jv, avalue, jValueType::l)){
                 node_iterator i = AutoMapAccess::find(*d, akey);
                 node_iterator end1 = AutoMapAccess::end(*d);
                 while(i != end1){
-                    if(m_valueMetaType.compare(avalue, i->data(m_offset2))==0)
-                        return createConstIterator(env, container.nativeId, iterator(i, m_offset1, m_offset2));
+                    if(m_valueMetaType.equals(avalue, i->data(m_offset2))) {
+                        const_iterator iter(i, m_offset1, m_offset2);
+                        return createIterator(env, ContainerIterator(std::move(iter), this, container));
+                    }
                     ++i;
-                    if(m_keyMetaType.compare(akey, i->data(m_offset1))!=0)
+                    if(!m_keyMetaType.equals(akey, i->data(m_offset1)))
                         break;
                 }
             }
         }
     }
     return constEnd(env, container);
+}
+
+jboolean AutoMultiMapAccess::iteratorEquals(JNIEnv *, const void* ptr, AbstractSequentialConstIteratorAccess::IteratorType iteratorType, const ConstContainerAndAccessInfo& ptr2){
+    if(ptr2.access->isSequentialConstIterator() && ptr2.access->isAutoAccess()){
+        AbstractSequentialConstIteratorAccess::IteratorType iteratorType2 = static_cast<AbstractSequentialConstIteratorAccess*>(ptr2.access)->iteratorType();
+        switch(iteratorType){
+        case AbstractSequentialConstIteratorAccess::IteratorType::const_iterator: {
+            using Iter1 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, const_iterator>;
+            switch(iteratorType2){
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, const_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiMapAccess>, iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_key_value_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, const_key_value_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::key_value_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiMapAccess>, key_value_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            default:
+                break;
+            }
+        }break;
+        case AbstractSequentialConstIteratorAccess::IteratorType::iterator: {
+            using Iter1 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiMapAccess>, iterator>;
+            switch(iteratorType2){
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, const_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiMapAccess>, iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_key_value_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, const_key_value_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::key_value_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiMapAccess>, key_value_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            default:
+                break;
+            }
+        }break;
+        case AbstractSequentialConstIteratorAccess::IteratorType::const_key_value_iterator: {
+            using Iter1 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, const_key_value_iterator>;
+            switch(iteratorType2){
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, const_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiMapAccess>, iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_key_value_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, const_key_value_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::key_value_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiMapAccess>, key_value_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            default:
+                break;
+            }
+        }break;
+        case AbstractSequentialConstIteratorAccess::IteratorType::key_value_iterator: {
+            using Iter1 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiMapAccess>, key_value_iterator>;
+            switch(iteratorType2){
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, const_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiMapAccess>, iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_key_value_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, const_key_value_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::key_value_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiMapAccess>, key_value_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            default:
+                break;
+            }
+        }break;
+        default:
+            break;
+        }
+    }
+    return false;
+}
+
+void* AutoMultiMapAccess::asIterator(void* iter, AbstractSequentialConstIteratorAccess::IteratorType iteratorType){
+    switch(iteratorType){
+    case AbstractSequentialConstIteratorAccess::IteratorType::const_iterator: {
+        using Iterator = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, const_iterator>;
+        return &reinterpret_cast<Iterator*>(iter)->iterator();
+    }break;
+    case AbstractSequentialConstIteratorAccess::IteratorType::iterator: {
+        using Iterator = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiMapAccess>, iterator>;
+        return &reinterpret_cast<Iterator*>(iter)->iterator();
+    }break;
+    case AbstractSequentialConstIteratorAccess::IteratorType::const_key_value_iterator: {
+        using Iterator = ContainerIterator<QtJambiPrivate::ContainerClone<AutoMultiMapAccess>, const_key_value_iterator>;
+        return &reinterpret_cast<Iterator*>(iter)->iterator();
+    }break;
+    case AbstractSequentialConstIteratorAccess::IteratorType::key_value_iterator: {
+        using Iterator = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoMultiMapAccess>, key_value_iterator>;
+        return &reinterpret_cast<Iterator*>(iter)->iterator();
+    }break;
+    default:
+        return nullptr;
+    }
 }
 
 qsizetype AutoMultiMapAccess::remove(JNIEnv *env, const ContainerInfo& container, jobject key, jobject value)
@@ -925,4 +1266,572 @@ jobject NestedPointersRCAutoMultiMapAccess::take(JNIEnv *env, const ContainerInf
     jobject result = AutoMultiMapAccess::take(env, container, key);
     updateRC(env, container);
     return result;
+}
+
+#if defined(Q_CC_MSVC) || defined(_LIBCPP_VERSION) || !defined(Q_OS_WIN)
+template class QTJAMBI_EXPORT QMultiMapAccess<qint32,QString>;
+template class QTJAMBI_EXPORT QMultiMapAccess<QString,QUrl>;
+template class QTJAMBI_EXPORT QMultiMapAccess<QString,QVariant>;
+template class QTJAMBI_EXPORT QMultiMapAccess<QByteArray,QByteArray>;
+#endif
+
+AbstractMultiMapAccess* createMultiMapAccess(const QMetaType& memberMetaType1, const QMetaType& memberMetaType2){
+    switch(memberMetaType1.id()){
+    case QMetaType::Type::Bool:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Char:
+    case QMetaType::SChar:
+    case QMetaType::UChar:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Short:
+    case QMetaType::UShort:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Int:
+    case QMetaType::UInt:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            return QMultiMapAccess<qint32,QString>::newInstance();
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Double:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Float:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::QChar:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Char16:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Char32:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::QString:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            return QMultiMapAccess<QString,QVariant>::newInstance();
+        case QMetaType::QUrl:
+            return QMultiMapAccess<QString,QUrl>::newInstance();
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::QByteArray:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            return QMultiMapAccess<QByteArray,QByteArray>::newInstance();
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::QVariant:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::QObjectStar:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    default:
+        break;
+    }
+    return nullptr;
 }

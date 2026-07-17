@@ -835,12 +835,14 @@ bool MetaBuilder::build(FileModelItem&& dom) {
         setupEquals(cls);
         setupComparable(cls);
         setupBeginEnd(cls);
+        setupIterator(cls);
         setupTextStreamFunctions(cls);
     }
     for(MetaClass *cls : qAsConst(m_meta_classes)) {
         setupEquals(cls);
         setupComparable(cls);
         setupBeginEnd(cls);
+        setupIterator(cls);
         setupTextStreamFunctions(cls);
 
         if(cls->hasCloneOperator() && !cls->typeEntry()->isContainer() && !cls->isInterface()){
@@ -973,113 +975,423 @@ bool MetaBuilder::build(FileModelItem&& dom) {
     return true;
 }
 
+static QString includeModelCast = QStringLiteral(u"QtJambi/ModelCast");
+static QString includeDBusCast = QStringLiteral(u"QtJambiDBus/Cast");
+static QString includeQmlCast = QStringLiteral(u"QtJambiQml/Cast");
+static QString includeFutureCast = QStringLiteral(u"QtJambi/FutureCast");
+static QString includeArrayCast = QStringLiteral(u"QtJambi/ArrayCast");
+static QString includeBufferCast = QStringLiteral(u"QtJambi/BufferCast");
+static QString includeEnumCast = QStringLiteral(u"QtJambi/EnumCast");
+static QString includeArithmeticCast = QStringLiteral(u"QtJambi/ArithmeticCast");
+static QString includeTemplate1Cast = QStringLiteral(u"QtJambi/Template1Cast");
+static QString includeTemplate2Cast = QStringLiteral(u"QtJambi/Template2Cast");
+static QString includeTemplate3Cast = QStringLiteral(u"QtJambi/Template3Cast");
+static QString includeTemplate4Cast = QStringLiteral(u"QtJambi/Template4Cast");
+static QString includeTemplate5Cast = QStringLiteral(u"QtJambi/Template5Cast");
+static QString includeIteratorCast = QStringLiteral(u"QtJambi/IteratorCast");
+static QString includeContainerCast = QStringLiteral(u"QtJambi/ContainerCast");
+static QString includeSmartPointerCast = QStringLiteral(u"QtJambi/SmartPointerCast");
+static QString includeTimeCast = QStringLiteral(u"QtJambi/TimeCast");
+static QString includeJObjectWrapper = QStringLiteral(u"QtJambi/JObjectWrapper");
+static QString includeStringAPI = QStringLiteral(u"QtJambi/StringAPI");
+static QString includeBufferAPI = QStringLiteral(u"QtJambi/BufferAPI");
+static QString includeJavaAPI = QStringLiteral(u"QtJambi/JavaAPI");
+static QString includeArrayAPI = QStringLiteral(u"QtJambi/ArrayAPI");
+static QString includeQPair = QStringLiteral(u"QtJambi/QPair");
+static QString includeQStringList = QStringLiteral(u"QtJambi/QStringList");
+static QString includeQByteArrayList = QStringLiteral(u"QtJambi/QByteArrayList");
+static QString includeQObjectList = QStringLiteral(u"QtJambi/QObjectList");
+static QString includeQVariantList = QStringLiteral(u"QtJambi/QVariantList");
+static QString includeQList = QStringLiteral(u"QtJambi/QList");
+static QString includeQSpan = QStringLiteral(u"QtJambi/QSpan");
+static QString includeQSet = QStringLiteral(u"QtJambi/QSet");
+static QString includeQHash = QStringLiteral(u"QtJambi/QHash");
+static QString includeQMap = QStringLiteral(u"QtJambi/QMap");
+static QString includeQMultiHash = QStringLiteral(u"QtJambi/QMultiHash");
+static QString includeQMultiMap = QStringLiteral(u"QtJambi/QMultiMap");
+
 void analyzeType(const MetaType* type,
+                 QSet<QString>& neededImports,
                  bool &hasDeprecation,
-                 bool &needModelCast,
-                 bool &needDBusCast,
-                 bool &needQmlCast,
-                 bool &needFutureCast,
-                 bool &needArrayCast,
-                 bool &needBufferCast,
-                 bool &needEnumCast,
-                 bool &needArithmeticCast,
-                 bool &needTemplate1Cast,
-                 bool &needTemplate2Cast,
-                 bool &needTemplate3Cast,
-                 bool &needTemplate4Cast,
-                 bool &needTemplate5Cast,
-                 bool &needIteratorCast,
-                 bool &needContainerCast,
-                 bool &needSmartPointerCast,
-                 bool &needTimeCast,
                  bool &needJObjectWrapper,
-                 bool &needStringAPI,
-                 bool &needBufferAPI,
-                 bool &needJavaAPI,
-                 bool &needArrayAPI,
                  bool requiresBoxedPrimitives = false){
     if(type){
         hasDeprecation |= type->typeEntry()->isDeclDeprecated();
         if(type->isCharString()){
-            needStringAPI = true;
-            needArithmeticCast = true;
+            neededImports.insert(includeStringAPI);
+            neededImports.insert(includeArithmeticCast);
         }else if(type->isQLatin1String()
                 || type->isQLatin1StringView()
                 || type->isQStringView()
                 || type->isQAnyStringView()
                 || type->isQUtf8StringView()){
-            needStringAPI = true;
+            neededImports.insert(includeStringAPI);
         }else if(type->typeEntry()->isStdStringBased()){
-            needTemplate3Cast = true;
-            needStringAPI = true;
+            neededImports.insert(includeTemplate3Cast);
+            neededImports.insert(includeStringAPI);
         }else if(type->typeEntry()->isStdStringViewBased()){
-            needTemplate2Cast = true;
-            needStringAPI = true;
+            neededImports.insert(includeTemplate2Cast);
+            neededImports.insert(includeStringAPI);
         }else if(type->typeEntry()->isContainer()){
             switch(static_cast<const TS::ContainerTypeEntry*>(type->typeEntry())->type()){
             case TS::ContainerTypeEntry::QQmlListPropertyContainer:
-                needQmlCast = true;
-                needTemplate1Cast = true;
+                neededImports.insert(includeQmlCast);
+                neededImports.insert(includeTemplate1Cast);
                 break;
             case TS::ContainerTypeEntry::QDBusReplyContainer:
-                needDBusCast = true;
-                needTemplate1Cast = true;
+                neededImports.insert(includeDBusCast);
+                neededImports.insert(includeTemplate1Cast);
                 break;
             case TS::ContainerTypeEntry::QModelRoleDataSpanContainer:
-                needModelCast = true;
-                needTemplate2Cast = true;
+                neededImports.insert(includeModelCast);
+                neededImports.insert(includeTemplate2Cast);
+                neededImports.insert(includeContainerCast);
+                neededImports.insert(includeQMap);
                 break;
             case TS::ContainerTypeEntry::std_array:
-                needArrayCast = true;
+                neededImports.insert(includeArrayCast);
                 break;
             case TS::ContainerTypeEntry::StringListContainer:
+                neededImports.insert(includeTemplate1Cast);
+                neededImports.insert(includeContainerCast);
+                neededImports.insert(includeQStringList);
+                break;
             case TS::ContainerTypeEntry::ByteArrayListContainer:
-                needTemplate1Cast = true;
-                needContainerCast = true;
+                neededImports.insert(includeTemplate1Cast);
+                neededImports.insert(includeContainerCast);
+                neededImports.insert(includeQByteArrayList);
                 break;
             case TS::ContainerTypeEntry::std_chrono:
             case TS::ContainerTypeEntry::std_chrono_template:
-                needTimeCast = true;
-                needTemplate2Cast = true;
+                neededImports.insert(includeTimeCast);
+                neededImports.insert(includeTemplate2Cast);
+                break;
+            case TS::ContainerTypeEntry::std_vector:
+                neededImports.insert(includeTemplate2Cast);
                 break;
             case TS::ContainerTypeEntry::PairContainer:
-            case TS::ContainerTypeEntry::std_vector:
-                needTemplate2Cast = true;
+                neededImports.insert(includeTemplate2Cast);
+                if(type->instantiations().size()>=2){
+                    const MetaType* instantiation1 = type->instantiations()[0];
+                    const MetaType* instantiation2 = type->instantiations()[1];
+                    if(instantiation1->isPrimitive() && instantiation1->typeEntry()->jniName()=="jint"){
+                        if(instantiation2->isPrimitive() && instantiation2->typeEntry()->jniName()=="jint"){
+                            neededImports.insert(includeQPair);
+                        }
+                    }
+                }
                 break;
-            case TS::ContainerTypeEntry::ListContainer:
-            case TS::ContainerTypeEntry::LinkedListContainer:
             case TS::ContainerTypeEntry::VectorContainer:
+            case TS::ContainerTypeEntry::ListContainer:
+            case TS::ContainerTypeEntry::QVulkanInfoVectorContainer:
             case TS::ContainerTypeEntry::StackContainer:
-            case TS::ContainerTypeEntry::QueueContainer:
-            case TS::ContainerTypeEntry::SetContainer:
+            case TS::ContainerTypeEntry::QueueContainer:{
+                neededImports.insert(includeTemplate1Cast);
+                neededImports.insert(includeContainerCast);
+                if(type->instantiations().size()>=1){
+                    const MetaType* instantiation = type->instantiations()[0];
+                    if(instantiation->isPrimitive() || instantiation->isPrimitiveChar()){
+                        neededImports.insert(includeQList);
+                    }else if(instantiation->isQString()){
+                        neededImports.insert(includeQStringList);
+                    }else if(instantiation->isQVariant()){
+                        neededImports.insert(includeQVariantList);
+                    }else if(instantiation->isQObject() && instantiation->typeEntry()->qualifiedCppName()=="QObject"){
+                        neededImports.insert(includeQObjectList);
+                    }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QByteArray"){
+                        neededImports.insert(includeQByteArrayList);
+                    }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                        neededImports.insert(includeModelCast);
+                    }
+                }
+                break;
+            }
+            case TS::ContainerTypeEntry::SetContainer:{
+                neededImports.insert(includeTemplate1Cast);
+                neededImports.insert(includeContainerCast);
+                if(type->instantiations().size()>=1){
+                    const MetaType* instantiation = type->instantiations()[0];
+                    if(instantiation->isPrimitive() || instantiation->isPrimitiveChar() || instantiation->isQString()){
+                        neededImports.insert(includeQSet);
+                    }else if(instantiation->isQObject() && instantiation->typeEntry()->qualifiedCppName()=="QObject"){
+                        neededImports.insert(includeQSet);
+                    }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QByteArray"){
+                        neededImports.insert(includeQSet);
+                    }
+                    if(instantiation->isPrimitive() || instantiation->isPrimitiveChar()){
+                        neededImports.insert(includeQList);
+                    }else if(instantiation->isQString()){
+                        neededImports.insert(includeQStringList);
+                    }else if(instantiation->isQVariant()){
+                        neededImports.insert(includeQVariantList);
+                    }else if(instantiation->isQObject() && instantiation->typeEntry()->qualifiedCppName()=="QObject"){
+                        neededImports.insert(includeQObjectList);
+                    }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QByteArray"){
+                        neededImports.insert(includeQByteArrayList);
+                    }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                        neededImports.insert(includeModelCast);
+                    }else{
+                        if(instantiation->isPrimitive() || instantiation->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation->isQObject() && instantiation->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                    }
+                }
+                break;
+            }
+            case TS::ContainerTypeEntry::LinkedListContainer:
             case TS::ContainerTypeEntry::QArrayDataContainer:
             case TS::ContainerTypeEntry::QTypedArrayDataContainer:
-                needTemplate1Cast = true;
-                needContainerCast = true;
+                neededImports.insert(includeTemplate1Cast);
+                neededImports.insert(includeContainerCast);
                 break;
-            case TS::ContainerTypeEntry::MapContainer:
-            case TS::ContainerTypeEntry::MultiMapContainer:
-            case TS::ContainerTypeEntry::HashContainer:
-            case TS::ContainerTypeEntry::MultiHashContainer:
-                needTemplate2Cast = true;
-                needContainerCast = true;
+            case TS::ContainerTypeEntry::MapContainer:{
+                neededImports.insert(includeTemplate2Cast);
+                neededImports.insert(includeContainerCast);
+                if(type->instantiations().size()>=2){
+                    const MetaType* instantiation1 = type->instantiations()[0];
+                    const MetaType* instantiation2 = type->instantiations()[1];
+                    if(instantiation1->isPrimitive() && instantiation1->typeEntry()->jniName()=="jint"
+                            && (
+                                (instantiation2->isPrimitive() && instantiation2->typeEntry()->jniName()=="jint")
+                                || instantiation2->isQVariant()
+                                )){
+                        neededImports.insert(includeQMap);
+                    }else if(instantiation1->isQString() && (instantiation2->isQVariant() || instantiation2->isQString())){
+                        neededImports.insert(includeQMap);
+                    }else if(instantiation1->isValue()
+                             && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"
+                             && (
+                                 (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")
+                                 || instantiation2->isQVariant()
+                                 )){
+                        neededImports.insert(includeQMap);
+                    }else{
+                        if(instantiation1->isPrimitive() || instantiation1->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation1->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation1->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation1->isQObject() && instantiation1->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                        if(instantiation2->isPrimitive() || instantiation2->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation2->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation2->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation2->isQObject() && instantiation2->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                    }
+                }
                 break;
+            }
+            case TS::ContainerTypeEntry::MultiMapContainer:{
+                neededImports.insert(includeTemplate2Cast);
+                neededImports.insert(includeContainerCast);
+                if(type->instantiations().size()>=2){
+                    const MetaType* instantiation1 = type->instantiations()[0];
+                    const MetaType* instantiation2 = type->instantiations()[1];
+                    if(instantiation1->isPrimitive() && instantiation1->typeEntry()->jniName()=="jint"
+                            && instantiation2->isPrimitive() && instantiation2->typeEntry()->jniName()=="jint"){
+                        neededImports.insert(includeQPair);
+                    }
+                    if(instantiation1->isQVariant()
+                            && instantiation2->isQVariant()){
+                        neededImports.insert(includeQPair);
+                    }
+                    if(instantiation1->isPrimitive()
+                            && instantiation1->typeEntry()->jniName()=="jint"
+                            && (instantiation2->isQVariant() || instantiation2->isQString())){
+                        neededImports.insert(includeQMultiMap);
+                    }else if(instantiation1->isQString()
+                             && (
+                                 instantiation2->isQVariant()
+                                 || (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QUrl")
+                                 )
+                             ){
+                        neededImports.insert(includeQMultiMap);
+                    }else if(instantiation1->isValue()
+                             && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"
+                             && (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")){
+                        neededImports.insert(includeQMultiMap);
+                    }else{
+                        if(instantiation1->isPrimitive() || instantiation1->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation1->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation1->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation1->isQObject() && instantiation1->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                        if(instantiation2->isPrimitive() || instantiation2->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation2->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation2->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation2->isQObject() && instantiation2->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                    }
+                }
+                break;
+            }
+            case TS::ContainerTypeEntry::HashContainer:{
+                neededImports.insert(includeTemplate2Cast);
+                neededImports.insert(includeContainerCast);
+                if(type->instantiations().size()>=2){
+                    const MetaType* instantiation1 = type->instantiations()[0];
+                    const MetaType* instantiation2 = type->instantiations()[1];
+                    if(instantiation1->isPrimitive() && instantiation1->typeEntry()->jniName()=="jint"
+                            && instantiation2->isPrimitive() && instantiation2->typeEntry()->jniName()=="jint"){
+                        neededImports.insert(includeQPair);
+                    }
+                    if(instantiation1->isQVariant()
+                            && instantiation2->isQVariant()){
+                        neededImports.insert(includeQPair);
+                    }
+                    if(instantiation1->isPrimitive()
+                            && instantiation1->typeEntry()->jniName()=="jint"
+                            && (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")){
+                        neededImports.insert(includeQHash);
+                    }else if(instantiation1->isQString() && instantiation2->isQVariant()){
+                        neededImports.insert(includeQHash);
+                    }else if(instantiation1->isValue()
+                             && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"
+                             && (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")){
+                        neededImports.insert(includeQHash);
+                    }else{
+                        if(instantiation1->isPrimitive() || instantiation1->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation1->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation1->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation1->isQObject() && instantiation1->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                        if(instantiation2->isPrimitive() || instantiation2->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation2->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation2->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation2->isQObject() && instantiation2->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                    }
+                }
+                break;
+            }
+            case TS::ContainerTypeEntry::MultiHashContainer:{
+                neededImports.insert(includeTemplate2Cast);
+                neededImports.insert(includeContainerCast);
+                if(type->instantiations().size()>=2){
+                    const MetaType* instantiation1 = type->instantiations()[0];
+                    const MetaType* instantiation2 = type->instantiations()[1];
+                    if(instantiation1->isPrimitive() && instantiation1->typeEntry()->jniName()=="jint"
+                            && instantiation2->isPrimitive() && instantiation2->typeEntry()->jniName()=="jint"){
+                        neededImports.insert(includeQPair);
+                    }
+                    if(instantiation1->isQVariant()
+                            && instantiation2->isQVariant()){
+                        neededImports.insert(includeQPair);
+                    }
+                    if(instantiation1->isPrimitive()
+                            && instantiation1->typeEntry()->jniName()=="jshort"
+                            && (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")){
+                        neededImports.insert(includeQMultiHash);
+                    }else if(instantiation1->isQString() && instantiation2->isQVariant()){
+                        neededImports.insert(includeQMultiHash);
+                    }else if(instantiation1->isValue()
+                             && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"
+                             && (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")){
+                        neededImports.insert(includeQMultiHash);
+                    }else{
+                        if(instantiation1->isPrimitive() || instantiation1->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation1->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation1->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation1->isQObject() && instantiation1->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                        if(instantiation2->isPrimitive() || instantiation2->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation2->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation2->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation2->isQObject() && instantiation2->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                    }
+                }
+                break;
+            }
             default:
                 switch(type->instantiations().size()){
                 case 1:
-                    needTemplate1Cast = true;
+                    neededImports.insert(includeTemplate1Cast);
                     break;
                 case 2:
-                    needTemplate2Cast = true;
+                    neededImports.insert(includeTemplate2Cast);
                     break;
                 case 3:
-                    needTemplate3Cast = true;
+                    neededImports.insert(includeTemplate3Cast);
                     break;
                 case 4:
-                    needTemplate4Cast = true;
+                    neededImports.insert(includeTemplate4Cast);
                     break;
                 case 5:
-                    needTemplate5Cast = true;
+                    neededImports.insert(includeTemplate5Cast);
                     break;
                 default:
                     break;
@@ -1087,7 +1399,7 @@ void analyzeType(const MetaType* type,
                 break;
             }
         }else if(type->typeEntry()->isIterator()){
-            needIteratorCast = true;
+            neededImports.insert(includeIteratorCast);
         }else if(type->typeEntry()->isSmartPointer()){
             auto stype = static_cast<const TS::SmartPointerTypeEntry*>(type->typeEntry());
             switch(stype->type()){
@@ -1095,42 +1407,61 @@ void analyzeType(const MetaType* type,
             case TS::SmartPointerTypeEntry::Type::QWeakPointer:
             case TS::SmartPointerTypeEntry::Type::shared_ptr:
             case TS::SmartPointerTypeEntry::Type::weak_ptr:
-                needSmartPointerCast = true;
-                needTemplate1Cast = true;
+                neededImports.insert(includeSmartPointerCast);
+                neededImports.insert(includeTemplate1Cast);
             break;
             case TS::SmartPointerTypeEntry::Type::QScopedPointer:
             case TS::SmartPointerTypeEntry::Type::unique_ptr:
-                needTemplate2Cast = true;
+                neededImports.insert(includeTemplate2Cast);
             break;
             default: break;
             }
         }else if(type->typeEntry()->isFunctional()
                  && (type->typeEntry()->qualifiedCppName().startsWith("std::function<")
                      || reinterpret_cast<const FunctionalTypeEntry *>(type->typeEntry())->isFunctionPointer())){
-            needTemplate1Cast = true;
+            neededImports.insert(includeTemplate1Cast);
         }else if(type->typeEntry()->isArray()){
-            needArrayCast = true;
+            neededImports.insert(includeArrayCast);
         }else if(type->typeEntry()->isEnum()){
-            needEnumCast = true;
-            needArithmeticCast = true;
+            neededImports.insert(includeEnumCast);
+            neededImports.insert(includeArithmeticCast);
         }else if(type->typeEntry()->isFlags()){
-            needArithmeticCast = true;
-            needTemplate1Cast = true;
+            neededImports.insert(includeArithmeticCast);
+            neededImports.insert(includeTemplate1Cast);
         }else if(type->typeEntry()->isInitializerList()){
-            needArrayCast = true;
-            needTemplate1Cast = true;
+            neededImports.insert(includeArrayCast);
+            neededImports.insert(includeTemplate1Cast);
         }else if(type->typeEntry()->isQSpan()){
-            needArrayCast = true;
-            needTemplate1Cast = true;
+            neededImports.insert(includeArrayCast);
+            neededImports.insert(includeTemplate1Cast);
+            if(type->instantiations().size()>=1){
+                const MetaType* instantiation = type->instantiations()[0];
+                if(instantiation->isPrimitive() || instantiation->isPrimitiveChar()){
+                    neededImports.insert(includeQSpan);
+                }else if(instantiation->isQString()){
+                    neededImports.insert(includeQStringList);
+                }else if(instantiation->isQVariant()){
+                    neededImports.insert(includeQVariantList);
+                }else if(instantiation->isQObject() && instantiation->typeEntry()->qualifiedCppName()=="QObject"){
+                    neededImports.insert(includeQObjectList);
+                }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QByteArray"){
+                    neededImports.insert(includeQByteArrayList);
+                }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                    neededImports.insert(includeModelCast);
+                }
+            }
         }else if(type->typeEntry()->isJObjectWrapper() || type->typeEntry()->isJMapWrapper() || type->typeEntry()->isJCollectionWrapper()){
             needJObjectWrapper = true;
         }else if(type->typeEntry()->isComplex()){
             auto ctype = static_cast<const TS::ContainerTypeEntry*>(type->typeEntry());
-            needModelCast |= ctype->isQModelIndex();
-            needFutureCast |= ctype->isQFuturing();
-            needTemplate1Cast |= ctype->isQFuturing();
+            if(ctype->isQModelIndex())
+                neededImports.insert(includeModelCast);
+            if(ctype->isQFuturing())
+                neededImports.insert(includeFutureCast);
+            if(ctype->isQFuturing())
+                neededImports.insert(includeTemplate1Cast);
         }else if(requiresBoxedPrimitives && (type->typeEntry()->isPrimitive() || type->typeEntry()->isQChar())){
-            needArithmeticCast = true;
+            neededImports.insert(includeArithmeticCast);
         }
 
         QList<const MetaType *> types = type->instantiations();
@@ -1139,207 +1470,726 @@ void analyzeType(const MetaType* type,
         types << type->originalTemplateType();
         for(const MetaType * itype : std::as_const(types)){
             analyzeType(itype,
+                         neededImports,
                          hasDeprecation,
-                         needModelCast,
-                         needDBusCast,
-                         needQmlCast,
-                         needFutureCast,
-                         needArrayCast,
-                         needBufferCast,
-                         needEnumCast,
-                         needArithmeticCast,
-                         needTemplate1Cast,
-                         needTemplate2Cast,
-                         needTemplate3Cast,
-                         needTemplate4Cast,
-                         needTemplate5Cast,
-                         needIteratorCast,
-                         needContainerCast,
-                         needSmartPointerCast,
-                         needTimeCast,
-                         needJObjectWrapper,
-                         needStringAPI,
-                         needBufferAPI,
-                         needJavaAPI,
-                         needArrayAPI, true);
+                         needJObjectWrapper, true);
         }
     }
 }
 
 void MetaBuilder::analyzeClass(MetaClass* java_class){
+    QSet<QString> neededImports;
     bool hasDeprecation = java_class->isDeclDeprecated();
-    bool needModelCast = java_class->typeEntry()->isQAbstractItemModel()
-            || java_class->typeEntry()->isQModelIndex();
-    bool needDBusCast = false;
-    bool needQmlCast = false;
-    bool needFutureCast = java_class->typeEntry()->isQFuturing();
-    bool needArrayCast = false;
-    bool needBufferCast = false;
-    bool needEnumCast = false;
-    bool needArithmeticCast = false;
-    bool needTemplate1Cast = false;
-    bool needTemplate2Cast = false;
-    bool needTemplate3Cast = false;
-    bool needTemplate4Cast = false;
-    bool needTemplate5Cast = false;
-    bool needIteratorCast = false;
-    bool needContainerCast = false;
-    bool needSmartPointerCast = false;
-    bool needTimeCast = false;
     bool needJObjectWrapper = false;
-    bool needStringAPI = false;
-    bool needBufferAPI = false;
-    bool needJavaAPI = false;
-    bool needArrayAPI = false;
+    if(java_class->typeEntry()->isQAbstractItemModel()
+            || java_class->typeEntry()->isQModelIndex())
+        neededImports.insert(includeModelCast);
+    if(java_class->typeEntry()->isQFuturing())
+        neededImports.insert(includeFutureCast);
     if(java_class->templateBaseClass()){
         if(java_class->templateBaseClass()->typeEntry()->isContainer()){
             switch(static_cast<const TS::ContainerTypeEntry*>(java_class->templateBaseClass()->typeEntry())->type()){
             case TS::ContainerTypeEntry::QQmlListPropertyContainer:
-                needQmlCast = true;
-                needTemplate1Cast = true;
+                neededImports.insert(includeQmlCast);
+                neededImports.insert(includeTemplate1Cast);
                 break;
             case TS::ContainerTypeEntry::QDBusReplyContainer:
-                needDBusCast = true;
-                needTemplate1Cast = true;
+                neededImports.insert(includeDBusCast);
+                neededImports.insert(includeTemplate1Cast);
                 break;
             case TS::ContainerTypeEntry::QModelRoleDataSpanContainer:
-                needModelCast = true;
-                needTemplate2Cast = true;
+                neededImports.insert(includeModelCast);
+                neededImports.insert(includeTemplate2Cast);
+                neededImports.insert(includeContainerCast);
+                // neededImports.insert(includeContainerExport);
                 break;
             case TS::ContainerTypeEntry::std_array:
-                needArrayCast = true;
+                neededImports.insert(includeArrayCast);
                 break;
             case TS::ContainerTypeEntry::StringListContainer:
+                neededImports.insert(includeTemplate1Cast);
+                neededImports.insert(includeContainerCast);
+                neededImports.insert(includeQStringList);
+                break;
             case TS::ContainerTypeEntry::ByteArrayListContainer:
-                needTemplate1Cast = true;
-                needContainerCast = true;
+                neededImports.insert(includeTemplate1Cast);
+                neededImports.insert(includeContainerCast);
+                neededImports.insert(includeQByteArrayList);
                 break;
             case TS::ContainerTypeEntry::std_chrono:
             case TS::ContainerTypeEntry::std_chrono_template:
-                needTimeCast = true;
-                needTemplate2Cast = true;
+                neededImports.insert(includeTimeCast);
+                neededImports.insert(includeTemplate2Cast);
                 break;
             case TS::ContainerTypeEntry::PairContainer:
+                neededImports.insert(includeTemplate2Cast);
+                if(java_class->templateBaseClassInstantiations().size()>=2){
+                    const MetaType* instantiation1 = java_class->templateBaseClassInstantiations()[0];
+                    const MetaType* instantiation2 = java_class->templateBaseClassInstantiations()[1];
+                    if(instantiation1->isPrimitive() && instantiation1->typeEntry()->jniName()=="jint"){
+                        if(instantiation2->isPrimitive() && instantiation2->typeEntry()->jniName()=="jint"){
+                            neededImports.insert(includeQPair);
+                        }
+                    }
+                }
+                break;
             case TS::ContainerTypeEntry::std_vector:
-                needTemplate2Cast = true;
+                neededImports.insert(includeTemplate2Cast);
                 break;
             case TS::ContainerTypeEntry::ListContainer:
-            case TS::ContainerTypeEntry::LinkedListContainer:
+            case TS::ContainerTypeEntry::QVulkanInfoVectorContainer:
             case TS::ContainerTypeEntry::VectorContainer:
             case TS::ContainerTypeEntry::StackContainer:
-            case TS::ContainerTypeEntry::QueueContainer:
-            case TS::ContainerTypeEntry::SetContainer:
+            case TS::ContainerTypeEntry::QueueContainer:{
+                neededImports.insert(includeTemplate1Cast);
+                neededImports.insert(includeContainerCast);
+                if(java_class->templateBaseClassInstantiations().size()>=1){
+                    const MetaType* instantiation = java_class->templateBaseClassInstantiations()[0];
+                    if(instantiation->isPrimitive() || instantiation->isPrimitiveChar()){
+                        neededImports.insert(includeQList);
+                    }else if(instantiation->isQString()){
+                        neededImports.insert(includeQStringList);
+                    }else if(instantiation->isQVariant()){
+                        neededImports.insert(includeQVariantList);
+                    }else if(instantiation->isQObject() && instantiation->typeEntry()->qualifiedCppName()=="QObject"){
+                        neededImports.insert(includeQObjectList);
+                    }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QByteArray"){
+                        neededImports.insert(includeQByteArrayList);
+                    }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                        neededImports.insert(includeModelCast);
+                    }
+                }
+                break;
+            }
+            case TS::ContainerTypeEntry::SetContainer:{
+                neededImports.insert(includeTemplate1Cast);
+                neededImports.insert(includeContainerCast);
+                if(java_class->templateBaseClassInstantiations().size()>=1){
+                    const MetaType* instantiation = java_class->templateBaseClassInstantiations()[0];
+                    if(instantiation->isPrimitive() || instantiation->isPrimitiveChar() || instantiation->isQString()){
+                        neededImports.insert(includeQSet);
+                    }else if(instantiation->isQObject() && instantiation->typeEntry()->qualifiedCppName()=="QObject"){
+                        neededImports.insert(includeQSet);
+                    }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QByteArray"){
+                        neededImports.insert(includeQSet);
+                    }
+                    if(instantiation->isPrimitive() || instantiation->isPrimitiveChar()){
+                        neededImports.insert(includeQList);
+                    }else if(instantiation->isQString()){
+                        neededImports.insert(includeQStringList);
+                    }else if(instantiation->isQVariant()){
+                        neededImports.insert(includeQVariantList);
+                    }else if(instantiation->isQObject() && instantiation->typeEntry()->qualifiedCppName()=="QObject"){
+                        neededImports.insert(includeQObjectList);
+                    }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QByteArray"){
+                        neededImports.insert(includeQByteArrayList);
+                    }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                        neededImports.insert(includeModelCast);
+                    }else{
+                        if(instantiation->isPrimitive() || instantiation->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation->isQObject() && instantiation->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                    }
+                }
+                break;
+            }
+            case TS::ContainerTypeEntry::LinkedListContainer:
             case TS::ContainerTypeEntry::QArrayDataContainer:
             case TS::ContainerTypeEntry::QTypedArrayDataContainer:
-                needTemplate1Cast = true;
-                needContainerCast = true;
+                neededImports.insert(includeTemplate1Cast);
+                neededImports.insert(includeContainerCast);
+                // neededImports.insert(includeContainerExport);
                 break;
-            case TS::ContainerTypeEntry::MapContainer:
-            case TS::ContainerTypeEntry::MultiMapContainer:
-            case TS::ContainerTypeEntry::HashContainer:
-            case TS::ContainerTypeEntry::MultiHashContainer:
-                needTemplate2Cast = true;
-                needContainerCast = true;
+            case TS::ContainerTypeEntry::MapContainer:{
+                neededImports.insert(includeTemplate2Cast);
+                neededImports.insert(includeContainerCast);
+                if(java_class->templateBaseClassInstantiations().size()>=2){
+                    const MetaType* instantiation1 = java_class->templateBaseClassInstantiations()[0];
+                    const MetaType* instantiation2 = java_class->templateBaseClassInstantiations()[1];
+                    if(instantiation1->isPrimitive() && instantiation1->typeEntry()->jniName()=="jint"
+                            && instantiation2->isPrimitive() && instantiation2->typeEntry()->jniName()=="jint"){
+                        neededImports.insert(includeQPair);
+                    }
+                    if(instantiation1->isQVariant()
+                            && instantiation2->isQVariant()){
+                        neededImports.insert(includeQPair);
+                    }
+                    if(instantiation1->isPrimitive() && instantiation1->typeEntry()->jniName()=="jint"
+                            && (
+                                (instantiation2->isPrimitive() && instantiation2->typeEntry()->jniName()=="jint")
+                                || instantiation2->isQVariant()
+                                )){
+                        neededImports.insert(includeQMap);
+                    }else if(instantiation1->isQString() && (instantiation2->isQVariant() || instantiation2->isQString())){
+                        neededImports.insert(includeQMap);
+                    }else if(instantiation1->isValue()
+                             && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"
+                             && (
+                                 (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")
+                                 || instantiation2->isQVariant()
+                                 )){
+                        neededImports.insert(includeQMap);
+                    }else{
+                        if(instantiation1->isPrimitive() || instantiation1->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation1->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation1->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation1->isQObject() && instantiation1->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                        if(instantiation2->isPrimitive() || instantiation2->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation2->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation2->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation2->isQObject() && instantiation2->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                    }
+                }
                 break;
+            }
+            case TS::ContainerTypeEntry::MultiMapContainer:{
+                neededImports.insert(includeTemplate2Cast);
+                neededImports.insert(includeContainerCast);
+                if(java_class->templateBaseClassInstantiations().size()>=2){
+                    const MetaType* instantiation1 = java_class->templateBaseClassInstantiations()[0];
+                    const MetaType* instantiation2 = java_class->templateBaseClassInstantiations()[1];
+                    if(instantiation1->isPrimitive() && instantiation1->typeEntry()->jniName()=="jint"
+                            && instantiation2->isPrimitive() && instantiation2->typeEntry()->jniName()=="jint"){
+                        neededImports.insert(includeQPair);
+                    }
+                    if(instantiation1->isQVariant()
+                            && instantiation2->isQVariant()){
+                        neededImports.insert(includeQPair);
+                    }
+                    if(instantiation1->isPrimitive()
+                            && instantiation1->typeEntry()->jniName()=="jint"
+                            && (instantiation2->isQVariant() || instantiation2->isQString())){
+                        neededImports.insert(includeQMultiMap);
+                    }else if(instantiation1->isQString()
+                             && (
+                                 instantiation2->isQVariant()
+                                 || (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QUrl")
+                                 )
+                             ){
+                        neededImports.insert(includeQMultiMap);
+                    }else if(instantiation1->isValue()
+                             && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"
+                             && (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")){
+                        neededImports.insert(includeQMultiMap);
+                    }else{
+                        if(instantiation1->isPrimitive() || instantiation1->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation1->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation1->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation1->isQObject() && instantiation1->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                        if(instantiation2->isPrimitive() || instantiation2->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation2->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation2->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation2->isQObject() && instantiation2->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                    }
+                }
+                break;
+            }
+            case TS::ContainerTypeEntry::HashContainer:{
+                neededImports.insert(includeTemplate2Cast);
+                neededImports.insert(includeContainerCast);
+                if(java_class->templateBaseClassInstantiations().size()>=2){
+                    const MetaType* instantiation1 = java_class->templateBaseClassInstantiations()[0];
+                    const MetaType* instantiation2 = java_class->templateBaseClassInstantiations()[1];
+                    if(instantiation1->isPrimitive() && instantiation1->typeEntry()->jniName()=="jint"
+                            && instantiation2->isPrimitive() && instantiation2->typeEntry()->jniName()=="jint"){
+                        neededImports.insert(includeQPair);
+                    }
+                    if(instantiation1->isQVariant()
+                            && instantiation2->isQVariant()){
+                        neededImports.insert(includeQPair);
+                    }
+                    if(instantiation1->isPrimitive()
+                            && instantiation1->typeEntry()->jniName()=="jint"
+                            && (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")){
+                        neededImports.insert(includeQHash);
+                    }else if(instantiation1->isQString() && instantiation2->isQVariant()){
+                        neededImports.insert(includeQHash);
+                    }else if(instantiation1->isValue()
+                             && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"
+                             && (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")){
+                        neededImports.insert(includeQHash);
+                    }else{
+                        if(instantiation1->isPrimitive() || instantiation1->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation1->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation1->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation1->isQObject() && instantiation1->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                        if(instantiation2->isPrimitive() || instantiation2->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation2->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation2->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation2->isQObject() && instantiation2->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                    }
+                }
+                break;
+            }
+            case TS::ContainerTypeEntry::MultiHashContainer:{
+                neededImports.insert(includeTemplate2Cast);
+                neededImports.insert(includeContainerCast);
+                if(java_class->templateBaseClassInstantiations().size()>=2){
+                    const MetaType* instantiation1 = java_class->templateBaseClassInstantiations()[0];
+                    const MetaType* instantiation2 = java_class->templateBaseClassInstantiations()[1];
+                    if(instantiation1->isPrimitive() && instantiation1->typeEntry()->jniName()=="jint"
+                            && instantiation2->isPrimitive() && instantiation2->typeEntry()->jniName()=="jint"){
+                        neededImports.insert(includeQPair);
+                    }
+                    if(instantiation1->isQVariant()
+                            && instantiation2->isQVariant()){
+                        neededImports.insert(includeQPair);
+                    }
+                    if(instantiation1->isPrimitive()
+                            && instantiation1->typeEntry()->jniName()=="jshort"
+                            && (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")){
+                        neededImports.insert(includeQMultiHash);
+                    }else if(instantiation1->isQString() && instantiation2->isQVariant()){
+                        neededImports.insert(includeQMultiHash);
+                    }else if(instantiation1->isValue()
+                             && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"
+                             && (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")){
+                        neededImports.insert(includeQMultiHash);
+                    }else{
+                        if(instantiation1->isPrimitive() || instantiation1->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation1->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation1->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation1->isQObject() && instantiation1->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                        if(instantiation2->isPrimitive() || instantiation2->isPrimitiveChar()){
+                            neededImports.insert(includeQList);
+                        }else if(instantiation2->isQString()){
+                            neededImports.insert(includeQStringList);
+                        }else if(instantiation2->isQVariant()){
+                            neededImports.insert(includeQVariantList);
+                        }else if(instantiation2->isQObject() && instantiation2->typeEntry()->qualifiedCppName()=="QObject"){
+                            neededImports.insert(includeQObjectList);
+                        }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray"){
+                            neededImports.insert(includeQByteArrayList);
+                        }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                            neededImports.insert(includeModelCast);
+                        }
+                    }
+                }
+                break;
+            }
             default:
                 break;
             }
         }
         switch(java_class->templateBaseClassInstantiations().size()){
         case 1:
-            needTemplate1Cast = true;
+            neededImports.insert(includeTemplate1Cast);
             break;
         case 2:
-            needTemplate2Cast = true;
+            neededImports.insert(includeTemplate2Cast);
             break;
         case 3:
-            needTemplate3Cast = true;
+            neededImports.insert(includeTemplate3Cast);
             break;
         case 4:
-            needTemplate4Cast = true;
+            neededImports.insert(includeTemplate4Cast);
             break;
         case 5:
-            needTemplate5Cast = true;
+            neededImports.insert(includeTemplate5Cast);
             break;
         default:
             break;
         }
         for(const MetaType * type : std::as_const(java_class->templateBaseClassInstantiations())){
             analyzeType(type,
+                         neededImports,
                          hasDeprecation,
-                         needModelCast,
-                         needDBusCast,
-                         needQmlCast,
-                         needFutureCast,
-                         needArrayCast,
-                         needBufferCast,
-                         needEnumCast,
-                         needArithmeticCast,
-                         needTemplate1Cast,
-                         needTemplate2Cast,
-                         needTemplate3Cast,
-                         needTemplate4Cast,
-                         needTemplate5Cast,
-                         needIteratorCast,
-                         needContainerCast,
-                         needSmartPointerCast,
-                         needTimeCast,
-                         needJObjectWrapper,
-                         needStringAPI,
-                         needBufferAPI,
-                         needJavaAPI,
-                         needArrayAPI, true);
+                         needJObjectWrapper, true);
         }
     }
     if(java_class->baseClass() && java_class->baseClass()->typeEntry()->isContainer()){
         switch(static_cast<const TS::ContainerTypeEntry*>(java_class->baseClass()->typeEntry())->type()){
         case TS::ContainerTypeEntry::QQmlListPropertyContainer:
-            needQmlCast = true;
-            needTemplate1Cast = true;
+            neededImports.insert(includeQmlCast);
+            neededImports.insert(includeTemplate1Cast);
             break;
         case TS::ContainerTypeEntry::QDBusReplyContainer:
-            needDBusCast = true;
-            needTemplate1Cast = true;
+            neededImports.insert(includeDBusCast);
+            neededImports.insert(includeTemplate1Cast);
             break;
         case TS::ContainerTypeEntry::QModelRoleDataSpanContainer:
-            needModelCast = true;
-            needTemplate2Cast = true;
+            neededImports.insert(includeModelCast);
+            neededImports.insert(includeTemplate2Cast);
+            neededImports.insert(includeContainerCast);
+            // neededImports.insert(includeContainerExport);
             break;
         case TS::ContainerTypeEntry::std_array:
-            needArrayCast = true;
+            neededImports.insert(includeArrayCast);
             break;
         case TS::ContainerTypeEntry::StringListContainer:
+            neededImports.insert(includeTemplate1Cast);
+            neededImports.insert(includeContainerCast);
+            neededImports.insert(includeQStringList);
+            break;
         case TS::ContainerTypeEntry::ByteArrayListContainer:
-            needTemplate1Cast = true;
-            needContainerCast = true;
+            neededImports.insert(includeTemplate1Cast);
+            neededImports.insert(includeContainerCast);
+            neededImports.insert(includeQByteArrayList);
             break;
         case TS::ContainerTypeEntry::std_chrono:
         case TS::ContainerTypeEntry::std_chrono_template:
-            needTimeCast = true;
-            needTemplate2Cast = true;
+            neededImports.insert(includeTimeCast);
+            neededImports.insert(includeTemplate2Cast);
             break;
         case TS::ContainerTypeEntry::PairContainer:
-        case TS::ContainerTypeEntry::std_vector:
-            needTemplate2Cast = true;
+            neededImports.insert(includeTemplate2Cast);
+            if(java_class->templateBaseClassInstantiations().size()>=2){
+                const MetaType* instantiation1 = java_class->templateBaseClassInstantiations()[0];
+                const MetaType* instantiation2 = java_class->templateBaseClassInstantiations()[1];
+                if(instantiation1->isPrimitive() && instantiation1->typeEntry()->jniName()=="jint"){
+                    if(instantiation2->isPrimitive() && instantiation2->typeEntry()->jniName()=="jint"){
+                        neededImports.insert(includeQPair);
+                    }
+                }
+            }
             break;
+        case TS::ContainerTypeEntry::std_vector:
+            neededImports.insert(includeTemplate2Cast);
+            break;
+        case TS::ContainerTypeEntry::SetContainer:{
+            neededImports.insert(includeTemplate1Cast);
+            neededImports.insert(includeContainerCast);
+            if(java_class->templateBaseClassInstantiations().size()>=1){
+                const MetaType* instantiation = java_class->templateBaseClassInstantiations()[0];
+                if(instantiation->isPrimitive() || instantiation->isPrimitiveChar() || instantiation->isQString()){
+                    neededImports.insert(includeQSet);
+                }else if(instantiation->isQObject() && instantiation->typeEntry()->qualifiedCppName()=="QObject"){
+                    neededImports.insert(includeQSet);
+                }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QByteArray"){
+                    neededImports.insert(includeQSet);
+                }
+                if(instantiation->isPrimitive() || instantiation->isPrimitiveChar()){
+                    neededImports.insert(includeQList);
+                }else if(instantiation->isQString()){
+                    neededImports.insert(includeQStringList);
+                }else if(instantiation->isQVariant()){
+                    neededImports.insert(includeQVariantList);
+                }else if(instantiation->isQObject() && instantiation->typeEntry()->qualifiedCppName()=="QObject"){
+                    neededImports.insert(includeQObjectList);
+                }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QByteArray"){
+                    neededImports.insert(includeQByteArrayList);
+                }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                    neededImports.insert(includeModelCast);
+                }else{
+                    if(instantiation->isPrimitive() || instantiation->isPrimitiveChar()){
+                        neededImports.insert(includeQList);
+                    }else if(instantiation->isQString()){
+                        neededImports.insert(includeQStringList);
+                    }else if(instantiation->isQVariant()){
+                        neededImports.insert(includeQVariantList);
+                    }else if(instantiation->isQObject() && instantiation->typeEntry()->qualifiedCppName()=="QObject"){
+                        neededImports.insert(includeQObjectList);
+                    }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QByteArray"){
+                        neededImports.insert(includeQByteArrayList);
+                    }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                        neededImports.insert(includeModelCast);
+                    }
+                }
+            }
+            break;
+        }
         case TS::ContainerTypeEntry::ListContainer:
-        case TS::ContainerTypeEntry::LinkedListContainer:
+        case TS::ContainerTypeEntry::QVulkanInfoVectorContainer:
         case TS::ContainerTypeEntry::VectorContainer:
         case TS::ContainerTypeEntry::StackContainer:
-        case TS::ContainerTypeEntry::QueueContainer:
-        case TS::ContainerTypeEntry::SetContainer:
+        case TS::ContainerTypeEntry::QueueContainer:{
+            neededImports.insert(includeTemplate1Cast);
+            neededImports.insert(includeContainerCast);
+            if(java_class->templateBaseClassInstantiations().size()>=1){
+                const MetaType* instantiation = java_class->templateBaseClassInstantiations()[0];
+                if(instantiation->isPrimitive() || instantiation->isPrimitiveChar()){
+                    neededImports.insert(includeQList);
+                }else if(instantiation->isQString()){
+                    neededImports.insert(includeQStringList);
+                }else if(instantiation->isQVariant()){
+                    neededImports.insert(includeQVariantList);
+                }else if(instantiation->isQObject() && instantiation->typeEntry()->qualifiedCppName()=="QObject"){
+                    neededImports.insert(includeQObjectList);
+                }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QByteArray"){
+                    neededImports.insert(includeQByteArrayList);
+                }else if(instantiation->isValue() && instantiation->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                    neededImports.insert(includeModelCast);
+                }
+            }
+            break;
+        }
+        case TS::ContainerTypeEntry::LinkedListContainer:
         case TS::ContainerTypeEntry::QArrayDataContainer:
         case TS::ContainerTypeEntry::QTypedArrayDataContainer:
-            needTemplate1Cast = true;
-            needContainerCast = true;
+            neededImports.insert(includeTemplate1Cast);
+            neededImports.insert(includeContainerCast);
             break;
-        case TS::ContainerTypeEntry::MapContainer:
-        case TS::ContainerTypeEntry::MultiMapContainer:
-        case TS::ContainerTypeEntry::HashContainer:
-        case TS::ContainerTypeEntry::MultiHashContainer:
-            needTemplate2Cast = true;
-            needContainerCast = true;
+        case TS::ContainerTypeEntry::MapContainer:{
+            neededImports.insert(includeTemplate2Cast);
+            neededImports.insert(includeContainerCast);
+            if(java_class->templateBaseClassInstantiations().size()>=2){
+                const MetaType* instantiation1 = java_class->templateBaseClassInstantiations()[0];
+                const MetaType* instantiation2 = java_class->templateBaseClassInstantiations()[1];
+                if(instantiation1->isPrimitive() && instantiation1->typeEntry()->jniName()=="jint"
+                        && (
+                            (instantiation2->isPrimitive() && instantiation2->typeEntry()->jniName()=="jint")
+                            || instantiation2->isQVariant()
+                            )){
+                    neededImports.insert(includeQMap);
+                }else if(instantiation1->isQString() && (instantiation2->isQVariant() || instantiation2->isQString())){
+                    neededImports.insert(includeQMap);
+                }else if(instantiation1->isValue()
+                         && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"
+                         && (
+                             (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")
+                             || instantiation2->isQVariant()
+                             )){
+                    neededImports.insert(includeQMap);
+                }else{
+                    if(instantiation1->isPrimitive() || instantiation1->isPrimitiveChar()){
+                        neededImports.insert(includeQList);
+                    }else if(instantiation1->isQString()){
+                        neededImports.insert(includeQStringList);
+                    }else if(instantiation1->isQVariant()){
+                        neededImports.insert(includeQVariantList);
+                    }else if(instantiation1->isQObject() && instantiation1->typeEntry()->qualifiedCppName()=="QObject"){
+                        neededImports.insert(includeQObjectList);
+                    }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"){
+                        neededImports.insert(includeQByteArrayList);
+                    }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                        neededImports.insert(includeModelCast);
+                    }
+                    if(instantiation2->isPrimitive() || instantiation2->isPrimitiveChar()){
+                        neededImports.insert(includeQList);
+                    }else if(instantiation2->isQString()){
+                        neededImports.insert(includeQStringList);
+                    }else if(instantiation2->isQVariant()){
+                        neededImports.insert(includeQVariantList);
+                    }else if(instantiation2->isQObject() && instantiation2->typeEntry()->qualifiedCppName()=="QObject"){
+                        neededImports.insert(includeQObjectList);
+                    }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray"){
+                        neededImports.insert(includeQByteArrayList);
+                    }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                        neededImports.insert(includeModelCast);
+                    }
+                }
+            }
             break;
+        }
+        case TS::ContainerTypeEntry::MultiMapContainer:{
+            neededImports.insert(includeTemplate2Cast);
+            neededImports.insert(includeContainerCast);
+            if(java_class->templateBaseClassInstantiations().size()>=2){
+                const MetaType* instantiation1 = java_class->templateBaseClassInstantiations()[0];
+                const MetaType* instantiation2 = java_class->templateBaseClassInstantiations()[1];
+                if(instantiation1->isPrimitive()
+                        && instantiation1->typeEntry()->jniName()=="jint"
+                        && (instantiation2->isQVariant() || instantiation2->isQString())){
+                    neededImports.insert(includeQMultiMap);
+                }else if(instantiation1->isQString()
+                         && (
+                             instantiation2->isQVariant()
+                             || (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QUrl")
+                             )
+                         ){
+                    neededImports.insert(includeQMultiMap);
+                }else if(instantiation1->isValue()
+                         && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"
+                         && (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")){
+                    neededImports.insert(includeQMultiMap);
+                }else{
+                    if(instantiation1->isPrimitive() || instantiation1->isPrimitiveChar()){
+                        neededImports.insert(includeQList);
+                    }else if(instantiation1->isQString()){
+                        neededImports.insert(includeQStringList);
+                    }else if(instantiation1->isQVariant()){
+                        neededImports.insert(includeQVariantList);
+                    }else if(instantiation1->isQObject() && instantiation1->typeEntry()->qualifiedCppName()=="QObject"){
+                        neededImports.insert(includeQObjectList);
+                    }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"){
+                        neededImports.insert(includeQByteArrayList);
+                    }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                        neededImports.insert(includeModelCast);
+                    }
+                    if(instantiation2->isPrimitive() || instantiation2->isPrimitiveChar()){
+                        neededImports.insert(includeQList);
+                    }else if(instantiation2->isQString()){
+                        neededImports.insert(includeQStringList);
+                    }else if(instantiation2->isQVariant()){
+                        neededImports.insert(includeQVariantList);
+                    }else if(instantiation2->isQObject() && instantiation2->typeEntry()->qualifiedCppName()=="QObject"){
+                        neededImports.insert(includeQObjectList);
+                    }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray"){
+                        neededImports.insert(includeQByteArrayList);
+                    }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                        neededImports.insert(includeModelCast);
+                    }
+                }
+            }
+            break;
+        }
+        case TS::ContainerTypeEntry::HashContainer:{
+            neededImports.insert(includeTemplate2Cast);
+            neededImports.insert(includeContainerCast);
+            if(java_class->templateBaseClassInstantiations().size()>=2){
+                const MetaType* instantiation1 = java_class->templateBaseClassInstantiations()[0];
+                const MetaType* instantiation2 = java_class->templateBaseClassInstantiations()[1];
+                if(instantiation1->isPrimitive()
+                        && instantiation1->typeEntry()->jniName()=="jint"
+                        && (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")){
+                    neededImports.insert(includeQHash);
+                }else if(instantiation1->isQString() && instantiation2->isQVariant()){
+                    neededImports.insert(includeQHash);
+                }else if(instantiation1->isValue()
+                         && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"
+                         && (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")){
+                    neededImports.insert(includeQHash);
+                }else{
+                    if(instantiation1->isPrimitive() || instantiation1->isPrimitiveChar()){
+                        neededImports.insert(includeQList);
+                    }else if(instantiation1->isQString()){
+                        neededImports.insert(includeQStringList);
+                    }else if(instantiation1->isQVariant()){
+                        neededImports.insert(includeQVariantList);
+                    }else if(instantiation1->isQObject() && instantiation1->typeEntry()->qualifiedCppName()=="QObject"){
+                        neededImports.insert(includeQObjectList);
+                    }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"){
+                        neededImports.insert(includeQByteArrayList);
+                    }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                        neededImports.insert(includeModelCast);
+                    }
+                    if(instantiation2->isPrimitive() || instantiation2->isPrimitiveChar()){
+                        neededImports.insert(includeQList);
+                    }else if(instantiation2->isQString()){
+                        neededImports.insert(includeQStringList);
+                    }else if(instantiation2->isQVariant()){
+                        neededImports.insert(includeQVariantList);
+                    }else if(instantiation2->isQObject() && instantiation2->typeEntry()->qualifiedCppName()=="QObject"){
+                        neededImports.insert(includeQObjectList);
+                    }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray"){
+                        neededImports.insert(includeQByteArrayList);
+                    }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                        neededImports.insert(includeModelCast);
+                    }
+                }
+            }
+            break;
+        }
+        case TS::ContainerTypeEntry::MultiHashContainer:{
+            neededImports.insert(includeTemplate2Cast);
+            neededImports.insert(includeContainerCast);
+            if(java_class->templateBaseClassInstantiations().size()>=2){
+                const MetaType* instantiation1 = java_class->templateBaseClassInstantiations()[0];
+                const MetaType* instantiation2 = java_class->templateBaseClassInstantiations()[1];
+                if(instantiation1->isPrimitive()
+                        && instantiation1->typeEntry()->jniName()=="jshort"
+                        && (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")){
+                    neededImports.insert(includeQMultiHash);
+                }else if(instantiation1->isQString() && instantiation2->isQVariant()){
+                    neededImports.insert(includeQMultiHash);
+                }else if(instantiation1->isValue()
+                         && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"
+                         && (instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray")){
+                    neededImports.insert(includeQMultiHash);
+                }else{
+                    if(instantiation1->isPrimitive() || instantiation1->isPrimitiveChar()){
+                        neededImports.insert(includeQList);
+                    }else if(instantiation1->isQString()){
+                        neededImports.insert(includeQStringList);
+                    }else if(instantiation1->isQVariant()){
+                        neededImports.insert(includeQVariantList);
+                    }else if(instantiation1->isQObject() && instantiation1->typeEntry()->qualifiedCppName()=="QObject"){
+                        neededImports.insert(includeQObjectList);
+                    }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QByteArray"){
+                        neededImports.insert(includeQByteArrayList);
+                    }else if(instantiation1->isValue() && instantiation1->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                        neededImports.insert(includeModelCast);
+                    }
+                    if(instantiation2->isPrimitive() || instantiation2->isPrimitiveChar()){
+                        neededImports.insert(includeQList);
+                    }else if(instantiation2->isQString()){
+                        neededImports.insert(includeQStringList);
+                    }else if(instantiation2->isQVariant()){
+                        neededImports.insert(includeQVariantList);
+                    }else if(instantiation2->isQObject() && instantiation2->typeEntry()->qualifiedCppName()=="QObject"){
+                        neededImports.insert(includeQObjectList);
+                    }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QByteArray"){
+                        neededImports.insert(includeQByteArrayList);
+                    }else if(instantiation2->isValue() && instantiation2->typeEntry()->qualifiedCppName()=="QPersistentModelIndex"){
+                        neededImports.insert(includeModelCast);
+                    }
+                }
+            }
+            break;
+        }
         default:
             break;
         }
@@ -1348,72 +2198,32 @@ void MetaBuilder::analyzeClass(MetaClass* java_class){
         if(!f->wasPrivate()){
             hasDeprecation |= f->isDeclDeprecated();
             if(f->operatorType()==OperatorType::Div || f->operatorType()==OperatorType::DivAssign)
-                needJavaAPI = true;
+                neededImports.insert(includeJavaAPI);
             if(f->useArgumentAsBuffer(0)){
-                needBufferCast = true;
+                neededImports.insert(includeBufferCast);
             }else if(f->useArgumentAsArray(0)){
-                needArrayCast = true;
+                neededImports.insert(includeArrayCast);
             }else if(f->useArgumentAsString(0)){
-                needStringAPI = true;
-                needArithmeticCast = true;
+                neededImports.insert(includeStringAPI);
+                neededImports.insert(includeArithmeticCast);
             }
             analyzeType(f->type(),
+                         neededImports,
                          hasDeprecation,
-                         needModelCast,
-                         needDBusCast,
-                         needQmlCast,
-                         needFutureCast,
-                         needArrayCast,
-                         needBufferCast,
-                         needEnumCast,
-                         needArithmeticCast,
-                         needTemplate1Cast,
-                         needTemplate2Cast,
-                         needTemplate3Cast,
-                         needTemplate4Cast,
-                         needTemplate5Cast,
-                         needIteratorCast,
-                         needContainerCast,
-                         needSmartPointerCast,
-                         needTimeCast,
-                         needJObjectWrapper,
-                         needStringAPI,
-                         needBufferAPI,
-                         needJavaAPI,
-                         needArrayAPI);
+                         needJObjectWrapper);
             for(const MetaArgument* arg : f->arguments()){
                 if(f->useArgumentAsBuffer(arg->argumentIndex()+1)){
-                    needBufferCast = true;
+                    neededImports.insert(includeBufferCast);
                 }else if(f->useArgumentAsArray(arg->argumentIndex()+1)){
-                    needArrayCast = true;
+                    neededImports.insert(includeArrayCast);
                 }else if(f->useArgumentAsString(arg->argumentIndex()+1)){
-                    needStringAPI = true;
-                    needArithmeticCast = true;
+                    neededImports.insert(includeStringAPI);
+                    neededImports.insert(includeArithmeticCast);
                 }
                 analyzeType(arg->type(),
+                             neededImports,
                              hasDeprecation,
-                             needModelCast,
-                             needDBusCast,
-                             needQmlCast,
-                             needFutureCast,
-                             needArrayCast,
-                             needBufferCast,
-                             needEnumCast,
-                             needArithmeticCast,
-                             needTemplate1Cast,
-                             needTemplate2Cast,
-                             needTemplate3Cast,
-                             needTemplate4Cast,
-                             needTemplate5Cast,
-                             needIteratorCast,
-                             needContainerCast,
-                             needSmartPointerCast,
-                             needTimeCast,
-                             needJObjectWrapper,
-                             needStringAPI,
-                             needBufferAPI,
-                             needJavaAPI,
-                             needArrayAPI);
+                             needJObjectWrapper);
             }
         }
     }
@@ -1421,29 +2231,9 @@ void MetaBuilder::analyzeClass(MetaClass* java_class){
         if(!f->wasPrivate()){
             hasDeprecation |= f->isDeclDeprecated();
             analyzeType(f->type(),
+                         neededImports,
                          hasDeprecation,
-                         needModelCast,
-                         needDBusCast,
-                         needQmlCast,
-                         needFutureCast,
-                         needArrayCast,
-                         needBufferCast,
-                         needEnumCast,
-                         needArithmeticCast,
-                         needTemplate1Cast,
-                         needTemplate2Cast,
-                         needTemplate3Cast,
-                         needTemplate4Cast,
-                         needTemplate5Cast,
-                         needIteratorCast,
-                         needContainerCast,
-                         needSmartPointerCast,
-                         needTimeCast,
-                         needJObjectWrapper,
-                         needStringAPI,
-                         needBufferAPI,
-                         needJavaAPI,
-                         needArrayAPI);
+                         needJObjectWrapper);
         }
     }
 
@@ -1457,146 +2247,52 @@ void MetaBuilder::analyzeClass(MetaClass* java_class){
     }
 
     java_class->setHasDeprecation(hasDeprecation);
-    java_class->setNeedModelCast(needModelCast);
-    java_class->setNeedDBusCast(needDBusCast);
-    java_class->setNeedQmlCast(needQmlCast);
-    java_class->setNeedFutureCast(needFutureCast);
-    java_class->setNeedArrayCast(needArrayCast);
-    java_class->setNeedBufferCast(needBufferCast);
-    java_class->setNeedEnumCast(needEnumCast);
-    java_class->setNeedArithmeticCast(needArithmeticCast);
-    java_class->setNeedTemplate1Cast(needTemplate1Cast);
-    java_class->setNeedTemplate2Cast(needTemplate2Cast);
-    java_class->setNeedTemplate3Cast(needTemplate3Cast);
-    java_class->setNeedTemplate4Cast(needTemplate4Cast);
-    java_class->setNeedTemplate5Cast(needTemplate5Cast);
-    java_class->setNeedSmartPointerCast(needSmartPointerCast);
-    java_class->setNeedIteratorCast(needIteratorCast);
-    java_class->setNeedContainerCast(needContainerCast);
-    java_class->setNeedTimeCast(needTimeCast);
-    java_class->setNeedJObjectWrapper(needJObjectWrapper);
-    java_class->setNeedBufferAPI(needBufferAPI);
-    java_class->setNeedArrayAPI(needArrayAPI);
-    java_class->setNeedStringAPI(needStringAPI);
-    java_class->setNeedJavaAPI(needJavaAPI);
+    if(needJObjectWrapper)
+        java_class->typeEntry()->addExtraInclude({TS::Include::IncludePath, includeJObjectWrapper});
+    for(QString neededImport : std::as_const(neededImports)){
+        java_class->typeEntry()->addExtraInclude({TS::Include::IncludePath, neededImport});
+    }
     for(MetaFunctional* java_functional : java_class->functionals()){
         analyzeFunctional(java_functional);
     }
 }
 
 void MetaBuilder::analyzeFunctional(MetaFunctional* java_functional){
+    QSet<QString> neededImports;
     bool hasDeprecation = java_functional->isDeclDeprecated() || java_functional->typeEntry()->isContainer();
-    bool needModelCast = false;
-    bool needDBusCast = false;
-    bool needQmlCast = false;
-    bool needFutureCast = false;
-    bool needArrayCast = false;
-    bool needBufferCast = false;
-    bool needEnumCast = false;
-    bool needArithmeticCast = false;
-    bool needTemplate1Cast = false;
-    bool needTemplate2Cast = false;
-    bool needTemplate3Cast = false;
-    bool needTemplate4Cast = false;
-    bool needTemplate5Cast = false;
-    bool needIteratorCast = false;
-    bool needContainerCast = false;
-    bool needSmartPointerCast = false;
-    bool needTimeCast = false;
     bool needJObjectWrapper = false;
-    bool needStringAPI = false;
-    bool needBufferAPI = false;
-    bool needArrayAPI = false;
-    bool needJavaAPI = false;
     if(java_functional->useArgumentAsBuffer(0)){
-        needBufferCast = true;
+        neededImports.insert(includeBufferCast);
     }else if(java_functional->useArgumentAsString(0)){
-        needStringAPI = true;
-        needArithmeticCast = true;
+        neededImports.insert(includeStringAPI);
+        neededImports.insert(includeArithmeticCast);
     }else if(java_functional->useArgumentAsArray(0)){
-        needArrayCast = true;
+        neededImports.insert(includeArrayCast);
     }
     analyzeType(java_functional->type(),
+                 neededImports,
                  hasDeprecation,
-                 needModelCast,
-                 needDBusCast,
-                 needQmlCast,
-                 needFutureCast,
-                 needArrayCast,
-                 needBufferCast,
-                 needEnumCast,
-                 needArithmeticCast,
-                 needTemplate1Cast,
-                 needTemplate2Cast,
-                 needTemplate3Cast,
-                 needTemplate4Cast,
-                 needTemplate5Cast,
-                 needIteratorCast,
-                 needContainerCast,
-                 needSmartPointerCast,
-                 needTimeCast,
-                 needJObjectWrapper,
-                 needStringAPI,
-                 needBufferAPI,
-                 needJavaAPI,
-                 needArrayAPI);
+                 needJObjectWrapper);
     for(const MetaArgument* arg : java_functional->arguments()){
         if(java_functional->useArgumentAsBuffer(arg->argumentIndex()+1)){
-            needBufferCast = true;
+            neededImports.insert(includeBufferCast);
         }else if(java_functional->useArgumentAsArray(arg->argumentIndex()+1)){
-            needArrayCast = true;
+            neededImports.insert(includeArrayCast);
         }else if(java_functional->useArgumentAsString(arg->argumentIndex()+1)){
-            needStringAPI = true;
-            needArithmeticCast = true;
+            neededImports.insert(includeStringAPI);
+            neededImports.insert(includeArithmeticCast);
         }
         analyzeType(arg->type(),
+                     neededImports,
                      hasDeprecation,
-                     needModelCast,
-                     needDBusCast,
-                     needQmlCast,
-                     needFutureCast,
-                     needArrayCast,
-                     needBufferCast,
-                     needEnumCast,
-                     needArithmeticCast,
-                     needTemplate1Cast,
-                     needTemplate2Cast,
-                     needTemplate3Cast,
-                     needTemplate4Cast,
-                     needTemplate5Cast,
-                     needIteratorCast,
-                     needContainerCast,
-                     needSmartPointerCast,
-                     needTimeCast,
-                     needJObjectWrapper,
-                     needStringAPI,
-                     needBufferAPI,
-                     needJavaAPI,
-                     needArrayAPI);
+                     needJObjectWrapper);
     }
     java_functional->setHasDeprecation(hasDeprecation);
-    java_functional->setNeedModelCast(needModelCast);
-    java_functional->setNeedDBusCast(needDBusCast);
-    java_functional->setNeedQmlCast(needQmlCast);
-    java_functional->setNeedFutureCast(needFutureCast);
-    java_functional->setNeedArrayCast(needArrayCast);
-    java_functional->setNeedBufferCast(needBufferCast);
-    java_functional->setNeedEnumCast(needEnumCast);
-    java_functional->setNeedArithmeticCast(needArithmeticCast);
-    java_functional->setNeedTemplate1Cast(needTemplate1Cast);
-    java_functional->setNeedTemplate2Cast(needTemplate2Cast);
-    java_functional->setNeedTemplate3Cast(needTemplate3Cast);
-    java_functional->setNeedTemplate4Cast(needTemplate4Cast);
-    java_functional->setNeedTemplate5Cast(needTemplate5Cast);
-    java_functional->setNeedSmartPointerCast(needSmartPointerCast);
-    java_functional->setNeedIteratorCast(needIteratorCast);
-    java_functional->setNeedContainerCast(needContainerCast);
-    java_functional->setNeedTimeCast(needTimeCast);
-    java_functional->setNeedJObjectWrapper(needJObjectWrapper);
-    java_functional->setNeedBufferAPI(needBufferAPI);
-    java_functional->setNeedArrayAPI(needArrayAPI);
-    java_functional->setNeedStringAPI(needStringAPI);
-    java_functional->setNeedJavaAPI(needJavaAPI);
+    if(needJObjectWrapper)
+        java_functional->typeEntry()->addExtraInclude({TS::Include::IncludePath, includeJObjectWrapper});
+    for(QString neededImport : std::as_const(neededImports)){
+        java_functional->typeEntry()->addExtraInclude({TS::Include::IncludePath, neededImport});
+    }
 }
 
 void MetaBuilder::applyDocs(const DocModel* docModel){
@@ -8709,7 +9405,7 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
             }else{
                 bool ok = false;
                 parameterType = p->parameterTypeInfo().toString();
-                type = translateType(p->parameterTypeInfo(), &ok, QString("%1::%2 template argument %3").arg(class_name, function_name, QString::number(templateParameterCounter+1)));
+                type = translateType(p->parameterTypeInfo(), &ok, QString("%1::%2 template argument %3").arg(class_name, _originalSignature, parameterType));
                 if(!ok)
                     type = nullptr;
             }
@@ -8755,7 +9451,7 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
         }
 
         if(!ok){
-            type = translateType(function_type, &ok, QString("%1::%2 return type").arg(class_name, function_name));
+            type = translateType(function_type, &ok, QString("%1::%2 return type %3").arg(class_name, _originalSignature, function_type.toString()));
             if(type && m_current_class){
                 if(type->typeEntry()->isQVariant() && m_current_class->typeEntry()==m_database->qvariantType()){
                     type->setTypeEntry(m_database->qvariantType());
@@ -8913,7 +9609,7 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
         }
 
         if(!ok){
-            argumentType = translateType(arg->type(), &ok, QString("%1::%2 argument type %3").arg(class_name, function_name, QString::number(i+1)));
+            argumentType = translateType(arg->type(), &ok, QString("%1::%2 argument type %3").arg(class_name, _originalSignature, arg->type().toString()));
             if(argumentType && m_current_class){
                 if(argumentType->typeEntry()->isQVariant() && m_current_class->typeEntry()==m_database->qvariantType()){
                     argumentType->setTypeEntry(m_database->qvariantType());
@@ -8930,7 +9626,7 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
                     typeInfo.setQualifiedName(QStringList() << m_current_class->typeEntry()->qualifiedCppName().split("::") << typeInfo.qualifiedName());
                 else
                     typeInfo.setQualifiedName(QStringList() << typeInfo.qualifiedName());
-                MetaType *_meta_type = translateType(typeInfo, &_ok, QString("%1::%2 argument type %3").arg(class_name, function_name, QString::number(i+1)));
+                MetaType *_meta_type = translateType(typeInfo, &_ok, QString("%1::%2 argument type %3").arg(class_name, _originalSignature, typeInfo.toString()));
                 if (_meta_type && _ok){
                     argumentType = _meta_type;
                 }
@@ -9013,7 +9709,7 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
         }
         if (!argumentType || !ok) {
             if(arg->type().isVolatile())
-                argumentType = translateType(arg->type(), &ok, QString("%1::%2 argument type %3").arg(class_name, function_name, QString::number(i+1)));
+                argumentType = translateType(arg->type(), &ok, QString("%1::%2 argument type %3").arg(class_name, _originalSignature, arg->type().toString()));
             if(function_item->accessPolicy() != CodeModel::Private
                 && m_current_class
                 && (m_current_class->typeEntry()->codeGeneration() & ~TypeEntry::InheritedByTypeSystem)==TypeEntry::GenerateAll
@@ -9303,7 +9999,10 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
                     }
                 }else{
                     if(meta_arguments.isEmpty()){
-                        meta_function->setName("operator_indirection");
+                        if(m_current_class && m_current_class->typeEntry()->isIterator())
+                            meta_function->setName("get");
+                        else
+                            meta_function->setName("operator_indirection");
                     }else{
                         meta_function->setName("times");
                     }
@@ -10096,6 +10795,18 @@ MetaType *MetaBuilder::translateType(TypeInfo typei,
                 //    qDebug()<< "Foreaching in container thingy," << info.toString();
                 MetaType *targ_type = translateType(info, ok, contextString);
                 if (!(*ok)) {
+                    if(container_type == ContainerTypeEntry::QKeyValueIterator
+                            && meta_type->instantiations().size()>=2){
+                        break;
+                    }
+                    if(container_type == ContainerTypeEntry::std_reverse_iterator
+                            && meta_type->instantiations().size()>=1){
+                        break;
+                    }
+                    if(container_type == ContainerTypeEntry::std_vector
+                            && meta_type->instantiations().size()>=1){
+                        break;
+                    }
                     delete meta_type;
                     return nullptr;
                 }
@@ -10196,7 +10907,7 @@ MetaType *MetaBuilder::translateType(TypeInfo typei,
 
 void MetaBuilder::fixMissingIterator(){
     QList<MissingAlias> missing_aliases;
-    for(const MissingAlias& missingAlias : m_missing_aliases){
+    for(const MissingAlias& missingAlias : std::as_const(m_missing_aliases)){
         bool found = false;
         if(missingAlias.aliasType->isIterator()){
             if(MetaClass * iteratorClass = classes().findClass(missingAlias.aliasType->qualifiedCppName(), MetaClassList::QualifiedCppName)){
@@ -10285,7 +10996,9 @@ void MetaBuilder::fixMissingIterator(){
 
 void MetaBuilder::decideUsagePattern(MetaType *meta_type) {
     const TypeEntry *type = meta_type->typeEntry();
-    if (type->isPrimitive()) {
+    if (type->isJNIEnv()) {
+        meta_type->setTypeUsagePattern(MetaType::JNIEnvPattern);
+    }else if (type->isPrimitive()) {
         if(meta_type->actualIndirections() == 0
                 || (meta_type->isConstant() && meta_type->getReferenceType()==MetaType::Reference && meta_type->indirections().size() == 0)
                 || (meta_type->getReferenceType()==MetaType::RReference && meta_type->indirections().size() == 0)){
@@ -10598,6 +11311,7 @@ QString MetaBuilder::translateDefaultValue(const QString& defaultValueExpression
         case ContainerTypeEntry::StringListContainer:
         case ContainerTypeEntry::ByteArrayListContainer:
         case ContainerTypeEntry::ListContainer:
+        case ContainerTypeEntry::QVulkanInfoVectorContainer:
         case ContainerTypeEntry::std_vector:
         case ContainerTypeEntry::LinkedListContainer:
         case ContainerTypeEntry::VectorContainer:
@@ -10982,6 +11696,7 @@ void MetaBuilder::inheritHiddenBaseType(MetaClass *subclass, const MetaClass *hi
         const ContainerTypeEntry* ctype = static_cast<const ContainerTypeEntry*>(hidden_base_class->typeEntry());
         switch(ctype->type()){
         case ContainerTypeEntry::ListContainer:
+        case ContainerTypeEntry::QVulkanInfoVectorContainer:
         case ContainerTypeEntry::LinkedListContainer:
         case ContainerTypeEntry::VectorContainer:
         case ContainerTypeEntry::StackContainer:
@@ -11720,39 +12435,148 @@ void MetaBuilder::setupTextStreamFunctions(MetaClass *cls) {
     }
 }
 
+void MetaBuilder::setupIterator(MetaClass *meta_class) {
+    if(meta_class->typeEntry()->isIterator() && meta_class->iteratorInstantiations().isEmpty()){
+        const IteratorTypeEntry* iteratorType = static_cast<const IteratorTypeEntry*>(meta_class->typeEntry());
+        if(meta_class->typeAliasType()){
+            if(meta_class->typeAliasType()->typeEntry()->isContainer()
+                    && static_cast<const ContainerTypeEntry*>(meta_class->typeAliasType()->typeEntry())->type()==ContainerTypeEntry::QKeyValueIterator
+                    && meta_class->typeAliasType()->instantiations().size()>=2){
+                const QList<const MetaType *>& instantiations = meta_class->typeAliasType()->instantiations();
+                meta_class->setIteratorInstantiations({instantiations[0]->copy(), instantiations[1]->copy()});
+            }else if(meta_class->typeAliasType()->typeEntry()->isContainer()
+                    && static_cast<const ContainerTypeEntry*>(meta_class->typeAliasType()->typeEntry())->type()==ContainerTypeEntry::std_reverse_iterator
+                    && meta_class->typeAliasType()->instantiations().size()>=1){
+                const QList<const MetaType *>& instantiations = meta_class->typeAliasType()->instantiations();
+                MetaClass * iteratorClass = m_meta_classes.findClass(instantiations[0]->typeEntry()->qualifiedCppName(), MetaClassList::QualifiedCppName);
+                if(iteratorClass){
+                    setupIterator(iteratorClass);
+                    meta_class->setIteratorInstantiations(iteratorClass->iteratorInstantiations());
+                }
+            }else if(meta_class->typeAliasType()->typeEntry()->isComplex()
+                    && meta_class->typeAliasType()->actualIndirections()==0){
+                MetaClass * iteratorClass = m_meta_classes.findClass(meta_class->typeAliasType()->typeEntry()->qualifiedCppName(), MetaClassList::QualifiedCppName);
+                if(iteratorClass){
+                    MetaFunction* keyFunction{nullptr};
+                    MetaFunction* valueFunction{nullptr};
+                    MetaFunction* derefFunction{nullptr};
+                    MetaFunction* lessFunction{nullptr};
+                    for(MetaFunction* function : iteratorClass->functions()){
+                        if(function->type() && function->arguments().isEmpty()){
+                            if(function->name()=="key"){
+                                keyFunction = function;
+                            } else if(function->name()=="value"){
+                                valueFunction = function;
+                            } else if(function->operatorType()==OperatorType::Times){
+                                derefFunction = function;
+                            }
+                        }
+                        if(function->operatorType()==OperatorType::Less){
+                            lessFunction = function;
+                        }
+                    }
+                    if(keyFunction && valueFunction){
+                        std::unique_ptr<MetaType> typeAliasType(keyFunction->type()->copy());
+                        if(!typeAliasType->isConstant())
+                            typeAliasType->setReferenceType(MetaType::NoReference);
+                        MetaBuilder::decideUsagePattern(typeAliasType.get());
+                        meta_class->addIteratorInstantiation(typeAliasType.release());
+                        typeAliasType = std::unique_ptr<MetaType>(valueFunction->type()->copy());
+                        if(!typeAliasType->isConstant())
+                            typeAliasType->setReferenceType(MetaType::NoReference);
+                        MetaBuilder::decideUsagePattern(typeAliasType.get());
+                        meta_class->addIteratorInstantiation(typeAliasType.release());
+                    }else if(derefFunction){
+                        std::unique_ptr<MetaType> typeAliasType(derefFunction->type()->copy());
+                        if(!typeAliasType->isConstant())
+                            typeAliasType->setReferenceType(MetaType::NoReference);
+                        MetaBuilder::decideUsagePattern(typeAliasType.get());
+                        meta_class->addIteratorInstantiation(typeAliasType.release());
+                    }
+                    if(lessFunction){
+                        const_cast<IteratorTypeEntry*>(iteratorType)->setIsComparable(true);
+                    }
+                }
+            }else{
+                std::unique_ptr<MetaType> typeAliasType(meta_class->typeAliasType()->copy());
+                if(typeAliasType->indirections().size()==1 && typeAliasType->getReferenceType()==MetaType::NoReference){
+                    QList<bool> indirections = typeAliasType->indirections();
+                    indirections.takeFirst();
+                    typeAliasType->setIndirections(indirections);
+                    if(typeAliasType->isConstant())
+                        typeAliasType->setReferenceType(MetaType::Reference);
+                    MetaBuilder::decideUsagePattern(typeAliasType.get());
+                    meta_class->addIteratorInstantiation(typeAliasType.release());
+                    const_cast<IteratorTypeEntry*>(iteratorType)->setIsComparable(true);
+                }
+            }
+        }
+        if(meta_class->iteratorInstantiations().isEmpty()){
+            MetaFunction* keyFunction{nullptr};
+            MetaFunction* valueFunction{nullptr};
+            MetaFunction* derefFunction{nullptr};
+            MetaFunction* lessFunction{nullptr};
+            for(MetaFunction* function : meta_class->functions()){
+                if(function->type() && function->arguments().isEmpty()){
+                    if(function->name()=="key"){
+                        keyFunction = function;
+                    } else if(function->name()=="value"){
+                        valueFunction = function;
+                    } else if(function->operatorType()==OperatorType::Times){
+                        derefFunction = function;
+                    }
+                }
+                if(function->operatorType()==OperatorType::Less){
+                    lessFunction = function;
+                }
+            }
+            if(keyFunction && valueFunction){
+                std::unique_ptr<MetaType> typeAliasType(keyFunction->type()->copy());
+                if(!typeAliasType->isConstant())
+                    typeAliasType->setReferenceType(MetaType::NoReference);
+                MetaBuilder::decideUsagePattern(typeAliasType.get());
+                meta_class->addIteratorInstantiation(typeAliasType.release());
+                typeAliasType = std::unique_ptr<MetaType>(valueFunction->type()->copy());
+                if(!typeAliasType->isConstant())
+                    typeAliasType->setReferenceType(MetaType::NoReference);
+                MetaBuilder::decideUsagePattern(typeAliasType.get());
+                meta_class->addIteratorInstantiation(typeAliasType.release());
+            }else if(derefFunction){
+                std::unique_ptr<MetaType> typeAliasType(derefFunction->type()->copy());
+                if(!typeAliasType->isConstant())
+                    typeAliasType->setReferenceType(MetaType::NoReference);
+                MetaBuilder::decideUsagePattern(typeAliasType.get());
+                meta_class->addIteratorInstantiation(typeAliasType.release());
+            }
+            if(lessFunction){
+                const_cast<IteratorTypeEntry*>(iteratorType)->setIsComparable(true);
+            }
+        }
+        if(meta_class->iteratorInstantiations().isEmpty() && iteratorType->qualifiedCppName().endsWith("sentinel")){
+            if(MetaClass * iteratorClass = m_meta_classes.findClass(iteratorType->qualifiedCppName().replace("sentinel", "const_iterator"), MetaClassList::QualifiedCppName)){
+                setupIterator(iteratorClass);
+                meta_class->setIteratorInstantiations(iteratorClass->iteratorInstantiations());
+            }
+        }
+    }
+}
+
 void MetaBuilder::setupBeginEnd(MetaClass *cls) {
     MetaFunctionList begins;
     MetaFunctionList ends;
-
-    QString name_begin = QLatin1String("begin");
-    QString name_end = QLatin1String("end");
-    QString name_constBegin = QLatin1String("constBegin");
-    QString name_constEnd = QLatin1String("constEnd");
 
     MetaFunctionList functions = cls->queryFunctions(MetaClass::ClassImplements
                                          | MetaClass::NotRemovedFromTargetLang);
     for(MetaFunction *f : std::as_const(functions)) {
         if(f->type() && f->type()->typeEntry()->isIterator() && f->arguments().size()==0){
-            if (f->name() == name_begin || f->name() == name_constBegin)
+            if (f->name() == QStringLiteral(u"begin") || f->name() == QStringLiteral(u"cbegin") || f->name() == QStringLiteral(u"constBegin"))
                 begins << f;
-            else if (f->name() == name_end || f->name() == name_constEnd)
+            else if (f->name() == QStringLiteral(u"end") || f->name() == QStringLiteral(u"cend") || f->name() == QStringLiteral(u"constEnd"))
                 ends << f;
         }
     }
 
     if (begins.size() || ends.size()) {
-        for(MetaFunction *f : std::as_const(begins)) {
-            FunctionModification mod;
-            mod.signature = f->minimalSignature();
-            mod.modifiers = FunctionModification::Protected;
-            const_cast<ComplexTypeEntry *>(static_cast<const ComplexTypeEntry *>(f->implementingClass()->typeEntry()))->addFunctionModification(mod);
-        }
-        for(MetaFunction *f : std::as_const(ends)) {
-            FunctionModification mod;
-            mod.signature = f->minimalSignature();
-            mod.modifiers = FunctionModification::Protected;
-            const_cast<ComplexTypeEntry *>(static_cast<const ComplexTypeEntry *>(f->implementingClass()->typeEntry()))->addFunctionModification(mod);
-        }
         cls->setBeginFunctions(begins);
         cls->setEndFunctions(ends);
     }
@@ -12185,6 +13009,21 @@ void MetaBuilder::setupConstructorAvailability(MetaClass *meta_class){
                         }
                     }
                 }
+            }
+        }
+    }
+    if(meta_class->isPublic() && (meta_class->typeEntry()->codeGeneration() & TS::TypeEntry::CodeGeneration::GenerateTargetLang)){
+        for(MetaFunction * function : meta_class->functions()){
+            switch(function->operatorType()){
+            case OperatorType::TypeCast:
+            if(function->wasPublic() && function->type() && function->type()->typeEntry()->isComplex()
+                    && !function->isNoImplicitArguments()){
+                const ComplexTypeEntry* ctype = reinterpret_cast<const ComplexTypeEntry*>(function->type()->typeEntry());
+                const_cast<ComplexTypeEntry*>(ctype)->addDeclImplicitCast(function);
+            }
+            break;
+            default:
+            break;
             }
         }
     }

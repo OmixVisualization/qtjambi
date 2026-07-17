@@ -5675,7 +5675,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNewObject(JNIEnv *env, jcl
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForOwnedObject(JNIEnv *env, jobject javaObject, void *ptr,
                                                                              LINK_NAME_ARG(const char* qt_name)
-                                                                             QtJambiNativeID owner, PtrDeleterFunction deleter_function)
+                                                                             const QSharedPointer<QtJambiLink>& owner, PtrDeleterFunction deleter_function)
 {
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
@@ -5720,8 +5720,8 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForOwnedObject(JNIEnv *env, j
     }else{
         qtJambiLink->init(env);
         QSharedPointer<QtJambiLink> shared = asSharedPointer(std::move(qtJambiLink));
-        if(QSharedPointer<QtJambiLink> _owner = QtJambiLink::fromNativeId(owner)){
-            _owner->registerDependentObject(shared);
+        if(owner){
+            owner->registerDependentObject(shared);
         }
         if(deleter_function){
             shared->setJavaOwnership(env);
@@ -5734,7 +5734,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForOwnedObject(JNIEnv *env, j
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForOwnedObject(JNIEnv *env, jobject javaObject, void *ptr,
                                                                              LINK_NAME_ARG(const char* qt_name)
-                                                                             QtJambiNativeID owner)
+                                                                             const QSharedPointer<QtJambiLink>& owner)
 {
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
@@ -5763,8 +5763,8 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForOwnedObject(JNIEnv *env, j
         qtJambiLink->init(env);
         qtJambiLink->setSplitOwnership(env);
         QSharedPointer<QtJambiLink> shared = asSharedPointer(std::move(qtJambiLink));
-        if(QSharedPointer<QtJambiLink> _owner = QtJambiLink::fromNativeId(owner)){
-            _owner->registerDependentObject(shared);
+        if(owner){
+            owner->registerDependentObject(shared);
         }
         return shared;
     }
@@ -5772,7 +5772,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForOwnedObject(JNIEnv *env, j
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
                                                                              LINK_NAME_ARG(const char* qt_name)
-                                                                             QtJambiNativeID owner, AbstractContainerAccess* containerAccess)
+                                                                             const QSharedPointer<QtJambiLink>& owner, AbstractContainerAccess* containerAccess)
 {
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
@@ -5804,8 +5804,8 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
         qtJambiLink->init(env);
         qtJambiLink->setSplitOwnership(env);
         QSharedPointer<QtJambiLink> shared = asSharedPointer(std::move(qtJambiLink));
-        if(QSharedPointer<QtJambiLink> _owner = QtJambiLink::fromNativeId(owner)){
-            _owner->registerDependentObject(shared);
+        if(owner){
+            owner->registerDependentObject(shared);
         }
         return shared;
     }
@@ -5813,7 +5813,7 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
 
 QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, jobject javaObject, void *ptr,
                                                                              LINK_NAME_ARG(const char* qt_name)
-                                                                             QtJambiNativeID owner, PtrDeleterFunction destructor_function, AbstractContainerAccess* containerAccess)
+                                                                             const QSharedPointer<QtJambiLink>& owner, PtrDeleterFunction destructor_function, AbstractContainerAccess* containerAccess)
 {
     Q_ASSERT(env);
     Q_ASSERT(javaObject);
@@ -5848,8 +5848,8 @@ QSharedPointer<QtJambiLink> QtJambiLink::createLinkForNativeObject(JNIEnv *env, 
             qtJambiLink->setSplitOwnership(env);
         }
         QSharedPointer<QtJambiLink> shared = asSharedPointer(std::move(qtJambiLink));
-        if(QSharedPointer<QtJambiLink> _owner = QtJambiLink::fromNativeId(owner)){
-            _owner->registerDependentObject(shared);
+        if(owner){
+            owner->registerDependentObject(shared);
         }
         return shared;
     }
@@ -5998,6 +5998,11 @@ ExternalRefCountData* ExternalRefCountWithCustomDeleter<QtJambiLink, NormalDelet
     link->m_refCount->weakref.ref();
     return link->m_refCount;
 }
+ExternalRefCountData* ExternalRefCountWithCustomDeleter<const QtJambiLink, NormalDeleter>::create(const QtJambiLink * link, QtSharedPointer::NormalDeleter, DestroyerFn){
+    link->m_refCount->strongref.ref();
+    link->m_refCount->weakref.ref();
+    return link->m_refCount;
+}
 
 template<>
 struct ExternalRefCountWithCustomDeleter<QtJambiLink, ExternalRefCountData*>{
@@ -6005,6 +6010,16 @@ struct ExternalRefCountWithCustomDeleter<QtJambiLink, ExternalRefCountData*>{
     static constexpr char safetyCheckDeleter = 0;
     static constexpr char deleter = 0;
     static constexpr inline ExternalRefCountData* create(QtJambiLink *, ExternalRefCountData* result, DestroyerFn){
+        return result;
+    }
+};
+
+template<>
+struct ExternalRefCountWithCustomDeleter<const QtJambiLink, ExternalRefCountData*>{
+    typedef const void* DestroyerFn;
+    static constexpr char safetyCheckDeleter = 0;
+    static constexpr char deleter = 0;
+    static constexpr inline ExternalRefCountData* create(const QtJambiLink *, ExternalRefCountData* result, DestroyerFn){
         return result;
     }
 };

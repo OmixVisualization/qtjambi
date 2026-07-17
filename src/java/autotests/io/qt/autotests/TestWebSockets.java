@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.*;
 import org.junit.*;
 
 import io.qt.*;
-import io.qt.autotests.generated.General;
+import io.qt.autotests.generated.*;
 import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.network.*;
@@ -45,7 +45,7 @@ import io.qt.webchannelquick.*;
 import io.qt.webengine.core.*;
 import io.qt.webengine.quick.*;
 import io.qt.websockets.*;
-import io.qt.widgets.QApplication;
+import io.qt.widgets.*;
 
 public class TestWebSockets extends ApplicationInitializer {
 	
@@ -61,8 +61,6 @@ public class TestWebSockets extends ApplicationInitializer {
 //        QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.OpenGLRhi);
     	QtUtilities.initializePackage("io.qt.webengine.widgets");
         QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
-        ApplicationInitializer.testInitializeWithWidgets();
-    	assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
     	boolean found = false;
     	try {
 			Class<?> cls = Class.forName("io.qt.webengine.widgets.QWebEngineView");
@@ -72,6 +70,8 @@ public class TestWebSockets extends ApplicationInitializer {
 		}
     	assumeTrue("QWebEngineView not available.", found);
     	QtWebEngineQuick.initialize();
+        ApplicationInitializer.testInitializeWithWidgets();
+    	assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
     	assumeTrue("global share context not available.", QOpenGLContext.globalShareContext()!=null);
     	QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.PluginsEnabled, true);
         QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.DnsPrefetchEnabled, true);
@@ -91,9 +91,10 @@ public class TestWebSockets extends ApplicationInitializer {
             	QRandomGenerator random = new QRandomGenerator();
             	random.bounded(1025, 49151);
             	do {
-            		port[0] = random.invoke();
+            		port[0] = random.getAsInt();
             	}while(!m_pWebSocketServer.listen(QHostAddress.SpecialAddress.LocalHost, port[0]));
             }
+        	Assert.assertTrue(m_pWebSocketServer.errorString(), m_pWebSocketServer.isListening());
     		System.out.println("Server listening on port "+port[0]);
             connect(m_pWebSocketServer.newConnection, this, Server::onNewConnection);
         }
@@ -194,34 +195,39 @@ public class TestWebSockets extends ApplicationInitializer {
         QQuickWindow window = (QQuickWindow)rootObjects.get(0);
         QQuickItem webEngineView = window.findChild(QQuickItem.class, "QQuickWebEngineView");
         Object wreceived[] = {null};
-        QObject consumer = new QObject() {
-			@QtInvokable
+        class Receiver extends QObject{
+        	Object wreceived[];
+        	Receiver(Object wreceived[], QQuickItem webEngineView, int[] port){
+        		this.wreceived = wreceived;
+        		QMetaMethod mtd = webEngineView.metaObject().method("doRunJavaScript", Object.class, Object.class);
+                QMetaObject.findSignal(webEngineView, "loadingChanged", QWebEngineLoadingInfo.class).connect(info->{
+                	switch(info.getStatus()) {
+        			case LoadFailedStatus:
+        				QApplication.quit();
+        				break;
+        			case LoadSucceededStatus:
+        			{
+                		mtd.invoke(webEngineView, "triggerConnect("+port[0]+")", this);
+                		QApplication.processEvents();
+                		QTimer.singleShot(8000, ()->{
+                			mtd.invoke(webEngineView, "triggerMessage('A', 'B')", this);
+                			QApplication.processEvents();
+                			QTimer.singleShot(8000, QCoreApplication::quit);
+                		});
+                	}
+        				break;
+        			default:
+        				break;
+                	}
+                });
+        	}
+        	@QtInvokable
 			public void accept(QJSValue value) {
 				wreceived[0] = value.toVariant();
 			}
-        };
-        QMetaMethod mtd = webEngineView.metaObject().method("doRunJavaScript", Object.class, Object.class);
-        QMetaObject.findSignal(webEngineView, "loadingChanged", QWebEngineLoadingInfo.class).connect(info->{
-        	switch(info.getStatus()) {
-			case LoadFailedStatus:
-				QApplication.quit();
-				break;
-			case LoadSucceededStatus:
-			{
-        		mtd.invoke(webEngineView, "triggerConnect("+port[0]+")", consumer);
-        		QApplication.processEvents();
-        		QTimer.singleShot(1000, ()->{
-        			mtd.invoke(webEngineView, "triggerMessage('A', 'B')", consumer);
-        			QApplication.processEvents();
-        			QTimer.singleShot(1500, QCoreApplication::quit);
-        		});
-        	}
-				break;
-			default:
-				break;
-        	
-        	}
-        });
+        }
+        @SuppressWarnings("unused")
+		Receiver consumer = new Receiver(wreceived, webEngineView, port);
         window.show();
         QTimer.singleShot(500, ()->webEngineView.setProperty("url", new QUrl("qrc:/io/qt/autotests/websocketstest.html")));
         QCoreApplication.exec();

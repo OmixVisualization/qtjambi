@@ -35,8 +35,8 @@
 #include <QtJambi/TypeTests>
 
 namespace QtJambiPrivate {
-    template<> struct supports_qHash<QBluetoothServiceInfo::Alternative> : supports_qHash<QList<QVariant>>{};
-    template<> struct supports_qHash<QBluetoothServiceInfo::Sequence> : supports_qHash<QList<QVariant>>{};
+    template<> struct supports_qHash<const QBluetoothServiceInfo::Alternative&> : supports_qHash<const QList<QVariant>&>{};
+    template<> struct supports_qHash<const QBluetoothServiceInfo::Sequence&> : supports_qHash<const QList<QVariant>&>{};
 }
 
 size_t qHash(const QLowEnergyCharacteristicData &value, size_t seed = 0);

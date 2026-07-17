@@ -36,7 +36,7 @@ import io.qt.core.QTimer;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QIcon;
 import io.qt.gui.rhi.QRhi;
-import io.qt.gui.rhi.QRhiInitParams;
+import io.qt.gui.rhi.QRhiNullInitParams;
 
 public class TestInitializationGuiRhiQt66 extends UnitTestInitializer {
     @Test
@@ -45,7 +45,7 @@ public class TestInitializationGuiRhiQt66 extends UnitTestInitializer {
     	QGuiApplication.initialize(new String[0]);
     	QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
     	{
-	    	QRhiInitParams params = new QRhiInitParams();
+	    	QRhiNullInitParams params = new QRhiNullInitParams();
 	    	QRhi.probe(QRhi.Implementation.Null, params);
 	    	QTimer.singleShot(500, QGuiApplication.instance(), QGuiApplication::quit);
 	    	QGuiApplication.exec();

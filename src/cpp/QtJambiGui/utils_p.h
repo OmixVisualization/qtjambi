@@ -147,4 +147,4 @@ extern template jobject qtjambi_cast<jobject,const QFont&>(JNIEnv *, const QFont
 extern template jobject qtjambi_cast<jobject,QPixmap>(JNIEnv *, QPixmap&&);
 extern template jobject qtjambi_cast<jobject,const QPixmap&>(JNIEnv *, const QPixmap&);
 
-#endif // QTJAMBIGUI_UTILS_H
+#endif // UTILS_P_H

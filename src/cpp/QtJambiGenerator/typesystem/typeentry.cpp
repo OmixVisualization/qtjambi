@@ -48,6 +48,7 @@ FunctionalTypeEntry::FunctionalTypeEntry(const QString &nspace, const QString &n
         m_qualifier_type(nullptr),
         m_include(),
         m_extra_includes(),
+        m_extra_impl_includes(),
         m_count(0),
         m_pp_condition(),
         m_using(),
@@ -107,6 +108,19 @@ void ComplexTypeEntry::setExtraIncludes(const IncludeList &includes) {
 void ComplexTypeEntry::addExtraInclude(const Include &include) {
     if (!m_includes_used.value(include.name, false)) {
         m_extra_includes << include;
+        m_includes_used[include.name] = true;
+    }
+}
+
+const IncludeList& ComplexTypeEntry::extraImplIncludes() const {
+    return m_extra_impl_includes;
+}
+void ComplexTypeEntry::setExtraImplIncludes(const IncludeList &includes) {
+    m_extra_impl_includes = includes;
+}
+void ComplexTypeEntry::addExtraImplInclude(const Include &include) {
+    if (!m_includes_used.value(include.name, false)) {
+        m_extra_impl_includes << include;
         m_includes_used[include.name] = true;
     }
 }
@@ -989,6 +1003,8 @@ QString ContainerTypeEntry::javaPackage() const {
         return "io.qt.dbus";
     if (m_type == QQmlListPropertyContainer)
         return "io.qt.qml";
+    if (m_type == QVulkanInfoVectorContainer)
+        return "io.qt.gui.vulkan";
     if (m_type == std_chrono
         || m_type == std_chrono_template)
         return "java.time";
@@ -998,6 +1014,7 @@ QString ContainerTypeEntry::javaPackage() const {
 QString ContainerTypeEntry::targetLangName() const {
 
     switch (m_type) {
+        case QVulkanInfoVectorContainer: return "QVulkanInfoVector";
         case StringListContainer: return "QStringList";
         case ByteArrayListContainer:
         case ListContainer:
@@ -1047,16 +1064,6 @@ QString ContainerTypeEntry::qualifiedCppName() const {
     return ComplexTypeEntry::qualifiedCppName();
 }
 
-QString IteratorTypeEntry::targetLangName() const {
-//    return (m_containerType ? m_containerType->targetLangName()+"$" : "") + ComplexTypeEntry::targetLangName();
-    return m_isConst ? "QSequentialConstIterator" : "QSequentialIterator";
-}
-
-QString IteratorTypeEntry::javaPackage() const {
-//    return m_containerType ? m_containerType->javaPackage() : ComplexTypeEntry::javaPackage();
-    return "io.qt.core";
-}
-
 const QString& IteratorTypeEntry::qualifiedCppContainerName() const {
     return m_qualifiedCppContainerName;
 }
@@ -1066,20 +1073,32 @@ void IteratorTypeEntry::setIsConst(bool newIsConst)
     m_isConst = newIsConst;
 }
 
-QString IteratorTypeEntry::qualifiedCppName() const {
-    if(!m_qualifiedCppContainerName.isEmpty()){
-        return m_qualifiedCppContainerName+"::"+ComplexTypeEntry::qualifiedCppName().split("::").last();
-    }else{
-        return m_containerType ? m_containerType->qualifiedCppName() + "::" + ComplexTypeEntry::qualifiedCppName().split("::").last() : ComplexTypeEntry::qualifiedCppName();
-    }
+IteratorTypeEntry::IteratorTypeEntry(const QString &name, const ComplexTypeEntry* containerType) :
+    ComplexTypeEntry(name, IteratorType),
+    m_containerType(containerType),
+    m_qualifiedCppContainerName(),
+    m_isComparable(false)
+{
+    setNoImplicitConstructors(true);
+}
+IteratorTypeEntry::IteratorTypeEntry(const QString &name, const QString& qualifiedCppContainerName, const ComplexTypeEntry* containerType, bool isComparable) :
+    ComplexTypeEntry(name, IteratorType),
+    m_containerType(containerType),
+    m_qualifiedCppContainerName(qualifiedCppContainerName),
+    m_isComparable(isComparable)
+{
+    setNoImplicitConstructors(true);
 }
 
-QString IteratorTypeEntry::iteratorName() const {
-    return ComplexTypeEntry::qualifiedCppName();
-}
+const ComplexTypeEntry* IteratorTypeEntry::containerType() const {return m_containerType;}
+void IteratorTypeEntry::setContainerType(const ComplexTypeEntry* t) {m_containerType = t;}
+void IteratorTypeEntry::setQualifiedCppContainerName(const QString& t) {m_qualifiedCppContainerName = t;}
+void IteratorTypeEntry::setIsComparable(bool isComparable) {m_isComparable = isComparable;}
+bool IteratorTypeEntry::isComparable() const {return m_isComparable;}
+bool IteratorTypeEntry::isConst() const {return m_isConst;}
 
 IteratorTypeEntry* IteratorTypeEntry::clone(const ComplexTypeEntry* containerType, const QString& qualifiedCppContainerName) const {
-    IteratorTypeEntry* entry = new IteratorTypeEntry(ComplexTypeEntry::qualifiedCppName(), qualifiedCppContainerName, containerType, m_isPointer);
+    IteratorTypeEntry* entry = new IteratorTypeEntry(ComplexTypeEntry::qualifiedCppName(), qualifiedCppContainerName, containerType, m_isComparable);
     if(containerType->typeFlags()==ComplexTypeEntry::ContainerType){
         entry->setCodeGeneration(GenerateForSubclass);
     }else{

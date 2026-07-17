@@ -29,4 +29,5 @@
 **
 ****************************************************************************/
 
+#include "containeraccess_sequential.h"
 #include "qtjambi_cast_iterator.h"

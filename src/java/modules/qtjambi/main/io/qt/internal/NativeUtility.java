@@ -975,7 +975,7 @@ public abstract class NativeUtility {
 									_this.enqueue();
 							});
 						}else {
-							disposed.connect(this::enqueue);
+							disposed.connect(this, AssociativeReference::enqueue);
 						}
 					}
 				}

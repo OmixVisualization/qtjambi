@@ -1,3 +1,4 @@
+
 /****************************************************************************
 **
 ** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.

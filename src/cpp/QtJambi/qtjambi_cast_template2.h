@@ -31,6 +31,7 @@
 #define QTJAMBI_CAST_TEMPLATE2_H
 
 #include "qtjambi_cast.h"
+#include "qtjambiapi.h"
 
 namespace QtJambiPrivate {
 
@@ -248,8 +249,7 @@ template<bool forward,
          template<typename K, typename T> class NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue,
          typename K, typename T, typename... Args>
 static constexpr auto find_qtjambi_jobject_associative_container_cast() {
-    constexpr bool hasCastImpl = is_complete_v< qtjambi_jobject_associative_container_cast<forward, NativeType, is_pointer, is_const, is_reference, is_rvalue, K, T, Args...> >;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/ContainerCast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/ContainerCast, is_complete_v< qtjambi_jobject_associative_container_cast<forward, NativeType, is_pointer, is_const, is_reference, is_rvalue, K, T, Args...> >);
     return qtjambi_jobject_associative_container_cast<forward, NativeType, is_pointer, is_const, is_reference, is_rvalue, K, T, Args...>{};
 }
 
@@ -320,8 +320,7 @@ struct qtjambi_jnitype_crono_duration_cast;
 
 template<bool forward, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename NativeType, typename... Args>
 static constexpr auto find_qtjambi_jnitype_crono_duration_cast() {
-    constexpr bool hasCastImpl = is_complete_v< qtjambi_jnitype_crono_duration_cast<forward, is_pointer, is_const, is_reference, is_rvalue, NativeType, Args...> >;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/TimeCast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/TimeCast, is_complete_v< qtjambi_jnitype_crono_duration_cast<forward, is_pointer, is_const, is_reference, is_rvalue, NativeType, Args...> >);
     return qtjambi_jnitype_crono_duration_cast<forward, is_pointer, is_const, is_reference, is_rvalue, NativeType, Args...>{};
 }
 
@@ -339,8 +338,7 @@ struct qtjambi_jnitype_crono_time_point_cast;
 
 template<bool forward, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename NativeType, typename... Args>
 static constexpr auto find_qtjambi_jnitype_crono_time_point_cast() {
-    constexpr bool hasCastImpl = is_complete_v< qtjambi_jnitype_crono_time_point_cast<forward, is_pointer, is_const, is_reference, is_rvalue, NativeType, Args...> >;
-    Q_STATIC_ASSERT_X(hasCastImpl, "Cannot cast without including <QtJambi/TimeCast>");
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/TimeCast, is_complete_v< qtjambi_jnitype_crono_time_point_cast<forward, is_pointer, is_const, is_reference, is_rvalue, NativeType, Args...> >);
     return qtjambi_jnitype_crono_time_point_cast<forward, is_pointer, is_const, is_reference, is_rvalue, NativeType, Args...>{};
 }
 

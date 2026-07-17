@@ -101,6 +101,7 @@
         <file alias="QtJambiTaskTree.java">typesystem/java/QtJambiTaskTree.java</file>
         <file alias="QtCanvasPainter.qml">typesystem/qml/QtCanvasPainter.qml</file>
         <file alias="QtOpenApiCommon.qml">typesystem/qml/QtOpenApiCommon.qml</file>
+        <file alias="QtGuiVulkan.qml">typesystem/qml/QtGuiVulkan.qml</file>
     </qresource>
     <qresource prefix="/io/qtjambi/generator/targets">
         <file alias="all.qml">targets/all.qml</file>

@@ -44,6 +44,7 @@
 #define QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD_QT6(field) QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(field)
 #define QTJAMBI_REPOSITORY_DEFINE_FIELD_QT6(name,sig) QTJAMBI_REPOSITORY_DEFINE_FIELD(name,sig)
 #define QTJAMBI_REPOSITORY_DEFINE_LONG_FIELD_QT6(name) QTJAMBI_REPOSITORY_DEFINE_LONG_FIELD(name)
+#define QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(type_name) QTJAMBI_REPOSITORY_DECLARE_CLASS(type_name,)
 
 namespace Java{
     namespace QtQml{
@@ -103,6 +104,84 @@ namespace Java{
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(metaType))
         QTJAMBI_REPOSITORY_DECLARE_CLASS(AbstractSpan,
                                          QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(commit))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QList$Iterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QList$ConstIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QList$ReverseIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QList$ConstReverseIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QSet$Iterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QSet$ConstIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMap$Iterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMap$ConstIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QHash$Iterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QHash$ConstIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMultiMap$Iterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMultiMap$ConstIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMultiHash$Iterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMultiHash$ConstIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMap$KeyValueIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMap$ConstKeyValueIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QHash$KeyValueIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QHash$ConstKeyValueIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMultiMap$KeyValueIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMultiMap$ConstKeyValueIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMultiHash$KeyValueIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMultiHash$ConstKeyValueIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMap$KeyIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QHash$KeyIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMultiMap$KeyIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMultiHash$KeyIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
 #if QT_VERSION > QT_VERSION_CHECK(6,7,0)
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QConstSpan,
                                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
@@ -111,6 +190,18 @@ namespace Java{
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QSpan,
                                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
                                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR2()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QSpan$Iterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QConstSpan$ConstIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QSpan$ReverseIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QConstSpan$ConstReverseIterator,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
                                          )
 #endif
 

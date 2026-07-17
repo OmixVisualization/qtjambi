@@ -29,7 +29,6 @@
 ****************************************************************************/
 package io.qt.uic;
 
-import java.util.Iterator;
 import java.util.Objects;
 
 import io.qt.core.QFile;
@@ -56,8 +55,8 @@ public class Driver {
 	
 	private <DomClass extends DomAttributeInterface> String findOrInsert(QHash<DomClass,String> domHash, DomClass dom, String className)
 	{
-		Iterator<QPair<DomClass,String>> it = domHash.find(dom).iterator();
-		if (!it.hasNext()) {
+		QHash.ConstIterator<DomClass,String> it = domHash.constFind(dom);
+		if (it.equals(domHash.constEnd())) {
 			String name = unique(dom.attributeName(), className);
 			String value = name;
 			if(!isFirst)
@@ -67,7 +66,7 @@ public class Driver {
 			domHash.insert(dom, value);
 			return value;
 		}
-		return it.next().second;
+		return it.value();
 	}
 	
 	private <DomClass extends DomAttributeInterface> DomClass findByAttributeName(QHash<DomClass,String> domHash, String name) {

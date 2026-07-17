@@ -920,7 +920,8 @@ QMetaType registerJObjectValueWrapper(JNIEnv *env, jclass clazz, QByteArrayView 
 }
 
 #define CACHE_MEMBER_DECL(Type,variable)\
-Type& QtJambiStorage::variable() {return m_##variable;}
+Type& QtJambiStorage::variable() {return m_##variable;}\
+const Type& QtJambiStorage::variable() const {return m_##variable;}
 
 CACHE_MEMBER_DECL(QtJambiStorage::BindableInterfacesHash, bindableInterfacesHash);
 CACHE_MEMBER_DECL(QtJambiStorage::MetaTypesByPointerHash, metaTypesByPointer);
@@ -968,10 +969,12 @@ CACHE_MEMBER_DECL(QtJambiStorage::IIDByteArrayHash, iidByteArrayHash)
 CACHE_MEMBER_DECL(QtJambiStorage::ID2IDHash, flagEnumIDHash)
 CACHE_MEMBER_DECL(QtJambiStorage::ID2IDHash, enumFlagIDHash)
 CACHE_MEMBER_DECL(QtJambiStorage::TypeStringHash, typeJavaInterfaceHash)
+CACHE_MEMBER_DECL(QtJambiStorage::ContainersIteratorJavaNamesHash, containersIteratorJavaNames)
 CACHE_MEMBER_DECL(QtJambiStorage::ContainerAccessFactoryHash, containerAccessFactories)
 CACHE_MEMBER_DECL(QtJambiStorage::SequentialContainerAccessFactoryByMetaTypeHash, sequentialContainerAccessFactoryByMetaTypes)
 CACHE_MEMBER_DECL(QtJambiStorage::AssociativeContainerAccessFactoryByMetaTypeHash, associativeContainerAccessFactoryByMetaTypes)
 CACHE_MEMBER_DECL(QtJambiStorage::MetaTypeByTypeInfoMap, metaTypeByTypeInfos)
+CACHE_MEMBER_DECL(QtJambiStorage::MetaTypeByNativeMetaTypeMap, metaTypeByNativeMetaType)
 CACHE_MEMBER_DECL(QtJambiStorage::TypeInfoByMetaTypeHash, typeInfoByMetaTypes)
 CACHE_MEMBER_DECL(QtJambiStorage::DefaultValueHash, defaultValueHash)
 CACHE_MEMBER_DECL(QtJambiStorage::FunctionInfoHash, virtualFunctionInfos)
@@ -1031,18 +1034,10 @@ CACHE_MEMBER_DECL(QtJambiStorage::NativeInterfaceMap, nativeInterfaceMap)
 #ifdef QTJAMBI_LOG_CLASSNAMES
 CACHE_MEMBER_DECL(QtJambiStorage::ClassNameHash, classNameHash)
 #endif
-#if defined(QTJAMBI_GENERIC_ACCESS)
-CACHE_MEMBER_DECL(QtJambiStorage::MetaSequenceHash, metaSequenceHash);
-CACHE_MEMBER_DECL(QtJambiStorage::MetaAssociationHash, metaAssociationHash);
-CACHE_MEMBER_DECL(QtJambiStorage::ContainerTypeInfoHash, containerTypeInfos);
-CACHE_MEMBER_DECL(QtJambiStorage::BiContainerTypeInfoHash, biContainerTypeInfos);
-CACHE_MEMBER_DECL(QtJambiStorage::SequentialContainerAccessFactoryHash, sequentialContainerAccessFactoryHash);
-CACHE_MEMBER_DECL(QtJambiStorage::AssociativeContainerAccessFactoryHash, associativeContainerAccessFactoryHash);
-#endif
 
-QReadWriteLock* QtJambiStorage::lock(){return m_lock;}
-QReadWriteLock* QtJambiStorage::registryLock(){return m_registryLock;}
-QReadWriteLock* QtJambiStorage::linkLock(){return m_linkLock;}
+QReadWriteLock* QtJambiStorage::lock() const{return m_lock;}
+QReadWriteLock* QtJambiStorage::registryLock() const{return m_registryLock;}
+QReadWriteLock* QtJambiStorage::linkLock() const{return m_linkLock;}
 
 QtJambiStorage::QtJambiStorage(bool init)
   : m_lock(init ? new QReadWriteLock() : nullptr),
@@ -1118,10 +1113,12 @@ void QtJambiStorage::cleanup(GlobalClassPointers& globalClassPointers,
     CACHE_DESTRUCTOR_VAR(ID2IDHash, flagEnumIDHash)
     CACHE_DESTRUCTOR_VAR(ID2IDHash, enumFlagIDHash)
     CACHE_DESTRUCTOR_VAR(TypeStringHash, typeJavaInterfaceHash)
+    CACHE_DESTRUCTOR_VAR(ContainersIteratorJavaNamesHash, containersIteratorJavaNames)
     CACHE_DESTRUCTOR_VAR(ContainerAccessFactoryHash, containerAccessFactories)
     CACHE_DESTRUCTOR_VAR(SequentialContainerAccessFactoryByMetaTypeHash, sequentialContainerAccessFactoryByMetaTypes)
     CACHE_DESTRUCTOR_VAR(AssociativeContainerAccessFactoryByMetaTypeHash, associativeContainerAccessFactoryByMetaTypes)
     CACHE_DESTRUCTOR_VAR(MetaTypeByTypeInfoMap, metaTypeByTypeInfos)
+    CACHE_DESTRUCTOR_VAR(MetaTypeByNativeMetaTypeMap, metaTypeByNativeMetaType)
     CACHE_DESTRUCTOR_VAR(TypeInfoByMetaTypeHash, typeInfoByMetaTypes)
     CACHE_DESTRUCTOR_VAR(DefaultValueHash, defaultValueHash)
     CACHE_DESTRUCTOR_VAR(FunctionInfoHash, virtualFunctionInfos)
@@ -1169,16 +1166,6 @@ void QtJambiStorage::cleanup(GlobalClassPointers& globalClassPointers,
     CACHE_DESTRUCTOR_VAR(ElementMetaTypesOfSmartPointersHash, elementMetaTypesOfSmartPointers);
     CACHE_DESTRUCTOR_VAR(ElementDeletersOfSmartPointersHash, elementDeletersOfSmartPointers);
 #endif
-#if defined(QTJAMBI_GENERIC_ACCESS)
-    CACHE_DESTRUCTOR_VAR(MetaSequenceHash, metaSequenceHash);
-    CACHE_DESTRUCTOR_VAR(MetaAssociationHash, metaAssociationHash);
-    CACHE_DESTRUCTOR_VAR(ContainerTypeInfoHash, containerTypeInfos);
-    CACHE_DESTRUCTOR_VAR(BiContainerTypeInfoHash, biContainerTypeInfos);
-#endif
-#if defined(QTJAMBI_GENERIC_ACCESS)
-    CACHE_DESTRUCTOR_VAR(SequentialContainerAccessFactoryHash, sequentialContainerAccessFactoryHash);
-    CACHE_DESTRUCTOR_VAR(AssociativeContainerAccessFactoryHash, associativeContainerAccessFactoryHash);
-#endif
 #if defined(QTJAMBI_DEBUG_TOOLS)
     CACHE_DESTRUCTOR_VAR(LinkSet, linkSet);
 #endif
@@ -1210,12 +1197,6 @@ void QtJambiStorage::cleanup(GlobalClassPointers& globalClassPointers,
         CACHE_DESTRUCTOR_SWAP(externalToInternalConverters);
         CACHE_DESTRUCTOR_SWAP(hashFunctionByMetaTypeHash);
         CACHE_DESTRUCTOR_SWAP(metaEnumByMetaTypeHash);
-#if defined(QTJAMBI_GENERIC_ACCESS)
-        CACHE_DESTRUCTOR_SWAP(metaSequenceHash);
-        CACHE_DESTRUCTOR_SWAP(metaAssociationHash);
-        CACHE_DESTRUCTOR_SWAP(containerTypeInfos);
-        CACHE_DESTRUCTOR_SWAP(biContainerTypeInfos);
-#endif
         // typeentry
         CACHE_DESTRUCTOR_SWAP(typeEntries);
         // supertypeinfo
@@ -1237,10 +1218,6 @@ void QtJambiStorage::cleanup(GlobalClassPointers& globalClassPointers,
         // containeraccess
         CACHE_DESTRUCTOR_SWAP(metaAssociationsByMetaType);
         CACHE_DESTRUCTOR_SWAP(metaSequencesByMetaType);
-#if defined(QTJAMBI_GENERIC_ACCESS)
-        CACHE_DESTRUCTOR_SWAP(sequentialContainerAccessFactoryHash);
-        CACHE_DESTRUCTOR_SWAP(associativeContainerAccessFactoryHash);
-#endif
         // qtjambilink lock()
         CACHE_DESTRUCTOR_SWAP(dependencies);
         CACHE_DESTRUCTOR_SWAP(conDestroyedDependencies);
@@ -1277,10 +1254,12 @@ void QtJambiStorage::cleanup(GlobalClassPointers& globalClassPointers,
         CACHE_DESTRUCTOR_SWAP(flagEnumIDHash)
         CACHE_DESTRUCTOR_SWAP(enumFlagIDHash)
         CACHE_DESTRUCTOR_SWAP(typeJavaInterfaceHash)
+        CACHE_DESTRUCTOR_SWAP(containersIteratorJavaNames)
         CACHE_DESTRUCTOR_SWAP(containerAccessFactories)
         CACHE_DESTRUCTOR_SWAP(sequentialContainerAccessFactoryByMetaTypes)
         CACHE_DESTRUCTOR_SWAP(associativeContainerAccessFactoryByMetaTypes)
         CACHE_DESTRUCTOR_SWAP(metaTypeByTypeInfos)
+        CACHE_DESTRUCTOR_SWAP(metaTypeByNativeMetaType)
         CACHE_DESTRUCTOR_SWAP(typeInfoByMetaTypes)
         CACHE_DESTRUCTOR_SWAP(defaultValueHash)
         CACHE_DESTRUCTOR_SWAP(virtualFunctionInfos)

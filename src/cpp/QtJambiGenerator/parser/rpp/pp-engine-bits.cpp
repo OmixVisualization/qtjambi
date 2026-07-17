@@ -233,7 +233,7 @@ long rpp::pp::eval_has_include(const QString& incl, bool next){
     if (fileInfo.isFile()) {
         return 1;
     }
-    static QStringList available{"<chrono>"};
+    static QStringList available{"<chrono>", "<vulkan/vulkan.h>"};
     if(available.contains(incl))
         return 1;
     Q_UNUSED(next)

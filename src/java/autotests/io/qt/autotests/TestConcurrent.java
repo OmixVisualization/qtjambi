@@ -29,29 +29,13 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.MissingFormatArgumentException;
-
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Test;
-
-import io.qt.QNoImplementationException;
-import io.qt.autotests.generated.FutureHandler;
-import io.qt.concurrent.QtConcurrent;
-import io.qt.core.QFuture;
-import io.qt.core.QFutureInterface;
-import io.qt.core.QFutureSynchronizer;
-import io.qt.core.QOperatingSystemVersion;
-import io.qt.core.QPromise;
-import io.qt.core.QThread;
-import io.qt.core.QThreadPool;
+import static org.junit.Assert.*;
+import java.util.*;
+import org.junit.*;
+import io.qt.*;
+import io.qt.autotests.generated.*;
+import io.qt.concurrent.*;
+import io.qt.core.*;
 
 public class TestConcurrent extends ApplicationInitializer {
 
@@ -199,6 +183,30 @@ public class TestConcurrent extends ApplicationInitializer {
         for (int i=0; i<lst.size(); ++i)
             assertEquals(i+COUNT, (int) lst.get(i));
     }
+    
+    @Test
+    public void testMap_iterators() {
+    	Set<QSize> result = Collections.synchronizedSet(new HashSet<>());
+    	{
+	    	QList<QSize> list = new QList<>(QSize.class);
+	    	for (int i = 0; i < COUNT; i++) {
+	    		list.add(new QSize(i,i*2));
+			}
+			QFuture<Void> future = QtConcurrent.map(list.constBegin(), list.constEnd(), result::add);
+			future.waitForFinished();
+			assertEquals(new HashSet<>(list), result);
+    	}
+    	{
+    		result.clear();
+	    	QSet<QSize> set = new QSet<>(QSize.class);
+	    	for (int i = 0; i < COUNT; i++) {
+	    		set.add(new QSize(i*2,i));
+			}
+			QFuture<Void> future = QtConcurrent.map(set.constBegin(), set.constEnd(), result::add);
+			future.waitForFinished();
+			assertEquals(new HashSet<>(set), result);
+    	}
+    }
 
     @Test
     public void testBlockingFiltered() {
@@ -207,6 +215,20 @@ public class TestConcurrent extends ApplicationInitializer {
             ints.add(i);
 
         List<Integer> lst = QtConcurrent.blockingFiltered(ints, i->i >= COUNT);
+
+        assertEquals(COUNT*2, ints.size());
+        assertEquals(COUNT, lst.size());
+        for (int i=0; i<lst.size(); ++i)
+            assertEquals(i+COUNT, (int) lst.get(i));
+    }
+    
+    @Test
+    public void testBlockingFiltered_iterators() {
+    	QList<Integer> ints = new QList<>(int.class);
+        for (int i=0; i<COUNT*2; ++i)
+            ints.add(i);
+
+        List<Integer> lst = QtConcurrent.blockingFiltered(ints.constBegin(), ints.constEnd(), i->i >= COUNT);
 
         assertEquals(COUNT*2, ints.size());
         assertEquals(COUNT, lst.size());
@@ -285,6 +307,32 @@ public class TestConcurrent extends ApplicationInitializer {
             ints.add(i);
 
         Integer result = QtConcurrent.blockingFilteredReduced(ints,
+        		i->i >= COUNT,
+        		(r, intermediate)->{
+        			if(intermediate==null)
+        				intermediate = 0;
+        			if(r==null)
+        				r = 0;
+        			return r + intermediate;
+    			}
+        );
+        assertEquals(COUNT*2, ints.size());
+
+        int n=0;
+        for (int i=COUNT; i<COUNT*2; ++i)
+            n += i;
+
+        assertTrue(result!=null);
+        assertEquals(n, result.intValue());
+    }
+    
+    @Test
+    public void testBlockingFilteredReduced_iterators() {
+    	QList<Integer> ints = new QList<>(int.class);
+        for (int i=0; i<COUNT*2; ++i)
+            ints.add(i);
+
+        Integer result = QtConcurrent.blockingFilteredReduced(ints.constBegin(), ints.constEnd(),
         		i->i >= COUNT,
         		(r, intermediate)->{
         			if(intermediate==null)

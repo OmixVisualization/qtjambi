@@ -52,6 +52,14 @@
   </target>
 
   <target name="library.native.make-impl">
+      <if>
+			<not>
+				<available file="${qtjambi.builddir}/Makefile" type="file"/>
+			</not>
+			<then>
+				<antcall target="library.native.qmake-impl"/>
+			</then>
+      </if>
       <make dir="${qtjambi.builddir}" target="${qtjambi.qmake.target.default}"/>
       <make dir="${qtjambi.builddir}" target="install"/>
   </target>

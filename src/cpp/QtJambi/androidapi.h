@@ -35,16 +35,20 @@
 #ifdef Q_OS_ANDROID
 #include "javautils.h"
 
+#define QTJAMBI_REPOSITORY_DECLARE_EXPORTED_CLASS(type_name, members) QTJAMBI_REPOSITORY_DECLARE_CLASS_IMPL(QTJAMBI_EXPORT,type_name, members)
+
 QT_WARNING_DISABLE_CLANG("-Wdollar-in-identifier-extension")
 
 namespace Java{
 namespace Android{
-QTJAMBI_REPOSITORY_DECLARE_CLASS(QtNative,
+QTJAMBI_REPOSITORY_DECLARE_EXPORTED_CLASS(QtNative,
                                  QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(activity)
                                  QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(service)
                                  QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(getContext))
 }
 }
+
+#undef QTJAMBI_REPOSITORY_DECLARE_EXPORTED_CLASS
 
 #endif //def Q_OS_ANDROID
 

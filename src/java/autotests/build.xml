@@ -368,19 +368,18 @@
 
     <target name="compile.native.generator" unless="${skip-generate}" depends="init.build, load-properties, tools.generator.make">
         <mkdir dir="${test.generator.outputdir}"/>
-        <generator dir="${generator.builddir}/../bin"
+        <generator dir="${generator.builddir}/bin"
                 importdirectories="generator/${psep}${basedir}/src/cpp/autotests"
                 outputDirectory="${test.generator.outputdir}"
-                generatorDirectory="${generator.builddir}/../bin"
+                generatorDirectory="${generator.builddir}/bin"
 				nullness="${qtjambi.generate.nullness}"
-                qtlibdirectory="${generator.builddir}/../lib${psep}${tools.qt.libdir}"
-                qtbindirectory="${generator.builddir}/../bin${psep}${tools.qt.bindir}"
+                qtlibdirectory="${generator.builddir}/lib${psep}${tools.qt.libdir}"
+                qtbindirectory="${generator.builddir}/bin${psep}${tools.qt.bindir}"
 				qtjambiVersion="${qtjambi.patchversion}"
                 includeDirectories="${qtjambi.qt.includedir};${basedir}/src/cpp/QtJambiGenerator/targets;${basedir}/src/cpp/autotests${psep}${generator.includepaths}"
                 typesystem="${basedir}/src/cpp/autotests/autotests.qml"
                 header="${basedir}/src/cpp/autotests/autotests.h"
             />
-        <antcall target="generate.uic"/>
     </target>
 
     <target name="generate.uic">
@@ -677,6 +676,7 @@
 				<include name="module-info.java"/>
 			</fileset>
         </copy>
+        <antcall target="generate.uic"/>
 		<if>
             <istrue value="${java.module.based}"/>
             <then>
@@ -1480,7 +1480,7 @@
         </if>
     </target>
 
-    <target name="run">
+    <target name="test-impl">
 		<if>
 			<and>
 				<available file="${qtjambi.qt.bindir}" type="dir"/>
@@ -1496,7 +1496,7 @@
                         <antcall target="release.run"/>
                     </then>
                     <else>
-                        <fail message="No build available."/>
+                        <fail message="No QtJambi ${qtjambi.jar.version} build available for ${qtjambi.osname}."/>
                     </else>
                 </if>
             </else>
@@ -1544,7 +1544,7 @@
                 </if>
             </then>
             <else>
-                <fail message="No release build available."/>
+                <fail message="No QtJambi ${qtjambi.jar.version} release build available for ${qtjambi.osname}."/>
             </else>
         </if>
     </target>
@@ -1593,7 +1593,7 @@
                 </if>
             </then>
             <else>
-                <fail message="No debug build available."/>
+                <fail message="No QtJambi ${qtjambi.jar.version} debug build available for ${qtjambi.osname}."/>
             </else>
         </if>
     </target>
@@ -1613,7 +1613,7 @@
                 </antcall>
             </then>
             <else>
-                <fail message="No release build available."/>
+                <fail message="No QtJambi ${qtjambi.jar.version} release build available for ${qtjambi.osname}."/>
             </else>
         </if>
     </target>
@@ -1633,7 +1633,7 @@
                 </antcall>
             </then>
             <else>
-                <fail message="No debug build available."/>
+                <fail message="No QtJambi ${qtjambi.jar.version} debug build available for ${qtjambi.osname}."/>
             </else>
         </if>
     </target>
@@ -1676,7 +1676,7 @@
     <target name="tests.run-impl" depends="init.build">
         <trycatch>
             <try>
-                <antcall target="run"/>
+                <antcall target="test-impl"/>
             </try>
             <finally>
                 <if>

@@ -230,38 +230,29 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject __java_engine = qtjambi_cast<jobject>(%env, %in);\n"+
-                                  "QtJambiAPI::setJavaOwnershipForTopLevelObject(%env, %in);\n"+
-                                  "jobject __java_%2 = qtjambi_cast<jobject>(%env, %2);\n"+
-                                  "jstring __java_%3 = qtjambi_cast<jstring>(%env, %3);\n"+
-                                  "jobject %out = Java::QtLocation::QGeoServiceProviderFactory$Result::newInstance(\n"+
-                                  "%env,\n"+
-                                  "__java_engine,\n"+
-                                  "__java_%2,\n"+
-                                  "__java_%3);"}
+                    Text{content: String.raw`
+jobject __java_engine = qtjambi_cast<jobject>(%env, %in);
+QtJambiAPI::setJavaOwnershipForTopLevelObject(%env, %in);
+jobject __java_%2 = qtjambi_cast<jobject>(%env, %2);
+jstring __java_%3 = qtjambi_cast<jstring>(%env, %3);
+jobject %out = Java::QtLocation::QGeoServiceProviderFactory$Result::newInstance(%env, __java_engine, __java_%2, __java_%3);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QGeoCodingManagerEngine*  %out = nullptr;\n"+
-                                  "if(%in){\n"+
-                                  "jobject __java_engine = Java::QtLocation::QGeoServiceProviderFactory$Result::engine(%env, %in);\n"+
-                                  "%out = qtjambi_cast<QGeoCodingManagerEngine*>(%env, __java_engine);\n"+
-                                  "if(%2){\n"+
-                                  "jobject __java_%2 = Java::QtLocation::QGeoServiceProviderFactory$Result::error(%env, %in);\n"+
-                                  "*%2 = qtjambi_cast<QGeoServiceProvider::Error>(%env, __java_%2);\n"+
-                                  "}\n"+
-                                  "if(%3){\n"+
-                                  "jobject __java_%3 = Java::QtLocation::QGeoServiceProviderFactory$Result::errorString(%env, %in);\n"+
-                                  "*%3 = qtjambi_cast<QString>(%env, __java_%3);\n"+
-                                  "}\n"+
-                                  "}else{\n"+
-                                  "if(%2){\n"+
-                                  "*%2 = QGeoServiceProvider::LoaderError;\n"+
-                                  "}\n"+
-                                  "if(%3){\n"+
-                                  "*%3 = QString(\"No result returned.\");\n"+
-                                  "}\n"+
-                                  "}"}
+                    Text{content: String.raw`
+%out = nullptr;
+if(%in){
+    %out = qtjambi_cast<QGeoCodingManagerEngine*>(%env, Java::QtLocation::QGeoServiceProviderFactory$Result::engine(%env, %in));
+    if(%2)
+        *%2 = qtjambi_cast<QGeoServiceProvider::Error>(%env, Java::QtLocation::QGeoServiceProviderFactory$Result::error(%env, %in));
+    if(%3)
+        *%3 = qtjambi_cast<QString>(%env, Java::QtLocation::QGeoServiceProviderFactory$Result::errorString(%env, %in));
+}else{
+    if(%2)
+        *%2 = QGeoServiceProvider::LoaderError;
+    if(%3)
+        *%3 = QStringLiteral("No result returned.");
+}`}
                 }
             }
             ModifyArgument{
@@ -270,8 +261,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QGeoServiceProvider::Error %in = QGeoServiceProvider::NoError;\n"+
-                                  "QGeoServiceProvider::Error* %out = &%in;"}
+                    Text{content: String.raw`
+                        QGeoServiceProvider::Error %in = QGeoServiceProvider::NoError;
+                        QGeoServiceProvider::Error* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -280,8 +272,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
+                    Text{content: String.raw`
+                            QString %in;
+                            QString* %out = &%in;`}
                 }
             }
         }
@@ -302,38 +295,29 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject __java_engine = qtjambi_cast<jobject>(%env, %in);\n"+
-                                  "QtJambiAPI::setJavaOwnershipForTopLevelObject(%env, %in);\n"+
-                                  "jobject __java_%2 = qtjambi_cast<jobject>(%env, %2);\n"+
-                                  "jstring __java_%3 = qtjambi_cast<jstring>(%env, %3);\n"+
-                                  "jobject %out = Java::QtLocation::QGeoServiceProviderFactory$Result::newInstance(\n"+
-                                  "%env,\n"+
-                                  "__java_engine,\n"+
-                                  "__java_%2,\n"+
-                                  "__java_%3);"}
+                    Text{content: String.raw`
+jobject __java_engine = qtjambi_cast<jobject>(%env, %in);
+QtJambiAPI::setJavaOwnershipForTopLevelObject(%env, %in);
+jobject __java_%2 = qtjambi_cast<jobject>(%env, %2);
+jstring __java_%3 = qtjambi_cast<jstring>(%env, %3);
+jobject %out = Java::QtLocation::QGeoServiceProviderFactory$Result::newInstance(%env, __java_engine, __java_%2, __java_%3);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QGeoRoutingManagerEngine*  %out = nullptr;\n"+
-                                  "if(%in){\n"+
-                                  "jobject __java_engine = Java::QtLocation::QGeoServiceProviderFactory$Result::engine(%env, %in);\n"+
-                                  "%out = qtjambi_cast<QGeoRoutingManagerEngine*>(%env, __java_engine);\n"+
-                                  "if(%2){\n"+
-                                  "jobject __java_%2 = Java::QtLocation::QGeoServiceProviderFactory$Result::error(%env, %in);\n"+
-                                  "*%2 = qtjambi_cast<QGeoServiceProvider::Error>(%env, __java_%2);\n"+
-                                  "}\n"+
-                                  "if(%3){\n"+
-                                  "jobject __java_%3 = Java::QtLocation::QGeoServiceProviderFactory$Result::errorString(%env, %in);\n"+
-                                  "*%3 = qtjambi_cast<QString>(%env, __java_%3);\n"+
-                                  "}\n"+
-                                  "}else{\n"+
-                                  "if(%2){\n"+
-                                  "*%2 = QGeoServiceProvider::LoaderError;\n"+
-                                  "}\n"+
-                                  "if(%3){\n"+
-                                  "*%3 = QString(\"No result returned.\");\n"+
-                                  "}\n"+
-                                  "}"}
+                    Text{content: String.raw`
+%out = nullptr;
+if(%in){
+    %out = qtjambi_cast<QGeoRoutingManagerEngine*>(%env, Java::QtLocation::QGeoServiceProviderFactory$Result::engine(%env, %in));
+    if(%2)
+        *%2 = qtjambi_cast<QGeoServiceProvider::Error>(%env, Java::QtLocation::QGeoServiceProviderFactory$Result::error(%env, %in));
+    if(%3)
+        *%3 = qtjambi_cast<QString>(%env, Java::QtLocation::QGeoServiceProviderFactory$Result::errorString(%env, %in));
+}else{
+    if(%2)
+        *%2 = QGeoServiceProvider::LoaderError;
+    if(%3)
+        *%3 = QStringLiteral("No result returned.");
+}`}
                 }
             }
             ModifyArgument{
@@ -342,8 +326,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QGeoServiceProvider::Error %in = QGeoServiceProvider::NoError;\n"+
-                                  "QGeoServiceProvider::Error* %out = &%in;"}
+                    Text{content: String.raw`
+                            QGeoServiceProvider::Error %in = QGeoServiceProvider::NoError;
+                            QGeoServiceProvider::Error* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -352,8 +337,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
+                    Text{content: String.raw`
+                        QString %in;
+                        QString* %out = &%in;`}
                 }
             }
         }
@@ -374,38 +360,29 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject __java_engine = qtjambi_cast<jobject>(%env, %in);\n"+
-                                  "QtJambiAPI::setJavaOwnershipForTopLevelObject(%env, %in);\n"+
-                                  "jobject __java_%2 = qtjambi_cast<jobject>(%env, %2);\n"+
-                                  "jstring __java_%3 = qtjambi_cast<jstring>(%env, %3);\n"+
-                                  "jobject %out = Java::QtLocation::QGeoServiceProviderFactory$Result::newInstance(\n"+
-                                  "%env,\n"+
-                                  "__java_engine,\n"+
-                                  "__java_%2,\n"+
-                                  "__java_%3);"}
+                    Text{content: String.raw`
+jobject __java_engine = qtjambi_cast<jobject>(%env, %in);
+QtJambiAPI::setJavaOwnershipForTopLevelObject(%env, %in);
+jobject __java_%2 = qtjambi_cast<jobject>(%env, %2);
+jstring __java_%3 = qtjambi_cast<jstring>(%env, %3);
+jobject %out = Java::QtLocation::QGeoServiceProviderFactory$Result::newInstance(%env, __java_engine, __java_%2, __java_%3);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QPlaceManagerEngine*  %out = nullptr;\n"+
-                                  "if(%in){\n"+
-                                  "jobject __java_engine = Java::QtLocation::QGeoServiceProviderFactory$Result::engine(%env, %in);\n"+
-                                  "%out = qtjambi_cast<QPlaceManagerEngine*>(%env, __java_engine);\n"+
-                                  "if(%2){\n"+
-                                  "jobject __java_%2 = Java::QtLocation::QGeoServiceProviderFactory$Result::error(%env, %in);\n"+
-                                  "*%2 = qtjambi_cast<QGeoServiceProvider::Error>(%env, __java_%2);\n"+
-                                  "}\n"+
-                                  "if(%3){\n"+
-                                  "jobject __java_%3 = Java::QtLocation::QGeoServiceProviderFactory$Result::errorString(%env, %in);\n"+
-                                  "*%3 = qtjambi_cast<QString>(%env, __java_%3);\n"+
-                                  "}\n"+
-                                  "}else{\n"+
-                                  "if(%2){\n"+
-                                  "*%2 = QGeoServiceProvider::LoaderError;\n"+
-                                  "}\n"+
-                                  "if(%3){\n"+
-                                  "*%3 = QString(\"No result returned.\");\n"+
-                                  "}\n"+
-                                  "}"}
+                    Text{content: String.raw`
+%out = nullptr;
+if(%in){
+    %out = qtjambi_cast<QPlaceManagerEngine*>(%env, Java::QtLocation::QGeoServiceProviderFactory$Result::engine(%env, %in));
+    if(%2)
+        *%2 = qtjambi_cast<QGeoServiceProvider::Error>(%env, Java::QtLocation::QGeoServiceProviderFactory$Result::error(%env, %in));
+    if(%3)
+        *%3 = qtjambi_cast<QString>(%env, Java::QtLocation::QGeoServiceProviderFactory$Result::errorString(%env, %in));
+}else{
+    if(%2)
+        *%2 = QGeoServiceProvider::LoaderError;
+    if(%3)
+        *%3 = QStringLiteral("No result returned.");
+}`}
                 }
             }
             ModifyArgument{
@@ -414,8 +391,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QGeoServiceProvider::Error %in = QGeoServiceProvider::NoError;\n"+
-                                  "QGeoServiceProvider::Error* %out = &%in;"}
+                    Text{content: String.raw`
+                            QGeoServiceProvider::Error %in = QGeoServiceProvider::NoError;
+                            QGeoServiceProvider::Error* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -424,8 +402,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
+                    Text{content: String.raw`
+                        QString %in;
+                        QString* %out = &%in;`}
                 }
             }
         }

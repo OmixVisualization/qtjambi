@@ -5003,12 +5003,122 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "filtered<Iterator,KeepFunctor>(QThreadPool*,Iterator,Iterator,KeepFunctor&&)"
-            remove: RemoveFlag.All
+            signature: "filtered<Iterator,KeepFunctor>(Iterator,Iterator,KeepFunctor&&)"
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<bool(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{index: 0; replaceType: "io.qt.core.@NonNull QFuture<T>"}
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%1) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    replaceType: "io.qt.concurrent.QtConcurrent$KeepFunctor<T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<bool(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+            }
         }
         ModifyFunction{
-            signature: "filtered<Iterator,KeepFunctor>(Iterator,Iterator,KeepFunctor&&)"
-            remove: RemoveFlag.All
+            signature: "filtered<Iterator,KeepFunctor>(QThreadPool*,Iterator,Iterator,KeepFunctor&&)"
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<bool(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{index: 0; replaceType: "io.qt.core.@NonNull QFuture<T>"}
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%2) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$KeepFunctor<T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<bool(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+            }
         }
         ModifyFunction{
             signature: "blockingFiltered<OutputSequence,Iterator,KeepFunctor>(Iterator,Iterator,KeepFunctor&&)"
@@ -5029,6 +5139,7 @@ TypeSystem{
                 ModifyArgument{
                     index: 1
                     replaceType: "java.util.Collection<T>"
+                    rename: "collection"
                     NoNullPointer{}
                     ConversionRule{
                         codeClass: CodeClass.Native
@@ -5044,6 +5155,65 @@ TypeSystem{
                     ConversionRule{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = sequence.end();"}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    replaceType: "io.qt.concurrent.QtConcurrent$KeepFunctor<T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<bool(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QList<QVariant>"
+                }
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<bool(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{index: 0; replaceType: "io.qt.core.@NonNull QList<T>"}
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%1) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
                     }
                 }
                 ModifyArgument{
@@ -5076,6 +5246,7 @@ TypeSystem{
                 ModifyArgument{
                     index: 2
                     replaceType: "java.util.Collection<T>"
+                    rename: "collection"
                     NoNullPointer{}
                     ConversionRule{
                         codeClass: CodeClass.Native
@@ -5091,6 +5262,65 @@ TypeSystem{
                     ConversionRule{
                         codeClass: CodeClass.Native
                         Text{content: "auto %out = sequence.end();"}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$KeepFunctor<T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<bool(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QList<QVariant>"
+                }
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<bool(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{index: 0; replaceType: "io.qt.core.@NonNull QList<T>"}
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%2) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
                     }
                 }
                 ModifyArgument{
@@ -5252,11 +5482,167 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "blockingFilteredReduced<ResultType,Iterator,KeepFunctor,ReduceFunctor,InitialValueType,0>(QThreadPool*,Iterator,Iterator,KeepFunctor&&,ReduceFunctor&&,InitialValueType&&,QtConcurrent::ReduceOptions)"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "JObjectWrapper"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<bool(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(JObjectWrapper&,const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "JObjectWrapper"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "U"}
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{index: 0; replaceType: "U"}
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%2) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$KeepFunctor<T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<bool(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 5
+                    replaceType: "io.qt.concurrent.QtConcurrent$ReduceFunctor<U, T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<void(JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{index: 6; ReplaceType{modifiedType: "U"; modifiedJavaType: "java.lang.Object"} }
+            }
         }
         ModifyFunction{
             signature: "blockingFilteredReduced<ResultType,Iterator,KeepFunctor,ReduceFunctor,InitialValueType,0>(Iterator,Iterator,KeepFunctor&&,ReduceFunctor&&,InitialValueType&&,QtConcurrent::ReduceOptions)"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "JObjectWrapper"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<bool(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(JObjectWrapper&,const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "JObjectWrapper"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "U"}
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{index: 0; replaceType: "U"}
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%1) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    replaceType: "io.qt.concurrent.QtConcurrent$KeepFunctor<T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<bool(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$ReduceFunctor<U, T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<void(JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{index: 5; ReplaceType{modifiedType: "U"; modifiedJavaType: "java.lang.Object"} }
+            }
         }
         ModifyFunction{
             signature: "filteredReduced<ResultType,Sequence,KeepFunctor,ReduceFunctor,InitialValueType,0>(QThreadPool*,Sequence&&,KeepFunctor&&,ReduceFunctor&&,InitialValueType&&,QtConcurrent::ReduceOptions)"
@@ -5388,11 +5774,167 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "filteredReduced<ResultType,Iterator,KeepFunctor,ReduceFunctor,InitialValueType,0>(QThreadPool*,Iterator,Iterator,KeepFunctor&&,ReduceFunctor&&,InitialValueType&&,QtConcurrent::ReduceOptions)"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "JObjectWrapper"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<bool(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(JObjectWrapper&,const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "JObjectWrapper"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "U"}
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{index: 0; replaceType: "io.qt.core.@NonNull QFuture<U>"}
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%2) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$KeepFunctor<T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<bool(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 5
+                    replaceType: "io.qt.concurrent.QtConcurrent$ReduceFunctor<U, T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<void(JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{index: 6; ReplaceType{modifiedType: "U"; modifiedJavaType: "java.lang.Object"} }
+            }
         }
         ModifyFunction{
             signature: "filteredReduced<ResultType,Iterator,KeepFunctor,ReduceFunctor,InitialValueType,0>(Iterator,Iterator,KeepFunctor&&,ReduceFunctor&&,InitialValueType&&,QtConcurrent::ReduceOptions)"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "JObjectWrapper"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<bool(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(JObjectWrapper&,const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "JObjectWrapper"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "U"}
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{index: 0; replaceType: "io.qt.core.@NonNull QFuture<U>"}
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%1) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    replaceType: "io.qt.concurrent.QtConcurrent$KeepFunctor<T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<bool(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$ReduceFunctor<U, T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<void(JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{index: 5; ReplaceType{modifiedType: "U"; modifiedJavaType: "java.lang.Object"} }
+            }
         }
         FunctionalType{
             name: "MapFunctor"
@@ -5470,11 +6012,119 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "map<Iterator,MapFunctor>(QThreadPool*,Iterator,Iterator,MapFunctor&&)"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%2) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$MapFunctor<T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<void(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+            }
         }
         ModifyFunction{
             signature: "map<Iterator,MapFunctor>(Iterator,Iterator,MapFunctor&&)"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%1) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    replaceType: "io.qt.concurrent.QtConcurrent$MapFunctor<T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<void(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+            }
         }
         ModifyFunction{
             signature: "blockingMap<Sequence,MapFunctor>(Sequence&&,MapFunctor&&)"
@@ -5542,11 +6192,119 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "blockingMap<Iterator,MapFunctor>(QThreadPool*,Iterator,Iterator,MapFunctor&&)"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%2) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$MapFunctor<T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<void(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+            }
         }
         ModifyFunction{
             signature: "blockingMap<Iterator,MapFunctor>(Iterator,Iterator,MapFunctor&&)"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%1) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    replaceType: "io.qt.concurrent.QtConcurrent$MapFunctor<T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<void(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+            }
         }
         FunctionalType{
             name: "MappedFunctor"
@@ -5633,11 +6391,123 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "mapped<Iterator,MapFunctor>(QThreadPool*,Iterator,Iterator,MapFunctor&&)"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<JObjectWrapper(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "U"}
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{index: 0; replaceType: "io.qt.core.@NonNull QFuture<U>"}
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%2) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$MappedFunctor<U,T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<JObjectWrapper(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+            }
         }
         ModifyFunction{
             signature: "mapped<Iterator,MapFunctor>(Iterator,Iterator,MapFunctor&&)"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<JObjectWrapper(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "U"}
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{index: 0; replaceType: "io.qt.core.@NonNull QFuture<U>"}
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%1) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    replaceType: "io.qt.concurrent.QtConcurrent$MappedFunctor<U,T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<JObjectWrapper(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+            }
         }
         ModifyFunction{
             signature: "blockingMapped<OutputSequence,InputSequence,MapFunctor>(InputSequence&&,MapFunctor&&)"
@@ -5715,11 +6585,129 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "blockingMapped<Sequence,Iterator,MapFunctor>(QThreadPool*,Iterator,Iterator,MapFunctor&&)"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "QList<JObjectWrapper>"
+                }
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<JObjectWrapper(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "U"}
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{index: 0; replaceType: "io.qt.core.@NonNull QList<U>"}
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%2) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$MappedFunctor<U,T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<JObjectWrapper(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+            }
         }
         ModifyFunction{
             signature: "blockingMapped<Sequence,Iterator,MapFunctor>(Iterator,Iterator,MapFunctor&&)"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "QList<JObjectWrapper>"
+                }
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<JObjectWrapper(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "U"}
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{index: 0; replaceType: "io.qt.core.@NonNull QList<U>"}
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%1) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    replaceType: "io.qt.concurrent.QtConcurrent$MappedFunctor<U,T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<JObjectWrapper(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+            }
         }
         ModifyFunction{
             signature: "mappedReduced<ResultType,Sequence,MapFunctor,ReduceFunctor,InitialValueType,0>(QThreadPool*,Sequence&&,MapFunctor&&,ReduceFunctor&&,InitialValueType&&,QtConcurrent::ReduceOptions)"
@@ -5853,11 +6841,169 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "mappedReduced<ResultType,Iterator,MapFunctor,ReduceFunctor,InitialValueType,0>(QThreadPool*,Iterator,Iterator,MapFunctor&&,ReduceFunctor&&,InitialValueType&&,QtConcurrent::ReduceOptions)"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "JObjectWrapper"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<JObjectWrapper(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(JObjectWrapper&,const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "JObjectWrapper"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "U"}
+                AddTypeParameter{name: "V"}
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{index: 0; replaceType: "io.qt.core.@NonNull QFuture<U>"}
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%2) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$MappedFunctor<V,T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<JObjectWrapper(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 5
+                    replaceType: "io.qt.concurrent.QtConcurrent$ReduceFunctor<U,V>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<void(JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{index: 6; ReplaceType{modifiedType: "U"; modifiedJavaType: "java.lang.Object"} }
+            }
         }
         ModifyFunction{
             signature: "mappedReduced<ResultType,Iterator,MapFunctor,ReduceFunctor,InitialValueType,0>(Iterator,Iterator,MapFunctor&&,ReduceFunctor&&,InitialValueType&&,QtConcurrent::ReduceOptions)"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "JObjectWrapper"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<JObjectWrapper(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(JObjectWrapper&,const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "JObjectWrapper"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "U"}
+                AddTypeParameter{name: "V"}
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{index: 0; replaceType: "io.qt.core.@NonNull QFuture<U>"}
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%1) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    replaceType: "io.qt.concurrent.QtConcurrent$MappedFunctor<V,T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<JObjectWrapper(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$ReduceFunctor<U,V>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<void(JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{index: 5; ReplaceType{modifiedType: "U"; modifiedJavaType: "java.lang.Object"} }
+            }
         }
         ModifyFunction{
             signature: "blockingMappedReduced<ResultType,Sequence,MapFunctor,ReduceFunctor,InitialValueType,0>(QThreadPool*,Sequence&&,MapFunctor&&,ReduceFunctor&&,InitialValueType&&,QtConcurrent::ReduceOptions)"
@@ -5991,11 +7137,169 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "blockingMappedReduced<ResultType,Iterator,MapFunctor,ReduceFunctor,InitialValueType,0>(QThreadPool*,Iterator,Iterator,MapFunctor&&,ReduceFunctor&&,InitialValueType&&,QtConcurrent::ReduceOptions)"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "JObjectWrapper"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<JObjectWrapper(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(JObjectWrapper&,const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "JObjectWrapper"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "U"}
+                AddTypeParameter{name: "V"}
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{index: 0; replaceType: "U"}
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%2) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$MappedFunctor<V,T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<JObjectWrapper(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 5
+                    replaceType: "io.qt.concurrent.QtConcurrent$ReduceFunctor<U,V>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<void(JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{index: 6; ReplaceType{modifiedType: "U"; modifiedJavaType: "java.lang.Object"} }
+            }
         }
         ModifyFunction{
             signature: "blockingMappedReduced<ResultType,Iterator,MapFunctor,ReduceFunctor,InitialValueType,0>(Iterator,Iterator,MapFunctor&&,ReduceFunctor&&,InitialValueType&&,QtConcurrent::ReduceOptions)"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "JObjectWrapper"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<JObjectWrapper(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(JObjectWrapper&,const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "JObjectWrapper"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "U"}
+                AddTypeParameter{name: "V"}
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{index: 0; replaceType: "U"}
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%1) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    replaceType: "io.qt.concurrent.QtConcurrent$MappedFunctor<V,T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<JObjectWrapper(const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$ReduceFunctor<U,V>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<void(JObjectWrapper&,const JObjectWrapper&)>(%env, %in);"}
+                    }
+                }
+                ModifyArgument{index: 5; ReplaceType{modifiedType: "U"; modifiedJavaType: "java.lang.Object"} }
+            }
         }
         ModifyFunction{
             signature: "startMap<Iterator,Functor>(QThreadPool*,Iterator,Iterator,Functor&&)"
@@ -6020,6 +7324,7 @@ TypeSystem{
                 ModifyArgument{
                     index: 2
                     replaceType: "java.util.Collection<T>"
+                    rename: "collection"
                     NoNullPointer{}
                     ConversionRule{
                         codeClass: CodeClass.Native
@@ -6038,6 +7343,71 @@ TypeSystem{
                     ConversionRule{
                         codeClass: CodeClass.Native
                         Text{content: String.raw`auto %out = sequence.end();`}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$MapFunctor<T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<void(const JObjectWrapper&)>(%env, %in, starter);"}
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{
+                    index: 0
+                    replaceType: "io.qt.concurrent.QtConcurrent$@NonNull ThreadEngineStarter<T>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "%out = starter.convert(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QtConcurrent::ThreadEngineStarterWrapper starter;
+                            applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%2) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
                     }
                 }
                 ModifyArgument{
@@ -6090,6 +7460,78 @@ TypeSystem{
                 }
                 ModifyArgument{
                     index: 3
+                    replaceType: "io.qt.concurrent.QtConcurrent$MappedFunctor<U,T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<JObjectWrapper(const JObjectWrapper&)>(%env, %in, starter);"}
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "startMapped<T,Iterator,Functor>(QThreadPool*,Iterator,Iterator,Functor&&)"
+            Instantiation{
+                Argument{
+                    type: "JObjectWrapper"
+                }
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<JObjectWrapper(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "U"}
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{
+                    index: 0
+                    replaceType: "io.qt.concurrent.QtConcurrent$@NonNull ThreadEngineStarter<U>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "%out = starter.convert(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QtConcurrent::ThreadEngineStarterWrapper starter;
+                            applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%2) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
                     replaceType: "io.qt.concurrent.QtConcurrent$MappedFunctor<U,T>"
                     NoNullPointer{}
                     ConversionRule{
@@ -6168,6 +7610,171 @@ TypeSystem{
                     ConversionRule{
                         codeClass: CodeClass.Native
                         Text{content: "JObjectWrapper %out = qtjambi_cast<JObjectWrapper>(%env, %in);"}
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "startMappedReduced<IntermediateType,ResultType,Iterator,MapFunctor,ReduceFunctor>(QThreadPool*,Iterator,Iterator,MapFunctor&&,ReduceFunctor&&,ResultType&&,QtConcurrent::ReduceOptions)"
+            Instantiation{
+                Argument{
+                    type: "JObjectWrapper"
+                }
+                Argument{
+                    type: "JObjectWrapper"
+                }
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<JObjectWrapper(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(JObjectWrapper&,const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "U"}
+                AddTypeParameter{name: "V"}
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{
+                    index: 0
+                    replaceType: "io.qt.concurrent.QtConcurrent$@NonNull ThreadEngineStarter<U>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "%out = starter.convert(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QtConcurrent::ThreadEngineStarterWrapper starter;
+                            applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%2) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$MappedFunctor<V,T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<JObjectWrapper(const JObjectWrapper&)>(%env, %in, starter);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 5
+                    replaceType: "io.qt.concurrent.QtConcurrent$ReduceFunctor<U,V>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<void(JObjectWrapper&,const JObjectWrapper&)>(%env, %in, starter);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 6
+                    ReplaceType{modifiedType: "U"; modifiedJavaType: "java.lang.Object"}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "JObjectWrapper %out = qtjambi_cast<JObjectWrapper>(%env, %in);"}
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "startFiltered<Iterator,KeepFunctor>(QThreadPool*,Iterator,Iterator,KeepFunctor&&)"
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<bool(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{
+                    index: 0
+                    replaceType: "io.qt.concurrent.QtConcurrent$@NonNull ThreadEngineStarter<T>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "%out = starter.convert(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QtConcurrent::ThreadEngineStarterWrapper starter;
+                            applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%2) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$KeepFunctor<T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<bool(const JObjectWrapper&)>(%env, %in, starter);"}
                     }
                 }
             }
@@ -6272,6 +7879,95 @@ TypeSystem{
                 }
                 ModifyArgument{
                     index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$ReduceFunctor<U,T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<void(JObjectWrapper&,const JObjectWrapper&)>(%env, %in, starter);"}
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "startFilteredReduced<ResultType,Iterator,MapFunctor,ReduceFunctor>(QThreadPool*,Iterator,Iterator,MapFunctor&&,ReduceFunctor&&,QtConcurrent::ReduceOptions)"
+            Instantiation{
+                Argument{
+                    type: "JObjectWrapper"
+                }
+                Argument{
+                    type: "JObjectWrapper"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<bool(const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void(JObjectWrapper&,const JObjectWrapper&)>"
+                    isImplicit: true
+                }
+                AddTypeParameter{name: "U"}
+                AddTypeParameter{name: "T"}
+                AddTypeParameter{name: "Container"; extending: "QtObjectInterface"}
+                AddTypeParameter{name: "Iterator"; extending: "io.qt.core.QSequentialConstIterator<T,Container>"}
+                ModifyArgument{
+                    index: 0
+                    replaceType: "io.qt.concurrent.QtConcurrent$@NonNull ThreadEngineStarter<U>"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "%out = starter.convert(%env, %in);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QtConcurrent::ThreadEngineStarterWrapper starter;
+                            applyOnIterators(%env, %in, [&](auto %out) mutable {`}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    Text{content: String.raw`});`}
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "Iterator"
+                        modifiedJavaType: "io.qt.core.QSequentialConstIterator"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                            QPair<void*,AbstractContainerAccess*> %in_info = ContainerAPI::fromJavaOwner(%env, %in);
+                            Q_ASSERT(%in_info.second->isSequentialConstIterator());
+                            decltype(__qt_%2) %out(%env, %in, %in_info.first, static_cast<AbstractSequentialConstIteratorAccess*>(%in_info.second));
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 4
+                    replaceType: "io.qt.concurrent.QtConcurrent$KeepFunctor<T>"
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = FutureAPI::convert<bool(const JObjectWrapper&)>(%env, %in, starter);"}
+                    }
+                }
+                ModifyArgument{
+                    index: 5
                     replaceType: "io.qt.concurrent.QtConcurrent$ReduceFunctor<U,T>"
                     NoNullPointer{}
                     ConversionRule{

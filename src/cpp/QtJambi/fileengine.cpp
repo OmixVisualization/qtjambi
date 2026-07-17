@@ -1461,6 +1461,16 @@ void QClassPathEngine::initialize(QClassPathFileEngineHandler* classPathFileEngi
 #endif
         QString directPath;
         QMap<QString,EntryInfo> entryPaths = classPathFileEngineHandler->jarFilesByEntry(baseName, &directPath);
+        if(directPath.isEmpty()
+            && entryPaths.isEmpty()
+            && !baseName.isEmpty()
+            && !baseName.endsWith(slash)
+            && baseName.contains("//")){
+            QStringList files = baseName.split('/');
+            files.removeAll(QStringLiteral(""));
+            baseName = files.join(slash);
+            entryPaths = classPathFileEngineHandler->jarFilesByEntry(baseName, &directPath);
+        }
         if(!directPath.isEmpty()){
             engines << new QFSFileEngine(directPath);
         }else if (!entryPaths.isEmpty()) { // Its at least a directory which exists in jar files

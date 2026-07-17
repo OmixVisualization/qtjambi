@@ -143,6 +143,50 @@ class QtConcurrent___ extends QtConcurrent {
     }
 
     /**
+     * <p>Overloaded function for {@link #blockingMappedReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+     *  with <code>options = SequentialReduce | UnorderedReduce</code>.</p>
+     */
+    public static <U,V,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> U blockingMappedReduced(io.qt.core.@Nullable QThreadPool pool, @StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce) {
+        return blockingMappedReduced(pool, begin, end, map, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(5));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #blockingMappedReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
+     */
+    public static <U,V,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> U blockingMappedReduced(io.qt.core.@Nullable QThreadPool pool, @StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOption @NonNull... options) {
+        return blockingMappedReduced(pool, begin, end, map, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(options));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #blockingMappedReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
+     */
+    public static <U,V,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> U blockingMappedReduced(io.qt.core.@Nullable QThreadPool pool, @StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options){
+        return blockingMappedReduced(pool, begin, end, map, reduce, computeDefaultResult(reduce), options);
+    }
+
+    /**
+     * <p>Overloaded function for {@link #blockingMappedReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+     *  with <code>options = SequentialReduce | UnorderedReduce</code>.</p>
+     */
+    public static <U,V,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> U blockingMappedReduced(@StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce) {
+        return blockingMappedReduced(begin, end, map, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(5));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #blockingMappedReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
+     */
+    public static <U,V,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> U blockingMappedReduced(@StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOption @NonNull... options) {
+        return blockingMappedReduced(begin, end, map, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(options));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #blockingMappedReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
+     */
+    public static <U,V,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> U blockingMappedReduced(@StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options){
+        return blockingMappedReduced(begin, end, map, reduce, computeDefaultResult(reduce), options);
+    }
+
+    /**
      * <p>Overloaded function for {@link #filteredReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}
      *  with <code>options = SequentialReduce | UnorderedReduce</code>.</p>
      */
@@ -184,6 +228,50 @@ class QtConcurrent___ extends QtConcurrent {
      */
     public static <U,T> io.qt.core.@NonNull QFuture<U> filteredReduced(java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options){
         return filteredReduced(sequence, keep, reduce, computeDefaultResult(reduce), options);
+    }
+
+    /**
+     * <p>Overloaded function for {@link #filteredReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+     *  with <code>options = SequentialReduce | UnorderedReduce</code>.</p>
+     */
+    public static <U,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> io.qt.core.@NonNull QFuture<U> filteredReduced(io.qt.core.@Nullable QThreadPool pool, @StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce) {
+        return filteredReduced(pool, begin, end, keep, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(5));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #filteredReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
+     */
+    public static <U,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> io.qt.core.@NonNull QFuture<U> filteredReduced(io.qt.core.@Nullable QThreadPool pool, @StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOption @NonNull... options) {
+        return filteredReduced(pool, begin, end, keep, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(options));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #filteredReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
+     */
+    public static <U,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> io.qt.core.@NonNull QFuture<U> filteredReduced(io.qt.core.@Nullable QThreadPool pool, @StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options){
+        return filteredReduced(pool, begin, end, keep, reduce, computeDefaultResult(reduce), options);
+    }
+
+    /**
+     * <p>Overloaded function for {@link #filteredReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+     *  with <code>options = SequentialReduce | UnorderedReduce</code>.</p>
+     */
+    public static <U,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> io.qt.core.@NonNull QFuture<U> filteredReduced(@StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce) {
+        return filteredReduced(begin, end, keep, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(5));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #filteredReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
+     */
+    public static <U,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> io.qt.core.@NonNull QFuture<U> filteredReduced(@StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOption @NonNull... options) {
+        return filteredReduced(begin, end, keep, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(options));
+    }
+
+    /**
+     * <p>Overloaded function for {@link #filteredReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
+     */
+    public static <U,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> io.qt.core.@NonNull QFuture<U> filteredReduced(@StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options){
+        return filteredReduced(begin, end, keep, reduce, computeDefaultResult(reduce), options);
     }
 
     /**
@@ -230,6 +318,50 @@ class QtConcurrent___ extends QtConcurrent {
         return blockingFilteredReduced(sequence, keep, reduce, computeDefaultResult(reduce), options);
     }
 
+/**
+ * <p>Overloaded function for {@link #blockingFilteredReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+ *  with <code>options = SequentialReduce | UnorderedReduce</code>.</p>
+ */
+public static <U,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> U blockingFilteredReduced(io.qt.core.@Nullable QThreadPool pool, @StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce) {
+    return blockingFilteredReduced(pool, begin, end, keep, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(5));
+}
+
+/**
+ * <p>Overloaded function for {@link #blockingFilteredReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
+ */
+public static <U,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> U blockingFilteredReduced(io.qt.core.@Nullable QThreadPool pool, @StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOption @NonNull... options) {
+    return blockingFilteredReduced(pool, begin, end, keep, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(options));
+}
+
+/**
+ * <p>Overloaded function for {@link #blockingFilteredReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
+ */
+public static <U,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> U blockingFilteredReduced(io.qt.core.@Nullable QThreadPool pool, @StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options){
+    return blockingFilteredReduced(pool, begin, end, keep, reduce, computeDefaultResult(reduce), options);
+}
+
+/**
+ * <p>Overloaded function for {@link #blockingFilteredReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+ *  with <code>options = SequentialReduce | UnorderedReduce</code>.</p>
+ */
+public static <U,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> U blockingFilteredReduced(@StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce) {
+    return blockingFilteredReduced(begin, end, keep, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(5));
+}
+
+/**
+ * <p>Overloaded function for {@link #blockingFilteredReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
+ */
+public static <U,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> U blockingFilteredReduced(@StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOption @NonNull... options) {
+    return blockingFilteredReduced(begin, end, keep, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(options));
+}
+
+/**
+ * <p>Overloaded function for {@link #blockingFilteredReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.KeepFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}.</p>
+ */
+public static <U,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> U blockingFilteredReduced(@StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull KeepFunctor<T> keep, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U, T> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options){
+    return blockingFilteredReduced(begin, end, keep, reduce, computeDefaultResult(reduce), options);
+}
+
     /**
      * <p>Overloaded function for {@link #mappedReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}
      */
@@ -271,6 +403,48 @@ class QtConcurrent___ extends QtConcurrent {
     public static <U,V,T> io.qt.core.@NonNull QFuture<U> mappedReduced(java.util.@StrictNonNull Collection<T> sequence, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options) {
         return mappedReduced(sequence, map, reduce, computeDefaultResult(reduce), options);
     }
+
+/**
+ * <p>Overloaded function for {@link #mappedReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+ */
+public static <U,V,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> io.qt.core.@NonNull QFuture<U> mappedReduced(io.qt.core.@Nullable QThreadPool pool, @StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce) {
+    return mappedReduced(pool, begin, end, map, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(5));
+}
+
+/**
+ * <p>Overloaded function for {@link #mappedReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+ */
+public static <U,V,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> io.qt.core.@NonNull QFuture<U> mappedReduced(io.qt.core.@Nullable QThreadPool pool, @StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOption @NonNull... options) {
+    return mappedReduced(pool, begin, end, map, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(options));
+}
+
+/**
+ * <p>Overloaded function for {@link #mappedReduced(io.qt.core.QThreadPool, java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+ */
+public static <U,V,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> io.qt.core.@NonNull QFuture<U> mappedReduced(io.qt.core.@Nullable QThreadPool pool, @StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options) {
+    return mappedReduced(pool, begin, end, map, reduce, computeDefaultResult(reduce), options);
+}
+
+/**
+ * <p>Overloaded function for {@link #mappedReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+ */
+public static <U,V,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> io.qt.core.@NonNull QFuture<U> mappedReduced(@StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce) {
+    return mappedReduced(begin, end, map, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(5));
+}
+
+/**
+ * <p>Overloaded function for {@link #mappedReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+ */
+public static <U,V,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> io.qt.core.@NonNull QFuture<U> mappedReduced(@StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOption @NonNull... options) {
+    return mappedReduced(begin, end, map, reduce, new io.qt.concurrent.QtConcurrent.ReduceOptions(options));
+}
+
+/**
+ * <p>Overloaded function for {@link #mappedReduced(java.util.Collection, io.qt.concurrent.QtConcurrent.MappedFunctor, io.qt.concurrent.QtConcurrent.ReduceFunctor, java.lang.Object, io.qt.concurrent.QtConcurrent.ReduceOptions)}
+ */
+public static <U,V,T,Container extends QtObjectInterface,Iterator extends io.qt.core.QSequentialConstIterator<T,Container>> io.qt.core.@NonNull QFuture<U> mappedReduced(@StrictNonNull Iterator begin, @StrictNonNull Iterator end, io.qt.concurrent.QtConcurrent.@StrictNonNull MappedFunctor<V,T> map, io.qt.concurrent.QtConcurrent.@StrictNonNull ReduceFunctor<U,V> reduce, io.qt.concurrent.QtConcurrent.@NonNull ReduceOptions options) {
+    return mappedReduced(begin, end, map, reduce, computeDefaultResult(reduce), options);
+}
 }// class
 
 class QtConcurrent_DISMISS_1__ extends QtConcurrent {

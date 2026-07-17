@@ -76,16 +76,24 @@ public class TestWebEngineQuick extends ApplicationInitializer {
     @Test
     public void test1() {
     	QQmlApplicationEngine engine = new QQmlApplicationEngine();
-    	engine.loadData(new QByteArray("import QtWebEngine\nWebEngineView{\n"
-    			+ "url: \"http://info.cern.ch/\"\n"
-    			+ "function doRunJavaScript(code,consumer){\n"
-    			+ "runJavaScript(code, value => consumer.accept(value));\n"
-    			+ "}\n"
+    	engine.loadData(new QByteArray("import QtQuick;"
+    			+ "import QtQuick.Window;"
+    			+ "import QtWebEngine;"
+    			+ "Window{"
+    			+ "visible: true;"
+    			+ "WebEngineView{"
+    			+ "url: \"http://info.cern.ch/\";"
+    			+ "property bool received: false;"
+    			+ "function doRunJavaScript(code,consumer){"
+    			+ "received = true;"
+    			+ "runJavaScript(code, value => {consumer.accept(value);});"
+    			+ "}"
+    			+ "}"
     			+ "}"));
         QList<QObject> rootObjects = engine.rootObjects();
         Assert.assertTrue(rootObjects.get(0)!=null);
         dump(rootObjects, 0);
-        QObject webEngineView = rootObjects.get(0);
+        QObject webEngineView = rootObjects.get(0).children().get(1);
 //        webEngineView.metaObject().methods().forEach(m->System.out.println(m.cppMethodSignature()));
         QMetaMethod mtd = webEngineView.metaObject().method("doRunJavaScript", Object.class, Object.class);
         Assert.assertTrue(mtd!=null && mtd.isValid());
@@ -99,19 +107,14 @@ public class TestWebEngineQuick extends ApplicationInitializer {
         javaScriptConsoleMessage.connect((a,b,c,d)->{
         	System.out.println(a+" "+b+" "+c+" "+d);
         });
-        Object received[] = {null};
+        QJSValue received[] = {null};
         QObject consumer = new QObject() {
 			@QtInvokable
 			public void accept(QJSValue value) {
-				received[0] = value.toVariant();
+				received[0] = value;
 				QApplication.quit();
 			}
         };
-//        QMetaObject.forType(consumer.getClass()).methods().forEach(m->System.out.println(m.cppMethodSignature()+" "+m.attributes()));
-        mtd.invoke(webEngineView, "window", consumer);
-        Assert.assertTrue(General.internalAccess.isJavaOwnership(consumer));
-        Assert.assertEquals(QJSEngine.ObjectOwnership.JavaOwnership, QJSEngine.objectOwnership(consumer));
-//        QCoreApplication.processEvents();
         QObject settings = (QObject)webEngineView.property("settings");
         QObject userScripts = (QObject)webEngineView.property("userScripts");
         QWebEngineSettings _settings = QtWebEngineQuick.toWebEngineSettings(settings);
@@ -134,7 +137,13 @@ public class TestWebEngineQuick extends ApplicationInitializer {
         Assert.assertFalse(settings.isDisposed());
         settings.property("autoLoadImages");// should not crash
     	QTimer.singleShot(10000, QApplication::quit);
+    	QTimer.singleShot(1000, ()->{
+            mtd.invoke(webEngineView, "window", consumer);
+    	});
     	QApplication.exec();
+        Assert.assertTrue(General.internalAccess.isJavaOwnership(consumer));
+        Assert.assertEquals(QJSEngine.ObjectOwnership.JavaOwnership, QJSEngine.objectOwnership(consumer));
+    	Assert.assertEquals(Boolean.TRUE, webEngineView.property("received"));
     	Assert.assertTrue(received[0]!=null);
         engine.dispose();
         Assert.assertFalse(consumer.isDisposed());

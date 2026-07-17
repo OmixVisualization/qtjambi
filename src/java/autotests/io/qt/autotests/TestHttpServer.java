@@ -1,3 +1,4 @@
+
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
@@ -32,11 +33,14 @@ package io.qt.autotests;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEventLoop;
 import io.qt.core.QIODevice;
+import io.qt.core.QMetaType;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QSemaphore;
 import io.qt.core.QThread;
 import io.qt.httpserver.QHttpServer;
@@ -52,53 +56,169 @@ import io.qt.network.QTcpServer;
 public class TestHttpServer extends ApplicationInitializer {
 	
     @Test
-    public void test() {
+    public void testTypeAware() {
+    	Assume.assumeFalse("Cannot run on Android", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
     	AtomicInteger port = new AtomicInteger();
     	QSemaphore semaphore = new QSemaphore();
     	QThread thread = new QThread(){
     		@Override
     		protected void run() {
-    			QHttpServer httpServer = new QHttpServer();
-            	httpServer.route("/", () -> "Hello world");
-            	
-            	httpServer.route("/query", (QHttpServerRequest request) ->
-            		request.value("Host") + "/query/"
-        	    );
-        	
-        	    httpServer.route("/query/<arg>", (Integer id, QHttpServerRequest request) ->
-        	        String.format("%s/query/%d", request.value("Host"), id)
-        	    );
-        	
-        	    httpServer.route("/query/<arg>/log", (Integer id, QHttpServerRequest request) ->
-        	        String.format("%s/query/%d/log", request.value("Host"), id)
-        	    );
-        	
-        	    httpServer.route("/query/<arg>/log/<arg>", (Integer id, Float threshold, QHttpServerRequest request) ->
-        	        String.format("%s/query/%d/log/%f", request.value("Host"), id, threshold)
-        	    );
-        	    
-        	    httpServer.addAfterRequestHandler(httpServer, (QHttpServerRequest req, QHttpServerResponse resp) -> {
-                    QHttpHeaders headers = resp.headers();
-                    headers.append(QHttpHeaders.WellKnownHeader.Server, "Qt HTTP Server");
-                    resp.setHeaders(headers);
-                });
-        	    
-        	    httpServer.setMissingHandler((request, responder)->{
-        	    	responder.sendResponse(new QHttpServerResponse(request.query().query(), QHttpServerResponder.StatusCode.BadRequest));
-        	    });
-        	    QTcpServer tcpServer = new QTcpServer();
-                if (!tcpServer.listen() || !httpServer.bind(tcpServer)) {
-                    System.err.println(QCoreApplication.translate("QHttpServerExample",
-                            "Server failed to listen on a port."));
-                    semaphore.release();
-                    return;
-                }
+    			QHttpServer httpServer = null;
+				QTcpServer tcpServer = null;
+				try {
+					httpServer = new QHttpServer();
+					httpServer.route("/", () -> "Hello world");
+					
+					httpServer.route("/query", (QHttpServerRequest request) ->
+						request.value("Host") + "/query/"
+					);
+     	
+					httpServer.route("/query/<arg>", (Integer id, QHttpServerRequest request) ->
+					    String.format("%s/query/%d", request.value("Host"), id)
+					);
+     	
+					httpServer.route("/query/<arg>/log", (Integer id, QHttpServerRequest request) ->
+					    String.format("%s/query/%d/log", request.value("Host"), id)
+					);
+     	
+					httpServer.route("/query/<arg>/log/<arg>", (Integer id, Float threshold, QHttpServerRequest request) ->
+					    String.format("%s/query/%d/log/%f", request.value("Host"), id, threshold)
+					);
+					
+					httpServer.addAfterRequestHandler(httpServer, (QHttpServerRequest req, QHttpServerResponse resp) -> {
+					    QHttpHeaders headers = resp.headers();
+					    headers.append(QHttpHeaders.WellKnownHeader.Server, "Qt HTTP Server");
+					    resp.setHeaders(headers);
+					});
+					
+					httpServer.setMissingHandler((request, responder)->{
+						responder.sendResponse(new QHttpServerResponse(request.query().query(), QHttpServerResponder.StatusCode.BadRequest));
+					});
+					tcpServer = new QTcpServer();
+					if (!tcpServer.listen() || !httpServer.bind(tcpServer)) {
+					    System.err.println(QCoreApplication.translate("QHttpServerExample",
+					            "Server failed to listen on a port."));
+					    semaphore.release();
+					    return;
+					}
 //    	    	System.out.println("http://127.0.0.1:"+tcpServer.serverPort()+"/query");
-                port.set(tcpServer.serverPort());
+					port.set(tcpServer.serverPort());
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
                 semaphore.release();
     			this.exec();
-    			tcpServer.dispose();
-    			httpServer.dispose();
+    			if(tcpServer!=null)
+    				tcpServer.dispose();
+    			if(httpServer!=null)
+    				httpServer.dispose();
+    		}
+    	};
+    	try {
+	    	thread.start();
+	    	semaphore.acquire();
+	    	Assert.assertTrue(port.get()!=0);
+	    	QNetworkAccessManager mgr = new QNetworkAccessManager();
+			QNetworkReply reply = mgr.get(new QNetworkRequest("http://127.0.0.1:"+port.get()+"/"));
+			QEventLoop eventLoop = new QEventLoop();
+			reply.finished.connect(eventLoop, QEventLoop::quit);
+			eventLoop.exec();
+			Assert.assertTrue(reply.open(QIODevice.OpenModeFlag.ReadOnly));
+			try {
+				Assert.assertEquals("Hello world", ""+reply.readAll());
+			}finally {
+				reply.close();
+			}
+			reply = mgr.get(new QNetworkRequest("http://127.0.0.1:"+port.get()+"/query"));
+			reply.finished.connect(eventLoop, QEventLoop::quit);
+			eventLoop.exec();
+			Assert.assertTrue(reply.open(QIODevice.OpenModeFlag.ReadOnly));
+			try {
+				Assert.assertEquals("Qt HTTP Server", reply.header(QNetworkRequest.KnownHeaders.ServerHeader));
+				Assert.assertEquals("127.0.0.1:"+port.get()+"/query/", ""+reply.readAll());
+			}finally {
+				reply.close();
+			}
+			reply = mgr.get(new QNetworkRequest("http://127.0.0.1:"+port.get()+"/query/5"));
+			reply.finished.connect(eventLoop, QEventLoop::quit);
+			eventLoop.exec();
+			Assert.assertTrue(reply.open(QIODevice.OpenModeFlag.ReadOnly));
+			try {
+				Assert.assertEquals(String.format("127.0.0.1:%d/query/%d", port.get(), 5), ""+reply.readAll());
+			}finally {
+				reply.close();
+			}
+			reply = mgr.get(new QNetworkRequest("http://127.0.0.1:"+port.get()+"/query/5/log/4.3"));
+			reply.finished.connect(eventLoop, QEventLoop::quit);
+			eventLoop.exec();
+			Assert.assertTrue(reply.open(QIODevice.OpenModeFlag.ReadOnly));
+			try {
+				Assert.assertEquals(String.format("127.0.0.1:%d/query/%d/log/%f", port.get(), 5, 4.3), ""+reply.readAll());
+			}finally {
+				reply.close();
+			}
+    	}finally {
+			thread.quit();
+			thread.join();
+		}
+    }
+    
+    @Test
+    public void testGeneric() {
+    	AtomicInteger port = new AtomicInteger();
+    	QSemaphore semaphore = new QSemaphore();
+    	QThread thread = new QThread(){
+    		@Override
+    		protected void run() {
+    			QHttpServer httpServer = null;
+				QTcpServer tcpServer = null;
+				try {
+					httpServer = new QHttpServer();
+					httpServer.route("/", (QHttpServer.SimpleViewHandler<String>)(args) -> "Hello world");
+					
+					httpServer.route("/query", (QHttpServer.RequestViewHandler<String>)(args,request) ->
+						request.value("Host") + "/query/"
+					);
+     	
+					httpServer.route("/query/<arg>", (QHttpServer.RequestViewHandler<String>)(args,request) ->
+					    String.format("%s/query/%d", request.value("Host"), args[0]), new QMetaType(QMetaType.Type.Int)
+					);
+     	
+					httpServer.route("/query/<arg>/log", (QHttpServer.RequestViewHandler<String>)(args,request) ->
+					    String.format("%s/query/%d/log", request.value("Host"), args[0]), new QMetaType(QMetaType.Type.Int)
+					);
+     	
+					httpServer.route("/query/<arg>/log/<arg>", (QHttpServer.RequestViewHandler<String>)(args,request) ->
+					    String.format("%s/query/%d/log/%f", request.value("Host"), args[0], args[1]), new QMetaType(QMetaType.Type.Int), new QMetaType(QMetaType.Type.Float)
+					);
+					
+					httpServer.addAfterRequestHandler(httpServer, (QHttpServerRequest req, QHttpServerResponse resp) -> {
+					    QHttpHeaders headers = resp.headers();
+					    headers.append(QHttpHeaders.WellKnownHeader.Server, "Qt HTTP Server");
+					    resp.setHeaders(headers);
+					});
+					
+					httpServer.setMissingHandler((request, responder)->{
+						responder.sendResponse(new QHttpServerResponse(request.query().query(), QHttpServerResponder.StatusCode.BadRequest));
+					});
+					tcpServer = new QTcpServer();
+					if (!tcpServer.listen() || !httpServer.bind(tcpServer)) {
+					    System.err.println(QCoreApplication.translate("QHttpServerExample",
+					            "Server failed to listen on a port."));
+					    semaphore.release();
+					    return;
+					}
+//    	    	System.out.println("http://127.0.0.1:"+tcpServer.serverPort()+"/query");
+					port.set(tcpServer.serverPort());
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
+                semaphore.release();
+    			this.exec();
+    			if(tcpServer!=null)
+    				tcpServer.dispose();
+    			if(httpServer!=null)
+    				httpServer.dispose();
     		}
     	};
     	try {

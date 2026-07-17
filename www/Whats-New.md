@@ -1,4 +1,10 @@
-# What's new in QtJambi 6.11.1
+# What's new in QtJambi 6.11.2
+
+* 
+
+# History
+
+## What's new in QtJambi 6.11.1
 
 * Full support for `QtTaskTree`
 * Type cast refactored to improve maintainability
@@ -8,8 +14,6 @@
 * Divide-by-zero checks in all division operators.
 * Bugfix: iterator causing crash after container modification
 * Bugfix: placement construction crashed with `-Xcheck:jni` enabled
-
-# History
 
 ## What's new in QtJambi 6.11.0
 

@@ -2781,6 +2781,13 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                     result = new FlagsTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second, dynamic_cast<const EnumTypeEntry*>(e.data()));
                     break;
                 }
+                case EntryTypes::IteratorTypeInfo:
+                {
+                    jmethodID creator_method = findInternalPrivateConstructor(env, java_class);
+                    Q_ASSERT(creator_method);
+                    result = new IteratorTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, creator_method, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    break;
+                }
                 case EntryTypes::StdFunctionTypeInfo:
                 {
                     jclass java_impl_class = nullptr;
@@ -4491,6 +4498,8 @@ QtJambiTypeEntryPtr QtJambiTypeEntry::getTypeEntry(JNIEnv* env, const std::type_
                         result = new QVariantTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
                     }else if(typeid_equals(typeId, typeid(QCborValueRef)) || typeid_equals(typeId, typeid(QCborValueConstRef))){
                         result = new QCborValueRefTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
+                    }else if(typeid_equals(typeId, typeid(QJsonValueRef)) || typeid_equals(typeId, typeid(QJsonValueConstRef))){
+                        result = new QJsonValueRefTypeEntry(env, typeId, typeInfo.qtName, typeInfo.javaName, java_class, typeInfo.valueSizeAndAlignment.first, typeInfo.valueSizeAndAlignment.second);
                     }
                     break;
                 }
@@ -5830,6 +5839,51 @@ bool EnumTypeEntry::convertToNative(JNIEnv *env, jobject input, void * output) c
     return true;
 }
 
+IteratorTypeEntry::IteratorTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size, size_t value_align)
+    : QtJambiTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, value_align)
+{
+}
+
+QtJambiTypeEntry::NativeToJavaResult IteratorTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jobject& output) const{
+    Q_UNUSED(env)
+    Q_UNUSED(qt_object)
+    Q_UNUSED(output)
+    return false;
+}
+
+bool IteratorTypeEntry::convertSmartPointerToJava(JNIEnv *env, const QSharedPointer<char>& smartPointer, qintptr offset, jobject& output) const{
+    Q_UNUSED(env)
+    Q_UNUSED(smartPointer)
+    Q_UNUSED(offset)
+    Q_UNUSED(output)
+    return false;
+}
+
+bool IteratorTypeEntry::convertSmartPointerToJava(JNIEnv *env, const std::shared_ptr<char>& smartPointer, qintptr offset, jobject& output) const{
+    Q_UNUSED(env)
+    Q_UNUSED(smartPointer)
+    Q_UNUSED(offset)
+    Q_UNUSED(output)
+    return false;
+}
+
+bool IteratorTypeEntry::convertToNative(JNIEnv *env, jobject input, void * output) const{
+    if(env->IsInstanceOf(input, this->javaClass())){
+        if(QSharedPointer<QtJambiLink> lnk = QtJambiLink::findLinkForJavaObject(env, input)){
+            AbstractContainerAccess* containerAccess = lnk->containerAccess();
+            if(containerAccess && containerAccess->isSequentialConstIterator()){
+                AbstractSequentialConstIteratorAccess* access = static_cast<AbstractSequentialConstIteratorAccess*>(containerAccess);
+                void* iter = access->asIterator(lnk->pointer());
+                *reinterpret_cast<void const**>(output) = iter;
+                return iter;
+            }
+        }
+        else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, input))
+            JavaException::raiseQNoImplementationException(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, input)) QTJAMBI_STACKTRACEINFO );
+    }
+    return false;
+}
+
 QtJambiTypeEntry::NativeToJavaResult FlagsTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jobject& output) const{
     if(this->valueSize()==8){
         output = env->NewObject(creatableClass(), creatorMethod(), static_cast<jlong>(*reinterpret_cast<const jlong*>(qt_object)));
@@ -6066,6 +6120,19 @@ QtJambiTypeEntry::NativeToJavaResult QCborValueRefTypeEntry::convertToJava(JNIEn
 
 bool QCborValueRefTypeEntry::convertToNative(JNIEnv *env, jobject, void *) const{
     JavaException::raiseError(env, "Cannot convert to QCborValueRef" QTJAMBI_STACKTRACEINFO );
+    return false;
+}
+
+QtJambiTypeEntry::NativeToJavaResult QJsonValueRefTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jobject& output) const{
+    const QJsonValueConstRef* vref = reinterpret_cast<const QJsonValueConstRef*>(qt_object);
+    QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeid(QJsonValue), "QJsonValue");
+    Q_ASSERT(typeEntry);
+    QJsonValue value = *vref;
+    return typeEntry->convertToJava(env, &value, output);
+}
+
+bool QJsonValueRefTypeEntry::convertToNative(JNIEnv *env, jobject, void *) const{
+    JavaException::raiseError(env, "Cannot convert to QJsonValueRef" QTJAMBI_STACKTRACEINFO );
     return false;
 }
 

@@ -75,3 +75,30 @@ int QmlAPI::getInterfaceOffset(JNIEnv *env, jclass cls, const std::type_info& in
 void QmlAPI::setQQmlListPropertyElementType(JNIEnv *env, jobject list, jobject elementType){
     Java::QtQml::QQmlListProperty::set_elementType(env, list, elementType);
 }
+
+static QmlAPI::QmlReportDestruction qmlReportDestructionFunction = nullptr;
+
+void QtJambiAPI::DeclarativeUtil::reportDestruction(QObject * obj){
+    if(qmlReportDestructionFunction)
+        qmlReportDestructionFunction(obj);
+}
+
+void QmlAPI::setQmlReportDestruction(QmlReportDestruction fct){
+    if(!qmlReportDestructionFunction)
+        qmlReportDestructionFunction = fct;
+}
+
+static QmlAPI::GetQmlOwnership fnGetQmlOwnership = nullptr;
+
+void QmlAPI::setGetQmlOwnership(GetQmlOwnership fct){
+    if(!fnGetQmlOwnership)
+        fnGetQmlOwnership = fct;
+}
+
+bool isQmlJavaScriptOwnership(QObject * obj){
+    return fnGetQmlOwnership && fnGetQmlOwnership(obj).testFlag(QmlAPI::JavaScriptOwnership);
+}
+
+bool isQmlExplicitCppOwnership(QObject * obj){
+    return fnGetQmlOwnership && fnGetQmlOwnership(obj)==(QmlAPI::CppOwnership | QmlAPI::ExplicitSet);
+}

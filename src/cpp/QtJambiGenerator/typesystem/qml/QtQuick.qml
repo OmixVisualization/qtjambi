@@ -2420,55 +2420,37 @@ if(%1.count()<=0)
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromPhysicalDevice(JNIEnv *, jlong);\n"+
-                          "QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromDeviceObjects(JNIEnv *, jlong, jlong, int, int);"}
+            Text{content: "QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromPhysicalDevice(JNIEnv *, jobject);\n"+
+                          "QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromDeviceObjects(JNIEnv *, jobject, jobject, int, int);"}
         }
         ModifyFunction{
-            signature: "fromPhysicalDevice(void*)"
+            signature: "fromPhysicalDevice(VkPhysicalDevice)"
             ppCondition: "QT_CONFIG(vulkan)"
             proxyCall: "qtjambi_QQuickGraphicsDevice_fromPhysicalDevice"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "long"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "#ifdef %out\n"+
-                                  "#undef %out\n"+
-                                  "#endif\n"+
-                                  "#define %out %in"}
+                    Text{content: "auto %out = %in;"}
                 }
             }
         }
         ModifyFunction{
-            signature: "fromDeviceObjects(void*, void*, int, int)"
+            signature: "fromDeviceObjects(VkPhysicalDevice, VkDevice, int, int)"
             ppCondition: "QT_CONFIG(vulkan)"
             proxyCall: "qtjambi_QQuickGraphicsDevice_fromDeviceObjects"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "long"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "#ifdef %out\n"+
-                                  "#undef %out\n"+
-                                  "#endif\n"+
-                                  "#define %out %in"}
+                    Text{content: "auto %out = %in;"}
                 }
             }
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "long"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "#ifdef %out\n"+
-                                  "#undef %out\n"+
-                                  "#endif\n"+
-                                  "#define %out %in"}
+                    Text{content: "auto %out = %in;"}
                 }
             }
         }
@@ -2547,18 +2529,6 @@ if(%1.count()<=0)
             Text{content: "\nObject __rcDeviceContext;"}
         }
     }
-
-    ObjectType{
-        name: "VkImage"
-        generate: false
-        since: [6, 2]
-    }
-
-    ObjectType{
-        name: "VkImageLayout"
-        generate: false
-        since: [6, 2]
-    }
     
     ValueType{
         name: "QQuickRenderTarget"
@@ -2577,19 +2547,19 @@ if(%1.count()<=0)
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jlong image, jint layout, const QSize& pixelSize, int sampleCount);"}
+            Text{content: "QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jobject image, jint layout, const QSize& pixelSize, int sampleCount);"}
         }
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
             since: [6, 4]
-            Text{content: "QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jlong image, jint layout, jint format, const QSize& pixelSize, int sampleCount);"}
+            Text{content: "QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jobject image, jint layout, jint format, const QSize& pixelSize, int sampleCount);"}
         }
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
             since: [6, 8]
-            Text{content: "QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jlong image, jint layout, jint format, jint viewFormat, const QSize& pixelSize, int sampleCount, int arraySize, QQuickRenderTarget::Flags flags);"}
+            Text{content: "QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jobject image, jint layout, jint format, jint viewFormat, const QSize& pixelSize, int sampleCount, int arraySize, QQuickRenderTarget::Flags flags);"}
         }
         ModifyFunction{
             signature: "fromD3D11Texture(void *, QSize, int)"
@@ -2658,28 +2628,16 @@ if(%1.count()<=0)
             proxyCall: "qtjambi_QQuickRenderTarget_fromVulkanImage"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "long"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "#ifdef %out\n"+
-                                  "#undef %out\n"+
-                                  "#endif\n"+
-                                  "#define %out %in"}
+                    Text{content: "auto %out = %in;"}
                 }
             }
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "int"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "#ifdef %out\n"+
-                                  "#undef %out\n"+
-                                  "#endif\n"+
-                                  "#define %out %in"}
+                    Text{content: "auto %out = %in;"}
                 }
             }
         }
@@ -2689,41 +2647,23 @@ if(%1.count()<=0)
             proxyCall: "qtjambi_QQuickRenderTarget_fromVulkanImage"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "long"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "#ifdef %out\n"+
-                                  "#undef %out\n"+
-                                  "#endif\n"+
-                                  "#define %out %in"}
+                    Text{content: "auto %out = %in;"}
                 }
             }
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "int"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "#ifdef %out\n"+
-                                  "#undef %out\n"+
-                                  "#endif\n"+
-                                  "#define %out %in"}
+                    Text{content: "auto %out = %in;"}
                 }
             }
             ModifyArgument{
                 index: 3
-                ReplaceType{
-                    modifiedType: "int"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "#ifdef %out\n"+
-                                  "#undef %out\n"+
-                                  "#endif\n"+
-                                  "#define %out %in"}
+                    Text{content: "auto %out = %in;"}
                 }
             }
             since: [6, 4]
@@ -2734,54 +2674,30 @@ if(%1.count()<=0)
             proxyCall: "qtjambi_QQuickRenderTarget_fromVulkanImage"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "long"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "#ifdef %out\n"+
-                                  "#undef %out\n"+
-                                  "#endif\n"+
-                                  "#define %out %in"}
+                    Text{content: "auto %out = %in;"}
                 }
             }
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "int"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "#ifdef %out\n"+
-                                  "#undef %out\n"+
-                                  "#endif\n"+
-                                  "#define %out %in"}
+                    Text{content: "auto %out = %in;"}
                 }
             }
             ModifyArgument{
                 index: 3
-                ReplaceType{
-                    modifiedType: "int"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "#ifdef %out\n"+
-                                  "#undef %out\n"+
-                                  "#endif\n"+
-                                  "#define %out %in"}
+                    Text{content: "auto %out = %in;"}
                 }
             }
             ModifyArgument{
                 index: 4
-                ReplaceType{
-                    modifiedType: "int"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "#ifdef %out\n"+
-                                  "#undef %out\n"+
-                                  "#endif\n"+
-                                  "#define %out %in"}
+                    Text{content: "auto %out = %in;"}
                 }
             }
             since: [6, 8]
@@ -2972,7 +2888,7 @@ if(%1.count()<=0)
                 replaceType: "io.qt.@Nullable QNativePointer"
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = QtJambiAPI::convertNativeToQNativePointer(%env, %in, QNativePointer::Type::Pointer, -1, 1);"}
+                    Text{content: "%out = QtJambiAPI::convertNativeToQNativePointer(%env, %in, QNativePointer::Type::Pointer, -1, 1);"}
                 }
             }
         }
@@ -3027,7 +2943,7 @@ if(%1.count()<=0)
                 replaceType: "io.qt.@Nullable QNativePointer"
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = QtJambiAPI::convertNativeToQNativePointer(%env, %in, QNativePointer::Type::Pointer, -1, 1);"}
+                    Text{content: "%out = QtJambiAPI::convertNativeToQNativePointer(%env, %in, QNativePointer::Type::Pointer, -1, 1);"}
                 }
             }
         }
@@ -3078,7 +2994,7 @@ if(%1.count()<=0)
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "QSGTexture * qtjambi_QSGVulkanTexture_fromNative(JNIEnv *env, jlong image, jint layout, QQuickWindow* window, const QSize& size, QQuickWindow::CreateTextureOptions options);"}
+            Text{content: "QSGTexture * qtjambi_QSGVulkanTexture_fromNative(JNIEnv *env, jobject image, jint layout, QQuickWindow* window, const QSize& size, QQuickWindow::CreateTextureOptions options);"}
         }
         ModifyFunction{
             signature: "fromNative(VkImage, VkImageLayout, QQuickWindow *, QSize, QQuickWindow::CreateTextureOptions)"
@@ -3092,32 +3008,20 @@ if(%1.count()<=0)
             }
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "long"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "#ifdef %out\n"+
-                                  "#undef %out\n"+
-                                  "#endif\n"+
-                                  "#define %out %in"}
+                    Text{content: "auto %out = %in;"}
                 }
             }
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "int"
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "#ifdef %out\n"+
-                                  "#undef %out\n"+
-                                  "#endif\n"+
-                                  "#define %out %in"}
+                    Text{content: "auto %out = %in;"}
                 }
             }
         }
-        ModifyFunction{
+        /*ModifyFunction{
             signature: "nativeImage() const"
             ModifyArgument{
                 index: 0
@@ -3142,7 +3046,7 @@ if(%1.count()<=0)
                     Text{content: "%out = jint(%in);"}
                 }
             }
-        }
+        }*/
         since: [6, 2]
     }
 

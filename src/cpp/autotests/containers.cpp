@@ -29,19 +29,46 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QtGlobal>
-#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
-size_t qHash(const std::pair<float,double>& value, size_t seed = 0);
+#include "global.h"
+
+#if QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)
+#include <QtGui/QVulkanInstance>
+#endif
+#ifndef QTJAMBI_NO_QUICK
+#include <QtQuick/QQuickItem>
+#endif
+#ifndef QTJAMBI_NO_WIDGETS
+#include <QtWidgets/QtWidgets>
 #endif
 
-#include "containers.h"
-#include <QtCore/QPoint>
-#include <QtJambi/QtJambiAPI>
-#include <QtJambi/Template2Cast>
-#include <QtJambi/ArithmeticCast>
 #include <QtJambi/Cast>
-
-#include <QtCore/QtCore>
+#include <QtJambi/ModelCast>
+#include <QtJambi/FutureCast>
+#include <QtJambi/ArrayCast>
+#include <QtJambi/EnumCast>
+#include <QtJambi/ArithmeticCast>
+#include <QtJambi/SmartPointerCast>
+#include <QtJambi/Template1Cast>
+#include <QtJambi/Template2Cast>
+#include <QtJambi/Template3Cast>
+#include <QtJambi/Template4Cast>
+#include <QtJambi/Template5Cast>
+#include <QtJambi/ContainerCast>
+#include <QtJambi/StringAPI>
+#include <QtJambi/BufferAPI>
+#include <QtJambiQml/Cast>
+#include <QtJambiCore/Cast>
+#include <QtJambi/QList>
+#include <QtJambi/QVariantList>
+#include <QtJambi/QObjectList>
+#include <QtJambi/QStringList>
+#include <QtJambi/QByteArrayList>
+#include <QtJambi/QPair>
+#include <QtJambi/QSet>
+#include <QtJambi/QMap>
+#include <QtJambi/QHash>
+#include <QtJambi/QMultiMap>
+#include <QtJambi/QMultiHash>
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 inline size_t qHash(const std::pair<float,double>& value, size_t seed){

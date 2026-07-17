@@ -306,10 +306,9 @@ void TypeInfo::setQualifiedName(const QStringList &qualified_name) {
 }
 
 bool TypeInfo::operator==(const TypeInfo &other) const {
-    if (arrayElements().count() != other.arguments().count())
-        return false;
-
 #if defined (RXX_CHECK_ARRAY_ELEMENTS) // ### it'll break
+    if (arrayElements().count() != other.arrayElements().count())
+        return false;
     for (int i = 0; i < arrayElements().count(); ++i) {
         QString elt1 = arrayElements().at(i).trimmed();
         QString elt2 = other.arrayElements().at(i).trimmed();
@@ -320,8 +319,9 @@ bool TypeInfo::operator==(const TypeInfo &other) const {
 #endif
 
     return m_flags == other.m_flags
-           && m_qualifiedName == other.m_qualifiedName
+            && m_qualifiedName == other.m_qualifiedName
             && m_arguments == other.m_arguments
+            && m_indirections == other.m_indirections
             && m_functionalReturnType == other.m_functionalReturnType
             && m_functionalArgumentTypes == other.m_functionalArgumentTypes;
 }

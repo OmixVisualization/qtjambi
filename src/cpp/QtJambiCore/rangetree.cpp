@@ -262,9 +262,55 @@ protected:
         }
     }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,12,0)
+    inline void resetParentInChildrenRecursive(range_type *children, int pmiFromColumn, int pmiToColumn)
+    {
+        const bool changePersistentIndexes = pmiToColumn >= pmiFromColumn;
+        const auto begin = QRangeModelDetails::adl_begin(*children);
+        const auto end = QRangeModelDetails::adl_end(*children);
+        for (auto it = begin; it != end; ++it) {
+            decltype(auto) maybeChildren = this->protocol().childRows(*(*it));
+            if (QRangeModelDetails::isValid(maybeChildren)) {
+                auto &childrenRef = QRangeModelDetails::refTo(maybeChildren);
+                auto *parentRow = QRangeModelDetails::pointerTo(*it);
+
+                int row = 0;
+                for (auto &child : childrenRef) {
+                    const_row_ptr oldParent = this->protocol().parentRow(*child);
+                    if (oldParent != parentRow) {
+                        if (changePersistentIndexes) {
+                            for (int column = pmiFromColumn; column <= pmiToColumn; ++column) {
+                                this->changePersistentIndex(this->createIndex(row, column, oldParent),
+                                                            this->createIndex(row, column, parentRow));
+                            }
+                        }
+                        this->protocol().setParentRow(*child, parentRow);
+                    }
+                    ++row;
+                }
+                resetParentInChildrenRecursive(&childrenRef, pmiFromColumn, pmiToColumn);
+            }
+        }
+    }
+#endif
+
     void resetParentInChildren(range_type *children)
     {
         if constexpr (tree_traits::has_setParentRow) {
+#if QT_VERSION >= QT_VERSION_CHECK(6,12,0)
+            const auto persistentIndexList = this->persistentIndexList();
+            const auto [firstColumn, lastColumn] = [&persistentIndexList]{
+                int first = std::numeric_limits<int>::max();
+                int last = -1;
+                for (const auto &pmi : persistentIndexList) {
+                    first = (std::min)(pmi.column(), first);
+                    last = (std::max)(pmi.column(), last);
+                }
+                return std::pair(first, last);
+            }();
+
+            resetParentInChildrenRecursive(children, firstColumn, lastColumn);
+#else
             const auto begin = QRangeModelDetails::begin(*children);
             const auto end = QRangeModelDetails::end(*children);
             for (auto it = begin; it != end; ++it) {
@@ -289,19 +335,21 @@ protected:
                     resetParentInChildren(QRangeModelDetails::pointerTo(*maybeChildren));
                 }
             }
-        }
-
-        if constexpr (treeType==TreeType::MutableTree) {
-            if(JniEnvironment env{100 + 16 * int(children->size())}){
-                if(jobject parentObject = children->rowObject(env)){
-                    for(auto* row : std::as_const(*children)){
-                        if(jobject entry = row->rowObject(env)){
-                            Java::QtCore::QRangeModel$TreeRowInterface::setParentRow(env, entry, nullptr);
-                            Java::QtCore::QRangeModel$TreeRowInterface::setParentRow(env, entry, parentObject);
+#endif
+            if constexpr (treeType==TreeType::MutableTree) {
+                if(JniEnvironment env{100 + 16 * int(children->size())}){
+                    if(jobject parentObject = children->rowObject(env)){
+                        for(auto* row : std::as_const(*children)){
+                            if(jobject entry = row->rowObject(env)){
+                                Java::QtCore::QRangeModel$TreeRowInterface::setParentRow(env, entry, nullptr);
+                                Java::QtCore::QRangeModel$TreeRowInterface::setParentRow(env, entry, parentObject);
+                            }
                         }
                     }
                 }
             }
+        }else{
+            Q_UNUSED(children)
         }
     }
 

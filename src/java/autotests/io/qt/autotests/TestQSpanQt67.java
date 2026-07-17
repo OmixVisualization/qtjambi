@@ -222,7 +222,7 @@ public class TestQSpanQt67 extends ApplicationInitializer {
 		Assert.assertEquals(Integer.valueOf(9), descendingIterator.next());
 		
 		Assert.assertTrue(span instanceof QSpan);
-		listIterator = ((QSpan<Integer>)span).mutableIterator();
+		listIterator = ((QSpan<Integer>)span).bidirectionalIterator();
 		Assert.assertEquals(Integer.valueOf(1), listIterator.next());
 		Assert.assertEquals(Integer.valueOf(2), listIterator.next());
 		listIterator.set(0);
@@ -233,9 +233,11 @@ public class TestQSpanQt67 extends ApplicationInitializer {
 		try{
     		span = QSpan.ofBuffer(IntBuffer.wrap(array).asReadOnlyBuffer());
     		Assert.assertTrue(span instanceof QSpan);
-    		((QSpan<Integer>)span).mutableIterator();
-    		Assert.fail("IllegalAccessException expected to be thrown");
-    	}catch(IllegalAccessException e) {
+    		java.util.ListIterator<Integer> li = ((QSpan<Integer>)span).bidirectionalIterator();
+    		li.next();
+    		li.set(1);
+    		Assert.fail("UnsupportedOperationException expected to be thrown");
+    	}catch(UnsupportedOperationException e) {
     	}
 	}
 	

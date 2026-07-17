@@ -355,17 +355,35 @@ class QGuiApplication___ extends QGuiApplication {
 }// class
 
 class QImage___ extends QImage {
-        public QImage(byte data[], int width, int height, Format format) {
-            initialize_native(this, data, width, height, format);
-        }
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qimage.html#QImage-7">QImage::<wbr/>QImage(const uchar*,<wbr/>int,<wbr/>int,<wbr/>QImage::Format,<wbr/>QImageCleanupFunction,<wbr/>void*)</a></code></p>
+     * <p>Constructs an image with the given width, height and format, that uses an existing read-only memory buffer, data.</p>
+     * <p>The width and height must be specified in pixels, data must be 32-bit aligned, and each scanline of data in the image must also be 32-bit aligned.</p>
+     * @param data
+     * @param width
+     * @param height
+     * @param format
+     */
+    public QImage(byte data[], int width, int height, Format format) {
+        initialize_native(this, data, width, height, format);
+    }
 
-        private static native void initialize_native(QImage instance, byte data[], int width, int height, Format format);
-        
-        public QImage(java.nio.Buffer data, int width, int height, Format format) {
-            initialize_native(this, data, width, height, format);
-        }
+    private static native void initialize_native(QImage instance, byte data[], int width, int height, Format format);
 
-        private static native void initialize_native(QImage instance, java.nio.Buffer data, int width, int height, Format format);
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qimage.html#QImage-7">QImage::<wbr/>QImage(const uchar*,<wbr/>int,<wbr/>int,<wbr/>QImage::Format,<wbr/>QImageCleanupFunction,<wbr/>void*)</a></code></p>
+     * <p>Constructs an image with the given width, height and format, that uses an existing read-only memory buffer, data.</p>
+     * <p>The width and height must be specified in pixels, data must be 32-bit aligned, and each scanline of data in the image must also be 32-bit aligned.</p>
+     * @param data
+     * @param width
+     * @param height
+     * @param format
+     */
+    public QImage(java.nio.Buffer data, int width, int height, Format format) {
+        initialize_native(this, data, width, height, format);
+    }
+
+    private static native void initialize_native(QImage instance, java.nio.Buffer data, int width, int height, Format format);
 }// class
 
 class QImage::JNI{

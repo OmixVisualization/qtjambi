@@ -49,6 +49,13 @@ private:
     Q_DISABLE_COPY_MOVE(ModelData)
 };
 
+#if 0
+namespace CoreAPI{
+QTJAMBI_EXPORT QVariant convertVariant(JNIEnv *env, const QObject* context, jobject java_object);
+QTJAMBI_EXPORT QMap<int,QVariant> convertItemData(JNIEnv *env, const QObject* context, jobject java_object);
+}
+#endif
+
 class QtJambiModelShell{
 public:
     typedef QtJambiAPI::ConstructorFn ConstructorFunction;

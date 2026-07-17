@@ -1,30 +1,16 @@
 package io.qt.autotests;
 
+import static io.qt.autotests.generated.ContainerFactory.*;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.*;
 
-import io.qt.QtUtilities;
-import io.qt.autotests.generated.ContainerTest;
-import io.qt.autotests.generated.General;
-import io.qt.autotests.generated.QList_QObject;
-import io.qt.autotests.generated.Tulip;
-import io.qt.autotests.generated.Variants;
-import io.qt.core.QCoreApplication;
-import io.qt.core.QEasingCurve;
-import io.qt.core.QEvent;
-import io.qt.core.QItemSelection;
-import io.qt.core.QList;
-import io.qt.core.QObject;
-import io.qt.core.QRunnable;
-import io.qt.gui.QStandardItemModel;
-import io.qt.gui.QTextCursor;
-import io.qt.gui.QTextDocument;
-import io.qt.widgets.QGraphicsItem;
-import io.qt.widgets.QGraphicsPathItem;
-import io.qt.widgets.QWidgetItem;
+import io.qt.*;
+import io.qt.autotests.generated.*;
+import io.qt.core.*;
+import io.qt.gui.*;
+import io.qt.widgets.*;
 
 public class TestReferenceCountingQList extends ApplicationInitializer {
 	
@@ -256,7 +242,7 @@ public class TestReferenceCountingQList extends ApplicationInitializer {
     public void test_cpp_QList_QObject() throws InterruptedException {
     	AtomicInteger counter = new AtomicInteger();
     	{
-	    	QList<QObject> container = Tulip.createListOfObjects();
+	    	QList<QObject> container = createListOfObjects();
 	    	for(int i=0; i<100; ++i) {
 	    		QObject object = new QObject();
 	    		General.internalAccess.registerCleaner(object, counter::incrementAndGet);
@@ -290,7 +276,7 @@ public class TestReferenceCountingQList extends ApplicationInitializer {
     public void test_cpp_QList_QRunnable() throws InterruptedException {
     	AtomicInteger counter = new AtomicInteger();
     	{
-	    	QList<QRunnable> container = Tulip.createListOfRunnables();
+	    	QList<QRunnable> container = createListOfRunnables();
 	    	for(int i=0; i<100; ++i) {
 	    		QRunnable object = new QRunnable() { @Override public void run() {} };
 	    		container.add(object);
@@ -325,7 +311,7 @@ public class TestReferenceCountingQList extends ApplicationInitializer {
     	AtomicInteger counter = new AtomicInteger();
     	TreeMap<Integer,Double> calls = new TreeMap<>();
     	{
-	    	QList<QEasingCurve.EasingFunction> container = Tulip.createListOfEasingFunctions();
+	    	QList<QEasingCurve.EasingFunction> container = createListOfEasingFunctions();
 	    	Assert.assertTrue(container!=null);
 	    	for(int i=0; i<100; ++i) {
 	    		int _i = i;
@@ -338,7 +324,7 @@ public class TestReferenceCountingQList extends ApplicationInitializer {
 	    		General.internalAccess.registerCleaner(object, counter::incrementAndGet);
 	    		object = null;
 	    	}
-	    	Tulip.testEasingFunctions(container);
+	    	testEasingFunctions(container);
 	        Assert.assertEquals(100, calls.size());
 	        for (int i = 0; i < calls.size(); i++) {
 	        	Assert.assertEquals(i+1, calls.get(i).intValue());
@@ -384,7 +370,7 @@ public class TestReferenceCountingQList extends ApplicationInitializer {
 	    		General.internalAccess.registerCleaner(object, counter::incrementAndGet);
 	    		object = null;
 	    	}
-	    	Tulip.testEasingFunctions(container);
+	    	testEasingFunctions(container);
 	        Assert.assertEquals(100, calls.size());
 	        for (int i = 0; i < calls.size(); i++) {
 	        	Assert.assertEquals(i, calls.get(i).intValue());
@@ -413,22 +399,22 @@ public class TestReferenceCountingQList extends ApplicationInitializer {
     }
     
     @Test
-    public void test_cpp_QList_Tulip_TestStdFunction() throws InterruptedException {
+    public void test_cpp_QList_TestStdFunction() throws InterruptedException {
     	AtomicInteger counter = new AtomicInteger();
     	TreeMap<Integer,Integer> calls = new TreeMap<>();
     	{
-	    	QList<Tulip.TestStdFunction> container = Tulip.createListOfStdFunctions();
+	    	QList<TestStdFunction> container = createListOfStdFunctions();
 	    	Assert.assertTrue(container!=null);
 	    	for(int i=0; i<100; ++i) {
 	    		int _i = i;
-	    		Tulip.TestStdFunction object = (int arg__1, boolean arg__2, double arg__3) -> {
+	    		TestStdFunction object = (int arg__1, boolean arg__2, double arg__3) -> {
 					calls.put(_i, arg__1);
 	    		};
 	    		container.add(object);
 	    		General.internalAccess.registerCleaner(object, counter::incrementAndGet);
 	    		object = null;
 	    	}
-	    	Tulip.testStdFunctions(container);
+	    	testStdFunctions(container);
 	        Assert.assertEquals(100, calls.size());
 	        for (int i = 0; i < calls.size(); i++) {
 	        	Assert.assertEquals(i+1, calls.get(i).intValue());
@@ -457,23 +443,24 @@ public class TestReferenceCountingQList extends ApplicationInitializer {
     }
     
     @Test
-    public void test_java_QList_Tulip_TestStdFunction() throws InterruptedException {
+    public void test_java_QList_TestStdFunction() throws InterruptedException {
     	AtomicInteger counter = new AtomicInteger();
     	TreeMap<Integer,Integer> calls = new TreeMap<>();
+    	int count = 100;
     	{
-	    	QList<Tulip.TestStdFunction> container = new QList<>(Tulip.TestStdFunction.class);
+	    	QList<TestStdFunction> container = new QList<>(TestStdFunction.class);
 	    	Assert.assertTrue(container!=null);
-	    	for(int i=0; i<100; ++i) {
+	    	for(int i=0; i<count; ++i) {
 	    		int _i = i;
-	    		Tulip.TestStdFunction object = (int arg__1, boolean arg__2, double arg__3) -> {
+	    		TestStdFunction object = (int arg__1, boolean arg__2, double arg__3) -> {
 					calls.put(_i, arg__1);
 	    		};
 	    		container.add(object);
 	    		General.internalAccess.registerCleaner(object, counter::incrementAndGet);
 	    		object = null;
 	    	}
-	    	Tulip.testStdFunctions(container);
-	        Assert.assertEquals(100, calls.size());
+	    	testStdFunctions(container);
+	        Assert.assertEquals(count, calls.size());
 	        for (int i = 0; i < calls.size(); i++) {
 	        	Assert.assertEquals(i, calls.get(i).intValue());
 			}
@@ -489,7 +476,7 @@ public class TestReferenceCountingQList extends ApplicationInitializer {
 	        General.internalAccess.registerCleaner(container, counter::incrementAndGet);
 	        container = null;
     	}
-        for (int i = 0; i < 50 && counter.get()<101; i++) {
+        for (int i = 0; i < 50 && counter.get()<count+1; i++) {
             ApplicationInitializer.runGC();
             synchronized(ApplicationInitializer.class) {
             	Thread.sleep(25);
@@ -497,7 +484,7 @@ public class TestReferenceCountingQList extends ApplicationInitializer {
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
             QCoreApplication.processEvents();
 		}
-        Assert.assertEquals(101, counter.get());
+        Assert.assertEquals(count+1, counter.get());
     }
     
     @Test

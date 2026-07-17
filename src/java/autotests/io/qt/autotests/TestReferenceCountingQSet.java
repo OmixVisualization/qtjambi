@@ -1,20 +1,13 @@
 package io.qt.autotests;
 
+import static io.qt.autotests.generated.MapFactory.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.*;
 
-import io.qt.autotests.generated.General;
-import io.qt.autotests.generated.Tulip;
-import io.qt.core.QCoreApplication;
-import io.qt.core.QEvent;
-import io.qt.core.QObject;
-import io.qt.core.QRunnable;
-import io.qt.core.QSet;
-import io.qt.widgets.QGraphicsItem;
-import io.qt.widgets.QGraphicsPathItem;
-import io.qt.widgets.QWidgetItem;
+import io.qt.autotests.generated.*;
+import io.qt.core.*;
+import io.qt.widgets.*;
 
 public class TestReferenceCountingQSet extends ApplicationInitializer {
 	
@@ -126,7 +119,7 @@ public class TestReferenceCountingQSet extends ApplicationInitializer {
     public void test_cpp_QSet_QObject() throws InterruptedException {
     	AtomicInteger counter = new AtomicInteger();
     	{
-	    	QSet<QObject> container = Tulip.createSetOfObjects();
+	    	QSet<QObject> container = createSetOfObjects();
 	    	for(int i=0; i<COUNT; ++i) {
 	    		QObject object = new QObject();
 	    		General.internalAccess.registerCleaner(object, counter::incrementAndGet);
@@ -160,7 +153,7 @@ public class TestReferenceCountingQSet extends ApplicationInitializer {
     public void test_cpp_QSet_QRunnable() throws InterruptedException {
     	AtomicInteger counter = new AtomicInteger();
     	{
-	    	QSet<QRunnable> container = Tulip.createSetOfRunnables();
+	    	QSet<QRunnable> container = createSetOfRunnables();
 	    	for(int i=0; i<COUNT; ++i) {
 	    		QRunnable object = new QRunnable() { @Override public void run() {} };
 	    		container.add(object);

@@ -30,18 +30,65 @@
 #ifndef CONTAINERACCESS_SEQUENTIAL_H
 #define CONTAINERACCESS_SEQUENTIAL_H
 
-#include "utils.h"
 #include "qtjambi_cast_iterator.h"
-#include "typetests.h"
-#include "containerapi.h"
+#include "containeraccess_iterator.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
 #include <QtCore/QSpan>
 #endif
 
+#define UNSUPPORTED_RETURN(Struct,R,msg)\
+template<template<typename T> class Container, typename T>\
+struct Struct<Container,T,false>{\
+    template<typename...Args>\
+    static R function(JNIEnv * env,Args&&...) {\
+        JavaException::raiseUnsupportedOperationException(env, #msg QTJAMBI_STACKTRACEINFO );\
+    }\
+    template<typename...Args>\
+    static R function(Args&&...) {\
+        throw "Unsupported operation: " #msg;\
+    }\
+};
+
+#define UNSUPPORTED_VOID(Struct,msg) UNSUPPORTED_RETURN(Struct,void,msg)
+
+#define UNSUPPORTED_VOID_PLAIN(Struct,msg)\
+template<template<typename T> class Container, typename T>\
+struct Struct<Container,T,false>{\
+    template<typename...Args>\
+    static void function(JNIEnv * env,Args&&...) {\
+        JavaException::raiseUnsupportedOperationException(env, #msg QTJAMBI_STACKTRACEINFO );\
+    }\
+    template<typename...Args>\
+    static void function(Args&&...) {}\
+};
+
 enum class QtJambiNativeID : jlong;
 
-namespace QtJambiPrivate {
+namespace QtJambiPrivate{
+
+template<typename T>
+struct container_registry;
+
+template<typename T>
+struct empty_container_registry{
+    Q_NORETURN static QMetaType register_container(QByteArrayView, AbstractContainerAccess*){
+        throw "Cannot register container";
+    }
+};
+
+template<typename T>
+static constexpr auto find_container_registry(){
+    if constexpr(is_complete_v< container_registry<T> >){
+        return container_registry<T>{};
+    }else{
+        QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/RegistryAPI, false && std::is_reference_v<T>);
+        return empty_container_registry<T>{};
+    }
+}
+
+template<typename T>
+using container_registry_impl = decltype(find_container_registry<T>());
 
 QTJAMBI_EXPORT jobject findFunctionPointerObject(JNIEnv *env, const void * pointer, const std::type_info& typeId);
 
@@ -50,7 +97,7 @@ typedef bool (*IsContainerAccessFunction)(JNIEnv *, jobject, const QMetaType&, v
 
 template<template<typename T> class Container, typename T, bool isPointer, bool = ((is_copy_constructible_v<T> && is_default_constructible_v<T>)
                                                                                    || std::is_trivially_copyable_v<T>
-                                                                                   || is_shared_data<Container<T>>::value) && is_copy_constructible_v<Container<T>>>
+                                                                                   || supports_isDetached_v<Container<T>>) && is_copy_constructible_v<Container<T>>>
 struct CloneContainer{
     static constexpr CopyFunction function = nullptr;
 };
@@ -59,12 +106,6 @@ template<template<typename T> class Container, typename T>
 struct CloneContainer<Container,T,false,true>{
     static void* clone(const void* ptr) { return new Container<T>(*reinterpret_cast<const Container<T>*>(ptr)); }
     static constexpr CopyFunction function = &clone;
-};
-
-template<template<typename T> class Container, typename T>
-struct DeleteContainer{
-    static void del(void* ptr,bool) { delete reinterpret_cast<Container<T>*>(ptr); }
-    static constexpr PtrDeleterFunction function = &del;
 };
 
 typedef AbstractContainerAccess*(*NewContainerAccessFunction)();
@@ -122,21 +163,18 @@ struct ContainerContentType<T*>{
     static constexpr AbstractContainerAccess* accessFactory(){ return nullptr; }
 };
 
-template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
+template<template<typename T> class Container, typename T, bool = supports_equal_v<T>>
 struct ContainerContains{
     static jboolean function(JNIEnv * env, const void* ptr, jobject object) {
         const Container<T> *container = static_cast<const Container<T> *>(ptr);
         return container->contains(::qtjambi_cast<T>(env, object));
     }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerContains<Container, T, false>{
-    static jboolean function(JNIEnv * env, const void*, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "contains(value)" QTJAMBI_STACKTRACEINFO );
-        return false;
+    static bool function(const void* ptr, const void* value) {
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        return container->contains(*static_cast<const T*>(value));
     }
 };
+UNSUPPORTED_RETURN(ContainerContains,jboolean,contains)
 
 template<template<typename T> class Container, typename T, IsContainerFunction isContainer>
 struct ContainerIntersects{
@@ -240,112 +278,44 @@ struct ContainerSubtract{
     }
 };
 
-template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
+template<template<typename T> class Container, typename T, bool = supports_equal_v<T>>
 struct ContainerCountObject{
-    static qsizetype function(JNIEnv * env, const void*, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "count(value)" QTJAMBI_STACKTRACEINFO );
-        return 0;
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerCountObject<Container, T, true>{
     static qsizetype function(JNIEnv * env, const void* ptr, jobject object) {
         const Container<T> *container = static_cast<const Container<T> *>(ptr);
         return container->count(::qtjambi_cast<T>(env, object));
     }
 };
+UNSUPPORTED_RETURN(ContainerCountObject,qsizetype,count)
 
-template<template<typename T> class Container, typename T>
-struct ContainerBegin{
-    static jobject function(JNIEnv *env, const ExtendedContainerInfo& ptr) {
-        Container<T> *container = static_cast<Container<T> *>(ptr.container);
-        return ::qtjambi_cast<jobject>(env, ptr.nativeId, container->begin());
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerEnd{
-    static jobject function(JNIEnv *env, const ExtendedContainerInfo& ptr) {
-        Container<T> *container = static_cast<Container<T> *>(ptr.container);
-        return ::qtjambi_cast<jobject>(env, ptr.nativeId, container->end());
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerConstBegin{
-    static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr) {
-        const Container<T> *container = static_cast<const Container<T> *>(ptr.container);
-        return ::qtjambi_cast<jobject>(env, ptr.nativeId, container->constBegin());
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerConstEnd{
-    static jobject function(JNIEnv *env, const ConstExtendedContainerInfo& ptr) {
-        const Container<T> *container = static_cast<const Container<T> *>(ptr.container);
-        return ::qtjambi_cast<jobject>(env, ptr.nativeId, container->constEnd());
-    }
-};
-
-template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
+template<template<typename T> class Container, typename T, bool = supports_equal_v<T>>
 struct ContainerEndsWith{
-    static jboolean function(JNIEnv * env, const void*, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "endsWith(value)" QTJAMBI_STACKTRACEINFO );
-        return false;
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerEndsWith<Container, T, true>{
     static jboolean function(JNIEnv * env, const void* ptr, jobject object) {
         const Container<T> *container = static_cast<const Container<T> *>(ptr);
         return container->endsWith(::qtjambi_cast<T>(env, object));
     }
 };
+UNSUPPORTED_RETURN(ContainerEndsWith,jboolean,endsWith)
 
-template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
+template<template<typename T> class Container, typename T, bool = supports_equal_v<T>>
 struct ContainerIndexOf{
-    static qsizetype function(JNIEnv * env, const void*, jobject, qsizetype) {
-        JavaException::raiseUnsupportedOperationException(env, "indexOf(value, index)" QTJAMBI_STACKTRACEINFO );
-        return 0;
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerIndexOf<Container, T, true>{
     static qsizetype function(JNIEnv * env, const void* ptr, jobject object, qsizetype idx) {
         const Container<T> *container = static_cast<const Container<T> *>(ptr);
         return container->indexOf(::qtjambi_cast<T>(env, object), int(idx));
     }
 };
+UNSUPPORTED_RETURN(ContainerIndexOf,qsizetype,indexOf)
 
-template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
+template<template<typename T> class Container, typename T, bool = supports_equal_v<T>>
 struct ContainerLastIndexOf{
-    static qsizetype function(JNIEnv * env, const void*, jobject, qsizetype) {
-        JavaException::raiseUnsupportedOperationException(env, "lastIndexOf(value,index)" QTJAMBI_STACKTRACEINFO );
-        return 0;
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerLastIndexOf<Container, T, true>{
     static qsizetype function(JNIEnv * env, const void* ptr, jobject object, qsizetype idx) {
         const Container<T> *container = static_cast<const Container<T> *>(ptr);
         return container->lastIndexOf(::qtjambi_cast<T>(env, object), int(idx));
     }
 };
+UNSUPPORTED_RETURN(ContainerLastIndexOf,qsizetype,lastIndexOf)
 
 template<template<typename T> class Container, jobject(*objectFromContainer)(JNIEnv *, void*&, AbstractContainerAccess*&), typename T, bool = is_default_constructible_v<T>>
 struct ContainerMid{
-    static ContainerAndAccessInfo function(JNIEnv * env, const ConstContainerAndAccessInfo&, qsizetype, qsizetype) {
-        JavaException::raiseUnsupportedOperationException(env, "mid(index1, index2)" QTJAMBI_STACKTRACEINFO );
-        return {};
-    }
-};
-
-template<template<typename T> class Container, jobject(*objectFromContainer)(JNIEnv *, void*&, AbstractContainerAccess*&), typename T>
-struct ContainerMid<Container, objectFromContainer, T, true>{
     static ContainerAndAccessInfo function(JNIEnv * env, const ConstContainerAndAccessInfo& ptr, qsizetype idx1, qsizetype idx2) {
         ContainerAndAccessInfo result;
         const Container<T> *container = static_cast<const Container<T> *>(ptr.container);
@@ -357,16 +327,16 @@ struct ContainerMid<Container, objectFromContainer, T, true>{
     }
 };
 
-template<template<typename T> class Container, typename T, IsContainerFunction is_Container1_fct, bool = supports_equal<T>::value>
-struct ContainerEquals{
-    static jboolean function(JNIEnv * env, const void*, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "operator==(other)" QTJAMBI_STACKTRACEINFO );
-        return false;
+template<template<typename T> class Container, jobject(*objectFromContainer)(JNIEnv *, void*&, AbstractContainerAccess*&), typename T>
+struct ContainerMid<Container, objectFromContainer, T, false>{
+    static ContainerAndAccessInfo function(JNIEnv * env, const ConstContainerAndAccessInfo&, qsizetype, qsizetype) {
+        JavaException::raiseUnsupportedOperationException(env, "mid(index1, index2)" QTJAMBI_STACKTRACEINFO );
+        return {};
     }
 };
 
-template<template<typename T> class Container, typename T, IsContainerFunction is_Container1_fct>
-struct ContainerEquals<Container, T, is_Container1_fct, true>{
+template<template<typename T> class Container, typename T, IsContainerFunction is_Container1_fct, bool = supports_equal_v<T>>
+struct ContainerEquals{
     static jboolean function(JNIEnv * env, const void* ptr, jobject other) {
         const Container<T> *container = static_cast<const Container<T> *>(ptr);
         std::unique_ptr<Container<T> > __qt_scoped_pointer;
@@ -390,6 +360,14 @@ struct ContainerEquals<Container, T, is_Container1_fct, true>{
     }
 };
 
+template<template<typename T> class Container, typename T, IsContainerFunction is_Container1_fct>
+struct ContainerEquals<Container, T, is_Container1_fct, false>{
+    static jboolean function(JNIEnv * env, const void*, jobject) {
+        JavaException::raiseUnsupportedOperationException(env, "operator==(other)" QTJAMBI_STACKTRACEINFO );
+        return false;
+    }
+};
+
 template<template<typename T> class Container, typename T>
 struct ContainerSize{
     static qsizetype function(JNIEnv * env, const void* ptr) {
@@ -403,93 +381,53 @@ struct ContainerSize{
     }
 };
 
-template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
+template<template<typename T> class Container, typename T, bool = supports_equal_v<T>>
 struct ContainerStartsWith{
-    static jboolean function(JNIEnv * env, const void*, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "startsWith(value)" QTJAMBI_STACKTRACEINFO );
-        return false;
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerStartsWith<Container, T, true>{
     static jboolean function(JNIEnv * env, const void* ptr, jobject object) {
         const Container<T> *container = static_cast<const Container<T> *>(ptr);
         return container->startsWith(::qtjambi_cast<T>(env, object));
     }
 };
+UNSUPPORTED_RETURN(ContainerStartsWith,jboolean,startsWith)
 
 template<template<typename T> class Container, typename T, bool = is_default_constructible_v<T>>
 struct SequentialContainerValue{
-    static jobject function(JNIEnv * env, const void*, qsizetype) {
-        JavaException::raiseUnsupportedOperationException(env, "value(i)" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct SequentialContainerValue<Container, T, true>{
     static jobject function(JNIEnv * env, const void* ptr, qsizetype index) {
         const Container<T> *container = static_cast<const Container<T> *>(ptr);
         return ::qtjambi_cast<jobject>(env, container->value(index));
     }
 };
+UNSUPPORTED_RETURN(SequentialContainerValue,jobject,value)
 
 template<template<typename T> class Container, typename T, bool = is_copy_constructible_v<T> || is_move_constructible_v<T>>
 struct ContainerValueDefault{
-    static jobject function(JNIEnv * env, const void*, qsizetype, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "value(i,defaultValue)" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerValueDefault<Container, T, true>{
     static jobject function(JNIEnv * env, const void* ptr, qsizetype index, jobject object) {
         const Container<T> *container = static_cast<const Container<T> *>(ptr);
         return ::qtjambi_cast<jobject>(env, container->value(index, ::qtjambi_cast<T>(env, object)));
     }
 };
+UNSUPPORTED_RETURN(ContainerValueDefault,jobject,value)
 
 template<template<typename T> class Container, typename T, bool = is_copy_constructible_v<T> || is_move_constructible_v<T>>
 struct ContainerAppend{
-    static void function(JNIEnv * env, const ContainerInfo&, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "append(value)" QTJAMBI_STACKTRACEINFO );
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerAppend<Container, T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, jobject object) {
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
         container->append(::qtjambi_cast<T>(env, object));
     }
 };
+UNSUPPORTED_VOID(ContainerAppend,append)
 
 template<template<typename T> class Container, typename T, bool = is_default_constructible_v<T>>
 struct ContainerFill{
-    static void function(JNIEnv * env, const ContainerInfo&, jobject, qsizetype) {
-        JavaException::raiseUnsupportedOperationException(env, "fill(value,size)" QTJAMBI_STACKTRACEINFO );
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerFill<Container, T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, jobject object, qsizetype size) {
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
         container->fill(::qtjambi_cast<T>(env, object), size);
     }
 };
+UNSUPPORTED_VOID(ContainerFill,fill)
 
 template<typename T, bool = is_copy_constructible_v<T> || is_move_constructible_v<T>>
 struct ContainerAppendList{
-    static void function(JNIEnv * env, const ContainerInfo&, ContainerAndAccessInfo&) {
-        JavaException::raiseUnsupportedOperationException(env, "QList::append(list)" QTJAMBI_STACKTRACEINFO );
-    }
-};
-
-template<typename T>
-struct ContainerAppendList<T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, ContainerAndAccessInfo& containerInfo) {
         QList<T> *container = static_cast<QList<T> *>(ptr.container);
         std::unique_ptr<QList<T> > __qt_scoped_pointer;
@@ -514,6 +452,13 @@ struct ContainerAppendList<T, true>{
     }
 };
 
+template<typename T>
+struct ContainerAppendList<T, false>{
+    static void function(JNIEnv * env, const ContainerInfo&, ContainerAndAccessInfo&) {
+        JavaException::raiseUnsupportedOperationException(env, "QList::append(list)" QTJAMBI_STACKTRACEINFO );
+    }
+};
+
 template<template<typename T> class Container, typename T>
 struct ContainerClear{
     static void function(JNIEnv *, const ContainerInfo& ptr) {
@@ -524,30 +469,15 @@ struct ContainerClear{
 
 template<template<typename T> class Container, typename T, bool = is_copy_constructible_v<T> && is_default_constructible_v<T>>
 struct ContainerInsertAt{
-    static void function(JNIEnv * env, const ContainerInfo&, qsizetype, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "insert(i,value)" QTJAMBI_STACKTRACEINFO );
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerInsertAt<Container, T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, qsizetype i, jobject value) {
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
         container->insert(i, ::qtjambi_cast<T>(env, value));
     }
 };
+UNSUPPORTED_VOID(ContainerInsertAt,insert)
 
 template<template<typename T> class Container, typename T, bool = is_copy_constructible_v<T> && is_default_constructible_v<T>>
 struct ContainerInsertN{
-    static void function(JNIEnv * env, const ContainerInfo&, qsizetype, qsizetype, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "insert(i,n,value)" QTJAMBI_STACKTRACEINFO );
-    }
-    static void function(void*, qsizetype, qsizetype, const void*) {
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerInsertN<Container, T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, qsizetype i, qsizetype n, jobject value) {
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
         container->insert(i, n, ::qtjambi_cast<T>(env, value));
@@ -557,6 +487,7 @@ struct ContainerInsertN<Container, T, true>{
         container->insert(index, n, *reinterpret_cast<const T*>(entry));
     }
 };
+UNSUPPORTED_VOID_PLAIN(ContainerInsertN,insert)
 
 template<template<typename T> class Container, typename T>
 struct ContainerInsert{
@@ -564,54 +495,39 @@ struct ContainerInsert{
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
         container->insert(::qtjambi_cast<T>(env, value));
     }
+    static void function(void* ptr, const void* entry) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->insert(*reinterpret_cast<const T*>(entry));
+    }
 };
 
 template<template<typename T> class Container, typename T, bool = is_copy_constructible_v<T> && is_default_constructible_v<T>>
 struct ContainerMove{
-    static void function(JNIEnv * env, const ContainerInfo&, qsizetype, qsizetype) {
-        JavaException::raiseUnsupportedOperationException(env, "move(index1, index2)" QTJAMBI_STACKTRACEINFO );
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerMove<Container, T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, qsizetype idx1, qsizetype idx2) {
         Q_UNUSED(env)
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
         container->move(idx1, idx2);
     }
 };
+UNSUPPORTED_VOID(ContainerMove,move)
 
 template<template<typename T> class Container, typename T, bool = is_copy_constructible_v<T> || is_move_constructible_v<T>>
 struct ContainerPrepend{
-    static void function(JNIEnv * env, const ContainerInfo&, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "prepend(value)" QTJAMBI_STACKTRACEINFO );
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerPrepend<Container, T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, jobject object) {
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
         container->prepend(::qtjambi_cast<T>(env, object));
     }
 };
+UNSUPPORTED_VOID(ContainerPrepend,prepend)
 
-template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
+template<template<typename T> class Container, typename T, bool = supports_equal_v<T>>
 struct ContainerRemoveAll{
-    static qsizetype function(JNIEnv * env, const ContainerInfo&, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "removeAll(value)" QTJAMBI_STACKTRACEINFO );
-        return 0;
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerRemoveAll<Container, T, true>{
     static qsizetype function(JNIEnv * env, const ContainerInfo& ptr, jobject object) {
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
         return container->removeAll(::qtjambi_cast<T>(env, object));
     }
 };
+UNSUPPORTED_RETURN(ContainerRemoveAll,qsizetype,removeAll)
 
 template<template<typename T> class Container, typename T>
 struct ContainerRemoveAt{
@@ -628,30 +544,16 @@ struct ContainerRemoveAt{
 
 template<template<typename T> class Container, typename T, bool = is_default_constructible_v<T>>
 struct ContainerRemoveI{
-    static void function(JNIEnv * env, const ContainerInfo&, qsizetype) {
-        JavaException::raiseUnsupportedOperationException(env, "remove(index)" QTJAMBI_STACKTRACEINFO );
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerRemoveI<Container, T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, qsizetype idx) {
         Q_UNUSED(env)
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
         container->remove(idx);
     }
 };
+UNSUPPORTED_VOID(ContainerRemoveI,remove)
 
 template<template<typename T> class Container, typename T, bool = is_default_constructible_v<T>>
 struct ContainerRemoveN{
-    static void function(JNIEnv * env, const ContainerInfo&, qsizetype, qsizetype) {
-        JavaException::raiseUnsupportedOperationException(env, "remove(index,n)" QTJAMBI_STACKTRACEINFO );
-    }
-    static void function(void*, qsizetype, qsizetype) {}
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerRemoveN<Container, T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, qsizetype idx, qsizetype n) {
         Q_UNUSED(env)
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
@@ -662,49 +564,28 @@ struct ContainerRemoveN<Container, T, true>{
         container->remove(idx, n);
     }
 };
+UNSUPPORTED_VOID_PLAIN(ContainerRemoveN,remove)
 
-template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
+template<template<typename T> class Container, typename T, bool = supports_equal_v<T>>
 struct ContainerRemoveOne{
-    static jboolean function(JNIEnv * env, const ContainerInfo&, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "removeOne(value)" QTJAMBI_STACKTRACEINFO );
-        return false;
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerRemoveOne<Container, T, true>{
     static jboolean function(JNIEnv * env, const ContainerInfo& ptr, jobject object) {
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
         return container->removeOne(::qtjambi_cast<T>(env, object));
     }
 };
+UNSUPPORTED_VOID(ContainerRemoveOne,remove)
 
-template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
+template<template<typename T> class Container, typename T, bool = supports_equal_v<T>>
 struct ContainerRemove{
-    static jboolean function(JNIEnv * env, const ContainerInfo&, jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "remove(value)" QTJAMBI_STACKTRACEINFO );
-        return false;
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerRemove<Container, T, true>{
     static jboolean function(JNIEnv * env, const ContainerInfo& ptr, jobject object) {
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
         return container->remove(::qtjambi_cast<T>(env, object));
     }
 };
+UNSUPPORTED_VOID(ContainerRemove,remove)
 
-template<template<typename T> class Container, typename T, bool = is_default_constructible_v<T> && !std::is_const<T>::value>
+template<template<typename T> class Container, typename T, bool = is_default_constructible_v<T> && !std::is_const_v<T>>
 struct ContainerReplace{
-    static void function(JNIEnv * env, const ContainerInfo&, qsizetype,jobject) {
-        JavaException::raiseUnsupportedOperationException(env, "replace(index,value)" QTJAMBI_STACKTRACEINFO );
-    }
-    static void function(void*, qsizetype, const void*) {}
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerReplace<Container, T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, qsizetype idx,jobject newObject) {
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
         container->replace(idx, ::qtjambi_cast<T>(env, newObject));
@@ -715,34 +596,30 @@ struct ContainerReplace<Container, T, true>{
         container->replace(idx, *reinterpret_cast<const T*>(newObject));
     }
 };
+UNSUPPORTED_VOID_PLAIN(ContainerReplace,replace)
 
 template<template<typename T> class Container, typename T, bool = is_default_constructible_v<T>>
 struct ContainerReserve{
-    static void function(JNIEnv * env, const ContainerInfo&, qsizetype) {
-        JavaException::raiseUnsupportedOperationException(env, "reserve(size)" QTJAMBI_STACKTRACEINFO );
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerReserve<Container, T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, qsizetype size) {
         Q_UNUSED(env)
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
         container->reserve(size);
     }
+    static void function(void* ptr, qsizetype size) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->reserve(size);
+    }
+};
+template<template<typename T> class Container, typename T>
+struct ContainerReserve<Container,T,false>{
+    static void function(JNIEnv * env,...) {
+        JavaException::raiseUnsupportedOperationException(env, "reserve" QTJAMBI_STACKTRACEINFO );
+    }
+    static void function(void*,...){}
 };
 
 template<template<typename T> class Container, typename T, bool = is_default_constructible_v<T> && !std::is_const<T>::value>
 struct ContainerResize{
-    static void function(JNIEnv * env, const ContainerInfo&, qsizetype) {
-        JavaException::raiseUnsupportedOperationException(env, "resize(size)" QTJAMBI_STACKTRACEINFO );
-    }
-    static void function(void*, qsizetype) {
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerResize<Container, T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr, qsizetype size) {
         Q_UNUSED(env)
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
@@ -753,22 +630,17 @@ struct ContainerResize<Container, T, true>{
         container->resize(size);
     }
 };
+UNSUPPORTED_VOID_PLAIN(ContainerResize,resize)
 
 template<template<typename T> class Container, typename T, bool = is_default_constructible_v<T>>
 struct ContainerSqueeze{
-    static void function(JNIEnv * env, const ContainerInfo&) {
-        JavaException::raiseUnsupportedOperationException(env, "squeeze()" QTJAMBI_STACKTRACEINFO );
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerSqueeze<Container, T, true>{
     static void function(JNIEnv * env, const ContainerInfo& ptr) {
         Q_UNUSED(env)
         Container<T> *container = static_cast<Container<T> *>(ptr.container);
         container->squeeze();
     }
 };
+UNSUPPORTED_VOID(ContainerSqueeze,squeeze)
 
 template<template<typename T> class Container, typename T>
 struct ContainerSwap{
@@ -778,6 +650,9 @@ struct ContainerSwap{
         container->swapItemsAt(idx1, idx2);
     }
 };
+
+#undef UNSUPPORTED_VOID
+#undef UNSUPPORTED_RETURN
 
 template<typename T>
 PtrOwnerFunction registeredOwnerFunction(){
@@ -928,21 +803,173 @@ template<typename T, typename Super>
 struct SequentialAccessSuperclassDecider<T,Super,false> : SequentialAccessSuperclassDecider_IsContainer<T,Super>{
 };
 
+template<typename T>
+struct QVariantListExport;
+template<typename T>
+struct QStringListExport;
+template<typename T>
+struct QModelListExport;
+template<typename T>
+struct QListExport;
+template<typename T>
+struct QObjectListExport;
+template<typename T>
+struct QSetExport;
+template<typename T>
+struct QByteArrayListExport;
+
+template<template<typename> class ExportTest, typename T, typename...Args>
+struct SequentialAccessExportTest;
+
+template<template<typename> class ExportTest, typename T>
+struct SequentialAccessExportTest<ExportTest, T> : std::true_type{};
+
+template<template<typename> class ExportTest, bool is_same, typename T, typename...Args>
+struct SequentialAccessExportCond : SequentialAccessExportTest<ExportTest, T, Args...>{};
+
+template<template<typename> class ExportTest, typename T, typename...Args>
+struct SequentialAccessExportCond<ExportTest, true, T, Args...> : is_complete<ExportTest<T>>{};
+
+template<template<typename> class ExportTest, typename T, typename A, typename...Args>
+struct SequentialAccessExportTest<ExportTest, T, A, Args...> : SequentialAccessExportCond<ExportTest, std::is_same_v<T,A>, T, Args...> {};
+
 } // namespace QtJambiPrivate
+
+class QModelIndex;
+class QPersistentModelIndex;
 
 template<typename T>
 class QListAccess : public QtJambiPrivate::SequentialAccessSuperclassDecider<T,AbstractListAccess>::type{
     typedef typename QtJambiPrivate::SequentialAccessSuperclassDecider<T,AbstractListAccess>::type Super;
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/QList, QtJambiPrivate::SequentialAccessExportTest<QtJambiPrivate::QListExport, T,
+                                                                                         bool, qint8, qint16, qint32, qint64,
+                                                                                         double, float, QChar, char16_t, char32_t>::value);
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/QStringList, QtJambiPrivate::SequentialAccessExportTest<QtJambiPrivate::QStringListExport, T, QString>::value);
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/QByteArrayList, QtJambiPrivate::SequentialAccessExportTest<QtJambiPrivate::QByteArrayListExport, T, QByteArray>::value);
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/QObjectList, QtJambiPrivate::SequentialAccessExportTest<QtJambiPrivate::QObjectListExport, T, QObject*>::value);
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/ModelCast, QtJambiPrivate::SequentialAccessExportTest<QtJambiPrivate::QModelListExport, T, QModelIndex, QPersistentModelIndex>::value);
+    using Container = QList<T>;
+    ~QListAccess() override {}
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::const_iterator, Container>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        return QtJambiAPI::convertListIteratorToJavaObject(env,
+                                                          new Iterator(std::move(iter)),
+                                                          QtJambiAPI::deletePointer<Iterator>,
+                                                          QSequentialConstIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::iterator, QtJambiPrivate::ContainerRef<Container>>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        QSharedPointer<QtJambiPrivate::ContainerRefPrivate> owner = iter.storage().reference();
+        return QtJambiPrivate::convertListIteratorToJavaObject(env,
+                                                               owner,
+                                                               new Iterator(std::move(iter)),
+                                                               QtJambiAPI::deletePointer<Iterator>,
+                                                               QSequentialIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::const_reverse_iterator, Container>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        return QtJambiAPI::convertListReverseIteratorToJavaObject(env,
+                                                           new Iterator(std::move(iter)),
+                                                           QtJambiAPI::deletePointer<Iterator>,
+                                                           QSequentialConstIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::reverse_iterator, QtJambiPrivate::ContainerRef<Container>>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        QSharedPointer<QtJambiPrivate::ContainerRefPrivate> owner = iter.storage().reference();
+        return QtJambiPrivate::convertListReverseIteratorToJavaObject(env,
+                                                                      owner,
+                                                                      new Iterator(std::move(iter)),
+                                                                      QtJambiAPI::deletePointer<Iterator>,
+                                                                      QSequentialIteratorAccess<Iterator,Container>::newInstance());
+    }
 protected:
     QListAccess(){}
 public:
-    static AbstractListAccess* newInstance(){
+    static QListAccess<T>* newInstance(){
         static QListAccess<T> instance;
         return &instance;
     }
 
     AbstractListAccess* clone() override{
         return this;
+    }
+
+    auto constBegin(const void* container) const {
+        return std::cbegin(*static_cast<const QList<T> *>(container));
+    }
+
+    auto constEnd(const void* container) const {
+        return std::cend(*static_cast<const QList<T> *>(container));
+    }
+
+    auto begin(void* container) const {
+        return std::begin(*static_cast<QList<T> *>(container));
+    }
+
+    auto end(void* container) const {
+        return std::end(*static_cast<QList<T> *>(container));
+    }
+
+    auto constReverseBegin(const void* container) const {
+        const QList<T> &list = *static_cast<const QList<T> *>(container);
+        return list.crbegin();
+    }
+
+    auto constReverseEnd(const void* container) const {
+        const QList<T> &list = *static_cast<const QList<T> *>(container);
+        return list.crend();
+    }
+
+    auto reverseBegin(void* container) const {
+        QList<T>& list = *static_cast<QList<T> *>(container);
+        return list.rbegin();
+    }
+
+    auto reverseEnd(void* container) const {
+        QList<T>& list = *static_cast<QList<T> *>(container);
+        return list.rend();
+    }
+
+    template<typename Iter>
+    bool isBegin(const void* container, const Iter& iter)const{
+        if constexpr(std::is_same_v<Iter,typename QList<T>::reverse_iterator>
+                      || std::is_same_v<Iter,typename QList<T>::const_reverse_iterator>){
+            return iter==constReverseBegin(container);
+        }else{
+            return iter==constBegin(container);
+        }
+    }
+
+    template<typename Iter>
+    bool isEnd(const void* container, const Iter& iter)const{
+        if constexpr(std::is_same_v<Iter,typename QList<T>::reverse_iterator>
+                      || std::is_same_v<Iter,typename QList<T>::const_reverse_iterator>){
+            return iter==constReverseEnd(container);
+        }else{
+            return iter==constEnd(container);
+        }
+    }
+
+    template<typename Iter>
+    bool isValid(const void* container, const Iter& iter)const{
+        if constexpr(QtJambiPrivate::supports_less_than_v<Iter>){
+            if constexpr(std::is_same_v<Iter,typename QList<T>::reverse_iterator>
+                          || std::is_same_v<Iter,typename QList<T>::const_reverse_iterator>){
+                auto end = constReverseEnd(container);
+                auto begin = constReverseBegin(container);
+                return (begin<iter || begin==iter) && iter<end;
+            }else{
+                auto end = constEnd(container);
+                auto begin = constBegin(container);
+                return (begin<iter || begin==iter) && iter<end;
+            }
+        }else{
+            return !isEnd(container, iter);
+        }
     }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
@@ -1075,7 +1102,7 @@ public:
 
     jobject at(JNIEnv * env, const void* container, qsizetype index) override {
         if constexpr(QtJambiPrivate::is_default_constructible_v<T>){
-            return ::qtjambi_cast<jobject>(env, static_cast<const QList<T> *>(container)->at(index));
+            return qtjambi_cast<jobject>(env, static_cast<const QList<T> *>(container)->at(index));
         }else{
             JavaException::raiseUnsupportedOperationException(env, "at(i)" QTJAMBI_STACKTRACEINFO );
             return nullptr;
@@ -1153,20 +1180,44 @@ public:
         return QtJambiPrivate::ContainerContains<QList, T>::function(container, value);
     }
 
-    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
-        return QtJambiPrivate::ContainerConstBegin<QList, T>::function(env, container);
+    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::cbegin(container), container, ptr));
     }
 
-    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
-        return QtJambiPrivate::ContainerConstEnd<QList, T>::function(env, container);
+    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::cend(container), container, ptr));
     }
 
-    jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override {
-        return QtJambiPrivate::ContainerBegin<QList, T>::function(env, container);
+    jobject begin(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::begin(container), container, ptr));
     }
 
-    jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override {
-        return QtJambiPrivate::ContainerEnd<QList, T>::function(env, container);
+    jobject end(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::end(container), container, ptr));
+    }
+
+    jobject constReverseBegin(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::crbegin(container), container, ptr));
+    }
+
+    jobject constReverseEnd(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::crend(container), container, ptr));
+    }
+
+    jobject reverseBegin(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::rbegin(container), container, ptr));
+    }
+
+    jobject reverseEnd(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::rend(container), container, ptr));
     }
 
     void appendList(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& containerInfo) override {
@@ -1186,6 +1237,10 @@ public:
 
     void reserve(JNIEnv * env, const ContainerInfo& container, qsizetype size) override {
         QtJambiPrivate::ContainerReserve<QList, T>::function(env, container, size);
+    }
+
+    void reserve(void* container, qsizetype size) override {
+        QtJambiPrivate::ContainerReserve<QList, T>::function(container, size);
     }
 
     void replace(void* container, qsizetype index, const void* value) override {
@@ -1407,7 +1462,7 @@ private:
         ~ElementIterator() override {};
         bool hasNext() override {return current!=end;};
         jobject next(JNIEnv * env) override {
-            jobject obj = ::qtjambi_cast<jobject>(env, *current);
+            jobject obj = qtjambi_cast<jobject>(env, *current);
             ++current;
             return obj;
         }
@@ -1440,10 +1495,11 @@ private:
         std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
             return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
         }
+        static jobject convertValue(JNIEnv* env,const void* pointer) {
+            return qtjambi_cast<jobject>(env, *reinterpret_cast<const T*>(pointer));
+        };
         std::function<jobject(JNIEnv*,const void*)> elementConverter() const override {
-            return [](JNIEnv* env,const void* pointer) -> jobject{
-                return ::qtjambi_cast<jobject>(env, reinterpret_cast<const T*>(pointer));
-            };
+            return &convertValue;
         }
     };
 public:
@@ -1458,16 +1514,68 @@ public:
 template<typename T>
 class QSetAccess : public QtJambiPrivate::SequentialAccessSuperclassDecider<T,AbstractSetAccess>::type{
     typedef typename QtJambiPrivate::SequentialAccessSuperclassDecider<T,AbstractSetAccess>::type Super;
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/QList, QtJambiPrivate::SequentialAccessExportTest<QtJambiPrivate::QSetExport, T,
+                                                                                         bool, qint8, qint16, qint32, qint64,
+                                                                                         double, float, QChar, char16_t, char32_t,
+                                                                                         QString, QByteArray, QObject*>::value);
+    using Container = QSet<T>;
+    ~QSetAccess() override {}
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::const_iterator, Container>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        return QtJambiAPI::convertSetIteratorToJavaObject(env,
+                                                           new Iterator(std::move(iter)),
+                                                           QtJambiAPI::deletePointer<Iterator>,
+                                                           QSequentialConstIteratorAccess<Iterator,Container>::newInstance());
+    }
+
 protected:
     QSetAccess(){}
 public:
-    static AbstractSetAccess* newInstance(){
+    static QSetAccess<T>* newInstance(){
         static QSetAccess<T> instance;
         return &instance;
     }
 
     AbstractSetAccess* clone() override{
         return this;
+    }
+
+    auto constBegin(const void* container) const {
+        return std::cbegin(*static_cast<const QSet<T> *>(container));
+    }
+
+    auto constEnd(const void* container) const {
+        return std::cend(*static_cast<const QSet<T> *>(container));
+    }
+
+    auto begin(void* container) const {
+        return std::begin(*static_cast<QSet<T> *>(container));
+    }
+
+    auto end(void* container) const {
+        return std::end(*static_cast<QSet<T> *>(container));
+    }
+
+    template<typename Iter>
+    bool isBegin(const void* container, const Iter& iter)const{
+        return iter==constBegin(container);
+    }
+
+    template<typename Iter>
+    bool isEnd(const void* container, const Iter& iter)const{
+        return iter==constEnd(container);
+    }
+
+    template<typename Iter>
+    bool isValid(const void* container, const Iter& iter)const{
+        if constexpr(QtJambiPrivate::supports_less_than_v<Iter>){
+            auto end = constEnd(container);
+            auto begin = constBegin(container);
+            return (begin<iter || begin==iter) && iter<end;
+        }else{
+            return !isEnd(container, iter);
+        }
     }
 
     bool isDetached(const void* container) override{
@@ -1574,12 +1682,14 @@ public:
         return static_cast<const QSet<T> *>(container)->capacity();
     }
 
-    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
-        return QtJambiPrivate::ContainerConstBegin<QSet, T>::function(env, container);
+    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::cbegin(container), container, ptr));
     }
 
-    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
-        return QtJambiPrivate::ContainerConstEnd<QSet, T>::function(env, container);
+    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator(std::cend(container), container, ptr));
     }
 
     jboolean contains(JNIEnv * env, const void* container, jobject value) override {
@@ -1635,6 +1745,9 @@ public:
             }
         }
     }
+    void insert(void* container, const void* entry) override {
+        QtJambiPrivate::ContainerInsert<QSet, T>::function(container, entry);
+    }
     void intersect(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override {
         QtJambiPrivate::ContainerIntersect<QSet, T, ContainerAPI::getAsQSet>::function(env, container, other);
         if constexpr(QtJambiPrivate::ContainerContentType<QSet<T>>::needsReferenceCounting){
@@ -1656,6 +1769,9 @@ public:
     }
     void reserve(JNIEnv * env, const ContainerInfo& container, qsizetype newSize) override {
         QtJambiPrivate::ContainerReserve<QSet, T>::function(env, container, newSize);
+    }
+    void reserve(void* container, qsizetype newSize) override {
+        QtJambiPrivate::ContainerReserve<QSet, T>::function(container, newSize);
     }
     void subtract(JNIEnv * env, const ContainerInfo& container, ContainerAndAccessInfo& other) override {
         QtJambiPrivate::ContainerSubtract<QSet, T, ContainerAPI::getAsQSet>::function(env, container, other);
@@ -1688,7 +1804,7 @@ private:
         ~ElementIterator() override {};
         bool hasNext() override {return current!=end;};
         jobject next(JNIEnv * env) override {
-            jobject obj = ::qtjambi_cast<jobject>(env, *current);
+            jobject obj = qtjambi_cast<jobject>(env, *current);
             ++current;
             return obj;
         }
@@ -1714,10 +1830,11 @@ private:
         std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
             return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
         }
+        static jobject convertValue(JNIEnv* env,const void* pointer) {
+            return qtjambi_cast<jobject>(env, *reinterpret_cast<const T*>(pointer));
+        };
         std::function<jobject(JNIEnv*,const void*)> elementConverter() const override {
-            return [](JNIEnv* env,const void* pointer) -> jobject{
-                return ::qtjambi_cast<jobject>(env, reinterpret_cast<const T*>(pointer));
-            };
+            return &convertValue;
         }
     };
 public:
@@ -1730,19 +1847,158 @@ public:
 };
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
-template<typename T, std::size_t E = q20::dynamic_extent>
+template<typename T, std::size_t E>
 class QSpanAccess : public QtJambiPrivate::SequentialAccessSuperclassDecider<T,AbstractSpanAccess>::type{
     typedef typename QtJambiPrivate::SequentialAccessSuperclassDecider<T,AbstractSpanAccess>::type Super;
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/QList, E!=q20::dynamic_extent || QtJambiPrivate::SequentialAccessExportTest<QtJambiPrivate::QListExport, T,
+                                                                                                                       bool, qint8, qint16, qint32, qint64,
+                                                                                                                       double, float, QChar, char16_t, char32_t,
+                                                                                                                       const bool, const qint8, const qint16, const qint32, const qint64,
+                                                                                                                       const double, const float, const QChar, const char16_t, const char32_t>::value);
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/QStringList, E!=q20::dynamic_extent || QtJambiPrivate::SequentialAccessExportTest<QtJambiPrivate::QStringListExport, T, QString, const QString>::value);
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/QByteArrayList, E!=q20::dynamic_extent || QtJambiPrivate::SequentialAccessExportTest<QtJambiPrivate::QByteArrayListExport, T, QByteArray, const QByteArray>::value);
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/QObjectList, E!=q20::dynamic_extent || QtJambiPrivate::SequentialAccessExportTest<QtJambiPrivate::QObjectListExport, T, QObject*, const QObject*>::value);
+    QTJAMBI_CAST_INCLUDE_CHECK(QtJambi/ModelCast, QtJambiPrivate::SequentialAccessExportTest<QtJambiPrivate::QModelListExport, T, QModelIndex, QPersistentModelIndex, const QModelIndex, const QPersistentModelIndex>::value);
+    using Container = QSpan<T,E>;
+    ~QSpanAccess() override {}
+
+    static jobject convertConstIterator(JNIEnv * env, ContainerIterator<Container, typename Container::const_iterator, QtJambiPrivate::ContainerRef<Container>>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        QSharedPointer<QtJambiPrivate::ContainerRefPrivate> owner = iter.storage().reference();
+        return QtJambiPrivate::convertSpanIteratorToJavaObject(env,
+                                                               owner,
+                                                               new Iterator(std::move(iter)),
+                                                               QtJambiAPI::deletePointer<Iterator>,
+                                                               QSequentialConstIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    static jobject convertConstIterator(JNIEnv * env, ContainerIterator<Container, typename Container::const_reverse_iterator, QtJambiPrivate::ContainerRef<Container>>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        QSharedPointer<QtJambiPrivate::ContainerRefPrivate> owner = iter.storage().reference();
+        return QtJambiPrivate::convertSpanReverseIteratorToJavaObject(env,
+                                                                      owner,
+                                                                      new Iterator(std::move(iter)),
+                                                                      QtJambiAPI::deletePointer<Iterator>,
+                                                                      QSequentialConstIteratorAccess<Iterator,Container>::newInstance());
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::iterator, QtJambiPrivate::ContainerRef<Container>>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        if constexpr(std::is_const_v<T> || !QtJambiPrivate::supports_assign_v<T&,const T&>){
+            Q_UNUSED(iter)
+            JavaException::raiseUnsupportedOperationException(env, "mutable iterator for QSpan<const T>" QTJAMBI_STACKTRACEINFO );
+        }else{
+            QSharedPointer<QtJambiPrivate::ContainerRefPrivate> owner = iter.storage().reference();
+            return QtJambiPrivate::convertSpanIteratorToJavaObject(env,
+                                                                   owner,
+                                                                   new Iterator(std::move(iter)),
+                                                                   QtJambiAPI::deletePointer<Iterator>,
+                                                                   QSequentialIteratorAccess<Iterator,Container>::newInstance());
+        }
+    }
+
+    jobject convertIterator(JNIEnv * env, ContainerIterator<Container, typename Container::reverse_iterator, QtJambiPrivate::ContainerRef<Container>>&& iter){
+        using Iterator = std::remove_reference_t<decltype(iter)>;
+        if constexpr(std::is_const_v<T> || !QtJambiPrivate::supports_assign_v<T&,const T&>){
+            Q_UNUSED(iter)
+            JavaException::raiseUnsupportedOperationException(env, "mutable iterator for QSpan<const T>" QTJAMBI_STACKTRACEINFO );
+        }else{
+            QSharedPointer<QtJambiPrivate::ContainerRefPrivate> owner = iter.storage().reference();
+            return QtJambiPrivate::convertSpanReverseIteratorToJavaObject(env,
+                                                                          owner,
+                                                                          new Iterator(std::move(iter)),
+                                                                          QtJambiAPI::deletePointer<Iterator>,
+                                                                          QSequentialIteratorAccess<Iterator,Container>::newInstance());
+        }
+    }
 protected:
     QSpanAccess(){}
 public:
-    static AbstractSpanAccess* newInstance(){
+    static QSpanAccess<T,E>* newInstance(){
         static QSpanAccess<T,E> instance;
         return &instance;
     }
 
     AbstractSpanAccess* clone() override{
         return this;
+    }
+
+    auto constBegin(const void* container) const {
+        const QSpan<T,E> &span = *static_cast<const QSpan<T,E> *>(container);
+        return std::cbegin(span);
+    }
+
+    auto constEnd(const void* container) const {
+        const QSpan<T,E> &span = *static_cast<const QSpan<T,E> *>(container);
+        return std::cend(span);
+    }
+
+    auto begin(void* container) const {
+        QSpan<T,E>& span = *static_cast<QSpan<T,E> *>(container);
+        return std::begin(span);
+    }
+
+    auto end(void* container) const {
+        QSpan<T,E>& span = *static_cast<QSpan<T,E> *>(container);
+        return std::end(span);
+    }
+
+    auto constReverseBegin(const void* container) const {
+        const QSpan<T,E> &span = *static_cast<const QSpan<T,E> *>(container);
+        return span.crbegin();
+    }
+
+    auto constReverseEnd(const void* container) const {
+        const QSpan<T,E> &span = *static_cast<const QSpan<T,E> *>(container);
+        return span.crend();
+    }
+
+    auto reverseBegin(void* container) const {
+        QSpan<T,E>& span = *static_cast<QSpan<T,E> *>(container);
+        return span.rbegin();
+    }
+
+    auto reverseEnd(void* container) const {
+        QSpan<T,E>& span = *static_cast<QSpan<T,E> *>(container);
+        return span.rend();
+    }
+
+    template<typename Iter>
+    bool isBegin(const void* container, const Iter& iter)const{
+        if constexpr(std::is_same_v<Iter,typename QSpan<T,E>::reverse_iterator>
+                      || std::is_same_v<Iter,typename QSpan<T,E>::const_reverse_iterator>){
+            return iter==constReverseBegin(container);
+        }else{
+            return iter==constBegin(container);
+        }
+    }
+
+    template<typename Iter>
+    bool isEnd(const void* container, const Iter& iter)const{
+        if constexpr(std::is_same_v<Iter,typename QSpan<T,E>::reverse_iterator>
+                      || std::is_same_v<Iter,typename QSpan<T,E>::const_reverse_iterator>){
+            return iter==constReverseEnd(container);
+        }else{
+            return iter==constEnd(container);
+        }
+    }
+
+    template<typename Iter>
+    bool isValid(const void* container, const Iter& iter)const{
+        if constexpr(QtJambiPrivate::supports_less_than_v<Iter>){
+            if constexpr(std::is_same_v<Iter,typename QSpan<T,E>::reverse_iterator>
+                          || std::is_same_v<Iter,typename QSpan<T,E>::const_reverse_iterator>){
+                auto end = constReverseEnd(container);
+                auto begin = constReverseBegin(container);
+                return (begin<iter || begin==iter) && iter<end;
+            }else{
+                auto end = constEnd(container);
+                auto begin = constBegin(container);
+                return (begin<iter || begin==iter) && iter<end;
+            }
+        }else{
+            return !isEnd(container, iter);
+        }
     }
 
     bool isConst() override{
@@ -1833,29 +2089,49 @@ public:
         return span->size_bytes();
     }
 
-    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
-        const QSpan<T,E> *span = static_cast<const QSpan<T,E> *>(container.container);
-        return ::qtjambi_cast<jobject>(env, container.nativeId, span->cbegin());
+    jobject constBegin(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertConstIterator(env, ContainerIterator<Container, typename Container::const_iterator, QtJambiPrivate::ContainerRef<Container>>(std::cbegin(container), container, ptr.nativeId));
     }
 
-    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container) override {
-        const QSpan<T,E> *span = static_cast<const QSpan<T,E> *>(container.container);
-        return ::qtjambi_cast<jobject>(env, container.nativeId, span->cend());
+    jobject constEnd(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertConstIterator(env, ContainerIterator<Container, typename Container::const_iterator, QtJambiPrivate::ContainerRef<Container>>(std::cend(container), container, ptr.nativeId));
     }
 
-    jobject begin(JNIEnv * env, const ExtendedContainerInfo& container) override {
-        QSpan<T,E> *span = static_cast<QSpan<T,E> *>(container.container);
-        return ::qtjambi_cast<jobject>(env, container.nativeId, span->begin());
+    jobject begin(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator<Container, typename Container::iterator, QtJambiPrivate::ContainerRef<Container>>(std::begin(container), container, ptr.nativeId));
     }
 
-    jobject end(JNIEnv * env, const ExtendedContainerInfo& container) override {
-        QSpan<T,E> *span = static_cast<QSpan<T,E> *>(container.container);
-        return ::qtjambi_cast<jobject>(env, container.nativeId, span->end());
+    jobject end(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator<Container, typename Container::iterator, QtJambiPrivate::ContainerRef<Container>>(std::end(container), container, ptr.nativeId));
+    }
+
+    jobject constReverseBegin(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertConstIterator(env, ContainerIterator<Container, typename Container::const_reverse_iterator, QtJambiPrivate::ContainerRef<Container>>(std::crbegin(container), container, ptr.nativeId));
+    }
+
+    jobject constReverseEnd(JNIEnv * env, const ConstExtendedContainerInfo& ptr) override {
+        const Container &container = *static_cast<const Container *>(ptr.container);
+        return convertConstIterator(env, ContainerIterator<Container, typename Container::const_reverse_iterator, QtJambiPrivate::ContainerRef<Container>>(std::crend(container), container, ptr.nativeId));
+    }
+
+    jobject reverseBegin(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator<Container, typename Container::reverse_iterator, QtJambiPrivate::ContainerRef<Container>>(std::rbegin(container), container, ptr.nativeId));
+    }
+
+    jobject reverseEnd(JNIEnv * env, const ExtendedContainerInfo& ptr) override {
+        Container &container = *static_cast<Container *>(ptr.container);
+        return convertIterator(env, ContainerIterator<Container, typename Container::reverse_iterator, QtJambiPrivate::ContainerRef<Container>>(std::rend(container), container, ptr.nativeId));
     }
 
     jobject get(JNIEnv * env, const void* container, qsizetype index) override {
         const QSpan<T,E> &span = *static_cast<const QSpan<T,E> *>(container);
-        return ::qtjambi_cast<jobject>(env, span[index]);
+        return qtjambi_cast<jobject>(env, span[index]);
     }
 
     const void* get(const void* container, qsizetype index) override {
@@ -1864,7 +2140,7 @@ public:
     }
 
     bool set(JNIEnv * env, const ContainerInfo& container, qsizetype index, jobject value) override {
-        if constexpr(std::is_const_v<T>){
+        if constexpr(std::is_const_v<T> || !QtJambiPrivate::supports_assign_v<T&,const T&>){
             Q_UNUSED(container);
             Q_UNUSED(index);
             Q_UNUSED(value);
@@ -1874,22 +2150,22 @@ public:
             const QSpan<T,E> &span = *static_cast<const QSpan<T,E> *>(container.container);
             if constexpr(QtJambiPrivate::ContainerContentType<T>::needsReferenceCounting){
                 if constexpr(QtJambiPrivate::ContainerContentType<T>::isContainer){
-                    span[index] = ::qtjambi_cast<T>(env, value);
+                    span[index] = qtjambi_cast<T>(env, value);
                     Super::updateRC(env, container);
                 }else{
-                    jobject oldValue = ::qtjambi_cast<jobject>(env, span[index]);
-                    span[index] = ::qtjambi_cast<T>(env, value);
+                    jobject oldValue = qtjambi_cast<jobject>(env, span[index]);
+                    span[index] = qtjambi_cast<T>(env, value);
                     Super::removeRC(env, container.object, oldValue);
                     Super::addRC(env, container.object, value);
                 }
             }else{
-                span[index] = ::qtjambi_cast<T>(env, value);
+                span[index] = qtjambi_cast<T>(env, value);
             }
             return true;
         }
     }
     bool set(void* container, qsizetype index, const void* value) override {
-        if constexpr(std::is_const_v<T>){
+        if constexpr(std::is_const_v<T> || !QtJambiPrivate::supports_assign_v<T&,const T&>){
             Q_UNUSED(container);
             Q_UNUSED(index);
             Q_UNUSED(value);
@@ -1905,8 +2181,8 @@ public:
                             return true;
                         }else{
                             const T& replace = *static_cast<const T *>(value);
-                            jobject oldValue = ::qtjambi_cast<jobject>(env, span[index]);
-                            jobject newValue = ::qtjambi_cast<jobject>(env, replace);
+                            jobject oldValue = qtjambi_cast<jobject>(env, span[index]);
+                            jobject newValue = qtjambi_cast<jobject>(env, replace);
                             span[index] = replace;
                             Super::removeRC(env, object, oldValue);
                             Super::addRC(env, object, newValue);
@@ -1941,7 +2217,7 @@ private:
         ~ElementIterator() override {};
         bool hasNext() override {return current!=end;};
         jobject next(JNIEnv * env) override {
-            jobject obj = ::qtjambi_cast<jobject>(env, *current);
+            jobject obj = qtjambi_cast<jobject>(env, *current);
             ++current;
             return obj;
         }
@@ -1973,10 +2249,11 @@ private:
         std::unique_ptr<AbstractSequentialAccess::ElementIterator> clone() const override {
             return std::unique_ptr<AbstractSequentialAccess::ElementIterator>(new ElementIterator(*this));
         }
+        static jobject convertValue(JNIEnv* env,const void* pointer) {
+            return qtjambi_cast<jobject>(env, *reinterpret_cast<const T*>(pointer));
+        };
         std::function<jobject(JNIEnv*,const void*)> elementConverter() const override {
-            return [](JNIEnv* env,const void* pointer) -> jobject{
-                return ::qtjambi_cast<jobject>(env, reinterpret_cast<const T*>(pointer));
-            };
+            return &convertValue;
         }
     };
 public:
@@ -1990,10 +2267,14 @@ public:
 
 template<typename T>
 AbstractSpanAccess* QListAccess<T>::createSpanAccess(bool isConst){
-    if(isConst){
-        return QSpanAccess<const T>::newInstance();
+    if constexpr(QtJambiPrivate::supports_assign_v<T&,const T&>){
+        if(isConst)
+            return QSpanAccess<const T>::newInstance();
+        else
+            return QSpanAccess<T>::newInstance();
     }else{
-        return QSpanAccess<T>::newInstance();
+        Q_UNUSED(isConst)
+        return QSpanAccess<const T>::newInstance();
     }
 }
 

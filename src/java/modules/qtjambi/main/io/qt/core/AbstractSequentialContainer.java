@@ -167,14 +167,20 @@ abstract class AbstractSequentialContainer<T> extends AbstractContainer<T> imple
         return !toBeRemoved.isEmpty();
 	}
 	
+	@QtUninvokable
+    protected abstract QSequentialConstIterator<T,? extends AbstractSequentialContainer<T>> constBegin();
+
+    @QtUninvokable
+	protected abstract QSequentialConstIterator<T,? extends AbstractSequentialContainer<T>> constEnd();
+	
     /**
      * Returns an iterator over elements of type {@code T}.
      * @return an Iterator
      */
 	@Override
     @QtUninvokable
-	public final Iterator<T> iterator() {
-		return constBegin().toJavaIterator();
+	public final Iterator<T> iterator(){
+		return AbstractIterator.iterator(constBegin());
 	}
 	
     /**

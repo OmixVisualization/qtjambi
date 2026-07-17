@@ -59,19 +59,90 @@ TypeSystem{
         className: "SignalsAndSlots"
         functionName: "disconnectNotify"
     }
-    
-    ValueType{
-        name: "Tulip"
-        Include{
-            fileName: "tulip.h"
-            location: Include.Local
+
+    ObjectType{
+        name: "MapFactory"
+
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+#if !defined(Q_CC_MSVC) && !defined(QTJAMBI_GENERATOR_RUNNING)
+template<typename RET, typename... ARGS>
+inline size_t qHash(RET (*value)(ARGS...))
+{
+    return qHash(reinterpret_cast<quintptr>(value));
+}
+#endif
+
+namespace QHashPrivate {
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QRunnable *>> = false;
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QObject *>> = false;
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
+}`
+            }
+            since: 6.8
         }
+    }
+
+    ObjectType{
+        name: "ContainerFactory"
+
+        FunctionalType{
+            name: "TestStdFunction"
+        }
+
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+#if !defined(Q_CC_MSVC) && !defined(QTJAMBI_GENERATOR_RUNNING)
+template<typename RET, typename... ARGS>
+inline size_t qHash(RET (*value)(ARGS...))
+{
+    return qHash(reinterpret_cast<quintptr>(value));
+}
+#endif
+
+namespace QHashPrivate {
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QRunnable *>> = false;
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QObject *>> = false;
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
+}`
+            }
+            since: 6.8
+        }
+    }
     
-		FunctionalType{
-			name: "TestStdFunction"
-		}
+    ObjectType{
+        name: "ContainerReferences"
 		
-		
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+namespace QHashPrivate {
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QRunnable *>> = false;
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QObject *>> = false;
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
+}`
+            }
+            since: 6.8
+        }
+    }
+
+    ObjectType{
+        name: "ContainerConverter"
+
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning

@@ -1,18 +1,13 @@
 package io.qt.autotests;
 
+import static io.qt.autotests.generated.MapFactory.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.*;
 
-import io.qt.autotests.generated.General;
-import io.qt.autotests.generated.Tulip;
-import io.qt.core.QCoreApplication;
-import io.qt.core.QEvent;
-import io.qt.core.QHash;
-import io.qt.core.QObject;
-import io.qt.core.QRunnable;
-import io.qt.widgets.QWidgetItem;
+import io.qt.autotests.generated.*;
+import io.qt.core.*;
+import io.qt.widgets.*;
 
 public class TestReferenceCountingQHash extends ApplicationInitializer {
 	
@@ -22,7 +17,7 @@ public class TestReferenceCountingQHash extends ApplicationInitializer {
     public void test_cpp_QHash_value_QObject() throws InterruptedException {
     	AtomicInteger counter = new AtomicInteger();
     	{
-	    	QHash<String,QObject> container = Tulip.createStringHashOfObjects();
+	    	QHash<String,QObject> container = createStringHashOfObjects();
 	    	for(int i=0; i<COUNT; ++i) {
 	    		QObject object = new QObject();
 	    		General.internalAccess.registerCleaner(object, counter::incrementAndGet);
@@ -57,7 +52,7 @@ public class TestReferenceCountingQHash extends ApplicationInitializer {
     public void test_cpp_QHash_value_QRunnable() throws InterruptedException {
     	AtomicInteger counter = new AtomicInteger();
     	{
-	    	QHash<String,QRunnable> container = Tulip.createStringHashOfRunnables();
+	    	QHash<String,QRunnable> container = createStringHashOfRunnables();
 	    	for(int i=0; i<COUNT; ++i) {
 	    		QRunnable object = new QRunnable() { @Override public void run() {} };
 	    		container.insert(""+i, object);

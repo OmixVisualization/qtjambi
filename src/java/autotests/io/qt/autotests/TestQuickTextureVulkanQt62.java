@@ -43,6 +43,7 @@ import io.qt.gui.QColor;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QPixmap;
 import io.qt.gui.QSurface;
+import io.qt.gui.vulkan.QVulkanInstance;
 import io.qt.quick.QQuickRenderTarget;
 import io.qt.quick.QQuickWindow;
 import io.qt.quick.QSGNode;
@@ -54,10 +55,13 @@ public class TestQuickTextureVulkanQt62 extends ApplicationInitializer {
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
-		Assume.assumeTrue("Qt build has no Vulkan support.", General.canVulkan() && General.canCreateVulkanInstance());
 		ApplicationInitializer.testInitializeWithGui();
 		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 		io.qt.QtUtilities.loadQtLibrary("OpenGL");
+		Assume.assumeTrue("Qt build has no Vulkan support.", General.canVulkan());
+		Assume.assumeTrue("Qt cannot create QVulkanInstance.", General.canCreateVulkanInstance());
+		QVulkanInstance vi = new QVulkanInstance();
+		Assume.assumeTrue("Qt cannot create QVulkanInstance.", vi.create());
 	}
 	
 	@Test
@@ -65,17 +69,16 @@ public class TestQuickTextureVulkanQt62 extends ApplicationInitializer {
 		QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.Vulkan);
 		QQuickWindow window = new QQuickWindow();
 		Assume.assumeTrue("Window needs Vulkan support.", window.surfaceType()==QSurface.SurfaceType.VulkanSurface);
+		Assume.assumeTrue("Window is missing QVulkanInstance.", window.vulkanInstance()!=null);
 		try {
 			QEventLoop loop = new QEventLoop();
-			boolean[] hasVulkanInstance = {false};
 			QSGTexture[] texture = {null};
 			TestQuick.TestItem item = new TestQuick.TestItem() {
 				@Override
 				protected QSGNode updatePaintNode(QSGNode arg__1, UpdatePaintNodeData arg__2) {
 					QPixmap pixmap = new QPixmap(100, 100);
 					pixmap.fill(new QColor(Qt.GlobalColor.magenta));
-					if(hasVulkanInstance[0] = General.hasVulkanInstance(window))
-						texture[0] = window.createTextureFromImage(pixmap.toImage());
+					texture[0] = window.createTextureFromImage(pixmap.toImage());
 					return arg__1;
 				}
 			};
@@ -86,7 +89,6 @@ public class TestQuickTextureVulkanQt62 extends ApplicationInitializer {
 		    QTimer.singleShot(20000, loop::quit);
 		    loop.exec();
 		    item.isDisposed();
-		    Assume.assumeTrue("Window is missing QVulkanInstance.", hasVulkanInstance[0]);
 			Assert.assertTrue(texture[0]!=null);
 			QSGVulkanTexture openglTexture = texture[0].nativeInterface(QSGVulkanTexture.class);
 			Assert.assertTrue(openglTexture!=null);

@@ -33,6 +33,7 @@
 #define QTJAMBI_CAST_TEMPLATE5_H
 
 #include "qtjambi_cast.h"
+#include "qtjambiapi.h"
 
 namespace QtJambiPrivate {
 

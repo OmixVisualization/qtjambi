@@ -149,7 +149,7 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content:  "DomUI* %out = Java::QtUIC::DomUI::isInstanceOf(%env, %in) ? reinterpret_cast<DomUI*>(QtJambiAPI::convertJavaObjectToNative(%env, %in)) : nullptr;"}
+                    Text{content:  "%out = Java::QtUIC::DomUI::isInstanceOf(%env, %in) ? reinterpret_cast<DomUI*>(QtJambiAPI::convertJavaObjectToNative(%env, %in)) : nullptr;"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native

@@ -40,6 +40,7 @@ import java.nio.ShortBuffer;
 import java.util.function.Supplier;
 
 import io.qt.QtObject;
+import io.qt.QtObjectInterface;
 import io.qt.QtUninvokable;
 
 abstract class AbstractSpan<T> extends AbstractContainer<T> implements java.lang.Iterable<T>{
@@ -156,19 +157,25 @@ abstract class AbstractSpan<T> extends AbstractContainer<T> implements java.lang
     AbstractSpan(QList<T> list){
 		super((QPrivateConstructor)null);
 		int size = list.size();
-		AbstractIterator<T> iter = isConstSpan() ? list.constBegin() : list.begin();
+		AbstractIterator<T,QList<T>> iter = isConstSpan() ? list.constBegin() : list.begin();
 		this.d = ofListStorage(list.clone());
 		list = ((ListSupplier<T>)d).storage();
-    	initializeFromBegin(this, QtJambi_LibraryUtilities.internal.nativeId(list), QtJambi_LibraryUtilities.internal.nativeId(iter), size, QtJambi_LibraryUtilities.internal.nativeId(d.owner()));
+		initializeFromListBegin(this, QtJambi_LibraryUtilities.internal.nativeId(list), QtJambi_LibraryUtilities.internal.nativeId(iter), size, QtJambi_LibraryUtilities.internal.nativeId(d.owner()));
 		this.__rcContainer = list.__rcContainer;
 	}
+    
+    <Container extends QtObjectInterface, InputIterator extends QSequentialIterator<T,Container>> AbstractSpan(InputIterator begin, InputIterator end) {
+    	super((QPrivateConstructor)null);
+    	this.d = ofOwner(begin);
+    	initializeFromBeginEnd(this, QtJambi_LibraryUtilities.internal.nativeId(begin), QtJambi_LibraryUtilities.internal.nativeId(end));
+    }
     
     AbstractSpan(QPrivateConstructor p, QList<T> list){
 		super(p);
 		int size = list.size();
-		AbstractIterator<T> iter = isConstSpan() ? list.constBegin() : list.begin();
+		AbstractIterator<T,QList<T>> iter = isConstSpan() ? list.constBegin() : list.begin();
 		this.d = ofListStorage(list);
-    	initializeFromBegin(this, QtJambi_LibraryUtilities.internal.nativeId(list), QtJambi_LibraryUtilities.internal.nativeId(iter), size, QtJambi_LibraryUtilities.internal.nativeId(d.owner()));
+		initializeFromListBegin(this, QtJambi_LibraryUtilities.internal.nativeId(list), QtJambi_LibraryUtilities.internal.nativeId(iter), size, QtJambi_LibraryUtilities.internal.nativeId(d.owner()));
 		this.__rcContainer = list.__rcContainer;
 	}
     
@@ -176,7 +183,7 @@ abstract class AbstractSpan<T> extends AbstractContainer<T> implements java.lang
 		super((QPrivateConstructor)null);
 		ArrayCommitter<T> d = new ArrayCommitter<>(type, array);
 		this.d = d;
-    	initializeFromBegin(this, QtJambi_LibraryUtilities.internal.nativeId(d.list), QtJambi_LibraryUtilities.internal.nativeId(d.list.begin()), d.list.size(), QtJambi_LibraryUtilities.internal.nativeId(d.owner()));
+		initializeFromListBegin(this, QtJambi_LibraryUtilities.internal.nativeId(d.list), QtJambi_LibraryUtilities.internal.nativeId(d.list.begin()), d.list.size(), QtJambi_LibraryUtilities.internal.nativeId(d.owner()));
 		this.__rcContainer = d.list.__rcContainer;
 	}
 	
@@ -184,7 +191,7 @@ abstract class AbstractSpan<T> extends AbstractContainer<T> implements java.lang
 		super((QPrivateConstructor)null);
 		ArrayCommitter<T> d = new ArrayCommitter<>(metaType, array);
 		this.d = d;
-    	initializeFromBegin(this, QtJambi_LibraryUtilities.internal.nativeId(d.list), QtJambi_LibraryUtilities.internal.nativeId(d.list.begin()), d.list.size(), QtJambi_LibraryUtilities.internal.nativeId(d.owner()));
+		initializeFromListBegin(this, QtJambi_LibraryUtilities.internal.nativeId(d.list), QtJambi_LibraryUtilities.internal.nativeId(d.list.begin()), d.list.size(), QtJambi_LibraryUtilities.internal.nativeId(d.owner()));
 		this.__rcContainer = d.list.__rcContainer;
 	}
     
@@ -238,7 +245,7 @@ abstract class AbstractSpan<T> extends AbstractContainer<T> implements java.lang
     
     AbstractSpan() { 
 		this((QPrivateConstructor)null, asUnmanagedSpanData());
-		initializeFromBegin(this, 0, 0, 0, 0);
+		initializeFromListBegin(this, 0, 0, 0, 0);
 	}
     
     AbstractSpan(AbstractSpan<T> other, int offset, int n) { 
@@ -321,7 +328,9 @@ abstract class AbstractSpan<T> extends AbstractContainer<T> implements java.lang
     
     native static <B extends java.nio.Buffer> B asBuffer(Class<B> bufferClass, long begin, long owner);
 	
-    private static native void initializeFromBegin(AbstractSpan<?> span, long list, long begin, long size, long owner);
+    private static native void initializeFromListBegin(AbstractSpan<?> span, long list, long begin, long size, long owner);
+    
+    private static native void initializeFromBeginEnd(AbstractSpan<?> span, long begin, long end);
     
     private static native boolean initializeFromBuffer(AbstractSpan<?> span, java.nio.Buffer buffer, char type, long owner, boolean isConst);
     
@@ -359,48 +368,36 @@ abstract class AbstractSpan<T> extends AbstractContainer<T> implements java.lang
     
     private static native void initializeFromClone(AbstractSpan<?> span, long other, long owner, boolean isArrayOrNondirectBuffer, int offset, int n);
 	
-    /**
-     * {@inheritDoc}
-     */
-	@Override
-	protected final QSequentialConstIterator<T> constBegin(){
-		return constBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
-	}
-	final QSequentialIterator<T> begin(){
-		if(isConstSpan())
-			throw new RuntimeException(String.format("Cannot get non-const iterator for QSpan<const %1%s>", elementMetaType().name()));
-		return begin(QtJambi_LibraryUtilities.internal.nativeId(this));
+	QSequentialIterator<T,? extends AbstractSpan<T>> begin(){
+		return null;
 	}
 	
-	/**
-     * {@inheritDoc}
+	QSequentialIterator<T,? extends AbstractSpan<T>> end(){
+		return null;
+	}
+	
+    /**
+     * Provides a constant C++ iterator to the container's begin.
+     * @return begin
      */
-	@Override
-	protected final QSequentialConstIterator<T> constEnd(){
-		return constEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
-	}
-	final QSequentialIterator<T> end(){
-		if(isConstSpan())
-			throw new RuntimeException(String.format("Cannot get non-const iterator for QSpan<const %1%s>", elementMetaType().name()));
-		return end(QtJambi_LibraryUtilities.internal.nativeId(this));
-	}
+    @QtUninvokable
+    protected abstract AbstractIterator<T,? extends AbstractSpan<T>> constBegin();
+
+    /**
+     * Provides a constant C++ iterator to the container's end.
+     * @return end
+     */
+    @QtUninvokable
+	protected abstract AbstractIterator<T,? extends AbstractSpan<T>> constEnd();
     
     native T get(long nativeId, int index);
     
     native boolean set(long nativeId, int index, T value);
-
-    native QSequentialConstIterator<T> constBegin(long nativeId);
-    
-    native QSequentialConstIterator<T> constEnd(long nativeId);
-    
-    native QSequentialIterator<T> begin(long nativeId);
-    
-    native QSequentialIterator<T> end(long nativeId);
     
     abstract boolean isConstSpan();
     
     @QtUninvokable
-	final QMetaType elementMetaType() {
+	final QMetaType elementType() {
     	return elementType(QtJambi_LibraryUtilities.internal.nativeId(this));
 	}
     

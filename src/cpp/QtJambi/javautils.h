@@ -40,10 +40,8 @@ QTJAMBI_EXPORT void javaExceptionCheck(JNIEnv* env);
 QTJAMBI_EXPORT void registerGlobalClassPointer(jclass& cls);
 }
 
-#define REPOSITORY_EXPORT QTJAMBI_STATIC_EXPORT
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS(type_name, members) \
-    class QTJAMBI_EXPORT type_name{\
+#define QTJAMBI_REPOSITORY_DECLARE_CLASS_IMPL(EXPORT, type_name, members) \
+    class EXPORT type_name{\
     private:\
         jclass class_ref;\
         explicit type_name(JNIEnv * env);\
@@ -57,8 +55,7 @@ QTJAMBI_EXPORT void registerGlobalClassPointer(jclass& cls);
         members\
     };
 
-#define QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(type_name) \
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(type_name,)
+#define QTJAMBI_REPOSITORY_DECLARE_CLASS(type_name, members) QTJAMBI_REPOSITORY_DECLARE_CLASS_IMPL(,type_name, members)
 
 #define QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()\
     private: jmethodID __constructor;\

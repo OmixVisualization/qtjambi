@@ -38,27 +38,29 @@ TypeSystem{
 
     CodeTemplate{
         name: "scxml.AtomicBoolean_to_bool_ptr"
-        Text{content: "bool* %out = nullptr;\n"+
-                      "if(%in){\n"+
-                      "    bool b = Java::Runtime::AtomicBoolean.get(%env, %in);\n"+
-                      "    JavaException::check(%env QTJAMBI_STACKTRACEINFO );\n"+
-                      "    %out = new bool(b);\n"+
-                      "    %scope.addFinalAction([%env,%in,%out](){\n"+
-                      "            jboolean bval = *%out;\n"+
-                      "            delete %out;\n"+
-                      "            Java::Runtime::AtomicBoolean.set(%env, %in, bval);\n"+
-                      "        });\n"+
-                      "}"}
+        Text{content: String.raw`
+                bool* %out = nullptr;
+                if(%in){
+                    bool b = Java::Runtime::AtomicBoolean.get(%env, %in);
+                    JavaException::check(%env QTJAMBI_STACKTRACEINFO );
+                    %out = new bool(b);
+                    %scope.addFinalAction([%env,%in,%out](){
+                            jboolean bval = *%out;
+                            delete %out;
+                            Java::Runtime::AtomicBoolean.set(%env, %in, bval);
+                        });
+                }`}
     }
     
     CodeTemplate{
         name: "scxml.bool_ptr_to_AtomicBoolean"
-        Text{content: "if(%in){\n"+
-                      "    %out = Java::Runtime::AtomicBoolean::newInstance(%env, *%in);\n"+
-                      "    %scope.addFinalAction([%env,%in,%out](){\n"+
-                      "            *%in = Java::Runtime::AtomicBoolean.get(%env, %out);\n"+
-                      "        });\n"+
-                      "}"}
+        Text{content: String.raw`
+                if(%in){
+                    %out = Java::Runtime::AtomicBoolean::newInstance(%env, *%in);
+                    %scope.addFinalAction([%env,%in,%out](){
+                            *%in = Java::Runtime::AtomicBoolean.get(%env, %out);
+                        });
+                }`}
     }
     
     NamespaceType{
@@ -136,10 +138,13 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "JBufferData d(%env, %in);\n"+
-                                  "int* %out = d.data<int>();\n"+
-                                  "if(%1)*%1 = d.size<int>();\n"+
-                                  "d.take();"}
+                    Text{content: String.raw`
+                        %out = nullptr;
+                        PersistentJBufferData* d = new PersistentJBufferData(%env, %in);
+                        %scope.addDeletion(d);
+                        %out = d->data<qint32>();
+                        if(%1)
+                            *%1 = d->size<int>();`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -156,8 +161,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "int count = 0;\n"+
-                                  "int* %out = &count;"}
+                    Text{content: String.raw`
+                            int count = 0;
+                            int* %out = &count;`}
                 }
             }
         }

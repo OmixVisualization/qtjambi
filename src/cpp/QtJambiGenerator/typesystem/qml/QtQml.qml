@@ -552,7 +552,7 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator-(QJSPrimitiveValue)"
-            Delegate{name: "substracted"; deprecated: true}
+            Delegate{name: "subtracted"; deprecated: true}
         }
         ModifyFunction{
             signature: "operator/(QJSPrimitiveValue)"

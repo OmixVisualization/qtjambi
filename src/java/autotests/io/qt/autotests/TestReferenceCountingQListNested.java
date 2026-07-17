@@ -1,35 +1,17 @@
 package io.qt.autotests;
 
+import static io.qt.autotests.generated.ContainerFactory.*;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.*;
 
-import io.qt.QtObject;
-import io.qt.QtUtilities;
-import io.qt.autotests.generated.ContainerTest;
-import io.qt.autotests.generated.General;
-import io.qt.autotests.generated.QList_QHash_QObject_QObject;
-import io.qt.autotests.generated.QList_QList_QObject;
-import io.qt.autotests.generated.Tulip;
-import io.qt.core.QCoreApplication;
-import io.qt.core.QEasingCurve;
-import io.qt.core.QEvent;
-import io.qt.core.QHash;
-import io.qt.core.QList;
-import io.qt.core.QMap;
-import io.qt.core.QMetaType;
-import io.qt.core.QMultiHash;
-import io.qt.core.QMultiMap;
-import io.qt.core.QObject;
-import io.qt.core.QPair;
-import io.qt.core.QRunnable;
-import io.qt.core.QSet;
-import io.qt.gui.QTextCursor;
-import io.qt.gui.QTextDocument;
-import io.qt.widgets.QWidgetItem;
+import io.qt.*;
+import io.qt.autotests.generated.*;
+import io.qt.core.*;
+import io.qt.gui.*;
+import io.qt.widgets.*;
 
 public class TestReferenceCountingQListNested extends ApplicationInitializer {
 	
@@ -384,7 +366,7 @@ public class TestReferenceCountingQListNested extends ApplicationInitializer {
     public void test_cpp_QList_QList_QObject() throws InterruptedException {
     	AtomicInteger counter = new AtomicInteger();
     	{
-	    	QList<List<QObject>> container = Tulip.createListOfListOfObjects();
+	    	QList<List<QObject>> container = createListOfListOfObjects();
 	    	for(int i=0; i<COUNT; ++i) {
 	    		QObject object = new QObject();
 	    		General.internalAccess.registerCleaner(object, counter::incrementAndGet);
@@ -420,7 +402,7 @@ public class TestReferenceCountingQListNested extends ApplicationInitializer {
     public void test_cpp_QList_QList_QRunnable() throws InterruptedException {
     	AtomicInteger counter = new AtomicInteger();
     	{
-	    	QList<List<QRunnable>> container = Tulip.createListOfListOfRunnables();
+	    	QList<List<QRunnable>> container = createListOfListOfRunnables();
 	    	for(int i=0; i<COUNT; ++i) {
 	    		QRunnable object = new QRunnable() { @Override public void run() {} };
 	    		container.add(QList.of(object));
@@ -473,7 +455,7 @@ public class TestReferenceCountingQListNested extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	    	for(QList<QEasingCurve.EasingFunction> list : container) {
-		    	Tulip.testEasingFunctions(list);
+		    	testEasingFunctions(list);
 	    	}
 	        Assert.assertEquals(COUNT, calls.size());
 	        for (int i = 0; i < calls.size(); i++) {
@@ -564,7 +546,7 @@ public class TestReferenceCountingQListNested extends ApplicationInitializer {
 	    		object = null;
 	    	}
 	    	for(QSet<QEasingCurve.EasingFunction> list : container) {
-		    	Tulip.testEasingFunctions(list);
+		    	testEasingFunctions(list);
 	    	}
 	        Assert.assertEquals(COUNT, calls.size());
 	        for (int i = 0; i < calls.size(); i++) {

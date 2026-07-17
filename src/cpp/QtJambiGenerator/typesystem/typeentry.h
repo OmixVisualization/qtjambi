@@ -90,6 +90,7 @@ class TypeEntry {
         enum Type {
             AliasType,
             PrimitiveType,
+            JNIEnvType,
             VoidType,
             AutoType,
             FlagsType,
@@ -166,6 +167,9 @@ class TypeEntry {
         }
         bool isPrimitive() const {
             return m_type == PrimitiveType;
+        }
+        bool isJNIEnv() const {
+            return m_type == JNIEnvType;
         }
         bool isEnum() const {
             return m_type == EnumType;
@@ -597,6 +601,13 @@ class AutoTypeEntry : public TypeEntry {
         }
 };
 
+class JNIEnvTypeEntry : public TypeEntry {
+public:
+    JNIEnvTypeEntry(const QString& name) : TypeEntry(name, JNIEnvType) {
+        setCodeGeneration(GenerateNothing);
+    }
+};
+
 class NativePointerTypeEntry : public TypeEntry {
 public:
     NativePointerTypeEntry(const QString& name) : TypeEntry(name, NativePointerType) {
@@ -809,6 +820,19 @@ class FunctionalTypeEntry : public TypeEntry {
             }
         }
 
+        const IncludeList& extraImplIncludes() const {
+            return m_extra_impl_includes;
+        }
+        void setExtraImplIncludes(const IncludeList &includes) {
+            m_extra_impl_includes = includes;
+        }
+        void addExtraImplInclude(const Include &include) {
+            if (!m_includes_used.value(include.name, false)) {
+                m_extra_impl_includes << include;
+                m_includes_used[include.name] = true;
+            }
+        }
+
         void addArgumentModification(const ArgumentModification &argumentModification) {
             argument_mods << argumentModification;
         }
@@ -903,6 +927,7 @@ class FunctionalTypeEntry : public TypeEntry {
         QString m_java_name;
         Include m_include;
         IncludeList m_extra_includes;
+        IncludeList m_extra_impl_includes;
         QList<Modification> m_modifications;
         QMap<QString, bool> m_includes_used;
         QList<ArgumentModification> argument_mods;
@@ -1242,6 +1267,9 @@ class ComplexTypeEntry : public TypeEntry {
         const IncludeList& extraIncludes() const;
         void setExtraIncludes(const IncludeList &includes);
         void addExtraInclude(const Include &include);
+        const IncludeList& extraImplIncludes() const;
+        void setExtraImplIncludes(const IncludeList &includes);
+        void addExtraImplInclude(const Include &include);
 
         ComplexTypeEntry *copy() const;
 
@@ -1623,6 +1651,7 @@ class ComplexTypeEntry : public TypeEntry {
 
 private:
         IncludeList m_extra_includes;
+        IncludeList m_extra_impl_includes;
         Include m_include;
         QMap<QString, bool> m_includes_used;
         FunctionModificationList m_function_mods;
@@ -2004,12 +2033,15 @@ public:
         QModelRoleDataSpanContainer,
         QBindableContainer,
         QPropertyBindingContainer,
+        QVulkanInfoVectorContainer,
         std_atomic,
         std_optional,
         std_vector,
         std_array,
         std_chrono,
-        std_chrono_template
+        std_chrono_template,
+        std_reverse_iterator,
+        QKeyValueIterator
     };
 
     ContainerTypeEntry(const QString &name, Type type);
@@ -2024,41 +2056,23 @@ private:
 
 class IteratorTypeEntry : public ComplexTypeEntry {
 public:
-    IteratorTypeEntry(const QString &name, const ComplexTypeEntry* containerType) :
-        ComplexTypeEntry(name, IteratorType),
-        m_containerType(containerType),
-        m_qualifiedCppContainerName(),
-        m_isPointer(false)
-    {
-        setCodeGeneration(GenerateForSubclass);
-        disableNativeIdUsage();
-    }
-    IteratorTypeEntry(const QString &name, const QString& qualifiedCppContainerName, const ComplexTypeEntry* containerType, bool isPointer) :
-        ComplexTypeEntry(name, IteratorType),
-        m_containerType(containerType),
-        m_qualifiedCppContainerName(qualifiedCppContainerName),
-        m_isPointer(isPointer)
-    {
-//            setCodeGeneration(GenerateNothing);
-        disableNativeIdUsage();
-    }
+    IteratorTypeEntry(const QString &name, const ComplexTypeEntry* containerType);
+    IteratorTypeEntry(const QString &name, const QString& qualifiedCppContainerName, const ComplexTypeEntry* containerType, bool isComparable);
     IteratorTypeEntry* clone(const ComplexTypeEntry* containerType, const QString& qualifiedCppContainerName) const;
-    QString targetLangName() const override;
-    QString javaPackage() const override;
-    QString qualifiedCppName() const override;
-    QString iteratorName() const;
+    //QString qualifiedCppName() const override;
+    //QString iteratorName() const;
     const QString& qualifiedCppContainerName() const;
-    const ComplexTypeEntry* containerType() const {return m_containerType;}
-    void setContainerType(const ComplexTypeEntry* t) {m_containerType = t;}
-    void setQualifiedCppContainerName(const QString& t) {m_qualifiedCppContainerName = t;}
-    void setIsPointer(bool isPointer) {m_isPointer = isPointer;}
-    bool isPointer() const {return m_isPointer;}
     void setIsConst(bool newIsConst);
-
+    const ComplexTypeEntry* containerType() const;
+    void setContainerType(const ComplexTypeEntry* t);
+    void setQualifiedCppContainerName(const QString& t);
+    void setIsComparable(bool isComparable);
+    bool isComparable() const;
+    bool isConst() const;
 private:
     const ComplexTypeEntry* m_containerType;
     QString m_qualifiedCppContainerName;
-    bool m_isPointer;
+    bool m_isComparable;
     bool m_isConst = true;
 };
 

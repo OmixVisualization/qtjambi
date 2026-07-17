@@ -37,6 +37,8 @@
 #include <QtCore/QtGlobal>
 #ifndef QTJAMBI_GENERATOR_RUNNING
 #include <QtJambi/global.h>
+#else
+#define QT_KEYPAD_NAVIGATION
 #endif
 #include <QtCore/QtCore>
 #ifndef QTJAMBI_NO_WIDGETS
@@ -58,7 +60,7 @@
 #include "polymorphictype.h"
 #include "signalsandslots.h"
 #include "testdialog.h"
-#include "tulip.h"
+#include "containerreferences.h"
 #include "containers.h"
 #include "bindableowner.h"
 #include "variants.h"
@@ -71,6 +73,9 @@
 #include "exceptiontest.h"
 #include "performancetests.h"
 #include "threadfactory.h"
+#include "containerfactory.h"
+#include "mapfactory.h"
+#include "containerconverter.h"
 
 #ifndef QTJAMBI_GENERATOR_RUNNING
 #include <QtJambi/QtJambiAPI>

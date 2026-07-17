@@ -31,7 +31,10 @@
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/CoreAPI>
 #include <QtJambi/RegistryAPI>
+#include <QtJambi/Template2Cast>
 #include <QtJambi/ContainerCast>
+#include <QtJambi/QList>
+#include <QtJambi/QStringList>
 #include <QtJambi/ArithmeticCast>
 #include <QtJambi/Cast>
 
@@ -47,6 +50,7 @@ extern "C" JNIEXPORT jstring JNICALL Java_io_qt_uic_java_WriteClass_getExternalT
 }
 
 void initialize_meta_info_UIC(){
+#if !defined(__GLIBCXX__) || !defined(Q_OS_WIN)
     using namespace RegistryAPI;
     using namespace QtJambiPrivate;
     registerContainerAccessFactory(typeid(QHash<DomWidget*,QString>), NewContainerAccessFunction(&QHashAccess<DomWidget*,QString>::newInstance));
@@ -57,4 +61,5 @@ void initialize_meta_info_UIC(){
     registerContainerAccessFactory(typeid(QHash<DomAction*,QString>), NewContainerAccessFunction(&QHashAccess<DomAction*,QString>::newInstance));
     registerContainerAccessFactory(typeid(QHash<QString,bool>), NewContainerAccessFunction(&QHashAccess<QString,bool>::newInstance));
     registerContainerAccessFactory(typeid(QHash<QString,DomProperty*>), NewContainerAccessFunction(&QHashAccess<QString,DomProperty*>::newInstance));
+#endif // !defined(__GLIBCXX__) || !defined(Q_OS_WIN)
 }

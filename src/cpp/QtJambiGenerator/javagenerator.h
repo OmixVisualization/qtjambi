@@ -67,13 +67,18 @@ public:
         Type type;
         QString typeName;
         QString comment;
-        Replacement(decltype(nullptr)) : type(None), typeName(), comment() {
+        MetaFunction* castFunction;
+        Replacement(decltype(nullptr)) : type(None), typeName(), comment(), castFunction(nullptr) {
         }
-        Replacement(Type _type = None) : type(_type), typeName(), comment() {
+        Replacement(Type _type = None) : type(_type), typeName(), comment(), castFunction(nullptr) {
         }
-        Replacement(const QString& _typeName) : type(Name), typeName(_typeName), comment() {
+        Replacement(const QString& _typeName) : type(Name), typeName(_typeName), comment(), castFunction(nullptr) {
         }
-        Replacement(const QString& _typeName, const QString _comment) : type(Name), typeName(_typeName), comment(_comment) {
+        Replacement(const QString& _typeName, const QString _comment) : type(Name), typeName(_typeName), comment(_comment), castFunction(nullptr) {
+        }
+        Replacement(const QString& _typeName, MetaFunction* _castFunction) : type(Name), typeName(_typeName), comment(), castFunction(_castFunction) {
+        }
+        Replacement(const QString& _typeName, MetaFunction* _castFunction, const QString _comment) : type(Name), typeName(_typeName), comment(_comment), castFunction(_castFunction) {
         }
         Replacement(const Replacement&) = default;
         Replacement& operator =(const Replacement&) = default;
@@ -145,7 +150,7 @@ public:
 
     bool isComparable(const MetaClass *cls) const;
 
-    const MetaType * getIterableType(const MetaClass *cls, bool& isConst) const;
+    void getIterableType(QList<const MetaType *>& iterableTypes, const MetaClass *cls, const MetaFunction*& beginFn, const MetaFunction*& endFn) const;
 
 #if 0
     void write1_dot_5_enum(QTextStream &s, const AbstractMetaEnum *java_enum);
@@ -153,7 +158,7 @@ public:
 
     virtual bool shouldGenerate(const MetaClass *java_class) const override {
         return java_class->enclosingClass()==nullptr // do not generate if enclosed class (in this case create static embedded class)
-                && !java_class->typeEntry()->isIterator()
+                //&& !java_class->typeEntry()->isIterator()
                 && !java_class->isFake() && !java_class->typeEntry()->isQVariant()
                 && (java_class->typeEntry()->codeGeneration() & TypeEntry::GenerateTargetLang);
     }
@@ -206,6 +211,7 @@ protected:
     QList<const MetaFunction *> m_inconsistent_functions;
     QList<const MetaFunction *> m_implicit_constructors;
     QList<const MetaFunction *> m_functions_with_implicit_calls;
+    QList<QString> m_functions_with_implicit_cast_calls;
     TS::TypeDatabase* m_database;
 
 private:

@@ -125,6 +125,51 @@ TypeSystem{
         jniName: "jlong"
         preferredConversion: false
     }
+
+    NativePointerType{
+        name: "VkQueue"
+    }
+
+    NativePointerType{
+        name: "VkCommandPool"
+    }
+
+    NativePointerType{
+        name: "VkRenderPass"
+    }
+
+    NativePointerType{
+        name: "VkCommandBuffer"
+    }
+
+    NativePointerType{
+        name: "VkFramebuffer"
+    }
+
+    NativePointerType{
+        name: "VkImage"
+    }
+
+    PrimitiveType{
+        name: "VkStructureType"
+        javaName: "int"
+        jniName: "jint"
+        preferredConversion: false
+    }
+
+    PrimitiveType{
+        name: "VkImageLayout"
+        javaName: "int"
+        jniName: "jint"
+        preferredConversion: false
+    }
+
+    PrimitiveType{
+        name: "VkFormat"
+        javaName: "int"
+        jniName: "jint"
+        preferredConversion: false
+    }
     
     PrimitiveType{
         name: "GLint"
@@ -764,6 +809,10 @@ TypeSystem{
     Rejection{
         className: "QPlatformMenu"
     }
+
+    Rejection{
+        className: "QPlatformVulkanInstance"
+    }
     
     Rejection{
         className: "QPlatformMenuBar"
@@ -889,18 +938,6 @@ TypeSystem{
     
     Rejection{
         className: "QTextFrameLayoutData"
-    }
-    
-    Rejection{
-        className: "QVulkanInstance"
-    }
-    
-    Rejection{
-        className: "QVulkanWindow"
-    }
-    
-    Rejection{
-        className: "QVulkanWindowRenderer"
     }
     
     ValueType{
@@ -1524,6 +1561,11 @@ TypeSystem{
     InterfaceType{
         name: "QAccessibleAttributesInterface"
         since: 6.8
+    }
+
+    InterfaceType{
+        name: "QAccessibleViewportInterface"
+        since: [6, 12]
     }
     
     ObjectType{
@@ -3004,6 +3046,11 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "QDragEnterEvent(QPoint,Qt::DropActions,const QMimeData*,Qt::MouseButtons,Qt::KeyboardModifiers)"
+            remove: RemoveFlag.All
+            since: [6, 12]
+        }
+        ModifyFunction{
             signature: "clone()const"
             ModifyArgument{
                 index: "return"
@@ -3048,6 +3095,11 @@ TypeSystem{
     
     ObjectType{
         name: "QDragMoveEvent"
+        ModifyFunction{
+            signature: "QDragMoveEvent(QPoint,Qt::DropActions,const QMimeData*,Qt::MouseButtons,Qt::KeyboardModifiers,QEvent::Type)"
+            remove: RemoveFlag.All
+            since: [6, 12]
+        }
         ModifyFunction{
             signature: "operator=(const QDragMoveEvent &)"
             Delegate{
@@ -4780,7 +4832,7 @@ default:
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "bool %out = __java_return_value!=nullptr;\n"+
+                    Text{content: "%out = __java_return_value!=nullptr;\n"+
                                   "if(%out && %1)\n"+
                                   "    *%1 = qtjambi_cast<const QImage&>(%env, %in);"}
                 }
@@ -6217,6 +6269,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
             ModifyFunction{
                 signature: "operator QPointF()const"
                 rename: "toPoint"
+                noImplicitArguments: true
             }
         }
         ModifyFunction{
@@ -6758,25 +6811,55 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
         name: "QRegion"
 
         Rejection{functionName: "cleanUp"}
-        Rejection{functionName: "cbegin"}
-        Rejection{functionName: "rbegin"}
-        Rejection{functionName: "crbegin"}
-        Rejection{functionName: "cend"}
-        Rejection{functionName: "rend"}
-        Rejection{functionName: "crend"}
         Rejection{className: "QRegionData"}
 
         IteratorType{
             name: "const_iterator"
+            javaName: "QRegion$ConstIterator"
         }
-
         IteratorType{
-            name: "iterator"
-            isConst: true
+            name: "const_reverse_iterator"
+            javaName: "QRegion$ConstReverseIterator"
         }
 
         EnumType{
             name: "RegionType"
+        }
+        ModifyFunction{
+            signature: "begin()const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "end()const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "rbegin()const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "rend()const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "cbegin()const"
+            Delegate{name: "begin"}
+            Delegate{name: "constBegin"}
+        }
+        ModifyFunction{
+            signature: "cend()const"
+            Delegate{name: "end"}
+            Delegate{name: "constEnd"}
+        }
+        ModifyFunction{
+            signature: "crbegin()const"
+            Delegate{name: "reverseBegin"}
+            Delegate{name: "constReverseBegin"}
+        }
+        ModifyFunction{
+            signature: "crend()const"
+            Delegate{name: "reverseEnd"}
+            Delegate{name: "constReverseEnd"}
         }
         ModifyFunction{
             signature: "QRegion(QBitmap)"
@@ -8791,9 +8874,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             name: "Visibility"
         }
         Rejection{
-            functionName: "vulkanInstance"
-        }
-        Rejection{
             functionName: "surfaceHandle"
         }
         ModifyFunction{
@@ -8833,6 +8913,10 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             threadAffinity: true
         }
         ModifyFunction{
+            signature: "vulkanInstance()const"
+            ppCondition: "QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)"
+        }
+        ModifyFunction{
             signature: "requestUpdate()"
             threadAffinity: Affinity.UI
         }
@@ -8846,14 +8930,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         }
         ModifyFunction{
             signature: "nativeEvent(const QByteArray &, void *, qintptr *)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setVulkanInstance(QVulkanInstance *)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "vulkanInstance() const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -13213,11 +13289,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
     }
 
     NativePointerType{
-        name: "VkFormat"
-        since: [6, 4]
-    }
-
-    NativePointerType{
         name: "MTLTexture"
     }
 
@@ -13319,8 +13390,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QPaintDeviceWindow' set to non-final, as it is extended by other classes"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QMenu::addAction', unmatched return type 'QtPrivate::QEnableIf<EXPRESSION,QAction*>::Type'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QToolBar::addAction', unmatched return type 'QtPrivate::QEnableIf<EXPRESSION,QAction*>::Type'"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'setVulkanInstance(QVulkanInstance*)' for function modification in 'QWindow' not found.*"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'vulkanInstance*' for function modification in 'QWindow' not found.*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QColorTransform::map', unmatched return type 'QRgbaFloat*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * '*', unmatched *type 'QVulkan*'"}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QColorTransform."}

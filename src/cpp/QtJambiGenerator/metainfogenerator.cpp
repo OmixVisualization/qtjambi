@@ -64,12 +64,11 @@ void MetaInfoGenerator::generate() {
 }
 
 bool MetaInfoGenerator::shouldGenerate(const TypeEntry *entry) const {
-    return entry != nullptr && !entry->isIterator() && !entry->isNamespace() && !entry->isEnum() && (entry->codeGeneration() & TypeEntry::GenerateCpp);
+    return entry != nullptr && !entry->isNamespace() && !entry->isEnum() && (entry->codeGeneration() & TypeEntry::GenerateCpp);
 }
 
 bool MetaInfoGenerator::shouldGenerate(const MetaClass *) const {
-    return true; //(!cls->isInterface() && cls->typeEntry()->isValue() && !cls->typeEntry()->isIterator()
-            //&& !cls->isAbstract() && (cls->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp));
+    return true;
 }
 
 QString MetaInfoGenerator::fileNameForClass(const MetaClass *) const {
@@ -287,7 +286,7 @@ void MetaInfoGenerator::writeCppFile() {
 
         if (buffer != nullptr) {
             QTextStream& stream  = *buffer;
-            if((!cls->typeEntry()->isIterator() && !cls->isFake() && (cls->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp) != 0)
+            if((!cls->isFake() && (cls->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp) != 0)
                     || (cls->isFake() && !cls->enums().isEmpty())){
                 if(!writtenClasses[cls->targetTypeSystem()].contains(cls->typeEntry()->qualifiedCppName())){
                     writtenClasses[cls->targetTypeSystem()] << cls->typeEntry()->qualifiedCppName();
@@ -351,7 +350,7 @@ void MetaInfoGenerator::writeCppFile() {
         for(MetaClass *cls : qAsConst(m_classes)) {
             if (BufferedOutputStream *f = buffers.value(cls->targetTypeSystem(), nullptr)) {
                 QTextStream& stream  = *f;
-                if((!cls->typeEntry()->isIterator() && !cls->isFake() && (cls->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp) != 0)
+                if((!cls->isFake() && (cls->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp) != 0)
                         || (cls->isFake() && !cls->enums().isEmpty())){
                     if(!writtenClasses[cls->targetTypeSystem()].contains(cls->typeEntry()->qualifiedCppName())){
                         writtenClasses[cls->targetTypeSystem()] << cls->typeEntry()->qualifiedCppName();

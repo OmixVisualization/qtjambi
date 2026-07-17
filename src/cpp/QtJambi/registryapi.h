@@ -30,6 +30,7 @@
 #if !defined(QTJAMBI_REGISTRYAPI_H) && !defined(QTJAMBI_GENERATOR_RUNNING)
 #define QTJAMBI_REGISTRYAPI_H
 
+#include <QtCore/QtGlobal>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 #include <QtCore/qnativeinterface.h>
 #endif
@@ -91,15 +92,17 @@ QTJAMBI_EXPORT void registerHashFunction(const std::type_info& typeId, qHashFn h
 
 namespace QtJambiPrivate {
 
-template <class T, bool supported = QtJambiPrivate::supports_IID<T>::value>
+template <class T>
 constexpr const char * interfaceIID(){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
-    if constexpr(!supported) return nullptr; else
+    if constexpr(!QtJambiPrivate::supports_qobject_interface_iid_v<T*>)
+        return nullptr;
+    else
 #endif
-    return qobject_interface_iid<T*>();
+        return qobject_interface_iid<T*>();
 }
 
-template<typename T, bool = QtJambiPrivate::supports_qHash<T>::value>
+template<typename T, bool = QtJambiPrivate::supports_qHash_v<const T&>>
 struct RegistryHelper{
     static void registerHashFunction(){ RegistryAPI::registerHashFunction(typeid(T), [](const void* ptr, size_t seed)->size_t{ return !ptr ? 0 : qHash(*reinterpret_cast<const T*>(ptr), seed); }); }
 };
@@ -557,11 +560,12 @@ QMetaType registerMetaType(QByteArrayView typeName, AbstractContainerAccess* acc
 
 QTJAMBI_EXPORT void registerContainerAccessFactory(const std::type_info& typeId, NewContainerAccessFunction factory);
 QTJAMBI_EXPORT void registerValueTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name);
+QTJAMBI_EXPORT void registerIteratorTypeInfo(const std::type_info& containerTypeId, const std::type_info& iteratorTypeId, const char *qt_name, const char *java_name);
 QTJAMBI_EXPORT void registerObjectTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name);
 QTJAMBI_EXPORT void registerQObjectTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name);
 QTJAMBI_EXPORT void registerInterfaceTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, const char *interface_iid);
 QTJAMBI_EXPORT void registerInterfaceValueTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, const char *interface_iid);
-QTJAMBI_EXPORT void registerFunctionalTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, bool isFunctionPointer, const QMetaType& metaType,
+QTJAMBI_EXPORT void registerFunctionalTypeInfo(const std::type_info& typeId, const char *qt_name, const char *java_name, bool isFunctionPointer, QMetaType&& metaType, QMetaType&& nativeMetaType,
                                                size_t size, size_t alignment, size_t sizeOfShell, size_t alignmentOfShell, FunctionalResolver resolver, uint returnScopes,
                                                RegistryAPI::DestructorFn destructor, std::initializer_list<ConstructorInfo> constructors, PtrDeleterFunction deleter, std::initializer_list<FunctionInfo> virtualFunctions);
 QTJAMBI_EXPORT void registerEnumTypeInfo(const std::type_info& enumTypeId, const char *qt_name, const char *java_name);
@@ -624,6 +628,12 @@ void registerDefaultPolymorphyHandler(){
         }
         return _result;
     });
+}
+
+template<typename Container, typename Iterator, size_t N1, size_t N2>
+void registerIteratorTypeInfo(const char (&qt_name)[N1], const char (&java_name)[N2])
+{
+    registerIteratorTypeInfo(typeid(Container), typeid(Iterator), qt_name, java_name);
 }
 
 template<typename T, size_t N1, size_t N2>
@@ -702,11 +712,14 @@ const std::type_info& registerFunctionalTypeInfo(const char (&qt_name)[N1], cons
             iface->dataStreamIn,
             iface->legacyRegisterOp
         };
-        metaType = QMetaType(metaTypeInterface);
+        registerFunctionalTypeInfo(id, qt_name, java_name, std::is_function_v<std::remove_pointer_t<T>>, QMetaType(metaTypeInterface), std::move(metaType),
+                                   sizeof(T), alignof(T), 0, 0, nullptr,
+                                   0, nullptr, {}, nullptr, {});
+    }else{
+        registerFunctionalTypeInfo(id, qt_name, java_name, std::is_function_v<std::remove_pointer_t<T>>, std::move(metaType), QMetaType(),
+                                   sizeof(T), alignof(T), 0, 0, nullptr,
+                                   0, nullptr, {}, nullptr, {});
     }
-    registerFunctionalTypeInfo(id, qt_name, java_name, std::is_function_v<std::remove_pointer_t<T>>, metaType,
-                               sizeof(T), alignof(T), 0, 0, nullptr,
-                               0, nullptr, {}, nullptr, {});
     return id;
 }
 
@@ -739,11 +752,14 @@ const std::type_info& registerFunctionalTypeInfo(const char (&qt_name)[N1], cons
             iface->dataStreamIn,
             iface->legacyRegisterOp
         };
-        metaType = QMetaType(metaTypeInterface);
+        registerFunctionalTypeInfo(id, qt_name, java_name, std::is_function_v<std::remove_pointer_t<T>>, QMetaType(metaTypeInterface), std::move(metaType),
+                                   sizeof(T), alignof(T), sizeof(Tshell), alignof(Tshell), &Tshell::resolveFunctional,
+                                   needsReturnScope ? 1 : 0, destructor, constructors, deleter, virtualFunctions);
+    }else{
+        registerFunctionalTypeInfo(id, qt_name, java_name, std::is_function_v<std::remove_pointer_t<T>>, std::move(metaType), QMetaType(),
+                                   sizeof(T), alignof(T), sizeof(Tshell), alignof(Tshell), &Tshell::resolveFunctional,
+                                   needsReturnScope ? 1 : 0, destructor, constructors, deleter, virtualFunctions);
     }
-    registerFunctionalTypeInfo(id, qt_name, java_name, std::is_function_v<std::remove_pointer_t<T>>, metaType,
-                               sizeof(T), alignof(T), sizeof(Tshell), alignof(Tshell), &Tshell::resolveFunctional,
-                               needsReturnScope ? 1 : 0, destructor, constructors, deleter, virtualFunctions);
     return id;
 }
 

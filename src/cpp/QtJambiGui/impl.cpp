@@ -173,8 +173,9 @@ MacOSUtilsPluginData MacOSUtilsPluginData::instance;
 #endif
 
 void initialize_meta_info_gui(){
+    using namespace RegistryAPI;
     QPixmapCache::cacheLimit();
-    RegistryAPI::registerPolymorphyHandler(typeid(QGradient), typeid(std::nullptr_t), [](void *ptr, qintptr& offset) -> bool {
+    registerPolymorphyHandler(typeid(QGradient), typeid(std::nullptr_t), [](void *ptr, qintptr& offset) -> bool {
                           QGradient *object = reinterpret_cast<QGradient *>(ptr);
                           Q_ASSERT(object);
                           offset = 0;
@@ -286,6 +287,16 @@ size_t qHash(const QColorTransform &value, size_t seed)
         }
     }
     return seed;
+}
+
+struct QRegionPrivate{
+    static bool isSharedWith(const QRegion& container, const QRegion& other){
+        return container.d==other.d;
+    }
+};
+
+bool QtJambiPrivate::is_shared_with(const QRegion& container, const QRegion& other){
+    return QRegionPrivate::isSharedWith(container, other);
 }
 
 template jobject qtjambi_cast<jobject,QPaintDevice::PaintDeviceMetric&>(JNIEnv *, QPaintDevice::PaintDeviceMetric&);

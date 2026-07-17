@@ -2950,6 +2950,16 @@ void initialize_meta_info_QQmlListProperty(){
         }
         return result;
     });
+#if 0
+    QmlAPI::setConvertToVariant([](const QObject* context, QObject * obj) -> QVariant {
+        if(!obj->parent()){
+            if(QJSEngine *engine = qjsEngine(context)){
+                return QVariant::fromValue(engine->newQObject(obj));
+            }
+        }
+        return {};
+    });
+#endif
     const std::type_info& typeId = registerUnspecificTypeInfo<QQmlListProperty<void>>("QQmlListProperty", "io/qt/qml/QQmlListProperty");
     registerOperators<QQmlListProperty<void>>();
     registerConstructorInfos(typeId, 0, &__qt_destruct_QQmlListProperty, {});

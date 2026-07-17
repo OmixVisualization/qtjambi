@@ -36,6 +36,7 @@
 
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/JavaAPI>
+#include <QtJambi/QList>
 #include <QtJambi/Cast>
 #include <QtJambi/ModelCast>
 
@@ -296,7 +297,7 @@ std::chrono::nanoseconds PerformanceTests::testConvertQModelIndexCopy(int count)
     auto start = std::chrono::high_resolution_clock::now();
     for(int i=0; i<count; ++i){
         QtJambiScope scope;
-        qtjambi_cast<jobject>(env, index);
+        (void)qtjambi_cast<jobject>(env, index);
         //std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     auto end = std::chrono::high_resolution_clock::now();
@@ -481,7 +482,7 @@ std::chrono::nanoseconds PerformanceTests::testConvertQSize(int count){
     const QSize& crSz = sz;
     auto start = std::chrono::high_resolution_clock::now();
     for(int i=0; i<count; ++i){
-        qtjambi_cast<jobject>(env, crSz);
+        (void)qtjambi_cast<jobject>(env, crSz);
         //std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     auto end = std::chrono::high_resolution_clock::now();
@@ -495,7 +496,7 @@ std::chrono::nanoseconds PerformanceTests::testConvertQString(int count){
     const QString& crStrg = strg;
     auto start = std::chrono::high_resolution_clock::now();
     for(int i=0; i<count; ++i){
-        qtjambi_cast<jstring>(env, crStrg);
+        (void)qtjambi_cast<jstring>(env, crStrg);
         //std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     auto end = std::chrono::high_resolution_clock::now();

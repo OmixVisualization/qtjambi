@@ -58,15 +58,8 @@ struct VariantUtility{
     static QVariant createVariant(const QMetaType& type, const void *data);
 };
 
-#if defined(Q_OS_ANDROID) || defined(Q_OS_FREEBSD)
-#define unique_id(id) qHash(QLatin1String((id).name()))
-#define typeid_equals(t1, t2) unique_id(t1)==unique_id(t2)
-#define typeid_not_equals(t1, t2) unique_id(t1)!=unique_id(t2)
-#else
-#define unique_id(id) (id).hash_code()
-#define typeid_equals(t1, t2) t1==t2
-#define typeid_not_equals(t1, t2) t1!=t2
-#endif
+bool isQmlJavaScriptOwnership(QObject * obj);
+bool isQmlExplicitCppOwnership(QObject * obj);
 
 void registerContainerAccess(QMetaType metaType, AbstractContainerAccess* access);
 void registerContainerAccess(QMetaType metaType, const QSharedPointer<AbstractContainerAccess>& sharedAccess);
@@ -138,20 +131,20 @@ public:
     Printer& operator=(Printer&& other) noexcept;
 
     template<typename Functor, std::enable_if_t<!std::is_pointer_v<Functor>, bool> = true
-             , std::enable_if_t<!std::is_same_v<std::remove_reference_t<std::remove_cv_t<Functor>>, Printer>, bool> = true
-             , std::enable_if_t<!std::is_null_pointer_v<std::remove_reference_t<std::remove_cv_t<Functor>>>, bool> = true
-             , std::enable_if_t<!std::is_same_v<std::remove_reference_t<std::remove_cv_t<Functor>>, FunctionPointer>, bool> = true
+             , std::enable_if_t<!std::is_same_v<std::remove_cv_t<std::remove_reference_t<Functor>>, Printer>, bool> = true
+             , std::enable_if_t<!std::is_null_pointer_v<std::remove_cv_t<std::remove_reference_t<Functor>>>, bool> = true
+             , std::enable_if_t<!std::is_same_v<std::remove_cv_t<std::remove_reference_t<Functor>>, FunctionPointer>, bool> = true
              , std::enable_if_t<std::is_invocable_v<Functor,QDebug&>, bool> = true
              >
     Printer(Functor&& functor) noexcept
         : Printer(
-            new std::remove_reference_t<std::remove_cv_t<Functor>>(std::move(functor)),
+            new std::remove_cv_t<std::remove_reference_t<Functor>>(std::move(functor)),
             [](void* data, QDebug& d){
-                std::remove_reference_t<std::remove_cv_t<Functor>>* fct = reinterpret_cast<std::remove_reference_t<std::remove_cv_t<Functor>>*>(data);
+                std::remove_cv_t<std::remove_reference_t<Functor>>* fct = reinterpret_cast<std::remove_cv_t<std::remove_reference_t<Functor>>*>(data);
                 (*fct)(d);
             },
             [](void* data){
-                delete reinterpret_cast<std::remove_reference_t<std::remove_cv_t<Functor>>*>(data);
+                delete reinterpret_cast<std::remove_cv_t<std::remove_reference_t<Functor>>*>(data);
             }
             ){}
     bool operator==(const Printer& other) const noexcept;
@@ -361,7 +354,8 @@ typedef void (*FinalizationDeleter)(JNIEnv* env, void* data);
 
 #define CACHE_MEMBER(Type,variable)\
 private: Type m_##variable;\
-public: Type& variable();
+public: Type& variable();\
+        const Type& variable() const;
 
 struct QtJambiStorage{
     typedef QMap<const QtPrivate::QMetaTypeInterface *, QtMetaContainerPrivate::QMetaAssociationInterface> MetaAssociationByMetaTypeHash;
@@ -394,6 +388,7 @@ struct QtJambiStorage{
     typedef QHash<const void *, QWeakPointer<QtJambiLink>> QObjectHash;
     typedef QMap<size_t, EntryTypes> TypeEntryTypesHash;
     typedef QMap<size_t, const char*> TypeStringHash;
+    typedef QMap<size_t, QMap<size_t, QPair<const char*,const char*>>> ContainersIteratorJavaNamesHash;
     typedef QHash<QByteArray, const char*> StringStringHash;
     typedef QHash<QByteArray, const std::type_info*> StrintypeHash;
     typedef QHash<QByteArray, QList<const std::type_info*>> StrinbTypesHash;
@@ -406,6 +401,7 @@ struct QtJambiStorage{
     typedef QHash<QPair<int,int>, QHash<AssociativeContainerType,std::function<AbstractContainerAccess*()>>> AssociativeContainerAccessFactoryByMetaTypeHash;
     typedef QHash<int, const std::type_info*> TypeInfoByMetaTypeHash;
     typedef QMap<size_t, const QtPrivate::QMetaTypeInterface *> MetaTypeByTypeInfoMap;
+    typedef QHash<QMetaType, QMetaType> MetaTypeByNativeMetaTypeMap;
     typedef QMap<size_t, const void*> DefaultValueHash;
     typedef QMap<size_t, QVector<RegistryAPI::FunctionInfo>> FunctionInfoHash;
     typedef QMap<size_t, QVector<RegistryAPI::ConstructorInfo>> ConstructorInfoHash;
@@ -496,10 +492,12 @@ struct QtJambiStorage{
     CACHE_MEMBER(ID2IDHash, flagEnumIDHash)
     CACHE_MEMBER(ID2IDHash, enumFlagIDHash)
     CACHE_MEMBER(TypeStringHash, typeJavaInterfaceHash)
+    CACHE_MEMBER(ContainersIteratorJavaNamesHash, containersIteratorJavaNames)
     CACHE_MEMBER(ContainerAccessFactoryHash, containerAccessFactories)
     CACHE_MEMBER(SequentialContainerAccessFactoryByMetaTypeHash, sequentialContainerAccessFactoryByMetaTypes)
     CACHE_MEMBER(AssociativeContainerAccessFactoryByMetaTypeHash, associativeContainerAccessFactoryByMetaTypes)
     CACHE_MEMBER(MetaTypeByTypeInfoMap, metaTypeByTypeInfos)
+    CACHE_MEMBER(MetaTypeByNativeMetaTypeMap, metaTypeByNativeMetaType)
     CACHE_MEMBER(TypeInfoByMetaTypeHash, typeInfoByMetaTypes)
     CACHE_MEMBER(DefaultValueHash, defaultValueHash)
     CACHE_MEMBER(FunctionInfoHash, virtualFunctionInfos)
@@ -564,20 +562,6 @@ struct QtJambiStorage{
     typedef QHash<size_t, QString> ClassNameHash;
     CACHE_MEMBER(ClassNameHash, classNameHash)
 #endif
-#if defined(QTJAMBI_GENERIC_ACCESS)
-    typedef QMap<size_t, ContainerAccessAPI::SequentialContainerAccessFactory> SequentialContainerAccessFactoryHash;
-    typedef QMap<size_t, ContainerAccessAPI::AssociativeContainerAccessFactory> AssociativeContainerAccessFactoryHash;
-    typedef QHash<size_t, QtMetaContainerPrivate::QMetaAssociationInterface> MetaAssociationHash;
-    typedef QHash<size_t, QtMetaContainerPrivate::QMetaSequenceInterface> MetaSequenceHash;
-    typedef QHash<const QtPrivate::QMetaTypeInterface*,ContainerTypeInfo> ContainerTypeInfoHash;
-    typedef QHash<const QtPrivate::QMetaTypeInterface*,BiContainerTypeInfo> BiContainerTypeInfoHash;
-    CACHE_MEMBER(MetaSequenceHash, metaSequenceHash);
-    CACHE_MEMBER(MetaAssociationHash, metaAssociationHash);
-    CACHE_MEMBER(ContainerTypeInfoHash, containerTypeInfos);
-    CACHE_MEMBER(BiContainerTypeInfoHash, biContainerTypeInfos);
-    CACHE_MEMBER(SequentialContainerAccessFactoryHash, sequentialContainerAccessFactoryHash);
-    CACHE_MEMBER(AssociativeContainerAccessFactoryHash, associativeContainerAccessFactoryHash);
-#endif
 #if defined(ALLOW_SCOPED_POINTER_METATYPE)
     typedef QHash<const QtPrivate::QMetaTypeInterface *,const QtPrivate::QMetaTypeInterface *> ElementMetaTypesOfSmartPointersHash;
     typedef QHash<const QtPrivate::QMetaTypeInterface *,PtrDeleterFunction> ElementDeletersOfSmartPointersHash;
@@ -585,9 +569,9 @@ struct QtJambiStorage{
     CACHE_MEMBER(ElementDeletersOfSmartPointersHash, elementDeletersOfSmartPointers);
 #endif
 
-    QReadWriteLock* lock();
-    QReadWriteLock* linkLock();
-    QReadWriteLock* registryLock();
+    QReadWriteLock* lock() const;
+    QReadWriteLock* linkLock() const;
+    QReadWriteLock* registryLock() const;
 private:
     explicit QtJambiStorage(bool init = false);
     bool ref();

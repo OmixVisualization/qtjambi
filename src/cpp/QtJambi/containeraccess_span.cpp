@@ -30,6 +30,13 @@
 ****************************************************************************/
 
 #include "pch_p.h"
+#include "qtjambi_cast.h"
+#include "qtjambi_cast_model.h"
+#include "containeraccess_export_variantlist.h"
+#include "containeraccess_export_bytearraylist.h"
+#include "containeraccess_export_stringlist.h"
+#include "containeraccess_export_objectlist.h"
+#include "containeraccess_export_list.h"
 
 QT_WARNING_DISABLE_GCC("-Winaccessible-base")
 QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
@@ -43,8 +50,7 @@ AutoSpanAccess::AutoSpanAccess(
         const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter,
         const QSharedPointer<AbstractContainerAccess>& elementNestedContainerAccess,
         PtrOwnerFunction elementOwnerFunction,
-        AbstractContainerAccess::DataType elementDataType,
-        bool isConst
+        AbstractContainerAccess::DataType elementDataType
         )
     : AbstractSpanAccess(), AbstractNestedSequentialAccess(),
       m_elementMetaType(elementMetaType),
@@ -54,11 +60,35 @@ AutoSpanAccess::AutoSpanAccess(
       m_elementNestedContainerAccess(elementNestedContainerAccess),
       m_offset(0),
       m_elementOwnerFunction(elementOwnerFunction),
-      m_elementDataType(elementDataType),
-      m_isConst(isConst)
+      m_elementDataType(elementDataType)
 {
     Q_ASSERT(m_elementMetaType.id()!=QMetaType::UnknownType
             && m_elementMetaType.id()!=QMetaType::Void);
+    m_offset = m_elementMetaType.sizeOf();
+    if(m_offset%m_elementMetaType.alignOf()>0)
+        m_offset += m_elementMetaType.alignOf()-m_offset%m_elementMetaType.alignOf();
+}
+
+AutoSpanAccess::AutoSpanAccess(
+    const QMetaType& elementMetaType,
+    const QtJambiUtils::QHashFunction& hashFunction,
+    const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+    const QSharedPointer<AbstractContainerAccess>& elementNestedContainerAccess,
+    PtrOwnerFunction elementOwnerFunction,
+    AbstractContainerAccess::DataType elementDataType
+    )
+    : AbstractSpanAccess(), AbstractNestedSequentialAccess(),
+    m_elementMetaType(elementMetaType),
+    m_hashFunction(hashFunction),
+    m_internalToExternalConverter(internalToExternalConverter),
+    m_externalToInternalConverter(),
+    m_elementNestedContainerAccess(elementNestedContainerAccess),
+    m_offset(0),
+    m_elementOwnerFunction(elementOwnerFunction),
+    m_elementDataType(elementDataType)
+{
+    Q_ASSERT(m_elementMetaType.id()!=QMetaType::UnknownType
+             && m_elementMetaType.id()!=QMetaType::Void);
     m_offset = m_elementMetaType.sizeOf();
     if(m_offset%m_elementMetaType.alignOf()>0)
         m_offset += m_elementMetaType.alignOf()-m_offset%m_elementMetaType.alignOf();
@@ -73,8 +103,7 @@ AutoSpanAccess::AutoSpanAccess(const AutoSpanAccess& other)
     m_elementNestedContainerAccess(other.m_elementNestedContainerAccess),
     m_offset(other.m_offset),
     m_elementOwnerFunction(other.m_elementOwnerFunction),
-    m_elementDataType(other.m_elementDataType),
-    m_isConst(other.m_isConst)
+    m_elementDataType(other.m_elementDataType)
 {
 }
 
@@ -294,7 +323,7 @@ void* AutoSpanAccess::constructContainer(void* result, void* container){
 }
 
 bool AutoSpanAccess::isConst(){
-    return m_isConst;
+    return !m_externalToInternalConverter;
 }
 
 bool AutoSpanAccess::equals(const void* container1, const void* container2)
@@ -317,14 +346,24 @@ void AutoSpanAccess::debugStream(QDebug &dbg, const void *ptr)
         dbg << QString::asprintf("QSpan<%s%s>()", isConst() ? "const " : "", elementMetaType().name());
 }
 
-AutoSpanAccess::iterator AutoSpanAccess::begin(const void* container) {
-    const QtJambiSpan* p = reinterpret_cast<const QtJambiSpan*>(container);
+AutoSpanAccess::iterator AutoSpanAccess::begin(void* container) {
+    QtJambiSpan* p = reinterpret_cast<QtJambiSpan*>(container);
     return iterator(m_offset, reinterpret_cast<char*>(const_cast<void*>(p->begin)));
 }
 
-AutoSpanAccess::iterator AutoSpanAccess::end(const void* container) {
-    const QtJambiSpan* p = reinterpret_cast<const QtJambiSpan*>(container);
+AutoSpanAccess::iterator AutoSpanAccess::end(void* container) {
+    QtJambiSpan* p = reinterpret_cast<QtJambiSpan*>(container);
     return iterator(m_offset, reinterpret_cast<char*>(const_cast<void*>(p->begin)) + p->size * m_offset);
+}
+
+AutoSpanAccess::const_iterator AutoSpanAccess::begin(const void* container) {
+    const QtJambiSpan* p = reinterpret_cast<const QtJambiSpan*>(container);
+    return const_iterator(m_offset, reinterpret_cast<char*>(const_cast<void*>(p->begin)));
+}
+
+AutoSpanAccess::const_iterator AutoSpanAccess::end(const void* container) {
+    const QtJambiSpan* p = reinterpret_cast<const QtJambiSpan*>(container);
+    return const_iterator(m_offset, reinterpret_cast<char*>(const_cast<void*>(p->begin)) + p->size * m_offset);
 }
 
 qsizetype AutoSpanAccess::size(const void* container)
@@ -338,16 +377,49 @@ AutoSpanAccess::iterator::iterator(size_t _offset, char* _ptr)
 }
 
 bool AutoSpanAccess::iterator::operator<(const iterator& right) const{
-    return right.ptr<ptr;
+    return ptr<right.ptr;
+}
+bool AutoSpanAccess::iterator::operator<=(const iterator& right) const{
+    return ptr<=right.ptr;
+}
+bool AutoSpanAccess::iterator::operator>(const iterator& right) const{
+    return ptr>right.ptr;
+}
+bool AutoSpanAccess::iterator::operator>=(const iterator& right) const{
+    return ptr>=right.ptr;
 }
 bool AutoSpanAccess::iterator::operator==(const iterator& right) const{
-    return right.ptr==ptr;
+    return ptr==right.ptr;
+}
+bool AutoSpanAccess::iterator::operator<(const const_iterator& right) const{
+    return ptr<right.ptr;
+}
+bool AutoSpanAccess::iterator::operator<=(const const_iterator& right) const{
+    return ptr<=right.ptr;
+}
+bool AutoSpanAccess::iterator::operator>(const const_iterator& right) const{
+    return ptr>right.ptr;
+}
+bool AutoSpanAccess::iterator::operator>=(const const_iterator& right) const{
+    return ptr>=right.ptr;
+}
+bool AutoSpanAccess::iterator::operator==(const const_iterator& right) const{
+    return ptr==right.ptr;
+}
+qsizetype AutoSpanAccess::iterator::operator-(const const_iterator& j) const{
+    return (ptr-j.ptr) / offset;
+}
+qsizetype AutoSpanAccess::iterator::operator-(const iterator& j) const{
+    return (ptr-j.ptr) / offset;
 }
 const char* AutoSpanAccess::iterator::operator->() const{
     return ptr;
 }
 const char& AutoSpanAccess::iterator::operator*() const{
     return *ptr;
+}
+const char& AutoSpanAccess::iterator::operator[](qsizetype j) const{
+    return *(ptr+j*offset);
 }
 const char* AutoSpanAccess::iterator::data() const{
     return ptr;
@@ -382,6 +454,103 @@ AutoSpanAccess::iterator AutoSpanAccess::iterator::operator--(int){
     iterator _this = *this;
     ptr -= offset;
     return _this;
+}
+
+AutoSpanAccess::iterator& AutoSpanAccess::iterator::operator+=(size_t n){
+    ptr += (offset*n);
+    return *this;
+}
+AutoSpanAccess::iterator& AutoSpanAccess::iterator::operator-=(size_t n){
+    ptr -= (offset*n);
+    return *this;
+}
+
+AutoSpanAccess::const_iterator::const_iterator(size_t _offset, const char* _ptr)
+    : offset(_offset), ptr(_ptr){
+}
+AutoSpanAccess::const_iterator::const_iterator(const iterator& other)
+    : offset(other.offset), ptr(other.ptr){
+}
+
+bool AutoSpanAccess::const_iterator::operator<(const const_iterator& right) const{
+    return ptr<right.ptr;
+}
+bool AutoSpanAccess::const_iterator::operator<=(const const_iterator& right) const{
+    return ptr<=right.ptr;
+}
+bool AutoSpanAccess::const_iterator::operator>(const const_iterator& right) const{
+    return ptr>right.ptr;
+}
+bool AutoSpanAccess::const_iterator::operator>=(const const_iterator& right) const{
+    return ptr>=right.ptr;
+}
+bool AutoSpanAccess::const_iterator::operator==(const const_iterator& right) const{
+    return ptr==right.ptr;
+}
+
+bool AutoSpanAccess::const_iterator::operator<(const iterator& right) const{
+    return ptr<right.ptr;
+}
+bool AutoSpanAccess::const_iterator::operator<=(const iterator& right) const{
+    return ptr<=right.ptr;
+}
+bool AutoSpanAccess::const_iterator::operator>(const iterator& right) const{
+    return ptr>right.ptr;
+}
+bool AutoSpanAccess::const_iterator::operator>=(const iterator& right) const{
+    return ptr>=right.ptr;
+}
+bool AutoSpanAccess::const_iterator::operator==(const iterator& right) const{
+    return ptr==right.ptr;
+}
+const char* AutoSpanAccess::const_iterator::operator->() const{
+    return ptr;
+}
+const char& AutoSpanAccess::const_iterator::operator*() const{
+    return *ptr;
+}
+const char* AutoSpanAccess::const_iterator::data() const{
+    return ptr;
+}
+const char& AutoSpanAccess::const_iterator::operator[](qsizetype j) const{
+    return *(ptr+j*offset);
+}
+qsizetype AutoSpanAccess::const_iterator::operator-(const const_iterator& j) const{
+    return (ptr-j.ptr) / offset;
+}
+qsizetype AutoSpanAccess::const_iterator::operator-(const iterator& j) const{
+    return (ptr-j.ptr) / offset;
+}
+
+AutoSpanAccess::const_iterator& AutoSpanAccess::const_iterator::operator++(){
+    ptr += offset;
+    return *this;
+}
+
+AutoSpanAccess::const_iterator AutoSpanAccess::const_iterator::operator++(int){
+    const_iterator _this = *this;
+    ptr += offset;
+    return _this;
+}
+
+AutoSpanAccess::const_iterator& AutoSpanAccess::const_iterator::operator--(){
+    ptr -= offset;
+    return *this;
+}
+
+AutoSpanAccess::const_iterator AutoSpanAccess::const_iterator::operator--(int){
+    const_iterator _this = *this;
+    ptr -= offset;
+    return _this;
+}
+
+AutoSpanAccess::const_iterator& AutoSpanAccess::const_iterator::operator+=(size_t n){
+    ptr += (offset*n);
+    return *this;
+}
+AutoSpanAccess::const_iterator& AutoSpanAccess::const_iterator::operator-=(size_t n){
+    ptr -= (offset*n);
+    return *this;
 }
 
 typedef QMap<const QtPrivate::QMetaTypeInterface *, QtMetaContainerPrivate::QMetaSequenceInterface> MetaSequenceHash;
@@ -673,94 +842,210 @@ bool AutoSpanAccess::hasOwnerFunction(){
     return false;
 }
 
-jobject AutoSpanAccess::createIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iter)
-{
-    auto* containerAccess = new AutoSequentialIteratorAccess(m_internalToExternalConverter,
-            [](auto*, void*ptr){
-                iterator& cursor = *reinterpret_cast<iterator*>(ptr);
-                ++cursor;
-            },
-            [](auto*, void*ptr){
-                iterator& cursor = *reinterpret_cast<iterator*>(ptr);
-                --cursor;
-            },
-            [](auto*,const void*ptr)->const void*{
-                return reinterpret_cast<const iterator*>(ptr)->data();
-            },
-            [](auto*,const void*ptr1,const void*ptr2)->bool{
-                const iterator* cursor1 = reinterpret_cast<const iterator*>(ptr1);
-                const iterator* cursor2 = reinterpret_cast<const iterator*>(ptr2);
-                return cursor1->data()<cursor2->data();
-            },
-            [](auto*,const void*ptr1, const void*ptr2)->bool{
-                const iterator* cursor1 = reinterpret_cast<const iterator*>(ptr1);
-                const iterator* cursor2 = reinterpret_cast<const iterator*>(ptr2);
-                return cursor1->data()==cursor2->data();
-            },
-            m_externalToInternalConverter,
-            [](auto*,void*ptr)->void*{
-                return reinterpret_cast<iterator*>(ptr)->data();
-            },
-            m_elementMetaType,
-            m_offset
-        );
-    return QtJambiAPI::convertQSequentialIteratorToJavaObject(env, ownerId, new iterator(std::move(iter)), [](void* ptr,bool){
-            delete reinterpret_cast<iterator*>(ptr);
-        }, containerAccess);
+jboolean AutoSpanAccess::iteratorEquals(JNIEnv *, const void* ptr, AbstractSequentialConstIteratorAccess::IteratorType iteratorType, const ConstContainerAndAccessInfo& ptr2){
+    if(ptr2.access->isSequentialConstIterator() && ptr2.access->isAutoAccess()){
+        AbstractSequentialConstIteratorAccess::IteratorType iteratorType2 = static_cast<AbstractSequentialConstIteratorAccess*>(ptr2.access)->iteratorType();
+        switch(iteratorType){
+        case AbstractSequentialConstIteratorAccess::IteratorType::const_iterator: {
+            using Iter1 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, const_iterator>;
+            switch(iteratorType2){
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, const_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            default:
+                return false;
+            }
+        }break;
+        case AbstractSequentialConstIteratorAccess::IteratorType::iterator: {
+            using Iter1 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, iterator>;
+            switch(iteratorType2){
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, const_iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, iterator>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            default:
+                return false;
+            }
+        }break;
+        case AbstractSequentialConstIteratorAccess::IteratorType::const_reverse_iterator: {
+            using Iter1 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, std::reverse_iterator<const_iterator>>;
+            switch(iteratorType2){
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_reverse_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, std::reverse_iterator<const_iterator>>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::reverse_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, std::reverse_iterator<iterator>>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            default:
+                return false;
+            }
+        }break;
+        case AbstractSequentialConstIteratorAccess::IteratorType::reverse_iterator: {
+            using Iter1 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, std::reverse_iterator<iterator>>;
+            switch(iteratorType2){
+            case AbstractSequentialConstIteratorAccess::IteratorType::const_reverse_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, std::reverse_iterator<const_iterator>>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            case AbstractSequentialConstIteratorAccess::IteratorType::reverse_iterator: {
+                using Iter2 = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, std::reverse_iterator<iterator>>;
+                return *reinterpret_cast<const Iter1*>(ptr)==*reinterpret_cast<const Iter2*>(ptr2.container);
+            }break;
+            default:
+                return false;
+            }
+        }break;
+        default:
+            return false;
+        }
+    }
+    return false;
 }
 
-jobject AutoSpanAccess::createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, iterator&& iter)
+void* AutoSpanAccess::asIterator(void* iter, AbstractSequentialConstIteratorAccess::IteratorType iteratorType){
+    switch(iteratorType){
+    case AbstractSequentialConstIteratorAccess::IteratorType::const_iterator: {
+        using Iterator = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, const_iterator>;
+        return &reinterpret_cast<Iterator*>(iter)->iterator();
+    }break;
+    case AbstractSequentialConstIteratorAccess::IteratorType::iterator: {
+        using Iterator = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, iterator>;
+        return &reinterpret_cast<Iterator*>(iter)->iterator();
+    }break;
+    case AbstractSequentialConstIteratorAccess::IteratorType::const_reverse_iterator: {
+        using Iterator = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, std::reverse_iterator<const_iterator>>;
+        return &reinterpret_cast<Iterator*>(iter)->iterator();
+    }break;
+    case AbstractSequentialConstIteratorAccess::IteratorType::reverse_iterator: {
+        using Iterator = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, std::reverse_iterator<iterator>>;
+        return &reinterpret_cast<Iterator*>(iter)->iterator();
+    }break;
+    default:
+        return nullptr;
+    }
+}
+
+bool AutoSpanAccess::findIterator(const void* iter, AbstractSequentialConstIteratorAccess::IteratorType iteratorType, const std::type_info& typeId, void* output){
+    Q_UNUSED(iter)
+    Q_UNUSED(iteratorType)
+    Q_UNUSED(typeId)
+    Q_UNUSED(output)
+    return false;
+}
+
+jobject AutoSpanAccess::createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, const_iterator>&& iter)
 {
-    auto* containerAccess = createAutoSequentialConstIteratorAccess(m_internalToExternalConverter,
-            [](auto*, void*ptr){
-                iterator& cursor = *reinterpret_cast<iterator*>(ptr);
-                ++cursor;
-            },
-            [](auto*, void*ptr){
-                iterator& cursor = *reinterpret_cast<iterator*>(ptr);
-                --cursor;
-            },
-            [](auto*,const void*ptr)->const void*{
-                return reinterpret_cast<const iterator*>(ptr)->data();
-            },
-            [](auto*,const void*ptr1, const void*ptr2)->bool{
-                const iterator* cursor1 = reinterpret_cast<const iterator*>(ptr1);
-                const iterator* cursor2 = reinterpret_cast<const iterator*>(ptr2);
-                return cursor1->data()<cursor2->data();
-            },
-            [](auto*,const void*ptr1, const void*ptr2)->bool{
-                const iterator* cursor1 = reinterpret_cast<const iterator*>(ptr1);
-                const iterator* cursor2 = reinterpret_cast<const iterator*>(ptr2);
-                return cursor1->data()==cursor2->data();
-            },
-            m_elementMetaType,
-            m_offset
-        );
-    return QtJambiAPI::convertQSequentialIteratorToJavaObject(env, ownerId, new iterator(std::move(iter)), [](void* ptr,bool){
-            delete reinterpret_cast<iterator*>(ptr);
-        }, containerAccess);
+    using Iter = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, const_iterator>;
+    return QtJambiAPI::convertSpanIteratorToJavaObject(env,
+                                                       new Iter(std::move(iter)),
+                                                       QtJambiAPI::deletePointer<Iter>,
+                                                       new AutoSequentialConstIteratorAccess<AutoSpanAccess,Iter>(m_internalToExternalConverter,
+                                                                                                                   m_elementMetaType,
+                                                                                                                   m_hashFunction,
+                                                                                                                   m_elementNestedContainerAccess,
+                                                                                                                   m_elementOwnerFunction,
+                                                                                                                   m_elementDataType));
+}
+
+jobject AutoSpanAccess::createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, iterator>&& iter)
+{
+    using Iter = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, iterator>;
+    QSharedPointer<QtJambiLink> link = iter.storage().link();
+    return QtJambiPrivate::convertSpanIteratorToJavaObject(env, link,
+                                                           new Iter(std::move(iter)),
+                                                           QtJambiAPI::deletePointer<Iter>,
+                                                           new AutoSequentialIteratorAccess<AutoSpanAccess,Iter>(m_internalToExternalConverter,
+                                                                                                                  m_externalToInternalConverter,
+                                                                                                                  m_elementMetaType,
+                                                                                                                  m_hashFunction,
+                                                                                                                  m_elementNestedContainerAccess,
+                                                                                                                  m_elementOwnerFunction,
+                                                                                                                  m_elementDataType));
+}
+
+jobject AutoSpanAccess::createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, std::reverse_iterator<const_iterator>>&& iter)
+{
+    using Iter = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, std::reverse_iterator<const_iterator>>;
+    return QtJambiAPI::convertSpanReverseIteratorToJavaObject(env,
+                                                       new Iter(std::move(iter)),
+                                                       QtJambiAPI::deletePointer<Iter>,
+                                                       new AutoSequentialConstIteratorAccess<AutoSpanAccess,Iter,AbstractSequentialConstIteratorAccess::IteratorType::const_reverse_iterator>(m_internalToExternalConverter,
+                                                                  m_elementMetaType,
+                                                                  m_hashFunction,
+                                                                  m_elementNestedContainerAccess,
+                                                                  m_elementOwnerFunction,
+                                                                  m_elementDataType));
+}
+
+jobject AutoSpanAccess::createIterator(JNIEnv * env, ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, std::reverse_iterator<iterator>>&& iter)
+{
+    using Iter = ContainerIterator<QtJambiPrivate::ContainerAccessLink<AutoSpanAccess>, std::reverse_iterator<iterator>>;
+    QSharedPointer<QtJambiLink> link = iter.storage().link();
+    return QtJambiPrivate::convertSpanReverseIteratorToJavaObject(env, link,
+                                                           new Iter(std::move(iter)),
+                                                           QtJambiAPI::deletePointer<Iter>,
+                                                           new AutoSequentialIteratorAccess<AutoSpanAccess,Iter,AbstractSequentialConstIteratorAccess::IteratorType::reverse_iterator>(m_internalToExternalConverter,
+                                                             m_externalToInternalConverter,
+                                                             m_elementMetaType,
+                                                             m_hashFunction,
+                                                             m_elementNestedContainerAccess,
+                                                             m_elementOwnerFunction,
+                                                             m_elementDataType));
 }
 
 jobject AutoSpanAccess::end(JNIEnv * env, const ExtendedContainerInfo& container)
 {
-    return createIterator(env, container.nativeId, end(container.container));
+    return createIterator(env, ContainerIterator(end(container.container), this, container));
 }
 
 jobject AutoSpanAccess::begin(JNIEnv * env, const ExtendedContainerInfo& container)
 {
-    if(m_isConst)
+    if(isConst())
         return end(env, container);
-    return createIterator(env, container.nativeId, begin(container.container));
+    return createIterator(env, ContainerIterator(begin(container.container), this, container));
 }
 
 jobject AutoSpanAccess::constEnd(JNIEnv * env, const ConstExtendedContainerInfo& container)
 {
-    return createConstIterator(env, container.nativeId, end(container.container));
+    return createIterator(env, ContainerIterator(end(container.container), QtJambiPrivate::ContainerAccessLink(this, QtJambiLink::fromNativeId(container.nativeId))));
 }
 
 jobject AutoSpanAccess::constBegin(JNIEnv * env, const ConstExtendedContainerInfo& container)
 {
-    return createConstIterator(env, container.nativeId, begin(container.container));
+    return createIterator(env, ContainerIterator(begin(container.container), QtJambiPrivate::ContainerAccessLink(this, QtJambiLink::fromNativeId(container.nativeId))));
+}
+
+jobject AutoSpanAccess::reverseEnd(JNIEnv * env, const ExtendedContainerInfo& container)
+{
+    return createIterator(env, ContainerIterator(reverseEnd(container.container), this, container));
+}
+
+jobject AutoSpanAccess::reverseBegin(JNIEnv * env, const ExtendedContainerInfo& container)
+{
+    if(isConst())
+        return reverseEnd(env, container);
+    return createIterator(env, ContainerIterator(reverseBegin(container.container), this, container));
+}
+
+jobject AutoSpanAccess::constReverseEnd(JNIEnv * env, const ConstExtendedContainerInfo& container)
+{
+    return createIterator(env, ContainerIterator(constReverseEnd(container.container), QtJambiPrivate::ContainerAccessLink(this, QtJambiLink::fromNativeId(container.nativeId))));
+}
+
+jobject AutoSpanAccess::constReverseBegin(JNIEnv * env, const ConstExtendedContainerInfo& container)
+{
+    return createIterator(env, ContainerIterator(constReverseBegin(container.container), QtJambiPrivate::ContainerAccessLink(this, QtJambiLink::fromNativeId(container.nativeId))));
 }
 
 jobject AutoSpanAccess::get(JNIEnv * env, const void* container, qsizetype index)
@@ -924,6 +1209,143 @@ bool NestedPointersRCAutoSpanAccess::set(JNIEnv * env, const ContainerInfo& cont
         return true;
     }
     return false;
+}
+
+#if defined(Q_CC_MSVC) || defined(_LIBCPP_VERSION) || !defined(Q_OS_WIN)
+template class QTJAMBI_EXPORT QSpanAccess<bool>;
+template class QTJAMBI_EXPORT QSpanAccess<qint8>;
+template class QTJAMBI_EXPORT QSpanAccess<qint16>;
+template class QTJAMBI_EXPORT QSpanAccess<qint32>;
+template class QTJAMBI_EXPORT QSpanAccess<qint64>;
+template class QTJAMBI_EXPORT QSpanAccess<double>;
+template class QTJAMBI_EXPORT QSpanAccess<float>;
+template class QTJAMBI_EXPORT QSpanAccess<QChar>;
+template class QTJAMBI_EXPORT QSpanAccess<char16_t>;
+template class QTJAMBI_EXPORT QSpanAccess<char32_t>;
+template class QTJAMBI_EXPORT QSpanAccess<QString>;
+template class QTJAMBI_EXPORT QSpanAccess<QByteArray>;
+template class QTJAMBI_EXPORT QSpanAccess<QVariant>;
+template class QTJAMBI_EXPORT QSpanAccess<QObject*>;
+template class QTJAMBI_EXPORT QSpanAccess<const bool>;
+template class QTJAMBI_EXPORT QSpanAccess<const qint8>;
+template class QTJAMBI_EXPORT QSpanAccess<const qint16>;
+template class QTJAMBI_EXPORT QSpanAccess<const qint32>;
+template class QTJAMBI_EXPORT QSpanAccess<const qint64>;
+template class QTJAMBI_EXPORT QSpanAccess<const double>;
+template class QTJAMBI_EXPORT QSpanAccess<const float>;
+template class QTJAMBI_EXPORT QSpanAccess<const QChar>;
+template class QTJAMBI_EXPORT QSpanAccess<const char16_t>;
+template class QTJAMBI_EXPORT QSpanAccess<const char32_t>;
+template class QTJAMBI_EXPORT QSpanAccess<const QString>;
+template class QTJAMBI_EXPORT QSpanAccess<const QByteArray>;
+template class QTJAMBI_EXPORT QSpanAccess<const QVariant>;
+template class QTJAMBI_EXPORT QSpanAccess<const QObject*>;
+template class QTJAMBI_EXPORT QSpanAccess<QModelIndex>;
+template class QTJAMBI_EXPORT QSpanAccess<const QModelIndex>;
+template class QTJAMBI_EXPORT QSpanAccess<QPersistentModelIndex>;
+template class QTJAMBI_EXPORT QSpanAccess<const QPersistentModelIndex>;
+#endif
+
+AbstractSpanAccess* createConstSpanAccess(const QMetaType& memberMetaType){
+#if defined(Q_CC_MSVC) || defined(_LIBCPP_VERSION) || !defined(Q_OS_WIN)
+    switch(memberMetaType.id()){
+    case QMetaType::UnknownType:
+        break;
+    case QMetaType::Bool:
+        return QSpanAccess<const bool>::newInstance();
+    case QMetaType::Char:
+    case QMetaType::SChar:
+    case QMetaType::UChar:
+        return QSpanAccess<const qint8>::newInstance();
+    case QMetaType::Short:
+    case QMetaType::UShort:
+        return QSpanAccess<const qint16>::newInstance();
+    case QMetaType::Int:
+    case QMetaType::UInt:
+        return QSpanAccess<const qint32>::newInstance();
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong:
+        return QSpanAccess<const qint64>::newInstance();
+    case QMetaType::Double:
+        return QSpanAccess<const double>::newInstance();
+    case QMetaType::Float:
+        return QSpanAccess<const float>::newInstance();
+    case QMetaType::QChar:
+        return QSpanAccess<const QChar>::newInstance();
+    case QMetaType::Char16:
+        return QSpanAccess<const char16_t>::newInstance();
+    case QMetaType::Char32:
+        return QSpanAccess<const char32_t>::newInstance();
+    case QMetaType::QString:
+        return QSpanAccess<const QString>::newInstance();
+    case QMetaType::QByteArray:
+        return QSpanAccess<const QByteArray>::newInstance();
+    case QMetaType::QModelIndex:
+        return QSpanAccess<const QModelIndex>::newInstance();
+    case QMetaType::QPersistentModelIndex:
+        return QSpanAccess<const QPersistentModelIndex>::newInstance();
+    case QMetaType::QVariant:
+        return QSpanAccess<const QVariant>::newInstance();
+    case QMetaType::QObjectStar:
+        return QSpanAccess<const QObject*>::newInstance();
+    default:
+        break;
+    }
+#else
+    Q_UNUSED(memberMetaType)
+#endif
+    return nullptr;
+}
+
+AbstractSpanAccess* createSpanAccess(const QMetaType& memberMetaType){
+#if defined(Q_CC_MSVC) || defined(_LIBCPP_VERSION) || !defined(Q_OS_WIN)
+    switch(memberMetaType.id()){
+    case QMetaType::UnknownType:
+        break;
+    case QMetaType::Bool:
+        return QSpanAccess<bool>::newInstance();
+    case QMetaType::Char:
+    case QMetaType::SChar:
+    case QMetaType::UChar:
+        return QSpanAccess<qint8>::newInstance();
+    case QMetaType::Short:
+    case QMetaType::UShort:
+        return QSpanAccess<qint16>::newInstance();
+    case QMetaType::Int:
+    case QMetaType::UInt:
+        return QSpanAccess<qint32>::newInstance();
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong:
+        return QSpanAccess<qint64>::newInstance();
+    case QMetaType::Double:
+        return QSpanAccess<double>::newInstance();
+    case QMetaType::Float:
+        return QSpanAccess<float>::newInstance();
+    case QMetaType::QChar:
+        return QSpanAccess<QChar>::newInstance();
+    case QMetaType::Char16:
+        return QSpanAccess<char16_t>::newInstance();
+    case QMetaType::Char32:
+        return QSpanAccess<char32_t>::newInstance();
+    case QMetaType::QString:
+        return QSpanAccess<QString>::newInstance();
+    case QMetaType::QByteArray:
+        return QSpanAccess<QByteArray>::newInstance();
+    case QMetaType::QModelIndex:
+        return QSpanAccess<QModelIndex>::newInstance();
+    case QMetaType::QPersistentModelIndex:
+        return QSpanAccess<QPersistentModelIndex>::newInstance();
+    case QMetaType::QVariant:
+        return QSpanAccess<QVariant>::newInstance();
+    case QMetaType::QObjectStar:
+        return QSpanAccess<QObject*>::newInstance();
+    default:
+        break;
+    }
+#else
+    Q_UNUSED(memberMetaType)
+#endif
+    return nullptr;
 }
 
 #endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)

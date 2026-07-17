@@ -5145,7 +5145,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QStyle::SubControl %out = qtjambi_cast<QStyle::SubControl>(%env, %in);"}
+                    Text{content: "%out = qtjambi_cast<QStyle::SubControl>(%env, %in);"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -8548,6 +8548,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
         ModifyFunction{
             signature: "hasEditFocus() const"
             ppCondition: "defined(QT_KEYPAD_NAVIGATION)"
+            until: [6, 11]
         }
         ModifyFunction{
             signature: "setEditFocus(bool)"
@@ -11612,10 +11613,12 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
         ModifyFunction{
             signature: "navigationMode()"
             ppCondition: "defined(QT_KEYPAD_NAVIGATION)"
+            until: [6, 11]
         }
         ModifyFunction{
             signature: "setNavigationMode(Qt::NavigationMode)"
             ppCondition: "defined(QT_KEYPAD_NAVIGATION)"
+            until: [6, 11]
         }
         ModifyFunction{
             signature: "setActiveWindow(QWidget*)"

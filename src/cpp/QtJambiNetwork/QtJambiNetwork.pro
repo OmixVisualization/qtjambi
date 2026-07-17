@@ -15,3 +15,9 @@ SOURCES += \
 }else{
     HEADERS += pch_p.h
 }
+
+win32-g++* {
+    CONFIG(debug, debug|release) {
+        QMAKE_CXXFLAGS += -O3
+    }
+}

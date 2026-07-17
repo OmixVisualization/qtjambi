@@ -55,8 +55,6 @@
 #   undef __GLIBCXX__
 #endif // QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
 
-#define seed_seq initializer_list<uint>const
-
 #include <QtCore/qstringliteral.h>
 #undef QStringLiteral
 #define QStringLiteral QString
@@ -91,10 +89,18 @@
 #define GL_COLOR_BUFFER_BIT               0x00004000
 
 #ifndef QTJAMBI_NO_GUI
+#   define PFN_vkVoidFunction QFunctionPointer
+#   define VK_VERSION_1_0 1
+#   define VK_VERSION_1_1 1
+#   define VK_VERSION_1_2 1
+#   define VK_VERSION_1_3 1
+#   define VK_VERSION_1_4 1
 #   define QACCESSIBLE_H
 #   undef QSCREEN_PLATFORM_H
 typedef struct __GLsync *GLsync;
 #   include <QtGui/QtGui>
+#   include <QtGui/QVulkanFunctions>
+#   include <QtGui/QVulkanWindow>
 typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
 
 #   undef QACCESSIBLE_H

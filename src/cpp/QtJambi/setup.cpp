@@ -91,9 +91,6 @@ void initializeFileEngineResources();
 void clearFileEngineResourcesAtShutdown(JNIEnv* env);
 void clearPurgeThreadAtShutdown(JNIEnv *env);
 void initializePurgeThread(JNIEnv *env);
-#if defined(QTJAMBI_GENERIC_ACCESS)
-void registerPointerContainerAccess();
-#endif //defined(QTJAMBI_GENERIC_ACCESS)
 JNIEnv *currentJNIEnvironment(JavaVM *vm, bool& requiresDetach, JniEnvironmentFlags flags);
 QObject* connectionSender(const QMetaObject::Connection* connection);
 void registerPluginImporter();
@@ -109,11 +106,11 @@ void initialize();
 }
 
 template<typename T, size_t N1, size_t N2>
-const std::type_info& registerSpecialTypeInfo(const char (&qt_name)[N1], const char (&java_name)[N2])
+const std::type_info& registerSpecialTypeInfo(const char (&qt_name)[N1], const char (&java_name)[N2], bool registerJavaToQtType = true)
 {
     using namespace RegistryAPI;
     const std::type_info& id = typeid(T);
-    registerTypeInfo(id, qt_name, java_name, EntryTypes::SpecialTypeInfo);
+    registerTypeInfo(id, qt_name, java_name, EntryTypes::SpecialTypeInfo, registerJavaToQtType);
     registerSizeOfType(id, sizeof(T), alignof(T));
     registerOperators<T>();
     return id;
@@ -234,9 +231,6 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
         }else{
             QInternal::registerCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
         }
-#if defined(QTJAMBI_GENERIC_ACCESS)
-        registerPointerContainerAccess();
-#endif //defined(QTJAMBI_GENERIC_ACCESS)
         //qtjambi_register_containeraccess_all();
 
         registerMetaType(typeid(JObjectWrapper), QMetaType::fromType<JObjectWrapper>());
@@ -607,9 +601,11 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
             });
         }
 
-        registerSpecialTypeInfo<QCborValueRef>("QCborValueRef", "io/qt/core/QCborValue");
+        registerSpecialTypeInfo<QJsonValueRef>("QJsonValueRef", "io/qt/core/QJsonValue", false);
+        registerSpecialTypeInfo<QJsonValueConstRef>("QJsonValueConstRef", "io/qt/core/QJsonValue", false);
+        registerSpecialTypeInfo<QCborValueRef>("QCborValueRef", "io/qt/core/QCborValue", false);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
-        registerSpecialTypeInfo<QCborValueConstRef>("QCborValueConstRef", "io/qt/core/QCborValue");
+        registerSpecialTypeInfo<QCborValueConstRef>("QCborValueConstRef", "io/qt/core/QCborValue", false);
 #endif
         {
             registerSpecialTypeInfo<QUrl::FormattingOptions>("QUrlTwoFlags<QUrl::UrlFormattingOption,QUrl::ComponentFormattingOption>", "io/qt/core/QUrl$FormattingOptions");

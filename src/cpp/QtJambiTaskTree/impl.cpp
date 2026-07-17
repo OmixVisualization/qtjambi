@@ -722,7 +722,25 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_tasktree_QTaskTree_onStorageDoneBar
 }
 
 QtTaskTree::Storage<QVariant>::Storage(JNIEnv* env, jclass structType, jobject supplier)
+#if QT_VERSION >= QT_VERSION_CHECK(6,12,0)
+    : StorageBase([supplier = JObjectWrapper(env, supplier)] {
+        if(JniEnvironment env{200}){
+            QTJAMBI_TRY{
+                jobject value = Java::Runtime::Supplier::get(env, supplier.object(env));
+                QVariant variant = qtjambi_cast<QVariant>(env, value);
+                if(variant.metaType().flags() & QMetaType::IsPointer){
+                    JavaException::raiseRuntimeException(env, QStringLiteral("Unable to use %1 as storage.").arg(variant.metaType().name()) QTJAMBI_STACKTRACEINFO );
+                }
+                return std::make_shared<QVariant>(std::move(variant));
+            }QTJAMBI_CATCH(const JavaException& exn){
+                exn.report(env);
+            }QTJAMBI_TRY_END
+        }
+        return std::make_shared<QVariant>();
+    }),
+#else
     : StorageBase(Storage::ctor(env, supplier), Storage::dtor()),
+#endif
     m_structType(env, structType)
 {}
 QVariant *QtTaskTree::Storage<QVariant>::activeStorage() const {
@@ -731,6 +749,9 @@ QVariant *QtTaskTree::Storage<QVariant>::activeStorage() const {
 const JObjectWrapper& QtTaskTree::Storage<QVariant>::structType() const{
     return m_structType;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,12,0)
+#else
 auto QtTaskTree::Storage<QVariant>::ctor(JNIEnv* env, jobject supplier) -> StorageConstructor {
     return [supplier = JObjectWrapper(env, supplier)] {
         if(JniEnvironment env{200}){
@@ -740,7 +761,7 @@ auto QtTaskTree::Storage<QVariant>::ctor(JNIEnv* env, jobject supplier) -> Stora
                 if(variant.metaType().flags() & QMetaType::IsPointer){
                     JavaException::raiseRuntimeException(env, QStringLiteral("Unable to use %1 as storage.").arg(variant.metaType().name()) QTJAMBI_STACKTRACEINFO );
                 }
-                return new QVariant(variant);
+                return new QVariant(std::move(variant));
             }QTJAMBI_CATCH(const JavaException& exn){
                 exn.report(env);
             }QTJAMBI_TRY_END
@@ -757,6 +778,7 @@ auto QtTaskTree::Storage<QVariant>::dtor() -> StorageDestructor {
         delete variant;
     };
 }
+#endif
 
 namespace Java{
 namespace QtTaskTree{

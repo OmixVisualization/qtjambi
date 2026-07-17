@@ -53,6 +53,16 @@
 
 QT_WARNING_DISABLE_CLANG("-Wshift-count-overflow")
 
+#if defined(Q_OS_ANDROID) || defined(Q_OS_FREEBSD)
+#define unique_id(id) qHash(QLatin1String((id).name()))
+#define typeid_equals(t1, t2) unique_id(t1)==unique_id(t2)
+#define typeid_not_equals(t1, t2) unique_id(t1)!=unique_id(t2)
+#else
+#define unique_id(id) (id).hash_code()
+#define typeid_equals(t1, t2) t1==t2
+#define typeid_not_equals(t1, t2) t1!=t2
+#endif
+
 class QtJambiScope;
 
 namespace QtJambiAPI{
@@ -107,6 +117,8 @@ struct CheckPointer<T,false>{
 }//QtJambiPrivate
 
 namespace QtJambiAPI{
+template<typename T>
+void deletePointer(void* ptr,bool) { delete reinterpret_cast<T*>(ptr); }
 
 template<typename T>
 void checkNullPointer(JNIEnv *env, const T* ptr)

@@ -31,7 +31,7 @@
 
 package io.qt.autotests;
 
-import io.qt.QtUtilities;
+import io.qt.*;
 
 /**
  * Special debugging methods used by autoests which are only available
@@ -41,7 +41,7 @@ import io.qt.QtUtilities;
 public final class DebugTools {
 
 	static {
-		QtUtilities.initializePackage(io.qt.autotests.generated.Tulip.class);
+		QtUtilities.initializePackage(io.qt.autotests.generated.General.class);
 	}
 	
 	private DebugTools() { throw new RuntimeException();}

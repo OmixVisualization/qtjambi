@@ -30,6 +30,8 @@
 ****************************************************************************/
 
 #include "pch_p.h"
+#include "qtjambi_cast.h"
+#include "containeraccess_export_pair.h"
 
 QT_WARNING_DISABLE_GCC("-Winaccessible-base")
 QT_WARNING_DISABLE_CLANG("-Winaccessible-base")
@@ -501,6 +503,35 @@ QMetaType AutoPairAccess::registerContainer(QByteArrayView typeName) {
         registerContainerAccess(newMetaType, this);
     }
     return newMetaType;
+}
+
+const void* AutoPairAccess::first(const void* container) {
+    return container;
+}
+
+void* AutoPairAccess::first(void* container) {
+    return container;
+}
+
+void AutoPairAccess::setFirst(void* container, const void* first) {
+    m_keyMetaType.destruct(container);
+    m_keyMetaType.construct(container, first);
+}
+
+const void* AutoPairAccess::second(const void* container) {
+    const void* snd = reinterpret_cast<const char*>(container)+m_offset;
+    return snd;
+}
+
+void* AutoPairAccess::second(void* container) {
+    void* snd = reinterpret_cast<char*>(container)+m_offset;
+    return snd;
+}
+
+void AutoPairAccess::setSecond(void* container, const void* first) {
+    void* snd = reinterpret_cast<char*>(container)+m_offset;
+    m_valueMetaType.destruct(snd);
+    m_valueMetaType.construct(snd, first);
 }
 
 jobject AutoPairAccess::first(JNIEnv * env, const void* container) {
@@ -1205,4 +1236,566 @@ std::unique_ptr<AbstractHashAccess::KeyValueIterator> AutoPairAccess::keyValueIt
     return std::unique_ptr<AbstractHashAccess::KeyValueIterator>(new KeyValueIterator(this, container));
 }
 
+#if defined(Q_CC_MSVC) || !defined(Q_OS_WIN)
+template class QTJAMBI_EXPORT QPairAccess<qint32,qint32>;
+template class QTJAMBI_EXPORT QPairAccess<QVariant,QVariant>;
+#endif
 
+AbstractPairAccess* createPairAccess(const QMetaType& memberMetaType1, const QMetaType& memberMetaType2){
+    switch(memberMetaType1.id()){
+    case QMetaType::Type::Bool:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Char:
+    case QMetaType::SChar:
+    case QMetaType::UChar:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Short:
+    case QMetaType::UShort:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Int:
+    case QMetaType::UInt:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            return QPairAccess<qint32,qint32>::newInstance();
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Double:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Float:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::QChar:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Char16:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::Char32:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::QString:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::QByteArray:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::QVariant:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    case QMetaType::QObjectStar:
+        switch(memberMetaType2.id()){
+        case QMetaType::Type::Bool:
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            break;
+        case QMetaType::Double:
+            break;
+        case QMetaType::Float:
+            break;
+        case QMetaType::QChar:
+            break;
+        case QMetaType::Char16:
+            break;
+        case QMetaType::Char32:
+            break;
+        case QMetaType::QString:
+            break;
+        case QMetaType::QByteArray:
+            break;
+        case QMetaType::QVariant:
+            break;
+        case QMetaType::QObjectStar:
+            break;
+        default:
+            break;
+        }
+        break;
+    default:
+        break;
+    }
+    return nullptr;
+}
