@@ -65,7 +65,7 @@ public class ThreadedSubantTask extends Task {
 	
     private static final ThreadLocal<ThreadedSubantTask> threadedSubantTasks = new ThreadLocal<>();
     
-    private static class InterruptedBuildException extends BuildException{}
+    private static class InterruptedBuildException extends BuildException{private static final long serialVersionUID = 2350947930146403223L;}
 	
 	@Override
 	public void execute() throws BuildException {

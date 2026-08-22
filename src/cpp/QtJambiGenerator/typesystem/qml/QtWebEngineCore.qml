@@ -726,12 +726,10 @@ if(%in){
                 ReplaceType{
                     modifiedType: "java.util.function.@Nullable Consumer<io.qt.core.@NonNull QByteArray>"
                 }
-                NoNullPointer{
-                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     InsertTemplate{
-                        name: "web.comsumer.function"
+                        name: "webc.comsumer.function"
                         Replace{
                             from: "%TYPE"
                             to: "const QByteArray &"
@@ -745,6 +743,74 @@ if(%in){
                     expression: "new io.qt.gui.QPageLayout(new io.qt.gui.QPageSize(io.qt.gui.QPageSize.PageSizeId.A4), io.qt.gui.QPageLayout.Orientation.Portrait, new io.qt.core.QMarginsF())"
                 }
             }
+            until: [6, 11]
+        }
+        ModifyFunction{
+            signature: "printToPdf(std::nullptr_t, const QPageLayout &, const QPageRanges &)"
+            access: Modification.Private
+            ModifyArgument{
+                index: 2
+                RemoveDefaultExpression{}
+            }
+            ModifyArgument{
+                index: 3
+                RemoveDefaultExpression{}
+            }
+            since: [6, 12]
+        }
+        FunctionalType{
+            name: "PdfPrinter"
+            using: "std::function<void(const QByteArray&)>"
+            generate: false
+            since: [6, 12]
+        }
+        ModifyFunction{
+            signature: "printToPdf<Functor,true>(Functor&&, const QPageLayout &, const QPageRanges &)"
+            Instantiation{
+                Argument{
+                    type: "std::function<void(const QByteArray&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    value: "true"
+                    isImplicit: true
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    ArgumentMap{index: 1; metaName: "%1"}
+                    ArgumentMap{index: 2; metaName: "%2"}
+                    ArgumentMap{index: 3; metaName: "%3"}
+                    Text{content: String.raw`
+                        if(%1==null){
+                            printToPdf((Void)null, %2, %3);
+                            return;
+                        }
+                        `}
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "java.util.function.@NonNull Consumer<io.qt.core.@NonNull QByteArray>"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        InsertTemplate{
+                            name: "webc.comsumer2.function"
+                            Replace{
+                                from: "%TYPE"
+                                to: "const QByteArray &"
+                            }
+                        }
+                    }
+                }
+                ModifyArgument{
+                    index: 2
+                    ReplaceDefaultExpression{
+                        expression: "new io.qt.gui.QPageLayout(new io.qt.gui.QPageSize(io.qt.gui.QPageSize.PageSizeId.A4), io.qt.gui.QPageLayout.Orientation.Portrait, new io.qt.core.QMarginsF())"
+                    }
+                }
+            }
+            since: [6, 12]
         }
         since: [6, 2]
     }
@@ -897,6 +963,51 @@ if(%in){
                 }
             }
         }
+        FunctionalType{
+            name: "CryptoModulePasswordFunction"
+            generate: false
+            using: "std::function<std::string(std::string, std::string, bool)>"
+        }
+        ModifyFunction{
+            signature: "setCryptoModulePasswordFunction(std::function<std::string(std::string, std::string, bool)>)"
+            ModifyArgument{
+                index: 1
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+std::function<std::string(std::string, std::string, bool)> %out;
+if(%in){
+    %out = [wrapper = JObjectWrapper(%env, %in)](std::string arg1, std::string arg2, bool arg3) -> std::string {
+                    if(JniEnvironment env{200}){
+                        QTJAMBI_TRY{
+                            jstring _arg1 = qtjambi_cast<jstring>(env, arg1);
+                            jstring _arg2 = qtjambi_cast<jstring>(env, arg2);
+                            jstring result = Java::QtWebEngineCore::QWebEngineProfile$CryptoModulePasswordFunction::apply(env, wrapper.object(env), _arg1, _arg2, jboolean(arg3));
+                            return qtjambi_cast<std::string>(env, result);
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
+                    }
+                    return std::string{};
+                };
+}`}
+                }
+            }
+            since: [6, 12]
+        }
+        InjectCode{
+            target: CodeClass.Java
+            Text{content: String.raw`
+/**
+ * <p>Java wrapper for Qt callable <code>std::function&lt;std::string(std::string, std::string, bool)&gt;</code></p>
+ */
+@FunctionalInterface
+public interface CryptoModulePasswordFunction {
+    public @NonNull String apply(@NonNull String arg1, @NonNull String arg2, boolean arg3);
+}
+                `}
+            since: [6, 12]
+        }
         InjectCode{
             target: CodeClass.Java
             Text{content: String.raw`
@@ -918,8 +1029,13 @@ namespace QtWebEngineCore{
 QTJAMBI_REPOSITORY_DECLARE_CLASS(QWebEngineProfile$IconAvailableCallback,
                                  QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(accept))
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvailableCallback,
-                                QTJAMBI_REPOSITORY_DEFINE_METHOD(accept,(Lio/qt/gui/QIcon;Lio/qt/core/QUrl;Lio/qt/core/QUrl;)V)
-                                )
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(accept,(Lio/qt/gui/QIcon;Lio/qt/core/QUrl;Lio/qt/core/QUrl;)V))
+#if QT_VERSION >= QT_VERSION_CHECK(6,12,0)
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QWebEngineProfile$CryptoModulePasswordFunction,
+                                 QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(apply))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$CryptoModulePasswordFunction,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(apply,(Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;))
+#endif
 }
 }
                 `}
@@ -1339,7 +1455,7 @@ bool operator==(const QWebEngineFullScreenRequest& arg1, const QWebEngineFullScr
                 ConversionRule{
                     codeClass: CodeClass.Native
                     InsertTemplate{
-                        name: "web.comsumer.function"
+                        name: "webc.comsumer.function"
                         Replace{
                             from: "%TYPE"
                             to: "const QByteArray &"
@@ -1347,6 +1463,58 @@ bool operator==(const QWebEngineFullScreenRequest& arg1, const QWebEngineFullScr
                     }
                 }
             }
+            until: [6, 11]
+        }
+        ModifyFunction{
+            signature: "printToPdf(std::nullptr_t)"
+            access: Modification.Private
+            since: [6, 12]
+        }
+        FunctionalType{
+            name: "PdfPrinter"
+            using: "std::function<void(const QByteArray&)>"
+            generate: false
+            since: [6, 12]
+        }
+        ModifyFunction{
+            signature: "printToPdf<Functor,true>(Functor&&)"
+            Instantiation{
+                Argument{
+                    type: "std::function<void(const QByteArray&)>"
+                    isImplicit: true
+                }
+                Argument{
+                    value: "true"
+                    isImplicit: true
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    ArgumentMap{index: 1; metaName: "%1"}
+                    Text{content: String.raw`
+                        if(%1==null){
+                            printToPdf((Void)null);
+                            return;
+                        }
+                        `}
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "java.util.function.@NonNull Consumer<io.qt.core.@NonNull QByteArray>"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        InsertTemplate{
+                            name: "webc.comsumer2.function"
+                            Replace{
+                                from: "%TYPE"
+                                to: "const QByteArray &"
+                            }
+                        }
+                    }
+                }
+            }
+            since: [6, 12]
         }
         InjectCode{
             target: CodeClass.Native

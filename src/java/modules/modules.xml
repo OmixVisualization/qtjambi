@@ -387,6 +387,15 @@
         <property name="moduledash" value="${module}"/>
         <stringreplace property="moduledash" target="." replacement="-"/>
         <mkdir dir="${qtjambi.javadocsDir}/${moduledash}"/>
+		<if>
+			<not>
+				<available file="${qtjambi.javadocsDir}/all/element-list"/>
+			</not>
+			<then>
+				<antcall target="javadocs-all"/>
+			</then>
+		</if>
+		<copy file="${qtjambi.javadocsDir}/all/element-list" tofile="${qtjambi.javadocsDir}/package-list"/>
         <if>
             <istrue value="${java.module.based}"/>
             <then>
@@ -415,7 +424,7 @@
 							locale="en_US"
                             sourcefiles="${java.source.files2.flat}">
                   <link href="https://docs.oracle.com/en/java/javase/${target.java.version}/docs/api"/>
-                  <link href="https://doc.qtjambi.io/${qtjambi.jar.version}/"/>
+                  <link href="https://doc.qtjambi.io/${qtjambi.jar.version}/" offline="true" packagelistLoc="${qtjambi.javadocsDir}"/>
                     <doctitle>${qtjambi.bundle.libraries} ${qtjambi.jar.version} API Documentation</doctitle>
                     <bottom><![CDATA[${qtjambi.bundle.libraries} ${qtjambi.jar.version} API Documentation<br>
                                 The documentation provided herein is licensed under the terms of the 
@@ -453,7 +462,7 @@
 							locale="en_US"
                             sourcefiles="${java.source.files2.flat}">
                   <link href="https://docs.oracle.com/javase/8/docs/api/"/>
-                  <link href="https://doc.qtjambi.io/${qtjambi.jar.version}/"/>
+                  <link href="https://doc.qtjambi.io/${qtjambi.jar.version}/" offline="true" packagelistLoc="${qtjambi.javadocsDir}/all"/>
                     <doctitle>${qtjambi.bundle.libraries} ${qtjambi.jar.version} API Documentation</doctitle>
                     <bottom><![CDATA[${qtjambi.bundle.libraries} ${qtjambi.jar.version} API Documentation<br>
                                 The documentation provided herein is licensed under the terms of the 
@@ -478,7 +487,7 @@
     </target>
 
 	<target name="javadocs-all" unless="${skip-java-build}">
-		<delete dir="${qtjambi.javadocsDir}" failonerror="no"/>
+		<delete dir="${qtjambi.javadocsDir}/all" failonerror="no"/>
 		<mkdir dir="${qtjambi.javadocsDir}"/>
 		<tstamp>
 			<format property="year" pattern="yyyy"/>
@@ -558,7 +567,7 @@
 				version="true"
 				locale="en_US"
 				sourcefiles="${java.source.files.flat}">
-					<link href="https://docs.oracle.com/javase/8/docs/api/index.html"/>
+					<link href="https://docs.oracle.com/javase/8/docs/api"/>
 					<doctitle>QtJambi ${qtjambi.jar.version} API Documentation</doctitle>
 					<bottom><![CDATA[QtJambi ${qtjambi.jar.version} API Documentation<br>
 								The documentation provided herein is licensed under the terms of the 

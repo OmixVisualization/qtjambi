@@ -107,4 +107,6 @@ TypeSystem{
     LoadTypeSystem{name: "QtTaskTree";          generate: true; unless: "QTJAMBI_NO_TASKTREE";         since: [6, 11]}
     LoadTypeSystem{name: "QtCanvasPainter";     generate: true; unless: "QTJAMBI_NO_CANVASPAINTER";         since: [6, 11]}
     LoadTypeSystem{name: "QtOpenApiCommon";     generate: true; unless: "QTJAMBI_NO_OPENAPI";         since: [6, 11]}
+    LoadTypeSystem{name: "QtQmlDesignSupport";  generate: true; unless: "QTJAMBI_NO_QML_DESIGN_SUPPORT";     since: [6, 12]}
+    LoadTypeSystem{name: "QtLabsStyleKit";      generate: true; unless: "QTJAMBI_NO_LABS_STYLE_KIT";         since: [6, 12]}
 }

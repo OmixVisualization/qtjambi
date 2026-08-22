@@ -359,7 +359,7 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
 	
     /**
      * Creating a container with given content.
-     * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#QMultiMap">QMultiMap::<wbr>QMultiMap(InputIterator,InputIterator)</code></a></p>
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultimap.html#QMultiMap">QMultiMap::<wbr>QMultiMap(InputIterator,InputIterator)</a></code></p>
      * @param begin
      * @param end
      */

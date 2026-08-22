@@ -130,24 +130,39 @@ TypeSystem{
         name: "VkQueue"
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkCommandPool"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkRenderPass"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkCommandBuffer"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkFramebuffer"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkImage"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
     PrimitiveType{
@@ -2609,7 +2624,7 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JByteArrayPointer %out(%env, jbyteArray(%in));"}
+                    Text{content: "JConstByteArrayPointer %out(%env, jbyteArray(%in));"}
                 }
             }
         }
@@ -9261,6 +9276,14 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
             }
         }
         ModifyFunction{
+            signature: "setVulkanInstance(QVulkanInstance*)"
+            ppCondition: "QT_CONFIG(vulkan)"
+        }
+        ModifyFunction{
+            signature: "vulkanInstance() const"
+            ppCondition: "QT_CONFIG(vulkan)"
+        }
+        ModifyFunction{
             signature: "requestUpdate()"
             threadAffinity: Affinity.UI
         }
@@ -13351,7 +13374,6 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QPlatformNativeInterface\\*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QPostEventList\\*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QPlatformPixmap\\*'"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAbstractNativeEventFilter\\*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QPlatformOpenGLContext\\*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'const QOpenGLVersionStatus&'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QPlatformOffscreenSurface\\*'"}

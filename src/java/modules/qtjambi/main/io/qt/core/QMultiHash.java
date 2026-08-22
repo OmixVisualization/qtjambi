@@ -361,7 +361,7 @@ public class QMultiHash<Key,T> extends AbstractMultiAssociativeContainer<Key,T> 
 	
     /**
      * Creating a container with given content.
-     * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#QMultiHash">QMultiHash::<wbr>QMultiHash(InputIterator,InputIterator)</code></a></p>
+     * <p>See <code><a href="https://doc.qt.io/qt/qmultihash.html#QMultiHash">QMultiHash::<wbr>QMultiHash(InputIterator,InputIterator)</a></code></p>
      * @param begin
      * @param end
      */

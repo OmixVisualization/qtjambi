@@ -55,7 +55,7 @@ public class TestQuickTextureD3DQt62 extends ApplicationInitializer {
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
-		Assume.assumeTrue(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows));
+		Assume.assumeTrue("Windows only", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows));
     	QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
 		ApplicationInitializer.testInitializeWithGui();
 		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);

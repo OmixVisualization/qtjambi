@@ -2110,6 +2110,18 @@ if(%in){
         name: "QPlaybackOptions"
         since: [6,10]
     }
+
+    Rejection{className: "QGStreamerInterface"}
+    InterfaceType{
+        name: "QGStreamerInterface"
+        since: [6,12]
+    }
+
+    Rejection{className: "QGStreamerVideoSource"}
+    ObjectType{
+        name: "QGStreamerVideoSource"
+        since: [6,12]
+    }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type 'QAbstractAudioBuffer*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QMediaService::requestControl', unmatched return type 'T'"}

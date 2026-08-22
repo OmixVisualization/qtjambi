@@ -6847,7 +6847,9 @@ void CppImplGenerator::writeFinalFunction(QTextStream &s, const MetaFunction *ja
 void CppImplGenerator::writeAssignment(QTextStream &s, const QString &destName, const QString &srcName,
                                        const MetaFunction *java_function,
                                        const MetaType *java_type) {
-    if (java_type->isArray()) {
+    if (java_function->hasConversionRule(TS::NativeCode, 1)){
+        s << INDENT << destName << " = " << srcName << ";" << Qt::endl;
+    }else if (java_type->isArray()) {
         const QMap<QString,QString>& arrayConversions = m_arrayConversions[quintptr(java_function)];
         QList<QList<int>> allEntries;
         for(int i=0; i<java_type->arrayElementCounts().size(); ++i){
@@ -6858,7 +6860,7 @@ void CppImplGenerator::writeAssignment(QTextStream &s, const QString &destName, 
                 }
             }else{
                 QList<QList<int>> nextEntries;
-                for(const QList<int>& entries : allEntries){
+                for(const QList<int>& entries : std::as_const(allEntries)){
                     for(int j=0; j<pair.first; ++j){
                         nextEntries << (QList<int>(entries) << j);
                     }
@@ -6866,7 +6868,7 @@ void CppImplGenerator::writeAssignment(QTextStream &s, const QString &destName, 
                 allEntries = nextEntries;
             }
         }
-        for(const QList<int>& entries : allEntries){
+        for(const QList<int>& entries : std::as_const(allEntries)){
             QString braces;
             for(int idx : entries){
                 braces += "[" + QString::number(idx) + "]";
@@ -6886,7 +6888,7 @@ void CppImplGenerator::writeAssignment(QTextStream &s, const QString &destName, 
                 }
             }else{
                 QList<QList<int>> nextEntries;
-                for(const QList<int>& entries : allEntries){
+                for(const QList<int>& entries : std::as_const(allEntries)){
                     for(int j=0; j<pair.first; ++j){
                         nextEntries << (QList<int>(entries) << j);
                     }
@@ -6894,7 +6896,7 @@ void CppImplGenerator::writeAssignment(QTextStream &s, const QString &destName, 
                 allEntries = nextEntries;
             }
         }
-        for(const QList<int>& entries : allEntries){
+        for(const QList<int>& entries : std::as_const(allEntries)){
             QString braces;
             for(int idx : entries){
                 braces += "[" + QString::number(idx) + "]";
@@ -6975,7 +6977,7 @@ void CppImplGenerator::writeFieldAccessors(QTextStream &s, const MetaField *java
                                       ? QString("%1::").arg(java_field->enclosingClass()->qualifiedCppName())
                                       : QString("this->%1::").arg(java_field->enclosingClass()->qualifiedCppName());
                     QString src;
-                    if (argument->type()->isPrimitive() || argument->type()->isPrimitiveChar())
+                    if ((argument->type()->isPrimitive() || argument->type()->isPrimitiveChar()) && !setter->hasConversionRule(TS::NativeCode, 1))
                         src = argument->indexedName();
                     else
                         src = "__qt_" + argument->indexedName();
@@ -7074,7 +7076,7 @@ void CppImplGenerator::writeFieldAccessors(QTextStream &s, const MetaField *java
                         else
                             dest = "__qt_this->";
                         QString src;
-                        if (argument->type()->isPrimitive() || argument->type()->isPrimitiveChar())
+                        if ((argument->type()->isPrimitive() || argument->type()->isPrimitiveChar()) && !setter->hasConversionRule(TS::NativeCode, 1))
                             src = argument->indexedName();
                         else
                             src = "__qt_" + argument->indexedName();
@@ -12391,11 +12393,12 @@ void CppImplGenerator::writeFunctionCallArguments(QTextStream &s,
                              && argument->type()->typeEntry()->qualifiedCppName()!="jthrowable")
                          || argument->type()->isPrimitiveChar()
                       )
+                     && !hasConversionRule
                     ) {
-                    if(argument->type()->isPrimitive() && !hasConversionRule)
+                    if(argument->type()->isPrimitive())
                         s << "static_cast<";
                     writeTypeInfo(s, argument->type(), Option(SkipName | ForceValueType));
-                    if(argument->type()->isPrimitive() && !hasConversionRule)
+                    if(argument->type()->isPrimitive())
                         s << ">";
                     s << "(";
                     paren++;

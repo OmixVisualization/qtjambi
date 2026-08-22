@@ -1197,7 +1197,7 @@ const QMetaObject * QtJambiMetaObjectPrivate::createQtJambiMetaObject(QtJambiMet
 
                 d->m_signalIndexes[signal.signalField][signal.emitMethodInfo.methodId] = i;
 
-                JIntArrayPointer signalMetaTypes(env, Java::QtJambi::MetaObjectData$SignalInfo::signalMetaTypes(env, signalInfo));
+                JConstIntArrayPointer signalMetaTypes(env, Java::QtJambi::MetaObjectData$SignalInfo::signalMetaTypes(env, signalInfo));
                 int length = QtJambiAPI::sizeOfJavaCollection(env, signalTypes);
                 signal.emitMethodInfo.parameterTypeInfos.reserve(length+1);
                 signal.emitMethodInfo.parameterTypeInfos.append(ParameterTypeInfo::voidTypeInfo(env));
@@ -1450,7 +1450,7 @@ const QMetaObject * QtJambiMetaObjectPrivate::createQtJambiMetaObject(QtJambiMet
     const jint parameterCount = Java::QtJambi::MetaObjectData$IntArray::size(env, metaTypesList);
     {
         QTJAMBI_JNI_LOCAL_FRAME(env, 32 + parameterCount);
-        JIntArrayPointer array(env, Java::QtJambi::MetaObjectData$IntArray::array(env, metaTypesList));
+        JConstIntArrayPointer array(env, Java::QtJambi::MetaObjectData$IntArray::array(env, metaTypesList));
         const QtPrivate::QMetaTypeInterface ** metaTypes = parameterCount==0 ? nullptr : new const QtPrivate::QMetaTypeInterface *[size_t(parameterCount)];
         for(jint i=0; i<parameterCount; ++i){
             metaTypes[i] = QMetaType(array[i]).iface();

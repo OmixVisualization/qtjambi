@@ -191,6 +191,15 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #   include <QtJambiQml/hashes.h>
 #endif // QTJAMBI_NO_QML
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 12, 0)
+#ifndef QTJAMBI_NO_QML_DESIGN_SUPPORT
+#   include <QtQmlDesignSupport/QtQmlDesignSupport>
+#endif // QTJAMBI_NO_QML_DESIGN_SUPPORT
+#ifndef QTJAMBI_NO_LABS_STYLE_KIT
+#   include <QtLabsStyleKit/QtLabsStyleKit>
+#endif // QTJAMBI_NO_LABS_STYLE_KIT
+#endif //QT_VERSION >= QT_VERSION_CHECK(6, 12, 0)
+
 #ifndef QTJAMBI_NO_QUICK
 #   include <QtQuick/qtquickglobal.h>
 #   ifndef Q_OS_WIN
@@ -271,6 +280,7 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #else
 #   ifndef QTJAMBI_NO_GRAPHS
 #       include <QtGraphs/QtGraphs>
+#       include <QtGraphs/qcustomseriescanvasrenderer.h>
 #       include <QtJambiGraphs/hashes.h>
 #   endif
 #   ifndef QTJAMBI_NO_GRAPHS_WIDGETS

@@ -47,26 +47,32 @@ static constexpr auto qtjambi_jobject_template_cast_impl(const NativeType<Ts...>
 
 template<bool forward, typename JniType, typename NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_rvalue, typename... Args>
 static constexpr auto qtjambi_jobject_cast_impl() {
-    if constexpr(is_template<NativeType>::value){
-        return decltype(qtjambi_jobject_template_cast_impl<forward, JniType, is_pointer, is_const, is_reference, is_rvalue, std::tuple<Args...>>(std::declval<const NativeType&>())){};
-    }else if constexpr(std::is_arithmetic<NativeType>::value
-                         || std::is_same_v<NativeType, QChar>
-                         || std::is_same_v<NativeType, QLatin1Char>
-                         || std::is_same_v<NativeType, std::byte>){
+    if constexpr(std::is_arithmetic<NativeType>::value
+                  || std::is_same_v<NativeType, QChar>
+                  || std::is_same_v<NativeType, QLatin1Char>
+                  || std::is_same_v<NativeType, std::byte>){
         return find_qtjambi_jobject_arithmetic_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>();
+    }else if constexpr(std::is_same_v<JniType, jstring>
+                  || std::is_same_v<NativeType, QString>
+                  || std::is_same_v<NativeType, QStringView>
+                  || std::is_same_v<NativeType, QAnyStringView>
+                  || std::is_same_v<NativeType, QUtf8StringView>
+                  || std::is_same_v<NativeType, QLatin1String>
+#if defined(__cpp_char8_t)
+                  || std::is_same_v<NativeType, std::u8string>
+                  || std::is_same_v<NativeType, std::u8string_view>
+#endif
+                  || std::is_same_v<NativeType, std::string>
+                  || std::is_same_v<NativeType, std::string_view>){
+        return qtjambi_string_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>{};
+    }else if constexpr(is_template<NativeType>::value){
+        return decltype(qtjambi_jobject_template_cast_impl<forward, JniType, is_pointer, is_const, is_reference, is_rvalue, std::tuple<Args...>>(std::declval<const NativeType&>())){};
     }else if constexpr(std::is_function_v<NativeType>){
         return qtjambi_jobject_function_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>{};
 #ifdef QOBJECT_H
     }else if constexpr(std::is_base_of_v<QObject, NativeType>){
         return qtjambi_jnitype_qobject_cast<forward, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>{};
 #endif
-    }else if constexpr(std::is_same_v<JniType, jstring>
-                         || std::is_same_v<NativeType, QString>
-                         || std::is_same_v<NativeType, QStringView>
-                         || std::is_same_v<NativeType, QAnyStringView>
-                         || std::is_same_v<NativeType, QUtf8StringView>
-                         || std::is_same_v<NativeType, QLatin1String>){
-        return qtjambi_string_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>{};
     }else{
         return qtjambi_jobject_plain_cast<forward, JniType, NativeType, is_pointer, is_const, is_reference, is_rvalue, Args...>{};
     }

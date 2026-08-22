@@ -1285,39 +1285,45 @@ final class BundleGenerator {
 											libDoc.getDocumentElement().appendChild(symlinkElement);
 										}
 									}else if(osArchName.startsWith("linux-") || osArchName.startsWith("solaris-") || osArchName.contains("bsd-")) {
-										libBundleJarFile.putNextEntry(new ZipEntry("lib/"+libraryFile.getName()));
-										Files.copy(libraryFile.toPath(), libBundleJarFile);
-										libBundleJarFile.closeEntry();
-										Element libraryElement = libDoc.createElement("library");
-										libraryElement.setAttribute("name", "lib/"+libraryFile.getName());
-										libDoc.getDocumentElement().appendChild(libraryElement);
-										String libName = libraryFile.getName();
-										if(libName.endsWith(".so."+_version)) {
-											if(_isDebug || isForceDebugInfo) {
-												String _libName;
-												File debugSym = new File(libraryFile.getParentFile(), _libName = libName.replace(".so."+_version, ".debug"));
-												if(!debugSym.exists() && _libName.startsWith("lib")) {
-													_libName = _libName.substring(3);
-													debugSym = new File(libraryFile.getParentFile(), _libName);
-												}
-												if(debugSym.exists()) {
-													debugJarFile.putNextEntry(new ZipEntry("lib/"+debugSym.getName()));
-													Files.copy(debugSym.toPath(), debugJarFile);
-													debugJarFile.closeEntry();
-													libraryElement = debugDoc.createElement("file");
-													libraryElement.setAttribute("name", "lib/"+debugSym.getName());
-													debugDoc.getDocumentElement().appendChild(libraryElement);									
+										if(!Files.isSymbolicLink(libraryFile.toPath()) && Files.isRegularFile(libraryFile.toPath())) {
+											libBundleJarFile.putNextEntry(new ZipEntry("lib/"+libraryFile.getName()));
+											try {
+												Files.copy(libraryFile.toPath(), libBundleJarFile);
+											} catch (Exception e) {
+												e.printStackTrace();
+											}
+											libBundleJarFile.closeEntry();
+											Element libraryElement = libDoc.createElement("library");
+											libraryElement.setAttribute("name", "lib/"+libraryFile.getName());
+											libDoc.getDocumentElement().appendChild(libraryElement);
+											String libName = libraryFile.getName();
+											if(libName.endsWith(".so."+_version)) {
+												if(_isDebug || isForceDebugInfo) {
+													String _libName;
+													File debugSym = new File(libraryFile.getParentFile(), _libName = libName.replace(".so."+_version, ".debug"));
+													if(!debugSym.exists() && _libName.startsWith("lib")) {
+														_libName = _libName.substring(3);
+														debugSym = new File(libraryFile.getParentFile(), _libName);
+													}
+													if(debugSym.exists()) {
+														debugJarFile.putNextEntry(new ZipEntry("lib/"+debugSym.getName()));
+														Files.copy(debugSym.toPath(), debugJarFile);
+														debugJarFile.closeEntry();
+														libraryElement = debugDoc.createElement("file");
+														libraryElement.setAttribute("name", "lib/"+debugSym.getName());
+														debugDoc.getDocumentElement().appendChild(libraryElement);									
+													}
 												}
 											}
-										}
-										if(libName.contains(".so.")) {
-											while(!libName.endsWith(".so")) {
-												int idx = libName.lastIndexOf('.');
-												libName = libName.substring(0, idx);
-												Element symlinkElement = libDoc.createElement("symlink");
-												symlinkElement.setAttribute("name", "lib/"+libName);
-												symlinkElement.setAttribute("target", "lib/"+libraryFile.getName());
-												libDoc.getDocumentElement().appendChild(symlinkElement);
+											if(libName.contains(".so.")) {
+												while(!libName.endsWith(".so")) {
+													int idx = libName.lastIndexOf('.');
+													libName = libName.substring(0, idx);
+													Element symlinkElement = libDoc.createElement("symlink");
+													symlinkElement.setAttribute("name", "lib/"+libName);
+													symlinkElement.setAttribute("target", "lib/"+libraryFile.getName());
+													libDoc.getDocumentElement().appendChild(symlinkElement);
+												}
 											}
 										}
 									}else if(osArchName.startsWith("android-")) {

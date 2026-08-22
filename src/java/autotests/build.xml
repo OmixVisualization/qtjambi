@@ -366,7 +366,7 @@
         <available property="qtjambi.ssl" type="file" file="${qtjambi.generator.outputdir}/java/io/qt/network/QSslSocket.java"/>
     </target>
 
-    <target name="compile.native.generator" unless="${skip-generate}" depends="init.build, load-properties, tools.generator.make">
+    <target name="compile.native.generator" unless="${skip-generate}" depends="load-properties">
         <mkdir dir="${test.generator.outputdir}"/>
         <generator dir="${generator.builddir}/bin"
                 importdirectories="generator/${psep}${basedir}/src/cpp/autotests"
@@ -384,7 +384,7 @@
 
     <target name="generate.uic">
         <if>
-            <available file="${deploymentdir}/qtjambi-uic-${qtjambi.jar.version}.jar" type="file"/>
+            <istrue value="${qtjambi.designer.any.true}"/>
             <then>
                 <uic uifile="${java.srcdir}/autotests/io/qt/autotests/ui/uitest.ui"
                      targetpackage="io.qt.autotests.generated"
@@ -404,7 +404,7 @@
             </then>
         </if>
     </target>
-	<target name="compile.native.make" depends="init.build">
+	<target name="compile.native.make">
         <make dir="${qtjambi.test.builddir}/autotests" target="${qtjambi.qmake.target.default}"/>
         <if>
             <os family="mac"/>
@@ -455,14 +455,14 @@
 			</else>
 		</if>
     </target>
-	<target name="compile.native.qmake" depends="init.build">
+	<target name="compile.native.qmake">
         <mkdir dir="${qtjambi.test.builddir}/autotests"/>
         <qmake  dir="${qtjambi.test.builddir}/autotests"
                 pro="${basedir}/src/cpp/autotests/autotests.pro"
                 config="${qtjambi.configuration}"
                 qmakebinary="${qtjambi.qt.qmake.abspath}"/>
     </target>
-    <target name="compile.native" depends="init.build">
+    <target name="compile.native">
         <antcall inheritrefs="true" target="compile.native.qmake">
         </antcall>
         <antcall inheritrefs="true" target="compile.native.make">
@@ -1650,30 +1650,30 @@
     </target>
     
     <target name="tests.generate-impl"
-            depends="init.build, compile.deps, check.junit, check.ssl, compile.native.generator, compile.native, compile.java, compile.plugins.java"/>
+            depends="compile.deps, check.junit, check.ssl, compile.native.generator, compile.native, compile.java, compile.plugins.java"/>
 
     <target name="tests.generate.only-impl"
-            depends="init.build, compile.deps, check.junit, check.ssl, compile.native.generator"/>
+            depends="compile.deps, check.junit, check.ssl, compile.native.generator"/>
 
     <target name="tests.compile-impl"
-            depends="init.build, compile.deps, check.junit, check.ssl, compile.native, compile.java, compile.plugins.java"/>
+            depends="compile.deps, check.junit, check.ssl, compile.native, compile.java, compile.plugins.java"/>
             
     <target name="tests.compile.native-impl"
-            depends="init.build, compile.deps, check.junit, check.ssl, compile.native"/>
+            depends="compile.deps, check.junit, check.ssl, compile.native"/>
             
     <target name="tests.compile.native.make-impl"
-            depends="init.build, compile.deps, check.junit, check.ssl, compile.native.make"/>
+            depends="compile.deps, check.junit, check.ssl, compile.native.make"/>
             
     <target name="tests.compile.native.qmake-impl"
-            depends="init.build, compile.deps, check.junit, check.ssl, compile.native.qmake"/>
+            depends="compile.deps, check.junit, check.ssl, compile.native.qmake"/>
             
     <target name="tests.compile.java-impl"
-            depends="init.build, compile.deps, check.junit, check.ssl, compile.java"/>
+            depends="compile.deps, check.junit, check.ssl, compile.java"/>
 
     <target name="tests.compile.plugins-impl"
-            depends="init.build, compile.deps, check.junit, check.ssl, compile.plugins.java"/>
+            depends="compile.deps, check.junit, check.ssl, compile.plugins.java"/>
 
-    <target name="tests.run-impl" depends="init.build">
+    <target name="tests.run-impl">
         <trycatch>
             <try>
                 <antcall target="test-impl"/>
@@ -1692,7 +1692,7 @@
         </trycatch>
     </target>
 
-    <target name="tests.run.all-impl" depends="init.build">
+    <target name="tests.run.all-impl">
         <trycatch>
             <try>
 				<if>
@@ -1722,7 +1722,7 @@
         </trycatch>
     </target>
 
-    <target name="tests.release.run-impl" depends="init.build">
+    <target name="tests.release.run-impl">
         <trycatch>
             <try>
                 <antcall target="release.run"/>
@@ -1741,7 +1741,7 @@
         </trycatch>
     </target>
 
-    <target name="tests.debug.run-impl" depends="init.build">
+    <target name="tests.debug.run-impl">
         <trycatch>
             <try>
                 <antcall target="debug.run"/>
@@ -1760,7 +1760,7 @@
         </trycatch>
     </target>
 
-    <target name="tests.release.run8-impl" depends="init.build">
+    <target name="tests.release.run8-impl">
         <trycatch>
             <try>
                 <antcall target="release.run8">
@@ -1781,7 +1781,7 @@
         </trycatch>
     </target>
 
-    <target name="tests.debug.run8-impl" depends="init.build">
+    <target name="tests.debug.run8-impl">
         <trycatch>
             <try>
                 <antcall target="debug.run8">
@@ -1802,7 +1802,7 @@
         </trycatch>
     </target>
 
-    <target name="tests.release.run.all-impl" depends="init.build">
+    <target name="tests.release.run.all-impl">
         <trycatch>
             <try>
                 <antcall target="release.run"/>
@@ -1821,7 +1821,7 @@
         </trycatch>
     </target>
     
-    <target name="tests.debug.run.all-impl" depends="init.build">
+    <target name="tests.debug.run.all-impl">
         <trycatch>
             <try>
                 <antcall target="debug.run"/>

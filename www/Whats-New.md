@@ -1,6 +1,9 @@
 # What's new in QtJambi 6.11.2
 
-* 
+* Full support for native iterators
+* Bugfix: Crash in QTranslator destruction when initializing with `load(byte[])`
+* [Issue 243](../../../issues/243): QtJambi 6.12 beta 2 does not build against Qt 6.12.0-beta2 or 6.11.1 on Linux
+* Ready for Qt 6.12
 
 # History
 

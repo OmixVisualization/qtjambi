@@ -34,6 +34,7 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.core.QCoreApplication;
 import io.qt.core.QEventLoop;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QSize;
@@ -43,32 +44,34 @@ import io.qt.gui.QColor;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QPixmap;
 import io.qt.gui.QSurface;
+import io.qt.internal.TestUtility;
 import io.qt.quick.QQuickRenderTarget;
 import io.qt.quick.QQuickWindow;
 import io.qt.quick.QSGNode;
 import io.qt.quick.QSGRendererInterface;
 import io.qt.quick.QSGTexture;
-import io.qt.quick.nativeinterface.QSGMetalTexture;
+import io.qt.quick.nativeinterface.QSGD3D12Texture;
 
-public class TestQuickTextureMetalQt62 extends ApplicationInitializer {
-	
+public class TestQuickTextureD3DQt66 extends ApplicationInitializer {
+
 	@BeforeClass
 	public static void testInitialize() throws Exception {
-		Assume.assumeTrue("Mac only", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS, QOperatingSystemVersion.OSType.IOS));
-		Assume.assumeTrue("nativeInterface<QSGMetalTexture>() actually never works in Qt.", false);
+		Assume.assumeTrue("Windows only", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows));
+		Assume.assumeTrue("Cannot run with MINGW", !"windows-mingw-x64".equals(TestUtility.osArchName()));
+		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
 		ApplicationInitializer.testInitializeWithGui();
-		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
+		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen() != null);
 		io.qt.QtUtilities.loadQtLibrary("OpenGL");
 	}
-	
+
 	@Test
-    public void testMetalTecture() {
-		QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.Metal);
+	public void testD3DTecture() {
+		QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.Direct3D12);
 		QQuickWindow window = new QQuickWindow();
-		Assume.assumeTrue(window.surfaceType()==QSurface.SurfaceType.MetalSurface);
+		Assume.assumeTrue(window.surfaceType() == QSurface.SurfaceType.Direct3DSurface);
 		try {
 			QEventLoop loop = new QEventLoop();
-			QSGTexture[] texture = {null};
+			QSGTexture[] texture = { null };
 			TestQuick.TestItem item = new TestQuick.TestItem() {
 				@Override
 				protected QSGNode updatePaintNode(QSGNode arg__1, UpdatePaintNodeData arg__2) {
@@ -82,16 +85,17 @@ public class TestQuickTextureMetalQt62 extends ApplicationInitializer {
 			window.contentItem().setEnabled(true);
 			window.show();
 			window.sceneGraphInitialized.connect(loop::quit);
-		    QTimer.singleShot(20000, loop::quit);
-		    loop.exec();
-		    item.isDisposed();
-			Assert.assertTrue(texture[0]!=null);
-			QSGMetalTexture openglTexture = texture[0].nativeInterface(QSGMetalTexture.class);
-			Assert.assertTrue(openglTexture!=null);
-			QQuickRenderTarget target = QQuickRenderTarget.fromMetalTexture(openglTexture.nativeTexture(), new QSize(100, 100));
-			Assert.assertTrue(target!=null);
-		}finally {
-		    window.close();
+			QTimer.singleShot(20000, loop::quit);
+			loop.exec();
+			item.isDisposed();
+			Assert.assertTrue(texture[0] != null);
+			QSGD3D12Texture openglTexture = texture[0].nativeInterface(QSGD3D12Texture.class);
+			Assert.assertTrue(openglTexture != null);
+			QQuickRenderTarget target = QQuickRenderTarget.fromD3D12Texture(openglTexture.nativeTexture(), 0, 0,
+					new QSize(100, 100));
+			Assert.assertTrue(target != null);
+		} finally {
+			window.close();
 			window.dispose();
 		}
 	}

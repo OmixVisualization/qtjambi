@@ -60,7 +60,6 @@ import io.qt.*;
  * @see QMultiHash#constBegin()
  * @see QMultiHash#constEnd()
  * @see QMultiHash#find(Object)
- * @see #iterator()
  */
 public class QAssociativeConstIterator<Key,T,Container extends QtObjectInterface> extends AbstractIterator<T,Container> {
 

@@ -2539,27 +2539,26 @@ if(%1.count()<=0)
                 ckeckAvailability: true
             }
         }
-        EnumType{
-            name: "Flag"
-            since: 6.8
-        }
-
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jobject image, jint layout, const QSize& pixelSize, int sampleCount);"}
+            Text{content: "QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jlong image, jint layout, const QSize& pixelSize, int sampleCount);"}
         }
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
             since: [6, 4]
-            Text{content: "QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jobject image, jint layout, jint format, const QSize& pixelSize, int sampleCount);"}
+            Text{content: "QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jlong image, jint layout, jint format, const QSize& pixelSize, int sampleCount);"}
         }
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
             since: [6, 8]
-            Text{content: "QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jobject image, jint layout, jint format, jint viewFormat, const QSize& pixelSize, int sampleCount, int arraySize, QQuickRenderTarget::Flags flags);"}
+            Text{content: "QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jlong image, jint layout, jint format, jint viewFormat, const QSize& pixelSize, int sampleCount, int arraySize, QQuickRenderTarget::Flags flags);"}
+        }
+        EnumType{
+            name: "Flag"
+            since: 6.8
         }
         ModifyFunction{
             signature: "fromD3D11Texture(void *, QSize, int)"
@@ -2628,6 +2627,9 @@ if(%1.count()<=0)
             proxyCall: "qtjambi_QQuickRenderTarget_fromVulkanImage"
             ModifyArgument{
                 index: 1
+                ReplaceType{
+                    modifiedType: "long"
+                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "auto %out = %in;"}
@@ -2635,6 +2637,9 @@ if(%1.count()<=0)
             }
             ModifyArgument{
                 index: 2
+                ReplaceType{
+                    modifiedType: "int"
+                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "auto %out = %in;"}
@@ -2647,6 +2652,9 @@ if(%1.count()<=0)
             proxyCall: "qtjambi_QQuickRenderTarget_fromVulkanImage"
             ModifyArgument{
                 index: 1
+                ReplaceType{
+                    modifiedType: "long"
+                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "auto %out = %in;"}
@@ -2654,6 +2662,9 @@ if(%1.count()<=0)
             }
             ModifyArgument{
                 index: 2
+                ReplaceType{
+                    modifiedType: "int"
+                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "auto %out = %in;"}
@@ -2661,6 +2672,9 @@ if(%1.count()<=0)
             }
             ModifyArgument{
                 index: 3
+                ReplaceType{
+                    modifiedType: "int"
+                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "auto %out = %in;"}
@@ -2674,6 +2688,9 @@ if(%1.count()<=0)
             proxyCall: "qtjambi_QQuickRenderTarget_fromVulkanImage"
             ModifyArgument{
                 index: 1
+                ReplaceType{
+                    modifiedType: "long"
+                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "auto %out = %in;"}
@@ -2681,6 +2698,9 @@ if(%1.count()<=0)
             }
             ModifyArgument{
                 index: 2
+                ReplaceType{
+                    modifiedType: "int"
+                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "auto %out = %in;"}
@@ -2688,6 +2708,9 @@ if(%1.count()<=0)
             }
             ModifyArgument{
                 index: 3
+                ReplaceType{
+                    modifiedType: "int"
+                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "auto %out = %in;"}
@@ -2695,6 +2718,9 @@ if(%1.count()<=0)
             }
             ModifyArgument{
                 index: 4
+                ReplaceType{
+                    modifiedType: "int"
+                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "auto %out = %in;"}
@@ -2994,10 +3020,10 @@ if(%1.count()<=0)
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "QSGTexture * qtjambi_QSGVulkanTexture_fromNative(JNIEnv *env, jobject image, jint layout, QQuickWindow* window, const QSize& size, QQuickWindow::CreateTextureOptions options);"}
+            Text{content: "QSGTexture * qtjambi_QSGVulkanTexture_fromNative(JNIEnv *env, jlong image, jint layout, QQuickWindow* window, const QSize& size, QQuickWindow::CreateTextureOptions options);"}
         }
         ModifyFunction{
-            signature: "fromNative(VkImage, VkImageLayout, QQuickWindow *, QSize, QQuickWindow::CreateTextureOptions)"
+            signature: "fromNative(VkImage,VkImageLayout,QQuickWindow*,QSize,QQuickWindow::CreateTextureOptions)"
             proxyCall: "qtjambi_QSGVulkanTexture_fromNative"
             ModifyArgument{
                 index: 0
@@ -3008,6 +3034,9 @@ if(%1.count()<=0)
             }
             ModifyArgument{
                 index: 1
+                ReplaceType{
+                    modifiedType: "long"
+                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "auto %out = %in;"}
@@ -3015,38 +3044,15 @@ if(%1.count()<=0)
             }
             ModifyArgument{
                 index: 2
+                ReplaceType{
+                    modifiedType: "int"
+                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "auto %out = %in;"}
                 }
             }
         }
-        /*ModifyFunction{
-            signature: "nativeImage() const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "long"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = jlong(%in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "nativeImageLayout() const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "int"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = jint(%in);"}
-                }
-            }
-        }*/
         since: [6, 2]
     }
 

@@ -2314,21 +2314,6 @@ Q_UNUSED(__qt_return_value)
     }
 
     Rejection{
-        className: "QAbstractEventDispatcher"
-        functionName: "filterEvent"
-    }
-
-    Rejection{
-        className: "QAbstractEventDispatcher"
-        functionName: "filterNativeEvent"
-    }
-
-    Rejection{
-        className: "QAbstractEventDispatcher"
-        functionName: "setEventFilter"
-    }
-
-    Rejection{
         className: "QFile"
         functionName: "setDecodingFunction"
     }
@@ -2348,16 +2333,6 @@ Q_UNUSED(__qt_return_value)
         className: "QPluginParsedMetaData"
         functionName: "value"
         since: [6, 3]
-    }
-
-    Rejection{
-        className: "QAbstractEventDispatcher"
-        functionName: "installNativeEventFilter"
-    }
-
-    Rejection{
-        className: "QAbstractEventDispatcher"
-        functionName: "removeNativeEventFilter"
     }
 
     Rejection{
@@ -10529,6 +10504,11 @@ if(destinationChildV<0)
                 location: Include.Global
             }
         }
+        Rejection{functionName: "installNativeEventFilter"}
+        Rejection{functionName: "removeNativeEventFilter"}
+        Rejection{functionName: "filterEvent"}
+        Rejection{functionName: "filterNativeEvent"}
+        Rejection{functionName: "setEventFilter"}
         ModifyFunction{
             signature: "instance(QThread*)"
             ModifyArgument{
@@ -11873,7 +11853,7 @@ if(destinationChildV<0)
 struct ObjectUserData : QtJambiObjectData{
     ObjectUserData(JNIEnv *env, jbyteArray data) : QtJambiObjectData(), array(env, data) {
     }
-    JConstByteArrayPointer array;
+    PersistentJConstByteArrayPointer array;
 };
 std::unique_ptr<ObjectUserData> userData(new ObjectUserData(%env, %in));
 const unsigned char* %out = reinterpret_cast<const unsigned char*>(userData->array.pointer());
@@ -14755,29 +14735,14 @@ if (objectThread &&
         name: "QCoreApplication"
         isValueOwner: true
 
-        Rejection{
-            functionName: "compressEvent"
-        }
-
-        Rejection{
-            functionName: "eventFilter"
-        }
-
-        Rejection{
-            functionName: "filterEvent"
-        }
-
-        Rejection{
-            functionName: "filterNativeEvent"
-        }
-
-        Rejection{
-            functionName: "setEventFilter"
-        }
-
-        Rejection{
-            functionName: "nativeInterface"
-        }
+        Rejection{functionName: "compressEvent"}
+        Rejection{functionName: "eventFilter"}
+        Rejection{functionName: "filterEvent"}
+        Rejection{functionName: "filterNativeEvent"}
+        Rejection{functionName: "setEventFilter"}
+        Rejection{functionName: "nativeInterface"}
+        Rejection{functionName: "installNativeEventFilter"}
+        Rejection{functionName: "removeNativeEventFilter"}
 
         Rejection{
             enumName: "enum_1"
@@ -28284,7 +28249,6 @@ static FilterResetter resetter(%0);
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type '*QtPrivate::*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QPair::*', unmatched parameter type '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: isFunctionPointer: *"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type '*QAbstractNativeEventFilter*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: template baseclass 'QListSpecialMethods<T>' of 'List' is not known"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'parent()const' for function modification in '*' not found. Possible candidates: parent(QModelIndex)const in *"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'operator<(QCollatorSortKey,QCollatorSortKey)' for function modification in 'QCollatorSortKey' not found. Possible candidates: operator<(QCollatorSortKey) in QCollatorSortKey"}

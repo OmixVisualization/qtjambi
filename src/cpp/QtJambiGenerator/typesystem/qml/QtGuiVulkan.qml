@@ -99,80 +99,137 @@ TypeSystem{
         preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkSemaphore"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkFence"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkDeviceMemory"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkBuffer"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkQueryPool"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkImageView"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkCommandPool"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkRenderPass"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkFramebuffer"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkEvent"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkBufferView"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkShaderModule"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkPipelineCache"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkPipeline"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkPipelineLayout"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkDescriptorSetLayout"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkSampler"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkDescriptorSet"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
-    NativePointerType{
+    PrimitiveType{
         name: "VkDescriptorPool"
+        javaName: "long"
+        jniName: "jlong"
+        preferredConversion: false
     }
 
     NativePointerType{

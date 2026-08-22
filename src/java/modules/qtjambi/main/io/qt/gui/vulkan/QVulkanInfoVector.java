@@ -44,10 +44,16 @@ public class QVulkanInfoVector<T> extends io.qt.core.QList<T>
 	    		if(((QVulkanLayer)element).name().equals(name))
 	    			return true;
 	    	}
-    	}
-    	if(type==QVulkanExtension.class) {
+    	}else if(type==QVulkanExtension.class) {
 	    	for(T element : this) {
 	    		if(((QVulkanExtension)element).name().equals(name))
+	    			return true;
+	    	}
+    	}else {
+    		for(T element : this) {
+	    		if(((QVulkanExtension)element).name().equals(name))
+	    			return true;
+	    		else if(((QVulkanLayer)element).name().equals(name))
 	    			return true;
 	    	}
     	}

@@ -102,6 +102,8 @@
         <file alias="QtCanvasPainter.qml">typesystem/qml/QtCanvasPainter.qml</file>
         <file alias="QtOpenApiCommon.qml">typesystem/qml/QtOpenApiCommon.qml</file>
         <file alias="QtGuiVulkan.qml">typesystem/qml/QtGuiVulkan.qml</file>
+        <file alias="QtQmlDesignSupport.qml">typesystem/qml/QtQmlDesignSupport.qml</file>
+        <file alias="QtLabsStyleKit.qml">typesystem/qml/QtQtLabsStyleKit.qml</file>
     </qresource>
     <qresource prefix="/io/qtjambi/generator/targets">
         <file alias="all.qml">targets/all.qml</file>

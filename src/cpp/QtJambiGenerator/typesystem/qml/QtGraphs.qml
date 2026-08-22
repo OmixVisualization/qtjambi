@@ -2089,11 +2089,29 @@ template<> QExplicitlySharedDataPointer<QGraphsLinePrivate>::~QExplicitlySharedD
                 }
             }
         }
+        ModifyFunction{
+            signature: "setCustomSeriesPainter(QCustomSeriesCanvasRenderer*)"
+            ppCondition: "QT_CONFIG(graphs_2d_high_performance_backend)"
+            ModifyArgument{
+                index: 1
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Cpp
+                }
+            }
+            since: [6,12]
+        }
         since: [6,11]
     }
 
     ObjectType{
         name: "QLogValueAxis"
+        since: [6,12]
+    }
+
+    ObjectType{
+        name: "QCustomSeriesCanvasRenderer"
+        ppCondition: "QT_CONFIG(graphs_2d_high_performance_backend)"
         since: [6,12]
     }
     

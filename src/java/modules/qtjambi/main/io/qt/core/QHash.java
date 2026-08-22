@@ -373,7 +373,7 @@ public class QHash<Key,T> extends AbstractAssociativeContainer<Key,T> implements
 	
     /**
      * Creating a container with given content.
-     * <p>See <code><a href="https://doc.qt.io/qt/qhash.html#QHash">QHash::<wbr>QHash(InputIterator,InputIterator)</code></a></p>
+     * <p>See <code><a href="https://doc.qt.io/qt/qhash.html#QHash">QHash::<wbr>QHash(InputIterator,InputIterator)</a></code></p>
      * @param begin
      * @param end
      */

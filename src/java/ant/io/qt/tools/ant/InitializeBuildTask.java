@@ -210,6 +210,10 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 				_moduleInfos.put("openapi", new ModuleInfo("QTJAMBI_NO_OPENAPI", "QtOpenApiCommon"));
 				skippedModules.add("openapi");
 			}
+			if((qtMajorVersion==6 && qtMinorVersion>=12) || qtMajorVersion>=7) {
+				_moduleInfos.put("qmldesignsupport", new ModuleInfo("QTJAMBI_NO_QML_DESIGN_SUPPORT", "QtQmlDesignSupport"));
+				_moduleInfos.put("labsstylekit", new ModuleInfo("QTJAMBI_NO_LABS_STYLE_KIT", "QtLabsStyleKit"));
+			}
 			moduleInfos = Collections.unmodifiableMap(_moduleInfos);
 		}
 		return moduleInfos;
@@ -1920,6 +1924,31 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 						try {
 							guidir.mkdirs();
 							Files.copy(file.toPath(), new File(guidir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		}
+		if(((qtMajorVersion==6 && qtMinorVersion>=12) || qtMajorVersion>6) && qtsources!=null) {
+			if(!headersdir.isDirectory()) {
+				headersdir.mkdirs();
+			}
+			File graphsdir = new File(headersdir, "QtGraphs");
+			if(!graphsdir.isDirectory()) {
+				File originalIncludeDir = new File(includePath, "QtGraphs");
+				if((!originalIncludeDir.exists() || !originalIncludeDir.isDirectory()) 
+						&& osInfo.crossOS()==OSInfo.OperationSystem.MacOS && useQtFramework) {
+					originalIncludeDir = new File(libPath, "QtGraphs.framework/Versions/A/Headers");
+				}
+				File moduleDir = new File(new File(qtsources), "qtgraphs" + File.separator + "src" + File.separator + "graphs2d" + File.separator + "qsgrenderer");
+				if (moduleDir.isDirectory()) {
+					File file = new File(moduleDir, "qcustomseriescanvasrenderer.h");
+					if(file.exists() && !new File(originalIncludeDir, file.getName()).exists()) {
+						try {
+							graphsdir.mkdirs();
+							Files.copy(file.toPath(), new File(graphsdir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}

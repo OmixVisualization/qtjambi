@@ -3698,11 +3698,12 @@ public:
         }
     }
 #endif //QT_VERSION >= QT_VERSION_CHECK(6,11,0)
-
-#if QT_VERSION >= QT_VERSION_CHECK(6,12,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,2)
     void interfaceVersion(int &versionNumber) const {
         versionNumber = QT_VERSION;
     }
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,11,2)
+#if QT_VERSION >= QT_VERSION_CHECK(6,12,0)
 
     void sort(int column, Qt::SortOrder order)    {
         Q_UNUSED(column)
@@ -3833,8 +3834,10 @@ public:
     using MultiData = Override<QRangeModelImplBase::MultiData, &Self::multiData>;
     using SetAutoConnectPolicy = Override<QRangeModelImplBase::SetAutoConnectPolicy, &Self::setAutoConnectPolicy>;
 #endif
-#if QT_VERSION >= QT_VERSION_CHECK(6,12,0)
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,2)
     using InterfaceVersion = Override<QRangeModelImplBase::InterfaceVersion, &Self::interfaceVersion>;
+#endif
+#if QT_VERSION >= QT_VERSION_CHECK(6,12,0)
     using Sort = Override<QRangeModelImplBase::Sort, &Self::sort>;
     using Match = Override<QRangeModelImplBase::Match, &Self::match>;
     using AdjustSupportedDragActions = Override<QRangeModelImplBase::AdjustSupportedDragActions, &Self::adjustSupportedDragActions>;

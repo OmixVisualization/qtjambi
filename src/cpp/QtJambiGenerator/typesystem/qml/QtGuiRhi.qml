@@ -1422,9 +1422,6 @@ if(%out_buffer.size()<array.size()*4)
         }
     }
     ObjectType{
-        name: "QRhiInitParams"
-    }
-    ObjectType{
         name: "QRhiNullInitParams"
     }
     ObjectType{
@@ -1433,6 +1430,12 @@ if(%out_buffer.size()<array.size()*4)
     ObjectType{
         name: "QRhiD3D11InitParams"
         ppCondition: "defined(Q_OS_WIN)"
+        ExtraIncludes{
+            Include{
+                fileName: "QWindow"
+                location: Include.Global
+            }
+        }
     }
     ObjectType{
         name: "QRhiD3D11NativeHandles"
@@ -1445,6 +1448,12 @@ if(%out_buffer.size()<array.size()*4)
     ObjectType{
         name: "QRhiD3D12InitParams"
         ppCondition: "defined(Q_OS_WIN)"
+        ExtraIncludes{
+            Include{
+                fileName: "QWindow"
+                location: Include.Global
+            }
+        }
     }
     ObjectType{
         name: "QRhiD3D12NativeHandles"
@@ -1632,6 +1641,12 @@ public final void setLuminanceInNits(float minLuminance, float maxLuminance) {
     }
     ObjectType{
         name: "QRhiVulkanInitParams"
+        ExtraIncludes{
+            Include{
+                fileName: "QWindow"
+                location: Include.Global
+            }
+        }
         ppCondition: "QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)"
     }
     ObjectType{
@@ -1641,10 +1656,24 @@ public final void setLuminanceInNits(float minLuminance, float maxLuminance) {
     ObjectType{
         name: "QRhiVulkanCommandBufferNativeHandles"
         ppCondition: "QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)"
+        ModifyField{
+            name: "commandBuffer"
+            ConversionRule{
+                codeClass: CodeClass.NativeSetter
+                Text{content: "auto %out = VkCommandBuffer(%in);"}
+            }
+        }
     }
     ObjectType{
         name: "QRhiVulkanRenderPassNativeHandles"
         ppCondition: "QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)"
+        ModifyField{
+            name: "renderPass"
+            ConversionRule{
+                codeClass: CodeClass.NativeSetter
+                Text{content: "auto %out = VkRenderPass(%in);"}
+            }
+        }
     }
 
     ObjectType{

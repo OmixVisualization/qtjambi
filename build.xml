@@ -431,6 +431,14 @@ Further options:
     <target name="generator.run-all-impl" depends="init.build, tools.generator.run, compile.native.generator">
         <antcall target="finished"/>
     </target>
+
+    <target name="generator.run.tests" depends="log, init.taskdef"
+        description="Generates QtJambi and test library.">
+        <foreach-version targets="generator.run-tests-impl"/>
+    </target>
+    <target name="generator.run-tests-impl" depends="init.build, tools.generator.make, compile.native.generator">
+        <antcall target="finished"/>
+    </target>
 	
 	<target name="tools.generator.run" unless="${skip-generate}">
         <mkdir dir="${qtjambi.generator.outputdir}"/>
@@ -590,7 +598,7 @@ Further options:
         <foreach-version targets="all-impl"/>
     </target>
     <target name="all-impl" depends="generate-all-impl, library-all-impl"/>
-    <target name="library-all-impl" depends="library.native.qmake-impl, tests.compile.native.qmake-impl, library.native.make-impl, tests.compile.native.make-impl, library.java-impl, library.native.bundle-impl, tests.compile.java-impl, tests.compile.plugins-impl, tests.compile.plugins-impl"/>
+    <target name="library-all-impl" depends="init.build, library.native.qmake-impl, tests.compile.native.qmake-impl, library.native.make-impl, tests.compile.native.make-impl, library.java-impl, library.native.bundle-impl, tests.compile.java-impl, tests.compile.plugins-impl, tests.compile.plugins-impl"/>
     
     <target name="clean" depends="log, init.taskdef"
         description="Cleans everything">
@@ -661,87 +669,135 @@ Further options:
 
     <target name="generate.tests" depends="tests.import"
          description="Generates and builds all tests">
-        <foreach-version targets="tests.generate-impl"/>
+        <foreach-version targets="generate-impl-test"/>
+    </target>
+	<target name="generate-impl-test" depends="init.build">
+        <antcall target="tests.generate-impl"/>
     </target>
 
     <target name="tests.generate.only" depends="tests.import"
          description="Generates and builds all tests">
-        <foreach-version targets="tests.generate.only-impl"/>
+        <foreach-version targets="generate.only-impl-test"/>
+    </target>
+	<target name="generate.only-impl-test" depends="init.build">
+        <antcall target="tests.generate.only-impl"/>
     </target>
 
     <target name="compile.tests" depends="tests.import"
           description="Builds all tests without recalling generator">
-        <foreach-version targets="tests.compile-impl"/>
+        <foreach-version targets="compile-impl-test"/>
+    </target>
+	<target name="compile-impl-test" depends="init.build">
+        <antcall target="tests.compile-impl"/>
     </target>
 
     <target name="qmake+make+bundle.tests" depends="tests.import"
           description="Builds native test components">
-        <foreach-version targets="tests.compile.native-impl"/>
+        <foreach-version targets="compile.native-impl-test"/>
+    </target>
+	<target name="compile.native-impl-test" depends="init.build">
+        <antcall target="tests.compile.native-impl"/>
     </target>
 
     <target name="make+bundle.tests" depends="tests.import"
           description="Builds native test components">
-        <foreach-version targets="tests.compile.native-impl"/>
+        <foreach-version targets="compile.native-impl-test"/>
     </target>
 
     <target name="qmake.tests" depends="tests.import"
           description="Runs qmake on native test components">
-        <foreach-version targets="tests.compile.native.qmake-impl"/>
+        <foreach-version targets="compile.native.qmake-impl-test"/>
+    </target>
+	<target name="compile.native.qmake-impl-test" depends="init.build">
+        <antcall target="tests.compile.native.qmake-impl"/>
     </target>
 
     <target name="qmake+make.tests" depends="tests.import"
           description="Runs make on native test components">
-        <foreach-version targets="tests.compile.native.make-impl"/>
+        <foreach-version targets="compile.native.make-impl-test"/>
+    </target>
+	<target name="compile.native.make-impl-test" depends="init.build">
+        <antcall target="tests.compile.native.make-impl"/>
     </target>
 
     <target name="javac.tests" depends="tests.import"
           description="Builds java test components">
-        <foreach-version targets="tests.compile.java-impl"/>
+        <foreach-version targets="compile.java-impl-test"/>
+    </target>
+	<target name="compile.java-impl-test" depends="init.build">
+        <antcall target="tests.compile.java-impl"/>
     </target>
 
     <target name="compile.tests.plugins" depends="tests.import"
           description="Builds plugins test components">
-        <foreach-version targets="tests.compile.plugins-impl"/>
+        <foreach-version targets="compile.plugins-impl-test"/>
+    </target>
+	<target name="compile.plugins-impl-test" depends="init.build">
+        <antcall target="tests.compile.plugins-impl"/>
     </target>
 
     <target name="run" depends="tests.import"
            description="Runs tests and generates report in TestReport subdir">
-        <foreach-version targets="tests.run-impl"/>
+        <foreach-version targets="run-impl-test"/>
+    </target>
+	<target name="run-impl-test" depends="init.build">
+        <antcall target="tests.run-impl"/>
     </target>
 	
     <target name="run.all" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
-        <foreach-version targets="tests.run.all-impl"/>
+        <foreach-version targets="run.all-impl"/>
+    </target>
+    <target name="run.all-impl" depends="init.build">
+        <antcall target="tests.run.all-impl"/>
     </target>
 
     <target name="run.release" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
-        <foreach-version targets="tests.release.run-impl"/>
+        <foreach-version targets="release.run-impl"/>
+    </target>
+	<target name="release.run-impl" depends="init.build">
+        <antcall target="tests.release.run-impl"/>
     </target>
 
     <target name="run.debug" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
-        <foreach-version targets="tests.debug.run-impl"/>
+        <foreach-version targets="debug.run-impl"/>
+    </target>
+	<target name="debug.run-impl" depends="init.build">
+        <antcall target="tests.debug.run-impl"/>
     </target>
 
     <target name="run.release8" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
-        <foreach-version targets="tests.release.run8-impl"/>
+        <foreach-version targets="release.run8-impl"/>
+    </target>
+	<target name="release.run8-impl" depends="init.build">
+        <antcall target="tests.release.run8-impl"/>
     </target>
 
     <target name="run.debug8" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
-        <foreach-version targets="tests.debug.run8-impl"/>
+        <foreach-version targets="debug.run8-impl"/>
+    </target>
+	<target name="debug.run8-impl" depends="init.build">
+        <antcall target="tests.debug.run8-impl"/>
     </target>
     
     <target name="run.release.all" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
-        <foreach-version targets="tests.release.run.all-impl"/>
+        <foreach-version targets="release.run.all-impl"/>
+    </target>
+	<target name="release.run.all-impl" depends="init.build">
+        <antcall target="tests.release.run.all-impl"/>
     </target>
     
     <target name="run.debug.all" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
-        <foreach-version targets="tests.debug.run.all-impl"/>
+        <foreach-version targets="debug.run.all-impl"/>
+    </target>
+	<target name="debug.run.all-impl" depends="init.build">
+        <antcall target="tests.debug.run.all-impl"/>
     </target>
     <target name="report" depends="tests.import"
             description="Generates all test reports">
