@@ -635,6 +635,7 @@
         </ant>
     </target>
     <target name="compile.java.impl" depends="load-properties" unless="${skip-java-build}">
+        <antcall target="generate.uic"/>
         <delete dir="${test.java.outdir}" failonerror="no"/>
         <mkdir dir="${test.java.outdir}"/>
         <delete dir="${test.java.srcoutdir}" failonerror="false"/>
@@ -676,7 +677,6 @@
 				<include name="module-info.java"/>
 			</fileset>
         </copy>
-        <antcall target="generate.uic"/>
 		<if>
             <istrue value="${java.module.based}"/>
             <then>
