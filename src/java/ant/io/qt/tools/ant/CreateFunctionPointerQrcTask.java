@@ -148,7 +148,7 @@ public class CreateFunctionPointerQrcTask extends Task {
 		}
 		if(currentData==null || Arrays.compare(currentData, bos.toByteArray())!=0) {
 			try{
-				Files.write(file.toPath(), currentData, StandardOpenOption.CREATE);
+				Files.write(file.toPath(), bos.toByteArray(), StandardOpenOption.CREATE);
 			} catch (IOException e) {
 				throw new BuildException(e);
 			}
