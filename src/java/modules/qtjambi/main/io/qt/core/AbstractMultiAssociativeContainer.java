@@ -29,20 +29,9 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
-import io.qt.NativeAccess;
-import io.qt.NonNull;
-import io.qt.QtUninvokable;
+import java.util.AbstractMap.*;
+import java.util.*;
+import io.qt.*;
 
 /**
  * Abstract superclass of multi-associative containers in Qt.

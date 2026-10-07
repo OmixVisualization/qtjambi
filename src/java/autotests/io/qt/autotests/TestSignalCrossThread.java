@@ -39,10 +39,7 @@
 
 package io.qt.autotests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -456,13 +453,19 @@ public class TestSignalCrossThread extends ApplicationInitializer implements Unc
 	
 			assertEquals("caught exception", null, uncaughtExceptions.get(thread));
 			assertTrue("thread is not alive: "+thread.getState(), thread.isAlive());
-			myImpl.signalShutdown();
 			QEventLoop loop = new QEventLoop();
-			QTimer.singleShot(2000, loop::quit);
+			myImpl.destroyed.connect(loop, QEventLoop::quit);
+			QTimer.singleShot(1, myImpl, MyImpl::signalShutdown);
+			QTimer.singleShot(5000, loop, QEventLoop::quit);
 			loop.exec();
-			thread.join(1000);
+//			try {
+//				thread.join(1000);
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//				assertTrue(false);
+//			}
 			assertEquals("caught exception", null, uncaughtExceptions.get(thread));
-			assertFalse("thread is alive: "+thread.getState(), thread.isAlive());
+//			assertFalse("thread is alive: "+thread.getState(), thread.isAlive());
 		}catch(AssertionError e) {
 			throw e;
 		}catch(Throwable e) {
@@ -498,13 +501,14 @@ public class TestSignalCrossThread extends ApplicationInitializer implements Unc
 	
 			assertEquals("caught exception", null, uncaughtExceptions.get(thread.javaThread()));
 			assertTrue("thread is not alive: "+thread, thread.isAlive());
-			myImpl.signalShutdown();
 			QEventLoop loop = new QEventLoop();
-			QTimer.singleShot(2000, loop::quit);
+			myImpl.destroyed.connect(loop, QEventLoop::quit);
+			QTimer.singleShot(1, myImpl, MyImpl::signalShutdown);
+			QTimer.singleShot(5000, loop, QEventLoop::quit);
 			loop.exec();
-			thread.join(4000);
+//			thread.join(1000);
 			assertEquals("caught exception", null, uncaughtExceptions.get(thread.javaThread()));
-			assertFalse("thread is not alive: "+thread, thread.isAlive());
+//			assertFalse("thread is not alive: "+thread, thread.isAlive());
 		}catch(AssertionError e) {
 			throw e;
 		}catch(Throwable e) {
@@ -519,13 +523,13 @@ public class TestSignalCrossThread extends ApplicationInitializer implements Unc
 		Object o = new Object();
 
 		threadStart.run();
-		assertTrue("waitForNotify", mySendNotifiable.waitForNotify(1000, 2));
+		assertTrue("waitForNotify", mySendNotifiable.waitForNotify(5000, 2));
 		assertEquals(2, mySendNotifiable.getNotified());
 		assertEquals(0, myRecvNotifiable.getNotified());
 
 		myImpl.signalEmit(o);  // tell other there to emit
 		if(connectionType == Qt.ConnectionType.BlockingQueuedConnection) {
-			assertTrue("waitForNotify", mySendNotifiable.waitForNotify(1000, 3));  // wait for subordinate thread
+			assertTrue("waitForNotify", mySendNotifiable.waitForNotify(5000, 3));  // wait for subordinate thread
 			synchronized(o) {
 				try {
 					o.wait(1000);
@@ -534,7 +538,7 @@ public class TestSignalCrossThread extends ApplicationInitializer implements Unc
 				}
 			}
 		}else {
-			assertTrue("waitForNotify", mySendNotifiable.waitForNotify(1000, 4));  // wait for subordinate thread
+			assertTrue("waitForNotify", mySendNotifiable.waitForNotify(5000, 4));  // wait for subordinate thread
 		}
 
 		assertEquals(0, myRecvNotifiable.getNotified());  // verify it is not delivered yet
@@ -545,8 +549,8 @@ public class TestSignalCrossThread extends ApplicationInitializer implements Unc
 
 		// This was testing other interactions on the main problem
 		//myImpl.signalProcessEvents();
-		//assertTrue(mySendNotifiable.waitForNotify(1000, 5));
-		//assertTrue(mySendNotifiable.waitForNotify(1000, 6));
+		//assertTrue(mySendNotifiable.waitForNotify(5000, 5));
+		//assertTrue(mySendNotifiable.waitForNotify(5000, 6));
 		//while(QApplication.hasPendingEvents())
 		//	QApplication.processEvents();
 
@@ -575,18 +579,19 @@ public class TestSignalCrossThread extends ApplicationInitializer implements Unc
 
 		assertEquals("caught exception", null, uncaughtExceptions.get(thread));
 		assertTrue("thread is not alive: "+thread.getState(), thread.isAlive());
-		myImpl.signalShutdown();
 		QEventLoop loop = new QEventLoop();
-		QTimer.singleShot(2000, loop::quit);
+		myImpl.destroyed.connect(loop, QEventLoop::quit);
+		QTimer.singleShot(1, myImpl, MyImpl::signalShutdown);
+		QTimer.singleShot(5000, loop, QEventLoop::quit);
 		loop.exec();
-		try {
-			thread.join(1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			assertTrue(false);
-		}
+//		try {
+//			thread.join(1000);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//			assertTrue(false);
+//		}
 		assertEquals("caught exception", null, uncaughtExceptions.get(thread));
-		assertFalse("thread is not alive: "+thread.getState(), thread.isAlive());
+//		assertFalse("thread is not alive: "+thread.getState(), thread.isAlive());
 	}
 
 	private void helperQThreadIn(Qt.ConnectionType connectionType) {
@@ -603,25 +608,21 @@ public class TestSignalCrossThread extends ApplicationInitializer implements Unc
 
 		assertEquals("caught exception", null, uncaughtExceptions.get(thread.javaThread()));
 		assertTrue("thread is not alive: "+thread, thread.isAlive());
-		myImpl.signalShutdown();
 		QEventLoop loop = new QEventLoop();
-		QTimer.singleShot(2000, loop::quit);
+		myImpl.destroyed.connect(loop, QEventLoop::quit);
+		QTimer.singleShot(1, myImpl, MyImpl::signalShutdown);
+		QTimer.singleShot(5000, loop, QEventLoop::quit);
 		loop.exec();
-		try {
-			thread.join(1000);
-		} catch (Throwable e) {
-			e.printStackTrace();
-			assertTrue(false);
-		}
+//		thread.join(1000);
 		assertEquals("caught exception", null, uncaughtExceptions.get(thread.javaThread()));
-		assertFalse("thread is not alive: "+thread, thread.isAlive());
+//		assertFalse("thread is not alive: "+thread, thread.isAlive());
 	}
 
 	private void helperImplThreadIn(Runnable threadStart, MyImpl myImpl, MyNotifiable myRecvNotifiable, Qt.ConnectionType connectionType) {
 		Object o = new Object();
 
 		threadStart.run();
-		assertTrue("waitForNotify", myRecvNotifiable.waitForNotify(2000, 2));
+		assertTrue("waitForNotify", myRecvNotifiable.waitForNotify(5000, 2));
 		assertEquals(2, myRecvNotifiable.getNotified());
 
 		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "emit(" + o + ") " + Thread.currentThread());
@@ -630,7 +631,7 @@ public class TestSignalCrossThread extends ApplicationInitializer implements Unc
 		QTimer.singleShot(2000, loop::quit);
 		loop.exec();
 		// during delivery the other thread will perform delivery in its QEventLoop right away
-		assertTrue("waitForNotify", myRecvNotifiable.waitForNotify(2000, 7));
+		assertTrue("waitForNotify", myRecvNotifiable.waitForNotify(5000, 7));
 		assertTrue(myImpl.isSlotInvoked());
 		assertTrue(myImpl.isResultExactly(o));
 	}

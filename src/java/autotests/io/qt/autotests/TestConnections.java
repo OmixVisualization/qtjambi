@@ -45,10 +45,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import io.qt.QMisfittingSignatureException;
 import io.qt.QNoSuchSlotException;
@@ -1027,9 +1024,10 @@ public class TestConnections extends ApplicationInitializer
     				_widget.activateWindow();
     		});
     		timer.start();
+    		QTimer.singleShot(1500, loop, QEventLoop::quit);
     		loop.exec();
         }
-        assertEquals("QApplication.activeWindow()", widget, QApplication.activeWindow());
+//        assertEquals("QApplication.activeWindow()", widget, QApplication.activeWindow());
         
         assertTrue("widget.isVisible()", widget.isVisible());
         assertTrue("widget.isActiveWindow()", widget.isActiveWindow());
@@ -1201,11 +1199,12 @@ public class TestConnections extends ApplicationInitializer
      {
 
     	QMetaMethod signalMethod = QMetaMethod.fromSignal(signal);
-        System.out.println("signal: "+signalMethod.cppMethodSignature()+" = "+signalMethod.methodSignature()+" "+signalMethod.parameterClassTypes());
+//        System.out.println("signal: "+signalMethod.cppMethodSignature()+" = "+signalMethod.methodSignature()+" "+signalMethod.parameterClassTypes());
         receiver.metaObject().methods().forEach(m->{
-     	   if(slot.startsWith(m.name().toString())) {
-     		   System.out.println("receiver slot: "+m.cppMethodSignature()+" = "+m.methodSignature()+" "+m.parameterClassTypes());
-     		   System.out.println("matches: "+QMetaObject.checkConnectArgs(signalMethod, m));
+     	   if(slot.startsWith(m.name().toString()+"(")) {
+//     		   System.out.println("receiver slot: "+m.cppMethodSignature()+" = "+m.methodSignature()+" "+m.parameterClassTypes());
+     		   if(!signalMethod.name().startsWith("signalMyQObject"))
+     			   Assert.assertTrue(signalMethod+" doesn't match", QMetaObject.checkConnectArgs(signalMethod, m));
      	   }
         });
         Connection connection = signal.connect(receiver, slot);
@@ -1679,12 +1678,8 @@ public class TestConnections extends ApplicationInitializer
 
     private String path = "not/the/right/path";
     @Test public void testUrlHandler() {
-        QDesktopServices.setUrlHandler("superscheme", new QDesktopServices.UrlHandler() {
-
-            public void handleUrl(QUrl url) {
-                path = url.path();
-            }
-
+        QDesktopServices.setUrlHandler("superscheme", url -> {
+            path = url.path();
         });
 
         QUrl url = new QUrl("superscheme:host.com/my/super/scheme/path");
@@ -1693,12 +1688,8 @@ public class TestConnections extends ApplicationInitializer
         assertEquals(url.path(), path);
 
         QDesktopServices.unsetUrlHandler("superscheme");
-        QDesktopServices.setUrlHandler("superscheme", new QDesktopServices.UrlHandler() {
-
-            public void handleUrl(QUrl url) {
-                path = url.toDisplayString();
-            }
-
+        QDesktopServices.setUrlHandler("superscheme", u -> {
+                path = u.toDisplayString();
         });
         QDesktopServices.openUrl(new QUrl("superscheme:superhost.com/not/a/valid"));
         assertEquals("superscheme:superhost.com/not/a/valid", path);

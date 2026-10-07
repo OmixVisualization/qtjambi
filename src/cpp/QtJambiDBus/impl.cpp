@@ -32,7 +32,10 @@
 #include <QtDBus/QDBusVariant>
 #include <QtDBus/QDBusUnixFileDescriptor>
 #include <QtDBus/qdbusmetatype.h>
+#if __has_include(<QtDBus/private/qdbusargument_p.h>)
 #include <QtDBus/private/qdbusargument_p.h>
+#define DBUS_PRIVATE
+#endif
 #include <QtDBus/QDBusReply>
 #include <QtCore/QVariant>
 #include <QtDBus/QDBusError>
@@ -489,6 +492,23 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_dbus_QDBusMetaType_marshall
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
 }
+
+#if !defined(DBUS_PRIVATE)
+struct QDBusArgumentPrivate{
+    enum
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+        class
+#endif
+    Direction { Marshalling, Demarshalling };
+    static inline QDBusArgumentPrivate *d(QDBusArgument &q)
+    { return q.d; }
+
+    void *message = nullptr;
+    QAtomicInt ref = 1;
+    QDBusConnection::ConnectionCapabilities capabilities;
+    Direction direction;
+};
+#endif
 
 void qtjambi_dbus_check_write_argument(JNIEnv * env, const QDBusArgument * arg){
     QDBusArgumentPrivate* d = arg ? QDBusArgumentPrivate::d(*const_cast<QDBusArgument *>(arg)) : nullptr;

@@ -159,7 +159,7 @@ class __QtQml__ extends QtQml{
     }
 
     /**
-     * <p>See <code><a href="@docRoot/qqmlengine.html#qmlRegisterSingletonInstance">qmlRegisterSingletonInstance&lt;T>(const char*,<wbr/>int,<wbr/>int,<wbr/>const char*,<wbr/>T*)</a></code></p>
+     * <p>See <a href="@docRoot/qqmlengine.html#qmlRegisterSingletonInstance"><code>qmlRegisterSingletonInstance&lt;T>(const char*,<wbr/>int,<wbr/>int,<wbr/>const char*,<wbr/>T*)</code></a></p>
      */
     public static <T extends io.qt.core.QObject> int qmlRegisterSingletonInstance(java.lang.@NonNull String uri, int versionMajor, int versionMinor, java.lang.@NonNull String typeName, @StrictNonNull T singleton){
         java.util.Objects.requireNonNull(singleton, "Argument 'singleton': null not expected.");
@@ -248,8 +248,13 @@ class QQmlEngine_65_{
 }// class
 
 class QQmlExpression__{
+    /**
+     * Exception representing undefined expression evaluation result
+     * @see QQmlExpression#evaluate()
+     * @serial exclude
+     */
     public static class ValueIsUndefined extends RuntimeException{
-        private static final long serialVersionUID = 7719401165632826435L;
+        private static final long serialVersionUID = 0L;
         private ValueIsUndefined(String message) {
             super(message);
         }
@@ -258,8 +263,15 @@ class QQmlExpression__{
 }// class
 
 class QQmlIncubationController__{
-	public static class WhileFlag{
-	    private final long flag;
+    /**
+     * Boolean flag for controlling while-loop incubation
+     * @see QQmlIncubationController#incubateWhile(WhileFlag)
+     */
+    public static class WhileFlag{
+        private final long flag;
+        /**
+         * Creates a true flag
+         */
         public WhileFlag() {
             this(true);
         }

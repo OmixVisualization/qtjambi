@@ -32,7 +32,7 @@
     <property name="plugin-subdir" value="sqldrivers"/>
     <property name="module-name" value="qsqljdbc"/>
     <property name="qtjambi-module-name" value="qtjambi.sql"/>
-    <property name="qtjambi.required.modules" value="qtjambi, qtjambi.sql"/>
+    <property name="qtjambi.required.modules" value="qtjambi,qtjambi.sql"/>
     <target name="build">
         <if>
 			<and>

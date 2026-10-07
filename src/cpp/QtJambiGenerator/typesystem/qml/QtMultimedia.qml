@@ -39,22 +39,11 @@ TypeSystem{
     LoadTypeSystem{name: "QtGuiRhi"; since: 6.6}
 
     InjectCode{
-        target: CodeClass.MetaInfo
-        position: Position.Position1
+        target: CodeClass.Java
+        position: Position.Position4
         Text{content: String.raw`
-#if defined(Q_OS_ANDROID)
-void initialize_meta_info_QtMultimedia(JavaVM*);
-#endif`}
-    }
-    
-    InjectCode{
-        target: CodeClass.MetaInfo
-        Text{content: String.raw`
-#if defined(Q_OS_ANDROID)
-    initialize_meta_info_QtMultimedia(%javaVM);
-#else
-    Q_UNUSED(%javaVM)
-#endif`}
+            loadUtilityLibrary("plugins_multimedia_ffmpegmediaplugin", LibraryRequirementMode.Optional, "android");
+            loadUtilityLibrary("plugins_multimedia_androidmediaplugin", LibraryRequirementMode.Optional, "android");`}
     }
 
     RequiredLibrary{
@@ -242,8 +231,9 @@ void initialize_meta_info_QtMultimedia(JavaVM*);
                 NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = %env->NewByteArray(__qt_this->mappedBytes(%1));\n"+
-                                  "%env->SetByteArrayRegion(%out, 0, __qt_this->mappedBytes(%1), reinterpret_cast<const jbyte *>(%in));"}
+                    Text{content: String.raw`
+                        %out = %env->NewByteArray(__qt_this->mappedBytes(%1));
+                        %env->SetByteArrayRegion(%out, 0, __qt_this->mappedBytes(%1), reinterpret_cast<const jbyte *>(%in));`}
                 }
             }
             since: [6, 2]
@@ -314,8 +304,9 @@ void initialize_meta_info_QtMultimedia(JavaVM*);
                     NoNullPointer{}
                     ConversionRule{
                         codeClass: CodeClass.Native
-                        Text{content: "%out = %env->NewByteArray(__qt_this->byteCount());\n"+
-                                      "%env->SetByteArrayRegion(%out, 0, __qt_this->byteCount(), reinterpret_cast<const jbyte*>(%in));"}
+                        Text{content: String.raw`
+                            %out = %env->NewByteArray(__qt_this->byteCount());
+                            %env->SetByteArrayRegion(%out, 0, __qt_this->byteCount(), reinterpret_cast<const jbyte*>(%in));`}
                     }
                 }
             }
@@ -385,8 +376,9 @@ void initialize_meta_info_QtMultimedia(JavaVM*);
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "int %in = 0;\n"+
-                                  "int* %out = &%in;"}
+                    Text{content: String.raw`
+                        int %in = 0;
+                        int* %out = &%in;`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -625,8 +617,9 @@ if(%in){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(\n"+
-                                  "%env, qtjambi_cast<jobject>(%env, %in), jboolean(%2));"}
+                    Text{content: String.raw`
+                            jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(
+                            %env, qtjambi_cast<jobject>(%env, %in), jboolean(%2));`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -649,8 +642,9 @@ if(%in){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool %in = false;\n"+
-                                  "bool* %out = &%in;"}
+                    Text{content: String.raw`
+                        bool %in = false;
+                        bool* %out = &%in;`}
                 }
             }
         }
@@ -774,8 +768,9 @@ if(%in){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(\n"+
-                                  "%env, qtjambi_cast<jobject>(%env, %in), jboolean(%2));"}
+                    Text{content: String.raw`
+                        jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(
+                        %env, qtjambi_cast<jobject>(%env, %in), jboolean(%2));`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -798,8 +793,9 @@ if(%in){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool %in = false;\n"+
-                                  "bool* %out = &%in;"}
+                    Text{content: String.raw`
+                        bool %in = false;
+                        bool* %out = &%in;`}
                 }
             }
         }
@@ -1101,8 +1097,9 @@ if(%in){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(\n"+
-                                  "%env, qtjambi_cast<jobject>(%env, %in), jboolean(%2));"}
+                    Text{content: String.raw`
+                        jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(
+                        %env, qtjambi_cast<jobject>(%env, %in), jboolean(%2));`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -1125,8 +1122,9 @@ if(%in){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool %in = false;\n"+
-                                  "bool* %out = &%in;"}
+                    Text{content: String.raw`
+                        bool %in = false;
+                        bool* %out = &%in;`}
                 }
             }
         }
@@ -1139,8 +1137,9 @@ if(%in){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(\n"+
-                                  "%env, qtjambi_cast<jobject>(%env, %in), jboolean(%2));"}
+                    Text{content: String.raw`
+                        jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(
+                        %env, qtjambi_cast<jobject>(%env, %in), jboolean(%2));`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -1163,8 +1162,9 @@ if(%in){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool %in = false;\n"+
-                                  "bool* %out = &%in;"}
+                    Text{content: String.raw`
+                        bool %in = false;
+                        bool* %out = &%in;`}
                 }
             }
         }
@@ -1757,7 +1757,7 @@ if(%in){
                     index: 1
                     NoNullPointer{}
                     ReplaceType{
-                        modifiedType: "io.qt.multimedia.QAudioSink$FloatConsumer"
+                        modifiedType: "io.qt.multimedia.QAudioSource$FloatConsumer"
                     }
                     ConversionRule{
                         codeClass: CodeClass.Native
@@ -1774,7 +1774,7 @@ if(%in){
                     index: 1
                     NoNullPointer{}
                     ReplaceType{
-                        modifiedType: "io.qt.multimedia.QAudioSink$ByteConsumer"
+                        modifiedType: "io.qt.multimedia.QAudioSource$ByteConsumer"
                     }
                     ConversionRule{
                         codeClass: CodeClass.Native
@@ -1791,7 +1791,7 @@ if(%in){
                     index: 1
                     NoNullPointer{}
                     ReplaceType{
-                        modifiedType: "io.qt.multimedia.QAudioSink$ShortConsumer"
+                        modifiedType: "io.qt.multimedia.QAudioSource$ShortConsumer"
                     }
                     ConversionRule{
                         codeClass: CodeClass.Native
@@ -1808,7 +1808,7 @@ if(%in){
                     index: 1
                     NoNullPointer{}
                     ReplaceType{
-                        modifiedType: "io.qt.multimedia.QAudioSink$IntConsumer"
+                        modifiedType: "io.qt.multimedia.QAudioSource$IntConsumer"
                     }
                     ConversionRule{
                         codeClass: CodeClass.Native
@@ -1883,6 +1883,17 @@ if(%in){
     
     ObjectType{
         name: "QMediaCaptureSession"
+        ModifyFunction{
+            signature: "setNativeVideoSource(QObject*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcNativeVideoSource"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6,12]
+        }
         ModifyFunction{
             signature: "setAudioInput(QAudioInput*)"
             ModifyArgument{

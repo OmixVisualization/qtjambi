@@ -766,7 +766,7 @@ final class BundleGenerator {
 									name = targetModule;
 									prepend = false;
 								}
-								List<File> list = libraries.computeIfAbsent(name, Utility.arrayListFactory());
+								List<File> list = libraries.computeIfAbsent(name, arrayListFactory());
 								if(prepend)
 									list.add(0, new File(binDir, lib));
 								else
@@ -775,16 +775,16 @@ final class BundleGenerator {
 								if(debugLib.exists())
 									list.add(debugLib);
 							}else if(lib.equals("libGLESv2.dll") || lib.equals("libEGL.dll") || lib.equals("opengl32sw.dll")) {
-								List<File> list = libraries.computeIfAbsent("gui", Utility.arrayListFactory());
+								List<File> list = libraries.computeIfAbsent("gui", arrayListFactory());
 								list.add(new File(binDir, lib));
 							}else if(isMingw && (lib.equals("libstdc++-6.dll") || lib.equals("libwinpthread-1.dll") || lib.equals("libgcc_s_seh-1.dll"))) {
-								List<File> list = libraries.computeIfAbsent("core", Utility.arrayListFactory());
+								List<File> list = libraries.computeIfAbsent("core", arrayListFactory());
 								list.add(new File(binDir, lib));
 							}else if(isLlvmMingw && (lib.equals("libc++.dll") || lib.equals("libunwind.dll"))) {
-								List<File> list = libraries.computeIfAbsent("core", Utility.arrayListFactory());
+								List<File> list = libraries.computeIfAbsent("core", arrayListFactory());
 								list.add(new File(binDir, lib));
 							}else if((lib.startsWith("av") || lib.startsWith("sw")) && lib.endsWith(".dll")) {
-								List<File> list = libraries.computeIfAbsent("multimedia", Utility.arrayListFactory());
+								List<File> list = libraries.computeIfAbsent("multimedia", arrayListFactory());
 								list.add(new File(binDir, lib));
 							}
 						}
@@ -819,7 +819,7 @@ final class BundleGenerator {
 									name = targetModule;
 									prepend = false;
 								}
-								List<File> list = libraries.computeIfAbsent(name, Utility.arrayListFactory());
+								List<File> list = libraries.computeIfAbsent(name, arrayListFactory());
 								if(prepend)
 									list.add(0, new File(binDir, lib));
 								else
@@ -828,10 +828,10 @@ final class BundleGenerator {
 								String libNoSuffix = lib.substring(0, lib.length()-5);
 								if(new File(binDir, libNoSuffix+"dd.dll").exists())
 									continue;
-								List<File> list = libraries.computeIfAbsent("gui", Utility.arrayListFactory());
+								List<File> list = libraries.computeIfAbsent("gui", arrayListFactory());
 								list.add(new File(binDir, lib));
 							}else if((lib.startsWith("av") || lib.startsWith("sw")) && lib.endsWith(".dll")) {
-								List<File> list = libraries.computeIfAbsent("multimedia", Utility.arrayListFactory());
+								List<File> list = libraries.computeIfAbsent("multimedia", arrayListFactory());
 								list.add(new File(binDir, lib));
 							}
 						}
@@ -869,7 +869,7 @@ final class BundleGenerator {
 								name = targetModule;
 								prepend = false;
 							}
-							List<File> list = libraries.computeIfAbsent(name, Utility.arrayListFactory());
+							List<File> list = libraries.computeIfAbsent(name, arrayListFactory());
 							if(prepend)
 								list.add(0, new File(binDir, lib));
 							else
@@ -878,19 +878,19 @@ final class BundleGenerator {
 							String libNoSuffix = lib.substring(0, lib.length()-5);
 							if(new File(binDir, libNoSuffix+".dll").exists())
 								continue;
-							List<File> list = libraries.computeIfAbsent("gui", Utility.arrayListFactory());
+							List<File> list = libraries.computeIfAbsent("gui", arrayListFactory());
 							list.add(new File(binDir, lib));
 						}else if(lib.equals("opengl32sw.dll")) {
-							List<File> list = libraries.computeIfAbsent("gui", Utility.arrayListFactory());
+							List<File> list = libraries.computeIfAbsent("gui", arrayListFactory());
 							list.add(new File(binDir, lib));
 						}else if(isMingw && (lib.equals("libstdc++-6.dll") || lib.equals("libwinpthread-1.dll") || lib.equals("libgcc_s_seh-1.dll"))) {
-							List<File> list = libraries.computeIfAbsent("core", Utility.arrayListFactory());
+							List<File> list = libraries.computeIfAbsent("core", arrayListFactory());
 							list.add(new File(binDir, lib));
 						}else if(isLlvmMingw && (lib.equals("libc++.dll") || lib.equals("libunwind.dll"))) {
-							List<File> list = libraries.computeIfAbsent("core", Utility.arrayListFactory());
+							List<File> list = libraries.computeIfAbsent("core", arrayListFactory());
 							list.add(new File(binDir, lib));
 						}else if((lib.startsWith("av") || lib.startsWith("sw")) && lib.endsWith(".dll")) {
-							List<File> list = libraries.computeIfAbsent("multimedia", Utility.arrayListFactory());
+							List<File> list = libraries.computeIfAbsent("multimedia", arrayListFactory());
 							list.add(new File(binDir, lib));
 						}
 					}
@@ -943,13 +943,13 @@ final class BundleGenerator {
 							name = targetModule;
 							prepend = false;
 						}
-						List<File> list = libraries.computeIfAbsent(name, Utility.arrayListFactory());
+						List<File> list = libraries.computeIfAbsent(name, arrayListFactory());
 						if(prepend)
 							list.add(0, new File(libDir, lib));
 						else
 							list.add(new File(libDir, lib));
 					}else if((lib.startsWith("libav") || lib.startsWith("libsw")) && lib.endsWith(".so")) {
-						List<File> list = libraries.computeIfAbsent("multimedia", Utility.arrayListFactory());
+						List<File> list = libraries.computeIfAbsent("multimedia", arrayListFactory());
 						list.add(new File(libDir, lib));
 					}
 				}
@@ -970,11 +970,11 @@ final class BundleGenerator {
 				isDebug = false;
 				String prefix = "libQt" + version.majorVersion();
 				String suffix = ".so."+version;
-				String suffix2 = ".so."+version.majorVersion()+"."+version.minorVersion();
+				String suffix2 = ".so."+version.majorVersion();
 				String prefix2 = "libicu";
 				for(String lib : libDir.list()) {
 					if(lib.startsWith(prefix) && lib.endsWith(suffix)) {
-						String name = lib.substring(prefix.length(), lib.length() - suffix.length()).toLowerCase();
+						String name = lib.substring(prefix.length(), lib.indexOf('.')).toLowerCase();
 						if(name.startsWith("3d"))
 							name = "qt"+name;
 						boolean prepend = true;
@@ -983,13 +983,13 @@ final class BundleGenerator {
 							name = targetModule;
 							prepend = false;
 						}
-						List<File> list = libraries.computeIfAbsent(name, Utility.arrayListFactory());
+						List<File> list = libraries.computeIfAbsent(name, arrayListFactory());
 						if(prepend)
 							list.add(0, new File(libDir, lib));
 						else
 							list.add(new File(libDir, lib));
 					}else if(lib.startsWith(prefix) && lib.endsWith(suffix2)) {
-						String name = lib.substring(prefix.length(), lib.length() - suffix2.length()).toLowerCase();
+						String name = lib.substring(prefix.length(), lib.indexOf('.')).toLowerCase();
 						if(name.startsWith("3d"))
 							name = "qt"+name;
 						boolean prepend = true;
@@ -1003,20 +1003,43 @@ final class BundleGenerator {
 							if(Files.isSymbolicLink(link)) {
 								File libFile = link.toRealPath().toFile();
 								if(libFile.getName().startsWith(prefix) && !libFile.getName().endsWith(suffix)) {
-									List<File> list = libraries.computeIfAbsent(name, Utility.arrayListFactory());
-									if(prepend)
-										list.add(0, libFile);
-									else
-										list.add(libFile);									
+									List<File> list = libraries.computeIfAbsent(name, arrayListFactory());
+									if(!list.contains(libFile)) {
+										if(prepend)
+											list.add(0, libFile);
+										else
+											list.add(libFile);
+									}
 								}
 							}
 						} catch (IOException e) {
 						}
+					}else if(lib.startsWith(prefix) 
+							&& lib.contains(suffix2+".") 
+							&& (lib.contains("WebEngine") || lib.contains("Pdf")) 
+							&& new File(libDir, lib).exists() 
+							&& !Files.isSymbolicLink(new File(libDir, lib).toPath())) {
+						String name = lib.substring(prefix.length(), lib.indexOf('.')).toLowerCase();
+						if(name.startsWith("3d"))
+							name = "qt"+name;
+						boolean prepend = true;
+						String targetModule = findTargetModule(name);
+						if(targetModule!=null) {
+							name = targetModule;
+							prepend = false;
+						}
+						List<File> list = libraries.computeIfAbsent(name, arrayListFactory());
+						File libFile = new File(libDir, lib);
+						if(!list.contains(libFile)) {
+							if(prepend)
+								list.add(0, libFile);
+							else
+								list.add(libFile);
+						}
 					}else if(lib.startsWith(prefix2) && lib.contains(".so.") && !Files.isSymbolicLink(new File(libDir, lib).toPath())) {
-						libraries.computeIfAbsent("core", Utility.arrayListFactory()).add(new File(libDir, lib));
+						libraries.computeIfAbsent("core", arrayListFactory()).add(new File(libDir, lib));
 					}else if((lib.startsWith("libav") || lib.startsWith("libsw")) && (lib.endsWith(".so") || lib.contains(".so."))) {
-						List<File> list = libraries.computeIfAbsent("multimedia", Utility.arrayListFactory());
-						list.add(new File(libDir, lib));
+						libraries.computeIfAbsent("multimedia", arrayListFactory()).add(new File(libDir, lib));
 					}
 				}
 				for(File pluginDir : pluginsDir.listFiles()) {
@@ -1047,13 +1070,13 @@ final class BundleGenerator {
 							name = targetModule;
 							prepend = false;
 						}
-						List<File> list = libraries.computeIfAbsent(name, Utility.arrayListFactory());
+						List<File> list = libraries.computeIfAbsent(name, arrayListFactory());
 						if(prepend)
 							list.add(0, lib);
 						else
 							list.add(lib);
 					}else if((lib.getName().startsWith("libav") || lib.getName().startsWith("libsw")) && lib.getName().endsWith(".dylib")) {
-						List<File> list = libraries.computeIfAbsent("multimedia", Utility.arrayListFactory());
+						List<File> list = libraries.computeIfAbsent("multimedia", arrayListFactory());
 						list.add(lib);
 					}
 				}
@@ -1109,8 +1132,7 @@ final class BundleGenerator {
 			}
 			
 			try {
-				@SuppressWarnings("serial")
-				class HasManifestException extends IOException{}
+				class HasManifestException extends IOException{private static final long serialVersionUID = 0L;}
 				
 				class UnEmptyJarOutputStream extends JarOutputStream{
 					private final File utilFile;
@@ -1637,8 +1659,10 @@ final class BundleGenerator {
 										}
 									}
 								}
-								if("pdfquick".equals(libPair.getKey())) {
-									copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/Pdf"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+								if("graphs".equals(libPair.getKey())) {
+									copyQmlPaths(qmllibs, Collections.singletonList("QtGraphs2D"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+								}else if("pdfquick".equals(libPair.getKey())) {
+									copyQmlPaths(qmllibs, Arrays.asList("QtQuick/Pdf", "QtQuick/Pdf/+Universal", "QtQuick/Pdf/+Material"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
 								}else if("waylandclient".equals(libPair.getKey())) {
 									copyQmlPaths(qmllibs, Collections.singletonList("QtWayland/Client"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
 								}else if("waylandcompositor".equals(libPair.getKey())) {
@@ -1683,7 +1707,7 @@ final class BundleGenerator {
 												"QtQuick/PrivateWidgets"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
 									}
 								}else if("webenginequick".equals(libPair.getKey())) {
-									copyQmlPaths(qmllibs, Collections.singletonList("QtWebEngine"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
+									copyQmlPaths(qmllibs, Arrays.asList("QtWebEngine", "QtWebEngine/ControlsDelegates"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
 								}else if("xmlpatterns".equals(libPair.getKey())) {
 									copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/XmlListModel"), libBundleJarFile, jarUtilFile, libDebugInfoJarFile, osArchName, _isDebug, isForceDebugInfo, libDoc, debugInfoDoc);
 								}
@@ -2156,11 +2180,9 @@ final class BundleGenerator {
 			}
 		}
 	}
-}
-
-final class Utility extends io.qt.internal.NativeUtility{
-	protected static <K,V> Function<K, ArrayList<V>> arrayListFactory(){
-		return io.qt.internal.NativeUtility.arrayListFactory();
+	
+	private static <K,V> Function<K, ArrayList<V>> arrayListFactory(){
+		return key->new ArrayList<>();
 	}
 }
 

@@ -303,17 +303,6 @@ default:
     }
     
     ObjectType{
-        name: "QQuickCloseEvent"
-        packageName: "io.qt.quick.internal"
-        forceFinal: true
-        generate: "no-shell"
-        ModifyFunction{
-            signature: "QQuickCloseEvent()"
-            remove: RemoveFlag.All
-        }
-    }
-    
-    ObjectType{
         name: "QQuickItem"
         ExtraIncludes{
             Include{
@@ -352,12 +341,6 @@ default:
         ValueType{
             name: "ItemChangeData"
             generate: false
-            CustomConstructor{
-                Text{content: "if(copy)\n"+
-                              "    return new(placement) QQuickItem::ItemChangeData(*copy);\n"+
-                              "else\n"+
-                              "    return new(placement) QQuickItem::ItemChangeData(false);"}
-            }
             ModifyField{
                 name: "window"
                 read: true
@@ -458,7 +441,7 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -473,7 +456,7 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -488,7 +471,7 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -503,7 +486,7 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -518,7 +501,7 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -533,7 +516,7 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -548,7 +531,7 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -563,7 +546,7 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -578,7 +561,7 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -593,7 +576,7 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -608,7 +591,7 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -623,7 +606,7 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -638,7 +621,7 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -653,7 +636,7 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         Import{
@@ -691,10 +674,11 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "boolean hasContainsMethod = true;\n"+
-                              "if(%1!=null){\n"+
-                              "    hasContainsMethod = %1.metaObject().method(\"contains\", io.qt.core.QPointF.class)!=null;\n"+
-                              "}"}
+                Text{content: String.raw`
+                    boolean hasContainsMethod = true;
+                    if(%1!=null){
+                        hasContainsMethod = %1.metaObject().method("contains", io.qt.core.QPointF.class)!=null;
+                    }`}
             }
         }
         ModifyFunction{
@@ -702,8 +686,9 @@ try{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "bool b = false;\n"+
-                              "bool* __qt_arg__2 = &b;"}
+                Text{content: String.raw`
+                    bool b = false;
+                    bool* __qt_arg__2 = &b;`}
             }
             ModifyArgument{
                 index: 2
@@ -1026,10 +1011,11 @@ try{
                 position: Position.End
                 ArgumentMap{index: 0; metaName: "%0"}
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "if(%0!=null){\n"+
-                              "    QtJambi_LibraryUtilities.internal.setCppOwnership(%1);\n"+
-                              "    %0.destroyed.connect(()->QtJambi_LibraryUtilities.internal.setDefaultOwnership(%1));\n"+
-                              "}"}
+            Text{content: String.raw`
+if(%0!=null){
+    QtJambi_LibraryUtilities.internal.setCppOwnership(%1);
+    %0.destroyed.connect(()->QtJambi_LibraryUtilities.internal.setDefaultOwnership(%1));
+}`}
             }
             since: 6.6
         }
@@ -1064,8 +1050,43 @@ try{
                 Text{content: "__rcRenderTarget = %1==null ? null : %1.__rcRenderTarget;"}
             }
         }
+        ModifyFunction{
+            signature: "closing(QQuickCloseEvent*)"
+            unless: "QTJAMBI_NO_QUICK_PRIVATE"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: String.raw`io.qt.core.@QtMetaType(name="QQuickCloseEvent*") @Nullable QObject`
+                    modifiedJavaType: "io.qt.core.QObject"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        QObject* tmp = qtjambi_cast<QObject*>(%env, %in);
+                        QQuickCloseEvent* %out = tmp ? reinterpret_cast<QQuickCloseEvent*>(tmp->qt_metacast("QQuickCloseEvent")) : nullptr;
+                        if(tmp && !%out)
+                            return false;`}
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: "%out = qtjambi_cast<jobject>(%env, reinterpret_cast<QObject*>(%in));"}
+                }
+            }
+        }
         InjectCode{
             Text{content: "private Object __rcDevice;\nprivate Object __rcRenderTarget;"}
+        }
+    }
+
+    ObjectType{
+        name: "QQuickCloseEvent"
+        unless: "QTJAMBI_NO_QUICK_PRIVATE"
+        packageName: "io.qt.quick.internal"
+        forceFinal: true
+        generate: "no-shell"
+        ModifyFunction{
+            signature: "QQuickCloseEvent()"
+            remove: RemoveFlag.All
         }
     }
     
@@ -1113,20 +1134,22 @@ try{
             signature: "removeAllChildNodes()"
             InjectCode{
                 position: Position.Beginning
-                Text{content: "int size = childCount();\n"+
-                              "java.util.List<QSGNode> nodes = new java.util.ArrayList<>(size);\n"+
-                              "for (int i = 0; i < size; i++) {\n"+
-                              "    nodes.add(childAtIndex(i));\n"+
-                              "}"}
+                Text{content: String.raw`
+int size = childCount();
+java.util.List<QSGNode> nodes = new java.util.ArrayList<>(size);
+for (int i = 0; i < size; i++) {
+    nodes.add(childAtIndex(i));
+}`}
             }
             InjectCode{
                 position: Position.End
-                Text{content: "for (QSGNode node : nodes) {\n"+
-                              "    if (node!=null && node.flags().testFlag(QSGNode.Flag.OwnedByParent)) {\n"+
-                              "        QtJambi_LibraryUtilities.internal.setDefaultOwnership(node);\n"+
-                              "    }\n"+
-                              "}\n"+
-                              "if(__rcChildren!=null)__rcChildren.clear();"}
+                Text{content: String.raw`
+for (QSGNode node : nodes) {
+    if (node!=null && node.flags().testFlag(QSGNode.Flag.OwnedByParent)) {
+        QtJambi_LibraryUtilities.internal.setDefaultOwnership(node);
+    }
+}
+if(__rcChildren!=null)__rcChildren.clear();`}
             }
         }
         ModifyFunction{
@@ -1152,8 +1175,9 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(%1.parent()!=null)\n"+
-                              "    throw new IllegalArgumentException(\"QSGNode is already a child!\");"}
+                Text{content: String.raw`
+                    if(%1.parent()!=null)
+                        throw new IllegalArgumentException("QSGNode is already a child!");`}
             }
         }
         ModifyFunction{
@@ -1179,8 +1203,9 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(%1.parent()!=null)\n"+
-                              "    throw new IllegalArgumentException(\"QSGNode is already a child!\");"}
+                Text{content: String.raw`
+                    if(%1.parent()!=null)
+                        throw new IllegalArgumentException("QSGNode is already a child!");`}
             }
         }
         ModifyFunction{
@@ -1211,8 +1236,9 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(%1.parent()!=null)\n"+
-                              "    throw new IllegalArgumentException(\"QSGNode is already a child!\");"}
+                Text{content: String.raw`
+                    if(%1.parent()!=null)
+                        throw new IllegalArgumentException("QSGNode is already a child!");`}
             }
         }
         ModifyFunction{
@@ -1243,8 +1269,9 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(%1.parent()!=null)\n"+
-                              "    throw new IllegalArgumentException(\"QSGNode is already a child!\");"}
+                Text{content: String.raw`
+                    if(%1.parent()!=null)
+                        throw new IllegalArgumentException("QSGNode is already a child!");`}
             }
         }
     }
@@ -1648,41 +1675,30 @@ void addRC(Object obj){
                 Text{content: "delete[] %this->attributes;"}
             }
             CustomConstructor{
-                type: CustomConstructor.Legacy
-                Text{content: "if(copy){\n"+
-                              "    QSGGeometry::AttributeSet* result = new(placement) QSGGeometry::AttributeSet{*copy};\n"+
-                              "    QSGGeometry::Attribute* attributes;\n"+
-                              "    result->attributes = attributes = copy->count>0 ? new QSGGeometry::Attribute[copy->count] : nullptr;\n"+
-                              "    for(int i=0; i<copy->count; ++i){\n"+
-                              "        attributes[i] = copy->attributes[i];\n"+
-                              "    }\n"+
-                              "    return result;\n"+
-                              "}else{\n"+
-                              "    return new(placement) QSGGeometry::AttributeSet{};\n"+
-                              "}"}
-            }
-            CustomConstructor{
                 type: CustomConstructor.Copy
-                Text{content: "QSGGeometry::AttributeSet* result = new(placement) QSGGeometry::AttributeSet{*copy};\n"+
-                              "QSGGeometry::Attribute* attributes;\n"+
-                              "result->attributes = attributes = copy->count>0 ? new QSGGeometry::Attribute[copy->count] : nullptr;\n"+
-                              "for(int i=0; i<copy->count; ++i){\n"+
-                              "    attributes[i] = copy->attributes[i];\n"+
-                              "}\n"}
+                Text{content: String.raw`
+QSGGeometry::AttributeSet* result = new(placement) QSGGeometry::AttributeSet{*copy};
+QSGGeometry::Attribute* attributes;
+result->attributes = attributes = copy->count>0 ? new QSGGeometry::Attribute[copy->count] : nullptr;
+for(int i=0; i<copy->count; ++i){
+    attributes[i] = copy->attributes[i];
+}`}
             }
             CustomConstructor{
                 type: CustomConstructor.Move
-                Text{content: "new(placement) QSGGeometry::AttributeSet{std::move(*copy)};\n"+
-                              "copy->count = 0;\n"+
-                              "copy->attributes = nullptr;\n"+
-                              "copy->stride = 0;\n"}
+                Text{content: String.raw`
+                    new(placement) QSGGeometry::AttributeSet{std::move(*copy)};
+                    copy->count = 0;
+                    copy->attributes = nullptr;
+                    copy->stride = 0;`}
             }
             CustomDestructor{
-                Text{content: "delete[] ptr->attributes;\n"+
-                              "ptr->count = 0;\n"+
-                              "ptr->stride = 0;\n"+
-                              "ptr->attributes = nullptr;\n"+
-                              "ptr->~AttributeSet();\n"}
+                Text{content: String.raw`
+                    delete[] ptr->attributes;
+                    ptr->count = 0;
+                    ptr->stride = 0;
+                    ptr->attributes = nullptr;
+                    ptr->~AttributeSet();`}
             }
 
             ModifyFunction{
@@ -1691,11 +1707,12 @@ void addRC(Object obj){
                     target: CodeClass.Native
                     position: Position.End
                     ArgumentMap{index: 1; metaName: "%1"}
-                    Text{content: "QSGGeometry::Attribute* attributes;\n"+
-                                  "__qt_this->attributes = attributes = __qt_%1.count>0 ? new QSGGeometry::Attribute[__qt_%1.count] : nullptr;\n"+
-                                  "for(int i=0; i<__qt_%1.count; ++i){\n"+
-                                  "    attributes[i] = __qt_%1.attributes[i];\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        QSGGeometry::Attribute* attributes;
+                        __qt_this->attributes = attributes = __qt_%1.count>0 ? new QSGGeometry::Attribute[__qt_%1.count] : nullptr;
+                        for(int i=0; i<__qt_%1.count; ++i){
+                            attributes[i] = __qt_%1.attributes[i];
+                        }`}
                 }
             }
 
@@ -1886,16 +1903,17 @@ if(%1.count()<=0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "switch(__qt_this->sizeOfIndex()){\n"+
-                                  "case 4:\n"+
-                                  "    %out = DataJBuffer(%env, reinterpret_cast<qint32*>(%in), __qt_this->indexCount()).take();\n"+
-                                  "    break;\n"+
-                                  "case 2:\n"+
-                                  "    %out = DataJBuffer(%env, reinterpret_cast<qint16*>(%in), __qt_this->indexCount()).take();\n"+
-                                  "    break;\n"+
-                                  "default:\n"+
-                                  "    break;\n"+
-                                  "}"}
+                    Text{content: String.raw`
+switch(__qt_this->sizeOfIndex()){
+case 4:
+    %out = DataJBuffer(%env, reinterpret_cast<qint32*>(%in), __qt_this->indexCount()).take();
+    break;
+case 2:
+    %out = DataJBuffer(%env, reinterpret_cast<qint16*>(%in), __qt_this->indexCount()).take();
+    break;
+default:
+    break;
+}`}
                 }
                 DefineOwnership{
                     codeClass: CodeClass.Native
@@ -2032,10 +2050,11 @@ if(%1.count()<=0)
         InjectCode{
             target: CodeClass.ShellDeclaration
             position: Position.End
-            Text{content: "    mutable QByteArray __qt_vertexShader;\n"+
-                          "    mutable QByteArray __qt_fragmentShader;\n"+
-                          "    mutable QByteArray __qt_attributeNameByteArrays;\n"+
-                          "    mutable QVector<const char *> __qt_attributeNames;"}
+            Text{content: String.raw`
+    mutable QByteArray __qt_vertexShader;
+    mutable QByteArray __qt_fragmentShader;
+    mutable QByteArray __qt_attributeNameByteArrays;
+    mutable QVector<const char *> __qt_attributeNames;`}
         }
         ModifyFunction{
             signature: "updateGraphicsPipelineState(QSGMaterialShader::RenderState &, QSGMaterialShader::GraphicsPipelineState *, QSGMaterial *, QSGMaterial *)"
@@ -2214,8 +2233,9 @@ if(%1.count()<=0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(%env, %in);\n"+
-                                  "const char* %out = info.name;"}
+                    Text{content: String.raw`
+                        CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(%env, %in);
+                        const char* %out = info.name;`}
                 }
             }
             ModifyArgument{
@@ -2420,8 +2440,9 @@ if(%1.count()<=0)
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromPhysicalDevice(JNIEnv *, jobject);\n"+
-                          "QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromDeviceObjects(JNIEnv *, jobject, jobject, int, int);"}
+            Text{content: String.raw`
+                QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromPhysicalDevice(JNIEnv *, jobject);
+                QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromDeviceObjects(JNIEnv *, jobject, jobject, int, int);`}
         }
         ModifyFunction{
             signature: "fromPhysicalDevice(VkPhysicalDevice)"
@@ -2897,14 +2918,15 @@ if(%1.count()<=0)
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "namespace QNativeInterface {\n"+
-                          "    struct QSGMetalTexture{\n"+
-                          "        QT_DECLARE_NATIVE_INTERFACE(QSGMetalTexture, 1, QSGTexture)\n"+
-                          "    };\n"+
-                          "}\n"+
-                          "\n"+
-                          "void* qtjambi_QSGMetalTexture_nativeTexture(JNIEnv *env, const void* ptr);\n"+
-                          "QSGTexture * qtjambi_QSGMetalTexture_fromNative(JNIEnv *env, void* texture, QQuickWindow* window, const QSize& size, QQuickWindow::CreateTextureOptions options);\n"}
+            Text{content: String.raw`
+namespace QNativeInterface {
+    struct QSGMetalTexture{
+        QT_DECLARE_NATIVE_INTERFACE(QSGMetalTexture, 1, QSGTexture)
+    };
+}
+
+void* qtjambi_QSGMetalTexture_nativeTexture(JNIEnv *env, const void* ptr);
+QSGTexture * qtjambi_QSGMetalTexture_fromNative(JNIEnv *env, void* texture, QQuickWindow* window, const QSize& size, QQuickWindow::CreateTextureOptions options);`}
         }
         ModifyFunction{
             signature: "nativeTexture() const"
@@ -2958,8 +2980,9 @@ if(%1.count()<=0)
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "void* qtjambi_QSGMetalTexture_nativeTexture(JNIEnv *env, const void* ptr);\n"+
-                          "QSGTexture * qtjambi_QSGMetalTexture_fromNative(JNIEnv *env, void* texture, QQuickWindow* window, const QSize& size, QQuickWindow::CreateTextureOptions options);"}
+            Text{content: String.raw`
+                void* qtjambi_QSGMetalTexture_nativeTexture(JNIEnv *env, const void* ptr);
+                QSGTexture * qtjambi_QSGMetalTexture_fromNative(JNIEnv *env, void* texture, QQuickWindow* window, const QSize& size, QQuickWindow::CreateTextureOptions options);`}
         }
         ModifyFunction{
             signature: "nativeTexture() const"

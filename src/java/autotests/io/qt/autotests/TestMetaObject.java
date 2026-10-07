@@ -80,16 +80,16 @@ public class TestMetaObject extends ApplicationInitializer {
         }
 
 		static class FlipModeSquads extends io.qt.QFlags<FlipModeSquad> implements Comparable<FlipModeSquads> {
-			private static final long serialVersionUID = 886661346884528047L;
+			private static final long serialVersionUID = 0L;
 			public FlipModeSquads(FlipModeSquad ... args) { super(args); }
             public FlipModeSquads(int value) { super(value); }
 			@Override
 			public FlipModeSquads clone() {
-				return new FlipModeSquads(intValue());
+				return new FlipModeSquads(toInt());
 			}
 			@Override
 			public FlipModeSquads combined(FlipModeSquad flag) {
-				return new FlipModeSquads(intValue() | flag.value());
+				return new FlipModeSquads(toInt() | flag.value());
 			}
 			@Override
 			public FlipModeSquad[] flags() {
@@ -102,11 +102,11 @@ public class TestMetaObject extends ApplicationInitializer {
 	        }
 
 	        public final int value(){
-	            return intValue();
+	            return toInt();
 	        }
 
 	        public final void setValue(int value){
-	            setIntValue(value);
+	            super.setValue(value);
 	        }
         }
     }

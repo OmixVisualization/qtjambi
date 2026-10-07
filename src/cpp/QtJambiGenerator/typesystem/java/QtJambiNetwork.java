@@ -108,6 +108,7 @@ class QUdpSocket___ extends QUdpSocket {
 class QRestAccessManager___ extends QRestAccessManager {
     /**
      * Callback for rest requests.
+     * @serial exclude
      */
     public interface Callback extends java.util.function.@StrictNonNull Consumer<io.qt.network.@Nullable QRestReply>, java.io.Serializable{
     }

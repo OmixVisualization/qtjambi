@@ -35,6 +35,7 @@ import io.qt.gui.*;
 import io.qt.*;
 import io.qt.qml.*;
 import io.qt.quick.*;
+import io.qt.quick.QSGGeometry.VertexData;
 
 public class TestQuick extends ApplicationInitializer {
 	
@@ -52,16 +53,21 @@ public class TestQuick extends ApplicationInitializer {
 	static QEventLoop loop;
 	
 	public static class SGMaterial extends QSGMaterial{
-		QSGMaterialType type = new QSGMaterialType();
+		private static final QSGMaterialType TYPE = new QSGMaterialType();
 		
 		@Override
 		public QSGMaterialShader createShader(QSGRendererInterface.RenderMode r) {
-			return new QSGMaterialShader();
+			return new QSGMaterialShader() {
+				{
+					setShaderFileName(QSGMaterialShader.Stage.FragmentStage, ":/qt-project.org/scenegraph/shaders_ng/visualization.frag.qsb");
+					setShaderFileName(QSGMaterialShader.Stage.VertexStage, ":/qt-project.org/scenegraph/shaders_ng/visualization.vert.qsb");
+				}
+			};
 		}
 
 		@Override
 		public QSGMaterialType type() {
-			return type;
+			return TYPE;
 		}
 	}
 	
@@ -91,10 +97,21 @@ public class TestQuick extends ApplicationInitializer {
 			updatePaintNode_item_disposed = testNode.isDisposed();
 			updatePaintNode_ended = true;
 			QSGGeometryNode geometryNode = new QSGGeometryNode();
+			geometryNode.setFlag(QSGNode.Flag.OwnsGeometry);
+			geometryNode.setFlag(QSGNode.Flag.OwnsMaterial);
 			geometryNode.setMaterial(new SGMaterial());
-			geometryNode.setGeometry(new QSGGeometry(QSGGeometry.defaultAttributes_Point2D(), 5));
+			geometryNode.setGeometry(new QSGGeometry(QSGGeometry.defaultAttributes_Point2D(), 4));
+			VertexData<?> vertexData = geometryNode.geometry().vertexData();
+			if(vertexData instanceof QSGGeometry.Point2DVertexData) {
+				QSGGeometry.Point2DVertexData points = (QSGGeometry.Point2DVertexData)vertexData;
+				points.set(0, new QSGGeometry.Point2D(0, 0));
+				points.set(1, new QSGGeometry.Point2D(0, 1));
+				points.set(2, new QSGGeometry.Point2D(1, 0));
+				points.set(3, new QSGGeometry.Point2D(1, 1));
+			}
+			geometryNode.markDirty(QSGNode.DirtyStateBit.DirtyGeometry);
 			if(loop!=null)
-				QMetaObject.invokeMethod(loop::quit, Qt.ConnectionType.QueuedConnection);
+				QMetaObject.invokeMethod(loop, QEventLoop::quit, Qt.ConnectionType.QueuedConnection);
 			return geometryNode;
 		}
 	}
@@ -102,7 +119,6 @@ public class TestQuick extends ApplicationInitializer {
 	@Test
     public void testQuickView()
     {
-		QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.OpenGL);
 		loop = new QEventLoop();
 		try {
 			updatePaintNode_begone = false;
@@ -110,41 +126,38 @@ public class TestQuick extends ApplicationInitializer {
 			updatePaintNode_item_disposed = false;
 			QtQml.qmlClearTypeRegistrations();
 			QtQml.qmlRegisterType(TestItem.class, "io.qt.test", 1, 0, "TestItem");
-		    QTimer timer = new QTimer();
-		    timer.timeout.connect(loop::quit);
 			QQuickView component = new QQuickView();
-			component.setObjectName("testQuickView");
-		    QSurfaceFormat format = component.format();
-		    format.setSamples(8);
-		    component.setFormat(format);
-			component.setSource("qrc:/io/qt/autotests/qml/TestItem.qml");
-			String error = "";
-			for(QQmlError err : component.errors()) {
-				error += err.description() + "\n";
+			try {
+				component.setObjectName("testQuickView");
+			    QSurfaceFormat format = component.format();
+			    format.setSamples(8);
+			    component.setFormat(format);
+				component.setSource("qrc:/io/qt/autotests/qml/TestItem.qml");
+				String error = "";
+				for(QQmlError err : component.errors()) {
+					error += err.description() + "\n";
+				}
+				Assert.assertEquals(error, QQuickView.Status.Ready, component.status());
+				Assert.assertTrue(component.rootObject() instanceof TestItem);
+			    component.show();
+			    QTimer.singleShot(5000, loop, QEventLoop::quit);
+			    loop.exec();
+			    component.close();
+			}finally {
+				component.dispose();
 			}
-			Assert.assertEquals(error, QQuickView.Status.Ready, component.status());
-			Assert.assertTrue(component.rootObject() instanceof TestItem);
-		    component.show();
-		    timer.start(5000);
-		    loop.exec();
-		    timer.timeout.disconnect();
-		    component.close();
-		    timer.stop();
-		    timer.dispose();
-		    component.dispose();
 		    Assert.assertTrue("updatePaintNode not begone", updatePaintNode_begone);
 		    Assert.assertTrue("updatePaintNode not ended", updatePaintNode_ended);
 		    Assert.assertTrue("updatePaintNode item not disposed", updatePaintNode_item_disposed);
-			QtQml.qmlClearTypeRegistrations();
 		}finally {
 			loop = null;
+			QtQml.qmlClearTypeRegistrations();
 		}
     }
 	
 	@Test
     public void testQuickWindow()
     {
-		QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.Software);
 		loop = new QEventLoop();
 		try {
 			updatePaintNode_begone = false;
@@ -154,26 +167,29 @@ public class TestQuick extends ApplicationInitializer {
 		    QTimer timer = new QTimer();
 		    timer.setInterval(5000);
 		    timer.setSingleShot(true);
-		    timer.timeout.connect(loop::quit);
+		    timer.timeout.connect(loop, QEventLoop::quit);
 		    QQuickWindow component = new QQuickWindow();
-			component.setObjectName("testQuickWindow");
-		    QSurfaceFormat format = component.format();
-		    format.setSamples(8);
-		    component.setFormat(format);
-		    TestItem test = new TestItem();
-		    test.setParentItem(component.contentItem());
-		    component.contentItem().setEnabled(true);
-		    component.sceneGraphInitialized.connect(()->component.setRenderTarget(QQuickRenderTarget.fromOpenGLTexture(0, new QSize(200, 200))), Qt.ConnectionType.DirectConnection);
-		    component.sceneGraphInitialized.connect(timer::start);
-		    component.show();
-		    QTimer.singleShot(20000, loop::quit);
-		    loop.exec();
-		    test.isDisposed();
-		    timer.timeout.disconnect();
-		    component.close();
-		    timer.stop();
-		    timer.dispose();
-		    component.dispose();
+		    try {
+			    component.setObjectName("testQuickWindow");
+			    QSurfaceFormat format = component.format();
+			    format.setSamples(8);
+			    component.setFormat(format);
+			    TestItem test = new TestItem();
+			    test.setParentItem(component.contentItem());
+			    component.contentItem().setEnabled(true);
+			    component.sceneGraphInitialized.connect(()->component.setRenderTarget(QQuickRenderTarget.fromOpenGLTexture(0, new QSize(200, 200))), Qt.ConnectionType.DirectConnection);
+			    component.sceneGraphInitialized.connect(timer, QTimer::start);
+			    component.show();
+			    QTimer.singleShot(20000, loop, QEventLoop::quit);
+			    loop.exec();
+			    test.isDisposed();
+			    timer.timeout.disconnect();
+			    component.close();
+			    timer.stop();
+			    timer.dispose();
+		    }finally {
+				component.dispose();
+			}
 		    Assert.assertTrue("updatePaintNode not begone", updatePaintNode_begone);
 		    Assert.assertTrue("updatePaintNode not ended", updatePaintNode_ended);
 		    Assert.assertTrue("updatePaintNode item not disposed", updatePaintNode_item_disposed);

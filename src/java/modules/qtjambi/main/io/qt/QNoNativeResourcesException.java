@@ -35,6 +35,7 @@ package io.qt;
  * @see QtObject#isDisposed()
  * @see QtObjectInterface#dispose()
  * @see QtObjectInterface#isDisposed()
+ * @serial exclude
  */
 public class QNoNativeResourcesException extends RuntimeException {
     private static final long serialVersionUID = 1L;

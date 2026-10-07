@@ -31,8 +31,14 @@
 
 include(../QtJambi/configure.pri)
 
-QT = core dbus dbus-private
-CONFIG+=no_private_qt_headers_warning
+QT = core dbus
+
+contains(QTJAMBI_MODULE, QtJambiDBus-private):{
+    QT += dbus-private
+    CONFIG+=no_private_qt_headers_warning
+}else{
+    DEFINES += QTJAMBI_NO_DBUS_PRIVATE
+}
 
 SOURCES += \
     impl.cpp

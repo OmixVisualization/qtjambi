@@ -328,8 +328,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
         }
@@ -351,8 +352,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
         }
@@ -1146,7 +1148,7 @@ TypeSystem{
             }
             Text{content: String.raw`
 /**
- * <p>See <code><a href="https://doc.qt.io/qt/qjsvalueiterator.html#next">QJSValueIterator::<wbr/>next()</a></code></p>
+ * <p>See <a href="https://doc.qt.io/qt/qjsvalueiterator.html#next"><code>QJSValueIterator::<wbr/>next()</code></a></p>
  * @return name and value of the current property
  * @throws java.util.NoSuchElementException
  */
@@ -1491,16 +1493,17 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (__qt_%1){\n"+
-                              "    switch(QJSEngine::objectOwnership(__qt_%1)){\n"+
-                              "    case QJSEngine::JavaScriptOwnership:\n"+
-                              "        QtJambiAPI::setCppOwnershipForTopLevelObject(%env, __qt_%1);\n"+
-                              "        break;\n"+
-                              "    default:\n"+
-                              "        QtJambiAPI::setJavaOwnershipForTopLevelObject(%env, __qt_%1);\n"+
-                              "        break;\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+if (__qt_%1){
+    switch(QJSEngine::objectOwnership(__qt_%1)){
+    case QJSEngine::JavaScriptOwnership:
+        QtJambiAPI::setCppOwnershipForTopLevelObject(%env, __qt_%1);
+        break;
+    default:
+        QtJambiAPI::setJavaOwnershipForTopLevelObject(%env, __qt_%1);
+        break;
+    }
+}`}
             }
         }
         InjectCode{
@@ -1543,6 +1546,35 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             signature: "clearSingletons()"
             threadAffinity: true
             since: 6.3
+        }
+        ModifyFunction{
+            signature: "setExternalSingletonInstance(QAnyStringView,QAnyStringView,QObject*)"
+            ModifyArgument{
+                index: 3
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                ArgumentMap{
+                    index: 3
+                    metaName: "%3"
+                }
+                Text{content: String.raw`
+if (__qt_%3){
+    switch(QJSEngine::objectOwnership(__qt_%3)){
+    case QJSEngine::JavaScriptOwnership:
+        QtJambiAPI::setCppOwnershipForTopLevelObject(%env, __qt_%3);
+        break;
+    default:
+        QtJambiAPI::setJavaOwnershipForTopLevelObject(%env, __qt_%3);
+        break;
+    }
+}`}
+            }
+            since: [6,12]
         }
         ModifyFunction{
             signature: "addImageProvider(QString,QQmlImageProviderBase*)"
@@ -1821,19 +1853,21 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool valueIsUndefined = false;\n"+
-                                  "bool* %out = &valueIsUndefined;"}
+                    Text{content: String.raw`
+                        bool valueIsUndefined = false;
+                        bool* %out = &valueIsUndefined;`}
                 }
             }
             ModifyArgument{
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "if(valueIsUndefined){\n"+
-                                  "    JavaException::raise<Java::QtQml::QQmlExpression$ValueIsUndefined>(%env, \"Value is undefined.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}else{\n"+
-                                  "    %out = qtjambi_cast<jobject>(%env, %in);\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        if(valueIsUndefined){
+                            JavaException::raise<Java::QtQml::QQmlExpression$ValueIsUndefined>(%env, "Value is undefined." QTJAMBI_STACKTRACEINFO );
+                        }else{
+                            %out = qtjambi_cast<jobject>(%env, %in);
+                        }`}
                 }
             }
         }
@@ -1880,8 +1914,9 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jlong ptr = Java::QtQml::QQmlIncubationController$WhileFlag::flag(%env, %in);\n"+
-                                  "std::atomic<bool>* %out = reinterpret_cast<std::atomic<bool>* >(ptr);"}
+                    Text{content: String.raw`
+                        jlong ptr = Java::QtQml::QQmlIncubationController$WhileFlag::flag(%env, %in);
+                        std::atomic<bool>* %out = reinterpret_cast<std::atomic<bool>* >(ptr);`}
                 }
                 ReferenceCount{
                     variableName: "__rcWhileFlag"
@@ -1940,7 +1975,9 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
         name: "QQmlListReference"
         InjectCode{
             target: CodeClass.Native
-            Text{content: "QT_WARNING_DISABLE_DEPRECATED\nQT_WARNING_DISABLE_GCC(\"-Wdeprecated-declarations\")"}
+            Text{content: String.raw`
+                QT_WARNING_DISABLE_DEPRECATED
+                QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")`}
         }
     }
     
@@ -2012,15 +2049,16 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
                     index: 1
                     metaName: "dest"
                 }
-                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            slot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else slot = \"1\" + slot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(slot!=null && !slot.startsWith("1") && !slot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            slot = "2" + method.cppMethodSignature();
+        else
+            slot = "1" + method.cppMethodSignature();
+    }else slot = "1" + slot;
+}`}
             }
         }
         InjectCode{
@@ -2103,7 +2141,7 @@ if(QJSEngine::objectOwnership(__qt_%1)==QJSEngine::JavaScriptOwnership)
             }
             ConversionRule{
                 codeClass: CodeClass.Native
-                Text{content: "%out = qtjambi_cast<jobject>(%env, QtQml::QQmlAttachedPropertiesFunc(%in), \"QtQml::QQmlAttachedPropertiesFunc\");"}
+                Text{content: String.raw`%out = qtjambi_cast<jobject>(%env, QtQml::QQmlAttachedPropertiesFunc(%in), "QtQml::QQmlAttachedPropertiesFunc");`}
             }
         }
     }

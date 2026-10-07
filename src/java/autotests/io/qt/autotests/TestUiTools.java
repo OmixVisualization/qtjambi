@@ -3,8 +3,6 @@ package io.qt.autotests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.lang.reflect.Method;
-
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -13,15 +11,12 @@ import io.qt.core.QCoreApplication;
 import io.qt.core.QDir;
 import io.qt.core.QFile;
 import io.qt.core.QIODevice;
-import io.qt.core.QLibraryInfo;
 import io.qt.core.QList;
 import io.qt.core.QObject;
 import io.qt.core.QRect;
 import io.qt.core.QTimer;
 import io.qt.core.Qt;
 import io.qt.gui.QKeySequence;
-import io.qt.quick.QQuickWindow;
-import io.qt.quick.QSGRendererInterface;
 import io.qt.widgets.QDialog;
 import io.qt.widgets.QDialogButtonBox;
 import io.qt.widgets.QGridLayout;
@@ -34,8 +29,6 @@ public class TestUiTools extends ApplicationInitializer {
 	@BeforeClass
 	public static void testInitialize() throws Exception {
 		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
-		Method mtd = QQuickWindow.class.getMethod(QLibraryInfo.version().majorVersion()>5 ? "setGraphicsApi" : "setSceneGraphBackend", QSGRendererInterface.GraphicsApi.class);
-		mtd.invoke(null, QSGRendererInterface.GraphicsApi.OpenGLRhi);
 		ApplicationInitializer.testInitializeWithWidgets();
 	}
     

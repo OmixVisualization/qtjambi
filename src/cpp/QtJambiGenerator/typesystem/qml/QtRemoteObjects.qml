@@ -152,7 +152,7 @@ TypeSystem{
                 AddArgument{
                     index: 1
                     name: "type"
-                    type: "java.lang.Class<T>"
+                    type: "java.lang.Class<? extends T>"
                 }
             }
         }
@@ -177,7 +177,7 @@ TypeSystem{
                 AddArgument{
                     index: 1
                     name: "type"
-                    type: "java.lang.Class<T>"
+                    type: "java.lang.Class<? extends T>"
                 }
             }
         }
@@ -202,7 +202,7 @@ TypeSystem{
                 AddArgument{
                     index: 1
                     name: "type"
-                    type: "java.lang.Class<T>"
+                    type: "java.lang.Class<? extends T>"
                 }
             }
         }
@@ -389,8 +389,9 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Destructor
             position: Position.Position1
-            Text{content: "if (!%this->isClosing())\n"+
-                          "    %this->close();"}
+            Text{content: String.raw`
+                if (!%this->isClosing())
+                    %this->close();`}
         }
         ExtraIncludes{
             Include{

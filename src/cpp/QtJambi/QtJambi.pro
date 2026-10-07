@@ -116,6 +116,7 @@ HEADERS += \
     containerutils.h \
     coreapi.h \
     debugapi.h \
+    events.h \
     exception.h \
     functionalbase.h \
     functionpointer.h \

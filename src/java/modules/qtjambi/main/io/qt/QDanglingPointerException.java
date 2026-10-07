@@ -31,6 +31,7 @@ package io.qt;
 
 /**
  * This exception is thrown whenever a native pointer points to an already deleted object, provided dangling pointer check is enabled by <code>-Dio.qt.enable-dangling-pointer-check=true</code>.
+ * @serial exclude
  */
 public class QDanglingPointerException extends RuntimeException {
     private static final long serialVersionUID = 1L;

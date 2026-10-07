@@ -39,6 +39,9 @@ import io.qt.core.QMetaObject.*;
  * Static signals are never realized as Qt's meta object signals but have a lightweight Java implementation.
  */
 public final class QStaticMemberSignals {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	private QStaticMemberSignals(){}
     
     /**
@@ -1260,9 +1263,35 @@ public final class QStaticMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public @Nullable QtSignalEmitterInterface containingObject() {
+		public final @Nullable QtSignalEmitterInterface containingObject() {
 			return null;
 		}
+
+        /**
+         * Returns the full name of the signal, on the form "package.class.signalName"
+         *  @return The fully qualified name of the signal
+         */
+        @io.qt.QtUninvokable
+        public final String fullName() {
+            return super.getFullName();
+        }
+
+        /**
+         * Returns the name of the signal
+         * @return The signal name
+         */
+        @io.qt.QtUninvokable
+        public final String name() {
+        	return super.getName();
+        }
+
+        /**
+         * Returns a string representation of this signal.
+         */
+        @Override
+        public final String toString() {
+            return super.getName();
+        }
     
         /**
          * Removes the given connection from this signal.

@@ -37,6 +37,19 @@
 class DocElement: public QObject
 {
 public:
+    enum Status{
+        Active,
+        Obsolete,
+        Deprecated,
+        Ignored,
+        Preliminary
+    };
+    enum Threadsafety{
+        None,
+        Reentrant,
+        ThreadSafe
+    };
+
     DocElement(QObject* parent);
 
     const QString& name() const;
@@ -54,6 +67,12 @@ public:
     void setSubdir(const QDir& subdir);
     void setSince(const QString &newSince);
 
+    Status status() const;
+    void setStatus(Status newStatus);
+
+    Threadsafety threadsafety() const;
+    void setThreadsafety(Threadsafety newThreadsafety);
+
 private:
     QString m_url;
     QString m_name;
@@ -62,6 +81,8 @@ private:
     QString m_brief;
     QString m_since;
     QDir m_subdir;
+    Status m_status = Active;
+    Threadsafety m_threadsafety = None;
 };
 
 #endif // DOCELEMENT_H

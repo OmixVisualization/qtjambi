@@ -45,7 +45,7 @@ import io.qt.core.QVersionNumber;
 public final class QtUtilities {
 	
 	static {
-		Utility.initializePackage(QtUtilities.class.getClassLoader(), "io.qt.internal");
+		QtJambi_LibraryUtilities.initialize();
 	}
 	
 	private QtUtilities() {}
@@ -72,7 +72,7 @@ public final class QtUtilities {
     };
 	
     public static boolean isAvailableQtLibrary(@NonNull String library) {
-        return Utility.isAvailableQtLibrary(Utility.callerClassProvider().get(), library);
+        return Utility.isAvailableQtLibrary(QtJambi_LibraryUtilities.internal.callerClassProvider().get(), library);
     }
     
     public static boolean isAvailableUtilityLibrary(@NonNull String library) {
@@ -84,11 +84,11 @@ public final class QtUtilities {
     }
     
     public static void loadQtLibrary(@NonNull String library) {
-    	Utility.loadQtLibrary(Utility.callerClassProvider().get(), library, LibraryRequirementMode.Mandatory);
+    	Utility.loadQtLibrary(QtJambi_LibraryUtilities.internal.callerClassProvider().get(), library, LibraryRequirementMode.Mandatory);
     }
     
     public static void loadQtLibrary(@NonNull String library, @NonNull LibraryRequirementMode mode, @NonNull String @NonNull...platforms) {
-    	Utility.loadQtLibrary(Utility.callerClassProvider().get(), library, mode, platforms);
+    	Utility.loadQtLibrary(QtJambi_LibraryUtilities.internal.callerClassProvider().get(), library, mode, platforms);
     }
 
     public static void loadUtilityLibrary(@NonNull String library) {
@@ -108,11 +108,11 @@ public final class QtUtilities {
     }
 
     public static void loadQtJambiLibrary(@NonNull String library) {
-    	Utility.loadQtJambiLibrary(Utility.callerClassProvider().get(), library);
+    	Utility.loadQtJambiLibrary(QtJambi_LibraryUtilities.internal.callerClassProvider().get(), library);
     }
     
     public static void loadJambiLibrary(@NonNull String library) {
-    	Utility.loadJambiLibrary(Utility.callerClassProvider().get(), library);
+    	Utility.loadJambiLibrary(QtJambi_LibraryUtilities.internal.callerClassProvider().get(), library);
     }
     
     public static void loadLibrary(@NonNull String lib) {
@@ -142,7 +142,7 @@ public final class QtUtilities {
     }
     
     public static boolean initializePackage(@NonNull String packagePath){
-    	Class<?> callerClass = Utility.callerClassProvider().get();
+    	Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
     	if(callerClass==null)
     		callerClass = QtUtilities.class;
     	return Utility.initializePackage(callerClass.getClassLoader(), packagePath);
@@ -151,7 +151,7 @@ public final class QtUtilities {
     public static boolean initializePackage(java.lang.@StrictNonNull Package pkg){
     	if(pkg==null)
     		return false;
-    	Class<?> callerClass = Utility.callerClassProvider().get();
+    	Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
     	if(callerClass==null)
     		callerClass = QtUtilities.class;
     	return Utility.initializePackage(callerClass.getClassLoader(), pkg.getName());
@@ -162,7 +162,11 @@ public final class QtUtilities {
 		return cls != null && cls.getPackage() != null && Utility.initializePackage(cls.getClassLoader(), cls.getPackage().getName());
 	}
 	
-    public static QMetaObject.@NonNull DisposedSignal getSignalOnDispose(@NonNull QtObjectInterface object) {
+    public static QMetaObject.@Nullable DisposedSignal getSignalOnDispose(@NonNull QtObjectInterface object) {
+    	return Utility.getSignalOnDispose(object, true);
+    }
+    
+    public static QMetaObject.@Nullable DisposedSignal getSignalOnDispose(@NonNull QtObject object) {
     	return Utility.getSignalOnDispose(object, true);
     }
     
@@ -244,6 +248,7 @@ public final class QtUtilities {
     
     /**
      * Equivalent to {@link java.util.function.Supplier}.
+     * @serial exclude
      */
     @FunctionalInterface
     public interface Supplier<T> extends java.util.function.Supplier<T>, java.io.Serializable { }

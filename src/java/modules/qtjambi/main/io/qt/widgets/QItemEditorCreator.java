@@ -30,20 +30,20 @@
 
 package io.qt.widgets;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
-import java.util.Objects;
-import java.util.function.Function;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.function.*;
 
-import io.qt.NonNull;
-import io.qt.Nullable;
-import io.qt.StrictNonNull;
-import io.qt.core.QByteArray;
+import io.qt.*;
+import io.qt.core.*;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qitemeditorcreator.html">QItemEditorCreator</a></p>
  */
 public class QItemEditorCreator<T extends QWidget> implements QItemEditorCreatorBase {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	
 	private final Function<QWidget, T> constructorHandle;
 	private final QByteArray valuePropertyName;

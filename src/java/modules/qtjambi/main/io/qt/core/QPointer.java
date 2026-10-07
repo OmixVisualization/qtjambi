@@ -39,6 +39,9 @@ import io.qt.core.QMetaObject.*;
  * <code>QPointer</code> stores a strong reference to a Qt object and supplies <code>null</code> when resource has been disposed or deleted.</p>
  */
 public final class QPointer<O extends QtObjectInterface> implements SmartPointer<O> {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	
 	public QPointer(O object) {
 		super();

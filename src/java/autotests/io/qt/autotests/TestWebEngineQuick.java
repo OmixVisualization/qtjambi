@@ -30,6 +30,8 @@ package io.qt.autotests;
 
 import static org.junit.Assume.assumeTrue;
 
+import java.util.*;
+
 import org.junit.*;
 
 import io.qt.*;
@@ -74,7 +76,7 @@ public class TestWebEngineQuick extends ApplicationInitializer {
     }
     
     @Test
-    public void test1() {
+    public void testWebEngineView() {
     	QQmlApplicationEngine engine = new QQmlApplicationEngine();
     	engine.loadData(new QByteArray("import QtQuick;"
     			+ "import QtQuick.Window;"
@@ -136,7 +138,7 @@ public class TestWebEngineQuick extends ApplicationInitializer {
         _settings.dispose();
         Assert.assertFalse(settings.isDisposed());
         settings.property("autoLoadImages");// should not crash
-    	QTimer.singleShot(10000, QApplication::quit);
+    	QTimer.singleShot(20000, QApplication::quit);
     	QTimer.singleShot(1000, ()->{
             mtd.invoke(webEngineView, "window", consumer);
     	});
@@ -151,6 +153,59 @@ public class TestWebEngineQuick extends ApplicationInitializer {
         Assert.assertTrue(userScripts.isDisposed());
         Assert.assertTrue(_userScripts.isDisposed());
         Assert.assertTrue(settings.isDisposed());
+    }
+	
+    @Test
+    public void testUnknownType() {
+    	Set<String> metaObjects = new TreeSet<>();
+//    	QLogging.qInstallLoggingMessageHandler(QtMsgType.QtWarningMsg);
+    	QGuiApplication app = QGuiApplication.instance();
+    	QObject filter = new QObject(app){
+    		@Override
+    		public boolean eventFilter(QObject obj, QEvent evt) {
+    			String className = obj.metaObject().className();
+    			if("QGuiApplication".equals(className)) {
+    				if(obj!=app)
+    					System.err.println("new instance of QGuiApplication: "+System.identityHashCode(obj));
+    			}
+    			if(!metaObjects.contains(className)) {
+    				metaObjects.add(className);
+		    		System.out.println(className+" -> "+obj.getClass().getName());
+    			}
+    			return false;
+    		}
+    	};
+    	QGuiApplication.instance().installEventFilter(filter);
+        QQmlApplicationEngine engine = new QQmlApplicationEngine();
+    	try {
+	    	engine.loadData(new QByteArray(
+	    			"import QtQuick\n" + 
+	    			"import QtQuick.Controls\n" + 
+	    			"import QtWebEngine\n" + 
+	    			"\n" + 
+	    			"ApplicationWindow {\n" + 
+	    			"    visible: true\n" + 
+	    			"    width: 500\n" + 
+	    			"    height: 400\n" + 
+	    			"    WebEngineView {\n" + 
+	    			"        id: webView\n" + 
+	    			"        anchors.fill: parent\n" + 
+	    			"        url: \"http://www.cern.ch\"\n" + 
+	    			"    }\n" + 
+	    			"}"
+	    			));
+	        QList<QObject> rootObjects = engine.rootObjects();
+	        Assert.assertTrue(!rootObjects.isEmpty());
+	        Assert.assertTrue(rootObjects.get(0)!=null);
+	    	QTimer.singleShot(2000, QApplication::quit);
+	    	QApplication.exec();
+	    	Assert.assertTrue(metaObjects.contains("QtWebEngineCore::RenderWidgetHostViewQtDelegateItem"));
+    	}finally {
+    		QGuiApplication.instance().removeEventFilter(filter);
+    		engine.destroyed.connect(o->System.out.println("destroyed: "+o.getClass()));
+	    	engine.dispose();
+    	}
+//    	System.err.hashCode();
     }
 
     private static void dump(QList<QObject> objects, int nestedLevel) {

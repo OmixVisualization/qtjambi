@@ -41,26 +41,28 @@ QTJAMBI_EXPORT void registerGlobalClassPointer(jclass& cls);
 }
 
 #define QTJAMBI_REPOSITORY_DECLARE_CLASS_IMPL(EXPORT, type_name, members) \
-    class EXPORT type_name{\
-    private:\
-        jclass class_ref;\
-        explicit type_name(JNIEnv * env);\
-        static const type_name& __qt_get_this(JNIEnv *);\
-    public:\
-        static jclass getClass(JNIEnv* env);\
-        static jboolean isInstanceOf(JNIEnv* env,jobject instance);\
-        static jboolean isAssignableFrom(JNIEnv* env,jclass otherClass);\
-        static jboolean isSameClass(JNIEnv* env,jclass otherClass);\
-        static jobjectArray newArray(JNIEnv* env,jsize size);\
-        members\
-    };
+class EXPORT type_name{\
+private:\
+    jclass class_ref;\
+    explicit type_name(JNIEnv * env);\
+    static const type_name& __qt_get_this(JNIEnv *);\
+public:\
+    static jclass getClass(JNIEnv* env);\
+    static jboolean isInstanceOf(JNIEnv* env,jobject instance);\
+    static jboolean isAssignableFrom(JNIEnv* env,jclass otherClass);\
+    static jboolean isSameClass(JNIEnv* env,jclass otherClass);\
+    static jobjectArray newArray(JNIEnv* env,jsize size);\
+    members\
+};
 
 #define QTJAMBI_REPOSITORY_DECLARE_CLASS(type_name, members) QTJAMBI_REPOSITORY_DECLARE_CLASS_IMPL(,type_name, members)
 
 #define QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()\
-    private: jmethodID __constructor;\
-    public: static inline jobject newInstance(JNIEnv* env,...){\
-        auto _this = __qt_get_this(env);\
+private: \
+    jmethodID __constructor;\
+public: \
+    static inline jobject newInstance(JNIEnv* env,...){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return nullptr;\
         va_list args;\
         jobject result;\
@@ -72,9 +74,11 @@ QTJAMBI_EXPORT void registerGlobalClassPointer(jclass& cls);
     }
 
 #define QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR2()\
-    private: jmethodID __constructor2;\
-    public: static inline jobject newInstance2(JNIEnv* env,...){\
-        auto _this = __qt_get_this(env);\
+private: \
+    jmethodID __constructor2;\
+public: \
+    static inline jobject newInstance2(JNIEnv* env,...){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return nullptr;\
         va_list args;\
         jobject result;\
@@ -86,9 +90,11 @@ QTJAMBI_EXPORT void registerGlobalClassPointer(jclass& cls);
     }
 
 #define QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR3()\
-    private: jmethodID __constructor3;\
-    public: static inline jobject newInstance3(JNIEnv* env,...){\
-        auto _this = __qt_get_this(env);\
+private: \
+    jmethodID __constructor3;\
+public: \
+    static inline jobject newInstance3(JNIEnv* env,...){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return nullptr;\
         va_list args;\
         jobject result;\
@@ -100,16 +106,19 @@ QTJAMBI_EXPORT void registerGlobalClassPointer(jclass& cls);
     }
 
 #define QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(method)\
-    public: static inline jmethodID method##_ID(JNIEnv* env){\
-        auto _this = __qt_get_this(env);\
+public: \
+    static inline jmethodID method##_ID(JNIEnv* env){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return nullptr;\
         return _this.__##method;\
     }
 
 #define QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(method)\
-    private: jmethodID __##method;\
-    public: static inline void method(JNIEnv* env,jobject object,...){\
-        auto _this = __qt_get_this(env);\
+private: \
+    jmethodID __##method;\
+public: \
+    static inline void method(JNIEnv* env,jobject object,...){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return;\
         QtJambiPrivate::javaInstanceCheck(env, object, _this.class_ref, true, #method);\
         va_list args;\
@@ -120,9 +129,11 @@ QTJAMBI_EXPORT void registerGlobalClassPointer(jclass& cls);
     }
 
 #define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_VOID_METHOD(method)\
-private: jmethodID __##method;\
-    public: static inline void method(JNIEnv* env,jthrowable object,...){\
-        auto _this = __qt_get_this(env);\
+private: \
+    jmethodID __##method;\
+public: \
+    static inline void method(JNIEnv* env,jthrowable object,...){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return;\
         QtJambiPrivate::javaInstanceCheck(env, object, _this.class_ref, true, #method);\
         va_list args;\
@@ -130,12 +141,14 @@ private: jmethodID __##method;\
         env->CallVoidMethodV(object,_this.__##method,args);\
         va_end(args);\
         QtJambiPrivate::javaExceptionCheck(env);\
-}
+    }
 
 #define QTJAMBI_REPOSITORY_DECLARE_STRING_VOID_METHOD(method)\
-private: jmethodID __##method;\
-    public: static inline void method(JNIEnv* env,jstring object,...){\
-        auto _this = __qt_get_this(env);\
+private: \
+    jmethodID __##method;\
+public: \
+    static inline void method(JNIEnv* env,jstring object,...){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return;\
         QtJambiPrivate::javaInstanceCheck(env, object, _this.class_ref, true, #method);\
         va_list args;\
@@ -143,12 +156,14 @@ private: jmethodID __##method;\
         env->CallVoidMethodV(object,_this.__##method,args);\
         va_end(args);\
         QtJambiPrivate::javaExceptionCheck(env);\
-}
+    }
 
 #define QTJAMBI_REPOSITORY_DECLARE_CLASS_VOID_METHOD(method)\
-private: jmethodID __##method;\
-    public: static inline void method(JNIEnv* env,jclass object,...){\
-        auto _this = __qt_get_this(env);\
+private: \
+    jmethodID __##method;\
+public: \
+    static inline void method(JNIEnv* env,jclass object,...){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return;\
         QtJambiPrivate::javaInstanceCheck(env, object, _this.class_ref, true, #method);\
         va_list args;\
@@ -156,12 +171,14 @@ private: jmethodID __##method;\
         env->CallVoidMethodV(object,_this.__##method,args);\
         va_end(args);\
         QtJambiPrivate::javaExceptionCheck(env);\
-}
+    }
 
 #define QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(method)\
-    private: jmethodID __##method;\
-    public: static inline void method(JNIEnv* env,...){\
-        auto _this = __qt_get_this(env);\
+private: \
+    jmethodID __##method;\
+public: \
+    static inline void method(JNIEnv* env,...){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return;\
         va_list args;\
         va_start(args, env);\
@@ -171,9 +188,11 @@ private: jmethodID __##method;\
     }
 
 #define QTJAMBI_REPOSITORY_DECLARE_PRIMITIVETYPE_METHOD(jtype,TYPE,method)\
-    private: jmethodID __##method;\
-    public: static inline jtype method(JNIEnv* env,jobject object,...){\
-        auto _this = __qt_get_this(env);\
+private: \
+    jmethodID __##method;\
+public: \
+    static inline jtype method(JNIEnv* env,jobject object,...){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return jtype{};\
         QtJambiPrivate::javaInstanceCheck(env, object, _this.class_ref, true, #method);\
         va_list args;\
@@ -185,9 +204,11 @@ private: jmethodID __##method;\
     }
 
 #define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_PRIMITIVETYPE_METHOD(jtype,TYPE,method)\
-private: jmethodID __##method;\
-    public: static inline jtype method(JNIEnv* env,jthrowable object,...){\
-        auto _this = __qt_get_this(env);\
+private: \
+    jmethodID __##method;\
+public: \
+    static inline jtype method(JNIEnv* env,jthrowable object,...){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return jtype{};\
         QtJambiPrivate::javaInstanceCheck(env, object, _this.class_ref, true, #method);\
         va_list args;\
@@ -196,12 +217,14 @@ private: jmethodID __##method;\
         va_end(args);\
         QtJambiPrivate::javaExceptionCheck(env);\
         return result;\
-}
+    }
 
 #define QTJAMBI_REPOSITORY_DECLARE_STRING_PRIMITIVETYPE_METHOD(jtype,TYPE,method)\
-private: jmethodID __##method;\
-    public: static inline jtype method(JNIEnv* env,jstring object,...){\
-        auto _this = __qt_get_this(env);\
+private: \
+    jmethodID __##method;\
+public: \
+    static inline jtype method(JNIEnv* env,jstring object,...){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return jtype{};\
         QtJambiPrivate::javaInstanceCheck(env, object, _this.class_ref, true, #method);\
         va_list args;\
@@ -210,12 +233,14 @@ private: jmethodID __##method;\
         va_end(args);\
         QtJambiPrivate::javaExceptionCheck(env);\
         return result;\
-}
+    }
 
 #define QTJAMBI_REPOSITORY_DECLARE_CLASS_PRIMITIVETYPE_METHOD(jtype,TYPE,method)\
-private: jmethodID __##method;\
-    public: static inline jtype method(JNIEnv* env,jclass object,...){\
-        auto _this = __qt_get_this(env);\
+private: \
+    jmethodID __##method;\
+public: \
+    static inline jtype method(JNIEnv* env,jclass object,...){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return jtype{};\
         QtJambiPrivate::javaInstanceCheck(env, object, _this.class_ref, true, #method);\
         va_list args;\
@@ -224,12 +249,14 @@ private: jmethodID __##method;\
         va_end(args);\
         QtJambiPrivate::javaExceptionCheck(env);\
         return result;\
-}
+    }
 
 #define QTJAMBI_REPOSITORY_DECLARE_STATIC_PRIMITIVETYPE_METHOD(jtype, TYPE, method)\
-    private: jmethodID __##method;\
-    public: static inline jtype method(JNIEnv* env,...){\
-        auto _this = __qt_get_this(env);\
+private: \
+    jmethodID __##method;\
+public: \
+    static inline jtype method(JNIEnv* env,...){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return jtype{};\
         va_list args;\
         va_start(args, env);\
@@ -240,88 +267,46 @@ private: jmethodID __##method;\
     }
 
 #define QTJAMBI_REPOSITORY_DECLARE_PRIMITIVETYPE_FIELD(jtype,TYPE,field)\
-    private: jfieldID __##field;\
-    public: static inline jtype field(JNIEnv* env,jobject object){\
-        auto _this = __qt_get_this(env);\
+private: \
+    jfieldID __##field;\
+public: \
+    static inline jtype field(JNIEnv* env,jobject object){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return jtype{};\
         QtJambiPrivate::javaInstanceCheck(env, object, _this.class_ref, false, #field);\
         jtype _result = jtype(env->Get##TYPE##Field(object, _this.__##field));\
         QtJambiPrivate::javaExceptionCheck(env);\
         return _result;\
-    }\
-    public: static inline void set_##field(JNIEnv* env,jobject object, jtype value){\
-        auto _this = __qt_get_this(env);\
+    }
+
+#define QTJAMBI_REPOSITORY_DECLARE_PRIMITIVETYPE_WRITABLE_FIELD(jtype,TYPE,field)\
+QTJAMBI_REPOSITORY_DECLARE_PRIMITIVETYPE_FIELD(jtype,TYPE,field)\
+public: \
+    static inline void set_##field(JNIEnv* env,jobject object, jtype value){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return;\
         QtJambiPrivate::javaInstanceCheck(env, object, _this.class_ref, false, #field);\
         env->Set##TYPE##Field(object, _this.__##field, value);\
         QtJambiPrivate::javaExceptionCheck(env);\
     }
 
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_PRIMITIVETYPE_FIELD(jtype,TYPE,field)\
-private: jfieldID __##field;\
-    public: static inline jtype field(JNIEnv* env,jthrowable object){\
-        auto _this = __qt_get_this(env);\
-        if(!_this.class_ref) return jtype{};\
-        QtJambiPrivate::javaInstanceCheck(env, object, _this.class_ref, false, #field);\
-        jtype _result = jtype(env->Get##TYPE##Field(object, _this.__##field));\
-        QtJambiPrivate::javaExceptionCheck(env);\
-        return _result;\
-}\
-    public: static inline void set_##field(JNIEnv* env,jthrowable object, jtype value){\
-        auto _this = __qt_get_this(env);\
-        if(!_this.class_ref) return;\
-        QtJambiPrivate::javaInstanceCheck(env, object, _this.class_ref, false, #field);\
-        env->Set##TYPE##Field(object, _this.__##field, value);\
-        QtJambiPrivate::javaExceptionCheck(env);\
-}
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_PRIMITIVETYPE_FIELD(jtype,TYPE,field)\
-private: jfieldID __##field;\
-    public: static inline jtype field(JNIEnv* env,jstring object){\
-        auto _this = __qt_get_this(env);\
-        if(!_this.class_ref) return jtype{};\
-        QtJambiPrivate::javaInstanceCheck(env, object, _this.class_ref, false, #field);\
-        jtype _result = jtype(env->Get##TYPE##Field(object, _this.__##field));\
-        QtJambiPrivate::javaExceptionCheck(env);\
-        return _result;\
-}\
-    public: static inline void set_##field(JNIEnv* env,jstring object, jtype value){\
-        auto _this = __qt_get_this(env);\
-        if(!_this.class_ref) return;\
-        QtJambiPrivate::javaInstanceCheck(env, object, _this.class_ref, false, #field);\
-        env->Set##TYPE##Field(object, _this.__##field, value);\
-        QtJambiPrivate::javaExceptionCheck(env);\
-}
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_PRIMITIVETYPE_FIELD(jtype,TYPE,field)\
-private: jfieldID __##field;\
-    public: static inline jtype field(JNIEnv* env,jclass object){\
-        auto _this = __qt_get_this(env);\
-        if(!_this.class_ref) return jtype{};\
-        QtJambiPrivate::javaInstanceCheck(env, object, _this.class_ref, false, #field);\
-        jtype _result = jtype(env->Get##TYPE##Field(object, _this.__##field));\
-        QtJambiPrivate::javaExceptionCheck(env);\
-        return _result;\
-}\
-    public: static inline void set_##field(JNIEnv* env,jclass object, jtype value){\
-        auto _this = __qt_get_this(env);\
-        if(!_this.class_ref) return;\
-        QtJambiPrivate::javaInstanceCheck(env, object, _this.class_ref, false, #field);\
-        env->Set##TYPE##Field(object, _this.__##field, value);\
-        QtJambiPrivate::javaExceptionCheck(env);\
-}
-
 #define QTJAMBI_REPOSITORY_DECLARE_STATIC_PRIMITIVETYPE_FIELD(jtype,TYPE,field)\
-    private: jfieldID __##field;\
-    public: static inline jtype field(JNIEnv* env){\
-        auto _this = __qt_get_this(env);\
+private:\
+    jfieldID __##field;\
+public:\
+    static inline jtype field(JNIEnv* env){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return jtype{};\
         jtype result = jtype(env->GetStatic##TYPE##Field(_this.class_ref, _this.__##field));\
         QtJambiPrivate::javaExceptionCheck(env);\
         return result;\
-    }\
-    public: static inline void set_##field(JNIEnv* env, jtype value){\
-        auto _this = __qt_get_this(env);\
+    }
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_PRIMITIVETYPE_WRITABLE_FIELD(jtype,TYPE,field)\
+    QTJAMBI_REPOSITORY_DECLARE_STATIC_PRIMITIVETYPE_FIELD(jtype,TYPE,field)\
+public:\
+    static inline void set_##field(JNIEnv* env, jtype value){\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return;\
         env->SetStatic##TYPE##Field(_this.class_ref, _this.__##field, value);\
         QtJambiPrivate::javaExceptionCheck(env);\
@@ -341,9 +326,6 @@ private: jfieldID __##field;\
 
 #define QTJAMBI_REPOSITORY_DECLARE_STATIC_TYPED_METHOD(jtype,method)\
     QTJAMBI_REPOSITORY_DECLARE_STATIC_PRIMITIVETYPE_METHOD(jtype,Object,method)
-
-#define QTJAMBI_REPOSITORY_DECLARE_TYPED_FIELD(jtype,field)\
-    QTJAMBI_REPOSITORY_DECLARE_PRIMITIVETYPE_FIELD(jtype,Object,field)
 
 #define QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(method)\
     QTJAMBI_REPOSITORY_DECLARE_TYPED_METHOD(jobject,method)
@@ -660,6 +642,12 @@ private: jfieldID __##field;\
 #define QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(method)\
     QTJAMBI_REPOSITORY_DECLARE_STATIC_PRIMITIVETYPE_METHOD(jboolean,Boolean,method)
 
+#define QTJAMBI_REPOSITORY_DECLARE_TYPED_FIELD(jtype,field)\
+QTJAMBI_REPOSITORY_DECLARE_PRIMITIVETYPE_FIELD(jtype,Object,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_TYPED_WRITABLE_FIELD(jtype,field)\
+QTJAMBI_REPOSITORY_DECLARE_PRIMITIVETYPE_WRITABLE_FIELD(jtype,Object,field)
+
 #define QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(field)\
     QTJAMBI_REPOSITORY_DECLARE_TYPED_FIELD(jobject,field)
 
@@ -670,7 +658,7 @@ private: jfieldID __##field;\
     QTJAMBI_REPOSITORY_DECLARE_TYPED_FIELD(jstring,field)
 
 #define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_TYPED_FIELD(jthrowabl,field)
+    QTJAMBI_REPOSITORY_DECLARE_TYPED_FIELD(jthrowable,field)
 
 #define QTJAMBI_REPOSITORY_DECLARE_INTARRAY_FIELD(field)\
     QTJAMBI_REPOSITORY_DECLARE_TYPED_FIELD(jintArray,field)
@@ -719,195 +707,6 @@ private: jfieldID __##field;\
 
 #define QTJAMBI_REPOSITORY_DECLARE_CHAR_FIELD(field)\
     QTJAMBI_REPOSITORY_DECLARE_PRIMITIVETYPE_FIELD(jchar,Char,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_TYPED_FIELD(jtype,field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_PRIMITIVETYPE_FIELD(jtype,Object,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_OBJECT_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_TYPED_FIELD(jobject,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CLASS_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_TYPED_FIELD(jclass,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_STRING_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_TYPED_FIELD(jstring,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_THROWABLE_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_TYPED_FIELD(jthrowabl,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_INTARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_TYPED_FIELD(jintArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_BYTEARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_TYPED_FIELD(jbyteArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_SHORTARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_TYPED_FIELD(jshortArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CHARARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_TYPED_FIELD(jcharArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_BOOLEANARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_TYPED_FIELD(jbooleanArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_FLOATARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_TYPED_FIELD(jfloatArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_DOUBLEARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_TYPED_FIELD(jdoubleArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_OBJECTARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_TYPED_FIELD(jobjectArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_BYTE_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_PRIMITIVETYPE_FIELD(jbyte,Byte,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_SHORT_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_PRIMITIVETYPE_FIELD(jshort,Short,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_INT_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_PRIMITIVETYPE_FIELD(jint,Int,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_LONG_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_PRIMITIVETYPE_FIELD(jlong,Long,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_FLOAT_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_PRIMITIVETYPE_FIELD(jfloat,Float,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_DOUBLE_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_PRIMITIVETYPE_FIELD(jdouble,Double,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_BOOLEAN_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_PRIMITIVETYPE_FIELD(jboolean,Boolean,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CHAR_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_THROWABLE_PRIMITIVETYPE_FIELD(jchar,Char,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_TYPED_FIELD(jtype,field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_PRIMITIVETYPE_FIELD(jtype,Object,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_OBJECT_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_TYPED_FIELD(jobject,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_CLASS_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_TYPED_FIELD(jclass,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_STRING_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_TYPED_FIELD(jstring,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_THROWABLE_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_TYPED_FIELD(jthrowabl,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_INTARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_TYPED_FIELD(jintArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_BYTEARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_TYPED_FIELD(jbyteArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_SHORTARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_TYPED_FIELD(jshortArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_CHARARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_TYPED_FIELD(jcharArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_BOOLEANARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_TYPED_FIELD(jbooleanArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_FLOATARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_TYPED_FIELD(jfloatArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_DOUBLEARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_TYPED_FIELD(jdoubleArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_OBJECTARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_TYPED_FIELD(jobjectArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_BYTE_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_PRIMITIVETYPE_FIELD(jbyte,Byte,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_SHORT_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_PRIMITIVETYPE_FIELD(jshort,Short,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_INT_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_PRIMITIVETYPE_FIELD(jint,Int,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_LONG_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_PRIMITIVETYPE_FIELD(jlong,Long,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_FLOAT_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_PRIMITIVETYPE_FIELD(jfloat,Float,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_DOUBLE_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_PRIMITIVETYPE_FIELD(jdouble,Double,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_BOOLEAN_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_PRIMITIVETYPE_FIELD(jboolean,Boolean,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_STRING_CHAR_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_STRING_PRIMITIVETYPE_FIELD(jchar,Char,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_TYPED_FIELD(jtype,field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_PRIMITIVETYPE_FIELD(jtype,Object,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_OBJECT_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_TYPED_FIELD(jobject,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_CLASS_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_TYPED_FIELD(jclass,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_STRING_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_TYPED_FIELD(jstring,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_THROWABLE_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_TYPED_FIELD(jthrowabl,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_INTARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_TYPED_FIELD(jintArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_BYTEARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_TYPED_FIELD(jbyteArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_SHORTARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_TYPED_FIELD(jshortArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_CHARARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_TYPED_FIELD(jcharArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_BOOLEANARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_TYPED_FIELD(jbooleanArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_FLOATARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_TYPED_FIELD(jfloatArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_DOUBLEARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_TYPED_FIELD(jdoubleArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_OBJECTARRAY_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_TYPED_FIELD(jobjectArray,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_BYTE_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_PRIMITIVETYPE_FIELD(jbyte,Byte,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_SHORT_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_PRIMITIVETYPE_FIELD(jshort,Short,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_INT_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_PRIMITIVETYPE_FIELD(jint,Int,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_LONG_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_PRIMITIVETYPE_FIELD(jlong,Long,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_FLOAT_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_PRIMITIVETYPE_FIELD(jfloat,Float,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_DOUBLE_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_PRIMITIVETYPE_FIELD(jdouble,Double,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_BOOLEAN_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_PRIMITIVETYPE_FIELD(jboolean,Boolean,field)
-
-#define QTJAMBI_REPOSITORY_DECLARE_CLASS_CHAR_FIELD(field)\
-    QTJAMBI_REPOSITORY_DECLARE_CLASS_PRIMITIVETYPE_FIELD(jchar,Char,field)
 
 #define QTJAMBI_REPOSITORY_DECLARE_STATIC_TYPED_FIELD(jtype,field)\
     QTJAMBI_REPOSITORY_DECLARE_STATIC_PRIMITIVETYPE_FIELD(jtype,Object,field)
@@ -975,15 +774,141 @@ private: jfieldID __##field;\
 #define QTJAMBI_REPOSITORY_DECLARE_STATIC_CHAR_FIELD(field)\
     QTJAMBI_REPOSITORY_DECLARE_STATIC_PRIMITIVETYPE_FIELD(jchar,Char,field)
 
+#define QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_TYPED_WRITABLE_FIELD(jobject,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_CLASS_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_TYPED_WRITABLE_FIELD(jclass,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STRING_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_TYPED_WRITABLE_FIELD(jstring,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_TYPED_WRITABLE_FIELD(jthrowable,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_INTARRAY_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_TYPED_WRITABLE_FIELD(jintArray,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_BYTEARRAY_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_TYPED_WRITABLE_FIELD(jbyteArray,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_SHORTARRAY_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_TYPED_WRITABLE_FIELD(jshortArray,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_CHARARRAY_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_TYPED_WRITABLE_FIELD(jcharArray,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_BOOLEANARRAY_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_TYPED_WRITABLE_FIELD(jbooleanArray,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_FLOATARRAY_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_TYPED_WRITABLE_FIELD(jfloatArray,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_DOUBLEARRAY_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_TYPED_WRITABLE_FIELD(jdoubleArray,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_OBJECTARRAY_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_TYPED_WRITABLE_FIELD(jobjectArray,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_BYTE_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_PRIMITIVETYPE_WRITABLE_FIELD(jbyte,Byte,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_SHORT_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_PRIMITIVETYPE_WRITABLE_FIELD(jshort,Short,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_INT_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_PRIMITIVETYPE_WRITABLE_FIELD(jint,Int,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_LONG_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_PRIMITIVETYPE_WRITABLE_FIELD(jlong,Long,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_FLOAT_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_PRIMITIVETYPE_WRITABLE_FIELD(jfloat,Float,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_DOUBLE_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_PRIMITIVETYPE_WRITABLE_FIELD(jdouble,Double,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_PRIMITIVETYPE_WRITABLE_FIELD(jboolean,Boolean,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_CHAR_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_PRIMITIVETYPE_WRITABLE_FIELD(jchar,Char,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_TYPED_WRITABLE_FIELD(jtype,field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_PRIMITIVETYPE_WRITABLE_FIELD(jtype,Object,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_TYPED_WRITABLE_FIELD(jobject,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_STRING_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_TYPED_WRITABLE_FIELD(jstring,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_CLASS_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_TYPED_WRITABLE_FIELD(jclass,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_THROWABLE_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_TYPED_WRITABLE_FIELD(jthrowable,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECTARRAY_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_TYPED_WRITABLE_FIELD(jobjectArray,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEANARRAY_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_TYPED_WRITABLE_FIELD(jbooleanArray,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_CHARARRAY_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_TYPED_WRITABLE_FIELD(jcharArray,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_BYTEARRAY_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_TYPED_WRITABLE_FIELD(jbyteArray,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_SHORTARRAY_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_TYPED_WRITABLE_FIELD(jshortArray,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_INTARRAY_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_TYPED_WRITABLE_FIELD(jintArray,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_LONGARRAY_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_TYPED_WRITABLE_FIELD(jlongArray,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_FLOATARRAY_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_TYPED_WRITABLE_FIELD(jfloatArray,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_DOUBLEARRAY_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_TYPED_WRITABLE_FIELD(jdoubleArray,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_BYTE_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_PRIMITIVETYPE_WRITABLE_FIELD(jbyte,Byte,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_SHORT_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_PRIMITIVETYPE_WRITABLE_FIELD(jshort,Short,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_INT_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_PRIMITIVETYPE_WRITABLE_FIELD(jint,Int,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_LONG_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_PRIMITIVETYPE_WRITABLE_FIELD(jlong,Long,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_FLOAT_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_PRIMITIVETYPE_WRITABLE_FIELD(jfloat,Float,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_DOUBLE_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_PRIMITIVETYPE_WRITABLE_FIELD(jdouble,Double,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_PRIMITIVETYPE_WRITABLE_FIELD(jboolean,Boolean,field)
+
+#define QTJAMBI_REPOSITORY_DECLARE_STATIC_CHAR_WRITABLE_FIELD(field)\
+QTJAMBI_REPOSITORY_DECLARE_STATIC_PRIMITIVETYPE_WRITABLE_FIELD(jchar,Char,field)
+
 #define DECLARE_CLASS_REF(cls)\
     private: jclass __##cls;\
     public: static inline bool isPrimitiveType(JNIEnv* env, jclass type){\
-        auto _this = __qt_get_this(env);\
+        const auto& _this = __qt_get_this(env);\
         if(!_this.class_ref) return false;\
         return env->IsSameObject(type, _this.__##cls);\
     }\
     static inline jclass primitiveType(JNIEnv* env){\
-        auto _this = __qt_get_this(env);\
+        const auto& _this = __qt_get_this(env);\
         return jclass(env->NewLocalRef(_this.__##cls));\
     }
 
@@ -1002,29 +927,29 @@ type_name::type_name(JNIEnv *env) : class_ref(nullptr) { \
     Q_ASSERT(this->class_ref);\
 }\
 jclass type_name::getClass(JNIEnv* env){\
-    auto _this = __qt_get_this(env);\
+    const auto& _this = __qt_get_this(env);\
     return jclass(env->NewLocalRef(_this.class_ref));\
 }\
 jboolean type_name::isInstanceOf(JNIEnv* env,jobject instance){\
-    auto _this = __qt_get_this(env);\
+    const auto& _this = __qt_get_this(env);\
     jboolean result = _this.class_ref && !env->IsSameObject(instance, nullptr) && env->IsInstanceOf(instance, _this.class_ref);\
     QtJambiPrivate::javaExceptionCheck(env);\
     return result;\
 }\
 jboolean type_name::isAssignableFrom(JNIEnv* env,jclass otherClass){\
-    auto _this = __qt_get_this(env);\
+    const auto& _this = __qt_get_this(env);\
     jboolean result = _this.class_ref && env->IsAssignableFrom(otherClass, _this.class_ref);\
     QtJambiPrivate::javaExceptionCheck(env);\
     return result;\
 }\
 jboolean type_name::isSameClass(JNIEnv* env,jclass otherClass){\
-    auto _this = __qt_get_this(env);\
+    const auto& _this = __qt_get_this(env);\
     jboolean result = _this.class_ref && env->IsSameObject(otherClass, _this.class_ref);\
     QtJambiPrivate::javaExceptionCheck(env);\
     return result;\
 }\
 jobjectArray type_name::newArray(JNIEnv* env,jsize size){\
-    auto _this = __qt_get_this(env);\
+    const auto& _this = __qt_get_this(env);\
     if(!_this.class_ref) return nullptr;\
     jobjectArray result = env->NewObjectArray(size, _this.class_ref, nullptr);\
     QtJambiPrivate::javaExceptionCheck(env);\

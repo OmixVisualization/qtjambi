@@ -31,6 +31,7 @@ package io.qt;
 
 /**
  * The QSignalInitializationException class is thrown when a signal cannot be initialized properly.
+ * @serial exclude
  */
 public class QSignalInitializationException extends RuntimeException {
     private static final long serialVersionUID = 1L;

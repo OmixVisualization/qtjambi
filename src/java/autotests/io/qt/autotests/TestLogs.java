@@ -28,34 +28,69 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.QtUtilities;
+import io.qt.core.QCoreApplication;
 import io.qt.core.QLogging;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QSize;
+import io.qt.core.QtMessageHandler;
 
 public class TestLogs extends UnitTestInitializer{
+
+	private static final Set<String> messages = new HashSet<>();
+	private static List<Handler> handlers;
+	private static Object replace;
+	private static Handler logHandler; 
+	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
 		System.setProperty("io.qt.enable-method-logs", "true");
 		System.setProperty("io.qt.enable-cleanup-logs", "true");
 		Logger rootLogger = Logger.getLogger("");
+		List<Handler> handlers = new ArrayList<>();
 		for (Handler h : rootLogger.getHandlers()) {
+			handlers.add(h);
 		    rootLogger.removeHandler(h);
 		}
-		rootLogger.addHandler(new QLogging.Handler());
-		QLogging.qInstallMessageHandler((type,context,message)->{
-			System.out.println(message);
+		Assume.assumeFalse("Does not work on Android batched tests", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android) || QCoreApplication.instance()==null);
+		TestLogs.handlers = handlers;
+		logHandler = new QLogging.Handler();
+		rootLogger.addHandler(logHandler);
+		replace = QLogging.qInstallMessageHandler((type,context,message)->{
+//			System.out.println(message);
+			messages.add(message);
 		});
-//		ApplicationInitializer.testInitialize();
+	}
+	
+	@AfterClass
+	public static void testShutdown() throws Exception {
+		QLogging.qInstallMessageHandler((QtMessageHandler)replace);
+		QtUtilities.setMethodLogsEnabled(false);
+		Logger rootLogger = Logger.getLogger("");
+		rootLogger.removeHandler(logHandler);
+		if(handlers!=null) {
+			for (Handler h : handlers) {
+				rootLogger.addHandler(h);
+			}
+		}
 	}
 	
 	@Test
     public void test() {
 		QSize size = new QSize();
+		int hashCode = System.identityHashCode(size);
 		size.dispose();
+		Assert.assertTrue(messages.contains(String.format("Begin dispose of 0x%1$s@io.qt.core.QSize...", Integer.toHexString(hashCode))));
+		Assert.assertTrue(messages.contains(String.format("Dispose of 0x%1$s@io.qt.core.QSize finished.", Integer.toHexString(hashCode))));
 	}
 }

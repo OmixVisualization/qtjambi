@@ -30,6 +30,7 @@
 package io.qt.autotests;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -46,14 +47,19 @@ import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaType;
 import io.qt.core.QTimer;
-import io.qt.qml.util.QmlElement;
 
 public class TestActiveX extends ApplicationInitializer {
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithWidgets();
-    	QAxWidget.staticMetaObject.hashCode();
+    	try {
+			QAxWidget.staticMetaObject.hashCode();
+		} catch (Error e) {
+			if(e.getMessage().startsWith("Cannot mix incompatible Qt library."))
+				Assume.assumeNoException(e.getMessage(), e);
+			else throw e;
+		}
     }
 	
 	private static class AxWidgetSubclass1 extends QAxWidget{
@@ -78,10 +84,6 @@ public class TestActiveX extends ApplicationInitializer {
 	
 	@QtClassInfo(key="key", value="value")
 	private static class AxWidgetSubclass5 extends QAxWidget{
-	}
-	
-	@QmlElement
-	private static class AxWidgetSubclass6 extends QAxWidget{
 	}
 	
 	@Test
@@ -138,18 +140,6 @@ public class TestActiveX extends ApplicationInitializer {
 			Assert.fail("UnsupportedOperationException expected to be thrown");
 		}catch(UnsupportedOperationException e) {
 			Assert.assertEquals("Cannot add @QtClassInfo to class io.qt.autotests.TestActiveX.AxWidgetSubclass5 because it extends type with dynamic meta object.", e.getMessage());
-		}
-		try {
-			QMetaObject.forType(AxWidgetSubclass6.class);
-			Assert.fail("UnsupportedOperationException expected to be thrown");
-		}catch(UnsupportedOperationException e) {
-			Assert.assertEquals("Cannot add @QmlElement to class io.qt.autotests.TestActiveX.AxWidgetSubclass6 because it extends type with dynamic meta object.", e.getMessage());
-		}
-		try {
-			new AxWidgetSubclass6();
-			Assert.fail("UnsupportedOperationException expected to be thrown");
-		}catch(UnsupportedOperationException e) {
-			Assert.assertEquals("Cannot add @QmlElement to class io.qt.autotests.TestActiveX.AxWidgetSubclass6 because it extends type with dynamic meta object.", e.getMessage());
 		}
 	}
 	

@@ -31,6 +31,7 @@ package io.qt;
 
 /**
  * The QSignalAccessException class is thrown when a private signal is emitted other than from inside its owning object.
+ * @serial exclude
  */
 public class QSignalAccessException extends RuntimeException {
     private static final long serialVersionUID = 1L;

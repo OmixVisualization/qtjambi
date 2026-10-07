@@ -34,7 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "Qt3DCore"
     module: "qtjambi.qt3dcore"
-    description: "The Qt 3D module contains functionality to support near-realtime simulation systems."
+    description: "The Qt 3D Core module contains functionality to support near-realtime simulation systems."
     RequiredLibrary{
         name: "QtConcurrent"
     }
@@ -285,79 +285,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
         }
     }
     
-    InterfaceType{
-        name: "Qt3DCore::QSceneInterface"
-        ModifyFunction{
-            signature: "addObservable(Qt3DCore::QObservableInterface*,Qt3DCore::QNodeId)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-                ReferenceCount{
-                    variableName: "__rcObservables"
-                    declareVariable: "io.qt.qt3d.core.Qt3DScene"
-                    action: ReferenceCount.Add
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "removeObservable(Qt3DCore::QObservableInterface*,Qt3DCore::QNodeId)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-                ReferenceCount{
-                    variableName: "__rcObservables"
-                    declareVariable: "io.qt.qt3d.core.Qt3DScene"
-                    action: ReferenceCount.Take
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "nodeIdFromObservable(Qt3DCore::QObservableInterface*)const"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setArbiter(Qt3DCore::QLockableObserverInterface*)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-                ReferenceCount{
-                    variableName: "__rcArbiter"
-                    declareVariable: "io.qt.qt3d.core.Qt3DScene"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-    }
-    
-    
-    InterfaceType{
-        name: "Qt3DCore::QBackendNodeFactory"
-        ModifyFunction{
-            signature: "createBackendNode(const QSharedPointer<Qt3DCore::QNodeCreatedChangeBase>&) const"
-            ModifyArgument{
-                index: 0
-                DefineOwnership{
-                    codeClass: CodeClass.Shell
-                    ownership: Ownership.Cpp
-                }
-                DefineOwnership{
-                    codeClass: CodeClass.Native
-                    ownership: Ownership.Java
-                }
-            }
-        }
-    }
-    
-    InterfaceType{
-        name: "Qt3DCore::QAspectJobProviderInterface"
-    }
-    
     ValueType{
         name: "Qt3DCore::QNodeId"
         ModifyFunction{
@@ -483,28 +410,11 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     }
     
     ObjectType{
-        name: "Qt3DCore::QAbstractCameraController"
-        ModifyFunction{
-            signature: "setCamera(Qt3DRender::QCamera*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
-        }
-    }
-    
-    ObjectType{
         name: "Qt3DCore::QBackendNode"
 
         EnumType{
             name: "Mode"
         }
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QBackendScenePropertyChange"
     }
     
     ObjectType{
@@ -608,38 +518,6 @@ if(JniEnvironmentExceptionHandler %env{200}) {
     }
     
     ObjectType{
-        name: "Qt3DCore::QScenePropertyChange"
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QScopedPointer"
-                location: Include.Global
-            }
-            Include{
-                fileName: "QtCore/QByteArray"
-                location: Include.Global
-            }
-        }
-        InjectCode{
-            target: CodeClass.ShellDeclaration
-            position: Position.End
-            Text{content: "public:\n"+
-                          "    inline void __qt_propertyNameReset(QByteArray* pointer){\n"+
-                          "        __qt_propertyName.reset(pointer);\n"+
-                          "    }\n"+
-                          "private:\n"+
-                          "    QScopedPointer<QByteArray> __qt_propertyName;"}
-        }
-        ModifyFunction{
-            signature: "setPropertyName(const char *)"
-            InjectCode{
-                target: CodeClass.Native
-                position: Position.End
-                Text{content: "__qt_this->__qt_propertyNameReset(container);"}
-            }
-        }
-    }
-    
-    ObjectType{
         name: "Qt3DCore::QAbstractAspect"
         ExtraIncludes{
             Include{
@@ -664,54 +542,9 @@ if(JniEnvironmentExceptionHandler %env{200}) {
             }
         }
     }
-    
-    ObjectType{
-        name: "Qt3DCore::QAbstractBuffer"
-    }
 
     ObjectType{
         name: "Qt3DCore::QAspectJob"
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QNodeVisitor"
-    }
-    
-    
-    ObjectType{
-        name: "Qt3DCore::QOpenGLInformationService"
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QAbstractServiceProvider"
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QSystemInformationService"
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QAbstractTransform"
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QLookAtTransform"
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QMatrixTransform"
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QRotateTransform"
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QScaleTransform"
-    }
-    
-    ObjectType{
-        name: "Qt3DCore::QTranslateTransform"
     }
     
     ValueType{

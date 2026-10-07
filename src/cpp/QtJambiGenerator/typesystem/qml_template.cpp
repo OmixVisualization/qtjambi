@@ -82,6 +82,19 @@ void InsertTemplate::setName(const QString &newName)
     emit nameChanged();
 }
 
+uint InsertTemplate::getIndents() const
+{
+    return indents;
+}
+
+void InsertTemplate::setIndents(uint newIndents)
+{
+    if (indents == newIndents)
+        return;
+    indents = newIndents;
+    emit indentsChanged();
+}
+
 const QString &Replace::getFrom() const
 {
     return from;

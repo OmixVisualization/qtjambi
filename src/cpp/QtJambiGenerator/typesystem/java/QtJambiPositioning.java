@@ -34,6 +34,10 @@ class QGeoAreaMonitorSource___ {
 }// class
 
 class QNmeaPositionInfoSource___ {
+    /**
+     * Result type for <code>QNmeaPositionInfoSource.parsePosInfoFromNmeaData</code>
+     * @see QNmeaPositionInfoSource#parsePosInfoFromNmeaData(io.qt.core.QByteArrayView)
+     */
     public static final class Result{
         public Result(QGeoPositionInfo info, boolean hasFix){
             this.info = info;

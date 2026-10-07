@@ -48,7 +48,6 @@ import java.util.function.Function;
 import io.qt.NativeAccess;
 import io.qt.QtObjectInterface;
 import io.qt.core.QMetaObject;
-import io.qt.internal.NativeUtility.NativeLink;
 
 /**
  * @hidden
@@ -807,9 +806,9 @@ abstract class ReferenceUtility {
 		Object collection = null;
 		boolean got = false;
 		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
-			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
-			if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
-				collection = ((NativeUtility.ReferenceCountingNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, null);
+			NativeUtility.ReferenceCountingInterface counter = NativeUtility.findReferenceCounter(owner, false);
+			if (counter!=null) {
+				collection = counter.getReferenceCountCollection(declaringClass, fieldName, null);
 				got = true;
 			}
 		}
@@ -844,9 +843,9 @@ abstract class ReferenceUtility {
 		Object collection = null;
 		boolean got = false;
 		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
-			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
-			if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
-				collection = ((NativeUtility.ReferenceCountingNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, null);
+			NativeUtility.ReferenceCountingInterface counter = NativeUtility.findReferenceCounter(owner, false);
+			if (counter!=null) {
+				collection = counter.getReferenceCountCollection(declaringClass, fieldName, null);
 				got = true;
 			}
 		}
@@ -882,9 +881,9 @@ abstract class ReferenceUtility {
 		Object collection = null;
 		boolean got = false;
 		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
-			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
-			if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
-				collection = ((NativeUtility.ReferenceCountingNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, RCList::new);
+			NativeUtility.ReferenceCountingInterface counter = NativeUtility.findReferenceCounter(owner, false);
+			if (counter!=null) {
+				collection = counter.getReferenceCountCollection(declaringClass, fieldName, RCList::new);
 				got = true;
 			}
 		}
@@ -928,9 +927,9 @@ abstract class ReferenceUtility {
 		Object map = null;
 		boolean got = false;
 		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
-			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
-			if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
-				map = ((NativeUtility.ReferenceCountingNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, () -> {
+			NativeUtility.ReferenceCountingInterface counter = NativeUtility.findReferenceCounter(owner, false);
+			if (counter!=null) {
+				map = counter.getReferenceCountCollection(declaringClass, fieldName, () -> {
 					if (isThreadSafe) {
 						return java.util.Collections.synchronizedMap(new RCMap());
 					} else {
@@ -979,9 +978,9 @@ abstract class ReferenceUtility {
 		Object collection = null;
 		boolean got = false;
 		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
-			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
-			if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
-				collection = ((NativeUtility.ReferenceCountingNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, null);
+			NativeUtility.ReferenceCountingInterface counter = NativeUtility.findReferenceCounter(owner, false);
+			if (counter!=null) {
+				collection = counter.getReferenceCountCollection(declaringClass, fieldName, null);
 				got = true;
 			}
 		}
@@ -1019,9 +1018,9 @@ abstract class ReferenceUtility {
 		Object collection = null;
 		boolean got = false;
 		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
-			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
-			if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
-				collection = ((NativeUtility.ReferenceCountingNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, RCList::new);
+			NativeUtility.ReferenceCountingInterface counter = NativeUtility.findReferenceCounter(owner, false);
+			if (counter!=null) {
+				collection = counter.getReferenceCountCollection(declaringClass, fieldName, RCList::new);
 				got = true;
 			}
 		}
@@ -1065,12 +1064,12 @@ abstract class ReferenceUtility {
 		Object newValue = null;
 		if(declaringClass!=null) {
 			if (declaringClass.isInterface()) {
-				NativeLink link = NativeUtility.findInterfaceLink(copy, true);
-				if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
-					newValue = ((NativeUtility.ReferenceCountingNativeLink) link).getReferenceCount(declaringClass, fieldName);
-					link = NativeUtility.findInterfaceLink(owner, true);
-					if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
-						((NativeUtility.ReferenceCountingNativeLink) link).setReferenceCount(declaringClass, fieldName, newValue);
+				NativeUtility.ReferenceCountingInterface counter = NativeUtility.findReferenceCounter(copy, true);
+				if (counter!=null) {
+					newValue = counter.getReferenceCount(declaringClass, fieldName);
+					counter = NativeUtility.findReferenceCounter(owner, true);
+					if (counter!=null) {
+						counter.setReferenceCount(declaringClass, fieldName, newValue);
 						return;
 					}
 				}
@@ -1095,9 +1094,9 @@ abstract class ReferenceUtility {
 				newValue = ReflectionUtility.readField(copy, field);
 			}
 			if (declaringClass!=null && declaringClass.isInterface()) {
-				NativeLink link = NativeUtility.findInterfaceLink(owner, true);
-				if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
-					((NativeUtility.ReferenceCountingNativeLink) link).setReferenceCount(declaringClass, fieldName, newValue);
+				NativeUtility.ReferenceCountingInterface counter = NativeUtility.findReferenceCounter(owner, true);
+				if (counter!=null) {
+					counter.setReferenceCount(declaringClass, fieldName, newValue);
 					return;
 				}
 			}
@@ -1120,9 +1119,9 @@ abstract class ReferenceUtility {
 		Field field = null;
 		if(declaringClass!=null) {
 			if (declaringClass.isInterface() && !isStatic) {
-				NativeLink link = NativeUtility.findInterfaceLink(owner, true);
-				if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
-					((NativeUtility.ReferenceCountingNativeLink) link).setReferenceCount(declaringClass, fieldName, newValue);
+				NativeUtility.ReferenceCountingInterface counter = NativeUtility.findReferenceCounter(owner, true);
+				if (counter!=null) {
+					counter.setReferenceCount(declaringClass, fieldName, newValue);
 					return;
 				}
 			}

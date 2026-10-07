@@ -38,6 +38,8 @@ HEADERS += \
     qtjambi_cast.h \
     range_p.h \
     range_p_p.h \
+    rangetable_p.h \
+    rangetree_p.h \
     utils.h \
     utils_p.h
 
@@ -54,9 +56,13 @@ SOURCES +=\
     plugins.cpp \
     impl.cpp \
     range.cpp \
+    rangetable_itemaccess.cpp \
     rangetree.cpp \
     rangetable.cpp \
+    rangetree_itemaccess.cpp \
     utils.cpp
+
+OBJECTIVE_SOURCES += impl_macos.mm
 
 lessThan(QT_MAJOR_VERSION, 6):{
     SOURCES +=
@@ -75,4 +81,8 @@ win32-g++* {
     CONFIG(debug, debug|release) {
         QMAKE_CXXFLAGS += -O3
     }
+}
+
+macx {
+    LIBS += -lobjc -framework Cocoa -framework AppKit
 }

@@ -9,7 +9,6 @@ import io.qt.*;
  */
 public class QVulkanInfoVector<T> extends io.qt.core.QList<T>
 {
-
 	static {
         QtJambi_LibraryUtilities.initialize();
     }

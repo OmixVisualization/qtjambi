@@ -40,7 +40,7 @@ package io.qt;
  * Otherwise, only the link between native and Java object is removed.
  * To check if the Java object is alive use {@link #isDisposed()}.
  */
-public interface QtObjectInterface{
+public interface QtObjectInterface extends Utility.ObjectInterface {
     /**
      * Explicitly removes the native resources held by the
      * object. Note that though this method does not guarantee that
@@ -49,7 +49,7 @@ public interface QtObjectInterface{
      */
 	@io.qt.QtDeclaredFinal
 	public default void dispose() {
-		Utility.disposeObject(this);
+		Utility.ObjectInterface.super.dispose();
 	}
 	
     /**
@@ -58,6 +58,6 @@ public interface QtObjectInterface{
      */
 	@io.qt.QtDeclaredFinal
 	public default boolean isDisposed() {
-		return Utility.isObjectDisposed(this);
+		return Utility.ObjectInterface.super.isDisposed();
 	}
 }

@@ -46,6 +46,27 @@ TypeSystem{
         target: CodeClass.MetaInfo
         Text{content: "#if defined(Q_OS_ANDROID)\ninitialize_meta_info_QtPositioning();\n#endif"}
     }
+
+    RequiredLibrary{
+        name: "QtDBus"
+        mode: RequiredLibrary.Optional
+    }
+    RequiredLibrary{
+        name: "QtSerialPort"
+        mode: RequiredLibrary.Optional
+    }
+    RequiredLibrary{
+        name: "QtNetwork"
+        mode: RequiredLibrary.Optional
+    }
+    InjectCode{
+        target: CodeClass.Java
+        position: Position.Position4
+        Text{content: String.raw`
+            loadUtilityLibrary("plugins_position_qtposition_android", LibraryRequirementMode.Optional, "android");
+            loadUtilityLibrary("plugins_position_qtposition_nmea", LibraryRequirementMode.Optional, "android");
+            loadUtilityLibrary("plugins_position_qtposition_positionpoll", LibraryRequirementMode.Optional, "android");`}
+    }
     
     ValueType{
         name: "QGeoAreaMonitorInfo"
@@ -233,39 +254,42 @@ TypeSystem{
                 NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out;\n"+
-                                  "if(!%in)\n"+
-                                  "    JavaException::raiseNullPointerException(%env, \"Parameter 'signal' must not be null.\" QTJAMBI_STACKTRACEINFO);\n"+
-                                  "jobject containingObject = Java::QtJambi::SignalUtility$AbstractSignal::containingObject(%env, %in);\n"+
-                                  "if(jobject __java_this = CoreAPI::javaObject(__this_nativeId, %env)) {\n"+
-                                  "    if(!%env->IsSameObject(__java_this, containingObject)){\n"+
-                                  "        JavaException::raiseIllegalArgumentException(%env, \"Given signal has to be one of the instance's signals.\" QTJAMBI_STACKTRACEINFO);\n"+
-                                  "    }\n"+
-                                  "}\n"+
-                                  "jint signalIndex = Java::QtJambi::SignalUtility$AbstractSignal::methodIndex(%env, %in);\n"+
-                                  "QMetaMethod metaSignal = this->metaObject()->method(signalIndex);\n"+
-                                  "if(!metaSignal.isValid() || metaSignal.methodType()==QMetaMethod::Signal)\n"+
-                                  "    return false;\n"+
-                                  "%out = qFlagLocation(QByteArray(\"2\").append(metaSignal.methodSignature()));"}
+                    Text{content: String.raw`
+QByteArray %out;
+if(!%in)
+    JavaException::raiseNullPointerException(%env, "Parameter 'signal' must not be null." QTJAMBI_STACKTRACEINFO);
+jobject containingObject = Java::QtJambi::SignalUtility$AbstractSignal::containingObject(%env, %in);
+if(jobject __java_this = CoreAPI::javaObject(__this_nativeId, %env)) {
+    if(!%env->IsSameObject(__java_this, containingObject)){
+        JavaException::raiseIllegalArgumentException(%env, "Given signal has to be one of the instance's signals." QTJAMBI_STACKTRACEINFO);
+    }
+}
+jint signalIndex = Java::QtJambi::SignalUtility$AbstractSignal::methodIndex(%env, %in);
+QMetaMethod metaSignal = this->metaObject()->method(signalIndex);
+if(!metaSignal.isValid() || metaSignal.methodType()==QMetaMethod::Signal)
+    return false;
+%out = qFlagLocation(QByteArray("2").append(metaSignal.methodSignature()));`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QMetaMethod metaSignal = metaObject()->method(%in ? metaObject()->indexOfMethod(%in+1) : -1);\n"+
-                                  "if(!metaSignal.isValid() || metaSignal.methodType()!=QMetaMethod::Signal){\n"+
-                                  "    __qt_return_value = false;\n"+
-                                  "}else{\n"+
-                                  "    jobject __java_metaSignal = qtjambi_cast<jobject>(%env, std::move(metaSignal));\n"+
-                                  "    if(!__java_metaSignal){\n"+
-                                  "        __qt_return_value = false;\n"+
-                                  "    }else{\n"+
-                                  "        jobject %out = Java::QtCore::QMetaMethod::toSignal(%env, __java_metaSignal, __java_this);"}
+                    Text{content: String.raw`
+QMetaMethod metaSignal = metaObject()->method(%in ? metaObject()->indexOfMethod(%in+1) : -1);
+if(!metaSignal.isValid() || metaSignal.methodType()!=QMetaMethod::Signal){
+    __qt_return_value = false;
+}else{
+    jobject __java_metaSignal = qtjambi_cast<jobject>(%env, std::move(metaSignal));
+    if(!__java_metaSignal){
+        __qt_return_value = false;
+    }else{
+        jobject %out = Java::QtCore::QMetaMethod::toSignal(%env, __java_metaSignal, __java_this);`}
                 }
             }
             InjectCode{
                 target: CodeClass.Shell
                 position: Position.End
-                Text{content: "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+                        }
+                    }`}
             }
         }
     }
@@ -420,8 +444,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QGeoPositionInfo %in;\n"+
-                                  "QGeoPositionInfo* %out = &%in;"}
+                    Text{content: String.raw`
+                        QGeoPositionInfo %in;
+                        QGeoPositionInfo* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -430,8 +455,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool %in = false;\n"+
-                                  "bool* %out = &%in;"}
+                    Text{content: String.raw`
+                        bool %in = false;
+                        bool* %out = &%in;`}
                 }
             }
         }
@@ -444,24 +470,26 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = nullptr;\n"+
-                                  "if(%in){\n"+
-                                  "    %out = Java::QtPositioning::QNmeaPositionInfoSource$Result::newInstance(\n"+
-                                  "    %env, qtjambi_cast<jobject>(%env, %2), %3);\n"+
-                                  "}"}
+                    Text{content: String.raw`
+jobject %out = nullptr;
+if(%in){
+    %out = Java::QtPositioning::QNmeaPositionInfoSource$Result::newInstance(
+    %env, qtjambi_cast<jobject>(%env, %2), %3);
+}`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "bool %out = false;\n"+
-                                  "if(%in){\n"+
-                                  "    if(%2){\n"+
-                                  "        jobject __java_%3 = Java::QtPositioning::QNmeaPositionInfoSource$Result::info(%env, %in);\n"+
-                                  "        *%2 = qtjambi_cast<QGeoPositionInfo>(%env, __java_%2);\n"+
-                                  "    }\n"+
-                                  "    if(%3){\n"+
-                                  "        *%3 = Java::QtPositioning::QNmeaPositionInfoSource$Result::hasFix(%env, %in);\n"+
-                                  "    }\n"+
-                                  "}"}
+                    Text{content: String.raw`
+bool %out = false;
+if(%in){
+    if(%2){
+        jobject __java_%3 = Java::QtPositioning::QNmeaPositionInfoSource$Result::info(%env, %in);
+        *%2 = qtjambi_cast<QGeoPositionInfo>(%env, __java_%2);
+    }
+    if(%3){
+        *%3 = Java::QtPositioning::QNmeaPositionInfoSource$Result::hasFix(%env, %in);
+    }
+}`}
                 }
             }
             ModifyArgument{
@@ -475,8 +503,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QGeoPositionInfo %in;\n"+
-                                  "QGeoPositionInfo* %out = &%in;"}
+                    Text{content: String.raw`
+                        QGeoPositionInfo %in;
+                        QGeoPositionInfo* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -485,8 +514,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool %in = false;\n"+
-                                  "bool* %out = &%in;"}
+                    Text{content: String.raw`
+                        bool %in = false;
+                        bool* %out = &%in;`}
                 }
             }
             since: [6,5]
@@ -510,9 +540,10 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
-                Text{content: "if(device()!=__rcDevice){\n"+
-                              "    __rcDevice = null;\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(device()!=__rcDevice){
+                        __rcDevice = null;
+                    }`}
             }
         }
     }

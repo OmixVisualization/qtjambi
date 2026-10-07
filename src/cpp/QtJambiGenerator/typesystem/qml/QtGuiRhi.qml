@@ -31,6 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.gui.rhi"
+    noPackageInfo: true
     defaultSuperClass: "QtObject"
     targetName: "QtJambiGuiRhi"
     module: "qtjambi"
@@ -1004,9 +1005,10 @@ if(%out_buffer.size()<array.size()*4)
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "if(__qt_this->type()!=QRhiBuffer::Dynamic){\n"+
-                              "    JavaException::raise<Java::Runtime::IllegalStateException>(%env, \"Buffer type is not Dynamic.\" QTJAMBI_STACKTRACEINFO );\n"+
-                              "}"}
+                Text{content: String.raw`
+                        if(__qt_this->type()!=QRhiBuffer::Dynamic){
+                            JavaException::raise<Java::Runtime::IllegalStateException>(%env, "Buffer type is not Dynamic." QTJAMBI_STACKTRACEINFO );
+                        }`}
             }
         }
     }
@@ -1078,20 +1080,40 @@ if(%out_buffer.size()<array.size()*4)
             signature: "drawIndexedIndirect(QRhiBuffer*,quint32,quint32,quint32)"
             ModifyArgument{
                 index: 4
-                RemoveDefaultExpression{}
+                ReplaceDefaultExpression{expression: "sizeofQRhiIndexedIndirectDrawCommand()"}
             }
+            since: [6,12]
         }
         ModifyFunction{
             signature: "drawIndirect(QRhiBuffer*,quint32,quint32,quint32)"
             ModifyArgument{
                 index: 4
-                RemoveDefaultExpression{}
+                ReplaceDefaultExpression{expression: "sizeofQRhiIndirectDrawCommand()"}
             }
+            since: [6,12]
         }
         InjectCode{
             target: CodeClass.Java
             position: Position.End
-            Text{content: "@SuppressWarnings(\"unchecked\")\nprivate final static io.qt.core.QPair<java.lang.@QtPrimitiveType Integer, java.lang.@QtPrimitiveType Integer>[] noDynamicOffsets = new io.qt.core.QPair[0];"}
+            Text{content: String.raw`
+                @SuppressWarnings("unchecked")
+                private final static io.qt.core.QPair<java.lang.@QtPrimitiveType Integer, java.lang.@QtPrimitiveType Integer>[] noDynamicOffsets = new io.qt.core.QPair[0];`}
+            Text{content: String.raw`
+                private static native int sizeofQRhiIndexedIndirectDrawCommand();
+                private static native int sizeofQRhiIndirectDrawCommand();`
+                since: [6,12]}
+        }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.End
+            Text{content: String.raw`
+extern "C" JNIEXPORT jint JNICALL
+Java_io_qt_gui_rhi_QRhiCommandBuffer_sizeofQRhiIndexedIndirectDrawCommand
+    (JNIEnv *__jni_env, jclass){ return jint(sizeof(QRhiIndexedIndirectDrawCommand)); }
+extern "C" JNIEXPORT jint JNICALL
+Java_io_qt_gui_rhi_QRhiCommandBuffer_sizeofQRhiIndirectDrawCommand
+    (JNIEnv *__jni_env, jclass){ return jint(sizeof(QRhiIndirectDrawCommand)); }`}
+            since: [6,12]
         }
     }
     ObjectType{
@@ -1647,10 +1669,28 @@ public final void setLuminanceInNits(float minLuminance, float maxLuminance) {
                 location: Include.Global
             }
         }
+        ModifyField{
+            name: "inst"
+            ReferenceCount{
+                action: ReferenceCount.Ignore
+            }
+        }
+        ModifyField{
+            name: "window"
+            ReferenceCount{
+                action: ReferenceCount.Ignore
+            }
+        }
         ppCondition: "QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)"
     }
     ObjectType{
         name: "QRhiVulkanNativeHandles"
+        ModifyField{
+            name: "inst"
+            ReferenceCount{
+                action: ReferenceCount.Ignore
+            }
+        }
         ppCondition: "QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)"
     }
     ObjectType{

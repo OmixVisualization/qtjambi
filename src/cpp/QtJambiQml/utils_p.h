@@ -46,7 +46,7 @@ namespace QtJambi {
 QTJAMBI_REPOSITORY_DECLARE_CLASS(QtObject$QPrivateConstructor,)
 QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConstructInPlace,
                                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
-                                 QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(native_id))
+                                 QTJAMBI_REPOSITORY_DECLARE_LONG_WRITABLE_FIELD(native_id))
 
 QTJAMBI_REPOSITORY_DECLARE_CLASS(QtMetaType,
                                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(type)

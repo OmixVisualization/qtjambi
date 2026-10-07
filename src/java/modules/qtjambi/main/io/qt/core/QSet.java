@@ -39,20 +39,11 @@ import io.qt.*;
  */
 public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, Cloneable
 {
-
-	static {
-    	QtJambi_LibraryUtilities.initialize();
-    }
-    
     /**
      * <p>Java wrapper for Qt class <code>QSet::const_iterator</code></p>
      */
     public static final class ConstIterator<T> extends io.qt.core.QSequentialConstIterator<T,QSet<T>>
     {
-        static {
-            QtJambi_LibraryUtilities.initialize();
-        }
-        
         /**
          * Creates and returns a copy of this object.
          */

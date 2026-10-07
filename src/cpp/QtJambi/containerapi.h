@@ -35,10 +35,9 @@
 #include <typeinfo>
 
 #include "global.h"
+#include "qtjambiapi_nativeid.h"
 #include "registryapi.h"
 #include "typetests.h"
-
-enum class QtJambiNativeID : jlong;
 
 class AbstractListAccess;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
@@ -256,7 +255,7 @@ struct ContainerInfo{
     ContainerInfo(jobject _object, void* _container) : object(_object), container(_container) {}
 };
 struct ExtendedContainerInfo : ContainerInfo{
-    QtJambiNativeID nativeId = QtJambiNativeID::Invalid;
+    QtJambiNativeID nativeId = InvalidNativeID;
     ExtendedContainerInfo() = default;
     ExtendedContainerInfo(jobject _object, void* _container, QtJambiNativeID _nativeId) : ContainerInfo(_object, _container), nativeId(_nativeId) {}
 };
@@ -275,7 +274,7 @@ struct ConstContainerInfo{
     ConstContainerInfo(jobject _object, const void* _container) : object(_object), container(_container) {}
 };
 struct ConstExtendedContainerInfo : ConstContainerInfo{
-    QtJambiNativeID nativeId = QtJambiNativeID::Invalid;
+    QtJambiNativeID nativeId = InvalidNativeID;
     ConstExtendedContainerInfo() = default;
     ConstExtendedContainerInfo(const ConstExtendedContainerInfo& other) : ConstContainerInfo(other), nativeId(other.nativeId) {}
     ConstExtendedContainerInfo(const ExtendedContainerInfo& other) : ConstContainerInfo(other), nativeId(other.nativeId) {}

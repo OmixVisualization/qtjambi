@@ -150,8 +150,6 @@ void AbstractSocketSubclass::aSlot(const QNetworkProxy &proxy, QAuthenticator *a
 #endif // QTJAMBI_NO_NETWORK
 
 namespace Java{
-Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
-
 #ifndef QTJAMBI_NO_WIDGETS
 namespace QtWidgets{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/widgets,QGraphicsItem$BlockedByModalPanelInfo,

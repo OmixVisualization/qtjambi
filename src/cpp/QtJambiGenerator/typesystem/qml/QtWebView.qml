@@ -45,22 +45,10 @@ TypeSystem{
         mode: RequiredLibrary.ProvideOnly
     }
     InjectCode{
-        target: CodeClass.MetaInfo
-        position: Position.Position1
+        target: CodeClass.Java
+        position: Position.Position4
         Text{content: String.raw`
-#if defined(Q_OS_ANDROID)
-void initialize_meta_info_QtWebView_android(JavaVM*);
-#endif`}
-    }
-    InjectCode{
-        target: CodeClass.MetaInfo
-        position: Position.Beginning
-        Text{content: String.raw`
-#if defined(Q_OS_ANDROID)
-    initialize_meta_info_QtWebView_android(%javaVM);
-#else
-    Q_UNUSED(%javaVM)
-#endif`}
+            loadUtilityLibrary("plugins_webview_qtwebview_android", LibraryRequirementMode.Optional, "android");`}
     }
 
     NamespaceType{
@@ -110,7 +98,7 @@ void initialize_meta_info_QtWebView_android(JavaVM*);
                 ConversionRule{
                     codeClass: CodeClass.Native
                     InsertTemplate{
-                        name: "webc.comsumer.function"
+                        name: "core.consumer.function"
                         Replace{
                             from: "%TYPE"
                             to: "const QVariant &"

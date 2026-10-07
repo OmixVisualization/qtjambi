@@ -1073,14 +1073,14 @@ bool JObjectWrapper::compareLess(JNIEnv *env, jobject otherObject) const{
     }else{
 #if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
         if(Java::QtJambi::QLongFlags::isInstanceOf(env, myObject) && otherObject && env->IsInstanceOf(otherObject, env->GetObjectClass(myObject))){
-            jlong h1 = Java::QtJambi::QLongFlags::longValue(env, myObject);
-            jlong h2 = Java::QtJambi::QLongFlags::longValue(env, otherObject);
+            jlong h1 = Java::QtJambi::QLongFlags::value(env, myObject);
+            jlong h2 = Java::QtJambi::QLongFlags::value(env, otherObject);
             return h1<h2;
         }else
 #endif
         if(Java::QtJambi::QFlags::isInstanceOf(env, myObject) && otherObject && env->IsInstanceOf(otherObject, env->GetObjectClass(myObject))){
-            jint h1 = Java::QtJambi::QFlags::intValue(env, myObject);
-            jint h2 = Java::QtJambi::QFlags::intValue(env, otherObject);
+            jint h1 = Java::QtJambi::QFlags::toInt(env, myObject);
+            jint h2 = Java::QtJambi::QFlags::toInt(env, otherObject);
             return h1<h2;
         }else if(Java::QtJambi::QtEnumerator::isInstanceOf(env, myObject) && otherObject && env->IsInstanceOf(otherObject, env->GetObjectClass(myObject))){
             jint h1 = Java::QtJambi::QtEnumerator::value(env, myObject);

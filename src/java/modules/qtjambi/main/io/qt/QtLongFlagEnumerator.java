@@ -40,7 +40,7 @@ public interface QtLongFlagEnumerator extends QtLongEnumerator, QtAbstractFlagEn
      */
 	public default long value() {
 		int o = ordinal();
-		if(!QtJambi_LibraryUtilities.internal.isSmallEnum(this))
+		if(!EnumUtility.isSmallEnum(this))
 			return o;
 		return o==0 ? 0 : 0x01 << (o-1);
 	}

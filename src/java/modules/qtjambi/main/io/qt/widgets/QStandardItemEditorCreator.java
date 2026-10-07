@@ -30,29 +30,26 @@
 
 package io.qt.widgets;
 
-import java.io.Serializable;
-import java.lang.invoke.MethodHandleInfo;
-import java.lang.invoke.MethodType;
-import java.lang.invoke.SerializedLambda;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Objects;
-import java.util.function.Function;
+import java.io.*;
+import java.lang.invoke.*;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.function.*;
 
-import io.qt.NonNull;
-import io.qt.Nullable;
-import io.qt.StrictNonNull;
-import io.qt.core.QByteArray;
-import io.qt.core.QMetaObject;
-import io.qt.core.QOperatingSystemVersion;
+import io.qt.*;
+import io.qt.core.*;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qstandarditemeditorcreator.html">QStandardItemEditorCreator</a></p>
  */
 public class QStandardItemEditorCreator<T extends QWidget> implements QItemEditorCreatorBase {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	
 	/**
 	 * Item editor widget factory handle.
+     * @serial exclude
 	 */
 	public interface Factory<@Nullable T> extends Function<@Nullable QWidget, @Nullable T>, Serializable{
 	}

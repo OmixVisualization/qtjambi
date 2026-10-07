@@ -82,7 +82,7 @@ namespace QtCore
                                  QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(resolve))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QMessageLogContext,
                                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
-                                 QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(__qt_directLink))
+                                 QTJAMBI_REPOSITORY_DECLARE_LONG_WRITABLE_FIELD(__qt_directLink))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QUnhandledException,
                                     QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()
                                      )
@@ -90,8 +90,8 @@ namespace QtCore
                                      QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()
                                     )
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QDebug,
-                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(__rcDevice)
-                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_FIELD(disabled))
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(__rcDevice)
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_WRITABLE_FIELD(disabled))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QCborStreamReader$StringResult,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QCborValue$FromCborResult,
@@ -391,7 +391,7 @@ namespace Runtime{
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(toByteArray))
 
     QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectByteBuffer,
-                QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+                QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(att)
                 inline static jfieldID att_field(JNIEnv* env){
                     auto _this = __qt_get_this(env);
                     return _this.__att;

@@ -31,6 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.gui.qpa"
+    noPackageInfo: true
     defaultSuperClass: "QtObject"
     targetName: "QtJambiGuiQpa"
     module: "qtjambi"
@@ -78,8 +79,9 @@ TypeSystem{
         Rejection{functionName: "createPlatformVulkanInstance"}
         InjectCode{
             target: CodeClass.Java
-            Text{content: "@QtUninvokable\n"+
-                          "public native static QPlatformIntegration instance();"}
+            Text{content: String.raw`
+                @QtUninvokable
+                public native static QPlatformIntegration instance();`}
         }
 
         ModifyFunction{

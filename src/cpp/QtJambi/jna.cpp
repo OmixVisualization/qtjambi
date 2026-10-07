@@ -377,10 +377,10 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                 }
 #if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
             }else if(argPointerOrReference==0 && !isReferenceMetaType && Java::QtJambi::QLongFlags::isInstanceOf(__jni_env, val)){
-                arg = Java::Runtime::Long::valueOf(__jni_env, Java::QtJambi::QLongFlags::longValue(__jni_env, val));
+                arg = Java::Runtime::Long::valueOf(__jni_env, Java::QtJambi::QLongFlags::value(__jni_env, val));
 #endif
             }else if(argPointerOrReference==0 && !isReferenceMetaType && Java::QtJambi::QFlags::isInstanceOf(__jni_env, val)){
-                arg = Java::Runtime::Integer::valueOf(__jni_env, Java::QtJambi::QFlags::intValue(__jni_env, val));
+                arg = Java::Runtime::Integer::valueOf(__jni_env, Java::QtJambi::QFlags::toInt(__jni_env, val));
             }else if(argPointerOrReference==0 && !isReferenceMetaType && Java::QtJambi::QtEnumerator::isInstanceOf(__jni_env, val)){
                 arg = Java::Runtime::Integer::valueOf(__jni_env, Java::QtJambi::QtEnumerator::value(__jni_env, val));
             }else if(argPointerOrReference==0 && !isReferenceMetaType && Java::QtJambi::QtByteEnumerator::isInstanceOf(__jni_env, val)){
@@ -858,7 +858,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                                     if(Java::QtJambi::QLongFlags::isInstanceOf(__jni_env, val)){
                                                         successActions.append([arg, val](JNIEnv* env){
                                                             if(jlong* flag = reinterpret_cast<jlong*>(Java::JNA::Pointer::peer(env, arg))){
-                                                                Java::QtJambi::QLongFlags::setLongValue(env, val, *flag);
+                                                                Java::QtJambi::QLongFlags::setValue(env, val, *flag);
                                                             }
                                                         });
                                                     }else
@@ -866,7 +866,7 @@ void convertArgumentList(QVector<Cleanup>& cleaners, QVector<SuccessAction>& suc
                                                     if(Java::QtJambi::QFlags::isInstanceOf(__jni_env, val)){
                                                         successActions.append([arg, val](JNIEnv* env){
                                                             if(int* flag = reinterpret_cast<int*>(Java::JNA::Pointer::peer(env, arg))){
-                                                                Java::QtJambi::QFlags::setIntValue(env, val, *flag);
+                                                                Java::QtJambi::QFlags::setValue(env, val, *flag);
                                                             }
                                                         });
                                                     }

@@ -423,4 +423,3 @@ jobject toBigInteger(JNIEnv* env, quint64 value, bool isNegative)
     object = Java::Runtime::BigInteger::newInstance(env, value==0 ? 0 : (isNegative ? -1 : 1), data);
     return object;
 }
-

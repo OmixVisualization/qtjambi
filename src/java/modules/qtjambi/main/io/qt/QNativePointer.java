@@ -49,7 +49,7 @@ import io.qt.core.QIODevice;
  */
 public final class QNativePointer {
     static {
-    	io.qt.QtUtilities.initializePackage("io.qt.internal");
+    	QtJambi_LibraryUtilities.initialize();
     }
     
     /**
@@ -1540,6 +1540,7 @@ public final class QNativePointer {
     
     /**
      * This exception is thrown when trying to write on a read-only native pointer.
+     * @serial exclude
      */
     public static class ReadOnlyNativePointerException extends UnsupportedOperationException{
 		private static final long serialVersionUID = -8238568644716457250L;

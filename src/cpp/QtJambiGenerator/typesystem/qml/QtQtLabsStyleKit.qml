@@ -34,7 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtLabsStyleKit"
     module: "qtjambi.labsstylekit"
-    description: ""
+    description: "Provides classes for integrating Qt Labs StyleKit with Qt Widgets."
     LoadTypeSystem{name: "QtWidgets"}
     ObjectType{
         name: "QStyleKitStyle"

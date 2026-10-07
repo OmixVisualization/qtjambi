@@ -53,7 +53,7 @@ namespace Java{
 namespace QtTaskTree{
 QTJAMBI_REPOSITORY_DECLARE_CLASS(Timeout,
                                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
-                                 QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(__qt_directLink))
+                                 QTJAMBI_REPOSITORY_DECLARE_LONG_WRITABLE_FIELD(__qt_directLink))
 QTJAMBI_REPOSITORY_DECLARE_CLASS(Storage$ActiveStorage,
                                  QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 }

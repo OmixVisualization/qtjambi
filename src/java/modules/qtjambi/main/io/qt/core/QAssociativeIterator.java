@@ -29,8 +29,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.NoSuchElementException;
-
+import java.util.*;
 import io.qt.*;
 
 /**

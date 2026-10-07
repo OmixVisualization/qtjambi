@@ -51,21 +51,6 @@ import io.qt.core.QObject;
  * @hidden
  */
 public interface InternalAccess {
-	
-	<E extends Enum<E> & io.qt.QtEnumerator> E resolveEnum(Class<E> cl, int value, String name);
-	
-	<E extends Enum<E> & io.qt.QtByteEnumerator> E resolveEnum(Class<E> cl, byte value, String name);
-	
-	<E extends Enum<E> & io.qt.QtShortEnumerator> E resolveEnum(Class<E> cl, short value, String name);
-	
-	<E extends Enum<E> & io.qt.QtLongEnumerator> E resolveEnum(Class<E> cl, long value, String name);
-	
-	<T extends QtAbstractFlagEnumerator> T[] flagConstants(QFlags<T> flags);
-	
-	QFlags<?> asFlags(QtAbstractFlagEnumerator flag);
-	
-	boolean isSmallEnum(QtAbstractFlagEnumerator enm);
-
     boolean isJavaOwnership(io.qt.QtObject object);
 
     boolean isJavaOwnership(io.qt.QtObjectInterface object);
@@ -100,6 +85,9 @@ public interface InternalAccess {
     
     Object findAssociation(Object object);
     
+    /**
+     * @hidden
+     */
     interface NativeIdInfo{
     	long nativeId();
     	boolean needsReferenceCounting();
@@ -195,7 +183,7 @@ public interface InternalAccess {
     
     <S extends java.io.Serializable> java.lang.reflect.Executable lambdaExecutable(S lambdaExpression);
     
-    <T> Class<T> getClass(T object);
+    <T> Class<? extends T> getClass(T object);
     
     Object readField(Object owner, Field f);
     
@@ -270,4 +258,144 @@ public interface InternalAccess {
     SerializedLambda serializeLambdaExpression(Serializable slotObject);
     
     boolean useAnnotatedType();
+
+	default <E extends Enum<E> & QtEnumerator> E resolveEnum(Class<E> cl, int value, String name) {
+		if (name != null) {
+			if (name.isEmpty())
+				name = null;
+			else {
+				E enm = null;
+				try {
+					enm = Enum.valueOf(cl, name);
+				} catch (Exception e) {
+				}
+				if (enm != null) {
+					if (enm.value() == value) {
+						return enm;
+					} else {
+						throw new io.qt.QNoSuchEnumValueException(value, name);
+					}
+				}
+			}
+		}
+		try {
+			E enm = EnumUtility.resolveIntEnum(cl.hashCode(), cl, value, name);
+			if (enm == null) {
+				if (name == null)
+					throw new QNoSuchEnumValueException(value);
+				else
+					throw new QNoSuchEnumValueException(value, name);
+			}
+			return enm;
+		} catch (QNoSuchEnumValueException e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new QNoSuchEnumValueException(value, e);
+		}
+	}
+
+	default <E extends Enum<E> & QtByteEnumerator> E resolveEnum(Class<E> cl, byte value, String name) {
+		if (name != null) {
+			if (name.isEmpty())
+				name = null;
+			else {
+				E enm = null;
+				try {
+					enm = Enum.valueOf(cl, name);
+				} catch (Exception e) {
+				}
+				if (enm != null) {
+					if (enm.value() == value) {
+						return enm;
+					} else {
+						throw new io.qt.QNoSuchEnumValueException(value, name);
+					}
+				}
+			}
+		}
+		try {
+			E enm = EnumUtility.resolveByteEnum(cl.hashCode(), cl, value, name);
+			if (enm == null) {
+				if (name == null)
+					throw new QNoSuchEnumValueException(value);
+				else
+					throw new QNoSuchEnumValueException(value, name);
+			}
+			return enm;
+		} catch (QNoSuchEnumValueException e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new QNoSuchEnumValueException(value, e);
+		}
+	}
+
+	default <E extends Enum<E> & QtShortEnumerator> E resolveEnum(Class<E> cl, short value, String name) {
+		if (name != null) {
+			if (name.isEmpty())
+				name = null;
+			else {
+				E enm = null;
+				try {
+					enm = Enum.valueOf(cl, name);
+				} catch (Exception e) {
+				}
+				if (enm != null) {
+					if (enm.value() == value) {
+						return enm;
+					} else {
+						throw new io.qt.QNoSuchEnumValueException(value, name);
+					}
+				}
+			}
+		}
+		try {
+			E enm = EnumUtility.resolveShortEnum(cl.hashCode(), cl, value, name);
+			if (enm == null) {
+				if (name == null)
+					throw new QNoSuchEnumValueException(value);
+				else
+					throw new QNoSuchEnumValueException(value, name);
+			}
+			return enm;
+		} catch (QNoSuchEnumValueException e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new QNoSuchEnumValueException(value, e);
+		}
+	}
+
+	default <E extends Enum<E> & QtLongEnumerator> E resolveEnum(Class<E> cl, long value, String name) {
+		if (name != null) {
+			if (name.isEmpty())
+				name = null;
+			else {
+				E enm = null;
+				try {
+					enm = Enum.valueOf(cl, name);
+				} catch (Exception e) {
+				}
+				if (enm != null) {
+					if (enm.value() == value) {
+						return enm;
+					} else {
+						throw new io.qt.QNoSuchEnumValueException(value, name);
+					}
+				}
+			}
+		}
+		try {
+			E enm = EnumUtility.resolveLongEnum(cl.hashCode(), cl, value, name);
+			if (enm == null) {
+				if (name == null)
+					throw new QNoSuchEnumValueException(value);
+				else
+					throw new QNoSuchEnumValueException(value, name);
+			}
+			return enm;
+		} catch (QNoSuchEnumValueException e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new QNoSuchEnumValueException(value, e);
+		}
+	}
 }

@@ -34,6 +34,7 @@
 #include <QtCore/QReadWriteLock>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QVariant>
+#include <QtCore/QAbstractNativeEventFilter>
 
 #include "objectdata.h"
 
@@ -152,6 +153,8 @@ QTJAMBI_EXPORT size_t computeHash(const QMetaType& metaType, const void* ptr, si
 QTJAMBI_EXPORT void invokeAndCatch(JNIEnv *__jni_env, void* ptr, void(*expression)(void*));
 
 QTJAMBI_EXPORT QVariant convertCheckedObjectToQVariant(JNIEnv *env, jobject object, const QMetaType& metaType);
+
+QTJAMBI_EXPORT QVariant convertJavaObjectToQVariant(JNIEnv *env, jobject java_object);
 
 QTJAMBI_EXPORT QMetaType registeredMetaType(JNIEnv *env, jclass clazz, jobjectArray instantiations = nullptr);
 
@@ -276,6 +279,18 @@ jobject convertEnumToJavaObject(JNIEnv *env, E qt_enum)
 }
 
 }
+
+struct ForwardedEventFilterPrivate;
+
+class QTJAMBI_EXPORT ForwardedEventFilter : public QAbstractNativeEventFilter{
+protected:
+    ForwardedEventFilter(QtJambiNativeID nativeId);
+    QAbstractNativeEventFilter* filter() const;
+public:
+    ~ForwardedEventFilter() override;
+private:
+    ForwardedEventFilterPrivate* d;
+};
 
 struct QtJambiSpan{
     const void* begin = nullptr;

@@ -32,6 +32,7 @@ package io.qt;
 /**
  * This exception is thrown when a method with {@link QtDeclaredFinal} annotation is overridden.
  * This is the case whenever a native non-virtual method cannot be represented by a Java method with final modifier.
+ * @serial exclude
  */
 public class QNonVirtualOverridingException extends RuntimeException
 {

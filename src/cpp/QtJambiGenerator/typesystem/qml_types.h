@@ -70,6 +70,9 @@ public:
     bool getPreferredJavaType() const;
     void setPreferredJavaType(bool newPreferredJavaType);
 
+    QString getCast() const;
+    void setCast(const QString &newCast);
+
 signals:
 
     void javaNameChanged();
@@ -80,16 +83,20 @@ signals:
 
     void preferredJavaTypeChanged();
 
+    void castChanged();
+
 private:
     QString javaName;
     QString jniName;
     bool preferredConversion = true;
     bool preferredJavaType = true;
+    QString cast = "static";
 
     Q_PROPERTY(QString javaName READ getJavaName WRITE setJavaName NOTIFY javaNameChanged)
     Q_PROPERTY(QString jniName READ getJniName WRITE setJniName NOTIFY jniNameChanged)
     Q_PROPERTY(bool preferredConversion READ getPreferredConversion WRITE setPreferredConversion NOTIFY preferredConversionChanged)
     Q_PROPERTY(bool preferredJavaType READ getPreferredJavaType WRITE setPreferredJavaType NOTIFY preferredJavaTypeChanged)
+    Q_PROPERTY(QString cast READ getCast WRITE setCast NOTIFY castChanged FINAL)
 };
 
 class ComplexType : public AbstractType
@@ -182,6 +189,9 @@ public:
     bool getNonSealed() const;
     void setNonSealed(bool newNonSealed);
 
+    bool getAsDirectLink() const;
+    void setAsDirectLink(bool newAsDirectLink);
+
 signals:
     void packageNameChanged();
 
@@ -239,6 +249,8 @@ signals:
 
     void nonSealedChanged();
 
+    void asDirectLinkChanged();
+
 private:
     QString packageName;
     QString implementing;
@@ -268,6 +280,7 @@ private:
     bool addTextStreamFunctions = false;
     bool sealed = false;
     bool nonSealed = false;
+    bool asDirectLink = false;
     Q_PROPERTY(QString packageName READ getPackageName WRITE setPackageName NOTIFY packageNameChanged)
     Q_PROPERTY(QString implementing READ getImplementing WRITE setImplementing NOTIFY implementingChanged)
     Q_PROPERTY(QString using READ getUsing WRITE setUsing NOTIFY usingChanged)
@@ -296,6 +309,7 @@ private:
     Q_PROPERTY(QString permitting READ getPermitting WRITE setPermitting NOTIFY permittingChanged FINAL)
     Q_PROPERTY(bool sealed READ getSealed WRITE setSealed NOTIFY sealedChanged FINAL)
     Q_PROPERTY(bool nonSealed READ getNonSealed WRITE setNonSealed NOTIFY nonSealedChanged FINAL)
+    Q_PROPERTY(bool asDirectLink READ getAsDirectLink WRITE setAsDirectLink NOTIFY asDirectLinkChanged FINAL)
 };
 
 class ObjectType : public ComplexType

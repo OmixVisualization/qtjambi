@@ -29,7 +29,7 @@
 ****************************************************************************/
 
 /**
- * QtJambi Deployer Tool
+ * <b>QtJambi's Deployer Tool</b> - Usage: <code>java --module qtjambi.deployer [plugin|qml|application|qt]</code>
  */
 module qtjambi.deployer {
     requires java.base;

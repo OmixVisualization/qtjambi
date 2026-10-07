@@ -1377,6 +1377,9 @@ void CppImplGenerator::write(QTextStream &s, const MetaClass *java_class, int) {
         if(java_class->typeEntry()->isQAbstractItemModel()){
             writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/ModelAPI")), included);
         }
+        if(java_class->isQWindow()){
+            writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/QNativeEvent")), included);
+        }
         if(java_class->typeEntry()->isIterator()){
             writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/ContainerAPI")), included);
         }
@@ -1658,8 +1661,9 @@ void CppImplGenerator::write(QTextStream &s, const MetaClass *java_class, int) {
         s << "// emitting Public Override Functions (publicOverrideFunctions)" << Qt::endl;
         for(MetaFunction *function : java_class->publicOverrideFunctions()) {
             if((functionsInTargetLang.contains(function) || signalsInTargetLang.contains(function))
-                    && !function->isProxyCall())
+                    && !function->isProxyCall()){
                 writePublicFunctionOverride(s, function, java_class);
+            }
         }
 
         // Write virtual function overries used to decide on static/virtual calls
@@ -1671,8 +1675,9 @@ void CppImplGenerator::write(QTextStream &s, const MetaClass *java_class, int) {
                         || ( (java_class->isAbstract() || java_class->isInterface()) && function->isAbstract() ))
                     && !(function->isRemovedFrom(java_class, TS::TargetLangCode)
                          || function->isRemovedFrom(function->declaringClass(), TS::TargetLangCode)
-                         ))
+                         )){
                 writeVirtualFunctionOverride(s, function, java_class);
+            }
         }
     }
     writeClassCodeInjections(s, java_class, CodeSnip::Position3);
@@ -1949,8 +1954,7 @@ void CppImplGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s, cons
                     if(!cls->typeEntry()->ppCondition().isEmpty()){
                         s << Qt::endl << "#if " << cls->typeEntry()->ppCondition() << Qt::endl << Qt::endl;
                     }
-                    if(!cls->typeEntry()->isQMetaObjectType()
-                            && !cls->typeEntry()->isQMessageLogContextType()){
+                    if(!cls->typeEntry()->isDirectLink()){
                         s << INDENT << cls->qualifiedCppName() << " *__qt_this = ";
                         if(cls->typeEntry()->isNativeIdBased()){
                             if(cls->typeEntry()->isIterator()){
@@ -2058,8 +2062,7 @@ void CppImplGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s, cons
                     if(!cls->typeEntry()->ppCondition().isEmpty()){
                         s << Qt::endl << "#if " << cls->typeEntry()->ppCondition() << Qt::endl << Qt::endl;
                     }
-                    if(!cls->typeEntry()->isQMetaObjectType()
-                            && !cls->typeEntry()->isQMessageLogContextType()){
+                    if(!cls->typeEntry()->isDirectLink()){
                         s << INDENT << "const " << cls->qualifiedCppName() << " *__qt_this = ";
                         if(cls->typeEntry()->isNativeIdBased()){
                             s << "qtjambi_cast<const " << cls->typeEntry()->qualifiedCppName() << "*>(__this_nativeId);" << Qt::endl;
@@ -2218,8 +2221,7 @@ void CppImplGenerator::writeToStringFunction(QTextStream &s, const MetaClass *ja
                 if(!java_class->typeEntry()->ppCondition().isEmpty()){
                     s << Qt::endl << "#if " << java_class->typeEntry()->ppCondition() << Qt::endl << Qt::endl;
                 }
-                if(!java_class->typeEntry()->isQMetaObjectType()
-                        && !java_class->typeEntry()->isQMessageLogContextType()){
+                if(!java_class->typeEntry()->isDirectLink()){
                     s << INDENT << java_class->qualifiedCppName() << " *__qt_this = ";
                     if(java_class->typeEntry()->isNativeIdBased()){
                         s << "qtjambi_cast<" << java_class->typeEntry()->qualifiedCppName() << "*>(__this_nativeId);" << Qt::endl;
@@ -2307,8 +2309,7 @@ void CppImplGenerator::writeCloneFunction(QTextStream &s, const MetaClass *java_
             if(!java_class->typeEntry()->ppCondition().isEmpty()){
                 s << Qt::endl << "#if " << java_class->typeEntry()->ppCondition() << Qt::endl << Qt::endl;
             }
-            if(!java_class->typeEntry()->isQMetaObjectType()
-                    && !java_class->typeEntry()->isQMessageLogContextType()){
+            if(!java_class->typeEntry()->isDirectLink()){
                 s << INDENT << "const " << java_class->typeEntry()->qualifiedCppName() << " *__qt_this = ";
                 if(java_class->typeEntry()->isNativeIdBased()){
                     s << "qtjambi_cast<" << java_class->typeEntry()->qualifiedCppName() << "*>(__this_nativeId);" << Qt::endl;
@@ -4133,7 +4134,7 @@ bool CppImplGenerator::writeBaseClassFunctionCall(QTextStream &s,
                     s << implementor->qualifiedCppName() << "*>(this)->";
                 }
             }
-        }else{
+        }else if(!java_function->superFunction()){
             s << implementor->qualifiedCppName() << "::";
         }
         s << java_function->originalName();
@@ -4229,8 +4230,7 @@ void CppImplGenerator::writeFunctionName(QTextStream &s,
             args += jni_signature(java_function->implementingClass()->typeEntry()->qualifiedTargetLangName(), format);
     }else if (callThrough && !java_function->isStatic()){
         if(java_function->implementingClass()->typeEntry()->isNativeIdBased()
-                || java_function->implementingClass()->typeEntry()->isQMetaObjectType()
-                || java_function->implementingClass()->typeEntry()->isQMessageLogContextType()){
+                || java_function->implementingClass()->typeEntry()->isDirectLink()){
             args += "J";
         }else if(java_function->declaringClass()->typeEntry()->isInterface()){
             args += jni_signature(java_function->declaringClass()->typeEntry()->qualifiedTargetLangName(), format);
@@ -4428,8 +4428,7 @@ void CppImplGenerator::writeFinalFunctionArguments(QTextStream &s, const MetaFun
                     s << " jclass," << Qt::endl;
                 else
                     s << " jobject __this";
-                if(java_function->declaringClass()->typeEntry()->isQMetaObjectType()
-                        || java_function->declaringClass()->typeEntry()->isQMessageLogContextType()){
+                if(java_function->declaringClass()->typeEntry()->isDirectLink()){
                     s << "," << Qt::endl
                       << (java_function->isConstant() ? " const " : " ") << java_function->declaringClass()->qualifiedCppName() << " *__qt_this";
                 }
@@ -6517,8 +6516,11 @@ void CppImplGenerator::writeFinalFunction(QTextStream &s, const MetaFunction *ja
         const MetaClass *java_class) {
     Q_ASSERT(java_class);
 
-    if (java_function->wasPrivate())
-        return ;
+    if (java_function->wasPrivate() && !java_function->superFunction())
+        return;
+
+    //if(java_function->superFunction() && !java_function->superFunction()->wasPublic())
+    //    return;
 
     if (java_function->isModifiedRemoved(TS::NativeCode))
         return;
@@ -6589,8 +6591,7 @@ void CppImplGenerator::writeFinalFunction(QTextStream &s, const MetaFunction *ja
             bool hasThisVar = false;
             if(!java_function->isStatic() && !(java_function->isConstructor())){
                 hasThisVar = java_function->needsCallThrough() || !(java_function->implementingClass()->typeEntry()->isNativeIdBased()
-                                                                    || java_function->implementingClass()->typeEntry()->isQMetaObjectType()
-                                                                    || java_function->implementingClass()->typeEntry()->isQMessageLogContextType());
+                                                                    || java_function->implementingClass()->typeEntry()->isDirectLink());
             }
             if(!pps.isEmpty()){
                 s << "#if " << pps.join(QStringLiteral(u" && ")) << Qt::endl;
@@ -6617,8 +6618,7 @@ void CppImplGenerator::writeFinalFunction(QTextStream &s, const MetaFunction *ja
             } else {
                 bool hasShell = cls->generateShellClass();
                 if (!java_function->isStatic() && !(java_function->isConstructor())) {
-                    if(!cls->typeEntry()->isQMetaObjectType()
-                            && !cls->typeEntry()->isQMessageLogContextType()){
+                    if(!cls->typeEntry()->isDirectLink()){
                         if(cls->typeEntry()->isInterface() || cls->typeEntry()->designatedInterface() || cls->typeEntry()->isFunctional()){
                             s << INDENT;
                             if(java_function->isConstant())
@@ -6652,14 +6652,32 @@ void CppImplGenerator::writeFinalFunction(QTextStream &s, const MetaFunction *ja
                     }
                     s << ")" << Qt::endl;
                 }
-                if (java_function->isFinalInCpp() && !java_function->isProxyCall() && !java_function->wasPublic() && hasShell) {
-                    const QString& name = cls->typeEntry()->designatedInterface() ? cls->extractInterface()->name() : cls->name();
-                    if(java_function->isStatic())
+                if (java_function->isFinalInCpp() && !java_function->isProxyCall() && (!java_function->wasPublic() && (!java_function->superFunction() || !java_function->superFunction()->wasPublic())) && hasShell) {
+                    const MetaClass *callClass = cls;
+                    if (java_function->wasPrivate() && java_function->superFunction() && java_function->superFunction()->wasPublic()){
+                        callClass = java_function->superFunction()->implementingClass();
+                    }
+                    const QString& name = callClass->typeEntry()->designatedInterface() ? callClass->extractInterface()->name() : callClass->name();
+                    if(java_function->isStatic()){
                         qt_object_name = name + "_access";
-                    else if(java_function->isConstant())
-                        qt_object_name = QString("static_cast<const %1*>(%2)").arg(name + "_access",qt_object_name);
-                    else
-                        qt_object_name = QString("static_cast<%1*>(%2)").arg(name + "_access",qt_object_name);
+                    }else if(java_function->superFunction() && !java_function->superFunction()->wasPublic()){
+                        Q_ASSERT(java_function->superFunction());
+                        if(java_function->isConstant())
+                            qt_object_name = QString("static_cast<const %1_%2_access*>(static_cast<const %3*>(%4))").arg(name,
+                                                                                                                         java_function->superFunction()->implementingClass()->name(),
+                                                                                                                         java_function->superFunction()->implementingClass()->qualifiedCppName(),
+                                                                                                                         qt_object_name);
+                        else
+                            qt_object_name = QString("static_cast<%1_%2_access*>(static_cast<%3*>(%4))").arg(name,
+                                                                                                             java_function->superFunction()->implementingClass()->name(),
+                                                                                                             java_function->superFunction()->implementingClass()->qualifiedCppName(),
+                                                                                                             qt_object_name);
+                    }else{
+                        if(java_function->isConstant())
+                            qt_object_name = QString("static_cast<const %1_access*>(%2)").arg(name,qt_object_name);
+                        else
+                            qt_object_name = QString("static_cast<%1_access*>(%2)").arg(name,qt_object_name);
+                    }
                     s << INDENT;
                     if(return_type!="void")
                         s << "__java_return_value = ";
@@ -6673,9 +6691,9 @@ void CppImplGenerator::writeFinalFunction(QTextStream &s, const MetaFunction *ja
                     if(java_function->isStatic())
                         qt_object_name = name + "_access";
                     else if(java_function->isConstant())
-                        qt_object_name = QString("static_cast<const %1*>(%2)").arg(name + "_access",qt_object_name);
+                        qt_object_name = QString("static_cast<const %1_access*>(%2)").arg(name,qt_object_name);
                     else
-                        qt_object_name = QString("static_cast<%1*>(%2)").arg(name + "_access",qt_object_name);
+                        qt_object_name = QString("static_cast<%1_access*>(%2)").arg(name,qt_object_name);
                     s << INDENT;
                     if(return_type!="void" && !java_function->isSelfReturningFunction())
                         s << "__java_return_value = ";
@@ -6687,6 +6705,18 @@ void CppImplGenerator::writeFinalFunction(QTextStream &s, const MetaFunction *ja
                 }else{
                     writeFinalFunctionSetup(s, java_function, qt_object_name, cls);
                     writeCodeInjections(s, java_function, java_function->implementingClass(), CodeSnip::Beginning, TS::NativeCode, "__jni_env", "__qtjambi_scope");
+
+                    if (java_function->wasPrivate() && java_function->superFunction() && java_function->superFunction()->wasPublic()){
+                        if(java_function->isConstant())
+                            qt_object_name = QString("static_cast<const %1*>(%2)").arg(java_function->superFunction()->implementingClass()->qualifiedCppName(), qt_object_name);
+                        else
+                            qt_object_name = QString("static_cast<%1*>(%2)").arg(java_function->superFunction()->implementingClass()->qualifiedCppName(), qt_object_name);
+                    }else if(!java_function->isStatic() && !java_function->isInGlobalScope() && java_function->declaringClass()!=cls && !java_function->declaringClass()->isNamespace()){
+                        if(java_function->isConstant())
+                            qt_object_name = QString("static_cast<const %1*>(%2)").arg(java_function->declaringClass()->qualifiedCppName(), qt_object_name);
+                        else
+                            qt_object_name = QString("static_cast<%1*>(%2)").arg(java_function->declaringClass()->qualifiedCppName(), qt_object_name);
+                    }
 
                     QStringList extra_param;
                     Option option = EnumAsInts;
@@ -6708,7 +6738,9 @@ void CppImplGenerator::writeFinalFunction(QTextStream &s, const MetaFunction *ja
                         if(java_function->proxyCall()!="//"){
                             s << INDENT;
                             if (function_type) {
-                                if(!java_function->proxyCall().isEmpty() || function_type->typeEntry()->isUnknown()){
+                                if(!java_function->proxyCall().isEmpty()
+                                        || function_type->typeEntry()->isUnknown()
+                                        || (function_type->typeEntry()->isContainer() && static_cast<const ContainerTypeEntry *>(function_type->typeEntry())->type() == ContainerTypeEntry::std_array)){
                                     if(returnTypeReplacement!="void"){
                                         s << "auto " << qt_return_value << " = ";
                                         hasReturn = true;
@@ -6796,8 +6828,7 @@ void CppImplGenerator::writeFinalFunction(QTextStream &s, const MetaFunction *ja
                     if (hasThisVar){
                         if(cls->typeEntry()->isNativeIdBased()){
                             s << INDENT << "Q_UNUSED(__this_nativeId)" << Qt::endl;
-                        }else if(cls->typeEntry()->isQMetaObjectType()
-                                 || cls->typeEntry()->isQMessageLogContextType()){
+                        }else if(cls->typeEntry()->isDirectLink()){
                             s << INDENT << "Q_UNUSED(__this)" << Qt::endl;
                         }
                     }
@@ -6828,8 +6859,7 @@ void CppImplGenerator::writeFinalFunction(QTextStream &s, const MetaFunction *ja
     }
     if(!java_function->isStatic()){
         if(!lines.contains("__qtjambi_scope")){
-            if(java_function->implementingClass()->typeEntry()->isQMetaObjectType()
-                    || java_function->implementingClass()->typeEntry()->isQMessageLogContextType()
+            if(java_function->implementingClass()->typeEntry()->isDirectLink()
                     || (java_function->implementingClass()->typeEntry()->isNativeIdBased()
                         && !java_function->implementingClass()->typeEntry()->designatedInterface()))
                 s << INDENT << "Q_UNUSED(__this)" << Qt::endl;
@@ -7034,8 +7064,7 @@ void CppImplGenerator::writeFieldAccessors(QTextStream &s, const MetaField *java
                     if(!pps.isEmpty())
                         s << "#if " << pps.join(QStringLiteral(u" && ")) << Qt::endl;
                     if (!setter->isStatic()) {
-                        if(!cls->typeEntry()->isQMetaObjectType()
-                                && !cls->typeEntry()->isQMessageLogContextType()){
+                        if(!cls->typeEntry()->isDirectLink()){
                             if(cls->typeEntry()->isInterface() || cls->typeEntry()->designatedInterface() || cls->typeEntry()->isFunctional()){
                                 s << INDENT;
                                 if(setter->isConstant())
@@ -7204,8 +7233,7 @@ void CppImplGenerator::writeFieldAccessors(QTextStream &s, const MetaField *java
                     if(!pps.isEmpty())
                         s << "#if " << pps.join(QStringLiteral(u" && ")) << Qt::endl;
                     if (!getter->isStatic()) {
-                        if(!cls->typeEntry()->isQMetaObjectType()
-                                && !cls->typeEntry()->isQMessageLogContextType()){
+                        if(!cls->typeEntry()->isDirectLink()){
                             if(cls->typeEntry()->isInterface() || cls->typeEntry()->designatedInterface() || cls->typeEntry()->isFunctional()){
                                 s << INDENT;
                                 if(getter->isConstant())
@@ -9197,13 +9225,18 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
         s << ">(" << __jni_env << ", " << qtjambi_scope << ", " << java_name << ")";
     } else if (java_type->isQString()) {
         if((option & OptionalScope) == OptionalScope){
+            QString type;
+            {
+                QTextStream s(&type);
+                writeTypeInfo(s, java_type, java_type->indirections().isEmpty() && java_type->getReferenceType()!=MetaType::NoReference ? Option(ForceValueType | SkipName) : SkipName);
+            }
             s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
-            s << INDENT << "    QString* _" << qt_name << " = new QString();" << Qt::endl;
+            s << INDENT << "    " << type << "* _" << qt_name << " = new " << type << "();" << Qt::endl;
             s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
             s << INDENT << "    " << qtjambi_scope << "->addDeletion(_" << qt_name << ");" << Qt::endl;
             s << INDENT << "}" << Qt::endl;
             s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return false;" << Qt::endl;
-            s << INDENT << "*reinterpret_cast<QString*>(" << qt_name << ") = ";
+            s << INDENT << "*reinterpret_cast<" << type << "*>(" << qt_name << ") = ";
         }else if((option & DirectReturn) == DirectReturn){
             s << INDENT << "return ";
         }else if((option & NoTmpVariable) == NoTmpVariable){
@@ -11930,19 +11963,6 @@ void CppImplGenerator::writeFunctionCall(QTextStream &s, const QString &object_n
             }
         }
 
-        //AbstractMetaClassList interfaces = java_function->implementingClass()->interfaces();
-
-        if (prefix.isEmpty()
-                && !(option & JNIProxyFunction)
-                && !java_function->isInGlobalScope()
-                && !java_function->isStatic()
-                && !java_function->isAbstract()
-                && !java_function->implementingClass()->typeEntry()->isNativeInterface()
-                && !java_function->implementingClass()->interfaces().isEmpty()
-                && !java_function->implementingClass()->inheritsFrom(java_function->declaringClass())) {
-            prefix = java_function->declaringClass()->qualifiedCppName() + "::";
-        }
-
         // Global scope stream operators need the arguments to be reordered (this ref at end)
         // so we special case them in order to simplify this code
         if (!java_function->type()
@@ -12238,7 +12258,7 @@ void CppImplGenerator::writeFunctionCall(QTextStream &s, const QString &object_n
                         s << "(";
                     }
                 }
-                QString prefix;
+                prefix.clear();
                 if(!(option & JNIProxyFunction))
                     prefix = "__qt_";
                 if(additionalClosingBracket && !java_function->type() && !java_function->arguments().isEmpty()){
@@ -12320,8 +12340,7 @@ void CppImplGenerator::writeFunctionCallArguments(QTextStream &s,
                 s << ", __qt_this";
             else if(java_function->implementingClass()->typeEntry()->isNativeIdBased())
                 s << ", __this_nativeId";
-            else if(java_function->implementingClass()->typeEntry()->isQMetaObjectType()
-                    || java_function->implementingClass()->typeEntry()->isQMessageLogContextType())
+            else if(java_function->implementingClass()->typeEntry()->isDirectLink())
                 s << ", __qt_this";
             else
                 s << ", __this";
@@ -12395,11 +12414,17 @@ void CppImplGenerator::writeFunctionCallArguments(QTextStream &s,
                       )
                      && !hasConversionRule
                     ) {
-                    if(argument->type()->isPrimitive())
-                        s << "static_cast<";
+                    if(argument->type()->isPrimitive()){
+                        const PrimitiveTypeEntry* ptype = static_cast<const PrimitiveTypeEntry*>(argument->type()->typeEntry());
+                        if(!ptype->getCast().isEmpty())
+                            s << ptype->getCast() << "_cast<";
+                    }
                     writeTypeInfo(s, argument->type(), Option(SkipName | ForceValueType));
-                    if(argument->type()->isPrimitive())
-                        s << ">";
+                    if(argument->type()->isPrimitive()){
+                        const PrimitiveTypeEntry* ptype = static_cast<const PrimitiveTypeEntry*>(argument->type()->typeEntry());
+                        if(!ptype->getCast().isEmpty())
+                            s << ">";
+                    }
                     s << "(";
                     paren++;
                 }else if(argument->type()->getReferenceType()==MetaType::RReference){
@@ -12615,7 +12640,7 @@ void CppImplGenerator::writeExtraIncludes(QTextStream &s, const MetaClass *java_
     std::sort(_classes.begin(), _classes.end(), [](const MetaClass *a, const MetaClass *b) -> bool {
         return a->name() < b->name();
     });
-    for(const MetaClass *cls : _classes){
+    for(const MetaClass *cls : std::as_const(_classes)){
         for(const Include& inc : cls->typeEntry()->extraIncludes()){
             if(inc.type==Include::IncludePath && inc.inherited){
                 includes << inc;
@@ -12632,7 +12657,7 @@ void CppImplGenerator::writeExtraIncludes(QTextStream &s, const MetaClass *java_
 
     std::sort(includes.begin(), includes.end());
     auto used = dedupe.size();
-    for(const Include &i : includes) {
+    for(const Include &i : std::as_const(includes)) {
         if (i.type != Include::TargetLangImport) {
             if(skipQtJambi){
                 if(!i.name.startsWith("QtJambi")){
@@ -12648,11 +12673,11 @@ void CppImplGenerator::writeExtraIncludes(QTextStream &s, const MetaClass *java_
         s << Qt::endl;
 }
 
-void CppImplGenerator::writeExtraIncludes(QTextStream &s, const MetaFunctional *java_class, IncludeList includes, QSet<QString>& dedupe, bool skipQtJambi) {
+void CppImplGenerator::writeExtraIncludes(QTextStream &s, const MetaFunctional *, IncludeList includes, QSet<QString>& dedupe, bool skipQtJambi) {
     std::sort(includes.begin(), includes.end());
 
     auto used = dedupe.size();
-    for(const Include &i : includes) {
+    for(const Include &i : std::as_const(includes)) {
         if (i.type != Include::TargetLangImport) {
             if(skipQtJambi){
                 if(!i.name.startsWith("QtJambi")){
@@ -12797,10 +12822,19 @@ void CppImplGenerator::writeTypeConversion(QTextStream &s, const MetaFunction *f
                         }else{
                             s << "[L" << type->typeEntry()->qualifiedTargetLangJNIName() << ";";
                         }
-                    }else if(type->typeEntry()->isVoid() || type->isNativePointer())
-                        s << "io/qt/QNativePointer";
-                    else
-                        s << type->typeEntry()->qualifiedTargetLangJNIName();
+                    }else{
+                        QString replacedJavaType;
+                        QString replacedJniType;
+                        QString replacedType = function->typeReplaced(index, &replacedJavaType, &replacedJniType);
+                        if(!replacedJavaType.isEmpty()){
+                            s << replacedJavaType.replace('.', '/');
+                        }else if(!replacedType.isEmpty()){
+                            s << annotationFreeTypeName(replacedType).replace('.', '/');
+                        }else if(type->typeEntry()->isVoid() || type->isNativePointer())
+                            s << "io/qt/QNativePointer";
+                        else
+                            s << type->typeEntry()->qualifiedTargetLangJNIName();
+                    }
                     s << "\"," << Qt::endl;
 
                     QStringList pps = getFunctionPPConditions(function);

@@ -107,13 +107,13 @@ import io.qt.core.QMetaObject.Slot8;
 import io.qt.core.QMetaObject.Slot9;
 import io.qt.core.QMetaObject.Slot10;
 import io.qt.core.QObject;
-import io.qt.core.QPair;
 import io.qt.core.QSet;
 import io.qt.core.QStaticMemberSignals;
 import io.qt.core.QStringList;
 import io.qt.core.QThread;
 import io.qt.core.Qt;
 import io.qt.core.Qt.ConnectionType;
+import io.qt.internal.CoreUtility.LambdaInfo;
 
 /**
  * @hidden
@@ -1027,7 +1027,7 @@ abstract class SignalUtility {
 
 		@Override
 		String name(AbstractSignal signal) {
-			return multiSignal.name();
+			return multiSignal.getName();
 		}
 		
 		@Override
@@ -2274,6 +2274,9 @@ abstract class SignalUtility {
 		}
 	}
 	
+    /**
+     * @hidden
+     */
     protected static abstract class AbstractSignal implements QMetaObject.Signal{
     	private AbstractSignalCore core;
 
@@ -2334,8 +2337,11 @@ abstract class SignalUtility {
         	}
         }
 		
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
-		public final int methodIndex() {
+		protected final int getMethodIndex() {
 			return core.methodIndex(this);
 		}
 
@@ -2359,8 +2365,11 @@ abstract class SignalUtility {
         	return true;
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
-        public final List<Class<?>> argumentTypes() {
+        protected final List<Class<?>> getArgumentTypes() {
         	List<SignalParameterType> types = core.signalTypes(this);
         	switch(types.size()){
         	case 0:
@@ -2387,49 +2396,34 @@ abstract class SignalUtility {
 		}
 
         /**
-         * Returns the object containing this signal.
-         * @return the signal containing object
+         * @hidden
          */
         @io.qt.QtUninvokable
-        public QtSignalEmitterInterface containingObject() {
-        	return null;
-        }
-
-        /**
-         * Returns the name of the signal
-         * @return The signal name
-         */
-        @io.qt.QtUninvokable
-        public final String name() {
+        protected final String getName() {
             return core.name(this);
         }
         
         /**
-         * Returns true if signal is connected
-         * @return connected
-         * @see QObject#isSignalConnected(io.qt.core.QMetaMethod)
+         * @hidden
          */
         @io.qt.QtUninvokable
-        public final boolean isConnected() {
+        protected final boolean getConnected() {
             return core.isConnected(this);
         }
         
         /**
-         * Returns the number of receivers connected to this signal
-         * @return receivers
-         * @see QObject#receivers(String)
+         * @hidden
          */
         @io.qt.QtUninvokable
-        public final int receivers() {
+        protected final int getReceivers() {
             return core.receivers(this);
         }
         
         /**
-         * Returns the full name of the signal, on the form "package.class.signalName"
-         *  @return The fully qualified name of the signal
+         * @hidden
          */
         @io.qt.QtUninvokable
-        public final String fullName() {
+        protected final String getFullName() {
         	return core.fullName(this);
         }
         
@@ -2437,6 +2431,9 @@ abstract class SignalUtility {
         	return core.signalMethod(this);
         }
 
+        /**
+         * @hidden
+         */
 		@io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnection(Object receiver, String method, Qt.ConnectionType... connectionType) {
         	QMetaObject metaObject = receiver instanceof QObject ? ((QObject)receiver).metaObject() : QMetaObject.forType(AccessUtility.instance.getClass(receiver));
@@ -2763,17 +2760,26 @@ abstract class SignalUtility {
         	core.emitSignal(this, args, arg1Default);
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final void emitDefaultSignal(Supplier<?> arg1Default, Supplier<?> arg2Default, final Object ... args) {
         	core.emitSignal(this, args, arg1Default, arg2Default);
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final void emitDefaultSignal(Supplier<?> arg1Default, Supplier<?> arg2Default, Supplier<?> arg3Default, 
         		final Object ... args) {
         	core.emitSignal(this, args, arg1Default, arg2Default, arg3Default);
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final void emitDefaultSignal(Supplier<?> arg1Default, Supplier<?> arg2Default, Supplier<?> arg3Default, 
         		Supplier<?> arg4Default, final Object ... args) {
@@ -2781,6 +2787,9 @@ abstract class SignalUtility {
 												arg4Default);
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final void emitDefaultSignal(Supplier<?> arg1Default, Supplier<?> arg2Default, Supplier<?> arg3Default, 
         		Supplier<?> arg4Default, Supplier<?> arg5Default, final Object ... args) {
@@ -2788,6 +2797,9 @@ abstract class SignalUtility {
         										arg4Default, arg5Default);
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final void emitDefaultSignal(Supplier<?> arg1Default, Supplier<?> arg2Default, Supplier<?> arg3Default, 
         		Supplier<?> arg4Default, Supplier<?> arg5Default, Supplier<?> arg6Default, 
@@ -2796,6 +2808,9 @@ abstract class SignalUtility {
 	        									arg4Default, arg5Default, arg6Default);
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final void emitDefaultSignal(Supplier<?> arg1Default, Supplier<?> arg2Default, Supplier<?> arg3Default, 
         		Supplier<?> arg4Default, Supplier<?> arg5Default, Supplier<?> arg6Default, 
@@ -2805,6 +2820,9 @@ abstract class SignalUtility {
 								        		arg7Default);
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final void emitDefaultSignal(Supplier<?> arg1Default, Supplier<?> arg2Default, Supplier<?> arg3Default, 
         		Supplier<?> arg4Default, Supplier<?> arg5Default, Supplier<?> arg6Default, 
@@ -2814,6 +2832,9 @@ abstract class SignalUtility {
 								        		arg7Default, arg8Default);        	
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final void emitDefaultSignal(Supplier<?> arg1Default, Supplier<?> arg2Default, Supplier<?> arg3Default, 
         		Supplier<?> arg4Default, Supplier<?> arg5Default, Supplier<?> arg6Default, 
@@ -2825,6 +2846,9 @@ abstract class SignalUtility {
         
         private final static Supplier<?>[] zeroarray = {};
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final void emitSignal(final Object ... args) {
         	core.emitSignal(this, args, zeroarray);
@@ -3528,6 +3552,9 @@ abstract class SignalUtility {
         	return matchMethodTypes(typeList, null);
         }
 
+        /**
+         * @hidden
+         */
         protected void checkConnection(Object receiver, boolean slotObject) {
         	if(receiver==this) {
     			throw new IllegalArgumentException("Cannot connect a signal to itself.");
@@ -3657,56 +3684,89 @@ abstract class SignalUtility {
         	return core.addConnectionToMethod(this, receiver, slot, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(GenericSlot slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(GenericSlotObjectConnection::new, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Slot0 slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection0::new, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Slot1<?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection1::new, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Slot2<?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection2::new, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Slot3<?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection3::new, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Slot4<?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection4::new, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Slot5<?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection5::new, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Slot6<?,?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection6::new, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Slot7<?,?,?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection7::new, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Slot8<?,?,?,?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection8::new, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Slot9<?,?,?,?,?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(SlotObjectConnection9::new, slotObject, connectionType);
@@ -3718,7 +3778,7 @@ abstract class SignalUtility {
             Class<?> lambdaOwnerClass = null;
 			int lambdaHashCode = 0;
 			Class<?> lambdaClass = AccessUtility.instance.getClass(slotObject);
-			MethodInfo methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(lambdaClass);
+			LambdaInfo.MethodInfo methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(lambdaClass);
 			boolean lambdaAnalyzed = false;
 			SerializedLambda serializedLambda;
 			if(methodInfo==null) {
@@ -3794,7 +3854,7 @@ abstract class SignalUtility {
 						return addConnectionToMethod(arg1, methodInfo.reflectiveMethod, methodInfo.methodHandle, methodInfo.isStaticMethod, null, connectionType);
 					}else {
 						if(metaMethod.methodType()==QMetaMethod.MethodType.Signal) {
-							MethodInfo _methodInfo = methodInfo;
+							LambdaInfo.MethodInfo _methodInfo = methodInfo;
 							logger.warning(()->String.format("Java method '%1$s' points to signal '%2$s'. Use signal connection instead: connect(receiver.%3$s)", _methodInfo.reflectiveMethod.toGenericString(), metaMethod.methodSignature(), metaMethod.name()));
 							if(arg1 instanceof AbstractSignal)
 								arg1 = ((AbstractSignal)arg1).containingObject();
@@ -3920,51 +3980,81 @@ abstract class SignalUtility {
             return this.core.addConnectionToSlotObject(this, factory, lambdaOwner, lambdaOwnerClass, lambdaHashCode, slotObject, connectionType);
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Object receiver, Slot1<?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(ContextualSlotObjectConnection0::new, receiver, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Object receiver, Slot2<?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(ContextualSlotObjectConnection1::new, receiver, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Object receiver, Slot3<?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(ContextualSlotObjectConnection2::new, receiver, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Object receiver, Slot4<?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(ContextualSlotObjectConnection3::new, receiver, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Object receiver, Slot5<?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(ContextualSlotObjectConnection4::new, receiver, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Object receiver, Slot6<?,?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(ContextualSlotObjectConnection5::new, receiver, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Object receiver, Slot7<?,?,?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(ContextualSlotObjectConnection6::new, receiver, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Object receiver, Slot8<?,?,?,?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(ContextualSlotObjectConnection7::new, receiver, slotObject, connectionType);
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Object receiver, Slot9<?,?,?,?,?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(ContextualSlotObjectConnection8::new, receiver, slotObject, connectionType);
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSlotObject(Object receiver, Slot10<?,?,?,?,?,?,?,?,?,?> slotObject, Qt.ConnectionType[] connectionType) {
         	return addConnectionToSlotObject(ContextualSlotObjectConnection9::new, receiver, slotObject, connectionType);
@@ -3976,7 +4066,7 @@ abstract class SignalUtility {
             Class<?> lambdaOwnerClass = null;
 			int lambdaHashCode = 0;
 			Class<?> lambdaClass = AccessUtility.instance.getClass(slotObject);
-			MethodInfo methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(lambdaClass);
+			LambdaInfo.MethodInfo methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(lambdaClass);
 			boolean lambdaAnalyzed = false;
 			SerializedLambda serializedLambda;
 			if(methodInfo==null) {
@@ -4068,7 +4158,7 @@ abstract class SignalUtility {
 						AbstractSignal signal = (AbstractSignal)lambdaOwner;
 						QMetaMethod method = signal.signalMethod();
 			    		if(method.isValid()) {
-			    			MethodInfo _methodInfo = methodInfo;
+			    			LambdaInfo.MethodInfo _methodInfo = methodInfo;
 							logger.warning(()->String.format("Java method '%1$s' points to signal '%2$s'. Use signal connection instead: connect(receiver.%3$s)", _methodInfo.reflectiveMethod.toGenericString(), method.methodSignature(), method.name()));
 			    			return addConnectionToMethod(signal.containingObject(), method, connectionType);
 			    		}
@@ -4119,6 +4209,9 @@ abstract class SignalUtility {
             return this.core.addConnectionToSlotObject(this, factory, lambdaOwner, lambdaOwnerClass, lambdaHashCode, slotObject, connectionType);
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSignalObject(AbstractSignal signalObject, Qt.ConnectionType[] connectionType) {
         	this.name();
@@ -4145,11 +4238,17 @@ abstract class SignalUtility {
         	return new NonConnection();//this.core.addConnectionToSignal(this, signalObject, connectionType);
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected static QMetaObject.Connection nonConnection() {
         	return new NonConnection();
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
 		protected final boolean removeConnectionToSignalObject(AbstractSignal signalObject) {
         	this.name();
@@ -4171,6 +4270,9 @@ abstract class SignalUtility {
         	return false;
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
 		protected final boolean removeConnectionToSlotObject(Serializable slotObject) {
         	if(slotObject instanceof AbstractSignal) {
@@ -4178,7 +4280,7 @@ abstract class SignalUtility {
         	}
 			Object lambdaOwner = null;
         	Class<?> lambdaClass = AccessUtility.instance.getClass(slotObject);
-			MethodInfo methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(lambdaClass);
+        	LambdaInfo.MethodInfo methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(lambdaClass);
 			boolean lambdaAnalyzed = false;
 			SerializedLambda serializedLambda;
 			if(methodInfo==null) {
@@ -4209,7 +4311,7 @@ abstract class SignalUtility {
 					QMetaMethod metaMethod = methodInfo.metaMethod();
 					Object arg1 = ClassAnalyzerUtility.LambdaTools.getCapturedArg(serializedLambda, 0);
 					if(metaMethod.methodType()==QMetaMethod.MethodType.Signal) {
-						MethodInfo _methodInfo = methodInfo;
+						LambdaInfo.MethodInfo _methodInfo = methodInfo;
 						logger.warning(()->String.format("Java method '%1$s' points to signal '%2$s'. Use signal connection instead: connect(receiver.%3$s)", _methodInfo.reflectiveMethod.toGenericString(), metaMethod.methodSignature(), metaMethod.name()));
 						if(arg1 instanceof AbstractSignal)
 							arg1 = ((AbstractSignal)arg1).containingObject();
@@ -4265,6 +4367,9 @@ abstract class SignalUtility {
 			return core.removeConnectionToSlotObject(this, slotObject, functionalInterfaceClass, lambdaOwner, lambdaOwnerClass, lambdaHashCode, serializedLambda!=null);
 		}
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
 		protected final boolean removeConnectionToSlotObject(final Object lambdaOwner, Serializable slotObject) {
         	java.util.Objects.requireNonNull(lambdaOwner, "Argument 'receiver': null not expected.");
@@ -4272,7 +4377,7 @@ abstract class SignalUtility {
         		return removeConnectionToSignalObject((AbstractSignal)slotObject);
         	}
         	Class<?> lambdaClass = AccessUtility.instance.getClass(slotObject);
-			MethodInfo methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(lambdaClass);
+        	LambdaInfo.MethodInfo methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(lambdaClass);
 			boolean lambdaAnalyzed = false;
 			SerializedLambda serializedLambda;
 			if(methodInfo==null) {
@@ -4320,7 +4425,7 @@ abstract class SignalUtility {
 						AbstractSignal signal = (AbstractSignal)lambdaOwner;
 						QMetaMethod method = signal.signalMethod();
 			    		if(method.isValid()) {
-			    			MethodInfo _methodInfo = methodInfo;
+			    			LambdaInfo.MethodInfo _methodInfo = methodInfo;
 							logger.warning(()->String.format("Java method '%1$s' points to signal '%2$s'. Use signal connection instead: connect(receiver.%3$s)", _methodInfo.reflectiveMethod.toGenericString(), method.methodSignature(), method.name()));
 			    			boolean result = removeConnectionToMethod(signal.containingObject(), method, true);
 			    			if(result)
@@ -4347,6 +4452,9 @@ abstract class SignalUtility {
 			return core.removeConnectionToSlotObject(this, slotObject, functionalInterfaceClass, lambdaOwner, lambdaOwnerClass, lambdaHashCode, serializedLambda!=null);
 		}
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final boolean removeConnection(Object receiver, String method) {
         	if(receiver!=null && method!=null) {
@@ -4385,6 +4493,9 @@ abstract class SignalUtility {
 			return core.removeConnectionToMethod(this, receiver, slot, allowNativeDisconnect);
 		}
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
 		protected final boolean removeConnection(QMetaObject.Connection conn) {
             boolean returned = false;
@@ -4404,8 +4515,11 @@ abstract class SignalUtility {
             return returned;
         }
 
+        /**
+         * {@inheritDoc}
+         */
 		@Override
-		public final String toString() {
+		public String toString() {
 			return core.toString(this);
 		}
     }
@@ -4485,6 +4599,9 @@ abstract class SignalUtility {
     	final Class<?> declaringClass(AbstractMultiSignal<Signal> multiSignal){return declaringClass;}
     }
 	
+    /**
+     * @hidden
+     */
     protected static abstract class AbstractMultiSignal<Signal extends AbstractSignal> {
     	private AbstractMultiSignalCore<Signal> core;
     	
@@ -4636,6 +4753,9 @@ abstract class SignalUtility {
         	}
         }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
     	protected final List<Signal> signals() {
 			return core.signals(this);
@@ -4682,6 +4802,9 @@ abstract class SignalUtility {
     		}
     	}
 
+        /**
+         * @hidden
+         */
     	@SuppressWarnings("unchecked")
         @io.qt.QtUninvokable
 		protected <A,B,C,D,E,F,G,H,I> QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> overload(Class<A> type1, Class<B> type2, Class<C> type3, Class<D> type4, Class<E> type5, 
@@ -4696,6 +4819,9 @@ abstract class SignalUtility {
     		return null;
     	}
     	
+        /**
+         * @hidden
+         */
     	@SuppressWarnings("unchecked")
         @io.qt.QtUninvokable
     	protected <A,B,C,D,E,F,G,H> QMetaObject.AbstractPrivateSignal8<A,B,C,D,E,F,G,H> overload(Class<A> type1, Class<B> type2, Class<C> type3, Class<D> type4, Class<E> type5, 
@@ -4710,6 +4836,9 @@ abstract class SignalUtility {
     		return null;
     	}
     	
+        /**
+         * @hidden
+         */
     	@SuppressWarnings("unchecked")
         @io.qt.QtUninvokable
 		protected <A,B,C,D,E,F,G> QMetaObject.AbstractPrivateSignal7<A,B,C,D,E,F,G> overload(Class<A> type1, Class<B> type2, Class<C> type3, Class<D> type4, Class<E> type5, 
@@ -4724,6 +4853,9 @@ abstract class SignalUtility {
     		return null;
     	}
     	
+        /**
+         * @hidden
+         */
     	@SuppressWarnings("unchecked")
         @io.qt.QtUninvokable
 		protected <A,B,C,D,E,F> QMetaObject.AbstractPrivateSignal6<A,B,C,D,E,F> overload(Class<A> type1, Class<B> type2, Class<C> type3, Class<D> type4, Class<E> type5, 
@@ -4738,6 +4870,9 @@ abstract class SignalUtility {
     		return null;
     	}
     	
+        /**
+         * @hidden
+         */
     	@SuppressWarnings("unchecked")
         @io.qt.QtUninvokable
 		protected <A,B,C,D,E> QMetaObject.AbstractPrivateSignal5<A,B,C,D,E> overload(Class<A> type1, Class<B> type2, Class<C> type3, Class<D> type4, Class<E> type5) throws QNoSuchSignalException{
@@ -4751,6 +4886,9 @@ abstract class SignalUtility {
     		return null;
     	}
     	
+        /**
+         * @hidden
+         */
     	@SuppressWarnings("unchecked")
         @io.qt.QtUninvokable
 		protected <A,B,C,D> QMetaObject.AbstractPrivateSignal4<A,B,C,D> overload(Class<A> type1, Class<B> type2, Class<C> type3, Class<D> type4) throws QNoSuchSignalException{
@@ -4764,6 +4902,9 @@ abstract class SignalUtility {
     		return null;
     	}
     	
+        /**
+         * @hidden
+         */
     	@SuppressWarnings("unchecked")
         @io.qt.QtUninvokable
 		protected <A,B,C> QMetaObject.AbstractPrivateSignal3<A,B,C> overload(Class<A> type1, Class<B> type2, Class<C> type3) throws QNoSuchSignalException{
@@ -4777,6 +4918,9 @@ abstract class SignalUtility {
     		return null;
     	}
     	
+        /**
+         * @hidden
+         */
     	@SuppressWarnings("unchecked")
         @io.qt.QtUninvokable
 		protected <A,B> QMetaObject.AbstractPrivateSignal2<A,B> overload(Class<A> type1, Class<B> type2) throws QNoSuchSignalException{
@@ -4790,6 +4934,9 @@ abstract class SignalUtility {
     		return null;
     	}
     	
+        /**
+         * @hidden
+         */
     	@SuppressWarnings("unchecked")
         @io.qt.QtUninvokable
 		protected <A> QMetaObject.AbstractPrivateSignal1<A> overload(Class<A> type1) throws QNoSuchSignalException{
@@ -4803,6 +4950,9 @@ abstract class SignalUtility {
     		return null;
     	}
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
     	protected QMetaObject.AbstractPrivateSignal0 overload() throws QNoSuchSignalException{
     		for(Signal signal : signals()) {
@@ -4815,6 +4965,9 @@ abstract class SignalUtility {
     		return null;
     	}
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
 	    protected boolean disconnect(QMetaObject.Connection connection) {
 	    	boolean result = false;
@@ -4824,6 +4977,9 @@ abstract class SignalUtility {
 	        return result;
 	    }
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
 	    protected boolean disconnectAll() {
 	    	boolean result = false;
@@ -4833,6 +4989,9 @@ abstract class SignalUtility {
 	        return result;
 	    }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final boolean disconnect(QMetaObject.AbstractSlot slotObject) {
         	boolean result = false;
@@ -4842,6 +5001,9 @@ abstract class SignalUtility {
         	return result;
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final boolean disconnect(Object receiver, QMetaObject.AbstractSlot slotObject) {
         	boolean result = false;
@@ -4851,6 +5013,9 @@ abstract class SignalUtility {
         	return result;
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
 		protected final boolean disconnect(AbstractSignal signalObject) {
         	boolean result = false;
@@ -4860,6 +5025,9 @@ abstract class SignalUtility {
         	return result;
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection connect(AbstractSignal signalObject, Qt.ConnectionType... connectionType) {
         	List<AbstractSignal> matchingSignals = new ArrayList<>();
@@ -4884,6 +5052,9 @@ abstract class SignalUtility {
         	return matchingSignals.get(0).addConnectionToSignalObject(signalObject, connectionType);
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection connect(QMetaObject.AbstractSlot slotObject, Qt.ConnectionType... connectionType) {
         	List<AbstractSignal> matchingSignals = new ArrayList<>();
@@ -5014,6 +5185,9 @@ abstract class SignalUtility {
         	}
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection connect(Object receiver, QMetaObject.AbstractSlot slotObject, Qt.ConnectionType... connectionType) {
         	List<AbstractSignal> matchingSignals = new ArrayList<>();
@@ -5144,6 +5318,9 @@ abstract class SignalUtility {
         	}
         }
         
+        /**
+         * @hidden
+         */
 		@io.qt.QtUninvokable
         protected QMetaObject.Connection connect(Object receiver, String method, Qt.ConnectionType... connectionType) {
         	QMetaObject metaObject = receiver instanceof QObject ? ((QObject)receiver).metaObject() : QMetaObject.forType(AccessUtility.instance.getClass(receiver));
@@ -5278,6 +5455,9 @@ abstract class SignalUtility {
         		return matchingSignals.get(0).addConnectionToMethod(receiver, metaMethod, connectionType);
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected boolean disconnect(Object receiver, String method) {
 	    	boolean result = false;
@@ -5289,7 +5469,7 @@ abstract class SignalUtility {
 
         @io.qt.QtUninvokable
 	    private void throwMismatchException(Class<?>... type) throws QNoSuchSignalException{
-	    	String name = this.fullName() + "(";
+	    	String name = this.getFullName() + "(";
 	    	for (int i = 0; i < type.length; i++) {
 				if(i!=0)
 					name += ",";
@@ -5303,28 +5483,24 @@ abstract class SignalUtility {
          * Returns the object containing this signal
          */
         @io.qt.QtUninvokable
-        public QtSignalEmitterInterface containingObject() {
-        	return null;
-        }
+        protected abstract QtSignalEmitterInterface containingObject();
 
         /**
-         * Returns the name of the signal
-         * @return The signal name
+         * @hidden
          */
         @io.qt.QtUninvokable
-        public final String name() {
+        protected final String getName() {
         	String name = core.name(this);
             return name==null ? "unnamed" : name;
         }
 
         /**
-         * Returns the full name of the signal, on the form "package.class.signalName"
-         *  @return The fully qualified name of the signal
+         *  @hidden
          */
         @io.qt.QtUninvokable
-        public final String fullName() {
+        protected final String getFullName() {
         	Class<?> declaringClass = core.declaringClass(this);
-        	String name = name();
+        	String name = getName();
             return declaringClass == null ? name : declaringClass.getName() + "." + name;
         }
     }
@@ -5801,6 +5977,9 @@ abstract class SignalUtility {
 		}
     }
     
+    /**
+     * @hidden
+     */
     public static interface StaticSlotInvoker{
     	void invoke(Object[] _arguments) throws Throwable;
     	default void invokeArguments(Object... _arguments) throws Throwable{
@@ -5808,6 +5987,9 @@ abstract class SignalUtility {
     	}
     }
     
+    /**
+     * @hidden
+     */
     public static interface SlotInvoker{
     	void invoke(Object instance, Object[] _arguments) throws Throwable;
     	default void invokeArguments(Object instance, Object... _arguments) throws Throwable{
@@ -5815,10 +5997,16 @@ abstract class SignalUtility {
     	}
     }
     
+    /**
+     * @hidden
+     */
     public static interface StaticLambdaArgsSlotInvoker{
     	void invoke(Object[] lambdaArgs, Object[] _arguments) throws Throwable;
     }
     
+    /**
+     * @hidden
+     */
     public static interface LambdaArgsSlotInvoker{
     	void invoke(Object instance, Object[] lambdaArgs, Object[] _arguments) throws Throwable;
     }
@@ -7163,33 +7351,7 @@ abstract class SignalUtility {
 		Class<?>[] classTypes = null;
 		Type[] types = null;
 		AnnotatedElement[] actualTypes = null;
-		if(data instanceof QPair) {
-			QPair<?,?> pair = (QPair<?,?>)data;
-			if(pair.first instanceof AbstractMultiSignal<?>) {
-				AbstractMultiSignal<?> multisignal = (AbstractMultiSignal<?>)pair.first;
-				Map<List<Class<?>>,EmitMethodInfo> emitMethodInfos = findEmitMethods(AccessUtility.instance.getClass(multisignal));
-				if(pair.second instanceof Integer) {
-					AbstractSignal signal = multisignal.signal((int)pair.second);
-					if(signal.core instanceof MultiSignalAnalyingSignalCore) {
-						MultiSignalAnalyingSignalCore core = (MultiSignalAnalyingSignalCore)signal.core;
-						classTypes = core.types;
-						EmitMethodInfo emitMethodInfo = emitMethodInfos.get(Arrays.asList(classTypes));
-						if(emitMethodInfo!=null) {
-							types = emitMethodInfo.method.getGenericParameterTypes();
-							if(ClassAnalyzerUtility.useAnnotatedType)
-								actualTypes = emitMethodInfo.method.getAnnotatedParameterTypes();
-						}
-					}
-				}else if(pair.second instanceof Class[]) {
-					EmitMethodInfo emitMethodInfo = emitMethodInfos.get(Arrays.asList((Class[])pair.second));
-					if(emitMethodInfo!=null) {
-						types = emitMethodInfo.method.getGenericParameterTypes();
-						if(ClassAnalyzerUtility.useAnnotatedType)
-							actualTypes = emitMethodInfo.method.getAnnotatedParameterTypes();
-					}
-				}
-			}
-		}else if(data instanceof Field) {
+		if(data instanceof Field) {
 			Type genericType = ((Field)data).getGenericType();
 			if (genericType instanceof java.lang.reflect.ParameterizedType) {
 				java.lang.reflect.ParameterizedType p = (java.lang.reflect.ParameterizedType) genericType;
@@ -7209,6 +7371,32 @@ abstract class SignalUtility {
 				actualTypes = ((Method)data).getAnnotatedParameterTypes();
 		}else if(data instanceof Class[]) {
 			classTypes = (Class<?>[])data;
+		}else if(data instanceof Map.Entry) {
+			Map.Entry<?,?> pair = (Map.Entry<?,?>)data;
+			if(pair.getKey() instanceof AbstractMultiSignal<?>) {
+				AbstractMultiSignal<?> multisignal = (AbstractMultiSignal<?>)pair.getKey();
+				Map<List<Class<?>>,EmitMethodInfo> emitMethodInfos = findEmitMethods(AccessUtility.instance.getClass(multisignal));
+				if(pair.getValue() instanceof Integer) {
+					AbstractSignal signal = multisignal.signal((int)pair.getValue());
+					if(signal.core instanceof MultiSignalAnalyingSignalCore) {
+						MultiSignalAnalyingSignalCore core = (MultiSignalAnalyingSignalCore)signal.core;
+						classTypes = core.types;
+						EmitMethodInfo emitMethodInfo = emitMethodInfos.get(Arrays.asList(classTypes));
+						if(emitMethodInfo!=null) {
+							types = emitMethodInfo.method.getGenericParameterTypes();
+							if(ClassAnalyzerUtility.useAnnotatedType)
+								actualTypes = emitMethodInfo.method.getAnnotatedParameterTypes();
+						}
+					}
+				}else if(pair.getValue() instanceof Class[]) {
+					EmitMethodInfo emitMethodInfo = emitMethodInfos.get(Arrays.asList((Class[])pair.getValue()));
+					if(emitMethodInfo!=null) {
+						types = emitMethodInfo.method.getGenericParameterTypes();
+						if(ClassAnalyzerUtility.useAnnotatedType)
+							actualTypes = emitMethodInfo.method.getAnnotatedParameterTypes();
+					}
+				}
+			}
 		}
 		
 		if(actualTypes!=null) {

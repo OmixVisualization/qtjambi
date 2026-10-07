@@ -38,23 +38,23 @@ package io.qt;
  * <p>
  * Java wrapper for Qt's class <a href="https://doc.qt.io/qt/qflags.html">QFlags</a>
  * </p>
- * 
  */
-@SuppressWarnings("serial")
 public abstract class QLongFlags<T extends QtLongFlagEnumerator> extends QFlags<T> {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
+    
 	/**
 	 * See <a href="https://doc.qt.io/qt/qflags.html#QFlags">QFlags::QFlags()</a>
 	 */
 	protected QLongFlags() {
-		this(0);
 	}
 	
 	/**
 	 * See <a href="https://doc.qt.io/qt/qflags.html#QFlags-2">QFlags::QFlags(QFlag)</a>
 	 */
 	protected QLongFlags(long value) {
-		super((int)value);
-		this.value = value;
+		setValue(value);
 	}
 	
 	/**
@@ -62,7 +62,6 @@ public abstract class QLongFlags<T extends QtLongFlagEnumerator> extends QFlags<
 	 */
 	@SafeVarargs
 	protected QLongFlags(@Nullable T @NonNull... args) {
-		this(0);
 		set(args);
 	}
 	
@@ -92,22 +91,25 @@ public abstract class QLongFlags<T extends QtLongFlagEnumerator> extends QFlags<
 	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-7c-1">QFlags::operator|=(QFlags&lt;T>)</a>
 	 */
 	public final void set(@StrictNonNull QLongFlags<T> flag) {
-		if(flag.getClass()==getClass())
-			value |= flag.value;
+		if(flag.getClass()==getClass()) {
+			long value = value();
+			value |= flag.value();
+			setValue(value);
+		}
 	}
 	
 	/**
 	 * @hidden
 	 */
 	void setImpl(@StrictNonNull QFlags<T> flag) {
-		long value = this.value;
+		long value = this.value();
 		if(flag.getClass()==getClass())
-			value |= ((QLongFlags<?>)flag).value;
-		this.setLongValue(value);
+			value |= ((QLongFlags<?>)flag).value();
+		this.setValue(value);
 	}
 	
 	boolean isNull() {
-		return value==0;
+		return value()==0;
 	}
 	
 	/**
@@ -125,6 +127,7 @@ public abstract class QLongFlags<T extends QtLongFlagEnumerator> extends QFlags<
 	 * See <a href="https://doc.qt.io/qt/qflags.html#setFlag">QFlags::setFlag(Enum, bool)</a>
 	 */
 	public @NonNull QLongFlags<T> setFlag(@Nullable T flag, boolean on) {
+		long value = this.value();
 		if (on) {
 			if (flag!=null) {
 				value |= flag.value();
@@ -134,6 +137,7 @@ public abstract class QLongFlags<T extends QtLongFlagEnumerator> extends QFlags<
 				value &= ~flag.value();
 			}
 		}
+		this.setValue(value);
 		return this;
 	}
 	
@@ -141,7 +145,7 @@ public abstract class QLongFlags<T extends QtLongFlagEnumerator> extends QFlags<
 	 * @hidden
 	 */
 	void setFlagImpl(@Nullable T flag, boolean on) {
-		long value = this.value;
+		long value = this.value();
 		if (on) {
 			if (flag!=null) {
 				value |= flag.value();
@@ -151,7 +155,7 @@ public abstract class QLongFlags<T extends QtLongFlagEnumerator> extends QFlags<
 				value &= ~flag.value();
 			}
 		}
-		this.setLongValue(value);
+		this.setValue(value);
 	}
 
 	/**
@@ -159,7 +163,7 @@ public abstract class QLongFlags<T extends QtLongFlagEnumerator> extends QFlags<
 	 */
 	public final boolean testFlags(@StrictNonNull QLongFlags<T> flags) {
 		if(flags.getClass()==getClass())
-			return (value & flags.longValue()) == flags.longValue();
+			return (value() & flags.value()) == flags.value();
 		return false;
 	}
 
@@ -168,14 +172,14 @@ public abstract class QLongFlags<T extends QtLongFlagEnumerator> extends QFlags<
 	 */
 	public final boolean testAnyFlags(@StrictNonNull QLongFlags<T> flags) {
 		if(flags.getClass()==getClass())
-			return (value & flags.longValue()) != 0;
+			return (value() & flags.value()) != 0;
 		return false;
 	}
 	
 	boolean testFlagImpl(@Nullable T flag) {
 		if (flag instanceof QtLongFlagEnumerator) {
 			QtLongFlagEnumerator t = (QtLongFlagEnumerator) flag;
-			return (value & t.value()) == t.value();
+			return (value() & t.value()) == t.value();
 		}
 		return super.testFlagImpl(flag);
 	}
@@ -186,43 +190,51 @@ public abstract class QLongFlags<T extends QtLongFlagEnumerator> extends QFlags<
 	 * and <a href="https://doc.qt.io/qt/qflags.html#operator-7e">QFlags::operator~()</a>
 	 */
 	public final void clear(@StrictNonNull QLongFlags<T> other) {
+		long value = this.value();
 		if(other.getClass()==getClass())
-			value &= ~other.longValue();
+			value &= ~other.value();
+		this.setValue(value);
 	}
 
 	/**
 	 * @hidden
 	 */
 	void clearAllImpl() {
-		value = 0;
+		this.setValue(0);
 	}
 
-	/**
-	 * @hidden
-	 */
-	@NativeAccess
-	protected final void setLongValue(long value) {
-		this.value = value;
-		setIntValue((int)value);
-	}
+    /**
+     * See <a href="https://doc.qt.io/qt/qflags.html#toInt"><code>QFlags::toInt() const</code></a>
+     */
+    public final long toLong(){
+        return value();
+    }
+    
+    /**
+     * Returns the value of this QFlags.
+     */
+	@io.qt.NativeAccess
+    public final long value() {
+        return ((long) high << 32) | (super.toInt() & 0xFFFFFFFFL);
+    }
+
+    /**
+     * Sets the value of this QFlags.
+     * 
+     * @param value new value
+     */
+	@io.qt.NativeAccess
+    public final void setValue(long value) {
+		super.setValue((int)(value & 0xFFFFFFFFL));
+		this.high = (int)(value >> 32);
+    }
 	
-	/**
-	 * @hidden
-	 */
-	@NativeAccess
-	protected final long longValue() {
-		return value;
+	@Override
+	boolean isLong() {
+		return true;
 	}
 
-	/**
-	 * Returns an array of flag objects represented by this QFlags.
-	 * @return array of enum entries
-	 */
-	public @NonNull T@NonNull[] flags() {
-		return flags(QtJambi_LibraryUtilities.internal.flagConstants(this));
-	}
-
-	private long value;
+	private int high;
 
 	/**
 	 * @hidden
@@ -238,7 +250,7 @@ public abstract class QLongFlags<T extends QtLongFlagEnumerator> extends QFlags<
 			return new QtLongFlagEnumerator[] { new QtLongFlagEnumerator() {
 				@Override
 				public long value() {
-					return ConcreteWrapper.this.longValue();
+					return ConcreteWrapper.this.value();
 				}
 
 				@Override
@@ -260,12 +272,12 @@ public abstract class QLongFlags<T extends QtLongFlagEnumerator> extends QFlags<
 
 		@Override
 		public @NonNull ConcreteWrapper clone() {
-			return new ConcreteWrapper(longValue());
+			return new ConcreteWrapper(value());
 		}
 
 		@Override
 		public @NonNull ConcreteWrapper combined(@StrictNonNull QtLongFlagEnumerator flag) {
-			return new ConcreteWrapper(longValue() | flag.value());
+			return new ConcreteWrapper(value() | flag.value());
 		}
 
 		@Override
@@ -278,7 +290,7 @@ public abstract class QLongFlags<T extends QtLongFlagEnumerator> extends QFlags<
      * Compares two QFlags values numerically.
      * The value returned is identical to what would be returned by:
      * <pre>
-     *    Integer.compare(a.value(), b.value())
+     *    Long.compare(a.value(), b.value())
      * </pre>
      */
     public static <E extends QtLongFlagEnumerator> int compare(@StrictNonNull QLongFlags<E> a, @Nullable QLongFlags<E> b) {
@@ -315,21 +327,21 @@ public abstract class QLongFlags<T extends QtLongFlagEnumerator> extends QFlags<
 	 * @hidden
 	 */
     int hashCodeImpl() {
-		return Long.hashCode(value);
+		return Long.hashCode(value());
 	}
     
 	/**
 	 * @hidden
 	 */
     String hexString() {
-		return Long.toHexString(value);
+		return Long.toHexString(value());
 	}
     
 	/**
 	 * @hidden
 	 */
     boolean equalsImpl(QFlags<?> other) {
-		return other!=null && other.getClass() == getClass() && ((QLongFlags<?>)other).value == value;
+		return other!=null && other.getClass() == getClass() && ((QLongFlags<?>)other).value() == value();
 	}
     
 	/**
@@ -337,7 +349,7 @@ public abstract class QLongFlags<T extends QtLongFlagEnumerator> extends QFlags<
 	 */
     int compareToImpl(@NonNull QFlags<?> o) {
     	if(o!=null && o.getClass()==getClass())
-			return Long.compare(value, ((QLongFlags<?>)o).value);
+			return Long.compare(value(), ((QLongFlags<?>)o).value());
 		return -1;
 	}
 }

@@ -34,7 +34,7 @@
     <property name="module-dir" value="${module-name}"/>
     <stringreplace property="module-dir" target="." replacement="/"/>
     <property name="qtjambi-module-name" value="qtjambi.qml"/>
-    <property name="qtjambi.required.modules" value="qtjambi, qtjambi.network, qtjambi.qml"/>
+    <property name="qtjambi.required.modules" value="qtjambi, qtjambi.qml"/>
     <target name="build">
         <if>
 			<and>

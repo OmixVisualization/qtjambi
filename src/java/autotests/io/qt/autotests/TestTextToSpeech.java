@@ -28,21 +28,13 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.*;
+import java.util.concurrent.atomic.*;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
-import io.qt.core.QCoreApplication;
-import io.qt.core.QEventLoop;
-import io.qt.core.QLocale;
-import io.qt.core.QThread;
-import io.qt.core.QTimer;
-import io.qt.texttospeech.QTextToSpeech;
-import io.qt.widgets.QApplication;
+import io.qt.core.*;
+import io.qt.texttospeech.*;
 
 public class TestTextToSpeech extends ApplicationInitializer {
 	
@@ -52,52 +44,79 @@ public class TestTextToSpeech extends ApplicationInitializer {
     }
     
     @Test
-    public void test() throws InterruptedException {
+    public void test() throws Throwable {
     	AtomicBoolean said = new AtomicBoolean(false);
     	List<QThread> threads = new ArrayList<>();
+    	List<Throwable> throwables = new ArrayList<>();
     	for(String engine : QTextToSpeech.availableEngines()) {
 	    	QThread thread = QThread.create(()->{
 	    		QEventLoop loop = new QEventLoop();
 	    		QTextToSpeech tts = new QTextToSpeech(engine);
-	        	Assert.assertEquals(tts.errorString(), QTextToSpeech.ErrorReason.NoError, tts.errorReason());
-	        	tts.setLocale(QLocale.Language.English);
-	        	tts.stateChanged.connect(state->{
-	        		switch(state) {
-	    			case Error:
-	    	    		QTimer.singleShot(3000, loop::quit);
-	    				break;
-	    			case Paused:
-	    				break;
-	    			case Ready:
-	    				break;
-	    			case Speaking:
-	    	    		said.set(true);
-	    	    		QTimer.singleShot(3000, loop::quit);
-	    				break;
-	    			case Synthesizing:
-	    				break;
-	    			default:
-	    				break;
-	        		}
-	        	});
-	        	tts.say("Text to speech test");
-	        	loop.exec();
-	        	loop.dispose();
-	        	tts.dispose();
+	    		try {
+		        	Assert.assertEquals(tts.errorString(), QTextToSpeech.ErrorReason.NoError, tts.errorReason());
+		        	tts.setLocale(QLocale.Language.English);
+		        	tts.stateChanged.connect(state->{
+		        		switch(state) {
+		    			case Error:
+		    	    		QTimer.singleShot(3000, loop::quit);
+		    				break;
+		    			case Paused:
+		    				break;
+		    			case Ready:
+		    				break;
+		    			case Speaking:
+		    	    		said.set(true);
+		    	    		QTimer.singleShot(3000, loop::quit);
+		    				break;
+		    			case Synthesizing:
+		    				break;
+		    			default:
+		    				break;
+		        		}
+		        	});
+		        	tts.say("Text to speech test");
+		        	loop.exec();
+	    		}catch(Throwable t){
+	    			throwables.add(t);
+	    		}finally {
+		        	loop.dispose();
+		        	tts.dispose();	    			
+	    		}
 	    	});
 	    	thread.setDaemon(true);
 	    	thread.finished.connect(QCoreApplication::quit);
 	    	thread.start();
 	    	threads.add(thread);
 	    	Thread.sleep(1000);
-	    	if(said.get())
-	    		break;
+//	    	if(said.get())
+//	    		break;
     	}
     	QTimer.singleShot(15000, QCoreApplication::quit);
-    	QApplication.exec();
+    	QCoreApplication.exec();
     	for(QThread thread : threads) {
 	    	if(thread.isRunning())
 	    		thread.requestInterruption();
+    	}
+    	if(!throwables.isEmpty()) {
+			if(said.get()) {
+				for (Throwable throwable : throwables) {
+					throwable.printStackTrace();
+				}
+			}else {
+	    		Throwable error = throwables.get(0);
+	    		if(!(error instanceof AssertionError)) {
+	    			error = new AssertionError();
+	    		}
+				for (Throwable throwable : throwables) {
+					if(error!=throwable) {
+						error.addSuppressed(throwable);
+					}
+					if(!(throwable instanceof AssertionError)) {
+						throwable.printStackTrace();
+					}
+				}
+				throw error;
+			}
     	}
     	Assert.assertTrue("Text to speech test did not run", said.get());
     }

@@ -29,14 +29,9 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
-import io.qt.QtUninvokable;
+import java.lang.reflect.*;
+import java.util.*;
+import io.qt.*;
 
 /**
  * Abstract superclass of sequential containers in Qt.

@@ -442,8 +442,6 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 				super(args);
 			}
 
-			private static final long serialVersionUID = -8392034916129435499L;
-			
 			@Override
 			public CustomQtFlags clone() {
 				return new CustomQtFlags(value());
@@ -458,11 +456,11 @@ public class TestPropertyAndMethodCall extends ApplicationInitializer {
 			}
 
 	        public final int value(){
-	            return intValue();
+	            return toInt();
 	        }
 
 	        public final void setValue(int value){
-	            setIntValue(value);
+	            super.setValue(value);
 	        }
 		}
 

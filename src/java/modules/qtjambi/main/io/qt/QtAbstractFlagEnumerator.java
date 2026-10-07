@@ -39,6 +39,6 @@ public interface QtAbstractFlagEnumerator extends QtAbstractEnumerator{
 	 * @return QFlags
 	 */
 	public default QFlags<?> asFlags(){
-		return QtJambi_LibraryUtilities.internal.asFlags(this);
+		return EnumUtility.asFlags(this);
 	}
 }

@@ -183,7 +183,7 @@
     <target name="compile-impl" depends="jar_init">
 		<trycatch>
 			<try>
-				<dependencies-to-classpath property="qtjambi.dependencies" jarversion="${qtjambi.jar.version}" dependencies="${qtjambi.required.modules}"/>
+				<dependencies-to-classpath property="qtjambi.dependencies" jarversion="${qtjambi.jar.version}" dependencies="${qtjambi.required.modules}" module="${module}"/>
 				<mkdir dir="${deploymentdir}"/>
 				<mkdir dir="${java.outdir}/${module}"/>
 				<copy todir="${java.outdir}/${module}" includeemptydirs="false" overwrite="true">

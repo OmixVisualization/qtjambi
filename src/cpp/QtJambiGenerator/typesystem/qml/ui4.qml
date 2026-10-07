@@ -33,8 +33,9 @@ TypeSystem{
     packageName: "io.qt.uic.ui4"
     defaultSuperClass: "QtObject"
     targetName: "QtJambiUIC"
+    noPackageInfo: true
     module: "qtjambi.uic"
-    description: "QtJambi User Interface Compiler"
+    description: "<b>QtJambi's User Interface Compiler</b> - Usage: <code>java --module qtjambi.uic -o &lt;output-directory> -p &lt;package> &lt;ui-file></code>"
     noExports: true
 
     InjectCode{

@@ -697,13 +697,14 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(%1!=null){\n"+
-                              "    if(%1==dataProxy()){\n"+
-                              "        throw new IllegalArgumentException(\"Proxy is already assigned to this series.\");\n"+
-                              "    }else if(%1.series()!=null){\n"+
-                              "        throw new IllegalArgumentException(\"Proxy is already assigned to another series.\");\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(%1!=null){
+                        if(%1==dataProxy()){
+                            throw new IllegalArgumentException("Proxy is already assigned to this series.");
+                        }else if(%1.series()!=null){
+                            throw new IllegalArgumentException("Proxy is already assigned to another series.");
+                        }
+                    }`}
             }
         }
     }
@@ -787,8 +788,9 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "__rcArray = %1;\n"+
-                              "QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);"}
+                Text{content: String.raw`
+                        __rcArray = %1;
+                        QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);`}
             }
             ModifyArgument{
                 index: 1
@@ -810,8 +812,9 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "__rcArray = %1;\n"+
-                              "QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);"}
+                Text{content: String.raw`
+                    __rcArray = %1;
+                    QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);`}
             }
             ModifyArgument{
                 index: 1
@@ -848,6 +851,10 @@ TypeSystem{
     
     ObjectType{
         name: "QtDataVisualization::QCategory3DAxis"
+        ModifyFunction{
+            signature: "labels()const"
+            remove: RemoveFlag.All
+        }
     }
     
     ObjectType{
@@ -887,8 +894,9 @@ TypeSystem{
                     index: 0
                     metaName: "%0"
                 }
-                Text{content: "__rcTextureData = %0;\n"+
-                              "QtJambi_LibraryUtilities.internal.registerDependentObject(__rcTextureData, this);"}
+                Text{content: String.raw`
+                    __rcTextureData = %0;
+                    QtJambi_LibraryUtilities.internal.registerDependentObject(__rcTextureData, this);`}
             }
         }
         InjectCode{
@@ -988,13 +996,14 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(%1!=null){\n"+
-                              "    if(%1==dataProxy()){\n"+
-                              "        throw new IllegalArgumentException(\"Proxy is already assigned to this series.\");\n"+
-                              "    }else if(%1.series()!=null){\n"+
-                              "        throw new IllegalArgumentException(\"Proxy is already assigned to another series.\");\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+                        if(%1!=null){
+                            if(%1==dataProxy()){
+                                throw new IllegalArgumentException("Proxy is already assigned to this series.");
+                            }else if(%1.series()!=null){
+                                throw new IllegalArgumentException("Proxy is already assigned to another series.");
+                            }
+                        }`}
             }
         }
     }
@@ -1018,8 +1027,9 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "__rcArray = %1;\n"+
-                              "QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);"}
+                Text{content: String.raw`
+                    __rcArray = %1;
+                    QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);`}
             }
             ModifyArgument{
                 index: 1
@@ -1078,13 +1088,14 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(%1!=null){\n"+
-                              "    if(%1==dataProxy()){\n"+
-                              "        throw new IllegalArgumentException(\"Proxy is already assigned to this series.\");\n"+
-                              "    }else if(%1.series()!=null){\n"+
-                              "        throw new IllegalArgumentException(\"Proxy is already assigned to another series.\");\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(%1!=null){
+                        if(%1==dataProxy()){
+                            throw new IllegalArgumentException("Proxy is already assigned to this series.");
+                        }else if(%1.series()!=null){
+                            throw new IllegalArgumentException("Proxy is already assigned to another series.");
+                        }
+                    }`}
             }
         }
     }
@@ -1138,8 +1149,9 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "__rcArray = %1;\n"+
-                              "QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);"}
+                Text{content: String.raw`
+                    __rcArray = %1;
+                    QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);`}
             }
             ModifyArgument{
                 index: 1

@@ -31,6 +31,7 @@ package io.qt;
 
 /**
  * The QPropertyDeclarationException class is thrown when a QProperty's declaration is not welformed.
+ * @serial exclude
  */
 public class QPropertyDeclarationException extends RuntimeException {
     private static final long serialVersionUID = 1L;

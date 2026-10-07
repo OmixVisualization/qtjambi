@@ -31,8 +31,14 @@
 
 include(../QtJambi/configure.pri)
 
-QT += core qml quick webenginecore webenginequick core-private webenginequick-private
-CONFIG+=no_private_qt_headers_warning
+QT += core qml quick webenginecore webenginequick
+
+contains(QTJAMBI_MODULE, QtJambiWebEngineQuick-private):{
+    QT += core-private webenginequick-private
+    CONFIG+=no_private_qt_headers_warning
+}else{
+    DEFINES += QTJAMBI_NO_RO_PRIVATE
+}
 
 SOURCES += \
     impl.cpp

@@ -666,22 +666,8 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
             if(!QtAndroidPrivate::javaVM()){
                 QtAndroidPrivate::initJNI(vm, env);
             }
-            //qputenv("QT_DEBUG_PLUGINS", "1");
             libraryPaths << thisLibraryPath.absolutePath();
             hasChanged = true;
-            QLibrary library(thisLibraryPath.absolutePath() + "/" + thisLibraryPath.fileName().replace("QtJambi"
-#if !defined(QT_NO_DEBUG)
-                                                                                                       "_debug"
-#endif
-                                                                                                       , "plugins_platforms_qtforandroid"));
-            if(!library.load()){
-                qFatal("Unable to load qtforandroid: %s", qPrintable(library.errorString()));
-            }
-#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-            if(auto onLoad = reinterpret_cast<decltype(&JNI_OnLoad)>(library.resolve("JNI_OnLoad"))){
-                onLoad(vm, nullptr);
-            }
-#endif
             qputenv("QML_IMPORT_PATH", qPrintable(thisLibraryPath.absolutePath()));
             qputenv("QML2_IMPORT_PATH", qPrintable(thisLibraryPath.absolutePath()));
 #else
@@ -771,41 +757,6 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *){
         });
         Java::Runtime::URL::getClass(env);
         Java::Runtime::URLConnection::getClass(env);
-#if defined(Q_OS_ANDROID) && QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
-        QLibrary library("libplugins_platforms_qtforandroid");
-        if(library.load()){
-            typedef jint(*Fn)(JavaVM *, void*);
-            Fn onLoad = Fn(library.resolve("JNI_OnLoad"));
-            if(onLoad){
-                onLoad(vm,nullptr);
-            }
-            if(QFunctionPointer accessibilitySupported = library.resolve("Java_org_qtproject_qt_android_QtNativeAccessibility_accessibilitySupported")){
-                JNINativeMethod nativeMethod;
-                nativeMethod.fnPtr = reinterpret_cast<void*>(accessibilitySupported);
-                nativeMethod.name = "accessibilitySupported";
-                nativeMethod.signature = "()Z";
-                env->RegisterNatives(Java::Android::QtNativeAccessibility::getClass(env), &nativeMethod, 1);
-            }
-#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 1)
-            if(QFunctionPointer canOverrideColorSchemeHint = library.resolve("Java_org_qtproject_qt_android_QtActivityDelegateBase_canOverrideColorSchemeHint")){
-                JNINativeMethod nativeMethod;
-                nativeMethod.fnPtr = reinterpret_cast<void*>(canOverrideColorSchemeHint);
-                nativeMethod.name = "canOverrideColorSchemeHint";
-                nativeMethod.signature = "()Z";
-                env->RegisterNatives(Java::Android::QtActivityDelegateBase::getClass(env), &nativeMethod, 1);
-            }
-            if(QFunctionPointer updateUiContrast = library.resolve("Java_org_qtproject_qt_android_QtActivityDelegateBase_updateUiContrast")){
-                JNINativeMethod nativeMethod;
-                nativeMethod.fnPtr = reinterpret_cast<void*>(updateUiContrast);
-                nativeMethod.name = "updateUiContrast";
-                nativeMethod.signature = "(F)V";
-                env->RegisterNatives(Java::Android::QtActivityDelegateBase::getClass(env), &nativeMethod, 1);
-            }
-#endif // QT_VERSION >= QT_VERSION_CHECK(6, 10, 1)
-        }else{
-            qWarning() << library.errorString();
-        }
-#endif
     }catch(const JavaException& e){
         e.raiseInJava(env);
     }catch (const std::exception& exn) {

@@ -32,9 +32,7 @@
 #ifndef DOCNAMESPACE_H
 #define DOCNAMESPACE_H
 
-#include "docmodel.h"
-#include "docclass.h"
-#include "docenum.h"
+#include "docelement.h"
 #include "docfunction.h"
 
 class DocNamespace: public DocElement

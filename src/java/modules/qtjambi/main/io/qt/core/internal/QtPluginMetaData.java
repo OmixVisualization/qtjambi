@@ -30,6 +30,7 @@
 
 package io.qt.core.internal;
 
+import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -45,4 +46,13 @@ import java.lang.annotation.Target;
 public @interface QtPluginMetaData {
 	String file() default "";
 	String json() default "";
+}
+
+/**
+ * @hidden
+ */
+class CoreUtility extends io.qt.internal.CoreUtility {
+    protected static Class<?> getFactoryClass(Serializable method) {
+    	return io.qt.internal.CoreUtility.getFactoryClass(method);
+    }
 }

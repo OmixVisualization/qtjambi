@@ -36,6 +36,7 @@ import io.qt.core.QMetaMethod;
  * @see QMetaMethod#invoke(io.qt.core.QObject, Object...)
  * @see QMetaMethod#invoke(io.qt.core.QObject, io.qt.core.Qt.ConnectionType, Object...)
  * @see QMetaMethod#invokeOnGadget(Object, Object...)
+ * @serial exclude
  */
 public class QUnsuccessfulInvocationException extends RuntimeException {
     private static final long serialVersionUID = 1L;

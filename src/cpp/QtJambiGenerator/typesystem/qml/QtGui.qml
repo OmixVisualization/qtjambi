@@ -31,6 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.gui"
+    noPackageInfo: true
     defaultSuperClass: "QtObject"
     qtLibrary: "QtGui"
     module: "qtjambi"    
@@ -275,9 +276,10 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "#ifndef GL_MAX_LABEL_LENGTH\n"+
-                          "#define GL_MAX_LABEL_LENGTH 0x82E8\n"+
-                          "#endif"}
+            Text{content: String.raw`
+                #ifndef GL_MAX_LABEL_LENGTH
+                #define GL_MAX_LABEL_LENGTH 0x82E8
+                #endif`}
         }
         ModifyFunction{
             signature: "glDeleteBuffers(GLsizei,const GLuint*)"
@@ -620,44 +622,50 @@ TypeSystem{
     
     CodeTemplate{
         name: "gui.getter_returning_nativepointer"
-        Text{content: "public final %RETURN_TYPE %FUNCTION_NAME() {\n"+
-                      "    QNativePointer np = %FUNCTION_NAME_private();\n"+
-                      "    %RETURN_TYPE tmp = np == null || np.isNull() ? null : np.object(%RETURN_TYPE.class);\n"+
-                      "    return tmp == null ? null : new %RETURN_TYPE(tmp);\n"+
-                      "}"}
+        Text{content: String.raw`
+            public final %RETURN_TYPE %FUNCTION_NAME() {
+                QNativePointer np = %FUNCTION_NAME_private();
+                %RETURN_TYPE tmp = np == null || np.isNull() ? null : np.object(%RETURN_TYPE.class);
+                return tmp == null ? null : new %RETURN_TYPE(tmp);
+            }`}
     }
     
     CodeTemplate{
         name: "gui.convert_validationdata_to_java"
-        Text{content: "jstring __qt_converted_input = qtjambi_cast<jstring>(%env, %STRING);\n"+
-                      "jobject %out = Java::QtGui::QValidator$QValidationData::newInstance(%env, __qt_converted_input, %POS);\n"+
-                      "jobject __java_validation_data = %out;"}
+        Text{content: String.raw`
+            jstring __qt_converted_input = qtjambi_cast<jstring>(%env, %STRING);
+            jobject %out = Java::QtGui::QValidator$QValidationData::newInstance(%env, __qt_converted_input, %POS);
+            jobject __java_validation_data = %out;`}
     }
     
     CodeTemplate{
         name: "gui.cleanup_validationdata_to_java"
-        Text{content: "jstring __java_string = jstring(Java::QtGui::QValidator$QValidationData::string(%env, __java_validation_data));\n"+
-                      "%STRING = qtjambi_cast<QString>(%env, __java_string);\n"+
-                      "%POS = Java::QtGui::QValidator$QValidationData::position(%env, __java_validation_data);"}
+        Text{content: String.raw`
+            jstring __java_string = jstring(Java::QtGui::QValidator$QValidationData::string(%env, __java_validation_data));
+            %STRING = qtjambi_cast<QString>(%env, __java_string);
+            %POS = Java::QtGui::QValidator$QValidationData::position(%env, __java_validation_data);`}
     }
     
     CodeTemplate{
         name: "gui.convert_validationdata_to_string"
-        Text{content: "jstring __java_string = Java::QtGui::QValidator$QValidationData::string(%env, %in);\n"+
-                      "QString %out = qtjambi_cast<QString>(%env, __java_string);\n"+
-                      "QString *__string_ptr = &%out;"}
+        Text{content: String.raw`
+            jstring __java_string = Java::QtGui::QValidator$QValidationData::string(%env, %in);
+            QString %out = qtjambi_cast<QString>(%env, __java_string);
+            QString *__string_ptr = &%out;`}
     }
     
     CodeTemplate{
         name: "gui.convert_validationdata_to_pos"
-        Text{content: "int %out = Java::QtGui::QValidator$QValidationData::position(%env, %1);\n"+
-                      "int *__position_ptr = &%out;"}
+        Text{content: String.raw`
+            int %out = Java::QtGui::QValidator$QValidationData::position(%env, %1);
+            int *__position_ptr = &%out;`}
     }
     
     CodeTemplate{
         name: "gui.cleanup_validationdata_from_java"
-        Text{content: "Java::QtGui::QValidator$QValidationData::set_position(%env, %1, *__position_ptr);\n"+
-                      "Java::QtGui::QValidator$QValidationData::set_string(%env, %1, qtjambi_cast<jstring>(%env, *__string_ptr));"}
+        Text{content: String.raw`
+            Java::QtGui::QValidator$QValidationData::set_position(%env, %1, *__position_ptr);
+            Java::QtGui::QValidator$QValidationData::set_string(%env, %1, qtjambi_cast<jstring>(%env, *__string_ptr));`}
     }
     
     CodeTemplate{
@@ -1611,13 +1619,6 @@ TypeSystem{
             Include{
                 fileName: "QInputMethodEvent"
                 location: Include.Global
-            }
-            CustomConstructor{
-                Text{content: "if(copy){\n"+
-                              "    return new(placement) QInputMethodEvent::Attribute(copy->type, copy->start, copy->length, copy->value);\n"+
-                              "}else{\n"+
-                              "    return new(placement) QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 0, 0);\n"+
-                              "}"}
             }
             CustomConstructor{
                 type: CustomConstructor.Copy
@@ -2857,13 +2858,6 @@ TypeSystem{
         name: "QConicalGradient"
         polymorphicIdExpression: "%1->type() == QGradient::ConicalGradient"
         CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QConicalGradient(copy->center(), copy->angle());\n"+
-                          "}else{\n"+
-                          "    return new(placement) QConicalGradient();\n"+
-                          "}"}
-        }
-        CustomConstructor{
             type: CustomConstructor.Copy
             Text{content: "new(placement) QConicalGradient(copy->center(), copy->angle());"}
         }
@@ -2977,11 +2971,13 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setUrlHandler(const QString &, QObject *, const char *)"
-            access: Modification.Private
             ModifyArgument{
                 index: 2
+                replaceType: "java.util.function.@Nullable Consumer<io.qt.core.@NonNull QUrl>"
                 ReferenceCount{
-                    action: ReferenceCount.Ignore
+                    variableName: "__rcUrlHandlers"
+                    keyArgument: 1
+                    action: ReferenceCount.Put
                 }
             }
             ModifyArgument{
@@ -2990,8 +2986,15 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "const char* %out = \"handleUrl\";"}
+                    Text{content: String.raw`const char* %out = "accept";`}
                 }
+            }
+            InjectCode{
+                position: Position.Beginning
+                ArgumentMap{index: 2; metaName: "%2"}
+                Text{content: String.raw`
+                    if(%2!=null && !(%2 instanceof io.qt.core.QObject))
+                        %2 = new InternalUrlHandler(%2);`}
             }
         }
         InjectCode{
@@ -3003,13 +3006,13 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "unsetUrlHandler(const QString &)"
-            InjectCode{
-                position: Position.End
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcUrlHandlers"
+                    keyArgument: 1
+                    action: ReferenceCount.Take
                 }
-                Text{content: "__rcUrlHandlers.remove(%1);"}
             }
         }
     }
@@ -3777,13 +3780,6 @@ TypeSystem{
     ValueType{
         name: "QFontInfo"
         CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QFontInfo(*copy);\n"+
-                          "}else{\n"+
-                          "    return new(placement) QFontInfo(QFont());\n"+
-                          "}"}
-        }
-        CustomConstructor{
             type: CustomConstructor.Copy
             Text{content: "new(placement) QFontInfo(*copy);"}
         }
@@ -3873,8 +3869,9 @@ TypeSystem{
                         index: 1
                         metaName: "%1"
                     }
-                    Text{content: "if(%1.length()!=4)\n"+
-                                  "    throw new IllegalArgumentException(\"The tag name must be exactly 4 characters long!\");"}
+                    Text{content: String.raw`
+                        if(%1.length()!=4)
+                            throw new IllegalArgumentException("The tag name must be exactly 4 characters long!");`}
                 }
             }
             ModifyFunction{
@@ -3938,13 +3935,6 @@ TypeSystem{
     ValueType{
         name: "QFontMetricsF"
         CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QFontMetricsF(*copy);\n"+
-                          "}else{\n"+
-                          "    return new(placement) QFontMetricsF(QFont());\n"+
-                          "}"}
-        }
-        CustomConstructor{
             type: CustomConstructor.Copy
             Text{content: "new(placement) QFontMetricsF(*copy);"}
         }
@@ -3992,13 +3982,6 @@ TypeSystem{
     
     ValueType{
         name: "QFontMetrics"
-        CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QFontMetrics(*copy);\n"+
-                          "}else{\n"+
-                          "    return new(placement) QFontMetrics(QFont());\n"+
-                          "}"}
-        }
         CustomConstructor{
             type: CustomConstructor.Copy
             Text{content: "new(placement) QFontMetrics(*copy);"}
@@ -4126,11 +4109,6 @@ TypeSystem{
 
         isPolymorphicBase: true
         polymorphicIdExpression: "%1->type() == QGradient::NoGradient"
-        CustomConstructor{
-            Text{content: "Q_UNUSED(copy)\n"+
-                          "qWarning(\"Copying empty QGradient object\");\n"+
-                          "return new(placement) QGradient();"}
-        }
         ModifyFunction{
             signature: "operator==(const QGradient &)const"
             Remove{
@@ -4836,8 +4814,9 @@ default:
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QImage __image;\n"+
-                                  "QImage* %out = &__image;"}
+                    Text{content: String.raw`
+                        QImage __image;
+                        QImage* %out = &__image;`}
                 }
             }
             ModifyArgument{
@@ -4847,9 +4826,10 @@ default:
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "%out = __java_return_value!=nullptr;\n"+
-                                  "if(%out && %1)\n"+
-                                  "    *%1 = qtjambi_cast<const QImage&>(%env, %in);"}
+                    Text{content: String.raw`
+                        %out = __java_return_value!=nullptr;
+                        if(%out && %1)
+                            *%1 = qtjambi_cast<const QImage&>(%env, %in);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -5004,20 +4984,11 @@ default:
         name: "QLinearGradient"
         polymorphicIdExpression: "%1->type() == QGradient::LinearGradient"
         CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    QLinearGradient *lg = new(placement) QLinearGradient(copy->start(), copy->finalStop());\n"+
-                          "    lg->setSpread(copy->spread());\n"+
-                          "    lg->setStops(copy->stops());\n"+
-                          "    return lg;\n"+
-                          "}else{\n"+
-                          "    return new(placement) QLinearGradient();\n"+
-                          "}"}
-        }
-        CustomConstructor{
             type: CustomConstructor.Copy
-            Text{content: "QLinearGradient *lg = new(placement) QLinearGradient(copy->start(), copy->finalStop());\n"+
-                          "lg->setSpread(copy->spread());\n"+
-                          "lg->setStops(copy->stops());"}
+            Text{content: String.raw`
+                QLinearGradient *lg = new(placement) QLinearGradient(copy->start(), copy->finalStop());
+                lg->setSpread(copy->spread());
+                lg->setStops(copy->stops());`}
         }
         CustomConstructor{
             type: CustomConstructor.Default
@@ -5614,8 +5585,9 @@ default:
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             ModifyArgument{
@@ -5832,8 +5804,9 @@ default:
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(%env, %in);\n"+
-                                  "const char* %out = info.name;"}
+                    Text{content: String.raw`
+                        CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(%env, %in);
+                        const char* %out = info.name;`}
                 }
             }
             ModifyArgument{
@@ -5872,8 +5845,9 @@ default:
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(%env, %in);\n"+
-                                  "const char* %out = info.name;"}
+                    Text{content: String.raw`
+                        CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(%env, %in);
+                        const char* %out = info.name;`}
                 }
             }
             ModifyArgument{
@@ -6470,8 +6444,9 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(%0)\n"+
-                              "    QtJambi_LibraryUtilities.internal.registerDependentObject(this, %1);"}
+                Text{content: String.raw`
+                    if(%0)
+                        QtJambi_LibraryUtilities.internal.registerDependentObject(this, %1);`}
             }
         }
         ModifyFunction{
@@ -6486,9 +6461,10 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                     index: 0
                     metaName: "%0"
                 }
-                Text{content: "if(%0 && device!=null){\n"+
-                              "    QtJambi_LibraryUtilities.internal.unregisterDependentObject(this, device);\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(%0 && device!=null){
+                        QtJambi_LibraryUtilities.internal.unregisterDependentObject(this, device);
+                    }`}
             }
         }
         ModifyFunction{
@@ -6812,11 +6788,12 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint size = jint(__qt_this->size());\n"+
-                                  "if(size>0){\n"+
-                                  "    %out = %env->NewByteArray(size);\n"+
-                                  "    %env->SetByteArrayRegion(%out, 0, size, reinterpret_cast<const jbyte *>(%in));\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        jint size = jint(__qt_this->size());
+                        if(size>0){
+                            %out = %env->NewByteArray(size);
+                            %env->SetByteArrayRegion(%out, 0, size, reinterpret_cast<const jbyte *>(%in));
+                        }`}
                 }
             }
         }
@@ -7246,8 +7223,9 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector3D xAxis;\n"+
-                                  "QVector3D* %out = &xAxis;"}
+                    Text{content: String.raw`
+                        QVector3D xAxis;
+                        QVector3D* %out = &xAxis;`}
                     until: [6,10]
                 }
             }
@@ -7261,8 +7239,9 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector3D yAxis;\n"+
-                                  "QVector3D* %out = &yAxis;"}
+                    Text{content: String.raw`
+                        QVector3D yAxis;
+                        QVector3D* %out = &yAxis;`}
                     until: [6,10]
                 }
             }
@@ -7276,8 +7255,9 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector3D zAxis;\n"+
-                                  "QVector3D* %out = &zAxis;"}
+                    Text{content: String.raw`
+                            QVector3D zAxis;
+                            QVector3D* %out = &zAxis;`}
                     until: [6,10]
                 }
             }
@@ -7339,8 +7319,9 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVector3D axis;\n"+
-                                  "QVector3D* %out = &axis;"}
+                    Text{content: String.raw`
+                        QVector3D axis;
+                        QVector3D* %out = &axis;`}
                 }
             }
             ModifyArgument{
@@ -7349,8 +7330,9 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "float fValue = 0;\n"+
-                                  "float* %out = &fValue;"}
+                    Text{content: String.raw`
+                        float fValue = 0;
+                        float* %out = &fValue;`}
                 }
             }
             ModifyArgument{
@@ -7472,12 +7454,6 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
     ValueType{
         name: "QRadialGradient"
         polymorphicIdExpression: "%1->type() == QGradient::RadialGradient"
-        CustomConstructor{
-            Text{content: "if(copy)\n"+
-                          "    return new(placement) QRadialGradient(copy->center(), copy->radius(), copy->focalPoint());\n"+
-                          "else\n"+
-                          "    return new(placement) QRadialGradient();"}
-        }
         CustomConstructor{
             type: CustomConstructor.Copy
             Text{content: "new(placement) QRadialGradient(copy->center(), copy->radius(), copy->focalPoint());"}
@@ -8158,8 +8134,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "int a = 0;\n"+
-                                  "int* %out = &a;"}
+                    Text{content: String.raw`
+                        int a = 0;
+                        int* %out = &a;`}
                 }
             }
             ModifyArgument{
@@ -8168,8 +8145,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "int b = 0;\n"+
-                                  "int* %out = &b;"}
+                    Text{content: String.raw`
+                        int b = 0;
+                        int* %out = &b;`}
                 }
             }
             ModifyArgument{
@@ -8178,8 +8156,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "int c = 0;\n"+
-                                  "int* %out = &c;"}
+                    Text{content: String.raw`
+                        int c = 0;
+                        int* %out = &c;`}
                 }
             }
             ModifyArgument{
@@ -8188,8 +8167,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "int d = 0;\n"+
-                                  "int* %out = &d;"}
+                    Text{content: String.raw`
+                        int d = 0;
+                        int* %out = &d;`}
                 }
             }
             ModifyArgument{
@@ -8591,8 +8571,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             ModifyArgument{
@@ -8717,8 +8698,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "i"
                 }
-                Text{content: "if(i<0 || i>2)\n"+
-                              "    throw new IndexOutOfBoundsException(i);"}
+                Text{content: String.raw`
+                    if(i<0 || i>2)
+                        throw new IndexOutOfBoundsException(i);`}
             }
         }
         ModifyFunction{
@@ -8730,8 +8712,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "i"
                 }
-                Text{content: "if(i<0 || i>2)\n"+
-                              "    throw new IndexOutOfBoundsException(i);"}
+                Text{content: String.raw`
+                    if(i<0 || i>2)
+                        throw new IndexOutOfBoundsException(i);`}
             }
         }
         ModifyFunction{
@@ -8775,8 +8758,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "i"
                 }
-                Text{content: "if(i<0 || i>3)\n"+
-                              "    throw new IndexOutOfBoundsException(i);"}
+                Text{content: String.raw`
+                    if(i<0 || i>3)
+                        throw new IndexOutOfBoundsException(i);`}
             }
         }
         ModifyFunction{
@@ -8788,8 +8772,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "i"
                 }
-                Text{content: "if(i<0 || i>3)\n"+
-                              "    throw new IndexOutOfBoundsException(i);"}
+                Text{content: String.raw`
+                    if(i<0 || i>3)
+                        throw new IndexOutOfBoundsException(i);`}
             }
         }
         ModifyFunction{
@@ -8837,8 +8822,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "i"
                 }
-                Text{content: "if(i<0 || i>4)\n"+
-                              "    throw new IndexOutOfBoundsException(i);"}
+                Text{content: String.raw`
+                    if(i<0 || i>4)
+                        throw new IndexOutOfBoundsException(i);`}
             }
         }
         ModifyFunction{
@@ -8850,8 +8836,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "i"
                 }
-                Text{content: "if(i<0 || i>4)\n"+
-                              "    throw new IndexOutOfBoundsException(i);"}
+                Text{content: String.raw`
+                    if(i<0 || i>4)
+                        throw new IndexOutOfBoundsException(i);`}
             }
         }
         ModifyFunction{
@@ -8945,7 +8932,43 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         }
         ModifyFunction{
             signature: "nativeEvent(const QByteArray &, void *, qintptr *)"
-            remove: RemoveFlag.All
+            ModifyArgument{
+                index: 1
+                rename: "event"
+                ReplaceType{
+                    modifiedType: "io.qt.core.QNativeEvent"
+                }
+                NoNullPointer{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: String.raw`
+                        QNativeEvent ne(%env, %in, %2, %3);
+                        jobject %out = ne;`}
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        const QNativeEvent& ne = QNativeEvent::fromJavaObject(%env, %in);
+                        const QByteArray & %out = ne.m_eventType;`}
+                }
+            }
+            ModifyArgument{
+                index: 2
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`void *%out = ne.m_message;`}
+                }
+            }
+            ModifyArgument{
+                index: 3
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`qintptr *%out = ne.m_result;`}
+                }
+            }
         }
         ModifyFunction{
             signature: "parent(QWindow::AncestorMode)const"
@@ -9008,7 +9031,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
             since: [6, 1]
         }
@@ -9024,7 +9047,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9039,7 +9062,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9054,7 +9077,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9069,7 +9092,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9084,7 +9107,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9099,7 +9122,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9114,7 +9137,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9129,7 +9152,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9144,7 +9167,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9159,7 +9182,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9174,7 +9197,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9189,7 +9212,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9204,7 +9227,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9219,7 +9242,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9234,7 +9257,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9249,7 +9272,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ExtraIncludes{
@@ -9277,10 +9300,12 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         }
         ModifyFunction{
             signature: "setVulkanInstance(QVulkanInstance*)"
-            ppCondition: "QT_CONFIG(vulkan)"
-        }
-        ModifyFunction{
-            signature: "vulkanInstance() const"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
             ppCondition: "QT_CONFIG(vulkan)"
         }
         ModifyFunction{
@@ -9312,8 +9337,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(%env, %in);\n"+
-                                  "const char* %out = info.name;"}
+                    Text{content: String.raw`
+                            CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(%env, %in);
+                            const char* %out = info.name;`}
                 }
             }
             ModifyArgument{
@@ -9500,7 +9526,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
             isPaintMethod: true
         }
@@ -9668,7 +9694,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "QtJambi_LibraryUtilities.internal.setReferenceCount(%1, QAction.class, \"__rcActionGroup\", false, false, this);"}
+                Text{content: String.raw`QtJambi_LibraryUtilities.internal.setReferenceCount(%1, QAction.class, "__rcActionGroup", false, false, this);`}
             }
         }
         ModifyFunction{
@@ -9687,7 +9713,7 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "QtJambi_LibraryUtilities.internal.setReferenceCount(%1, QAction.class, \"__rcActionGroup\", false, false, null);"}
+                Text{content: String.raw`QtJambi_LibraryUtilities.internal.setReferenceCount(%1, QAction.class, "__rcActionGroup", false, false, null);`}
             }
         }
     }
@@ -9736,13 +9762,14 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (__rcActionGroup != null) {\n"+
-                              "    QtJambi_LibraryUtilities.internal.removeFromCollectionReferenceCount(__rcActionGroup, QActionGroup.class, \"__rcActions\", false, this);\n"+
-                              "}\n"+
-                              "__rcActionGroup = %1;\n"+
-                              "if (__rcActionGroup != null) {\n"+
-                              "    QtJambi_LibraryUtilities.internal.addReferenceCount(__rcActionGroup, QActionGroup.class, \"__rcActions\", false, false, this);\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if (__rcActionGroup != null) {
+                        QtJambi_LibraryUtilities.internal.removeFromCollectionReferenceCount(__rcActionGroup, QActionGroup.class, "__rcActions", false, this);
+                    }
+                    __rcActionGroup = %1;
+                    if (__rcActionGroup != null) {
+                        QtJambi_LibraryUtilities.internal.addReferenceCount(__rcActionGroup, QActionGroup.class, "__rcActions", false, false, this);
+                    }`}
             }
         }
         ModifyFunction{
@@ -9763,11 +9790,12 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     }
                     ConversionRule{
                         codeClass: CodeClass.Native
-                        Text{content: "static bool iswidgetApplication = QGuiApplication::instance()->inherits(\"QApplication\");\n"+
-                                      "if(iswidgetApplication && %in && !Java::QtWidgets::QMenu::isInstanceOf(%env, %in)){\n"+
-                                      "    JavaException::raiseIllegalArgumentException(%env, \"QAction.setMenu(menu) expects a QMenu in widget applications.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                      "}\n"+
-                                      "QObject* %out = QtJambiAPI::convertJavaObjectToQObject(%env, %in);"}
+                        Text{content: String.raw`
+                            static bool iswidgetApplication = QGuiApplication::instance()->inherits("QApplication");
+                            if(iswidgetApplication && %in && !Java::QtWidgets::QMenu::isInstanceOf(%env, %in)){
+                                JavaException::raiseIllegalArgumentException(%env, "QAction.setMenu(menu) expects a QMenu in widget applications." QTJAMBI_STACKTRACEINFO );
+                            }
+                            QObject* %out = QtJambiAPI::convertJavaObjectToQObject(%env, %in);`}
                     }
                 }
             }
@@ -9979,8 +10007,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "const char* %out = nullptr;\n"+
-                                  "Q_UNUSED(%in)"}
+                    Text{content: String.raw`
+                        const char* %out = nullptr;
+                        Q_UNUSED(%in)`}
                 }
             }
             ModifyArgument{
@@ -9992,8 +10021,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "const char* %out = nullptr;\n"+
-                                  "Q_UNUSED(%in)"}
+                    Text{content: String.raw`
+                        const char* %out = nullptr;
+                        Q_UNUSED(%in)`}
                 }
             }
         }
@@ -10018,8 +10048,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "const char* %out = nullptr;\n"+
-                                  "Q_UNUSED(%in)"}
+                    Text{content: String.raw`
+                        const char* %out = nullptr;
+                        Q_UNUSED(%in)`}
                 }
             }
             ModifyArgument{
@@ -10031,8 +10062,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "const char* %out = nullptr;\n"+
-                                  "Q_UNUSED(%in)"}
+                    Text{content: String.raw`
+                        const char* %out = nullptr;
+                        Q_UNUSED(%in)`}
                 }
             }
         }
@@ -10320,8 +10352,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                     index: 1
                     metaName: "%COUNT"
                 }
-                Text{content: "if(pointCount() <= %COUNT)\n"+
-                              "    throw new IndexOutOfBoundsException(\"Index out of range: \"+%COUNT);"}
+                Text{content: String.raw`
+                    if(pointCount() <= %COUNT)
+                        throw new IndexOutOfBoundsException("Index out of range: "+%COUNT);`}
             }
         }
         ModifyFunction{
@@ -10588,8 +10621,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(%env, %in);\n"+
-                                  "const char* %out = info.name;"}
+                    Text{content: String.raw`
+                        CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(%env, %in);
+                        const char* %out = info.name;`}
                 }
             }
             ModifyArgument{
@@ -10654,14 +10688,15 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                    pointer = nullptr;\n"+
-                                  "                                },\n"+
-                                  "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                }\n"+
-                                  "                            );"}
+                    Text{content: String.raw`
+                            JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),
+                                                            [](void* & pointer,JNIEnv *, jobject){
+                                                                pointer = nullptr;
+                                                            },
+                                                            [](JNIEnv * env, void* const& ptr) -> jobject {
+                                                                return DataJBuffer(env, ptr, INT_MAX).take();
+                                                            }
+                                                        );`}
                 }
             }
         }
@@ -10859,9 +10894,10 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "#ifndef GL_MAX_LABEL_LENGTH\n"+
-                          "#define GL_MAX_LABEL_LENGTH 0x82E8\n"+
-                          "#endif"}
+            Text{content: String.raw`
+                #ifndef GL_MAX_LABEL_LENGTH
+                #define GL_MAX_LABEL_LENGTH 0x82E8
+                #endif`}
         }
         ModifyFunction{
             signature: "glDebugMessageCallback(GLDEBUGPROC, const void *)"
@@ -10893,17 +10929,18 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                    pointer = nullptr;\n"+
-                                  "                                },\n"+
-                                  "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                }\n"+
-                                  "                            );\n"+
-                                  "if(%out.size()==0){\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, \"Array length is 0.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}"}
+                    Text{content: String.raw`
+JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),
+                                [](void* & pointer,JNIEnv *, jobject){
+                                    pointer = nullptr;
+                                },
+                                [](JNIEnv * env, void* const& ptr) -> jobject {
+                                    return DataJBuffer(env, ptr, INT_MAX).take();
+                                }
+                            );
+if(%out.size()==0){
+    JavaException::raiseIllegalArgumentException(%env, "Array length is 0." QTJAMBI_STACKTRACEINFO );
+}`}
                 }
             }
         }
@@ -10916,14 +10953,15 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                    pointer = nullptr;\n"+
-                                  "                                },\n"+
-                                  "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                }\n"+
-                                  "                            );"}
+                    Text{content: String.raw`
+JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),
+                                [](void* & pointer,JNIEnv *, jobject){
+                                    pointer = nullptr;
+                                },
+                                [](JNIEnv * env, void* const& ptr) -> jobject {
+                                    return DataJBuffer(env, ptr, INT_MAX).take();
+                                }
+                            );`}
                 }
             }
         }
@@ -11127,10 +11165,11 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "GLuint %out = GLuint(%env->GetArrayLength(jarray(%3)));\n"+
-                                  "%out = qMin(%out, GLuint(%env->GetArrayLength(jarray(%4))));\n"+
-                                  "%out = qMin(%out, GLuint(%env->GetArrayLength(jarray(%5))));\n"+
-                                  "%out = qMin(%out, GLuint(%env->GetArrayLength(jarray(%8))));"}
+                    Text{content: String.raw`
+                        GLuint %out = GLuint(%env->GetArrayLength(jarray(%3)));
+                        %out = qMin(%out, GLuint(%env->GetArrayLength(jarray(%4))));
+                        %out = qMin(%out, GLuint(%env->GetArrayLength(jarray(%5))));
+                        %out = qMin(%out, GLuint(%env->GetArrayLength(jarray(%8))));`}
                 }
             }
             ModifyArgument{
@@ -11172,8 +11211,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QScopedArrayPointer<GLsizei> %in(new GLsizei[__qt_%1]);\n"+
-                                  "GLsizei* %out = %in.get();"}
+                    Text{content: String.raw`
+                        QScopedArrayPointer<GLsizei> %in(new GLsizei[__qt_%1]);
+                        GLsizei* %out = %in.get();`}
                 }
             }
             ModifyArgument{
@@ -11183,21 +11223,23 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();"}
+                    Text{content: String.raw`
+                        QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\0');
+                        char* %out = %out_buffer.data();`}
                 }
             }
             ModifyArgument{
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = jint(%in);\n"+
-                                  "int offset = 0;\n"+
-                                  "for(jsize i=0; i<jsize(__qt_return_value); ++i){\n"+
-                                  "    jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(__qt_%8+offset, __qt_%7[i]));\n"+
-                                  "    offset += __qt_%7[i];\n"+
-                                  "    %env->SetObjectArrayElement(%8, i, result);\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        %out = jint(%in);
+                        int offset = 0;
+                        for(jsize i=0; i<jsize(__qt_return_value); ++i){
+                            jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(__qt_%8+offset, __qt_%7[i]));
+                            offset += __qt_%7[i];
+                            %env->SetObjectArrayElement(%8, i, result);
+                        }`}
                 }
             }
         }
@@ -11324,8 +11366,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "GLsizei %in = 0;\n"+
-                                  "GLsizei* %out = &%in;"}
+                    Text{content: String.raw`
+                        GLsizei %in = 0;
+                        GLsizei* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -11335,17 +11378,19 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "    jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %3));\n"+
-                                  "    %env->SetObjectArrayElement(%in, 0, result);\n"+
-                                  "});"}
+                    Text{content: String.raw`
+                        QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\0');
+                        char* %out = %out_buffer.data();
+                        %scope.addFinalAction([&](){
+                            jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %3));
+                            %env->SetObjectArrayElement(%in, 0, result);
+                        });`}
                 }
             }
             InjectCode{
-                Text{content: "if (infoLog.length < 1)\n"+
-                              "    throw new IllegalArgumentException(\"Argument 'infoLog': Wrong number of elements in array. Found: 0, expected: 1\");"}
+                Text{content: String.raw`
+                        if (infoLog.length < 1)
+                            throw new IllegalArgumentException("Argument 'infoLog': Wrong number of elements in array. Found: 0, expected: 1");`}
             }
         }
         ModifyFunction{
@@ -11378,8 +11423,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "GLsizei %in = 0;\n"+
-                                  "GLsizei* %out = &%in;"}
+                    Text{content: String.raw`
+                        GLsizei %in = 0;
+                        GLsizei* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -11389,17 +11435,19 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "    jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %5));\n"+
-                                  "    %env->SetObjectArrayElement(%in, 0, result);\n"+
-                                  "});"}
+                    Text{content: String.raw`
+                        QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\0');
+                        char* %out = %out_buffer.data();
+                        %scope.addFinalAction([&](){
+                            jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %5));
+                            %env->SetObjectArrayElement(%in, 0, result);
+                        });`}
                 }
             }
             InjectCode{
-                Text{content: "if (name.length < 1)\n"+
-                              "    throw new IllegalArgumentException(\"Argument 'name': Wrong number of elements in array. Found: 0, expected: 1\");"}
+                Text{content: String.raw`
+                    if (name.length < 1)
+                        throw new IllegalArgumentException("Argument 'name': Wrong number of elements in array. Found: 0, expected: 1");`}
             }
         }
         ModifyFunction{
@@ -11419,8 +11467,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "GLsizei %in = 0;\n"+
-                                  "GLsizei* %out = &%in;"}
+                    Text{content: String.raw`
+                        GLsizei %in = 0;
+                        GLsizei* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -11430,17 +11479,19 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "    jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %4));\n"+
-                                  "    %env->SetObjectArrayElement(%in, 0, result);\n"+
-                                  "});"}
+                    Text{content: String.raw`
+                        QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\0');
+                        char* %out = %out_buffer.data();
+                        %scope.addFinalAction([&](){
+                            jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %4));
+                            %env->SetObjectArrayElement(%in, 0, result);
+                        });`}
                 }
             }
             InjectCode{
-                Text{content: "if (label.length < 1)\n"+
-                              "    throw new IllegalArgumentException(\"Argument 'label': Wrong number of elements in array. Found: 0, expected: 1\");"}
+                Text{content: String.raw`
+                    if (label.length < 1)
+                        throw new IllegalArgumentException("Argument 'label': Wrong number of elements in array. Found: 0, expected: 1");`}
             }
         }
         ModifyFunction{
@@ -11452,14 +11503,15 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                    pointer = nullptr;\n"+
-                                  "                                },\n"+
-                                  "                                [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                    return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                }\n"+
-                                  "                            );"}
+                    Text{content: String.raw`
+JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),
+                                [](void* & pointer,JNIEnv *, jobject){
+                                    pointer = nullptr;
+                                },
+                                [](JNIEnv * env, void* const& ptr) -> jobject {
+                                    return DataJBuffer(env, ptr, INT_MAX).take();
+                                }
+                            );`}
                 }
             }
         }
@@ -11480,8 +11532,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "GLsizei %in = 0;\n"+
-                                  "GLsizei* %out = &%in;"}
+                    Text{content: String.raw`
+                        GLsizei %in = 0;
+                        GLsizei* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -11491,17 +11544,19 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "    jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %3));\n"+
-                                  "    %env->SetObjectArrayElement(%in, 0, result);\n"+
-                                  "});"}
+                    Text{content: String.raw`
+                        QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\0');
+                        char* %out = %out_buffer.data();
+                        %scope.addFinalAction([&](){
+                            jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %3));
+                            %env->SetObjectArrayElement(%in, 0, result);
+                        });`}
                 }
             }
             InjectCode{
-                Text{content: "if (infoLog.length < 1)\n"+
-                              "    throw new IllegalArgumentException(\"Argument 'infoLog': Wrong number of elements in array. Found: 0, expected: 1\");"}
+                Text{content: String.raw`
+                    if (infoLog.length < 1)
+                        throw new IllegalArgumentException("Argument 'infoLog': Wrong number of elements in array. Found: 0, expected: 1");`}
             }
         }
         ModifyFunction{
@@ -11521,8 +11576,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "GLsizei %in = 0;\n"+
-                                  "GLsizei* %out = &%in;"}
+                    Text{content: String.raw`
+                        GLsizei %in = 0;
+                        GLsizei* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -11532,17 +11588,19 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "    jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %4));\n"+
-                                  "    %env->SetObjectArrayElement(%in, 0, result);\n"+
-                                  "});"}
+                    Text{content: String.raw`
+                        QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\0');
+                        char* %out = %out_buffer.data();
+                        %scope.addFinalAction([&](){
+                            jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %4));
+                            %env->SetObjectArrayElement(%in, 0, result);
+                        });`}
                 }
             }
             InjectCode{
-                Text{content: "if (label.length < 1)\n"+
-                              "    throw new IllegalArgumentException(\"Argument 'label': Wrong number of elements in array. Found: 0, expected: 1\");"}
+                Text{content: String.raw`
+                    if (label.length < 1)
+                        throw new IllegalArgumentException("Argument 'label': Wrong number of elements in array. Found: 0, expected: 1");`}
             }
         }
         ModifyFunction{
@@ -11574,8 +11632,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "GLsizei %in = 0;\n"+
-                                  "GLsizei* %out = &%in;"}
+                    Text{content: String.raw`
+                        GLsizei %in = 0;
+                        GLsizei* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -11585,17 +11644,19 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "    jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %3));\n"+
-                                  "    %env->SetObjectArrayElement(%in, 0, result);\n"+
-                                  "});"}
+                    Text{content: String.raw`
+                        QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\0');
+                        char* %out = %out_buffer.data();
+                        %scope.addFinalAction([&](){
+                            jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %3));
+                            %env->SetObjectArrayElement(%in, 0, result);
+                        });`}
                 }
             }
             InjectCode{
-                Text{content: "if (label.length < 1)\n"+
-                              "    throw new IllegalArgumentException(\"Argument 'label': Wrong number of elements in array. Found: 0, expected: 1\");"}
+                Text{content: String.raw`
+                    if (label.length < 1)
+                        throw new IllegalArgumentException("Argument 'label': Wrong number of elements in array. Found: 0, expected: 1");`}
             }
         }
         ModifyFunction{
@@ -12134,8 +12195,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JBufferData %out(%env, %in);\n"+
-                                  "GLsizei %3 = GLsizei(%out.size());"}
+                    Text{content: String.raw`
+                        JBufferData %out(%env, %in);
+                        GLsizei %3 = GLsizei(%out.size());`}
                 }
             }
         }
@@ -12184,8 +12246,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "GLsizei %in = 0;\n"+
-                                  "GLsizei* %out = &%in;"}
+                    Text{content: String.raw`
+                        GLsizei %in = 0;
+                        GLsizei* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -12207,17 +12270,19 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "    jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %4));\n"+
-                                  "    %env->SetObjectArrayElement(%in, 0, result);\n"+
-                                  "});"}
+                    Text{content: String.raw`
+                        QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\0');
+                        char* %out = %out_buffer.data();
+                        %scope.addFinalAction([&](){
+                            jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %4));
+                            %env->SetObjectArrayElement(%in, 0, result);
+                        });`}
                 }
             }
             InjectCode{
-                Text{content: "if (name.length < 1)\n"+
-                              "    throw new IllegalArgumentException(\"Argument 'name': Wrong number of elements in array. Found: 0, expected: 1\");"}
+                Text{content: String.raw`
+                    if (name.length < 1)
+                        throw new IllegalArgumentException("Argument 'name': Wrong number of elements in array. Found: 0, expected: 1");`}
             }
         }
         ModifyFunction{
@@ -13141,8 +13206,9 @@ private native <QNativeInterface extends QtObjectInterface> QNativeInterface nat
         Rejection{functionName: "createPlatformVulkanInstance"}
         InjectCode{
             target: CodeClass.Java
-            Text{content: "@QtUninvokable\n"+
-                          "public native static QPlatformIntegration instance();"}
+            Text{content: String.raw`
+                @QtUninvokable
+                public native static QPlatformIntegration instance();`}
         }
 
         ModifyFunction{

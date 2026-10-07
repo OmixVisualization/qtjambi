@@ -35,7 +35,7 @@ TypeSystem{
     LoadTypeSystem{name: "QtGui";               generate: true; unless: "QTJAMBI_NO_GUI"}
     LoadTypeSystem{name: "QtGuiQpa";            generate: true; unless: "QTJAMBI_NO_GUI";              since: 7}
     LoadTypeSystem{name: "QtGuiRhi";            generate: true; unless: "QTJAMBI_NO_GUI";              since: 6.6}
-    LoadTypeSystem{name: "QtGuiVulkan";         generate: true; unless: "QTJAMBI_NO_GUI";              since: 6.6}
+    LoadTypeSystem{name: "QtGuiVulkan";         generate: true; unless: "QTJAMBI_NO_VULKAN";              since: 6.6}
     LoadTypeSystem{name: "QtOpenGL";            generate: true; unless: "QTJAMBI_NO_OPENGL";}
     LoadTypeSystem{name: "QtConcurrent";        generate: true; unless: "QTJAMBI_NO_CONCURRENT"}
     LoadTypeSystem{name: "QtWidgets";           generate: true; unless: "QTJAMBI_NO_WIDGETS"}
@@ -89,6 +89,9 @@ TypeSystem{
     LoadTypeSystem{name: "QtDesigner";          generate: true; unless: "QTJAMBI_NO_DESIGNER"}
     LoadTypeSystem{name: "ui4";                 generate: true; unless: "QTJAMBI_NO_UI4"}
     LoadTypeSystem{name: "QtActiveX";           generate: true; unless: "QTJAMBI_NO_ACTIVEX"}
+    LoadTypeSystem{name: "QtCoap";              generate: true; unless: "QTJAMBI_NO_COAP"}
+    LoadTypeSystem{name: "QtMqtt";              generate: true; unless: "QTJAMBI_NO_MQTT"}
+    LoadTypeSystem{name: "QtOpcUa";             generate: true; unless: "QTJAMBI_NO_OPCUA"}
     LoadTypeSystem{name: "QtDataVisualization"; generate: true; unless: "QTJAMBI_NO_DATA_VISUALIZATION"; until: 6.5}
     LoadTypeSystem{name: "QtCharts";            generate: true; unless: "QTJAMBI_NO_CHARTS"; until: 6.5}
     LoadTypeSystem{name: "QtGraphs";            generate: true; unless: "QTJAMBI_NO_GRAPHS";           since: 6.6}

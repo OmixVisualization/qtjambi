@@ -30,7 +30,6 @@
 package io.qt.core;
 
 import java.util.*;
-
 import io.qt.*;
 
 /**

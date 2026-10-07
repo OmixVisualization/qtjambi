@@ -1575,7 +1575,7 @@ bool QtJambiAPI::enumValue(JNIEnv *env, jobject java_object, void* ptr, size_t s
         if(Java::Runtime::Number::isInstanceOf(env, java_object)){
             *reinterpret_cast<qint8*>(ptr) = QtJambiAPI::fromJavaByteObject(env, java_object);
         }else if(Java::QtJambi::QFlags::isInstanceOf(env, java_object)){
-            *reinterpret_cast<qint8*>(ptr) = qint8(Java::QtJambi::QFlags::intValue(env, java_object));
+            *reinterpret_cast<qint8*>(ptr) = qint8(Java::QtJambi::QFlags::toInt(env, java_object));
         }else if(Java::QtJambi::QtEnumerator::isInstanceOf(env, java_object)){
             *reinterpret_cast<qint8*>(ptr) = qint8(Java::QtJambi::QtEnumerator::value(env,java_object));
         }else if(Java::QtJambi::QtByteEnumerator::isInstanceOf(env, java_object)){
@@ -1595,7 +1595,7 @@ bool QtJambiAPI::enumValue(JNIEnv *env, jobject java_object, void* ptr, size_t s
         if(Java::Runtime::Number::isInstanceOf(env, java_object)){
             *reinterpret_cast<qint16*>(ptr) = QtJambiAPI::fromJavaByteObject(env, java_object);
         }else if(Java::QtJambi::QFlags::isInstanceOf(env, java_object)){
-            *reinterpret_cast<qint16*>(ptr) = qint16(Java::QtJambi::QFlags::intValue(env, java_object));
+            *reinterpret_cast<qint16*>(ptr) = qint16(Java::QtJambi::QFlags::toInt(env, java_object));
         }else if(Java::QtJambi::QtEnumerator::isInstanceOf(env, java_object)){
             *reinterpret_cast<qint16*>(ptr) = qint16(Java::QtJambi::QtEnumerator::value(env,java_object));
         }else if(Java::QtJambi::QtByteEnumerator::isInstanceOf(env, java_object)){
@@ -1615,7 +1615,7 @@ bool QtJambiAPI::enumValue(JNIEnv *env, jobject java_object, void* ptr, size_t s
         if(Java::Runtime::Number::isInstanceOf(env, java_object)){
             *reinterpret_cast<qint32*>(ptr) = QtJambiAPI::fromJavaByteObject(env, java_object);
         }else if(Java::QtJambi::QFlags::isInstanceOf(env, java_object)){
-            *reinterpret_cast<qint32*>(ptr) = qint32(Java::QtJambi::QFlags::intValue(env, java_object));
+            *reinterpret_cast<qint32*>(ptr) = qint32(Java::QtJambi::QFlags::toInt(env, java_object));
         }else if(Java::QtJambi::QtEnumerator::isInstanceOf(env, java_object)){
             *reinterpret_cast<qint32*>(ptr) = qint32(Java::QtJambi::QtEnumerator::value(env,java_object));
         }else if(Java::QtJambi::QtByteEnumerator::isInstanceOf(env, java_object)){
@@ -1636,10 +1636,10 @@ bool QtJambiAPI::enumValue(JNIEnv *env, jobject java_object, void* ptr, size_t s
             *reinterpret_cast<qint64*>(ptr) = QtJambiAPI::fromJavaByteObject(env, java_object);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
         }else if(Java::QtJambi::QLongFlags::isInstanceOf(env, java_object)){
-            *reinterpret_cast<qint64*>(ptr) = qint64(Java::QtJambi::QLongFlags::longValue(env, java_object));
+            *reinterpret_cast<qint64*>(ptr) = qint64(Java::QtJambi::QLongFlags::value(env, java_object));
 #endif
         }else if(Java::QtJambi::QFlags::isInstanceOf(env, java_object)){
-            *reinterpret_cast<qint64*>(ptr) = qint64(Java::QtJambi::QFlags::intValue(env, java_object));
+            *reinterpret_cast<qint64*>(ptr) = qint64(Java::QtJambi::QFlags::toInt(env, java_object));
         }else if(Java::QtJambi::QtEnumerator::isInstanceOf(env, java_object)){
             *reinterpret_cast<qint64*>(ptr) = qint64(Java::QtJambi::QtEnumerator::value(env,java_object));
         }else if(Java::QtJambi::QtByteEnumerator::isInstanceOf(env, java_object)){
@@ -1773,98 +1773,98 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,Buffer,
 
 namespace PrivateFields{
 QTJAMBI_REPOSITORY_DECLARE_CLASS(Buffer,
-    QTJAMBI_REPOSITORY_DECLARE_INT_FIELD(capacity)
+    QTJAMBI_REPOSITORY_DECLARE_INT_WRITABLE_FIELD(capacity)
     inline static jfieldID capacity_field(JNIEnv* env){
         auto _this = __qt_get_this(env);
         return _this.__capacity;
     }
     )
 QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectByteBuffer,
-    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(att)
     inline static jfieldID att_field(JNIEnv* env){
         auto _this = __qt_get_this(env);
         return _this.__att;
     }
     )
 QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectShortBufferS,
-    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(att)
     inline static jfieldID att_field(JNIEnv* env){
         auto _this = __qt_get_this(env);
         return _this.__att;
     }
     )
 QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectShortBufferU,
-    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(att)
     inline static jfieldID att_field(JNIEnv* env){
         auto _this = __qt_get_this(env);
         return _this.__att;
     }
     )
 QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectIntBufferS,
-    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(att)
     inline static jfieldID att_field(JNIEnv* env){
         auto _this = __qt_get_this(env);
         return _this.__att;
     }
     )
 QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectIntBufferU,
-    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(att)
     inline static jfieldID att_field(JNIEnv* env){
         auto _this = __qt_get_this(env);
         return _this.__att;
     }
     )
 QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectLongBufferS,
-    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(att)
     inline static jfieldID att_field(JNIEnv* env){
         auto _this = __qt_get_this(env);
         return _this.__att;
     }
     )
 QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectLongBufferU,
-    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(att)
     inline static jfieldID att_field(JNIEnv* env){
         auto _this = __qt_get_this(env);
         return _this.__att;
     }
     )
 QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectCharBufferS,
-    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(att)
     inline static jfieldID att_field(JNIEnv* env){
         auto _this = __qt_get_this(env);
         return _this.__att;
     }
     )
 QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectCharBufferU,
-    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(att)
     inline static jfieldID att_field(JNIEnv* env){
         auto _this = __qt_get_this(env);
         return _this.__att;
     }
     )
 QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectFloatBufferS,
-    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(att)
     inline static jfieldID att_field(JNIEnv* env){
         auto _this = __qt_get_this(env);
         return _this.__att;
     }
     )
 QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectFloatBufferU,
-    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(att)
     inline static jfieldID att_field(JNIEnv* env){
         auto _this = __qt_get_this(env);
         return _this.__att;
     }
     )
 QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectDoubleBufferS,
-    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(att)
     inline static jfieldID att_field(JNIEnv* env){
         auto _this = __qt_get_this(env);
         return _this.__att;
     }
     )
 QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectDoubleBufferU,
-    QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+    QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(att)
     inline static jfieldID att_field(JNIEnv* env){
         auto _this = __qt_get_this(env);
         return _this.__att;

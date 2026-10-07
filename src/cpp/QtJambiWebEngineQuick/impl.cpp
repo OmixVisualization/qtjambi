@@ -27,10 +27,17 @@
 **
 ****************************************************************************/
 
+#if __has_include(<QtWebEngineQuick/private/qquickwebenginesettings_p.h>)
 #include <QtWebEngineQuick/private/qquickwebenginesettings_p.h>
+#define QUICK_WEBENGINE_SETTINGS
+#endif
+#if __has_include(<QtWebEngineQuick/private/qquickwebenginescriptcollection_p.h>)
 #include <QtWebEngineQuick/private/qquickwebenginescriptcollection_p.h>
+#define QUICK_WEBENGINE_SCRIPTCOLLECTION
+#endif
 #if __has_include(<QtWebEngineQuick/private/qquickwebenginescriptcollection_p_p.h>)
 #include <QtWebEngineQuick/private/qquickwebenginescriptcollection_p_p.h>
+#define QUICK_WEBENGINE_SCRIPTCOLLECTION
 #endif
 #include <QtWebEngineCore/QWebEngineSettings>
 #include <QtWebEngineCore/QWebEngineScriptCollection>
@@ -39,14 +46,22 @@
 #include <QtJambi/CoreAPI>
 #include <QtJambi/Cast>
 
+#if !defined(QUICK_WEBENGINE_SETTINGS)
+struct QQuickWebEngineSettings : QObject { QScopedPointer<QWebEngineSettings> d_ptr; };
+#endif
+
+#if !defined(QUICK_WEBENGINE_SCRIPTCOLLECTION)
+struct QWebEngineScriptCollection : QObject { QScopedPointer<QWebEngineScriptCollection> d; };
+#endif
+
 class QQuickWebEngineViewPrivate{
 public:
-    static QWebEngineSettings* getWebEngineSettings(QQuickWebEngineSettings* settings){
-        return settings->d_ptr.data();
+    static QWebEngineSettings* getWebEngineSettings(QObject* settings){
+        return static_cast<QQuickWebEngineSettings*>(settings)->d_ptr.data();
     }
 
-    static QWebEngineScriptCollection* getWebEngineScriptCollection(QQuickWebEngineScriptCollection* collection){
-        return collection->d.data();
+    static QWebEngineScriptCollection* getWebEngineScriptCollection(QObject* collection){
+        return static_cast<QQuickWebEngineScriptCollection*>(collection)->d.data();
     }
 };
 
@@ -54,8 +69,8 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_webengine_quick_QtWebEngineQuick
     jobject __java_return_value{0};
     QTJAMBI_TRY {
         QObject *_object = qtjambi_cast<QObject*>(env, object);
-        if(QQuickWebEngineSettings* settings = qobject_cast<QQuickWebEngineSettings*>(_object)){
-            QWebEngineSettings* wSettings = QQuickWebEngineViewPrivate::getWebEngineSettings(settings);
+        if(_object->inherits("QQuickWebEngineSettings")){
+            QWebEngineSettings* wSettings = QQuickWebEngineViewPrivate::getWebEngineSettings(_object);
             __java_return_value = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, wSettings);
             CoreAPI::registerDependentObject(env, __java_return_value, object);
         }
@@ -69,8 +84,8 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_webengine_quick_QtWebEngineQuick
     jobject __java_return_value{0};
     QTJAMBI_TRY {
         QObject *_object = qtjambi_cast<QObject*>(env, object);
-        if(QQuickWebEngineScriptCollection* collection = qobject_cast<QQuickWebEngineScriptCollection*>(_object)){
-            QWebEngineScriptCollection* wCollection = QQuickWebEngineViewPrivate::getWebEngineScriptCollection(collection);
+        if(_object->inherits("QQuickWebEngineScriptCollection")){
+            QWebEngineScriptCollection* wCollection = QQuickWebEngineViewPrivate::getWebEngineScriptCollection(_object);
             __java_return_value = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, wCollection);
             CoreAPI::registerDependentObject(env, __java_return_value, object);
         }

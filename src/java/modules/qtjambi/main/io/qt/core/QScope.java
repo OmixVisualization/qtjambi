@@ -52,6 +52,9 @@ import io.qt.QtObjectInterface;
  * </code>
  */
 public final class QScope implements AutoCloseable {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	
 	private static final Logger logger = Logger.getLogger("io.qt");
 	

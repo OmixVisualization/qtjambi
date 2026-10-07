@@ -1,11 +1,7 @@
 package io.qt.core;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-
-import io.qt.NonNull;
+import java.util.*;
+import io.qt.*;
 
 /**
  * <p>Convenience class that simplifies QFuture synchronization</p>

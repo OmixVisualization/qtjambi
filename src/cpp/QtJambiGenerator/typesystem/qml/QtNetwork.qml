@@ -38,15 +38,16 @@ TypeSystem{
     description: "Classes to make network programming easier and more portable."
     CodeTemplate{
         name: "network.read_char*_long_long"
-        Text{content: "public final int read(byte data[]) {\n"+
-                      "    if (data.length == 0) return 0;\n"+
-                      "    \n"+
-                      "    QNativePointer np = new QNativePointer(QNativePointer.Type.Byte, data.length);\n"+
-                      "    int len = (int) read(np, data.length);\n"+
-                      "    for (int i=0; i<len; ++i) data[i] = np.byteAt(i);\n"+
-                      "    \n"+
-                      "    return len;\n"+
-                      "}"}
+        Text{content: String.raw`
+public final int read(byte data[]) {"
+    if (data.length == 0) return 0;"
+    "
+    QNativePointer np = new QNativePointer(QNativePointer.Type.Byte, data.length);"
+    int len = (int) read(np, data.length);"
+    for (int i=0; i<len; ++i) data[i] = np.byteAt(i);"
+    "
+    return len;"
+}`}
     }
     
     RequiredLibrary{
@@ -406,15 +407,17 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok = false;\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok = false;
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::QtNetwork::QTimeoutException>(%env, \"Connection timed out\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                    if(!ok)
+                        JavaException::raise<Java::QtNetwork::QTimeoutException>(%env, "Connection timed out" QTJAMBI_STACKTRACEINFO );`}
             }
         }
         InjectCode{
@@ -484,11 +487,12 @@ TypeSystem{
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = jlong(%in);\n"+
-                                  "if(%4){\n"+
-                                  "    Java::QtNetwork::QHostAddress$HostInfo::set_address(%env, %4, qtjambi_cast<jobject>(%env, std::move(host)));\n"+
-                                  "    Java::QtNetwork::QHostAddress$HostInfo::set_port(%env, %4, jshort(port));\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                            %out = jlong(%in);
+                            if(%4){
+                                Java::QtNetwork::QHostAddress$HostInfo::set_address(%env, %4, qtjambi_cast<jobject>(%env, std::move(host)));
+                                Java::QtNetwork::QHostAddress$HostInfo::set_port(%env, %4, jshort(port));
+                            }`}
                 }
             }
             ModifyArgument{
@@ -507,8 +511,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QHostAddress host;\n"+
-                                  "QHostAddress* %out = %2 ? &host : nullptr;"}
+                    Text{content: String.raw`
+                        QHostAddress host;
+                        QHostAddress* %out = %2 ? &host : nullptr;`}
                 }
             }
             ModifyArgument{
@@ -522,8 +527,9 @@ TypeSystem{
                 rename: "hostInfo"
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "ushort port(0);\n"+
-                                  "ushort* %out = %2 ? &port : nullptr;"}
+                    Text{content: String.raw`
+                        ushort port(0);
+                        ushort* %out = %2 ? &port : nullptr;`}
                 }
             }
         }
@@ -604,15 +610,17 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok = false;\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok = false;
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::QtNetwork::QTimeoutException>(%env, \"Connection timed out\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                    if(!ok)
+                        JavaException::raise<Java::QtNetwork::QTimeoutException>(%env, "Connection timed out" QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -1108,15 +1116,16 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
                     index: 2
                     metaName: "dest"
                 }
-                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            slot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else slot = \"1\" + slot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(slot!=null && !slot.startsWith("1") && !slot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            slot = "2" + method.cppMethodSignature();
+        else
+            slot = "1" + method.cppMethodSignature();
+    }else slot = "1" + slot;
+}`}
             }
             until: 6.6
         }
@@ -1134,15 +1143,16 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
                     index: 2
                     metaName: "dest"
                 }
-                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            slot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else slot = \"1\" + slot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(slot!=null && !slot.startsWith("1") && !slot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            slot = "2" + method.cppMethodSignature();
+        else
+            slot = "1" + method.cppMethodSignature();
+    }else slot = "1" + slot;
+}`}
             }
             since: 6.7
         }
@@ -1207,24 +1217,25 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
                         index: 3
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {\n"+
-                                  "        throw new IllegalArgumentException(\"Method does not take a single QHostInfo argument: \"+metaMethod.cppMethodSignature());\n"+
-                                  "    }\n"+
-                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                                  "    if(context!=null && context==object) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            return lookupHost(name, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            return lookupHost(name, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {
+        throw new IllegalArgumentException("Method does not take a single QHostInfo argument: "+metaMethod.cppMethodSignature());
+    }
+    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
+    if(context!=null && context==object) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            return lookupHost(name, context, "2"+metaMethod.cppMethodSignature());
+        case Method:
+        case Slot:
+            return lookupHost(name, context, "1"+metaMethod.cppMethodSignature());
+        default:
+            break;
+        }
+    }
+}`}
                 }
             }
             Instantiation{
@@ -1268,23 +1279,24 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
                         index: 3
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {\n"+
-                                  "        throw new IllegalArgumentException(\"Method does not take a single QHostInfo argument: \"+metaMethod.cppMethodSignature());\n"+
-                                  "    }\n"+
-                                  "    if(context instanceof io.qt.core.QObject) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            return lookupHost(name, (io.qt.core.QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            return lookupHost(name, (io.qt.core.QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {
+        throw new IllegalArgumentException("Method does not take a single QHostInfo argument: "+metaMethod.cppMethodSignature());
+    }
+    if(context instanceof io.qt.core.QObject) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            return lookupHost(name, (io.qt.core.QObject)context, "2"+metaMethod.cppMethodSignature());
+        case Method:
+        case Slot:
+            return lookupHost(name, (io.qt.core.QObject)context, "1"+metaMethod.cppMethodSignature());
+        default:
+            break;
+        }
+    }
+}`}
                 }
             }
             Instantiation{
@@ -1329,21 +1341,22 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
                         index: 3
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {\n"+
-                                  "        throw new IllegalArgumentException(\"Method does not take a single QHostInfo argument: \"+metaMethod.cppMethodSignature());\n"+
-                                  "    }\n"+
-                                  "    switch(metaMethod.methodType()) {\n"+
-                                  "    case Signal:\n"+
-                                  "        return lookupHost(name, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "    case Method:\n"+
-                                  "    case Slot:\n"+
-                                  "        return lookupHost(name, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "    default:\n"+
-                                  "        break;\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {
+        throw new IllegalArgumentException("Method does not take a single QHostInfo argument: "+metaMethod.cppMethodSignature());
+    }
+    switch(metaMethod.methodType()) {
+    case Signal:
+        return lookupHost(name, context, "2"+metaMethod.cppMethodSignature());
+    case Method:
+    case Slot:
+        return lookupHost(name, context, "1"+metaMethod.cppMethodSignature());
+    default:
+        break;
+    }
+}`}
                 }
             }
             until: 6.5
@@ -1379,24 +1392,25 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
                         index: 3
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {\n"+
-                                  "        throw new IllegalArgumentException(\"Method does not take a single QHostInfo argument: \"+metaMethod.cppMethodSignature());\n"+
-                                  "    }\n"+
-                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                                  "    if(context!=null && context==object) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            return lookupHost(name, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            return lookupHost(name, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {
+        throw new IllegalArgumentException("Method does not take a single QHostInfo argument: "+metaMethod.cppMethodSignature());
+    }
+    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
+    if(context!=null && context==object) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            return lookupHost(name, context, "2"+metaMethod.cppMethodSignature());
+        case Method:
+        case Slot:
+            return lookupHost(name, context, "1"+metaMethod.cppMethodSignature());
+        default:
+            break;
+        }
+    }
+}`}
                 }
             }
             Instantiation{
@@ -1436,23 +1450,24 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
                         index: 3
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(slot);\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {\n"+
-                                  "        throw new IllegalArgumentException(\"Method does not take a single QHostInfo argument: \"+metaMethod.cppMethodSignature());\n"+
-                                  "    }\n"+
-                                  "    if(context instanceof io.qt.core.QObject) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            return lookupHost(name, (io.qt.core.QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            return lookupHost(name, (io.qt.core.QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(slot);
+if(metaMethod!=null && metaMethod.isValid()) {
+    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {
+        throw new IllegalArgumentException("Method does not take a single QHostInfo argument: "+metaMethod.cppMethodSignature());
+    }
+    if(context instanceof io.qt.core.QObject) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            return lookupHost(name, (io.qt.core.QObject)context, "2"+metaMethod.cppMethodSignature());
+        case Method:
+        case Slot:
+            return lookupHost(name, (io.qt.core.QObject)context, "1"+metaMethod.cppMethodSignature());
+        default:
+            break;
+        }
+    }
+}`}
                 }
             }
             Instantiation{
@@ -1493,21 +1508,22 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
                         index: 3
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(slot);\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {\n"+
-                                  "        throw new IllegalArgumentException(\"Method does not take a single QHostInfo argument: \"+metaMethod.cppMethodSignature());\n"+
-                                  "    }\n"+
-                                  "    switch(metaMethod.methodType()) {\n"+
-                                  "    case Signal:\n"+
-                                  "        return lookupHost(name, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "    case Method:\n"+
-                                  "    case Slot:\n"+
-                                  "        return lookupHost(name, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "    default:\n"+
-                                  "        break;\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(slot);
+if(metaMethod!=null && metaMethod.isValid()) {
+    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {
+        throw new IllegalArgumentException("Method does not take a single QHostInfo argument: "+metaMethod.cppMethodSignature());
+    }
+    switch(metaMethod.methodType()) {
+    case Signal:
+        return lookupHost(name, context, "2"+metaMethod.cppMethodSignature());
+    case Method:
+    case Slot:
+        return lookupHost(name, context, "1"+metaMethod.cppMethodSignature());
+    default:
+        break;
+    }
+}`}
                 }
             }
             since: 6.6
@@ -1595,8 +1611,9 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
                     index: 1
                     metaName: "index"
                 }
-                Text{content: "if(index<0 || index>15)\n"+
-                              "    throw new ArrayIndexOutOfBoundsException(index);"}
+                Text{content: String.raw`
+                    if(index<0 || index>15)
+                        throw new ArrayIndexOutOfBoundsException(index);`}
             }
         }
         ModifyFunction{
@@ -1608,8 +1625,9 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
                     index: 1
                     metaName: "index"
                 }
-                Text{content: "if(index<0 || index>15)\n"+
-                              "    throw new ArrayIndexOutOfBoundsException(index);"}
+                Text{content: String.raw`
+                    if(index<0 || index>15)
+                        throw new ArrayIndexOutOfBoundsException(index);`}
             }
         }
     }
@@ -1872,19 +1890,20 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
             access: Modification.Private
         }
         InjectCode{
-            Text{content: "public static final String ALPNProtocolHTTP2;\n"+
-                          "public static final String NextProtocolHttp1_1;\n"+
-                          "static{\n"+
-                          "    String _ALPNProtocolHTTP2 = null;\n"+
-                          "    String _NextProtocolHttp1_1 = null;\n"+
-                          "    try{\n"+
-                          "        _ALPNProtocolHTTP2 = ALPNProtocolHTTP2();\n"+
-                          "        _NextProtocolHttp1_1 = NextProtocolHttp1_1();\n"+
-                          "    }catch(Throwable t){\n"+
-                          "    }\n"+
-                          "    ALPNProtocolHTTP2 = _ALPNProtocolHTTP2;\n"+
-                          "    NextProtocolHttp1_1 = _NextProtocolHttp1_1;\n"+
-                          "}"}
+            Text{content: String.raw`
+public static final String ALPNProtocolHTTP2;
+public static final String NextProtocolHttp1_1;
+static{
+    String _ALPNProtocolHTTP2 = null;
+    String _NextProtocolHttp1_1 = null;
+    try{
+        _ALPNProtocolHTTP2 = ALPNProtocolHTTP2();
+        _NextProtocolHttp1_1 = NextProtocolHttp1_1();
+    }catch(Throwable t){
+    }
+    ALPNProtocolHTTP2 = _ALPNProtocolHTTP2;
+    NextProtocolHttp1_1 = _NextProtocolHttp1_1;
+}`}
         }
         ModifyFunction{
             signature: "setBackendConfiguration(const QMap<QByteArray, QVariant> &)"
@@ -2148,16 +2167,17 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: template baseclass 'QtPrivate::ContextTypeForFunctor::ContextType<Functor>' of '' is not known"}
     CodeTemplate{
         name: "rest.comsumer.function"
-        Text{content: "auto %out = [wrapper = JObjectWrapper(%env, %in)](QRestReply* reply){\n"+
-                      "                    if(JniEnvironment env{200}){\n"+
-                      "                        QTJAMBI_TRY{\n"+
-                      "                            jobject _reply = qtjambi_cast<jobject>(env, reply);\n"+
-                      "                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _reply);\n"+
-                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                      "                            exn.report(env);\n"+
-                      "                        }QTJAMBI_TRY_END\n"+
-                      "                    }\n"+
-                      "                };"}
+        Text{content: String.raw`
+auto %out = [wrapper = JObjectWrapper(%env, %in)](QRestReply* reply){
+                    if(JniEnvironment env{200}){
+                        QTJAMBI_TRY{
+                            jobject _reply = qtjambi_cast<jobject>(env, reply);
+                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _reply);
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
+                    }
+                };`}
     }
 
     ObjectType{
@@ -2176,19 +2196,20 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "auto convertConsumer(JNIEnv* _env, jobject _consumer){\n"+
-                          "    return [consumer = JObjectWrapper(_env, _consumer)](QRestReply& reply){\n"+
-                          "                    if(JniEnvironment env{200}){\n"+
-                          "                        QTJAMBI_TRY{\n"+
-                          "                            jobject _reply = qtjambi_cast<jobject>(env, &reply);\n"+
-                          "                            InvalidateAfterUse inv(env, _reply);\n"+
-                          "                            Java::Runtime::Consumer::accept(env, consumer.object(env), _reply);\n"+
-                          "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                          "                            exn.report(env);\n"+
-                          "                        }QTJAMBI_TRY_END\n"+
-                          "                    }\n"+
-                          "                };\n"+
-                          "}"}
+            Text{content: String.raw`
+auto convertConsumer(JNIEnv* _env, jobject _consumer){
+    return [consumer = JObjectWrapper(_env, _consumer)](QRestReply& reply){
+                    if(JniEnvironment env{200}){
+                        QTJAMBI_TRY{
+                            jobject _reply = qtjambi_cast<jobject>(env, &reply);
+                            InvalidateAfterUse inv(env, _reply);
+                            Java::Runtime::Consumer::accept(env, consumer.object(env), _reply);
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
+                    }
+                };
+}`}
         }
 
         InjectCode{
@@ -3363,34 +3384,63 @@ inline auto convertSlot(JNIEnv* _env, jobject _receiver, jobject _slot){
         EnumType{
             name: "WellKnownHeader"
         }
-        ModifyFunction{
-            signature: "rangeValues(bool*)const"
-            ModifyArgument{
-                index: 0
-                replaceType: "io.qt.core.@Nullable QList<io.qt.network.@NonNull QHttpHeaderRange>"
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %1 ? qtjambi_cast<jobject>(%env, std::move(%in)) : nullptr;"}
-                }
-            }
-            ModifyArgument{
-                index: 1
-                RemoveArgument{}
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: String.raw`
-                        bool %in = false;
-                        bool* %out = &%in;
-                        `}
-                }
-            }
-            since: [6,12]
-        }
         since: 6.7
     }
 
     ValueType{
         name: "QHttpHeaderRange"
+        since: [6, 12]
+    }
+
+    ValueType{
+        name: "QHttpHeaderRangeSet"
+        ModifyFunction{
+            signature: "QHttpHeaderRangeSet(std::initializer_list<QHttpHeaderRangeSpec>)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "ranges()const"
+            ModifyArgument{
+                index: 0
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = qtjambi_cast<jobject>(%env, %scope, std::move(%in));"}
+                }
+            }
+        }
+        since: [6, 12]
+    }
+
+    ValueType{
+        name: "QHttpHeaderRangeSpec"
+        ModifyField{
+            name: "start"
+            ReplaceType{
+                modifiedType: "java.lang.@Nullable Long"
+            }
+            ConversionRule{
+                codeClass: CodeClass.NativeGetter
+                Text{content: "%out = %in.has_value() ? qtjambi_cast<jobject>(%env, %in.value()) : nullptr;"}
+            }
+            ConversionRule{
+                codeClass: CodeClass.NativeSetter
+                Text{content: "std::optional<qint64> %out = %in ? std::make_optional(qtjambi_cast<qint64>(%env, %in)) : std::nullopt;"}
+            }
+        }
+        ModifyField{
+            name: "end"
+            ReplaceType{
+                modifiedType: "java.lang.@Nullable Long"
+            }
+            ConversionRule{
+                codeClass: CodeClass.NativeGetter
+                Text{content: "%out = %in.has_value() ? qtjambi_cast<jobject>(%env, %in.value()) : nullptr;"}
+            }
+            ConversionRule{
+                codeClass: CodeClass.NativeSetter
+                Text{content: "std::optional<qint64> %out = %in ? std::make_optional(qtjambi_cast<qint64>(%env, %in)) : std::nullopt;"}
+            }
+        }
         since: [6, 12]
     }
 

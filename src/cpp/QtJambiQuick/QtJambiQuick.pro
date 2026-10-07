@@ -31,8 +31,14 @@
 
 include(../QtJambi/configure.pri)
 
-QT += core gui qml quick quick-private
-CONFIG+=no_private_qt_headers_warning
+QT += core gui qml quick
+
+contains(QTJAMBI_MODULE, QtJambiQuick-private):{
+    QT += quick-private
+    CONFIG+=no_private_qt_headers_warning
+}else{
+    DEFINES += QTJAMBI_NO_QUICK_PRIVATE
+}
 
 SOURCES += \
     impl.cpp

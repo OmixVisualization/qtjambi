@@ -43,6 +43,9 @@ import java.util.jar.JarFile;
 import io.qt.QLibraryNotFoundError;
 import io.qt.core.QCoreApplication;
 
+/**
+ * @hidden
+ */
 public final class LibraryExtractor {
 	
 	private LibraryExtractor() {}

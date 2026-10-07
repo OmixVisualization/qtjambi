@@ -2195,7 +2195,7 @@ void MetaBuilder::analyzeClass(MetaClass* java_class){
         }
     }
     for(const MetaFunction* f : java_class->functions()){
-        if(!f->wasPrivate()){
+        if(!f->wasPrivate() || f->superFunction()){
             hasDeprecation |= f->isDeclDeprecated();
             if(f->operatorType()==OperatorType::Div || f->operatorType()==OperatorType::DivAssign)
                 neededImports.insert(includeJavaAPI);
@@ -2290,7 +2290,7 @@ void MetaBuilder::analyzeFunctional(MetaFunctional* java_functional){
     java_functional->setHasDeprecation(hasDeprecation);
     if(needJObjectWrapper)
         java_functional->typeEntry()->addExtraInclude({TS::Include::IncludePath, includeJObjectWrapper});
-    for(QString neededImport : std::as_const(neededImports)){
+    for(const QString& neededImport : std::as_const(neededImports)){
         java_functional->typeEntry()->addExtraInclude({TS::Include::IncludePath, neededImport});
     }
 }
@@ -2300,6 +2300,25 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
         QMap<QString, QSharedPointer<MetaType>> analyzedTypes;
         MetaFunctionalList meta_functionals = m_meta_functionals;
         const DocNamespace* globalNamespace = docModel->getNamespace("");
+        const QMap<QString,TypeSystemTypeEntry*>& typeSystemsByQtLibrary = TS::TypeDatabase::instance()->typeSystemsByQtLibrary();
+        for(auto iter = typeSystemsByQtLibrary.constKeyValueBegin(), end = typeSystemsByQtLibrary.constKeyValueEnd(); iter!=end; ++iter){
+            if(const DocModule* module = docModel->getModule(iter->first)){
+                iter->second->setHref(module->href());
+                iter->second->setBrief(QString(module->brief()).replace("C++", "Java"));
+                if(module->href().endsWith("-module.html")) {
+                    if(const DocPage* page = docModel->getPage(module->name().toLower()+"-index.html")){
+                        iter->second->setHref(page->href());
+                        if(page->brief().size()>iter->second->brief().size())
+                            iter->second->setBrief(QString(page->brief()).replace("C++", "Java"));
+                    }
+                }
+                iter->second->setDocName(module->name());
+                iter->second->setSince(module->since());
+                iter->second->setDeprecated(module->status()==DocElement::Deprecated);
+                iter->second->setObsolete(module->status()==DocElement::Obsolete);
+                iter->second->setPreliminary(module->status()==DocElement::Preliminary);
+            }
+        }
         for(MetaClass *meta_class : qAsConst(m_meta_classes)) {
             if(meta_class->isNamespace() || meta_class->isFake()){
                 const DocNamespace* ns = meta_class->isFake() ? globalNamespace : docModel->getNamespace(meta_class->qualifiedCppName());
@@ -2325,6 +2344,8 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                     meta_class->setHref(ns->href());
                     meta_class->setBrief(ns->brief());
                     meta_class->setSince(ns->since());
+                    meta_class->setStatus(MetaAttributes::Status(ns->status()));
+                    meta_class->setThreadsafety(MetaAttributes::Threadsafety(ns->threadsafety()));
                 }
                 for(MetaFunction * meta_function : meta_class->functions()){
                     for(int i=0; i<meta_function->arguments().size(); ++i){
@@ -2363,6 +2384,8 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                         meta_function->setHref(functions[0]->href());
                         meta_function->setBrief(functions[0]->brief());
                         meta_function->setSince(functions[0]->since());
+                        meta_function->setStatus(MetaAttributes::Status(functions[0]->status()));
+                        meta_function->setThreadsafety(MetaAttributes::Threadsafety(functions[0]->threadsafety()));
                     }else{
                         for(const DocFunction* function : qAsConst(functions)){
                             if(meta_function->isConstant()==function->isConst()
@@ -2434,6 +2457,8 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                                     meta_function->setHref(function->href());
                                     meta_function->setBrief(function->brief());
                                     meta_function->setSince(function->since());
+                                    meta_function->setStatus(MetaAttributes::Status(function->status()));
+                                    meta_function->setThreadsafety(MetaAttributes::Threadsafety(function->threadsafety()));
                                     break;
                                 }else if(meta_function->functionTemplate().first){
                                     ok = true;
@@ -2494,6 +2519,8 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                                         meta_function->setHref(function->href());
                                         meta_function->setBrief(function->brief());
                                         meta_function->setSince(function->since());
+                                        meta_function->setStatus(MetaAttributes::Status(function->status()));
+                                        meta_function->setThreadsafety(MetaAttributes::Threadsafety(function->threadsafety()));
                                         break;
                                     }
                                 }
@@ -2506,6 +2533,8 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                                     meta_function->setHref(function->href());
                                     meta_function->setBrief(function->brief());
                                     meta_function->setSince(function->since());
+                                    meta_function->setStatus(MetaAttributes::Status(function->status()));
+                                    meta_function->setThreadsafety(MetaAttributes::Threadsafety(function->threadsafety()));
                                     break;
                                 }
                             }
@@ -2513,11 +2542,18 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                     }
                 }
             }else{
+                const DocTypeDef* tdef = nullptr;
                 const DocClass* cls = docModel->getClass(meta_class->qualifiedCppName());
                 if(!cls && meta_class->templateBaseClass()){
                     cls = docModel->getClass(meta_class->templateBaseClass()->qualifiedCppName());
                 }
                 if(!cls){
+                    tdef = docModel->getTypeDef(meta_class->qualifiedCppName());
+                    if(!tdef && meta_class->templateBaseClass()){
+                        tdef = docModel->getTypeDef(meta_class->templateBaseClass()->qualifiedCppName());
+                    }
+                }
+                if(!cls && !tdef){
                     QString name = meta_class->qualifiedCppName();
                     int index = name.indexOf('<');
                     if(index>0){
@@ -2528,19 +2564,31 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                         if(qualifiedCppName.last().endsWith("<JObjectWrapper>")){
                             qualifiedCppName.last().replace("<JObjectWrapper>", "");
                             cls = docModel->getClass(qualifiedCppName.join("::"));
+                            if(!cls)
+                                tdef = docModel->getTypeDef(qualifiedCppName.join("::"));
                         }else if(qualifiedCppName.last().endsWith("<void>")){
                             qualifiedCppName.last().replace("<void>", "");
                             cls = docModel->getClass(qualifiedCppName.join("::"));
+                            if(!cls)
+                                tdef = docModel->getTypeDef(qualifiedCppName.join("::"));
                         }else if(qualifiedCppName.last().startsWith("QtJambi")){
                             qualifiedCppName.last().replace("QtJambi", "Q");
                             cls = docModel->getClass(qualifiedCppName.join("::"));
+                            if(!cls)
+                                tdef = docModel->getTypeDef(qualifiedCppName.join("::"));
                         }else if(qualifiedCppName.last().startsWith("QVoid")){
                             qualifiedCppName.last().replace("QVoid", "Q");
+                            cls = docModel->getClass(qualifiedCppName.join("::"));
+                            if(!cls)
+                                tdef = docModel->getTypeDef(qualifiedCppName.join("::"));
+                        }
+                        if(!cls && !tdef && qualifiedCppName.size()>1){
+                            qualifiedCppName.takeFirst();
                             cls = docModel->getClass(qualifiedCppName.join("::"));
                         }
                         if(!cls && qualifiedCppName.size()>1){
                             qualifiedCppName.takeFirst();
-                            cls = docModel->getClass(qualifiedCppName.join("::"));
+                            tdef = docModel->getTypeDef(qualifiedCppName.join("::"));
                         }
                     }
                 }
@@ -2548,6 +2596,8 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                     meta_class->setHref(cls->href());
                     meta_class->setBrief(cls->brief());
                     meta_class->setSince(cls->since());
+                    meta_class->setStatus(MetaAttributes::Status(cls->status()));
+                    meta_class->setThreadsafety(MetaAttributes::Threadsafety(cls->threadsafety()));
                     for(MetaFunction * meta_function : meta_class->functions()){
                         for(int i=0; i<meta_function->arguments().size(); ++i){
                             MetaArgument *argument = meta_function->arguments()[i];
@@ -2601,6 +2651,8 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                             meta_function->setHref(functions[0]->href());
                             meta_function->setBrief(functions[0]->brief());
                             meta_function->setSince(functions[0]->since());
+                            meta_function->setStatus(MetaAttributes::Status(functions[0]->status()));
+                            meta_function->setThreadsafety(MetaAttributes::Threadsafety(functions[0]->threadsafety()));
                         }else for(const DocFunction* function : qAsConst(functions)){
                             if(meta_function->isConstant()==function->isConst()
                                     && meta_function->isStatic()==function->isStatic()
@@ -2665,6 +2717,8 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                                     meta_function->setHref(function->href());
                                     meta_function->setBrief(function->brief());
                                     meta_function->setSince(function->since());
+                                    meta_function->setStatus(MetaAttributes::Status(function->status()));
+                                    meta_function->setThreadsafety(MetaAttributes::Threadsafety(function->threadsafety()));
                                     break;
                                 }
                             }
@@ -2674,6 +2728,8 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                                     meta_function->setHref(prop->href());
                                     meta_function->setBrief(prop->brief());
                                     meta_function->setSince(prop->since());
+                                    meta_function->setStatus(MetaAttributes::Status(prop->status()));
+                                    meta_function->setThreadsafety(MetaAttributes::Threadsafety(prop->threadsafety()));
                                 }
                         }
                         if(meta_function->href().isEmpty()){
@@ -2683,6 +2739,8 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                                     meta_function->setHref(function->href());
                                     meta_function->setBrief(function->brief());
                                     meta_function->setSince(function->since());
+                                    meta_function->setStatus(MetaAttributes::Status(function->status()));
+                                    meta_function->setThreadsafety(MetaAttributes::Threadsafety(function->threadsafety()));
                                     break;
                                 }
                             }
@@ -2694,8 +2752,16 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                             meta_field->setHref(variable->href());
                             meta_field->setBrief(variable->brief());
                             meta_field->setSince(variable->since());
+                            meta_field->setStatus(MetaAttributes::Status(variable->status()));
+                            meta_field->setThreadsafety(MetaAttributes::Threadsafety(variable->threadsafety()));
                         }
                     }
+                }else if(tdef){
+                    meta_class->setHref(tdef->href());
+                    meta_class->setBrief(tdef->brief());
+                    meta_class->setSince(tdef->since());
+                    meta_class->setStatus(MetaAttributes::Status(tdef->status()));
+                    meta_class->setThreadsafety(MetaAttributes::Threadsafety(tdef->threadsafety()));
                 }
 
                 for(MetaEnum* meta_enum : meta_class->enums()){
@@ -2794,6 +2860,8 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                         meta_enum->setHref(docEnum->href());
                         meta_enum->setBrief(docEnum->brief());
                         meta_enum->setSince(docEnum->since());
+                        meta_enum->setStatus(MetaAttributes::Status(docEnum->status()));
+                        meta_enum->setThreadsafety(MetaAttributes::Threadsafety(docEnum->threadsafety()));
                     }
                 }
 
@@ -2801,8 +2869,12 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
             }
         }
         for(MetaFunctional *meta_class : qAsConst(meta_functionals)) {
+            const DocTypeDef* tdef = nullptr;
             const DocClass* cls = docModel->getClass(meta_class->typeEntry()->qualifiedCppName());
             if(!cls){
+                tdef = docModel->getTypeDef(meta_class->typeEntry()->qualifiedCppName());
+            }
+            if(!cls && !tdef){
                 QString name = meta_class->typeEntry()->qualifiedCppName();
                 int index = name.indexOf('<');
                 if(index>0){
@@ -2873,6 +2945,8 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                             meta_class->setHref(def->href());
                             meta_class->setBrief(def->brief());
                             meta_class->setSince(def->since());
+                            meta_class->setStatus(MetaAttributes::Status(def->status()));
+                            meta_class->setThreadsafety(MetaAttributes::Threadsafety(def->threadsafety()));
                         }
                     }
                 }
@@ -2881,6 +2955,14 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                 meta_class->setHref(cls->href());
                 meta_class->setBrief(cls->brief());
                 meta_class->setSince(cls->since());
+                meta_class->setStatus(MetaAttributes::Status(cls->status()));
+                meta_class->setThreadsafety(MetaAttributes::Threadsafety(cls->threadsafety()));
+            }else if(tdef){
+                meta_class->setHref(tdef->href());
+                meta_class->setBrief(tdef->brief());
+                meta_class->setSince(tdef->since());
+                meta_class->setStatus(MetaAttributes::Status(tdef->status()));
+                meta_class->setThreadsafety(MetaAttributes::Threadsafety(tdef->threadsafety()));
             }
         }
         for(MetaEnum* meta_enum : qAsConst(m_enums)){
@@ -2915,6 +2997,8 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                     meta_enum->setHref(docEnum->href());
                     meta_enum->setBrief(docEnum->brief());
                     meta_enum->setSince(docEnum->since());
+                    meta_enum->setStatus(MetaAttributes::Status(docEnum->status()));
+                    meta_enum->setThreadsafety(MetaAttributes::Threadsafety(docEnum->threadsafety()));
                 }
             }
         }
@@ -8609,10 +8693,8 @@ void MetaBuilder::fixFunctions(MetaClass * cls) {
         QHash<MetaFunction *, FunctionModificationList> funcs_to_add;
         for (int sfi = 0; sfi < super_funcs.size(); ++sfi) {
             MetaFunction *sf = super_funcs.at(sfi);
-
             if (sf->isRemovedFromAllLanguages(sf->implementingClass()))
                 continue;
-
             // we generally don't care about private functions, but we have to get the ones that are
             // virtual in case they override abstract functions.
             bool add = (sf->isNormal() || sf->isSignal() || sf->isEmptyFunction());
@@ -8653,9 +8735,9 @@ void MetaBuilder::fixFunctions(MetaClass * cls) {
                                 if (!sf->isFinalInTargetLang() && f->isFinalInTargetLang() && !f->isDeclaredFinalInCpp()) {
                                     *f -= MetaAttributes::FinalInTargetLang;
                                     if(!sf->implementingClass()->isInterface() || sf->wasPublic()){
-                                        if(!sf->wasPrivate())
+                                        if(!sf->wasPrivate()){
                                             *f += MetaAttributes::Override;
-                                        else if(sf->isDeprecated() && !f->isDeprecated()){
+                                        }else if(sf->isDeprecated() && !f->isDeprecated()){
                                             *f += MetaAttributes::Deprecated;
                                             f->setDeprecatedComment(sf->deprecatedComment());
                                         }
@@ -8663,11 +8745,22 @@ void MetaBuilder::fixFunctions(MetaClass * cls) {
                                     //                                 printf("   --- inherit virtual\n");
                                 }
                                 if (!f->isFinalInTargetLang() && f->isPrivate() && !sf->isPrivate()) {
-                                    f->setFunctionType(MetaFunction::EmptyFunction);
+                                    QString throws = f->throws();
+                                    if(throws.endsWith("QNoImplementationException")){
+                                        f->setFunctionType(MetaFunction::EmptyFunction);
+                                    }else{
+                                        f->setSuperFunction(sf);
+                                        f->setDeprecatedComment("Don't call this member function because its native counterpart is not public.");
+                                    }
                                     f->setVisibility(MetaAttributes::Protected);
                                     *f += MetaAttributes::FinalInTargetLang;
+                                    *f += MetaAttributes::FinalInCpp;
+                                    *f += MetaAttributes::Deprecated;
                                     ReportHandler::warning(QString("private virtual function '%1' in '%2'")
                                                            .arg(f->signature(), f->implementingClass()->name()));
+                                }else if(!(f->originalAttributes() & MetaAttributes::Public) && sf->isPublic() && !sf->isAbstract() && !f->implementingClass()->generateShellClass()){
+                                    *f += MetaAttributes::Deprecated;
+                                    f->setDeprecatedComment("Don't call this member function because its native counterpart is not public.");
                                 }
                             }
                         }
@@ -8688,15 +8781,26 @@ void MetaBuilder::fixFunctions(MetaClass * cls) {
                             // the subclasses will not compile as non-abstract classes.
                             // But they don't need to be implemented, since they can never be called.
                             if (f->isPrivate() && sf->isAbstract()) {
-                                f->setFunctionType(MetaFunction::EmptyFunction);
-                                f->setVisibility(sf->visibility());
-                                *f += MetaAttributes::FinalInTargetLang;
+                                QString throws = f->throws();
+                                if(throws.endsWith("QNoImplementationException")){
+                                    f->setFunctionType(MetaFunction::EmptyFunction);
+                                }else{
+                                    f->setSuperFunction(sf);
+                                    f->setDeprecatedComment("Don't call this member function because its native counterpart is not public.");
+                                }
+                                *f += MetaAttributes::Deprecated;
                                 *f += MetaAttributes::FinalInCpp;
+                                f->setVisibility(sf->visibility());
+                                //*f += MetaAttributes::FinalInTargetLang;
                             }
                         }
 
                         // Set the class which first declares this function, afawk
-                        f->setDeclaringClass(sf->declaringClass());
+                        if(!sf->isFinal()){
+                            f->setDeclaringClass(sf->declaringClass());
+                        }else if(sf->implementingClass()->isInterface() && sf->implementingClass()->extractInterfaceImpl()==f->declaringClass()){
+                            f->setDeclaringClass(sf->declaringClass());
+                        }
 
                         if (sf->isFinalInTargetLang() && !sf->isPrivate() && !f->isPrivate() && !sf->isStatic() && !f->isStatic() && !f->isSignal()) {
                             // Shadowed funcion, need to make base class
@@ -8778,8 +8882,11 @@ void MetaBuilder::fixFunctions(MetaClass * cls) {
                     if ((cmp & MetaFunction::EqualModifiedName)
                         && (cmp & MetaFunction::EqualArguments)) {
                         f = f->copy();
-                        f->setFunctionType(MetaFunction::EmptyFunction);
+                        //f->setFunctionType(MetaFunction::EmptyFunction);
+                        *f += MetaAttributes::Deprecated;
+                        f->setDeprecatedComment("Don't call this member function because its native counterpart is not public.");
                         f->setVisibility(sf->visibility());
+                        f->setSuperFunction(sf);
                         *f += MetaAttributes::FinalInTargetLang;
                         *f += MetaAttributes::FinalInCpp;
                         *f += MetaAttributes::Override;
@@ -12612,7 +12719,8 @@ void MetaBuilder::setupEquals(MetaClass *cls) {
             && cls->typeEntry()->hasEquals()
             && (cls->typeEntry()->codeGeneration() & ~TypeEntry::InheritedByTypeSystem)==TypeEntry::GenerateAll
             && (cls->typeEntry()->isValue()
-                    || (cls->typeEntry()->hasPublicDefaultConstructor() && cls->typeEntry()->hasPublicCopyConstructor() && cls->typeEntry()->isDestructorPublic()))) {
+                    || (cls->typeEntry()->hasPublicDefaultConstructor() && cls->typeEntry()->hasPublicCopyConstructor() && cls->typeEntry()->isDestructorPublic())
+                )) {
             ReportHandler::warning(QString::fromLatin1("Class '%1' has equals operators but no qHash() function. Hashcode of objects will consistently be 0.")
                                    .arg(cls->qualifiedCppName()));
         }
@@ -13016,7 +13124,10 @@ void MetaBuilder::setupConstructorAvailability(MetaClass *meta_class){
         for(MetaFunction * function : meta_class->functions()){
             switch(function->operatorType()){
             case OperatorType::TypeCast:
-            if(function->wasPublic() && function->type() && function->type()->typeEntry()->isComplex()
+            if(function->wasPublic() && function->type()
+                    && !function->type()->isQVariant()
+                    && !function->type()->typeEntry()->isQVariant()
+                    && function->type()->typeEntry()->isComplex()
                     && !function->isNoImplicitArguments()){
                 const ComplexTypeEntry* ctype = reinterpret_cast<const ComplexTypeEntry*>(function->type()->typeEntry());
                 const_cast<ComplexTypeEntry*>(ctype)->addDeclImplicitCast(function);

@@ -32,6 +32,7 @@ package io.qt.core;
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qexception.html">QException</a></p>
  * <p>The <code>QUnhandledException</code> class represents an unhandled exception in a worker thread.</p>
+ * @serial exclude
  */
 public final class QUnhandledException extends QException {
 	private static final long serialVersionUID = 198634816268472541L;

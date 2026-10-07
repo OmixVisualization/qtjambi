@@ -104,6 +104,10 @@ class QRemoteObjectNode___ {
 
 class QtRemoteObjects___ {
 
+    /**
+     * Result class for <code>getTypeNameAndMetaobjectFromClassInfo(QMetaObject)</code>
+     * @see QtRemoteObjects#getTypeNameAndMetaobjectFromClassInfo(io.qt.core.QMetaObject)
+     */
     public static class TypeNameAndMetaobject{
         TypeNameAndMetaobject(String typeName, io.qt.core.QMetaObject metaObject) {
             super();

@@ -66,7 +66,7 @@ public class TestCanvasPainter extends ApplicationInitializer{
 		    float centerX = width() / 2;
 		    float centerY = height() / 2;
 		    // Paint the background circle
-		    QCanvasRadialGradient gradient1 = new QCanvasRadialGradient(centerX, centerY - size * 0.1f, size * 0.6f);
+		    QCanvasRadialGradient gradient1 = new QCanvasRadialGradient(centerX, centerY - size * 0.1f, 0, size * 0.6f);
 		    gradient1.setStartColor(new QColor(0x909090));
 		    gradient1.setEndColor(new QColor(0x404040));
 		    p.beginPath();

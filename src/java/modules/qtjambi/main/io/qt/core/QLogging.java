@@ -740,6 +740,10 @@ public final class QLogging {
     @QtUninvokable
     private native static void showCMessageFromSupplier(int messageType, long categoryId, Supplier<? extends CharSequence> message);
     
+    /**
+     * Java logging handler printing to Qt logger
+     * @see java.util.logging.Logger#addHandler(java.util.logging.Handler)
+     */
     public static class Handler extends java.util.logging.Handler {
     	private static class MessageFormatter extends Formatter{
 			@Override
@@ -808,6 +812,10 @@ public final class QLogging {
             }
             return defaultValue==null ? new MessageFormatter() : defaultValue;
         }
+    	
+    	/**
+    	 * {@inheritDoc} 
+    	 */
 		@SuppressWarnings("exports")
 		@Override
 		public void publish(LogRecord record) {
@@ -837,9 +845,17 @@ public final class QLogging {
 				reportError(null, ex, ErrorManager.FORMAT_FAILURE);
 			}
 		}
+
+    	/**
+    	 * {@inheritDoc} 
+    	 */
 		@Override
 		public void flush() {
 		}
+		
+    	/**
+    	 * {@inheritDoc} 
+    	 */
 		@Override
 		public void close() {
 		}

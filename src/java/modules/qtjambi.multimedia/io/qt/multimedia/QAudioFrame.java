@@ -1,15 +1,18 @@
 package io.qt.multimedia;
 
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
+import java.nio.*;
 
-import io.qt.NonNull;
-import io.qt.multimedia.QAudioFormat.ChannelConfig;
+import io.qt.*;
+import io.qt.multimedia.QAudioFormat.*;
 
+/**
+ * <p>Java wrapper for Qt class <code>QAudioFrame</code></p>
+ */
 public final class QAudioFrame {
-	
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
+
 	public static QAudioFrame.@NonNull AsByte dataAsAudioFrame(java.nio.@NonNull ByteBuffer buffer, @NonNull ChannelConfig config){
 		return new QAudioFrame(config).new AsByte(buffer);
 	}
@@ -37,6 +40,9 @@ public final class QAudioFrame {
 	
 	private final long positionToIndexFunction;
 	
+	/**
+	 * <p>Java wrapper for 8 bit audio data</p>
+	 */
 	public final class AsByte{
 		private AsByte(ByteBuffer channels) {
 			this.channels = channels;
@@ -68,6 +74,9 @@ public final class QAudioFrame {
 		private final java.nio.ByteBuffer channels;
 	}
 	
+	/**
+	 * <p>Java wrapper for 16 bit audio data</p>
+	 */
 	public final class AsShort{
 		private AsShort(ShortBuffer channels) {
 			this.channels = channels;
@@ -99,6 +108,9 @@ public final class QAudioFrame {
 		private final java.nio.ShortBuffer channels;
 	}
 	
+	/**
+	 * <p>Java wrapper for 32 bit audio data</p>
+	 */
 	public final class AsInt{
 		private AsInt(IntBuffer channels) {
 			this.channels = channels;
@@ -130,6 +142,9 @@ public final class QAudioFrame {
 		private final java.nio.IntBuffer channels;
 	}
 	
+	/**
+	 * <p>Java wrapper for 32 bit floating point audio data</p>
+	 */
 	public final class AsFloat{
 		private AsFloat(FloatBuffer channels) {
 			this.channels = channels;

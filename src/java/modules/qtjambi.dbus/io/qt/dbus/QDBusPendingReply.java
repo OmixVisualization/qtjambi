@@ -40,13 +40,9 @@ import io.qt.core.QMetaType;
 
 /**
  * The QDBusPendingReply class contains the reply to an asynchronous method call.
- * <p>Java wrapper for Qt's class <a href="https://doc.qt.io/qt/qdbuspendingreply.html">QDBusPendingReply</a></p>
+ * <p>Java wrapper for Qt's class <a href="https://doc.qt.io/qt/qdbuspendingreply.html"><code>QDBusPendingReply</code></a></p>
  */
 public class QDBusPendingReply<A> extends io.qt.dbus.QDBusPendingReplyBase implements java.lang.Cloneable {
-	
-	static {
-        QtJambi_LibraryUtilities.initialize();
-    }
 	
 	private final QMetaType typeA;
 	

@@ -46,6 +46,7 @@ import io.qt.QtAsGadget;
 import io.qt.QtEnumerator;
 import io.qt.QtInvokable;
 import io.qt.QtPropertyConstant;
+import io.qt.QtPropertyMember;
 import io.qt.QtPropertyReader;
 import io.qt.QtPropertyStored;
 import io.qt.QtPropertyWriter;
@@ -209,7 +210,7 @@ public class TestQml4 extends ApplicationInitializer{
     public void run_testValueType() {
 		Assume.assumeTrue("Qt version >= 6.4", QLibraryInfo.version().compareTo(new QVersionNumber(6,4))>=0);
 		qmlClearTypeRegistrations();
-		int id = qmlRegisterType(CloneableMetaValue.class, "io.qt.test", 1, 0, "mval");
+		int id = qmlRegisterType(QmlCreatableValue.class, "io.qt.test", 1, 0, "mval");
 		Assert.assertTrue(id!=-1);
 		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
 				"import QtQuick 2.0\n" +
@@ -225,7 +226,7 @@ public class TestQml4 extends ApplicationInitializer{
 			Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 			QObject root = component.create();
 			Object customValue = root.property("customValue");
-			Assert.assertTrue(customValue instanceof CloneableMetaValue);
+			Assert.assertTrue(customValue instanceof QmlCreatableValue);
 			Object customValues = root.property("customValues");
 			Assert.assertTrue(customValues instanceof QList);
 			QList list = (QList)customValues;
@@ -235,7 +236,7 @@ public class TestQml4 extends ApplicationInitializer{
 				Assert.fail("IllegalArgumentException expected");
 			} catch (IllegalArgumentException e) {
 			}
-			list.add(new CloneableMetaValue());
+			list.add(new QmlCreatableValue());
 		}finally {
 			engine.dispose();
 		}
@@ -1344,5 +1345,71 @@ public class TestQml4 extends ApplicationInitializer{
 		}finally {
 			engine.dispose();
 		}
+	}
+}
+
+class QmlCreatableValue implements Cloneable{
+	
+	@SuppressWarnings("unused")
+	private static QmlCreatableValue create(QJSValue arguments) {
+		QmlCreatableValue value = new QmlCreatableValue();
+		if(arguments.isArray()) {
+			int length = arguments.property("length").toInt();
+			if(length==3) {
+				value.i = arguments.property(0).toInt();
+				value.d = arguments.property(1).toNumber();
+				value.s = arguments.property(2).toString();
+			}
+		}
+		return value;
+	}
+	
+	@QtPropertyMember
+	int i;
+	@QtPropertyMember
+	double d;
+	@QtPropertyMember
+	String s;
+	
+	@Override
+	public QmlCreatableValue clone() {
+		QmlCreatableValue v = new QmlCreatableValue();
+		v.d = d;
+		v.i = i;
+		v.s = s;
+		return v;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		long temp;
+		temp = Double.doubleToLongBits(d);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + i;
+		result = prime * result + ((s == null) ? 0 : s.hashCode());
+		return result;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		QmlCreatableValue other = (QmlCreatableValue) obj;
+		if (Double.doubleToLongBits(d) != Double.doubleToLongBits(other.d))
+			return false;
+		if (i != other.i)
+			return false;
+		if (s == null) {
+			if (other.s != null)
+				return false;
+		} else if (!s.equals(other.s))
+			return false;
+		return true;
 	}
 }

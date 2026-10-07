@@ -97,9 +97,10 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
-                Text{content: "if(port<0 || port>=0x0ffff){\n"+
-                              "throw new IllegalArgumentException(\"Port out of range: \"+port);\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(port<0 || port>=0x0ffff){
+                        throw new IllegalArgumentException("Port out of range: "+port);
+                    }`}
             }
             until: 6.7
         }
@@ -112,11 +113,12 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QList<int> tmp;\n"+
-                                  "for(ushort s : %in){\n"+
-                                  "tmp << int(s);\n"+
-                                  "}\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(tmp));"}
+                    Text{content: String.raw`
+                        QList<int> tmp;
+                        for(ushort s : %in){
+                            tmp << int(s);
+                        }
+                        %out = qtjambi_cast<jobject>(%env, std::move(tmp));`}
                 }
             }
             until: 6.7
@@ -130,11 +132,12 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QList<int> tmp;\n"+
-                                  "for(ushort s : %in){\n"+
-                                  "tmp << int(s);\n"+
-                                  "}\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(tmp));"}
+                    Text{content: String.raw`
+                        QList<int> tmp;
+                        for(ushort s : %in){
+                            tmp << int(s);
+                        }
+                        %out = qtjambi_cast<jobject>(%env, std::move(tmp));`}
                 }
             }
             since: 6.8
@@ -396,14 +399,16 @@ auto %out = [slot = JObjectWrapper(%env, %in)](const QHttpServerRequest & reques
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
-                Text{content: "if(__rcRouter!=null && !__rcRouter.isDisposed())\n"+
-                              "    return __rcRouter;"}
+                Text{content: String.raw`
+                        if(__rcRouter!=null && !__rcRouter.isDisposed())
+                            return __rcRouter;`}
             }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
-                Text{content: "__rcRouter = __qt_return_value;\n"+
-                              "QtJambi_LibraryUtilities.internal.registerDependentObject(__rcRouter, this);"}
+                Text{content: String.raw`
+                    __rcRouter = __qt_return_value;
+                    QtJambi_LibraryUtilities.internal.registerDependentObject(__rcRouter, this);`}
             }
         }
         ModifyFunction{
@@ -1039,6 +1044,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_httpserver_QHttpServerRouterRule_in
             target: CodeClass.Java
             position: Position.End
             Text{content: String.raw`
+/**
+ * RouterHandler function for <code>QHttpServer.route(...)</code>
+ * @serial exclude
+ */
 public interface RouterHandler extends io.qt.core.QMetaObject.Slot3<io.qt.core.@NonNull QRegularExpressionMatch,io.qt.httpserver.@NonNull QHttpServerRequest,io.qt.httpserver.@StrictNonNull QHttpServerResponder>{
 }
 

@@ -32,6 +32,7 @@ package io.qt;
 /**
  * Error thrown when QtJambi is not able to find library.
  * @see QtUtilities#loadQtLibrary(String)
+ * @serial exclude
  */
 public class QLibraryNotFoundError extends LinkageError {
 	private static final long serialVersionUID = -7108832113606951792L;

@@ -29,15 +29,22 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.NativeAccess;
-import io.qt.QtObject;
-import io.qt.QtUninvokable;
+import java.io.*;
+import java.lang.invoke.*;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.function.*;
+
+import io.qt.*;
 
 /**
  * Abstract superclass of containers in Qt.
  */
 abstract class AbstractContainer<T> extends QtObject implements Cloneable{
-	
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
+
 	@NativeAccess
 	Object __rcContainer;
 	
@@ -87,4 +94,141 @@ abstract class AbstractContainer<T> extends QtObject implements Cloneable{
      */
     @Override
     public abstract AbstractContainer<T> clone();
+}
+
+/**
+ * @hidden
+ */
+class CoreUtility extends io.qt.internal.CoreUtility {
+    static {
+        QtJambi_LibraryUtilities.initialize();
+    }
+
+    protected static abstract class AbstractSignal extends io.qt.internal.CoreUtility.AbstractSignal {
+        AbstractSignal() {
+            super();
+        }
+
+        AbstractSignal(Consumer<Object[]> argumentTest) {
+            super(argumentTest);
+        }
+
+        AbstractSignal(Class<?> declaringClass) {
+            super(declaringClass);
+        }
+
+        AbstractSignal(Class<?> declaringClass, boolean isDisposed) {
+            super(declaringClass, isDisposed);
+        }
+
+        AbstractSignal(@StrictNonNull String signalName, Class<?>[] types) {
+            super(signalName, types);
+        }
+    }
+
+    protected static abstract class AbstractMultiSignal<S extends AbstractSignal>
+            extends io.qt.internal.CoreUtility.AbstractMultiSignal<S> {
+        AbstractMultiSignal() {
+            super();
+        }
+    }
+
+    protected static void checkConnectionToDisposedSignal(QMetaObject.DisposedSignal signal, Object receiver,
+            boolean slotObject) {
+        io.qt.internal.CoreUtility.checkConnectionToDisposedSignal(signal, receiver, slotObject);
+    }
+    
+    protected static QMetaMethod signalMethod(io.qt.internal.CoreUtility.AbstractSignal signal) {
+        return io.qt.internal.CoreUtility.signalMethod(signal);
+    }
+    
+    protected static String internalNameOfArgumentType(Class<? extends Object> cls) {
+    	return io.qt.internal.CoreUtility.internalNameOfArgumentType(cls);
+    }
+
+    protected static String internalTypeNameOfClass(Class<? extends Object> cls, Type genericType, AnnotatedElement annotatedType) {
+        return io.qt.internal.CoreUtility.internalTypeNameOfClass(cls, genericType, annotatedType);
+    }
+
+    protected static String internalTypeName(String s, ClassLoader classLoader) {
+        return io.qt.internal.CoreUtility.internalTypeName(s, classLoader);
+    }
+    
+    protected static void addClassPath(String path) {
+        io.qt.internal.CoreUtility.addClassPath(path);
+    }
+
+    protected static void removeClassPath(String path) {
+        io.qt.internal.CoreUtility.removeClassPath(path);
+    }
+
+    protected static void addClassPath(java.net.URL path) {
+        io.qt.internal.CoreUtility.addClassPath(path);
+    }
+    
+    protected static QMetaType[] findSuperInstantiations(Class<?> clazz){
+    	return io.qt.internal.CoreUtility.findSuperInstantiations(clazz);
+    }
+    
+    protected static <T> void registerDataStreamOperators(int metaType, Class<?> classType, java.util.function.BiConsumer<QDataStream, T> datastreamInFn, java.util.function.Function<QDataStream, T> datastreamOutFn){
+    	io.qt.internal.CoreUtility.registerDataStreamOperators(metaType, classType, datastreamInFn, datastreamOutFn);
+    }
+    
+    protected static <T> void registerDebugStreamOperator(int metaType, Class<?> classType, java.util.function.BiConsumer<QDebug, T> debugstreamFn) {
+    	io.qt.internal.CoreUtility.registerDebugStreamOperator(metaType, classType, debugstreamFn);
+	}
+    
+    protected static boolean registerConverter(int metaType1, Class<?> classType1, int metaType2, Class<?> classType2, java.util.function.Function<?,?> converterFn) {
+    	return io.qt.internal.CoreUtility.registerConverter(metaType1, classType1, metaType2, classType2, converterFn);
+    }
+	protected static Object invokeInterfaceDefaultMethod(Method method, Object object, Object... args) throws Throwable {
+		return io.qt.internal.CoreUtility.invokeInterfaceDefaultMethod(method, object, args);
+	}
+	protected static MethodHandle getMethodHandle(Method method) throws IllegalAccessException {
+		return io.qt.internal.CoreUtility.getMethodHandle(method);
+	}
+	
+	protected static void emitNativeSignal(QObject sender, int methodIndex, long metaObjectId, Object... args) {
+        io.qt.internal.CoreUtility.emitNativeSignal(sender, methodIndex, metaObjectId, args);
+    }
+ 
+    protected static boolean disconnectAll(QtSignalEmitterInterface sender, Object receiver) {
+        return io.qt.internal.CoreUtility.disconnectAll(sender, receiver);
+    }
+ 
+    protected static boolean disconnectOne(QMetaObject.Connection connection) {
+        return io.qt.internal.CoreUtility.disconnectOne(connection);
+    }
+ 
+    protected static void registerPropertyField(QMetaProperty metaProperty, java.lang.reflect.Field field) {
+        io.qt.internal.CoreUtility.registerPropertyField(metaProperty, field);
+    }
+    
+    protected static <PI> PI analyzeProperty(QObject containingObject, QtObject property, BiFunction<Field, QMetaType, PI> fun1, BiFunction<Field, QMetaProperty, PI> fun2) {
+		return io.qt.internal.CoreUtility.analyzeProperty(containingObject, property, fun1, fun2);
+	}
+    
+    protected static <A,B> Function<A,B> functionFromMethod(Method method){
+        return io.qt.internal.CoreUtility.functionFromMethod(method);
+    }
+    
+    protected static QMetaMethod fromMethod(java.io.Serializable method) {
+    	return io.qt.internal.CoreUtility.fromMethod(method);
+    }
+    
+    protected static <S extends Serializable, Bindable> @NonNull Bindable fromProperty(Class<S> type, S propertyGetter, BiFunction<QObject, QMetaProperty, Bindable> constr){
+    	return io.qt.internal.CoreUtility.fromProperty(type, propertyGetter, constr);
+    }
+    
+    protected static <L> L lambdaInfo(Serializable slotObject, QMetaObject.Method8<Object,QObject,QMetaObject,Integer,Integer,Boolean,List<Object>,java.lang.reflect.Method,L> constructor) {
+    	return io.qt.internal.CoreUtility.lambdaInfo(slotObject, constructor);
+    }
+    
+    protected static <L> L lambdaInfo(Serializable slotObject, Object object, QMetaObject.Method8<Object,QObject,QMetaObject,Integer,Integer,Boolean,List<Object>,java.lang.reflect.Method,L> constructor) {
+    	return io.qt.internal.CoreUtility.lambdaInfo(slotObject, object, constructor);
+    }
+    
+    protected static <L> L lambdaInfo(Serializable slotObject, QObject object, QMetaObject.Method8<Object,QObject,QMetaObject,Integer,Integer,Boolean,List<Object>,java.lang.reflect.Method,L> constructor) {
+    	return io.qt.internal.CoreUtility.lambdaInfo(slotObject, object, constructor);
+    }
 }

@@ -30,11 +30,18 @@
 package io.qt.autotests;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 public class TestInitializationActiveX extends UnitTestInitializer {
     @Test
     public void initialize() {
-    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.activex"));
+    	try {
+    		Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.activex"));
+    	} catch (Error e) {
+			if(e.getMessage().startsWith("Cannot mix incompatible Qt library."))
+				Assume.assumeNoException(e.getMessage(), e);
+			else throw e;
+		}
     }
 }

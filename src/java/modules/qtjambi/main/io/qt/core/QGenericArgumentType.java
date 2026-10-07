@@ -29,9 +29,12 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.NativeAccess;
+import io.qt.*;
 
 abstract class QGenericArgumentType<T>{
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	QGenericArgumentType(Class<?> classType, QMetaType metaType, int pointerOrReference) {
 		super();
 		if(classType==null && metaType!=null && metaType.id()!=QMetaType.Type.Nullptr.value()) {

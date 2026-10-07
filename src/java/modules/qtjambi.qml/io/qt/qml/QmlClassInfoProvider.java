@@ -40,7 +40,6 @@ import io.qt.core.QMetaType;
 import io.qt.qml.util.*;
 
 final class QmlClassInfoProvider {
-	
 	static final Map<String,Integer> packageVersions = Collections.synchronizedMap(new TreeMap<>());
 	
 	static int majorVersion(Package pkg) {

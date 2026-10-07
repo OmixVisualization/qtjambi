@@ -86,9 +86,10 @@ TypeSystem{
             }
             ConversionRule{
                 codeClass: CodeClass.Native
-                Text{content: "std::unique_ptr<ApplicationData> applicationData(ApplicationData::initialize<QGuiApplication>(%env, %in));\n"+
-                              "char** %out = applicationData->chars();\n"+
-                              "int %1 = applicationData->size();"}
+                Text{content: String.raw`
+                    std::unique_ptr<ApplicationData> applicationData(ApplicationData::initialize<QGuiApplication>(%env, %in));
+                    char** %out = applicationData->chars();
+                    int %1 = applicationData->size();`}
             }
         }
     }
@@ -108,9 +109,10 @@ TypeSystem{
             }
             ConversionRule{
                 codeClass: CodeClass.Native
-                Text{content: "std::unique_ptr<ApplicationData> applicationData(ApplicationData::initialize<QGuiApplication>(%env, %in));\n"+
-                              "char** %out = applicationData->chars();\n"+
-                              "int %1 = applicationData->size();"}
+                Text{content: String.raw`
+                    std::unique_ptr<ApplicationData> applicationData(ApplicationData::initialize<QGuiApplication>(%env, %in));
+                    char** %out = applicationData->chars();
+                    int %1 = applicationData->size();`}
             }
         }
     }

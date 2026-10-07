@@ -293,43 +293,16 @@ class QColor___ extends QColor {
 }// class
 
 class QDesktopServices___ extends QDesktopServices {
-
-        private static java.util.TreeMap<String, io.qt.core.QObject> __rcUrlHandlers = new java.util.TreeMap<String, io.qt.core.QObject>();
-
-        public static interface UrlHandler {
-            public void handleUrl(io.qt.core.QUrl url);
+    private static final class InternalUrlHandler extends io.qt.core.QObject implements java.util.function.Consumer<io.qt.core.QUrl>{
+        private final java.util.function.Consumer<io.qt.core.QUrl> urlHandler;
+        private InternalUrlHandler(java.util.function.Consumer<io.qt.core.QUrl> urlHandler) {
+            this.urlHandler = urlHandler;
         }
-
-        private static class InternalUrlHandler extends io.qt.core.QObject {
-
-                private UrlHandler urlHandler;
-
-                private InternalUrlHandler(UrlHandler urlHandler) {
-                    this.urlHandler = urlHandler;
-                }
-
-                @NativeAccess
-                public void handleUrl(io.qt.core.QUrl url) {
-                    urlHandler.handleUrl(url);
-                }
-
+        @Override
+        public final void accept(io.qt.core.QUrl url) {
+            urlHandler.accept(url);
         }
-        
-        public static void setUrlHandler(String scheme, UrlHandler urlHandler) {
-            if(urlHandler instanceof io.qt.core.QObject) {
-                __rcUrlHandlers.put(scheme, (io.qt.core.QObject)urlHandler);
-                setUrlHandler(scheme, (io.qt.core.QObject)urlHandler);
-            }else {
-                InternalUrlHandler receiver = urlHandler != null ? new InternalUrlHandler(urlHandler) : null;
-        
-                if (receiver == null)
-                    __rcUrlHandlers.remove(scheme);
-                else
-                    __rcUrlHandlers.put(scheme, receiver);
-                setUrlHandler(scheme, receiver);
-            }
-        }
-
+    }
 }// class
 
 class QGuiApplication___ extends QGuiApplication {
@@ -356,7 +329,7 @@ class QGuiApplication___ extends QGuiApplication {
 
 class QImage___ extends QImage {
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qimage.html#QImage-7">QImage::<wbr/>QImage(const uchar*,<wbr/>int,<wbr/>int,<wbr/>QImage::Format,<wbr/>QImageCleanupFunction,<wbr/>void*)</a></code></p>
+     * <p>See <a href="https://doc.qt.io/qt/qimage.html#QImage-7"><code>QImage::<wbr/>QImage(const uchar*,<wbr/>int,<wbr/>int,<wbr/>QImage::Format,<wbr/>QImageCleanupFunction,<wbr/>void*)</code></a></p>
      * <p>Constructs an image with the given width, height and format, that uses an existing read-only memory buffer, data.</p>
      * <p>The width and height must be specified in pixels, data must be 32-bit aligned, and each scanline of data in the image must also be 32-bit aligned.</p>
      * @param data
@@ -371,7 +344,7 @@ class QImage___ extends QImage {
     private static native void initialize_native(QImage instance, byte data[], int width, int height, Format format);
 
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qimage.html#QImage-7">QImage::<wbr/>QImage(const uchar*,<wbr/>int,<wbr/>int,<wbr/>QImage::Format,<wbr/>QImageCleanupFunction,<wbr/>void*)</a></code></p>
+     * <p>See <a href="https://doc.qt.io/qt/qimage.html#QImage-7"><code>QImage::<wbr/>QImage(const uchar*,<wbr/>int,<wbr/>int,<wbr/>QImage::Format,<wbr/>QImageCleanupFunction,<wbr/>void*)</code></a></p>
      * <p>Constructs an image with the given width, height and format, that uses an existing read-only memory buffer, data.</p>
      * <p>The width and height must be specified in pixels, data must be 32-bit aligned, and each scanline of data in the image must also be 32-bit aligned.</p>
      * @param data

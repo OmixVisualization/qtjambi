@@ -29,7 +29,7 @@
 ****************************************************************************/
 
 /**
- * QtJambi Generator
+ * <b>QtJambi Generator</b> - Usage: <code>java --module qtjambi.generator --help</code>
  */
 module qtjambi.generator {
     requires java.base;

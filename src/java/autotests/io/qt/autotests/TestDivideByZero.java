@@ -30,9 +30,8 @@ package io.qt.autotests;
 
 import io.qt.core.*;
 import io.qt.gui.*;
-import io.qt.qml.*;
 
-public class TestDivideByZerro extends ApplicationInitializer{
+public class TestDivideByZero extends ApplicationInitializer{
 	@org.junit.Test(expected = ArithmeticException.class)
 	public void testDivQSize() {
 		QSize value = new QSize(1,1);
@@ -102,11 +101,6 @@ public class TestDivideByZerro extends ApplicationInitializer{
 	public void testDivQQuaternion() {
 		QQuaternion value = new QQuaternion(1,1,1,1);
 		value.div(0);
-	}
-	@org.junit.Test(expected = ArithmeticException.class)
-	public void testDivQJSPrimitiveValue() {
-		QJSPrimitiveValue value = new QJSPrimitiveValue(1);
-		value.div(new QJSPrimitiveValue(0));
 	}
 	@org.junit.Test(expected = ArithmeticException.class)
 	public void testDivQMatrix4x4() {

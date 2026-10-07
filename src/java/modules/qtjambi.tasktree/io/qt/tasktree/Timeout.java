@@ -32,7 +32,13 @@ package io.qt.tasktree;
 
 import io.qt.*;
 
-public class Timeout{
+/**
+ * <p>Java wrapper for Qt class <code>QtTaskTree::Timeout</code></p>
+ */
+public final class Timeout{
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	private final long __qt_directLink;
 	private final boolean __qt_isMutable;
 	private Timeout(long directLink, boolean isMutable) { 
@@ -54,7 +60,7 @@ public class Timeout{
 			throw new QNoImplementationException("Constant time cannot be changed.");
 		}
 	}
-	public static native java.time.@NonNull Duration getTimeout(long directLink);
+	private static native java.time.@NonNull Duration getTimeout(long directLink);
 	
-	public static native void setTimeout(long directLink, java.time.temporal.@NonNull TemporalAmount milliseconds);
+	private static native void setTimeout(long directLink, java.time.temporal.@NonNull TemporalAmount milliseconds);
 }

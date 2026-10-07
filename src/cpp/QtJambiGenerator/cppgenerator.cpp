@@ -654,7 +654,13 @@ void CppGenerator::writeFunctionSignature(QTextStream &s,
             if(implementor->typeEntry()->designatedInterface()){
                 s << implementor->extractInterface()->name() + "_access";
             }else{
-                s << implementor->name() + "_access";
+                if(java_function->wasPrivate() && java_function->superFunction() && !java_function->superFunction()->wasPublic()){
+                    s << implementor->name() + "_" + (java_function->superFunction()->implementingClass()->typeEntry()->designatedInterface()
+                                                         ? java_function->superFunction()->implementingClass()->extractInterface()->name()
+                                                         : java_function->superFunction()->implementingClass()->name()) + "_access";
+                }else{
+                    s << implementor->name() + "_access";
+                }
             }
         }else{
             if (classname_prefix.isEmpty()){

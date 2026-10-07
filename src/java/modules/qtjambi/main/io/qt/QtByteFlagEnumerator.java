@@ -40,7 +40,7 @@ public interface QtByteFlagEnumerator extends QtByteEnumerator, QtAbstractFlagEn
      */
 	public default byte value() {
 		int o = ordinal();
-		if(!QtJambi_LibraryUtilities.internal.isSmallEnum(this))
+		if(!EnumUtility.isSmallEnum(this))
 			return (byte)o;
 		return (byte)(o==0 ? 0 : 0x01 << (o-1));
 	}

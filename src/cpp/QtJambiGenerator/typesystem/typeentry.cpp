@@ -474,8 +474,17 @@ bool ComplexTypeEntry::isNativeIdBased() const {
     return m_attributes.testFlag(IsNativeIdBased);
 }
 
+bool ComplexTypeEntry::isDirectLink() const {
+    return m_attributes.testFlag(IsDirectLink);
+}
+
 void ComplexTypeEntry::disableNativeIdUsage() {
     m_attributes.setFlag(IsNativeIdBased, false);
+}
+
+void ComplexTypeEntry::asDirectLink() {
+    m_attributes.setFlag(IsNativeIdBased, false);
+    m_attributes.setFlag(IsDirectLink, true);
 }
 
 void ComplexTypeEntry::addInstantiation(const QStringList& instantiation, const ComplexTypeEntry* typeEntry){
@@ -818,6 +827,16 @@ QString PrimitiveTypeEntry::javaObjectName() const {
     return table[targetLangName()];
 }
 
+const QString& PrimitiveTypeEntry::getCast() const
+{
+    return cast;
+}
+
+void PrimitiveTypeEntry::setCast(const QString &newCast)
+{
+    cast = newCast;
+}
+
 QString EnumTypeEntry::jniName() const {
     if(forceInteger()){
         switch(m_size){
@@ -1154,6 +1173,76 @@ bool TypeSystemTypeEntry::hasFunctionCodeInjections(const QString &methodSignatu
     return false;
 }
 
+bool TypeSystemTypeEntry::deprecated() const
+{
+    return m_deprecated;
+}
+
+void TypeSystemTypeEntry::setDeprecated(bool newDeprecated)
+{
+    m_deprecated = newDeprecated;
+}
+
+bool TypeSystemTypeEntry::obsolete() const
+{
+    return m_obsolete;
+}
+
+void TypeSystemTypeEntry::setObsolete(bool newObsolete)
+{
+    m_obsolete = newObsolete;
+}
+
+bool TypeSystemTypeEntry::preliminary() const
+{
+    return m_preliminary;
+}
+
+void TypeSystemTypeEntry::setPreliminary(bool newPreliminary)
+{
+    m_preliminary = newPreliminary;
+}
+
+const QString& TypeSystemTypeEntry::brief() const
+{
+    return m_brief;
+}
+
+void TypeSystemTypeEntry::setBrief(const QString &newBrief)
+{
+    m_brief = newBrief;
+}
+
+const QString& TypeSystemTypeEntry::docName() const
+{
+    return m_docName;
+}
+
+void TypeSystemTypeEntry::setDocName(const QString &newDocName)
+{
+    m_docName = newDocName;
+}
+
+const QString& TypeSystemTypeEntry::since() const
+{
+    return m_since;
+}
+
+void TypeSystemTypeEntry::setSince(const QString &newSince)
+{
+    m_since = newSince;
+}
+
+const QString& TypeSystemTypeEntry::href() const
+{
+    return m_href;
+}
+
+void TypeSystemTypeEntry::setHref(const QString &newHref)
+{
+    m_href = newHref;
+}
+
 const QString &TypeSystemTypeEntry::targetName() const
 {
     return m_targetName;
@@ -1164,9 +1253,23 @@ void TypeSystemTypeEntry::setTargetName(const QString &newTargetName)
     m_targetName = newTargetName;
 }
 
+QList<CodeSnip> TypeSystemTypeEntry::snips(const QString & package) const{
+    return m_snips[package];
+}
+
+bool TypeSystemTypeEntry::noPackageInfo() const
+{
+    return m_noPackageInfo;
+}
+
+void TypeSystemTypeEntry::setNoPackageInfo(bool newNoPackageInfo)
+{
+    m_noPackageInfo = newNoPackageInfo;
+}
+
 TypeSystemTypeEntry::TypeSystemTypeEntry(const QString &name)
         : TypeEntry(name, TypeSystemType),
-          snips(),
+          m_snips(),
           m_include(),
           m_extra_includes(),
           m_qtLibrary(),
@@ -1177,7 +1280,7 @@ TypeSystemTypeEntry::TypeSystemTypeEntry(const QString &name)
 
 TypeSystemTypeEntry::TypeSystemTypeEntry(const QString &name, const QString &lib, const QString &module)
         : TypeEntry(name, TypeSystemType),
-          snips(),
+          m_snips(),
           m_include(),
           m_extra_includes(),
           m_qtLibrary(lib),
@@ -1316,7 +1419,7 @@ GLsyncTypeEntry::GLsyncTypeEntry() : ObjectTypeEntry("__GLsync") {
 }
 
 QMessageLogContextTypeEntry::QMessageLogContextTypeEntry() : ComplexTypeEntry("QMessageLogContext", QMessageLogContextType) {
-    disableNativeIdUsage();
+    asDirectLink();
     setDestructorPrivate();
     setHasPrivateCopyConstructor();
     setHasPrivateMoveConstructor();
@@ -1328,7 +1431,7 @@ QString QMessageLogContextTypeEntry::javaPackage() const { return "io.qt.core"; 
 bool QMessageLogContextTypeEntry::isValue() const { return false; }
 
 QMetaObjectTypeEntry::QMetaObjectTypeEntry() : ComplexTypeEntry("QMetaObject", QMetaObjectType) {
-    disableNativeIdUsage();
+    asDirectLink();
     setDestructorPrivate();
     setHasPrivateCopyConstructor();
     setHasPrivateMoveConstructor();

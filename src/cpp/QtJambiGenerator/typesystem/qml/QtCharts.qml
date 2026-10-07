@@ -590,8 +590,9 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (oldChart!=null && oldChart!=%1 && oldChart.parent()==null)\n"+
-                              "    QtJambi_LibraryUtilities.internal.setJavaOwnership(%this);"}
+                Text{content: String.raw`
+                    if (oldChart!=null && oldChart!=%1 && oldChart.parent()==null)
+                        QtJambi_LibraryUtilities.internal.setJavaOwnership(%this);`}
             }
         }
     }

@@ -31,7 +31,7 @@
 
 #include "pch_p.h"
 
-extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_EnumUtility_resolveLongEnum(JNIEnv *env, jclass, jint hashCode, jclass enumClass, jlong value, jstring entryName){
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_EnumUtility_resolveLongEnum(JNIEnv *env, jclass, jint hashCode, jclass enumClass, jlong value, jstring entryName){
     try{
         return resolveLongEnum(env, hashCode, enumClass, value, entryName);
     }catch(const JavaException& exn){
@@ -40,7 +40,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_EnumUtility_resolveLong
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_EnumUtility_resolveByteEnum(JNIEnv *env, jclass, jint hashCode, jclass enumClass, jbyte value, jstring entryName){
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_EnumUtility_resolveByteEnum(JNIEnv *env, jclass, jint hashCode, jclass enumClass, jbyte value, jstring entryName){
     try{
         return resolveByteEnum(env, hashCode, enumClass, value, entryName);
     }catch(const JavaException& exn){
@@ -49,7 +49,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_EnumUtility_resolveByte
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_EnumUtility_resolveShortEnum(JNIEnv *env, jclass, jint hashCode, jclass enumClass, jshort value, jstring entryName){
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_EnumUtility_resolveShortEnum(JNIEnv *env, jclass, jint hashCode, jclass enumClass, jshort value, jstring entryName){
     try{
         return resolveShortEnum(env, hashCode, enumClass, value, entryName);
     }catch(const JavaException& exn){
@@ -58,11 +58,24 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_EnumUtility_resolveShor
     return nullptr;
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_EnumUtility_resolveIntEnum(JNIEnv *env, jclass, jint hashCode, jclass enumClass, jint value, jstring entryName){
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_EnumUtility_resolveIntEnum(JNIEnv *env, jclass, jint hashCode, jclass enumClass, jint value, jstring entryName){
     try{
         return resolveIntEnum(env, hashCode, enumClass, value, entryName);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
+    return nullptr;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_EnumUtility_longFlagsClass(JNIEnv *env, jclass){
+#if QT_VERSION >= QT_VERSION_CHECK(6,9,0)
+    try{
+        return Java::QtJambi::QLongFlags::getClass(env);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+#else
+    Q_UNUSED(env)
+#endif
     return nullptr;
 }

@@ -31,6 +31,7 @@ package io.qt.gui;
 /**
  * This exception is thrown in cases where a painter is used on a widget
  * outside its paintEvent function.
+ * @serial exclude
  */
 public class QPaintingOutsidePaintEventException extends RuntimeException {
     private static final long serialVersionUID = 1L;

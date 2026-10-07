@@ -29,7 +29,6 @@
 package io.qt.core;
 
 import io.qt.*;
-import io.qt.internal.LambdaInfo;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qbindable.html">QBindable</a></p>
@@ -395,47 +394,8 @@ public final class QBindable<T> extends QUntypedBindable {
 		return new QBindable<>(property.aliasedProperty(), property.iface);
 	}
 	
-	private static class CoreUtility extends io.qt.internal.CoreUtility{
-        protected static LambdaInfo lambdaInfo(java.io.Serializable slotObject) {
-            return io.qt.internal.CoreUtility.lambdaInfo(slotObject);
-        }
-    }
-	
 	public static <T> @NonNull QBindable<T> fromProperty(QtUtilities.Supplier<T> propertyGetter){
-		io.qt.internal.LambdaInfo info = CoreUtility.lambdaInfo(propertyGetter);
-		if(info!=null && info.qobject!=null && info.methodInfo.reflectiveMethod!=null && !info.methodInfo.reflectiveMethod.isSynthetic()) {
-			QtPropertyReader pr = info.methodInfo.reflectiveMethod.getAnnotation(QtPropertyReader.class);
-			if(pr!=null) {
-				if(pr.enabled() && !pr.name().isEmpty()) {
-					QMetaProperty prp = info.qobject.metaObject().property(pr.name());
-					if(prp!=null && prp.isValid()) {
-						return new QBindable<>(info.qobject, prp);
-					}
-				}
-			}else{
-				int[] lambdaMetaTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(QtUtilities.Supplier.class, propertyGetter);
-				if(lambdaMetaTypes!=null && lambdaMetaTypes.length==1) {
-					QMetaProperty prp = info.qobject.metaObject().property(info.methodInfo.reflectiveMethod.getName());
-					if(prp!=null && prp.isValid() && lambdaMetaTypes[0]==prp.typeId()) {
-						return new QBindable<>(info.qobject, prp);
-					}
-					boolean isIs = false;
-					if(info.methodInfo.reflectiveMethod.getName().startsWith("get") || info.methodInfo.reflectiveMethod.getName().startsWith("has") || (isIs = info.methodInfo.reflectiveMethod.getName().startsWith("is"))) {
-						String name = info.methodInfo.reflectiveMethod.getName().substring(isIs ? 2 : 3);
-						if(name.length()>1) {
-							name = Character.toLowerCase(name.charAt(0)) + name.substring(1);
-							prp = info.qobject.metaObject().property(name);
-							if(prp!=null && prp.isValid() && lambdaMetaTypes[0]==prp.typeId()) {
-								return new QBindable<>(info.qobject, prp);
-							}
-						}
-					}
-				}
-			}
-			throw new IllegalArgumentException(String.format("Unable to determine property from method %1$s.", info.methodInfo.reflectiveMethod.toGenericString()));
-		}else {
-			throw new IllegalArgumentException("Unable to determine property from given method.");
-		}
+		return CoreUtility.fromProperty(QtUtilities.Supplier.class, propertyGetter, QBindable::new);
 	}
 
 	private QBindable(QPrivateConstructor p) {

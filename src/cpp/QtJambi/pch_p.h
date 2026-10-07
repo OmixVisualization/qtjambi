@@ -62,6 +62,7 @@
 #include "guiapi.h"
 #include "java_p.h"
 #include "javaapi.h"
+#include "events.h"
 #include "javaarrays.h"
 #include "javabuffers.h"
 #include "javastrings.h"

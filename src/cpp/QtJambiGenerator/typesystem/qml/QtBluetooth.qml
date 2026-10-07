@@ -213,9 +213,10 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Int8PointerArray %inArray(%env, reinterpret_cast<qint8*>(%in.data), 16);\n"+
-                                  "%out = %env->NewByteArray(16);\n"+
-                                  "%env->SetByteArrayRegion(jbyteArray(%out), 0, 16, *reinterpret_cast<jbyte **>(&%in));"}
+                    Text{content: String.raw`
+                        Int8PointerArray %inArray(%env, reinterpret_cast<qint8*>(%in.data), 16);
+                        %out = %env->NewByteArray(16);
+                        %env->SetByteArrayRegion(jbyteArray(%out), 0, 16, *reinterpret_cast<jbyte **>(&%in));`}
                 }
             }
             until: 6.5
@@ -223,8 +224,9 @@ TypeSystem{
         ModifyFunction{
             signature: "QBluetoothUuid(quint128)"
             InjectCode{
-                Text{content: "if(uuid.length!=16)\n"+
-                              "    throw new IllegalArgumentException(\"Uuid needs to be an array of length 16.\");"}
+                Text{content: String.raw`
+                    if(uuid.length!=16)
+                        throw new IllegalArgumentException("Uuid needs to be an array of length 16.");`}
             }
             ModifyArgument{
                 index: 1
@@ -234,8 +236,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "quint128 %out;\n"+
-                                  "%env->GetByteArrayRegion(jbyteArray(%in), 0, 16, *reinterpret_cast<jbyte **>(&%out));"}
+                    Text{content: String.raw`
+                            quint128 %out;
+                            %env->GetByteArrayRegion(jbyteArray(%in), 0, 16, *reinterpret_cast<jbyte **>(&%out));`}
                 }
             }
             until: 6.5
@@ -287,8 +290,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
         }
@@ -311,8 +315,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
         }
@@ -381,12 +386,13 @@ TypeSystem{
             signature: "setIncludedServices(const QList<QLowEnergyService*>&)"
             InjectCode{
                 position: Position.End
-                Text{content: "if(__rcIncludedService!=null){\n"+
-                              "    __rcIncludedService.clear();\n"+
-                              "}else{\n"+
-                              "    __rcIncludedService = new java.util.ArrayList<>();\n"+
-                              "}\n"+
-                              "__rcIncludedService.addAll(services);"}
+                Text{content: String.raw`
+                        if(__rcIncludedService!=null){
+                            __rcIncludedService.clear();
+                        }else{
+                            __rcIncludedService = new java.util.ArrayList<>();
+                        }
+                        __rcIncludedService.addAll(services);`}
             }
         }
         ModifyFunction{

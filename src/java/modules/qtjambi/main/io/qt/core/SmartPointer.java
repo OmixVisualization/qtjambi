@@ -30,9 +30,8 @@
 package io.qt.core;
 
 import io.qt.QtUninvokable;
-import io.qt.internal.MetaTypeUtility;
 
-interface SmartPointer<O> extends MetaTypeUtility.SmartPointer {
+interface SmartPointer<O> {
 	@QtUninvokable
 	public O data();
 	@QtUninvokable

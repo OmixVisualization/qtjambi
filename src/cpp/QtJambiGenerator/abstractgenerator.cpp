@@ -178,6 +178,16 @@ bool AbstractGenerator::isCharSequenceSubstitute(const MetaType* type){
              && (type->isConstant() || type->actualIndirections()==0);
 }
 
+QString AbstractGenerator::docsUrl() const
+{
+    return m_docsUrl;
+}
+
+void AbstractGenerator::setDocsUrl(const QString &newDocsUrl)
+{
+    m_docsUrl = newDocsUrl;
+}
+
 QString AbstractGenerator::annotationFreeTypeName(QString typeName){
     auto index = typeName.indexOf('@');
     if(index>=0){

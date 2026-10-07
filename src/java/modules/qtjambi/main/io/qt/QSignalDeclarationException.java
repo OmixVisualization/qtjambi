@@ -30,7 +30,8 @@
 package io.qt;
 
 /**
- * The QSignalDeclarationException class is thrown when a signal's declaration is not welformed.
+ * The QSignalDeclarationException class is thrown when a signal's declaration is not well formed.
+ * @serial exclude
  */
 public class QSignalDeclarationException extends RuntimeException {
     private static final long serialVersionUID = 1L;

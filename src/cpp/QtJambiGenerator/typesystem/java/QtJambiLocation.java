@@ -30,6 +30,14 @@
 ****************************************************************************/
 
 class QGeoServiceProviderFactory___ {
+    /**
+     * Result type for <code>QGeoServiceProviderFactory.create</code>
+     * @see QGeoServiceProviderFactory#createGeocodingManagerEngine(java.util.Map)
+     * @see QGeoServiceProviderFactory#createPlaceManagerEngine(java.util.Map)
+     * @see QGeoServiceProviderFactory#createRoutingManagerEngine(java.util.Map)
+     *
+     * @param <T>
+     */
     public static final class Result<T extends io.qt.core.QObject>{
         private final T engine;
         private final QGeoServiceProvider.Error error;

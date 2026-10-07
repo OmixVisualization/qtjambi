@@ -35,6 +35,11 @@ TypeSystem{
     qtLibrary: "QtGraphsWidgets"
     module: "qtjambi.graphswidgets"
     description: "Widget support for QtGraphs is included in its own module to avoid a hard dependency on QtWidgets when building only QML applications."
+    RequiredLibrary{
+        name: "QtGraphs2DImpl"
+        mode: RequiredLibrary.ProvideOnly
+        since: [6,12]
+    }
     ObjectType{
         name: "Q3DBarsWidgetItem"
         ModifyFunction{

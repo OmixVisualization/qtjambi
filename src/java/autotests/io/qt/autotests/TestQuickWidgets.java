@@ -33,7 +33,6 @@ import org.junit.*;
 import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.qml.*;
-import io.qt.quick.*;
 import io.qt.quick.widgets.*;
 import io.qt.widgets.*;
 import io.qt.autotests.TestQuick.*;
@@ -50,7 +49,6 @@ public class TestQuickWidgets extends ApplicationInitializer {
 	@Test
     public void testQuickWidget()
     {
-		QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.Software);
 		loop = new QEventLoop();
 		try {
 			updatePaintNode_begone = false;
@@ -58,36 +56,35 @@ public class TestQuickWidgets extends ApplicationInitializer {
 			updatePaintNode_item_disposed = false;
 			QtQml.qmlClearTypeRegistrations();
 			QtQml.qmlRegisterType(TestItem.class, "io.qt.test", 1, 0, "TestItem");
-		    QTimer timer = new QTimer();
-		    timer.timeout.connect(loop::quit);
 		    QMainWindow mainWindow = new QMainWindow();
-		    mainWindow.setWindowTitle("testQuickWidget");
-			QQuickWidget component = new QQuickWidget(mainWindow);
-			component.setObjectName("testQuickWidget");
-			mainWindow.setCentralWidget(component);
-		    QSurfaceFormat format = component.format();
-		    format.setSamples(8);
-		    component.setFormat(format);
-			component.setSource(QUrl.fromLocalFile(":io/qt/autotests/qml/TestItem.qml"));
-			String error = "";
-			for(QQmlError err : component.errors()) {
-				error += err.description() + "\n";
-			}
-			Assert.assertEquals(error, QQuickWidget.Status.Ready, component.status());
-			Assert.assertTrue(component.rootObject() instanceof TestItem);
-			mainWindow.show();
-			timer.start(5000);
-			loop.exec();
-		    timer.timeout.disconnect();
-		    component.close();
-		    timer.stop();
-		    timer.dispose();
+		    try {
+			    mainWindow.setWindowTitle("testQuickWidget");
+				QQuickWidget component = new QQuickWidget(mainWindow);
+				component.setObjectName("testQuickWidget");
+				mainWindow.setCentralWidget(component);
+			    QSurfaceFormat format = component.format();
+			    format.setSamples(8);
+			    component.setFormat(format);
+				component.setSource(QUrl.fromLocalFile(":io/qt/autotests/qml/TestItem.qml"));
+				String error = "";
+				for(QQmlError err : component.errors()) {
+					error += err.description() + "\n";
+				}
+				Assert.assertEquals(error, QQuickWidget.Status.Ready, component.status());
+				Assert.assertTrue(component.rootObject() instanceof TestItem);
+				mainWindow.show();
+				QTimer.singleShot(5000, loop, QEventLoop::quit);
+				loop.exec();
+			    mainWindow.close();
+		    }finally {
+		    	mainWindow.dispose();
+		    }
 		    Assert.assertTrue("updatePaintNode not begone", updatePaintNode_begone);
 		    Assert.assertTrue("updatePaintNode not ended", updatePaintNode_ended);
 		    Assert.assertTrue("updatePaintNode item not disposed", updatePaintNode_item_disposed);
-			QtQml.qmlClearTypeRegistrations();
 		}finally{
 			loop = null;
+			QtQml.qmlClearTypeRegistrations();
 		}
     }
 }

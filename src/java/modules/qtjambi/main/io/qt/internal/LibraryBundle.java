@@ -31,35 +31,16 @@
 ****************************************************************************/
 package io.qt.internal;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
+import java.io.*;
+import java.net.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.*;
+import java.util.logging.*;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
+import org.xml.sax.*;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-import io.qt.QLibraryNotLoadedError;
-import io.qt.QtUtilities;
-import io.qt.core.QPair;
+import io.qt.*;
 
 /**
  * @hidden
@@ -143,7 +124,7 @@ final class LibraryBundle {
     private boolean hasSourcePaths;
     private boolean isDebuginfo;
     private List<Library> libraries;
-    private List<QPair<String,Boolean>> files;
+    private List<Map.Entry<String,Boolean>> files;
     private List<String> qmlLibraries;
 
     private void addQmlLibrary(String name) {
@@ -161,7 +142,7 @@ final class LibraryBundle {
     private void addFile(String direntAsString, boolean isExecutable) {
         if (files == null)
             files = new ArrayList<>();
-        files.add(new QPair<>(direntAsString, isExecutable));
+        files.add(new AbstractMap.SimpleImmutableEntry<>(direntAsString, isExecutable));
     }
 
     URL url() {
@@ -300,7 +281,7 @@ final class LibraryBundle {
         return libraries == null ? Collections.emptyList() : Collections.unmodifiableList(libraries);
     }
 
-    public List<QPair<String,Boolean>> files() {
+    public List<Map.Entry<String,Boolean>> files() {
         return files == null ? Collections.emptyList() : Collections.unmodifiableList(files);
     }
 

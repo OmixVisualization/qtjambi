@@ -3265,8 +3265,35 @@ class QObject___ extends QObject {
          * @return the signal containing object
          */
         @Override
+        @io.qt.QtUninvokable
         public final @NonNull QObject containingObject() {
             return QObject.this;
+        }
+
+        /**
+         * Returns the full name of the signal, on the form "package.class.signalName"
+         *  @return The fully qualified name of the signal
+         */
+        @io.qt.QtUninvokable
+        public final String fullName() {
+            return super.getFullName();
+        }
+
+        /**
+         * Returns the name of the signal
+         * @return The signal name
+         */
+        @io.qt.QtUninvokable
+        public final String name() {
+            return super.getName();
+        }
+
+        /**
+         * Returns a string representation of this signal.
+         */
+        @Override
+        public final String toString() {
+            return super.getName();
         }
 
         /**
@@ -9379,7 +9406,7 @@ class QObject___ extends QObject {
      * @return the object's meta-object
      */
     @QtUninvokable
-    public final QMetaObject metaObject() {
+    public final @Nullable QMetaObject metaObject() {
         return metaObject(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
@@ -9437,27 +9464,6 @@ class QObject___ extends QObject {
         return QMetaObject.cast(targetType, object);
     }
 
-    private static class CoreUtility extends io.qt.internal.CoreUtility {
-        protected static void emitNativeSignal(QObject sender, int methodIndex, long metaObjectId, Object... args) {
-            io.qt.internal.CoreUtility.emitNativeSignal(sender, methodIndex, metaObjectId, args);
-        }
-
-        protected static boolean disconnectAll(QtSignalEmitterInterface sender, Object receiver) {
-            return io.qt.internal.CoreUtility.disconnectAll(sender, receiver);
-        }
-
-        protected static boolean disconnectOne(QMetaObject.Connection connection) {
-            return io.qt.internal.CoreUtility.disconnectOne(connection);
-        }
-
-        protected static abstract class AbstractMultiSignal<S extends AbstractSignal>
-                extends io.qt.internal.CoreUtility.AbstractMultiSignal<S> {
-            AbstractMultiSignal() {
-                super();
-            }
-        }
-    }
-
     @QtUninvokable
     boolean isObjectsThread() {
         return isObjectsThread(QtJambi_LibraryUtilities.internal.checkedNativeId(this));
@@ -9487,7 +9493,7 @@ class QObject___ extends QObject {
             if (metaProperty.isBindable()) {
                 QUntypedBindable bindable = metaProperty.bindable(object);
                 if (bindable.data() == property) {
-                    PropertyUtility.registerPropertyField(metaProperty, reflectedField);
+                    CoreUtility.registerPropertyField(metaProperty, reflectedField);
                     QMetaMethod notifySignal = metaProperty.notifySignal();
                     if (notifySignal.isValid()) {
                         if (notifySignal.parameterCount() == 0) {
@@ -9722,7 +9728,7 @@ class QObject___ extends QObject {
         }
 
         final void initialize(QProperty<T> property, T val) {
-            PropertyInfo result = PropertyUtility.analyzeProperty(property.owner(), property);
+            PropertyInfo result = CoreUtility.analyzeProperty(property.owner(), property, PropertyInfo::new, PropertyInfo::new);
             if (result.property != null) {
                 if (result.notifySignal == null) {
                     if (result.metaType.flags().testFlag(QMetaType.TypeFlag.IsPointer)
@@ -10068,7 +10074,7 @@ class QObject___ extends QObject {
          */
         @SuppressWarnings("unchecked")
         @QtUninvokable
-        public final @NonNull QPropertyBinding<T> setBinding(QPropertyBinding<T> newBinding) {
+        public final @NonNull QPropertyBinding<T> setBinding(@NonNull QPropertyBinding<T> newBinding) {
             if (newBinding != null
                     && !io.qt.core.QProperty.checkType(core.valueMetaType(this), newBinding.valueMetaType()))
                 return new QPropertyBinding<>();
@@ -10105,7 +10111,7 @@ class QObject___ extends QObject {
          * @return true if types match, false otherwise.
          */
         @QtUninvokable
-        public final boolean setBinding(QUntypedPropertyBinding newBinding) {
+        public final boolean setBinding(@NonNull QUntypedPropertyBinding newBinding) {
             if (newBinding != null
                     && !io.qt.core.QProperty.checkType(core.valueMetaType(this), newBinding.valueMetaType()))
                 return false;
@@ -10208,7 +10214,7 @@ class QObject___ extends QObject {
          * @see QPropertyChangeHandler
          */
         @QtUninvokable
-        public final @NonNull QPropertyChangeHandler onValueChanged(Runnable f) {
+        public final @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f) {
             return new QPropertyChangeHandler(bindingData(), f);
         }
 
@@ -10222,7 +10228,7 @@ class QObject___ extends QObject {
          * @see #onValueChanged(Runnable)
          */
         @QtUninvokable
-        public final @NonNull QPropertyChangeHandler subscribe(Runnable f) {
+        public final @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f) {
             f.run();
             return onValueChanged(f);
         }
@@ -10245,7 +10251,7 @@ class QObject___ extends QObject {
          * @see QPropertyNotifier
          */
         @QtUninvokable
-        public final @NonNull QPropertyNotifier addNotifier(Runnable f) {
+        public final @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f) {
             return new QPropertyNotifier(bindingData(), f);
         }
 
@@ -10428,7 +10434,7 @@ class QObject___ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QBooleanPropertyBinding setBinding(QBooleanPropertyBinding newBinding) {
+        public final QBooleanPropertyBinding setBinding(@NonNull QBooleanPropertyBinding newBinding) {
             QPropertyBindingData bd = bindingData();
             QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
             notifyProperty(bd);
@@ -10495,7 +10501,7 @@ class QObject___ extends QObject {
          * @return true if types match, false otherwise.
          */
         @QtUninvokable
-        public final boolean setBinding(QUntypedPropertyBinding newBinding) {
+        public final boolean setBinding(@NonNull QUntypedPropertyBinding newBinding) {
             if (io.qt.core.QBooleanProperty.checkType(newBinding.valueMetaType())) {
                 QPropertyBindingData bd = bindingData();
                 bd.setBinding(newBinding, this);
@@ -10589,7 +10595,7 @@ class QObject___ extends QObject {
          * @see QPropertyChangeHandler
          */
         @QtUninvokable
-        public final QPropertyChangeHandler onValueChanged(Runnable f) {
+        public final @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f) {
             return new QPropertyChangeHandler(bindingData(), f);
         }
 
@@ -10603,7 +10609,7 @@ class QObject___ extends QObject {
          * @see #onValueChanged(Runnable)
          */
         @QtUninvokable
-        public final QPropertyChangeHandler subscribe(Runnable f) {
+        public final @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f) {
             f.run();
             return onValueChanged(f);
         }
@@ -10626,7 +10632,7 @@ class QObject___ extends QObject {
          * @see QPropertyNotifier
          */
         @QtUninvokable
-        public final QPropertyNotifier addNotifier(Runnable f) {
+        public final @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f) {
             return new QPropertyNotifier(bindingData(), f);
         }
 
@@ -10656,7 +10662,7 @@ class QObject___ extends QObject {
         }
 
         private Runnable signal = () -> {
-            PropertyInfo result = PropertyUtility.analyzeProperty(QObject.this, this);
+            PropertyInfo result = CoreUtility.analyzeProperty(QObject.this, this, PropertyInfo::new, PropertyInfo::new);
             QMetaMethod notifySignal;
             if (result.property != null) {
                 notifySignal = result.notifySignal;
@@ -10721,7 +10727,7 @@ class QObject___ extends QObject {
          * 
          * @param binding
          */
-        public QByteProperty(QBytePropertyBinding binding) {
+        public QByteProperty(@NonNull QBytePropertyBinding binding) {
             super();
             registerProperty(QObject.this, this);
             Runnable signal = this.signal;
@@ -10803,7 +10809,7 @@ class QObject___ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QBytePropertyBinding setBinding(QBytePropertyBinding newBinding) {
+        public final @NonNull QBytePropertyBinding setBinding(@NonNull QBytePropertyBinding newBinding) {
             QPropertyBindingData bd = bindingData();
             QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
             notifyProperty(bd);
@@ -10833,7 +10839,7 @@ class QObject___ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QBytePropertyBinding setBinding(
+        public final @NonNull QBytePropertyBinding setBinding(
                 QPropertyBinding<@QtPrimitiveType @StrictNonNull Byte> newBinding) {
             if (!io.qt.core.QByteProperty.checkType(newBinding.valueMetaType()))
                 return new QBytePropertyBinding();
@@ -10870,7 +10876,7 @@ class QObject___ extends QObject {
          * @return true if types match, false otherwise.
          */
         @QtUninvokable
-        public final boolean setBinding(QUntypedPropertyBinding newBinding) {
+        public final boolean setBinding(@NonNull QUntypedPropertyBinding newBinding) {
             if (io.qt.core.QByteProperty.checkType(newBinding.valueMetaType())) {
                 QPropertyBindingData bd = bindingData();
                 bd.setBinding(newBinding, this);
@@ -10898,7 +10904,7 @@ class QObject___ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QBytePropertyBinding setBinding(QtUtilities.ByteSupplier functor) {
+        public final @NonNull QBytePropertyBinding setBinding(QtUtilities.@NonNull ByteSupplier functor) {
             return setBinding(new QBytePropertyBinding(functor));
         }
 
@@ -10926,7 +10932,7 @@ class QObject___ extends QObject {
          * @return binding
          */
         @QtUninvokable
-        public final QBytePropertyBinding binding() {
+        public final @NonNull QBytePropertyBinding binding() {
             return new QBytePropertyBinding(this);
         }
 
@@ -10942,7 +10948,7 @@ class QObject___ extends QObject {
          * @return the removed binding
          */
         @QtUninvokable
-        public final QBytePropertyBinding takeBinding() {
+        public final @NonNull QBytePropertyBinding takeBinding() {
             return setBinding(new QBytePropertyBinding());
         }
 
@@ -10964,7 +10970,7 @@ class QObject___ extends QObject {
          * @see QPropertyChangeHandler
          */
         @QtUninvokable
-        public final QPropertyChangeHandler onValueChanged(Runnable f) {
+        public final @NonNull QPropertyChangeHandler onValueChanged(Runnable f) {
             return new QPropertyChangeHandler(bindingData(), f);
         }
 
@@ -10978,7 +10984,7 @@ class QObject___ extends QObject {
          * @see #onValueChanged(Runnable)
          */
         @QtUninvokable
-        public final QPropertyChangeHandler subscribe(Runnable f) {
+        public final @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f) {
             f.run();
             return onValueChanged(f);
         }
@@ -11001,7 +11007,7 @@ class QObject___ extends QObject {
          * @see QPropertyNotifier
          */
         @QtUninvokable
-        public final QPropertyNotifier addNotifier(Runnable f) {
+        public final @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f) {
             return new QPropertyNotifier(bindingData(), f);
         }
 
@@ -11031,7 +11037,7 @@ class QObject___ extends QObject {
         }
 
         private Runnable signal = () -> {
-            PropertyInfo result = PropertyUtility.analyzeProperty(QObject.this, this);
+            PropertyInfo result = CoreUtility.analyzeProperty(QObject.this, this, PropertyInfo::new, PropertyInfo::new);
             QMetaMethod notifySignal;
             if (result.property != null) {
                 notifySignal = result.notifySignal;
@@ -11179,7 +11185,7 @@ class QObject___ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QShortPropertyBinding setBinding(QtUtilities.ShortSupplier functor) {
+        public final @NonNull QShortPropertyBinding setBinding(QtUtilities.@NonNull ShortSupplier functor) {
             return setBinding(new QShortPropertyBinding(functor));
         }
 
@@ -11203,7 +11209,7 @@ class QObject___ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QShortPropertyBinding setBinding(QShortPropertyBinding newBinding) {
+        public final @NonNull QShortPropertyBinding setBinding(@NonNull QShortPropertyBinding newBinding) {
             QPropertyBindingData bd = bindingData();
             QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
             notifyProperty(bd);
@@ -11233,7 +11239,7 @@ class QObject___ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QShortPropertyBinding setBinding(
+        public final @NonNull QShortPropertyBinding setBinding(
                 QPropertyBinding<@QtPrimitiveType @StrictNonNull Short> newBinding) {
             if (!io.qt.core.QShortProperty.checkType(newBinding.valueMetaType()))
                 return new QShortPropertyBinding();
@@ -11270,7 +11276,7 @@ class QObject___ extends QObject {
          * @return true if types match, false otherwise.
          */
         @QtUninvokable
-        public final boolean setBinding(QUntypedPropertyBinding newBinding) {
+        public final boolean setBinding(@NonNull QUntypedPropertyBinding newBinding) {
             if (io.qt.core.QShortProperty.checkType(newBinding.valueMetaType())) {
                 QPropertyBindingData bd = bindingData();
                 bd.setBinding(newBinding, this);
@@ -11282,7 +11288,7 @@ class QObject___ extends QObject {
         }
 
         @QtUninvokable
-        private final QShortPropertyBinding makeBinding() {
+        private final @NonNull QShortPropertyBinding makeBinding() {
             return new QShortPropertyBinding(this::value);
         }
 
@@ -11305,7 +11311,7 @@ class QObject___ extends QObject {
          * @return binding
          */
         @QtUninvokable
-        public final QShortPropertyBinding binding() {
+        public final @NonNull QShortPropertyBinding binding() {
             return new QShortPropertyBinding(this);
         }
 
@@ -11321,7 +11327,7 @@ class QObject___ extends QObject {
          * @return the removed binding
          */
         @QtUninvokable
-        public final QShortPropertyBinding takeBinding() {
+        public final @NonNull QShortPropertyBinding takeBinding() {
             return setBinding(new QShortPropertyBinding());
         }
 
@@ -11343,7 +11349,7 @@ class QObject___ extends QObject {
          * @see QPropertyChangeHandler
          */
         @QtUninvokable
-        public final QPropertyChangeHandler onValueChanged(Runnable f) {
+        public final @NonNull QPropertyChangeHandler onValueChanged(Runnable f) {
             return new QPropertyChangeHandler(bindingData(), f);
         }
 
@@ -11357,7 +11363,7 @@ class QObject___ extends QObject {
          * @see #onValueChanged(Runnable)
          */
         @QtUninvokable
-        public final QPropertyChangeHandler subscribe(Runnable f) {
+        public final @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f) {
             f.run();
             return onValueChanged(f);
         }
@@ -11380,7 +11386,7 @@ class QObject___ extends QObject {
          * @see QPropertyNotifier
          */
         @QtUninvokable
-        public final QPropertyNotifier addNotifier(Runnable f) {
+        public final @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f) {
             return new QPropertyNotifier(bindingData(), f);
         }
 
@@ -11410,7 +11416,7 @@ class QObject___ extends QObject {
         }
 
         private Runnable signal = () -> {
-            PropertyInfo result = PropertyUtility.analyzeProperty(QObject.this, this);
+            PropertyInfo result = CoreUtility.analyzeProperty(QObject.this, this, PropertyInfo::new, PropertyInfo::new);
             QMetaMethod notifySignal;
             if (result.property != null) {
                 notifySignal = result.notifySignal;
@@ -11557,7 +11563,7 @@ class QObject___ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QIntPropertyBinding setBinding(QIntPropertyBinding newBinding) {
+        public final @NonNull QIntPropertyBinding setBinding(@NonNull QIntPropertyBinding newBinding) {
             QPropertyBindingData bd = bindingData();
             QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
             notifyProperty(bd);
@@ -11587,7 +11593,7 @@ class QObject___ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QIntPropertyBinding setBinding(
+        public final @NonNull QIntPropertyBinding setBinding(
                 QPropertyBinding<@QtPrimitiveType @StrictNonNull Integer> newBinding) {
             if (!io.qt.core.QIntProperty.checkType(newBinding.valueMetaType()))
                 return new QIntPropertyBinding();
@@ -11624,7 +11630,7 @@ class QObject___ extends QObject {
          * @return true if types match, false otherwise.
          */
         @QtUninvokable
-        public final boolean setBinding(QUntypedPropertyBinding newBinding) {
+        public final boolean setBinding(@NonNull QUntypedPropertyBinding newBinding) {
             if (io.qt.core.QIntProperty.checkType(newBinding.valueMetaType())) {
                 QPropertyBindingData bd = bindingData();
                 bd.setBinding(newBinding, this);
@@ -11718,7 +11724,7 @@ class QObject___ extends QObject {
          * @see QPropertyChangeHandler
          */
         @QtUninvokable
-        public final QPropertyChangeHandler onValueChanged(Runnable f) {
+        public final @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f) {
             return new QPropertyChangeHandler(bindingData(), f);
         }
 
@@ -11732,7 +11738,7 @@ class QObject___ extends QObject {
          * @see #onValueChanged(Runnable)
          */
         @QtUninvokable
-        public final QPropertyChangeHandler subscribe(Runnable f) {
+        public final @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f) {
             f.run();
             return onValueChanged(f);
         }
@@ -11755,7 +11761,7 @@ class QObject___ extends QObject {
          * @see QPropertyNotifier
          */
         @QtUninvokable
-        public final QPropertyNotifier addNotifier(Runnable f) {
+        public final @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f) {
             return new QPropertyNotifier(bindingData(), f);
         }
 
@@ -11785,7 +11791,7 @@ class QObject___ extends QObject {
         }
 
         private Runnable signal = () -> {
-            PropertyInfo result = PropertyUtility.analyzeProperty(QObject.this, this);
+            PropertyInfo result = CoreUtility.analyzeProperty(QObject.this, this, PropertyInfo::new, PropertyInfo::new);
             QMetaMethod notifySignal;
             if (result.property != null) {
                 notifySignal = result.notifySignal;
@@ -11932,7 +11938,7 @@ class QObject___ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QLongPropertyBinding setBinding(QLongPropertyBinding newBinding) {
+        public final @NonNull QLongPropertyBinding setBinding(@NonNull QLongPropertyBinding newBinding) {
             QPropertyBindingData bd = bindingData();
             QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
             notifyProperty(bd);
@@ -11999,7 +12005,7 @@ class QObject___ extends QObject {
          * @return true if types match, false otherwise.
          */
         @QtUninvokable
-        public boolean setBinding(QUntypedPropertyBinding newBinding) {
+        public boolean setBinding(@NonNull QUntypedPropertyBinding newBinding) {
             if (io.qt.core.QLongProperty.checkType(newBinding.valueMetaType())) {
                 QPropertyBindingData bd = bindingData();
                 bd.setBinding(newBinding, this);
@@ -12093,7 +12099,7 @@ class QObject___ extends QObject {
          * @see QPropertyChangeHandler
          */
         @QtUninvokable
-        public final QPropertyChangeHandler onValueChanged(Runnable f) {
+        public final @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f) {
             return new QPropertyChangeHandler(bindingData(), f);
         }
 
@@ -12107,7 +12113,7 @@ class QObject___ extends QObject {
          * @see #onValueChanged(Runnable)
          */
         @QtUninvokable
-        public final QPropertyChangeHandler subscribe(Runnable f) {
+        public final @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f) {
             f.run();
             return onValueChanged(f);
         }
@@ -12130,7 +12136,7 @@ class QObject___ extends QObject {
          * @see QPropertyNotifier
          */
         @QtUninvokable
-        public final QPropertyNotifier addNotifier(Runnable f) {
+        public final @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f) {
             return new QPropertyNotifier(bindingData(), f);
         }
 
@@ -12160,7 +12166,7 @@ class QObject___ extends QObject {
         }
 
         private Runnable signal = () -> {
-            PropertyInfo result = PropertyUtility.analyzeProperty(QObject.this, this);
+            PropertyInfo result = CoreUtility.analyzeProperty(QObject.this, this, PropertyInfo::new, PropertyInfo::new);
             QMetaMethod notifySignal;
             if (result.property != null) {
                 notifySignal = result.notifySignal;
@@ -12308,7 +12314,7 @@ class QObject___ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QFloatPropertyBinding setBinding(QFloatPropertyBinding newBinding) {
+        public final @NonNull QFloatPropertyBinding setBinding(@NonNull QFloatPropertyBinding newBinding) {
             QPropertyBindingData bd = bindingData();
             QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
             notifyProperty(bd);
@@ -12375,7 +12381,7 @@ class QObject___ extends QObject {
          * @return true if types match, false otherwise.
          */
         @QtUninvokable
-        public final boolean setBinding(QUntypedPropertyBinding newBinding) {
+        public final boolean setBinding(@NonNull QUntypedPropertyBinding newBinding) {
             if (io.qt.core.QFloatProperty.checkType(newBinding.valueMetaType())) {
                 QPropertyBindingData bd = bindingData();
                 bd.setBinding(newBinding, this);
@@ -12403,7 +12409,7 @@ class QObject___ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QFloatPropertyBinding setBinding(QtUtilities.FloatSupplier functor) {
+        public final @NonNull QFloatPropertyBinding setBinding(QtUtilities.@NonNull FloatSupplier functor) {
             return setBinding(new QFloatPropertyBinding(functor));
         }
 
@@ -12469,7 +12475,7 @@ class QObject___ extends QObject {
          * @see QPropertyChangeHandler
          */
         @QtUninvokable
-        public final QPropertyChangeHandler onValueChanged(Runnable f) {
+        public final @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f) {
             return new QPropertyChangeHandler(bindingData(), f);
         }
 
@@ -12483,7 +12489,7 @@ class QObject___ extends QObject {
          * @see #onValueChanged(Runnable)
          */
         @QtUninvokable
-        public final QPropertyChangeHandler subscribe(Runnable f) {
+        public final @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f) {
             f.run();
             return onValueChanged(f);
         }
@@ -12506,7 +12512,7 @@ class QObject___ extends QObject {
          * @see QPropertyNotifier
          */
         @QtUninvokable
-        public final QPropertyNotifier addNotifier(Runnable f) {
+        public final @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f) {
             return new QPropertyNotifier(bindingData(), f);
         }
 
@@ -12536,7 +12542,7 @@ class QObject___ extends QObject {
         }
 
         private Runnable signal = () -> {
-            PropertyInfo result = PropertyUtility.analyzeProperty(QObject.this, this);
+            PropertyInfo result = CoreUtility.analyzeProperty(QObject.this, this, PropertyInfo::new, PropertyInfo::new);
             QMetaMethod notifySignal;
             if (result.property != null) {
                 notifySignal = result.notifySignal;
@@ -12684,7 +12690,7 @@ class QObject___ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QDoublePropertyBinding setBinding(QDoublePropertyBinding newBinding) {
+        public final @NonNull QDoublePropertyBinding setBinding(@NonNull QDoublePropertyBinding newBinding) {
             QPropertyBindingData bd = bindingData();
             QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
             notifyProperty(bd);
@@ -12751,7 +12757,7 @@ class QObject___ extends QObject {
          * @return true if types match, false otherwise.
          */
         @QtUninvokable
-        public final boolean setBinding(QUntypedPropertyBinding newBinding) {
+        public final boolean setBinding(@NonNull QUntypedPropertyBinding newBinding) {
             if (io.qt.core.QDoubleProperty.checkType(newBinding.valueMetaType())) {
                 QPropertyBindingData bd = bindingData();
                 bd.setBinding(newBinding, this);
@@ -12779,7 +12785,7 @@ class QObject___ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final QDoublePropertyBinding setBinding(java.util.function.DoubleSupplier functor) {
+        public final @NonNull QDoublePropertyBinding setBinding(java.util.function.@StrictNonNull DoubleSupplier functor) {
             return setBinding(new QDoublePropertyBinding(functor));
         }
 
@@ -12807,7 +12813,7 @@ class QObject___ extends QObject {
          * @return binding
          */
         @QtUninvokable
-        public final QDoublePropertyBinding binding() {
+        public final @NonNull QDoublePropertyBinding binding() {
             return new QDoublePropertyBinding(this);
         }
 
@@ -12823,7 +12829,7 @@ class QObject___ extends QObject {
          * @return the removed binding
          */
         @QtUninvokable
-        public final QDoublePropertyBinding takeBinding() {
+        public final @NonNull QDoublePropertyBinding takeBinding() {
             return setBinding(new QDoublePropertyBinding());
         }
 
@@ -12845,7 +12851,7 @@ class QObject___ extends QObject {
          * @see QPropertyChangeHandler
          */
         @QtUninvokable
-        public final QPropertyChangeHandler onValueChanged(Runnable f) {
+        public final @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f) {
             return new QPropertyChangeHandler(bindingData(), f);
         }
 
@@ -12859,7 +12865,7 @@ class QObject___ extends QObject {
          * @see #onValueChanged(Runnable)
          */
         @QtUninvokable
-        public final QPropertyChangeHandler subscribe(Runnable f) {
+        public final @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f) {
             f.run();
             return onValueChanged(f);
         }
@@ -12882,7 +12888,7 @@ class QObject___ extends QObject {
          * @see QPropertyNotifier
          */
         @QtUninvokable
-        public final QPropertyNotifier addNotifier(Runnable f) {
+        public final @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f) {
             return new QPropertyNotifier(bindingData(), f);
         }
 
@@ -12912,7 +12918,7 @@ class QObject___ extends QObject {
         }
 
         private Runnable signal = () -> {
-            PropertyInfo result = PropertyUtility.analyzeProperty(QObject.this, this);
+            PropertyInfo result = CoreUtility.analyzeProperty(QObject.this, this, PropertyInfo::new, PropertyInfo::new);
             QMetaMethod notifySignal;
             if (result.property != null) {
                 notifySignal = result.notifySignal;
@@ -12977,7 +12983,7 @@ class QObject___ extends QObject {
          * 
          * @param binding
          */
-        public QCharProperty(QCharPropertyBinding binding) {
+        public QCharProperty(@NonNull QCharPropertyBinding binding) {
             super();
             registerProperty(QObject.this, this);
             Runnable signal = this.signal;
@@ -13059,7 +13065,7 @@ class QObject___ extends QObject {
          * @return oldBinding
          */
         @QtUninvokable
-        public final @NonNull QCharPropertyBinding setBinding(QCharPropertyBinding newBinding) {
+        public final @NonNull QCharPropertyBinding setBinding(@NonNull QCharPropertyBinding newBinding) {
             QPropertyBindingData bd = bindingData();
             QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
             notifyProperty(bd);
@@ -13126,7 +13132,7 @@ class QObject___ extends QObject {
          * @return true if types match, false otherwise.
          */
         @QtUninvokable
-        public final boolean setBinding(QUntypedPropertyBinding newBinding) {
+        public final boolean setBinding(@NonNull QUntypedPropertyBinding newBinding) {
             if (io.qt.core.QCharProperty.checkType(newBinding.valueMetaType())) {
                 QPropertyBindingData bd = bindingData();
                 bd.setBinding(newBinding, this);
@@ -13287,7 +13293,7 @@ class QObject___ extends QObject {
         }
 
         private Runnable signal = () -> {
-            PropertyInfo result = PropertyUtility.analyzeProperty(QObject.this, this);
+            PropertyInfo result = CoreUtility.analyzeProperty(QObject.this, this, PropertyInfo::new, PropertyInfo::new);
             QMetaMethod notifySignal;
             if (result.property != null) {
                 notifySignal = result.notifySignal;
@@ -13831,9 +13837,9 @@ class QObject___ extends QObject {
         }
     }
 
-    static QObject getQPropertyOwner(io.qt.internal.LambdaInfo info) {
+    static QObject getQPropertyOwner(QMetaObject.LambdaInfo info) {
         if (info != null) {
-            if (info.owner == null && info.methodInfo.isStaticMethod && info.lambdaArgs.size() > 0) {
+            if (info.owner == null && info.isStaticMethod && info.lambdaArgs.size() > 0) {
                 Object arg = info.lambdaArgs.get(0);
                 if (arg instanceof QUntypedPropertyData) {
                     if (arg instanceof QProperty) {
@@ -13906,7 +13912,7 @@ class QObject___ extends QObject {
     }
 
     QMetaProperty metaProperty(QUntypedPropertyData property) {
-        QMetaProperty mp = PropertyUtility.analyzeProperty(this, property).property;
+        QMetaProperty mp = CoreUtility.analyzeProperty(this, property, PropertyInfo::new, PropertyInfo::new).property;
         if (mp == null)
             mp = new QMetaProperty();
         return mp;
@@ -13937,17 +13943,6 @@ class QObject___ extends QObject {
         final QMetaType metaType;
         final QMetaProperty property;
         final QMetaMethod notifySignal;
-    }
-
-    private static class PropertyUtility extends io.qt.internal.PropertyUtility {
-        static PropertyInfo analyzeProperty(QObject object, QUntypedPropertyData property) {
-            return io.qt.internal.PropertyUtility.analyzeProperty(object, property, PropertyInfo::new,
-                    PropertyInfo::new);
-        }
-
-        protected static void registerPropertyField(QMetaProperty metaProperty, java.lang.reflect.Field field) {
-            io.qt.internal.PropertyUtility.registerPropertyField(metaProperty, field);
-        }
     }
 
 }// class
@@ -14051,7 +14046,6 @@ abstract class QUrl___ extends QUrl {
      */
     public static final class FormattingOptions extends QFlags<@NonNull FormattingOption>
             implements Comparable<@NonNull FormattingOptions> {
-        private static final long serialVersionUID = -4458464052834800982L;
 
         public FormattingOptions() {
             super(0);
@@ -14141,7 +14135,7 @@ abstract class QUrl___ extends QUrl {
          * Returns the value of this QFlags.
          */
         public final int value() {
-            return intValue();
+            return toInt();
         }
 
         /**
@@ -14150,7 +14144,7 @@ abstract class QUrl___ extends QUrl {
          * @param value new value
          */
         public final void setValue(int value) {
-            setIntValue(value);
+            super.setValue(value);
         }
     }
 
@@ -14279,7 +14273,7 @@ abstract class QAbstractItemModel___ extends QAbstractItemModel {
 class QMutex___ extends QMutex {
     /**
      * <p>
-     * See <code><a href="@docRoot/qmutex.html#try_lock_for">QMutex::<wbr/>try_lock_for(std::chrono::duration)</a></code>
+     * See <a href="@docRoot/qmutex.html#try_lock_for"><code>QMutex::<wbr/>try_lock_for(std::chrono::duration)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -14289,7 +14283,7 @@ class QMutex___ extends QMutex {
 
     /**
      * <p>
-     * See <code><a href="@docRoot/qmutex.html#try_lock_until">QMutex::<wbr/>try_lock_until(std::chrono::time_point)</a></code>
+     * See <a href="@docRoot/qmutex.html#try_lock_until"><code>QMutex::<wbr/>try_lock_until(std::chrono::time_point)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -15155,13 +15149,22 @@ class QPermission___ {
 }// class
 
 class QStringConverter___ extends QStringConverter {
+     /**
+      * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qstringconverter-finalizeresultchar.html"><code>QStringConverter::<wbr/>FinalizeResultChar</code></a></p>
+      */
      public static class FinalizeResult
      {
           private FinalizeResult(short invalidChars, byte error){
                this.invalidChars = invalidChars;
                this.error = FinalizeResultError.resolve(error);
           }
+          /**
+           * <p><a href="https://doc.qt.io/qt/qstringconverter-finalizeresultchar.html#invalidChars-var"><code>QStringConverter::<wbr/>FinalizeResultChar::<wbr/>invalidChars</code></a></p>
+           */
           public final short invalidChars;
+          /**
+           * <p><a href="https://doc.qt.io/qt/qstringconverter-finalizeresultchar.html#error-var"><code>QStringConverter::<wbr/>FinalizeResultChar::<wbr/>error</code></a></p>
+           */
           public final FinalizeResultError error;
      }
 }// class
@@ -15724,12 +15727,15 @@ class QByteArrayView___ extends QByteArray {
 
     private native static void initialize_native(QByteArrayView instance, QByteArray data);
 
+    /**
+     * @serial exclude
+     */
     private static class Purger implements QMetaObject.Slot0 {
         enum Mode {
             Buffer, String, Bytes
         }
 
-        private static final long serialVersionUID = 5686767543992375547L;
+        private static final long serialVersionUID = 0L;
         private final long pointer;
         private final Mode mode;
         private final java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger(
@@ -16102,6 +16108,7 @@ class QtFuture___ {
      /**
       * Runnable without arguments.
       * @see java.lang.Runnable
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Runnable extends java.io.Serializable{
@@ -16116,6 +16123,7 @@ class QtFuture___ {
       * Runnable with one argument.
       * @see java.lang.Runnable
       * @param <A>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Runnable1<A> extends java.io.Serializable{
@@ -16132,6 +16140,7 @@ class QtFuture___ {
       * @see java.lang.Runnable
       * @param <A>
       * @param <B>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Runnable2<A,B> extends java.io.Serializable{
@@ -16150,6 +16159,7 @@ class QtFuture___ {
       * @param <A>
       * @param <B>
       * @param <C>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Runnable3<A,B,C> extends java.io.Serializable{
@@ -16170,6 +16180,7 @@ class QtFuture___ {
       * @param <B>
       * @param <C>
       * @param <D>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Runnable4<A,B,C,D> extends java.io.Serializable{
@@ -16192,6 +16203,7 @@ class QtFuture___ {
       * @param <C>
       * @param <D>
       * @param <E>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Runnable5<A,B,C,D,E> extends java.io.Serializable{
@@ -16216,6 +16228,7 @@ class QtFuture___ {
       * @param <D>
       * @param <E>
       * @param <F>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Runnable6<A,B,C,D,E,F> extends java.io.Serializable{
@@ -16242,6 +16255,7 @@ class QtFuture___ {
       * @param <E>
       * @param <F>
       * @param <G>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Runnable7<A,B,C,D,E,F,G> extends java.io.Serializable{
@@ -16270,6 +16284,7 @@ class QtFuture___ {
       * @param <F>
       * @param <G>
       * @param <H>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Runnable8<A,B,C,D,E,F,G,H> extends java.io.Serializable{
@@ -16300,6 +16315,7 @@ class QtFuture___ {
       * @param <G>
       * @param <H>
       * @param <I>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Runnable9<A,B,C,D,E,F,G,H,I> extends java.io.Serializable{
@@ -16322,6 +16338,7 @@ class QtFuture___ {
      /**
       * Runnable with void promise.
       * @see java.lang.Runnable
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithVoidPromise extends java.io.Serializable{
@@ -16337,6 +16354,7 @@ class QtFuture___ {
       * Runnable with void promise and one arguments.
       * @see java.lang.Runnable
       * @param <A>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithVoidPromise1<A> extends java.io.Serializable{
@@ -16354,6 +16372,7 @@ class QtFuture___ {
       * @see java.lang.Runnable
       * @param <A>
       * @param <B>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithVoidPromise2<A, B> extends java.io.Serializable{
@@ -16373,6 +16392,7 @@ class QtFuture___ {
       * @param <A>
       * @param <B>
       * @param <C>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithVoidPromise3<A, B, C> extends java.io.Serializable{
@@ -16394,6 +16414,7 @@ class QtFuture___ {
       * @param <B>
       * @param <C>
       * @param <D>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithVoidPromise4<A, B, C, D> extends java.io.Serializable{
@@ -16417,6 +16438,7 @@ class QtFuture___ {
       * @param <C>
       * @param <D>
       * @param <E>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithVoidPromise5<A, B, C, D, E> extends java.io.Serializable{
@@ -16442,6 +16464,7 @@ class QtFuture___ {
       * @param <D>
       * @param <E>
       * @param <F>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithVoidPromise6<A, B, C, D, E, F> extends java.io.Serializable{
@@ -16469,6 +16492,7 @@ class QtFuture___ {
       * @param <E>
       * @param <F>
       * @param <G>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithVoidPromise7<A, B, C, D, E, F, G> extends java.io.Serializable{
@@ -16498,6 +16522,7 @@ class QtFuture___ {
       * @param <F>
       * @param <G>
       * @param <H>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> extends java.io.Serializable{
@@ -16529,6 +16554,7 @@ class QtFuture___ {
       * @param <G>
       * @param <H>
       * @param <I>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> extends java.io.Serializable{
@@ -16552,6 +16578,7 @@ class QtFuture___ {
      /**
       * Runnable with typed promise.
       * @see java.lang.Runnable
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithPromise<T> extends java.io.Serializable{
@@ -16567,6 +16594,7 @@ class QtFuture___ {
       * Runnable with typed promise and one argument.
       * @see java.lang.Runnable
       * @param <A>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithPromise1<T, A> extends java.io.Serializable{
@@ -16584,6 +16612,7 @@ class QtFuture___ {
       * @see java.lang.Runnable
       * @param <A>
       * @param <B>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithPromise2<T, A, B> extends java.io.Serializable{
@@ -16603,6 +16632,7 @@ class QtFuture___ {
       * @param <A>
       * @param <B>
       * @param <C>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithPromise3<T, A, B, C> extends java.io.Serializable{
@@ -16624,6 +16654,7 @@ class QtFuture___ {
       * @param <B>
       * @param <C>
       * @param <D>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithPromise4<T, A, B, C, D> extends java.io.Serializable{
@@ -16647,6 +16678,7 @@ class QtFuture___ {
       * @param <C>
       * @param <D>
       * @param <E>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithPromise5<T, A, B, C, D, E> extends java.io.Serializable{
@@ -16672,6 +16704,7 @@ class QtFuture___ {
       * @param <D>
       * @param <E>
       * @param <F>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithPromise6<T, A, B, C, D, E, F> extends java.io.Serializable{
@@ -16699,6 +16732,7 @@ class QtFuture___ {
       * @param <E>
       * @param <F>
       * @param <G>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithPromise7<T, A, B, C, D, E, F, G> extends java.io.Serializable{
@@ -16728,6 +16762,7 @@ class QtFuture___ {
       * @param <F>
       * @param <G>
       * @param <H>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithPromise8<T, A, B, C, D, E, F, G, H> extends java.io.Serializable{
@@ -16759,6 +16794,7 @@ class QtFuture___ {
       * @param <G>
       * @param <H>
       * @param <I>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> extends java.io.Serializable{
@@ -16783,6 +16819,7 @@ class QtFuture___ {
       * Callable with five arguments.
       * @see java.util.concurrent.Callable
       * @param <T>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Callable<T> extends java.io.Serializable{
@@ -16799,6 +16836,7 @@ class QtFuture___ {
       * @see java.util.concurrent.Callable
       * @param <T>
       * @param <A>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Callable1<T,A> extends java.io.Serializable{
@@ -16817,6 +16855,7 @@ class QtFuture___ {
       * @param <T>
       * @param <A>
       * @param <B>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Callable2<T,A,B> extends java.io.Serializable{
@@ -16837,6 +16876,7 @@ class QtFuture___ {
       * @param <A>
       * @param <B>
       * @param <C>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Callable3<T,A,B,C> extends java.io.Serializable{
@@ -16859,6 +16899,7 @@ class QtFuture___ {
       * @param <B>
       * @param <C>
       * @param <D>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Callable4<T,A,B,C,D> extends java.io.Serializable{
@@ -16883,6 +16924,7 @@ class QtFuture___ {
       * @param <C>
       * @param <D>
       * @param <E>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Callable5<T,A,B,C,D,E> extends java.io.Serializable{
@@ -16909,6 +16951,7 @@ class QtFuture___ {
       * @param <D>
       * @param <E>
       * @param <F>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Callable6<T,A,B,C,D,E,F> extends java.io.Serializable{
@@ -16937,6 +16980,7 @@ class QtFuture___ {
       * @param <E>
       * @param <F>
       * @param <G>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Callable7<T,A,B,C,D,E,F,G> extends java.io.Serializable{
@@ -16967,6 +17011,7 @@ class QtFuture___ {
       * @param <F>
       * @param <G>
       * @param <H>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Callable8<T,A,B,C,D,E,F,G,H> extends java.io.Serializable{
@@ -16999,6 +17044,7 @@ class QtFuture___ {
       * @param <G>
       * @param <H>
       * @param <I>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Callable9<T,A,B,C,D,E,F,G,H,I> extends java.io.Serializable{
@@ -17022,6 +17068,7 @@ class QtFuture___ {
      /**
       * Predicate with five arguments.
       * @see java.util.function.Predicate
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Predicate extends java.io.Serializable{
@@ -17037,6 +17084,7 @@ class QtFuture___ {
       * Predicate with five arguments.
       * @see java.util.function.Predicate
       * @param <A>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Predicate1<A> extends java.io.Serializable{
@@ -17054,6 +17102,7 @@ class QtFuture___ {
       * @see java.util.function.Predicate
       * @param <A>
       * @param <B>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Predicate2<A,B> extends java.io.Serializable{
@@ -17073,6 +17122,7 @@ class QtFuture___ {
       * @param <A>
       * @param <B>
       * @param <C>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Predicate3<A,B,C> extends java.io.Serializable{
@@ -17094,6 +17144,7 @@ class QtFuture___ {
       * @param <B>
       * @param <C>
       * @param <D>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Predicate4<A,B,C,D> extends java.io.Serializable{
@@ -17117,6 +17168,7 @@ class QtFuture___ {
       * @param <C>
       * @param <D>
       * @param <E>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Predicate5<A,B,C,D,E> extends java.io.Serializable{
@@ -17142,6 +17194,7 @@ class QtFuture___ {
       * @param <D>
       * @param <E>
       * @param <F>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Predicate6<A,B,C,D,E,F> extends java.io.Serializable{
@@ -17169,6 +17222,7 @@ class QtFuture___ {
       * @param <E>
       * @param <F>
       * @param <G>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Predicate7<A,B,C,D,E,F,G> extends java.io.Serializable{
@@ -17198,6 +17252,7 @@ class QtFuture___ {
       * @param <F>
       * @param <G>
       * @param <H>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Predicate8<A,B,C,D,E,F,G,H> extends java.io.Serializable{
@@ -17229,6 +17284,7 @@ class QtFuture___ {
       * @param <G>
       * @param <H>
       * @param <I>
+      * @serial exclude
       */
      @FunctionalInterface
      public interface Predicate9<A,B,C,D,E,F,G,H,I> extends java.io.Serializable{
@@ -17894,6 +17950,7 @@ class QMetaType___ extends QMetaType {
      * Writes a value to data stream.
      * 
      * @param <U>
+     * @serial exclude
      */
     @FunctionalInterface
     public interface DataStreamInFn<U> extends java.util.function.BiConsumer<QDataStream, U>, java.io.Serializable {
@@ -17903,6 +17960,7 @@ class QMetaType___ extends QMetaType {
      * Reads a value from data stream.
      * 
      * @param <U>
+     * @serial exclude
      */
     @FunctionalInterface
     public interface DataStreamOutFn<U> extends java.util.function.Function<QDataStream, U>, java.io.Serializable {
@@ -17940,7 +17998,7 @@ class QMetaType___ extends QMetaType {
                             datastreamInFnClassTypes[2].getTypeName(), new QMetaType(datastreamInTypes[2]).name(),
                             datastreamOutFnClassTypes[0].getTypeName(), new QMetaType(datastreamOutTypes[0]).name()));
         }
-        io.qt.internal.MetaTypeUtility.registerDataStreamOperators(datastreamOutTypes[0], datastreamOutFnClassTypes[0],
+        CoreUtility.registerDataStreamOperators(datastreamOutTypes[0], datastreamOutFnClassTypes[0],
                 datastreamInFn, datastreamOutFn);
         return datastreamOutTypes[0];
     }
@@ -17949,6 +18007,7 @@ class QMetaType___ extends QMetaType {
      * Writes a value to debug stream.
      * 
      * @param <U>
+     * @serial exclude
      */
     public interface DebugStreamFn<U> extends java.util.function.BiConsumer<QDebug, U>, java.io.Serializable {
     }
@@ -17969,8 +18028,7 @@ class QMetaType___ extends QMetaType {
             throw new IllegalArgumentException("DebugStreamFn function not a lambda expression.");
         if (debugstreamTypes[2] == 0)
             throw new IllegalArgumentException("Unable to recognize meta type.");
-        io.qt.internal.MetaTypeUtility.registerDebugStreamOperator(debugstreamTypes[2], debugstreamClassTypes[2],
-                debugstreamFn);
+        CoreUtility.registerDebugStreamOperator(debugstreamTypes[2], debugstreamClassTypes[2], debugstreamFn);
         return debugstreamTypes[2];
     }
 
@@ -17981,6 +18039,7 @@ class QMetaType___ extends QMetaType {
      * 
      * @param <T1>
      * @param <T2>
+     * @serial exclude
      */
     @FunctionalInterface
     public interface ConverterFn<T1, T2> extends java.util.function.Function<T1, T2>, java.io.Serializable {
@@ -18002,7 +18061,7 @@ class QMetaType___ extends QMetaType {
             throw new IllegalArgumentException("ConverterFn function not a lambda expression.");
         if (converterTypes[0] == 0 || converterTypes[1] == 0)
             throw new IllegalArgumentException("Unable to recognize meta type.");
-        return io.qt.internal.MetaTypeUtility.registerConverter(converterTypes[0], converterClassTypes[0],
+        return CoreUtility.registerConverter(converterTypes[0], converterClassTypes[0],
                 converterTypes[1], converterClassTypes[1], converterFn);
     }
 
@@ -18078,7 +18137,6 @@ class QMetaType___ extends QMetaType {
      */
     public static final class GenericFlags extends QFlags<@NonNull GenericFlag>
             implements GenericTypeInterface, Comparable<@NonNull QFlags<?>> {
-        private static final long serialVersionUID = -7659504264600507749L;
 
         @NativeAccess
         private GenericFlags(int type, int value) {
@@ -18147,18 +18205,17 @@ class QMetaType___ extends QMetaType {
             return this;
         }
 
-        @SuppressWarnings({ "rawtypes", "unchecked" })
         @Override
         @QtUninvokable
         public int compareTo(@NonNull QFlags<?> o) {
-            return QFlags.compare((QFlags) this, (QFlags) o);
+            return Integer.compare(value(), o.toInt());
         }
 
         /**
          * Returns the value of this QFlags.
          */
         public final int value() {
-            return intValue();
+            return toInt();
         }
 
         /**
@@ -18167,7 +18224,7 @@ class QMetaType___ extends QMetaType {
          * @param value new value
          */
         public final void setValue(int value) {
-            setIntValue(value);
+            super.setValue(value);
         }
     }
 
@@ -18627,7 +18684,6 @@ class QMetaType_69__ extends QMetaType {
      */
     public static final class GenericLongFlags extends QLongFlags<@NonNull GenericLongFlag>
             implements GenericTypeInterface, Comparable<@NonNull QLongFlags<?>> {
-        private static final long serialVersionUID = -7659504264600507749L;
 
         @NativeAccess
         private GenericLongFlags(int type, long value) {
@@ -18696,35 +18752,10 @@ class QMetaType_69__ extends QMetaType {
             return this;
         }
 
-        @SuppressWarnings({ "rawtypes", "unchecked" })
         @Override
         @QtUninvokable
         public int compareTo(@NonNull QLongFlags<?> o) {
-            return QLongFlags.compare((QLongFlags) this, (QLongFlags) o);
-        }
-
-        /**
-         * Returns the value of this QFlags.
-         */
-        public final long value() {
-            return longValue();
-        }
-
-        /**
-         * See <a href="https://doc.qt.io/qt/qflags.html#toInt">QFlags::toInt()
-         * const</a>
-         */
-        public final long toLong() {
-            return longValue();
-        }
-
-        /**
-         * Sets the value of this QFlags.
-         * 
-         * @param value new value
-         */
-        public final void setValue(long value) {
-            setLongValue(value);
+            return Long.compare(value(), o.value());
         }
     }
 }// class
@@ -20276,7 +20307,7 @@ class QMetaObject___ {
             for (int i = 0; i < parameterTypes.length; ++i) {
                 if (i != 0)
                     args.append(',');
-                String typeName = MetaTypeUtility.internalNameOfArgumentType(parameterTypes[i]);
+                String typeName = internalNameOfType(parameterTypes[i]);
                 if (typeName.isEmpty())
                     args.append("QVariant");
                 else
@@ -20337,7 +20368,7 @@ class QMetaObject___ {
         for (int i = 0; i < parameterTypes.length; ++i) {
             if (i != 0)
                 args.append(',');
-            String typeName = MetaTypeUtility.internalNameOfArgumentType(parameterTypes[i]);
+            String typeName = internalNameOfType(parameterTypes[i]);
             if (typeName.isEmpty())
                 args.append("QVariant");
             else
@@ -20369,7 +20400,7 @@ class QMetaObject___ {
 
     /**
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#newInstance">QMetaObject::<wbr/>newInstance(Args &amp;&amp;...)const</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#newInstance"><code>QMetaObject::<wbr/>newInstance(Args &amp;&amp;...)const</code></a>
      * </p>
      * 
      * @return new instance
@@ -20519,7 +20550,7 @@ class QMetaObject___ {
     private static native Class<?> type(long __qt_directLink);
     
     static String internalNameOfType(Class<? extends Object> cls) {
-        return MetaTypeUtility.internalNameOfArgumentType(cls);
+        return CoreUtility.internalNameOfArgumentType(cls);
     }
 
     static native QMetaObject.Connection connect(QObject sender, String signal, QObject receiver, String slot, byte connection);
@@ -20693,9 +20724,9 @@ class QMetaObject___ {
                             String cpptype;
                             if (paramType == null) {
                                 String className = argumentTypes[i].replace(" ", "");
-                                cpptype = MetaTypeUtility.internalTypeName(className, QMetaObject.class.getClassLoader());
+                                cpptype = CoreUtility.internalTypeName(className, QMetaObject.class.getClassLoader());
                             } else {
-                                cpptype = MetaTypeUtility.internalTypeNameOfClass(paramType,
+                                cpptype = CoreUtility.internalTypeNameOfClass(paramType,
                                         genericParamType == null ? paramType : genericParamType, annotatedParamType);
                             }
                             if (cpptype.isEmpty())
@@ -21129,6 +21160,80 @@ class QMetaObject___ {
         }
 
         /**
+         * Signal argument types
+         */
+        @Override
+        @io.qt.QtUninvokable
+        public final List<Class<?>> argumentTypes() {
+            return super.getArgumentTypes();
+        }
+
+        /**
+         * Returns the object containing this signal.
+         * @return the signal containing object
+         */
+        @Override
+        @io.qt.QtUninvokable
+        public QtSignalEmitterInterface containingObject() {
+            return null;
+        }
+
+        /**
+         * Returns the name of the signal
+         * @return The signal name
+         */
+        @io.qt.QtUninvokable
+        public final String name() {
+            return getName();
+        }
+
+        /**
+         * Returns the meta method index of the signal
+         * @return method index
+         */
+        @io.qt.QtUninvokable
+        public final int methodIndex() {
+            return getMethodIndex();
+        }
+
+        /**
+         * Returns true if signal is connected
+         * @return connected
+         * @see QObject#isSignalConnected(io.qt.core.QMetaMethod)
+         */
+        @io.qt.QtUninvokable
+        public final boolean isConnected() {
+            return getConnected();
+        }
+
+        /**
+         * Returns the number of receivers connected to this signal
+         * @return receivers
+         * @see QObject#receivers(String)
+         */
+        @io.qt.QtUninvokable
+        public final int receivers() {
+            return getReceivers();
+        }
+
+        /**
+         * Returns the full name of the signal, on the form "package.class.signalName"
+         *  @return The fully qualified name of the signal
+         */
+        @io.qt.QtUninvokable
+        public final String fullName() {
+            return getFullName();
+        }
+
+        /**
+         * Returns a string representation of this signal.
+         */
+        @Override
+        public final String toString() {
+            return super.toString();
+        }
+
+        /**
          * Connects the signal to a method in an object. Whenever it is emitted, the
          * method will be invoked on the given object.
          *
@@ -21337,12 +21442,14 @@ class QMetaObject___ {
 
     /**
      * Supertype of all slot handles.
+     * @serial exclude
      */
     public static interface AbstractSlot extends Serializable {
     }
 
     /**
      * A generic slot handle to a method of variadic arguments.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface GenericSlot extends AbstractSlot {
@@ -21351,6 +21458,7 @@ class QMetaObject___ {
 
     /**
      * A handle to parameterless slot.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Slot0 extends AbstractSlot {
@@ -21361,6 +21469,7 @@ class QMetaObject___ {
      * A handle to slot with one parameter.
      * 
      * @param <A> The type of the first parameter of the slot.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Slot1<A> extends AbstractSlot {
@@ -21372,6 +21481,7 @@ class QMetaObject___ {
      * 
      * @param <A> The type of the first parameter of the slot.
      * @param <B> The type of the second parameter of the slot.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Slot2<A, B> extends AbstractSlot {
@@ -21384,6 +21494,7 @@ class QMetaObject___ {
      * @param <A> The type of the first parameter of the slot.
      * @param <B> The type of the second parameter of the slot.
      * @param <C> The type of the third parameter of the slot.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Slot3<A, B, C> extends AbstractSlot {
@@ -21397,6 +21508,7 @@ class QMetaObject___ {
      * @param <B> The type of the second parameter of the slot.
      * @param <C> The type of the third parameter of the slot.
      * @param <D> The type of the fourth parameter of the slot.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Slot4<A, B, C, D> extends AbstractSlot {
@@ -21411,6 +21523,7 @@ class QMetaObject___ {
      * @param <C> The type of the third parameter of the slot.
      * @param <D> The type of the fourth parameter of the slot.
      * @param <E> The type of the fifth parameter of the slot.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Slot5<A, B, C, D, E> extends AbstractSlot {
@@ -21426,6 +21539,7 @@ class QMetaObject___ {
      * @param <D> The type of the fourth parameter of the slot.
      * @param <E> The type of the fifth parameter of the slot.
      * @param <F> The type of the sixth parameter of the slot.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Slot6<A, B, C, D, E, F> extends AbstractSlot {
@@ -21442,6 +21556,7 @@ class QMetaObject___ {
      * @param <E> The type of the fifth parameter of the slot.
      * @param <F> The type of the sixth parameter of the slot.
      * @param <G> The type of the seventh parameter of the slot.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Slot7<A, B, C, D, E, F, G> extends AbstractSlot {
@@ -21459,6 +21574,7 @@ class QMetaObject___ {
      * @param <F> The type of the sixth parameter of the slot.
      * @param <G> The type of the seventh parameter of the slot.
      * @param <H> The type of the eighth parameter of the slot.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Slot8<A, B, C, D, E, F, G, H> extends AbstractSlot {
@@ -21477,6 +21593,7 @@ class QMetaObject___ {
      * @param <G> The type of the seventh parameter of the slot.
      * @param <H> The type of the eighth parameter of the slot.
      * @param <I> The type of the ninth parameter of the slot.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Slot9<A, B, C, D, E, F, G, H, I> extends AbstractSlot {
@@ -21496,6 +21613,7 @@ class QMetaObject___ {
      * @param <H> The type of the eighth parameter of the slot.
      * @param <I> The type of the ninth parameter of the slot.
      * @param <J> The type of the tenth parameter of the slot.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Slot10<A, B, C, D, E, F, G, H, I, J> extends AbstractSlot {
@@ -21506,15 +21624,33 @@ class QMetaObject___ {
      * Interface abstraction of signals.
      */
     public static interface Signal {
-        String name();
+         /**
+          * Returns the name of the signal
+          * @return The signal name
+          */
+         String name();
 
-        String fullName();
+         /**
+          * Returns the full name of the signal, on the form "package.class.signalName"
+          *  @return The fully qualified name of the signal
+          */
+         String fullName();
 
-        QtSignalEmitterInterface containingObject();
+         /**
+          * Returns the object containing this signal.
+          * @return the signal containing object
+          */
+         QtSignalEmitterInterface containingObject();
 
-        int methodIndex();
+         /**
+          * Signal's meta method index
+          */
+         int methodIndex();
 
-        List<Class<?>> argumentTypes();
+         /**
+          * Signal argument types
+          */
+         List<Class<?>> argumentTypes();
     }
 
     /**
@@ -21765,6 +21901,7 @@ class QMetaObject___ {
      * A generic handle to a method of variadic arguments with return value.
      * 
      * @param <R> The type of the return value of the method.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface GenericMethod<R> extends AbstractSlot {
@@ -21775,6 +21912,7 @@ class QMetaObject___ {
      * A handle to parameterless method with return value.
      * 
      * @param <R> The type of the return value of the method.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Method0<R> extends AbstractSlot {
@@ -21786,6 +21924,7 @@ class QMetaObject___ {
      * 
      * @param <A> The type of the first parameter of the method.
      * @param <R> The type of the return value of the method.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Method1<A, R> extends AbstractSlot {
@@ -21798,6 +21937,7 @@ class QMetaObject___ {
      * @param <A> The type of the first parameter of the method.
      * @param <B> The type of the second parameter of the method.
      * @param <R> The type of the return value of the method.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Method2<A, B, R> extends AbstractSlot {
@@ -21811,6 +21951,7 @@ class QMetaObject___ {
      * @param <B> The type of the second parameter of the method.
      * @param <C> The type of the third parameter of the method.
      * @param <R> The type of the return value of the method.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Method3<A, B, C, R> extends AbstractSlot {
@@ -21825,6 +21966,7 @@ class QMetaObject___ {
      * @param <C> The type of the third parameter of the method.
      * @param <D> The type of the fourth parameter of the method.
      * @param <R> The type of the return value of the method.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Method4<A, B, C, D, R> extends AbstractSlot {
@@ -21840,6 +21982,7 @@ class QMetaObject___ {
      * @param <D> The type of the fourth parameter of the method.
      * @param <E> The type of the fifth parameter of the method.
      * @param <R> The type of the return value of the method.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Method5<A, B, C, D, E, R> extends AbstractSlot {
@@ -21856,6 +21999,7 @@ class QMetaObject___ {
      * @param <E> The type of the fifth parameter of the method.
      * @param <F> The type of the sixth parameter of the method.
      * @param <R> The type of the return value of the method.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Method6<A, B, C, D, E, F, R> extends AbstractSlot {
@@ -21873,6 +22017,7 @@ class QMetaObject___ {
      * @param <F> The type of the sixth parameter of the method.
      * @param <G> The type of the seventh parameter of the method.
      * @param <R> The type of the return value of the method.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Method7<A, B, C, D, E, F, G, R> extends AbstractSlot {
@@ -21891,6 +22036,7 @@ class QMetaObject___ {
      * @param <G> The type of the seventh parameter of the method.
      * @param <H> The type of the eighth parameter of the method.
      * @param <R> The type of the return value of the method.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Method8<A, B, C, D, E, F, G, H, R> extends AbstractSlot {
@@ -21910,6 +22056,7 @@ class QMetaObject___ {
      * @param <H> The type of the eighth parameter of the method.
      * @param <I> The type of the ninth parameter of the method.
      * @param <R> The type of the return value of the method.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Method9<A, B, C, D, E, F, G, H, I, R> extends AbstractSlot {
@@ -21930,6 +22077,7 @@ class QMetaObject___ {
      * @param <I> The type of the ninth parameter of the method.
      * @param <J> The type of the tenth parameter of the method.
      * @param <R> The type of the return value of the method.
+     * @serial exclude
      */
     @FunctionalInterface
     public static interface Method10<A, B, C, D, E, F, G, H, I, J, R> extends AbstractSlot {
@@ -30405,11 +30553,11 @@ class QMetaObject___ {
     public static <R> R invokeMethod(@StrictNonNull Method0<R> method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -30422,10 +30570,10 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type);
                 }else {
                     Object[] args = info.lambdaArgs.toArray();
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -30496,11 +30644,11 @@ class QMetaObject___ {
     public static <A,R> R invokeMethod(@StrictNonNull Method1<A,R> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+1) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+1) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -30513,12 +30661,12 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 1, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -30593,11 +30741,11 @@ class QMetaObject___ {
     public static <A,B,R> R invokeMethod(@StrictNonNull Method2<A,B,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+2) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+2) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -30610,13 +30758,13 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 2, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -30690,11 +30838,11 @@ class QMetaObject___ {
     public static <A,B,C,R> R invokeMethod(@StrictNonNull Method3<A,B,C,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+3) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+3) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -30707,14 +30855,14 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 3, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -30792,11 +30940,11 @@ class QMetaObject___ {
     public static <A,B,C,D,R> R invokeMethod(@StrictNonNull Method4<A,B,C,D,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+4) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+4) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -30809,15 +30957,15 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     args[3] = arg4;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 4, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -30899,11 +31047,11 @@ class QMetaObject___ {
     public static <A,B,C,D,E,R> R invokeMethod(@StrictNonNull Method5<A,B,C,D,E,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+5) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+5) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -30916,16 +31064,16 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     args[3] = arg4;
                     args[4] = arg5;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 5, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -31011,11 +31159,11 @@ class QMetaObject___ {
     public static <A,B,C,D,E,F,R> R invokeMethod(@StrictNonNull Method6<A,B,C,D,E,F,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+6) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+6) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -31028,9 +31176,9 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -31038,7 +31186,7 @@ class QMetaObject___ {
                     args[4] = arg5;
                     args[5] = arg6;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 6, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -31128,11 +31276,11 @@ class QMetaObject___ {
     public static <A,B,C,D,E,F,G,R> R invokeMethod(@StrictNonNull Method7<A,B,C,D,E,F,G,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+7) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+7) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -31145,9 +31293,9 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -31156,7 +31304,7 @@ class QMetaObject___ {
                     args[5] = arg6;
                     args[6] = arg7;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 7, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -31250,11 +31398,11 @@ class QMetaObject___ {
     public static <A,B,C,D,E,F,G,H,R> R invokeMethod(@StrictNonNull Method8<A,B,C,D,E,F,G,H,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+8) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+8) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -31267,9 +31415,9 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -31279,7 +31427,7 @@ class QMetaObject___ {
                     args[6] = arg7;
                     args[7] = arg8;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 8, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -31377,11 +31525,11 @@ class QMetaObject___ {
     public static <A,B,C,D,E,F,G,H,I,R> R invokeMethod(@StrictNonNull Method9<A,B,C,D,E,F,G,H,I,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+9) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+9) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -31394,9 +31542,9 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -31407,7 +31555,7 @@ class QMetaObject___ {
                     args[7] = arg8;
                     args[8] = arg9;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 9, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -31463,11 +31611,11 @@ class QMetaObject___ {
     public static void invokeMethod(@StrictNonNull Slot0 method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -31480,7 +31628,7 @@ class QMetaObject___ {
                         }
                 default:
                 }
-                invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, info.lambdaArgs.toArray());
+                invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, info.lambdaArgs.toArray());
                 return;
             }
             context = info.qobject;
@@ -31545,11 +31693,11 @@ class QMetaObject___ {
     public static <A> void invokeMethod(@StrictNonNull Slot1<A> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+1) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+1) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -31563,12 +31711,12 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 1, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -31638,11 +31786,11 @@ class QMetaObject___ {
     public static <A,B> void invokeMethod(@StrictNonNull Slot2<A,B> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+2) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+2) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -31656,13 +31804,13 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 2, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -31736,11 +31884,11 @@ class QMetaObject___ {
     public static <A,B,C> void invokeMethod(@StrictNonNull Slot3<A,B,C> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+3) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+3) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -31754,14 +31902,14 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 3, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -31834,11 +31982,11 @@ class QMetaObject___ {
     public static <A,B,C,D> void invokeMethod(@StrictNonNull Slot4<A,B,C,D> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+4) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+4) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -31852,15 +32000,15 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     args[3] = arg4;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 4, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -31937,11 +32085,11 @@ class QMetaObject___ {
     public static <A,B,C,D,E> void invokeMethod(@StrictNonNull Slot5<A,B,C,D,E> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+5) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+5) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -31955,16 +32103,16 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     args[3] = arg4;
                     args[4] = arg5;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 5, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -32044,11 +32192,11 @@ class QMetaObject___ {
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull Slot6<A,B,C,D,E,F> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+6) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+6) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -32062,9 +32210,9 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -32072,7 +32220,7 @@ class QMetaObject___ {
                     args[4] = arg5;
                     args[5] = arg6;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 6, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -32157,11 +32305,11 @@ class QMetaObject___ {
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull Slot7<A,B,C,D,E,F,G> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+7) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+7) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -32175,9 +32323,9 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -32186,7 +32334,7 @@ class QMetaObject___ {
                     args[5] = arg6;
                     args[6] = arg7;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 7, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -32275,11 +32423,11 @@ class QMetaObject___ {
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull Slot8<A,B,C,D,E,F,G,H> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+8) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+8) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -32293,9 +32441,9 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -32305,7 +32453,7 @@ class QMetaObject___ {
                     args[6] = arg7;
                     args[7] = arg8;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 8, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -32398,11 +32546,11 @@ class QMetaObject___ {
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull Slot9<A,B,C,D,E,F,G,H,I> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method);
+        LambdaInfo info = LambdaInfo.of(method);
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+9) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+9) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -32416,9 +32564,9 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -32429,7 +32577,7 @@ class QMetaObject___ {
                     args[7] = arg8;
                     args[8] = arg9;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 9, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -33548,10 +33696,10 @@ class QMetaObject___ {
     public static <Target> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot1<Target> method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
-        if(info!=null && info.qobject!=null && info.methodInfo.metaObject!=null) {
+        if(info!=null && info.qobject!=null && info.metaObject!=null) {
             switch(type) {
             case AutoConnection:
             case DirectConnection:
@@ -33564,8 +33712,8 @@ class QMetaObject___ {
                     }
             default:
             }
-            if(info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()) {
-                invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, info.lambdaArgs.toArray());
+            if(info.expectedParameterTypes==info.lambdaArgs.size()) {
+                invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, info.lambdaArgs.toArray());
                 return;
             }
             context = info.qobject;
@@ -33634,11 +33782,11 @@ class QMetaObject___ {
     public static <Target,A> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot2<Target,A> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+1) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+1) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -33652,12 +33800,12 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 1, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -33731,11 +33879,11 @@ class QMetaObject___ {
     public static <Target,A,B> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot3<Target,A,B> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+2) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+2) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -33749,13 +33897,13 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 2, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -33833,11 +33981,11 @@ class QMetaObject___ {
     public static <Target,A,B,C> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot4<Target,A,B,C> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+3) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+3) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -33851,14 +33999,14 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 3, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -33935,11 +34083,11 @@ class QMetaObject___ {
     public static <Target,A,B,C,D> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot5<Target,A,B,C,D> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+4) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+4) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -33953,15 +34101,15 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     args[3] = arg4;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 4, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -34042,11 +34190,11 @@ class QMetaObject___ {
     public static <Target,A,B,C,D,E> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot6<Target,A,B,C,D,E> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+5) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+5) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -34060,16 +34208,16 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     args[3] = arg4;
                     args[4] = arg5;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 5, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -34153,11 +34301,11 @@ class QMetaObject___ {
     public static <Target,A,B,C,D,E,F> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot7<Target,A,B,C,D,E,F> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+6) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+6) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -34171,9 +34319,9 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -34181,7 +34329,7 @@ class QMetaObject___ {
                     args[4] = arg5;
                     args[5] = arg6;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 6, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -34270,11 +34418,11 @@ class QMetaObject___ {
     public static <Target,A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot8<Target,A,B,C,D,E,F,G> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+7) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+7) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -34288,9 +34436,9 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -34299,7 +34447,7 @@ class QMetaObject___ {
                     args[5] = arg6;
                     args[6] = arg7;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 7, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -34392,11 +34540,11 @@ class QMetaObject___ {
     public static <Target,A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot9<Target,A,B,C,D,E,F,G,H> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+8) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+8) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -34410,9 +34558,9 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -34422,7 +34570,7 @@ class QMetaObject___ {
                     args[6] = arg7;
                     args[7] = arg8;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 8, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -34519,11 +34667,11 @@ class QMetaObject___ {
     public static <Target,A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull Target target, @StrictNonNull Slot10<Target,A,B,C,D,E,F,G,H,I> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QThread thread = null;
         QObject context;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+9) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+9) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -34537,9 +34685,9 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -34550,7 +34698,7 @@ class QMetaObject___ {
                     args[7] = arg8;
                     args[8] = arg9;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 9, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
                 return;
             }
@@ -34617,11 +34765,11 @@ class QMetaObject___ {
     public static <Target,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method1<Target,R> method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -34634,10 +34782,10 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type);
                 }else {
                     Object[] args = info.lambdaArgs.toArray();
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -34711,11 +34859,11 @@ class QMetaObject___ {
     public static <Target,A,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method2<Target,A,R> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+1) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+1) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -34728,12 +34876,12 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 1, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -34812,11 +34960,11 @@ class QMetaObject___ {
     public static <Target,A,B,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method3<Target,A,B,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+2) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+2) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -34829,13 +34977,13 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 2, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -34913,11 +35061,11 @@ class QMetaObject___ {
     public static <Target,A,B,C,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method4<Target,A,B,C,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+3) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+3) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -34930,14 +35078,14 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 3, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -35019,11 +35167,11 @@ class QMetaObject___ {
     public static <Target,A,B,C,D,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method5<Target,A,B,C,D,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+4) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+4) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -35036,15 +35184,15 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     args[3] = arg4;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 4, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -35130,11 +35278,11 @@ class QMetaObject___ {
     public static <Target,A,B,C,D,E,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method6<Target,A,B,C,D,E,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+5) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+5) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -35147,16 +35295,16 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     args[3] = arg4;
                     args[4] = arg5;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 5, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -35246,11 +35394,11 @@ class QMetaObject___ {
     public static <Target,A,B,C,D,E,F,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method7<Target,A,B,C,D,E,F,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+6) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+6) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -35263,9 +35411,9 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -35273,7 +35421,7 @@ class QMetaObject___ {
                     args[4] = arg5;
                     args[5] = arg6;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 6, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -35367,11 +35515,11 @@ class QMetaObject___ {
     public static <Target,A,B,C,D,E,F,G,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method8<Target,A,B,C,D,E,F,G,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+7) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+7) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -35384,9 +35532,9 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -35395,7 +35543,7 @@ class QMetaObject___ {
                     args[5] = arg6;
                     args[6] = arg7;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 7, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -35493,11 +35641,11 @@ class QMetaObject___ {
     public static <Target,A,B,C,D,E,F,G,H,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method9<Target,A,B,C,D,E,F,G,H,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+8) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+8) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -35510,9 +35658,9 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -35522,7 +35670,7 @@ class QMetaObject___ {
                     args[6] = arg7;
                     args[7] = arg8;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 8, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -35624,11 +35772,11 @@ class QMetaObject___ {
     public static <Target,A,B,C,D,E,F,G,H,I,R> R invokeMethod(@StrictNonNull Target target, @StrictNonNull Method10<Target,A,B,C,D,E,F,G,H,I,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         if(type==null)
             type = Qt.ConnectionType.AutoConnection;
-        LambdaInfo info = CoreUtility.lambdaInfo(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
+        LambdaInfo info = LambdaInfo.of(method, Objects.<Target>requireNonNull(target, "Argument 'target': null not expected."));
         QObject context;
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+9) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+9) {
                 switch(type) {
                 case AutoConnection:
                 case DirectConnection:
@@ -35641,9 +35789,9 @@ class QMetaObject___ {
                 default:
                 }
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -35654,7 +35802,7 @@ class QMetaObject___ {
                     args[7] = arg8;
                     args[8] = arg9;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 9, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
             context = info.qobject;
@@ -35726,10 +35874,10 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
-        if(info!=null && info.methodInfo.metaObject!=null) {
-            if(info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()) {
-                invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, info.lambdaArgs.toArray());
+        LambdaInfo info = LambdaInfo.of(method, target);
+        if(info!=null && info.metaObject!=null) {
+            if(info.expectedParameterTypes==info.lambdaArgs.size()) {
+                invokeMethod(info.metaObject, info.methodIndex, target, type, info.lambdaArgs.toArray());
                 return;
             }
         }
@@ -35785,16 +35933,16 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+1) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+1) {
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, arg1);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 1, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, args);
                 }
                 return;
             }
@@ -35855,17 +36003,17 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+2) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+2) {
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, arg1, arg2);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 2, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, args);
                 }
                 return;
             }
@@ -35930,18 +36078,18 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+3) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+3) {
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, arg1, arg2, arg3);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 3, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, args);
                 }
                 return;
             }
@@ -36010,19 +36158,19 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+4) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+4) {
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, arg1, arg2, arg3, arg4);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     args[3] = arg4;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 4, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, args);
                 }
                 return;
             }
@@ -36095,20 +36243,20 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+5) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+5) {
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     args[3] = arg4;
                     args[4] = arg5;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 5, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, args);
                 }
                 return;
             }
@@ -36184,13 +36332,13 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+6) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+6) {
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -36198,7 +36346,7 @@ class QMetaObject___ {
                     args[4] = arg5;
                     args[5] = arg6;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 6, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, args);
                 }
                 return;
             }
@@ -36279,13 +36427,13 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+7) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+7) {
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -36294,7 +36442,7 @@ class QMetaObject___ {
                     args[5] = arg6;
                     args[6] = arg7;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 7, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, args);
                 }
                 return;
             }
@@ -36379,13 +36527,13 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+8) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+8) {
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -36395,7 +36543,7 @@ class QMetaObject___ {
                     args[6] = arg7;
                     args[7] = arg8;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 8, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, args);
                 }
                 return;
             }
@@ -36484,13 +36632,13 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+9) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+9) {
                 if(info.lambdaArgs.isEmpty()) {
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -36501,7 +36649,7 @@ class QMetaObject___ {
                     args[7] = arg8;
                     args[8] = arg9;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 9, info.lambdaArgs.size());
-                    invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                    invokeMethod(info.metaObject, info.methodIndex, target, type, args);
                 }
                 return;
             }
@@ -36559,14 +36707,14 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()) {
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type);
+                    return invokeMethod(info.metaObject, info.methodIndex, target, type);
                 }else {
                     Object[] args = info.lambdaArgs.toArray();
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, target, type, args);
                 }
             }
         }
@@ -36626,16 +36774,16 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+1) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+1) {
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1);
+                    return invokeMethod(info.metaObject, info.methodIndex, target, type, arg1);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 1, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, target, type, args);
                 }
             }
         }
@@ -36700,17 +36848,17 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+2) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+2) {
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2);
+                    return invokeMethod(info.metaObject, info.methodIndex, target, type, arg1, arg2);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 2, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, target, type, args);
                 }
             }
         }
@@ -36779,18 +36927,18 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+3) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+3) {
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3);
+                    return invokeMethod(info.metaObject, info.methodIndex, target, type, arg1, arg2, arg3);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 3, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, target, type, args);
                 }
             }
         }
@@ -36863,19 +37011,19 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+4) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+4) {
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4);
+                    return invokeMethod(info.metaObject, info.methodIndex, target, type, arg1, arg2, arg3, arg4);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     args[3] = arg4;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 4, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, target, type, args);
                 }
             }
         }
@@ -36952,20 +37100,20 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+5) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+5) {
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5);
+                    return invokeMethod(info.metaObject, info.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
                     args[3] = arg4;
                     args[4] = arg5;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 5, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, target, type, args);
                 }
             }
         }
@@ -37046,13 +37194,13 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+6) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+6) {
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6);
+                    return invokeMethod(info.metaObject, info.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -37060,7 +37208,7 @@ class QMetaObject___ {
                     args[4] = arg5;
                     args[5] = arg6;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 6, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, target, type, args);
                 }
             }
         }
@@ -37145,13 +37293,13 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+7) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+7) {
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+                    return invokeMethod(info.metaObject, info.methodIndex, target, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -37160,7 +37308,7 @@ class QMetaObject___ {
                     args[5] = arg6;
                     args[6] = arg7;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 7, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, target, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, target, type, args);
                 }
             }
         }
@@ -37249,13 +37397,13 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+8) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+8) {
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -37265,7 +37413,7 @@ class QMetaObject___ {
                     args[6] = arg7;
                     args[7] = arg8;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 8, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
         }
@@ -37358,13 +37506,13 @@ class QMetaObject___ {
                 }
         default:
         }
-        LambdaInfo info = CoreUtility.lambdaInfo(method, target);
+        LambdaInfo info = LambdaInfo.of(method, target);
         if(info!=null) {
-            if(info.methodInfo.metaObject!=null && info.methodInfo.expectedParameterTypes==info.lambdaArgs.size()+9) {
+            if(info.metaObject!=null && info.expectedParameterTypes==info.lambdaArgs.size()+9) {
                 if(info.lambdaArgs.isEmpty()) {
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
                 }else {
-                    Object[] args = new Object[info.methodInfo.expectedParameterTypes];
+                    Object[] args = new Object[info.expectedParameterTypes];
                     args[0] = arg1;
                     args[1] = arg2;
                     args[2] = arg3;
@@ -37375,7 +37523,7 @@ class QMetaObject___ {
                     args[7] = arg8;
                     args[8] = arg9;
                     System.arraycopy(info.lambdaArgs.toArray(), 0, args, 9, info.lambdaArgs.size());
-                    return invokeMethod(info.methodInfo.metaObject, info.methodInfo.methodIndex, info.qobject, type, args);
+                    return invokeMethod(info.metaObject, info.methodIndex, info.qobject, type, args);
                 }
             }
         }
@@ -44200,63 +44348,7 @@ class QMetaObject___ {
         return qmethod;
     }
     
-        private static native QMetaMethod methodFromMethod(long __qt_directLink, Object[] method);
-
-    private static class CoreUtility extends io.qt.internal.CoreUtility {
-        static {
-            QtJambi_LibraryUtilities.initialize();
-        }
-
-        protected static abstract class AbstractSignal extends io.qt.internal.CoreUtility.AbstractSignal {
-            AbstractSignal() {
-                super();
-            }
-
-            AbstractSignal(Consumer<Object[]> argumentTest) {
-                super(argumentTest);
-            }
-
-            AbstractSignal(Class<?> declaringClass) {
-                super(declaringClass);
-            }
-
-            AbstractSignal(Class<?> declaringClass, boolean isDisposed) {
-                super(declaringClass, isDisposed);
-            }
-
-            AbstractSignal(@StrictNonNull String signalName, Class<?>[] types) {
-                super(signalName, types);
-            }
-        }
-
-        protected static abstract class AbstractMultiSignal<S extends AbstractSignal>
-                extends io.qt.internal.CoreUtility.AbstractMultiSignal<S> {
-            AbstractMultiSignal() {
-                super();
-            }
-        }
-
-        protected static void checkConnectionToDisposedSignal(QMetaObject.DisposedSignal signal, Object receiver,
-                boolean slotObject) {
-            io.qt.internal.CoreUtility.checkConnectionToDisposedSignal(signal, receiver, slotObject);
-        }
-        
-        protected static QMetaMethod signalMethod(io.qt.internal.CoreUtility.AbstractSignal signal) {
-            return io.qt.internal.CoreUtility.signalMethod(signal);
-        }
-        
-        protected static LambdaInfo lambdaInfo(java.io.Serializable slotObject) {
-            return io.qt.internal.CoreUtility.lambdaInfo(slotObject);
-        }
-
-        protected static LambdaInfo lambdaInfo(java.io.Serializable slotObject, Object owner) {
-            return io.qt.internal.CoreUtility.lambdaInfo(slotObject, owner);
-        }
-
-        protected static LambdaInfo lambdaInfo(java.io.Serializable slotObject, QObject qobject) {
-            return io.qt.internal.CoreUtility.lambdaInfo(slotObject, qobject);
-        }
-    }
+    private static native QMetaMethod methodFromMethod(long __qt_directLink, Object[] method);
 
     /**
      * Calling <code>writeProperty(property, AutoConnection, value)</code>.
@@ -45351,13 +45443,54 @@ class QMetaObject___ {
         }
     }
 
+     final static class LambdaInfo {
+         final Object owner;
+         final QObject qobject;
+         final List<Object> lambdaArgs;
+         final boolean isStaticMethod;
+         final QMetaObject metaObject;
+         final int methodIndex;
+         final int expectedParameterTypes;
+         final java.lang.reflect.Method reflectiveMethod;
+
+          private LambdaInfo(Object owner,
+                           QObject qobject,
+                           QMetaObject metaObject,
+                           int methodIndex,
+                           int expectedParameterTypes,
+                           boolean isStaticMethod,
+                           List<Object> lambdaArgs,
+                           java.lang.reflect.Method reflectiveMethod) {
+              this.owner = owner;
+              this.reflectiveMethod = reflectiveMethod;
+              this.qobject = qobject;
+              this.lambdaArgs = lambdaArgs;
+              this.isStaticMethod = isStaticMethod;
+              this.metaObject = metaObject;
+              this.methodIndex = methodIndex;
+              this.expectedParameterTypes = expectedParameterTypes;
+          }
+
+          static LambdaInfo of(Serializable slotObject) {
+               return CoreUtility.lambdaInfo(slotObject, LambdaInfo::new);
+          }
+
+          private static LambdaInfo of(Serializable slotObject, QObject object) {
+               return CoreUtility.lambdaInfo(slotObject, object, LambdaInfo::new);
+          }
+
+          private static LambdaInfo of(Serializable slotObject, Object object) {
+               return CoreUtility.lambdaInfo(slotObject, object, LambdaInfo::new);
+          }
+     }
+
 }// class
 
 class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param sender         the signal sender
@@ -45376,7 +45509,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -45396,7 +45529,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -45418,7 +45551,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -45441,7 +45574,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -45465,7 +45598,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -45491,7 +45624,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -45518,7 +45651,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -45546,7 +45679,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -45575,7 +45708,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -45605,7 +45738,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -45627,7 +45760,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -45651,7 +45784,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -45676,7 +45809,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -45702,7 +45835,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -45729,7 +45862,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -45757,7 +45890,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -45786,7 +45919,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -45816,7 +45949,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -45847,7 +45980,7 @@ class QMetaObject_610__ {
     /**
      * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <Receiver>     The type of the receiver
@@ -45880,7 +46013,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param sender         the signal sender
@@ -45904,7 +46037,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -45926,7 +46059,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -45949,7 +46082,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -45974,7 +46107,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -46000,7 +46133,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -46027,7 +46160,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -46055,7 +46188,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -46084,7 +46217,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -46114,7 +46247,7 @@ class QMetaObject_610__ {
      * Initializes a connection between the given <i>signal</i> and
      * <i>connectSignal</i>.
      * <p>
-     * See <code><a href="https://doc.qt.io/qt/qmetaobject.html#connect">QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</a></code>
+     * See <a href="https://doc.qt.io/qt/qmetaobject.html#connect"><code>QMetaObject::<wbr/>connect&lg;Functor&gt;(const QObject *,<wbr/>const QMetaMethod &amp;,<wbr/>const QObject *,<wbr/>Functor,<wbr/>Qt::ConnectionType)</code></a>
      * </p>
      *
      * @param <A>            The type of the first parameter of the signal.
@@ -46454,45 +46587,32 @@ class QMetaMethod___ {
         return qmethod;
     }
 
-    private static class CoreUtility extends io.qt.internal.CoreUtility {
-        protected static io.qt.internal.LambdaInfo lambdaInfo(java.io.Serializable slotObject) {
-            return io.qt.internal.CoreUtility.lambdaInfo(slotObject);
-        }
-    }
-
-    private static QMetaMethod fromMethodImpl(QMetaObject.AbstractSlot method) {
-        io.qt.internal.LambdaInfo info = CoreUtility.lambdaInfo(method);
-        if (info != null)
-            return info.methodInfo.metaMethod();
-        return new QMetaMethod();
-    }
-
     /**
      * Returns corresponding meta method for given method handle.
      */
     public static <R> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Method0<R> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
      * Returns corresponding meta method for given method handle.
      */
     public static <A, R> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Method1<A, R> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
      * Returns corresponding meta method for given method handle.
      */
     public static <A, B, R> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Method2<A, B, R> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
      * Returns corresponding meta method for given method handle.
      */
     public static <A, B, C, R> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Method3<A, B, C, R> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
@@ -46500,7 +46620,7 @@ class QMetaMethod___ {
      */
     public static <A, B, C, D, R> @NonNull QMetaMethod fromMethod(
             QMetaObject.@StrictNonNull Method4<A, B, C, D, R> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
@@ -46508,7 +46628,7 @@ class QMetaMethod___ {
      */
     public static <A, B, C, D, E, R> @NonNull QMetaMethod fromMethod(
             QMetaObject.@StrictNonNull Method5<A, B, C, D, E, R> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
@@ -46516,7 +46636,7 @@ class QMetaMethod___ {
      */
     public static <A, B, C, D, E, F, R> @NonNull QMetaMethod fromMethod(
             QMetaObject.@StrictNonNull Method6<A, B, C, D, E, F, R> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
@@ -46524,7 +46644,7 @@ class QMetaMethod___ {
      */
     public static <A, B, C, D, E, F, G, R> @NonNull QMetaMethod fromMethod(
             QMetaObject.@StrictNonNull Method7<A, B, C, D, E, F, G, R> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
@@ -46532,7 +46652,7 @@ class QMetaMethod___ {
      */
     public static <A, B, C, D, E, F, G, H, R> @NonNull QMetaMethod fromMethod(
             QMetaObject.@StrictNonNull Method8<A, B, C, D, E, F, G, H, R> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
@@ -46540,42 +46660,42 @@ class QMetaMethod___ {
      */
     public static <A, B, C, D, E, F, G, H, I, R> @NonNull QMetaMethod fromMethod(
             QMetaObject.@StrictNonNull Method9<A, B, C, D, E, F, G, H, I, R> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
      * Returns corresponding meta method for given method handle.
      */
     public static @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Slot0 method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
      * Returns corresponding meta method for given method handle.
      */
     public static <A> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Slot1<A> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
      * Returns corresponding meta method for given method handle.
      */
     public static <A, B> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Slot2<A, B> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
      * Returns corresponding meta method for given method handle.
      */
     public static <A, B, C> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Slot3<A, B, C> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
      * Returns corresponding meta method for given method handle.
      */
     public static <A, B, C, D> @NonNull QMetaMethod fromMethod(QMetaObject.@StrictNonNull Slot4<A, B, C, D> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
@@ -46583,7 +46703,7 @@ class QMetaMethod___ {
      */
     public static <A, B, C, D, E> @NonNull QMetaMethod fromMethod(
             QMetaObject.@StrictNonNull Slot5<A, B, C, D, E> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
@@ -46591,7 +46711,7 @@ class QMetaMethod___ {
      */
     public static <A, B, C, D, E, F> @NonNull QMetaMethod fromMethod(
             QMetaObject.@StrictNonNull Slot6<A, B, C, D, E, F> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
@@ -46599,7 +46719,7 @@ class QMetaMethod___ {
      */
     public static <A, B, C, D, E, F, G> @NonNull QMetaMethod fromMethod(
             QMetaObject.@StrictNonNull Slot7<A, B, C, D, E, F, G> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
@@ -46607,7 +46727,7 @@ class QMetaMethod___ {
      */
     public static <A, B, C, D, E, F, G, H> @NonNull QMetaMethod fromMethod(
             QMetaObject.@StrictNonNull Slot8<A, B, C, D, E, F, G, H> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 
     /**
@@ -46615,7 +46735,7 @@ class QMetaMethod___ {
      */
     public static <A, B, C, D, E, F, G, H, I> @NonNull QMetaMethod fromMethod(
             QMetaObject.@StrictNonNull Slot9<A, B, C, D, E, F, G, H, I> method) {
-        return fromMethodImpl(method);
+        return CoreUtility.fromMethod(method);
     }
 }// class
 
@@ -47078,74 +47198,50 @@ class QFactoryLoader_63_ {
 }// class
 
 class QFactoryLoader__ {
-    private static class CoreUtility extends io.qt.internal.CoreUtility {
-        protected static LambdaInfo lambdaInfo(Serializable slotObject) {
-            return io.qt.internal.CoreUtility.lambdaInfo(slotObject);
-        }
-    }
-
-    private static Class<?> getFactoryClass(Serializable method) {
-        io.qt.internal.LambdaInfo lamdaInfo = CoreUtility.lambdaInfo(method);
-        if (lamdaInfo != null) {
-            if (lamdaInfo.methodInfo.reflectiveMethod != null
-                    && (lamdaInfo.lambdaArgs == null || lamdaInfo.lambdaArgs.isEmpty())
-                    && !lamdaInfo.methodInfo.reflectiveMethod.isSynthetic()
-                    && !lamdaInfo.methodInfo.reflectiveMethod.isBridge()
-                    && !Modifier.isStatic(lamdaInfo.methodInfo.reflectiveMethod.getModifiers())) {
-                return lamdaInfo.methodInfo.reflectiveMethod.getDeclaringClass();
-            } else if (lamdaInfo.methodInfo.reflectiveConstructor != null
-                    && (lamdaInfo.lambdaArgs == null || lamdaInfo.lambdaArgs.isEmpty())
-                    && !lamdaInfo.methodInfo.reflectiveConstructor.isSynthetic()
-                    && !Modifier.isStatic(lamdaInfo.methodInfo.reflectiveConstructor.getModifiers())) {
-                return lamdaInfo.methodInfo.reflectiveConstructor.getDeclaringClass();
-            }
-        }
-        return null;
-    }
 
     @SuppressWarnings("unchecked")
     private static <T> Class<T> getFactoryClass(QMetaObject.Method1<T, ?> method) {
-        return (Class<T>) getFactoryClass((Serializable) method);
+        return (Class<T>) CoreUtility.getFactoryClass((Serializable) method);
     }
 
     @SuppressWarnings("unchecked")
     private static <T> Class<T> getFactoryClass(QMetaObject.Method2<T, ?, ?> method) {
-        return (Class<T>) getFactoryClass((Serializable) method);
+        return (Class<T>) CoreUtility.getFactoryClass((Serializable) method);
     }
 
     @SuppressWarnings("unchecked")
     private static <T> Class<T> getFactoryClass(QMetaObject.Method3<T, ?, ?, ?> method) {
-        return (Class<T>) getFactoryClass((Serializable) method);
+        return (Class<T>) CoreUtility.getFactoryClass((Serializable) method);
     }
 
     @SuppressWarnings("unchecked")
     private static <T> Class<T> getFactoryClass(QMetaObject.Method4<T, ?, ?, ?, ?> method) {
-        return (Class<T>) getFactoryClass((Serializable) method);
+        return (Class<T>) CoreUtility.getFactoryClass((Serializable) method);
     }
 
     @SuppressWarnings("unchecked")
     private static <T> Class<T> getFactoryClass(QMetaObject.Method5<T, ?, ?, ?, ?, ?> method) {
-        return (Class<T>) getFactoryClass((Serializable) method);
+        return (Class<T>) CoreUtility.getFactoryClass((Serializable) method);
     }
 
     @SuppressWarnings("unchecked")
     private static <T> Class<T> getFactoryClass(QMetaObject.Method6<T, ?, ?, ?, ?, ?, ?> method) {
-        return (Class<T>) getFactoryClass((Serializable) method);
+        return (Class<T>) CoreUtility.getFactoryClass((Serializable) method);
     }
 
     @SuppressWarnings("unchecked")
     private static <T> Class<T> getFactoryClass(QMetaObject.Method7<T, ?, ?, ?, ?, ?, ?, ?> method) {
-        return (Class<T>) getFactoryClass((Serializable) method);
+        return (Class<T>) CoreUtility.getFactoryClass((Serializable) method);
     }
 
     @SuppressWarnings("unchecked")
     private static <T> Class<T> getFactoryClass(QMetaObject.Method8<T, ?, ?, ?, ?, ?, ?, ?, ?> method) {
-        return (Class<T>) getFactoryClass((Serializable) method);
+        return (Class<T>) CoreUtility.getFactoryClass((Serializable) method);
     }
 
     @SuppressWarnings("unchecked")
     private static <T> Class<T> getFactoryClass(QMetaObject.Method9<T, ?, ?, ?, ?, ?, ?, ?, ?, ?> method) {
-        return (Class<T>) getFactoryClass((Serializable) method);
+        return (Class<T>) CoreUtility.getFactoryClass((Serializable) method);
     }
 
     @QtUninvokable
@@ -49182,19 +49278,6 @@ class QFunctionPointer__ {
 }// class
 
 class QResource__ {
-    private static class CoreUtility extends io.qt.internal.CoreUtility {
-        protected static void addClassPath(String path) {
-            io.qt.internal.CoreUtility.addClassPath(path);
-        }
-
-        protected static void removeClassPath(String path) {
-            io.qt.internal.CoreUtility.removeClassPath(path);
-        }
-
-        protected static void addClassPath(java.net.URL path) {
-            io.qt.internal.CoreUtility.addClassPath(path);
-        }
-    }
 
     /**
      * Adds <code>path</code> to the set of classpaths in which QtJambi should
@@ -49597,7 +49680,7 @@ class QDeadlineTimer__ {
     }
 
 /**
-     * <p>See <code><a href="@docRoot/qdeadlinetimer.html#QDeadlineTimer-5">QDeadlineTimer::<wbr/>QDeadlineTimer(std::chrono::duration, Qt::TimerType)</a></code></p>
+     * <p>See <a href="@docRoot/qdeadlinetimer.html#QDeadlineTimer-5"><code>QDeadlineTimer::<wbr/>QDeadlineTimer(std::chrono::duration, Qt::TimerType)</code></a></p>
      */
     public QDeadlineTimer(java.time.temporal.@NonNull TemporalAmount remaining, io.qt.core.Qt.@NonNull TimerType type){
         this(ForeverConstant.Forever, type);
@@ -49620,7 +49703,7 @@ class QDeadlineTimer__ {
     }
 
 /**
-     * <p>See <code><a href="@docRoot/qdeadlinetimer.html#QDeadlineTimer-4">QDeadlineTimer::<wbr/>QDeadlineTimer(std::chrono::time_point, Qt::TimerType)</a></code></p>
+     * <p>See <a href="@docRoot/qdeadlinetimer.html#QDeadlineTimer-4"><code>QDeadlineTimer::<wbr/>QDeadlineTimer(std::chrono::time_point, Qt::TimerType)</code></a></p>
      */
     public QDeadlineTimer(java.time.temporal.@NonNull Temporal timePoint, io.qt.core.Qt.@NonNull TimerType type){
         this(ForeverConstant.Forever, type);
@@ -49649,7 +49732,7 @@ class QDeadlineTimer__ {
 
     /**
      * <p>
-     * See <code><a href="@docRoot/qdeadlinetimer.html#setRemainingTime-2">QDeadlineTimer::<wbr/>setRemainingTime(std::chrono::duration, Qt::TimerType)</a></code>
+     * See <a href="@docRoot/qdeadlinetimer.html#setRemainingTime-2"><code>QDeadlineTimer::<wbr/>setRemainingTime(std::chrono::duration, Qt::TimerType)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -49681,7 +49764,7 @@ class QDeadlineTimer__ {
 
     /**
      * <p>
-     * See <code><a href="@docRoot/qdeadlinetimer.html#setDeadline-2">QDeadlineTimer::<wbr/>setDeadline(std::chrono::time_point, Qt::TimerType)</a></code>
+     * See <a href="@docRoot/qdeadlinetimer.html#setDeadline-2"><code>QDeadlineTimer::<wbr/>setDeadline(std::chrono::time_point, Qt::TimerType)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -49702,7 +49785,7 @@ class QDeadlineTimer__ {
 
     /**
      * <p>
-     * See <code><a href="@docRoot/qdeadlinetimer.html#operator-eq">QDeadlineTimer::<wbr/>operator=(std::chrono::time_point)</a></code>
+     * See <a href="@docRoot/qdeadlinetimer.html#operator-eq"><code>QDeadlineTimer::<wbr/>operator=(std::chrono::time_point)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -49712,7 +49795,7 @@ class QDeadlineTimer__ {
 
     /**
      * <p>
-     * See <code><a href="@docRoot/qdeadlinetimer.html#operator-eq-1">QDeadlineTimer::<wbr/>operator=(std::chrono::duration)</a></code>
+     * See <a href="@docRoot/qdeadlinetimer.html#operator-eq-1"><code>QDeadlineTimer::<wbr/>operator=(std::chrono::duration)</code></a>
      * </p>
      */
     @QtUninvokable
@@ -49791,8 +49874,9 @@ class QJsonArray___ {
         }
         return vargs;
     }
-	/**
-     * <p>Overloaded constructor for <code><a href="@docRoot/qjsonarray.html#QJsonArray-1">QJsonArray::<wbr/>QJsonArray(std::initializer_list&lt;QJsonValue&gt;)</a></code></p>
+
+    /**
+     * <p>Overloaded constructor for <a href="@docRoot/qjsonarray.html#QJsonArray-1"><code>QJsonArray::<wbr/>QJsonArray(std::initializer_list&lt;QJsonValue&gt;)</code></a></p>
      */
     public QJsonArray(@Nullable Object @NonNull... args){
         this(toJsonValueArray(args));
@@ -49838,9 +49922,10 @@ class QCborArray___ {
             }
         }
         return vargs;
-	}
-	/**
-     * <p>Overloaded constructor for <code><a href="@docRoot/qcborarray.html#QCborArray-2">QCborArray::<wbr/>QCborArray(std::initializer_list&lt;QCborValue&gt;)</a></code></p>
+    }
+
+    /**
+     * <p>Overloaded constructor for <a href="@docRoot/qcborarray.html#QCborArray-2"><code>QCborArray::<wbr/>QCborArray(std::initializer_list&lt;QCborValue&gt;)</code></a></p>
      */
     public QCborArray(@Nullable Object @NonNull... args){
         this(toCborValueArray(args));
@@ -50439,7 +50524,7 @@ class QFutureInterface__ {
 class QFuture__ {
      /**
       * <p>QFuture::ConstIterator class provides an STL-style const iterator for QFuture</p>
-      * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qfuture-constiterator.html">QFuture::const_iterator</a></code></p>
+      * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qfuture-constiterator.html"><code>QFuture::const_iterator</code></a></p>
       */
      public static final class ConstIterator<T> extends io.qt.core.QSequentialConstIterator<T,QFuture<T>>
          implements java.lang.Cloneable
@@ -50619,7 +50704,7 @@ class QMutexLocker___ {
     }
 
     /**
-     * <p>See <code><a href="@docRoot/qmutexlocker.html#QMutexLocker-1">QMutexLocker&lt;QRecursiveMutex&gt;::<wbr/>QMutexLocker(QRecursiveMutex*)</a></code></p>
+     * <p>See <a href="@docRoot/qmutexlocker.html#QMutexLocker-1"><code>QMutexLocker&lt;QRecursiveMutex&gt;::<wbr/>QMutexLocker(QRecursiveMutex*)</code></a></p>
      * @since This function was introduced in Qt 6.4.
      * @param mutex
      */
@@ -50901,7 +50986,7 @@ class QRangeModel__ {
     }
 
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+     * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
      * @param range int[][]
      * @param parent
      */
@@ -50934,7 +51019,7 @@ class QRangeModel__ {
     }
 
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+     * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
      * @param range byte[][]
      * @param parent
      */
@@ -50967,7 +51052,7 @@ class QRangeModel__ {
     }
 
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+     * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
      * @param range short[][]
      * @param parent
      */
@@ -51000,7 +51085,7 @@ class QRangeModel__ {
     }
 
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+     * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
      * @param range long[][]
      * @param parent
      */
@@ -51033,7 +51118,7 @@ class QRangeModel__ {
     }
 
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+     * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
      * @param range float[][]
      * @param parent
      */
@@ -51066,7 +51151,7 @@ class QRangeModel__ {
     }
 
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+     * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
      * @param range double[][]
      * @param parent
      */
@@ -51099,7 +51184,7 @@ class QRangeModel__ {
     }
 
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+     * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
      * @param range boolean[][]
      * @param parent
      */
@@ -51132,7 +51217,7 @@ class QRangeModel__ {
     }
 
     /**
-     * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+     * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
      * @param range char[][]
      * @param parent
      */
@@ -51165,7 +51250,7 @@ class QRangeModel__ {
     }
 
      /**
-      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
       * @param range String[][]
       * @param parent
       */
@@ -51198,7 +51283,7 @@ class QRangeModel__ {
      }
 
      /**
-      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
       * @param range T[][]
       * @param parent
       */
@@ -51215,7 +51300,7 @@ class QRangeModel__ {
      }
 
      /**
-      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
       * @param range int[]
       * @param parent
       */
@@ -51232,7 +51317,7 @@ class QRangeModel__ {
      }
 
      /**
-      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
       * @param range byte[]
       * @param parent
       */
@@ -51249,7 +51334,7 @@ class QRangeModel__ {
      }
 
      /**
-      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
       * @param range short[]
       * @param parent
       */
@@ -51266,7 +51351,7 @@ class QRangeModel__ {
      }
 
      /**
-      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
       * @param range long[]
       * @param parent
       */
@@ -51283,7 +51368,7 @@ class QRangeModel__ {
      }
 
      /**
-      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
       * @param range float[]
       * @param parent
       */
@@ -51300,7 +51385,7 @@ class QRangeModel__ {
      }
 
      /**
-      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
       * @param range double[]
       * @param parent
       */
@@ -51317,7 +51402,7 @@ class QRangeModel__ {
      }
 
      /**
-      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
       * @param range boolean[]
       * @param parent
       */
@@ -51334,7 +51419,7 @@ class QRangeModel__ {
      }
 
      /**
-      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
       * @param range char[]
       * @param parent
       */
@@ -51376,7 +51461,7 @@ class QRangeModel__ {
      }
 
     /**
-      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
       * @param range T[]
       * @param rowCategory
       * @param parent
@@ -51394,7 +51479,7 @@ class QRangeModel__ {
      }
 
      /**
-      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
       * @param range T[]
       * @param parent
       */
@@ -51459,7 +51544,7 @@ class QRangeModel__ {
      }
 
      /**
-      * <p>See <code><a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel">QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</a></code></p>
+      * <p>See <a href="https://doc.qt.io/qt/qrangemodel.html#QRangeModel"><code>QRangeModel::<wbr/>QRangeModel&lt;Range,<wbr/>true&gt;(Range&amp;&amp;,<wbr/>QObject*)</code></a></p>
       * @param range
       * @param rowCategory
       * @param parent
@@ -51472,7 +51557,7 @@ class QRangeModel__ {
 class QRangeModel_611__ {
      /**
       * <p>The ItemAccess template provides a customization point to control how QRangeModel accesses role data of individual items.</p>
-      * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qrangemodel-itemaccess.html">QRangeModel::ItemAccess</a></code></p>
+      * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qrangemodel-itemaccess.html"><code>QRangeModel::ItemAccess</code></a></p>
       * @since This class was introduced in Qt 6.11.
       */
      public interface ItemAccess<T>{
@@ -51537,11 +51622,18 @@ QRangeModel_shell::QRangeModel_shell(Range &&range, Protocol &&protocol, QObject
 }// class
 
 class QVariantAnimation__ {
+     /**
+      * <p>Interpolator type for <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      * @serial exclude
+      */
      @FunctionalInterface
      public interface Interpolator<T> extends java.io.Serializable{
           T compute(T from, T to, double progress);
      }
 
+     /**
+      * <p>Interpolator type for <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      */
      @FunctionalInterface
      public interface IntInterpolator{
           int compute(int from, int to, double progress);
@@ -51550,6 +51642,9 @@ class QVariantAnimation__ {
           }
      }
 
+     /**
+      * <p>Interpolator type for <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      */
      @FunctionalInterface
      public interface LongInterpolator{
           long compute(long from, long to, double progress);
@@ -51558,6 +51653,9 @@ class QVariantAnimation__ {
           }
      }
 
+     /**
+      * <p>Interpolator type for <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      */
      @FunctionalInterface
      public interface ByteInterpolator{
           byte compute(byte from, byte to, double progress);
@@ -51566,6 +51664,9 @@ class QVariantAnimation__ {
           }
      }
 
+     /**
+      * <p>Interpolator type for <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      */
      @FunctionalInterface
      public interface ShortInterpolator{
           short compute(short from, short to, double progress);
@@ -51574,6 +51675,9 @@ class QVariantAnimation__ {
           }
      }
 
+     /**
+      * <p>Interpolator type for <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      */
      @FunctionalInterface
      public interface CharInterpolator{
           char compute(char from, char to, double progress);
@@ -51582,6 +51686,9 @@ class QVariantAnimation__ {
           }
      }
 
+     /**
+      * <p>Interpolator type for <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      */
      @FunctionalInterface
      public interface BooleanInterpolator{
           boolean compute(boolean from, boolean to, double progress);
@@ -51590,6 +51697,9 @@ class QVariantAnimation__ {
           }
      }
 
+     /**
+      * <p>Interpolator type for <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      */
      @FunctionalInterface
      public interface DoubleInterpolator{
           double compute(double from, double to, double progress);
@@ -51598,6 +51708,9 @@ class QVariantAnimation__ {
           }
      }
 
+     /**
+      * <p>Interpolator type for <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      */
      @FunctionalInterface
      public interface FloatInterpolator{
           float compute(float from, float to, double progress);
@@ -51606,6 +51719,10 @@ class QVariantAnimation__ {
           }
      }
 
+     /**
+      * <p>See <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      * @param interpolator
+      */
      public static <T> void registerAnimationInterpolator(@StrictNonNull Interpolator<T> interpolator) {
           int[] metaTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(Interpolator.class, java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
           if(metaTypes!=null && metaTypes.length>0 && metaTypes[0]!=0) {
@@ -51615,6 +51732,11 @@ class QVariantAnimation__ {
           }
      }
 
+     /**
+      * <p>See <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      * @param cls
+      * @param interpolator
+      */
      public static <T> void registerAnimationInterpolator(@StrictNonNull Class<T> cls, @StrictNonNull Interpolator<T> interpolator) {
           int[] metaTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(Interpolator.class, java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
           if(metaTypes!=null && metaTypes.length>0 && metaTypes[0]!=0) {
@@ -51629,6 +51751,11 @@ class QVariantAnimation__ {
           }
      }
 
+     /**
+      * <p>See <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      * @param metaType
+      * @param interpolator
+      */
      public static <T> void registerAnimationInterpolator(@StrictNonNull QMetaType metaType, @StrictNonNull Interpolator<T> interpolator) {
           int[] metaTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(Interpolator.class, java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
           if(metaTypes!=null && metaTypes.length>0 && metaTypes[0]!=0) {
@@ -51640,44 +51767,215 @@ class QVariantAnimation__ {
 
      private static native void registerAnimationInterpolator(Interpolator<?> interpolator, int metaType);
 
+     /**
+      * <p>See <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      * @param interpolator of type <code>int</code>
+      */
      public static void registerAnimationInterpolator(@StrictNonNull IntInterpolator interpolator) {
          registerAnimationInterpolatorI(java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
      }
      private static native void registerAnimationInterpolatorI(IntInterpolator interpolator);
 
+     /**
+      * <p>See <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      * @param interpolator of type <code>long</code>
+      */
      public static void registerAnimationInterpolator(@StrictNonNull LongInterpolator interpolator) {
          registerAnimationInterpolatorJ(java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
      }
      private static native void registerAnimationInterpolatorJ(LongInterpolator interpolator);
 
+     /**
+      * <p>See <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      * @param interpolator of type <code>byte</code>
+      */
      public static void registerAnimationInterpolator(@StrictNonNull ByteInterpolator interpolator) {
          registerAnimationInterpolatorB(java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
      }
      private static native void registerAnimationInterpolatorB(ByteInterpolator interpolator);
 
+     /**
+      * <p>See <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      * @param interpolator of type <code>short</code>
+      */
      public static void registerAnimationInterpolator(@StrictNonNull ShortInterpolator interpolator) {
          registerAnimationInterpolatorS(java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
      }
      private static native void registerAnimationInterpolatorS(ShortInterpolator interpolator);
 
+     /**
+      * <p>See <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      * @param interpolator of type <code>char</code>
+      */
      public static void registerAnimationInterpolator(@StrictNonNull CharInterpolator interpolator) {
          registerAnimationInterpolatorC(java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
      }
      private static native void registerAnimationInterpolatorC(CharInterpolator interpolator);
 
+     /**
+      * <p>See <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      * @param interpolator of type <code>boolean</code>
+      */
      public static void registerAnimationInterpolator(@StrictNonNull BooleanInterpolator interpolator) {
          registerAnimationInterpolatorZ(java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
      }
      private static native void registerAnimationInterpolatorZ(BooleanInterpolator interpolator);
 
+     /**
+      * <p>See <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      * @param interpolator of type <code>double</code>
+      */
      public static void registerAnimationInterpolator(@StrictNonNull DoubleInterpolator interpolator) {
          registerAnimationInterpolatorD(java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
      }
      private static native void registerAnimationInterpolatorD(DoubleInterpolator interpolator);
 
+     /**
+      * <p>See <a href="https://doc.qt.io/qt/qvariantanimation.html#qRegisterAnimationInterpolator"><code>qRegisterAnimationInterpolator(QVariant (*)(const T &amp;, const T &amp;, qreal))</code></a></p>
+      * @param interpolator of type <code>float</code>
+      */
      public static void registerAnimationInterpolator(@StrictNonNull FloatInterpolator interpolator) {
          registerAnimationInterpolatorF(java.util.Objects.requireNonNull(interpolator, "Argument 'interpolator': null not expected."));
      }
      private static native void registerAnimationInterpolatorF(FloatInterpolator interpolator);
+}// class
+
+class QAbstractNativeEventFilter__ {
+     /**
+      * Reduces the number of native-to-java conversions by pre-filtering the events
+      * according to the given event types.
+      *
+      * @param eventFilter
+      * @param eventTypes
+      * @return selective event filter
+      */
+     public static @Nullable QAbstractNativeEventFilter asSelectiveEventFilter(@StrictNonNull QAbstractNativeEventFilter eventFilter, QByteArray... eventTypes) {
+          if(eventTypes==null || eventTypes.length==0){
+               return eventFilter;
+          }
+          if(eventTypes.length==1){
+               return asSelectiveEventFilterEventType(QtJambi_LibraryUtilities.internal.checkedNativeId(
+                                                                 java.util.Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")),
+                                                       QtJambi_LibraryUtilities.internal.checkedNativeId(
+                                                                 java.util.Objects.requireNonNull(eventTypes[0], "Argument 'eventType': null not expected.")));
+          }
+          QSet<QByteArray> set = QSet.ofTyped(QByteArray.class, eventTypes);
+          return asSelectiveEventFilterEventType(QtJambi_LibraryUtilities.internal.checkedNativeId(
+                                                            java.util.Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")),
+                                                  QtJambi_LibraryUtilities.internal.nativeId(set));
+     }
+
+     private static native QAbstractNativeEventFilter asSelectiveEventFilterEventType(long eventFilter, long eventType);
+     private static native QAbstractNativeEventFilter asSelectiveEventFilterEventTypes(long eventFilter, long eventTypes);
+
+     /**
+      * Reduces the number of native-to-java conversions by pre-filtering the events to Windows MSG events
+      * further filtered by the given MSG message identifiers.
+      *
+      * @param eventFilter
+      * @param messageIdentifiers
+      * @return selective event filter
+      */
+     public static @Nullable QAbstractNativeEventFilter asSelectiveWindowsMSGEventFilter(@StrictNonNull QAbstractNativeEventFilter eventFilter, int... messageIdentifiers) {
+          if(messageIdentifiers==null || messageIdentifiers.length==0){
+               return asSelectiveWindowsMSGEventFilter(QtJambi_LibraryUtilities.internal.checkedNativeId(
+                                                                 java.util.Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")));
+          }
+          if(messageIdentifiers.length==1){
+               return asSelectiveWindowsMSGEventFilterMessage(QtJambi_LibraryUtilities.internal.checkedNativeId(
+                                                                 java.util.Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")),
+                                                              messageIdentifiers[0]);
+          }
+          QSet<Integer> set = QSet.ofInt(messageIdentifiers);
+          return asSelectiveWindowsMSGEventFilterMessages(QtJambi_LibraryUtilities.internal.checkedNativeId(
+                                                            java.util.Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")),
+                                                  QtJambi_LibraryUtilities.internal.nativeId(set));
+     }
+
+     private static native QAbstractNativeEventFilter asSelectiveWindowsMSGEventFilter(long eventFilter);
+     private static native QAbstractNativeEventFilter asSelectiveWindowsMSGEventFilterMessage(long eventFilter, int message);
+     private static native QAbstractNativeEventFilter asSelectiveWindowsMSGEventFilterMessages(long eventFilter, long messages);
+
+     /**
+      * Reduces the number of native-to-java conversions by pre-filtering the events to NSEvents
+      * further filtered by the given NSEvent types.
+      *
+      * @param eventFilter
+      * @param types
+      * @return selective event filter
+      */
+     public static @Nullable QAbstractNativeEventFilter asSelectiveMacNSEventFilter(@StrictNonNull QAbstractNativeEventFilter eventFilter, int... types) {
+          if(types==null || types.length==0){
+               return asSelectiveMacNSEventFilter(QtJambi_LibraryUtilities.internal.checkedNativeId(
+                                                                 java.util.Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")));
+          }
+          if(types.length==1){
+               return asSelectiveMacNSEventFilterType(QtJambi_LibraryUtilities.internal.checkedNativeId(
+                                                                 java.util.Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")),
+                                                              types[0]);
+          }
+          QSet<Integer> set = QSet.ofInt(types);
+          return asSelectiveMacNSEventFilterTypes(QtJambi_LibraryUtilities.internal.checkedNativeId(
+                                                            java.util.Objects.requireNonNull(eventFilter, "Argument 'eventFilter': null not expected.")),
+                                                  QtJambi_LibraryUtilities.internal.nativeId(set));
+     }
+
+     private static native QAbstractNativeEventFilter asSelectiveMacNSEventFilter(long eventFilter);
+     private static native QAbstractNativeEventFilter asSelectiveMacNSEventFilterType(long eventFilter, int type);
+     private static native QAbstractNativeEventFilter asSelectiveMacNSEventFilterTypes(long eventFilter, long types);
+}// class
+
+class QNativeEvent__ {
+     @QtUninvokable
+     private void dispose(){
+          if(_rc_nativePointer!=null)
+               _rc_nativePointer.invalidate();
+          if(_rc_buffer!=null)
+               QtJambi_LibraryUtilities.internal.truncateBuffer(null, _rc_buffer);
+          if(_qt_eventType!=null)
+               _qt_eventType.dispose();
+     }
+
+     private QByteArrayView _qt_eventType = null;
+     private QNativePointer _rc_nativePointer = null;
+     private java.nio.ByteBuffer _rc_buffer = null;
+
+     private static final int windows_generic_MSG = 1;
+     private static final int windows_dispatcher_MSG = 2;
+     private static final int mac_generic_NSEvent = 3;
+     private static final int NSEvent = 4;
+     private static final int xcb_generic_event_t = 5;
+
+     /**
+      * <p>See second argument of <a href="https://doc.qt.io/qt/qabstractnativeeventfilter.html#nativeEventFilter"><code>QAbstractNativeEventFilter::<wbr/>nativeEventFilter(QByteArray,<wbr/>void*,<wbr/>qintptr*)</code></a></p>
+      * @return message object as {@link MSG} (Windows), {@link NSEvent} (macOS) or {@link QNativePointer} (others)
+      */
+     @QtUninvokable
+     public final java.lang.Object message(){
+          switch(messageType(__qt_directLink)){
+          case windows_generic_MSG:
+          case windows_dispatcher_MSG:
+               return new MSG(this);
+          case mac_generic_NSEvent:
+          case NSEvent:
+               return new NSEvent(this);
+          case xcb_generic_event_t:
+          default:
+               if(_rc_nativePointer==null || _rc_nativePointer.isNull())
+                    _rc_nativePointer = messagePointer(__qt_directLink);
+               return _rc_nativePointer;
+          }
+     }
+
+     @Override
+     public int hashCode() {
+         return Long.hashCode(__qt_directLink);
+     }
+
+     @QtUninvokable
+     private static native int messageType(long __this__directLink);
+
+     @QtUninvokable
+     private static native QNativePointer messagePointer(long __this__directLink);
 }// class
 

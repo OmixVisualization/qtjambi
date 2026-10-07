@@ -34,7 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "Qt3DQuick"
     module: "qtjambi.qt3dquick"
-    description: "Qt3DQuick Contains classes used for implementing QML functionality into Qt3D applications."
+    description: "The Qt 3D Quick module contains classes used for implementing QML functionality into Qt3D applications."
 
     NamespacePrefix{
         prefix: "Qt3DCore::Quick"

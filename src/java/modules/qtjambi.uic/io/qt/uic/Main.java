@@ -34,9 +34,9 @@ import io.qt.core.QCommandLineOption;
 import io.qt.core.QCommandLineParser;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QDir;
+import io.qt.core.QHashSeed;
 import io.qt.core.QList;
 import io.qt.core.QScopeGuard;
-import io.qt.core.Qt;
 
 /**
  * @hidden
@@ -44,7 +44,7 @@ import io.qt.core.Qt;
 public class Main {
 
 	public static void main(String[] args) {
-		Qt.qSetGlobalQHashSeed(0);
+		QHashSeed.setDeterministicGlobalSeed();
 		QCoreApplication.setApplicationName("uic");
 		QCoreApplication.setApplicationVersion(QtUtilities.qtjambiVersion().toString());
 		QCoreApplication.initialize(args);
@@ -115,7 +115,8 @@ public class Main {
 		    parser.addOption(idBasedOption);
 	
 		    parser.addPositionalArgument("[uifile]", "Input file (*.ui), otherwise stdin.");
-	
+		    if(args.length==0)
+		    	parser.showHelp();
 		    parser.process(QCoreApplication.arguments());
 		    
 		    driver.option().dependencies = parser.isSet(dependenciesOption);

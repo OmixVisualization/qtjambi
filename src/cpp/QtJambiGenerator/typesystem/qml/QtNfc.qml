@@ -84,14 +84,15 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "namespace QtJambiPrivate{\n"+
-                          "    template<>\n"+
-                          "    struct supports_less_than<QNdefMessage> : std::false_type{};\n"+
-                          "    template<>\n"+
-                          "    struct supports_stream_operators<QNdefMessage> : std::false_type{};\n"+
-                          "    template<>\n"+
-                          "    struct supports_debugstream<QNdefMessage> : std::false_type{};\n"+
-                          "}"}
+            Text{content: String.raw`
+namespace QtJambiPrivate{
+    template<>
+    struct supports_less_than<QNdefMessage> : std::false_type{};
+    template<>
+    struct supports_stream_operators<QNdefMessage> : std::false_type{};
+    template<>
+    struct supports_debugstream<QNdefMessage> : std::false_type{};
+}`}
         }
     }
     
@@ -118,45 +119,46 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         InjectCode{
-            Text{content: "@QtUninvokable\n"+
-                          "public final void appendRecord(Class<? extends QNdefRecord> type) {\n"+
-                          "    appendRecord(type, 1, 1);\n"+
-                          "}\n"+
-                          "\n"+
-                          "@QtUninvokable\n"+
-                          "public final void appendRecord(Class<? extends QNdefRecord> type, int min) {\n"+
-                          "    appendRecord(type, min, 1);\n"+
-                          "}\n"+
-                          "\n"+
-                          "@QtUninvokable\n"+
-                          "public final void appendRecord(Class<? extends QNdefRecord> type, int min, int max) {\n"+
-                          "    if(type==QNdefRecord.class) {\n"+
-                          "        QNdefRecord record = new QNdefRecord();\n"+
-                          "        appendRecord(record.typeNameFormat(), record.type(), min, max);\n"+
-                          "    }else if(type==QNdefNfcSmartPosterRecord.class) {\n"+
-                          "        QNdefNfcSmartPosterRecord record = new QNdefNfcSmartPosterRecord();\n"+
-                          "        appendRecord(record.typeNameFormat(), record.type(), min, max);\n"+
-                          "    }else if(type==QNdefNfcTextRecord.class) {\n"+
-                          "        QNdefNfcTextRecord record = new QNdefNfcTextRecord();\n"+
-                          "        appendRecord(record.typeNameFormat(), record.type(), min, max);\n"+
-                          "    }else if(type==QNdefNfcUriRecord.class) {\n"+
-                          "        QNdefNfcUriRecord record = new QNdefNfcUriRecord();\n"+
-                          "        appendRecord(record.typeNameFormat(), record.type(), min, max);\n"+
-                          "    }else if(type==QNdefNfcIconRecord.class) {\n"+
-                          "        QNdefNfcIconRecord record = new QNdefNfcIconRecord();\n"+
-                          "        appendRecord(record.typeNameFormat(), record.type(), min, max);\n"+
-                          "    }else {\n"+
-                          "        try {\n"+
-                          "            QNdefRecord record = type.getConstructor().newInstance();\n"+
-                          "            appendRecord(record.typeNameFormat(), record.type(), min, max);\n"+
-                          "        } catch (RuntimeException | Error e) {\n"+
-                          "            throw e;\n"+
-                          "        } catch (InstantiationException | IllegalAccessException\n"+
-                          "                                        | java.lang.reflect.InvocationTargetException | NoSuchMethodException e) {\n"+
-                          "            throw new RuntimeException(e);\n"+
-                          "        }\n"+
-                          "    }\n"+
-                          "}"}
+            Text{content: String.raw`
+@QtUninvokable
+public final void appendRecord(Class<? extends QNdefRecord> type) {
+    appendRecord(type, 1, 1);
+}
+
+@QtUninvokable
+public final void appendRecord(Class<? extends QNdefRecord> type, int min) {
+    appendRecord(type, min, 1);
+}
+
+@QtUninvokable
+public final void appendRecord(Class<? extends QNdefRecord> type, int min, int max) {
+    if(type==QNdefRecord.class) {
+        QNdefRecord record = new QNdefRecord();
+        appendRecord(record.typeNameFormat(), record.type(), min, max);
+    }else if(type==QNdefNfcSmartPosterRecord.class) {
+        QNdefNfcSmartPosterRecord record = new QNdefNfcSmartPosterRecord();
+        appendRecord(record.typeNameFormat(), record.type(), min, max);
+    }else if(type==QNdefNfcTextRecord.class) {
+        QNdefNfcTextRecord record = new QNdefNfcTextRecord();
+        appendRecord(record.typeNameFormat(), record.type(), min, max);
+    }else if(type==QNdefNfcUriRecord.class) {
+        QNdefNfcUriRecord record = new QNdefNfcUriRecord();
+        appendRecord(record.typeNameFormat(), record.type(), min, max);
+    }else if(type==QNdefNfcIconRecord.class) {
+        QNdefNfcIconRecord record = new QNdefNfcIconRecord();
+        appendRecord(record.typeNameFormat(), record.type(), min, max);
+    }else {
+        try {
+            QNdefRecord record = type.getConstructor().newInstance();
+            appendRecord(record.typeNameFormat(), record.type(), min, max);
+        } catch (RuntimeException | Error e) {
+            throw e;
+        } catch (InstantiationException | IllegalAccessException
+                                        | java.lang.reflect.InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}`}
         }
     }
     
@@ -166,16 +168,17 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "namespace QtJambiPrivate{\n"+
-                          "    template<>\n"+
-                          "    struct supports_less_than<QNdefMessage> : std::false_type{};\n"+
-                          "    template<>\n"+
-                          "    struct supports_stream_operators<QNdefMessage> : std::false_type{};\n"+
-                          "    template<>\n"+
-                          "    struct supports_debugstream<QNdefMessage> : std::false_type{};\n"+
-                          "}\n"+
-                          "QT_WARNING_DISABLE_CLANG(\"-Wdeprecated-copy\")\n"+
-                          "QT_WARNING_DISABLE_GCC(\"-Wdeprecated-copy\")"}
+            Text{content: String.raw`
+namespace QtJambiPrivate{
+    template<>
+    struct supports_less_than<QNdefMessage> : std::false_type{};
+    template<>
+    struct supports_stream_operators<QNdefMessage> : std::false_type{};
+    template<>
+    struct supports_debugstream<QNdefMessage> : std::false_type{};
+}
+QT_WARNING_DISABLE_CLANG("-Wdeprecated-copy")
+QT_WARNING_DISABLE_GCC("-Wdeprecated-copy")`}
         }
     }
     
@@ -188,6 +191,13 @@ TypeSystem{
         ModifyFunction{
             signature: "QNdefNfcSmartPosterRecord(QNdefRecord)"
             isForcedExplicit: true
+        }
+        ModifyFunction{
+            signature: "setPayload(const QByteArray &)"
+            ModifyArgument{
+                index: 1
+                noImplicitCalls: true
+            }
         }
         polymorphicIdExpression: "%1->isRecordType<QNdefNfcSmartPosterRecord>()"
     }

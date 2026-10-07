@@ -53,8 +53,7 @@ public class TestQml extends ApplicationInitializer{
 		ApplicationInitializer.testDispose();
 	}
 	
-	@SuppressWarnings("serial")
-	public static class TestException extends RuntimeException{}
+	public static class TestException extends RuntimeException{private static final long serialVersionUID = 0L;}
 	
 	public static class TestChild extends QObject
 	{

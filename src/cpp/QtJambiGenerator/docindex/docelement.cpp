@@ -99,3 +99,23 @@ void DocElement::setSince(const QString &newSince)
 {
     m_since = newSince;
 }
+
+DocElement::Status DocElement::status() const
+{
+    return m_status;
+}
+
+void DocElement::setStatus(Status newStatus)
+{
+    m_status = newStatus;
+}
+
+DocElement::Threadsafety DocElement::threadsafety() const
+{
+    return m_threadsafety;
+}
+
+void DocElement::setThreadsafety(Threadsafety newThreadsafety)
+{
+    m_threadsafety = newThreadsafety;
+}

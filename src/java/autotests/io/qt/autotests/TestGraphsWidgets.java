@@ -29,18 +29,19 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import static io.qt.autotests.TestQuick.loop;
+
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.core.QEventLoop;
 import io.qt.core.QTimer;
 import io.qt.graphs.*;
 import io.qt.graphs.widgets.*;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QIcon;
 import io.qt.quick.widgets.QQuickWidget;
-import io.qt.widgets.QApplication;
-import io.qt.widgets.QWidget;
 
 public class TestGraphsWidgets extends ApplicationInitializer {
 	
@@ -50,12 +51,13 @@ public class TestGraphsWidgets extends ApplicationInitializer {
     }
 	
     @Test
-    public void initialize() {
+    public void testGraphWidgets() {
     	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.graphs.widgets"));
     	QGuiApplication.setWindowIcon(new QIcon(":io/qt/autotests/icon.png"));
-    	{
-	    	QQuickWidget window = new QQuickWidget();
-	    	Q3DSurfaceWidgetItem item = new Q3DSurfaceWidgetItem();
+    	loop = new QEventLoop();
+    	QQuickWidget window = new QQuickWidget();
+    	Q3DSurfaceWidgetItem item = new Q3DSurfaceWidgetItem();
+		try {
 	    	item.setWidget(window);
 	    	window.setMinimumSize(256, 256);
 	    	
@@ -75,8 +77,12 @@ public class TestGraphsWidgets extends ApplicationInitializer {
 	        item.addSeries(series);
 	        
 	    	window.show();
-	    	QTimer.singleShot(1500, window, QWidget::close);
-	    	QApplication.exec();
-    	}
+	    	QTimer.singleShot(1500, loop, QEventLoop::quit);
+	    	loop.exec();
+		}finally{
+			item.dispose();
+			window.dispose();
+			loop = null;
+		}
     }
 }

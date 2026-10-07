@@ -36,7 +36,6 @@ import java.lang.reflect.Type;
 import java.util.function.Supplier;
 
 import io.qt.*;
-import io.qt.internal.LambdaInfo;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qpropertybinding.html">QPropertyBinding</a></p>
@@ -132,17 +131,11 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 		pendingMetaType.set(metaTypeSupplier);
 	}
 	
-	private static class CoreUtility extends io.qt.internal.CoreUtility{
-        protected static LambdaInfo lambdaInfo(java.io.Serializable slotObject) {
-            return io.qt.internal.CoreUtility.lambdaInfo(slotObject);
-        }
-    }
-	
 	@SuppressWarnings({ "removal", "deprecation" })
 	@NativeAccess
 	static QMetaType analyzeMetaType(Serializable functor) {
-		LambdaInfo lamdaInfo = CoreUtility.lambdaInfo(functor);
-		if(lamdaInfo==null || lamdaInfo.methodInfo.reflectiveMethod==null) {
+		QMetaObject.LambdaInfo lamdaInfo = QMetaObject.LambdaInfo.of(functor);
+		if(lamdaInfo==null || lamdaInfo.reflectiveMethod==null) {
 			if(functor instanceof QtUtilities.Supplier) {
 				Class<?> functorClass = QtJambi_LibraryUtilities.internal.getClass(functor);
 				for(Type iface : functorClass.getGenericInterfaces()) {
@@ -216,12 +209,12 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 		}
 		AnnotatedElement rt = null;
 		if(QtJambi_LibraryUtilities.internal.useAnnotatedType())
-			rt = lamdaInfo.methodInfo.reflectiveMethod.getAnnotatedReturnType();
+			rt = lamdaInfo.reflectiveMethod.getAnnotatedReturnType();
 		int t = QtJambi_LibraryUtilities.internal.registerMetaType(
-				lamdaInfo.methodInfo.reflectiveMethod.getReturnType(), 
-				lamdaInfo.methodInfo.reflectiveMethod.getGenericReturnType(), 
+				lamdaInfo.reflectiveMethod.getReturnType(), 
+				lamdaInfo.reflectiveMethod.getGenericReturnType(), 
 				rt,
-				lamdaInfo.methodInfo.reflectiveMethod.isAnnotationPresent(QtPointerType.class),
+				lamdaInfo.reflectiveMethod.isAnnotationPresent(QtPointerType.class),
 		        false);
 		return new QMetaType(t);
 	}

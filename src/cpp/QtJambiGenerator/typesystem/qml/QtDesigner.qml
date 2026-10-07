@@ -708,11 +708,12 @@ TypeSystem{
         InjectCode{
             target: CodeClass.ShellDeclaration
             position: Position.End
-            Text{content: "public:\n"+
-                          "    inline QtResourceSet *resourceSet() const override {return m_resourceSet;}\n"+
-                          "    inline void setResourceSet(QtResourceSet *resourceSet) override { m_resourceSet = resourceSet; }\n"+
-                          "private:\n"+
-                          "    QtResourceSet * m_resourceSet = nullptr;"}
+            Text{content: String.raw`
+                    public:
+                        inline QtResourceSet *resourceSet() const override {return m_resourceSet;}
+                        inline void setResourceSet(QtResourceSet *resourceSet) override { m_resourceSet = resourceSet; }
+                    private:
+                        QtResourceSet * m_resourceSet = nullptr;`}
         }
         ModifyFunction{
             signature: "cursor() const"

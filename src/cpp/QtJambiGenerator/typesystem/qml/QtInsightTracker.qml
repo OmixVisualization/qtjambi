@@ -34,7 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtInsightTracker"
     module: "qtjambi.insighttracker"
-    description: ""
+    description: "Qt Insight is an analytics solution designed to provide real customer insights on the usage of your application or device."
     LoadTypeSystem{name: "QtCore";              unless: "QTJAMBI_NO_CORE"}
     
     ObjectType{

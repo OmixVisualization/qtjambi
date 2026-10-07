@@ -29,18 +29,3 @@
 
 #include <QtCore/QLibrary>
 #include <QtJambi/QtJambiAPI>
-
-#ifdef Q_OS_ANDROID
-void initialize_meta_info_QtWebView_android(JavaVM* javaVM){
-    QLibrary library("libplugins_webview_qtwebview_android");
-    if(library.load()){
-        typedef jint (*JNI_OnLoadFn)(JavaVM*,void*);
-        JNI_OnLoadFn onLoad = JNI_OnLoadFn(library.resolve("JNI_OnLoad"));
-        if(onLoad){
-            onLoad(javaVM,nullptr);
-        }
-    }else{
-        qWarning() << library.errorString();
-    }
-}
-#endif

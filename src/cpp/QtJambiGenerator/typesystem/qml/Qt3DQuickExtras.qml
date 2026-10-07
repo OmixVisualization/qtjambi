@@ -34,7 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "Qt3DQuickExtras"
     module: "qtjambi.qt3dquickextras"
-    description: ""
+    description: "Qt 3D Quick Extras module"
 
     NamespacePrefix{
         prefix: "Qt3DExtras::Quick"

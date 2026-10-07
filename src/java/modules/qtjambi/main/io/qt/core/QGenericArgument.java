@@ -29,7 +29,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.NativeAccess;
+import io.qt.*;
 
 /**
  * <p>Specifies a function pointer's argument type and value.</p>

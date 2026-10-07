@@ -42,6 +42,9 @@ import io.qt.core.QMetaObject.*;
  */
 public final class QWeakPointer<O extends QtObjectInterface> implements SmartPointer<O> {
 	
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	public QWeakPointer(O object) {
 		super();
 		set(object);

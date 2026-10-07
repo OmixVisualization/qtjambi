@@ -37,22 +37,23 @@ TypeSystem{
     description: "Classes for unit testing Qt applications and libraries."
     CodeTemplate{
         name: "test.stringsupplier.function"
-        Text{content: "JObjectWrapper %in_wrapper(%env, %in);\n"+
-                      "qxp::function_ref<const char*()> %out = [%in_wrapper]() -> const char* {\n"+
-                      "                                        const char* result{nullptr};\n"+
-                      "                                        if(JniEnvironment env{200}){\n"+
-                      "                                            QTJAMBI_TRY{\n"+
-                      "                                                jstring value = jstring(Java::Runtime::Supplier::get(env, %in_wrapper.object(env)));\n"+
-                      "                                                jsize length = env->GetStringUTFLength(value);\n"+
-                      "                                                char* c = new char[size_t(length)];\n"+
-                      "                                                env->GetStringUTFRegion(value, 0, length, c);\n"+
-                      "                                                result = c;\n"+
-                      "                                            }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                      "                                                exn.report(env);\n"+
-                      "                                            }QTJAMBI_TRY_END\n"+
-                      "                                        }\n"+
-                      "                                        return result;\n"+
-                      "                                    };"}
+        Text{content: String.raw`
+JObjectWrapper %in_wrapper(%env, %in);
+qxp::function_ref<const char*()> %out = [%in_wrapper]() -> const char* {
+                                        const char* result{nullptr};
+                                        if(JniEnvironment env{200}){
+                                            QTJAMBI_TRY{
+                                                jstring value = jstring(Java::Runtime::Supplier::get(env, %in_wrapper.object(env)));
+                                                jsize length = env->GetStringUTFLength(value);
+                                                char* c = new char[size_t(length)];
+                                                env->GetStringUTFRegion(value, 0, length, c);
+                                                result = c;
+                                            }QTJAMBI_CATCH(const JavaException& exn){
+                                                exn.report(env);
+                                            }QTJAMBI_TRY_END
+                                        }
+                                        return result;
+                                    };`}
     }
     
     RequiredLibrary{
@@ -315,6 +316,10 @@ TypeSystem{
         ModifyFunction{
             signature: "qCompare<T1,T2>(const T1*,const T2*,const char*,const char*,const char*,int)"
             remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "qCompare<T1,T2>(const T1*,const T2*,const char*,const char*,const char*,int)"
+            remove: RemoveFlag.All
             since: [6,12]
         }
         ModifyFunction{
@@ -410,19 +415,20 @@ TypeSystem{
                     NoNullPointer{}
                     ConversionRule{
                         codeClass: CodeClass.Native
-                        Text{content: "JObjectWrapper functor(%env, %in);\n"+
-                                      "auto %out = [functor]() -> bool {\n"+
-                                      "                    if(JniEnvironment env{200}){\n"+
-                                      "                        bool result{false};\n"+
-                                      "                        QTJAMBI_TRY{\n"+
-                                      "                            result = Java::Runtime::BooleanSupplier::getAsBoolean(env, functor.object(env));\n"+
-                                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                                      "                            exn.report(env);\n"+
-                                      "                        }QTJAMBI_TRY_END\n"+
-                                      "                        return result;\n"+
-                                      "                    }\n"+
-                                      "                    else return false;\n"+
-                                      "                };"}
+                        Text{content: String.raw`
+JObjectWrapper functor(%env, %in);
+auto %out = [functor]() -> bool {
+                    if(JniEnvironment env{200}){
+                        bool result{false};
+                        QTJAMBI_TRY{
+                            result = Java::Runtime::BooleanSupplier::getAsBoolean(env, functor.object(env));
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
+                        return result;
+                    }
+                    else return false;
+                };`}
                     }
                 }
             }
@@ -442,19 +448,20 @@ TypeSystem{
                     NoNullPointer{}
                     ConversionRule{
                         codeClass: CodeClass.Native
-                        Text{content: "JObjectWrapper functor(%env, %in);\n"+
-                                      "auto %out = [functor]() -> bool {\n"+
-                                      "                    if(JniEnvironment env{200}){\n"+
-                                      "                        bool result{false};\n"+
-                                      "                        QTJAMBI_TRY{\n"+
-                                      "                            result = Java::Runtime::BooleanSupplier::getAsBoolean(env, functor.object(env));\n"+
-                                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                                      "                            exn.report(env);\n"+
-                                      "                        }QTJAMBI_TRY_END\n"+
-                                      "                        return result;\n"+
-                                      "                    }\n"+
-                                      "                    else return false;\n"+
-                                      "                };"}
+                        Text{content: String.raw`
+JObjectWrapper functor(%env, %in);
+auto %out = [functor]() -> bool {
+                    if(JniEnvironment env{200}){
+                        bool result{false};
+                        QTJAMBI_TRY{
+                            result = Java::Runtime::BooleanSupplier::getAsBoolean(env, functor.object(env));
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
+                        return result;
+                    }
+                    else return false;
+                };`}
                     }
                 }
             }
@@ -594,9 +601,10 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jsize %in_length = %env->GetStringUTFLength(%in);\n"+
-                                  "char* %out = new char[size_t(%in_length)];\n"+
-                                  "%env->GetStringUTFRegion(%in, 0, %in_length, %out);"}
+                    Text{content: String.raw`
+                        jsize %in_length = %env->GetStringUTFLength(%in);
+                        char* %out = new char[size_t(%in_length)];
+                        %env->GetStringUTFRegion(%in, 0, %in_length, %out);`}
                 }
             }
             ModifyArgument{
@@ -606,9 +614,10 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jsize %in_length = %env->GetStringUTFLength(%in);\n"+
-                                  "char* %out = new char[size_t(%in_length)];\n"+
-                                  "%env->GetStringUTFRegion(%in, 0, %in_length, %out);"}
+                    Text{content: String.raw`
+                        jsize %in_length = %env->GetStringUTFLength(%in);
+                        char* %out = new char[size_t(%in_length)];
+                        %env->GetStringUTFRegion(%in, 0, %in_length, %out);`}
                 }
             }
         }
@@ -621,14 +630,14 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)\n"+
-                                  "if(!QMetaType(%2).iface()->copyCtr\n"+
-                                  "            || (!%in && !QMetaType(%2).iface()->defaultCtr)){\n"+
-                                  "    JavaException::raiseUnsupportedOperationException(%env, QStringLiteral(\"Unable to create result of type %\"\"1.\").arg(QLatin1String(QMetaType::typeName(%2))) QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}\n"+
-                                  "#endif\n"+
-                                  "QVariant variant_%in(QMetaType(%2), %in);\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, variant_%in);"}
+                    Text{content: String.raw`
+#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
+if(!QMetaType(%2).iface()->copyCtr
+            || (!%in && !QMetaType(%2).iface()->defaultCtr)){
+    JavaException::raiseUnsupportedOperationException(%env, QStringLiteral("Unable to create result of type %""1.").arg(QLatin1String(QMetaType::typeName(%2))) QTJAMBI_STACKTRACEINFO );
+}
+#endif
+%out = qtjambi_cast<jobject>(%env, QVariant(QMetaType(%2), %in));`}
                 }
             }
         }
@@ -641,14 +650,14 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)\n"+
-                                  "if(!QMetaType(%2).iface()->copyCtr\n"+
-                                  "                || (!%in && !QMetaType(%2).iface()->defaultCtr)){\n"+
-                                  "    JavaException::raiseUnsupportedOperationException(%env, QStringLiteral(\"Unable to create result of type %\"\"1.\").arg(QLatin1String(QMetaType::typeName(%2))) QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}\n"+
-                                  "#endif\n"+
-                                  "QVariant variant_%in(QMetaType(%2), %in);\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, variant_%in);"}
+                    Text{content: String.raw`
+#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
+if(!QMetaType(%2).iface()->copyCtr
+            || (!%in && !QMetaType(%2).iface()->defaultCtr)){
+    JavaException::raiseUnsupportedOperationException(%env, QStringLiteral("Unable to create result of type %""1.").arg(QLatin1String(QMetaType::typeName(%2))) QTJAMBI_STACKTRACEINFO );
+}
+#endif
+%out = qtjambi_cast<jobject>(%env, QVariant(QMetaType(%2), %in));`}
                 }
             }
         }
@@ -661,14 +670,14 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)\n"+
-                                  "if(!QMetaType(%2).iface()->copyCtr\n"+
-                                  "                || (!%in && !QMetaType(%2).iface()->defaultCtr)){\n"+
-                                  "    JavaException::raiseUnsupportedOperationException(%env, QStringLiteral(\"Unable to create result of type %\"\"1.\").arg(QLatin1String(QMetaType::typeName(%2))) QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}\n"+
-                                  "#endif\n"+
-                                  "QVariant variant_%in(QMetaType(%2), %in);\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, variant_%in);"}
+                    Text{content: String.raw`
+#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
+if(!QMetaType(%2).iface()->copyCtr
+            || (!%in && !QMetaType(%2).iface()->defaultCtr)){
+    JavaException::raiseUnsupportedOperationException(%env, QStringLiteral("Unable to create result of type %""1.").arg(QLatin1String(QMetaType::typeName(%2))) QTJAMBI_STACKTRACEINFO );
+}
+#endif
+%out = qtjambi_cast<jobject>(%env, QVariant(QMetaType(%2), %in));`}
                 }
             }
         }
@@ -681,9 +690,10 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "char %out = QChar(%in).toLatin1();\n"+
-                                  "if(%in!=%out)\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                    Text{content: String.raw`
+                        char %out = QChar(%in).toLatin1();
+                        if(%in!=%out)
+                            JavaException::raiseIllegalArgumentException(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );`}
                 }
             }
         }
@@ -696,9 +706,10 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "char %out = QChar(%in).toLatin1();\n"+
-                                  "if(%in!=%out)\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                    Text{content: String.raw`
+                        char %out = QChar(%in).toLatin1();
+                        if(%in!=%out)
+                            JavaException::raiseIllegalArgumentException(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );`}
                 }
             }
         }
@@ -711,9 +722,10 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "char %out = QChar(%in).toLatin1();\n"+
-                                  "if(%in!=%out)\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                    Text{content: String.raw`
+                        char %out = QChar(%in).toLatin1();
+                        if(%in!=%out)
+                            JavaException::raiseIllegalArgumentException(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );`}
                 }
             }
         }
@@ -726,9 +738,10 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "char %out = QChar(%in).toLatin1();\n"+
-                                  "if(%in!=%out)\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                    Text{content: String.raw`
+                        char %out = QChar(%in).toLatin1();
+                        if(%in!=%out)
+                            JavaException::raiseIllegalArgumentException(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );`}
                 }
             }
         }
@@ -741,9 +754,10 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "char %out = QChar(%in).toLatin1();\n"+
-                                  "if(%in!=%out)\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                    Text{content: String.raw`
+                        char %out = QChar(%in).toLatin1();
+                        if(%in!=%out)
+                            JavaException::raiseIllegalArgumentException(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );`}
                 }
             }
         }
@@ -756,9 +770,10 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "char %out = QChar(%in).toLatin1();\n"+
-                                  "if(%in!=%out)\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                    Text{content: String.raw`
+                        char %out = QChar(%in).toLatin1();
+                        if(%in!=%out)
+                            JavaException::raiseIllegalArgumentException(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );`}
                 }
             }
         }
@@ -771,9 +786,10 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "char %out = QChar(%in).toLatin1();\n"+
-                                  "if(%in!=%out)\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                    Text{content: String.raw`
+                        char %out = QChar(%in).toLatin1();
+                        if(%in!=%out)
+                            JavaException::raiseIllegalArgumentException(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );`}
                 }
             }
         }
@@ -786,9 +802,10 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "char %out = QChar(%in).toLatin1();\n"+
-                                  "if(%in!=%out)\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                    Text{content: String.raw`
+                        char %out = QChar(%in).toLatin1();
+                        if(%in!=%out)
+                            JavaException::raiseIllegalArgumentException(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );`}
                 }
             }
         }
@@ -801,9 +818,10 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "char %out = QChar(%in).toLatin1();\n"+
-                                  "if(%in!=%out)\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                    Text{content: String.raw`
+                        char %out = QChar(%in).toLatin1();
+                        if(%in!=%out)
+                            JavaException::raiseIllegalArgumentException(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );`}
                 }
             }
         }
@@ -816,9 +834,10 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "char %out = QChar(%in).toLatin1();\n"+
-                                  "if(%in!=%out)\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                    Text{content: String.raw`
+                        char %out = QChar(%in).toLatin1();
+                        if(%in!=%out)
+                            JavaException::raiseIllegalArgumentException(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );`}
                 }
             }
         }
@@ -831,9 +850,10 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "char %out = QChar(%in).toLatin1();\n"+
-                                  "if(%in!=%out)\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Not an ASCII character: '%\"\"1'\").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );"}
+                    Text{content: String.raw`
+                        char %out = QChar(%in).toLatin1();
+                        if(%in!=%out)
+                            JavaException::raiseIllegalArgumentException(%env, QStringLiteral("Not an ASCII character: '%""1'").arg(QChar(%in)) QTJAMBI_STACKTRACEINFO );`}
                 }
             }
         }
@@ -1149,15 +1169,16 @@ TypeSystem{
                     index: 1
                     metaName: "dest"
                 }
-                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            slot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else slot = \"1\" + slot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(slot!=null && !slot.startsWith("1") && !slot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            slot = "2" + method.cppMethodSignature();
+        else
+            slot = "1" + method.cppMethodSignature();
+    }else slot = "1" + slot;
+}`}
             }
         }
         ModifyFunction{
@@ -1378,10 +1399,11 @@ TypeSystem{
         name: "QTestEventList"
         InjectCode{
             target: CodeClass.Native
-            Text{content: "namespace QtJambiPrivate{\n"+
-                          "    template<>\n"+
-                          "    struct supports_stream_operators<QTestEventList> : std::false_type{};\n"+
-                          "}"}
+            Text{content: String.raw`
+                namespace QtJambiPrivate{
+                    template<>
+                    struct supports_stream_operators<QTestEventList> : std::false_type{};
+                }`}
         }
         ModifyFunction{
             signature: "clear()"

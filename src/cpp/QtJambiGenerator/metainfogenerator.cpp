@@ -439,7 +439,7 @@ void MetaInfoGenerator::writeCppFile() {
 static void generateInitializer(QTextStream &s, const TypeSystemTypeEntry * typeSystemEntry, const QString& package, TS::Language language, CodeSnip::Position pos, Indentor indent) {
     if(typeSystemEntry){
         QStringList lines;
-        for(const CodeSnip &snip : typeSystemEntry->snips[package]) {
+        for(const CodeSnip &snip : typeSystemEntry->snips(package)) {
             if (snip.position == pos && snip.language == language)
                 lines << snip.code().split("\n");
         }
@@ -1022,6 +1022,9 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                 for(const TypeSystemTypeEntry* typeSystem : qAsConst(allTypeSystems[moduleName]))
                     sortedTypeSystems << typeSystem;
                 std::sort(sortedTypeSystems.begin(), sortedTypeSystems.end(), [](const TypeSystemTypeEntry*a, const TypeSystemTypeEntry*b)->bool{return a->name()<b->name();});
+                QString comment;
+                QTextStream sc(&comment);
+                bool isDeprecated = false;
                 for(const TypeSystemTypeEntry* typeSystem : qAsConst(sortedTypeSystems)){
                     for(const QString& forwardDeclaration : typeSystem->forwardDeclarations()){
                         auto idx = forwardDeclaration.lastIndexOf('/');
@@ -1033,19 +1036,50 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                         moduleExcludes << forwardDeclaration+".class";
                         moduleExcludes << pkg;
                     }
-                    if(!typeSystem->description().isEmpty()){
-                        stream << "/**" << Qt::endl;
-                        description = typeSystem->description();
-                        for(const QString& line : typeSystem->description().split("\n")){
-                            stream << " * " << line.trimmed() << Qt::endl;
-                        }
-                        stream << " */" << Qt::endl;
+                    if(sortedTypeSystems.size()==1){
+                        if(!typeSystem->brief().isEmpty())
+                            sc << "<p>" << typeSystem->brief() << "</p>" << Qt::endl;
+                        else if(!typeSystem->description().isEmpty())
+                            sc << "<p>" << typeSystem->description() << "</p>" << Qt::endl;
+                        if(!typeSystem->since().isEmpty())
+                            sc << "<p>This module is available since Qt " << typeSystem->since() << ".</p>" << Qt::endl;
+                        if(!typeSystem->href().isEmpty())
+                            sc << "@see <a href=\"" << m_docsUrl << typeSystem->href() << "\">" << typeSystem->docName() << "</a>" << Qt::endl;
+                        isDeprecated = typeSystem->deprecated() || typeSystem->isDeclDeprecated();
+                    }else{
+                        if(!typeSystem->description().isEmpty())
+                            sc << typeSystem->description() << Qt::endl;
                     }
+                    if(!typeSystem->noPackageInfo()){
+                        BufferedOutputStream pi(QFileInfo(javaOutputDirectory() + "/" + moduleName + "/" + QString(typeSystem->name()).replace('.', '/') + "/package-info.java"));
+                        pi << "/**" << Qt::endl;
+                        if(!typeSystem->brief().isEmpty())
+                            pi << " * <p>" << typeSystem->brief() << "</p>" << Qt::endl;
+                        else if(!typeSystem->description().isEmpty())
+                            pi << " * <p>" << typeSystem->description() << "</p>" << Qt::endl;
+                        if(!typeSystem->since().isEmpty())
+                            pi << " * <p>This package is available since Qt " << typeSystem->since() << ".</p>" << Qt::endl;
+                        if(!typeSystem->href().isEmpty())
+                            pi << " * @see <a href=\"" << m_docsUrl << typeSystem->href() << "\">" << typeSystem->docName() << "</a>" << Qt::endl;
+                        pi << " */" << Qt::endl;
+                        if(isDeprecated)
+                            pi << "@Deprecated" << Qt::endl;
+                        pi << "package " << typeSystem->name() << ";" << Qt::endl;
+                    }
+                }
+                if(!comment.isEmpty()){
+                    stream << "/**" << Qt::endl;
+                    for(const QString& line : comment.trimmed().split("\n")){
+                        stream << " * " << line.trimmed() << Qt::endl;
+                    }
+                    stream << " */" << Qt::endl;
                 }
                 Indentor INDENT;
                 for(const TypeSystemTypeEntry* typeSystem : qAsConst(sortedTypeSystems)){
                     generateInitializer(stream, typeSystem, {}, TS::ModuleInfo, CodeSnip::Position1, INDENT);
                 }
+                if(isDeprecated)
+                    stream << "@Deprecated" << Qt::endl;
                 stream << "module " << moduleName << " {" << Qt::endl;
                 {
                     INDENTATION(INDENT);

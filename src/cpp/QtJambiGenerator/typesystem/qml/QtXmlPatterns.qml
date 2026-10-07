@@ -358,8 +358,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString target;\n"+
-                                  "QString* %out = &target;"}
+                    Text{content: String.raw`
+                        QString target;
+                        QString* %out = &target;`}
                 }
             }
             ModifyArgument{

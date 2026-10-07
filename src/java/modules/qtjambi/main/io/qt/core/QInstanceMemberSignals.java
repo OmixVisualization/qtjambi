@@ -770,6 +770,11 @@ public interface QInstanceMemberSignals {
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal1} with default value for parameter no. 1.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     */
     public static final class Signal1Default1<A> extends AbstractSignal1Default1<A>{
         
     	@SuppressWarnings("unused")
@@ -2543,9 +2548,35 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public @NonNull QtSignalEmitterInterface containingObject() {
+		public final @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
+
+        /**
+         * Returns the full name of the signal, on the form "package.class.signalName"
+         *  @return The fully qualified name of the signal
+         */
+        @io.qt.QtUninvokable
+        public final String fullName() {
+            return super.getFullName();
+        }
+
+        /**
+         * Returns the name of the signal
+         * @return The signal name
+         */
+        @io.qt.QtUninvokable
+        public final String name() {
+        	return super.getName();
+        }
+
+        /**
+         * Returns a string representation of this signal.
+         */
+        @Override
+        public final String toString() {
+            return super.getName();
+        }
     
         /**
          * Removes the given connection from this signal.

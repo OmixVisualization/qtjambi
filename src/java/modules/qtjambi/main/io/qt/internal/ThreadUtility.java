@@ -30,10 +30,8 @@
 
 package io.qt.internal;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.function.BiConsumer;
+import java.lang.reflect.*;
+import java.util.function.*;
 
 import io.qt.NativeAccess;
 import io.qt.core.QThread;
@@ -47,67 +45,75 @@ abstract class ThreadUtility {
 		throw new RuntimeException();
 	}
 
-	private static final Object threadInterruptibleSetterMonitor = new Object();
-	private static BiConsumer<Thread,Object> threadInterruptibleSetter;
-	private static Object interruptible;
-	
-	private static Object interruptibleInvoke(Object proxy, Method method, Object[] args){
-		if(args!=null && args.length==1 && args[0] instanceof Thread) {
-            Thread _thread = (Thread)args[0];
-            if(_thread.isAlive()) {
-            	try {
-	                QThread _qthread = QThread.thread(_thread);
-	                if(_qthread!=null && !_qthread.isDisposed()){
-	                	Object monitor = NativeUtility.findInterfaceLink(_qthread, true);
-	                	if(monitor!=null) {
-		                	synchronized(monitor){
-		                		if(!_qthread.isInterruptionRequested())
-		                			_qthread.requestInterruption();
-		                    }
-	                	}
-	                }
-                } catch (Throwable e) {}
-            }
-        }
-        return null;
-	}
-	
-	private static void empty(Thread t,Object o) {}
-
-	@NativeAccess
-	private static void setThreadInterruptible(QThread qthread, Thread thread, boolean set) {
-		BiConsumer<Thread,Object> setter;
-		synchronized(threadInterruptibleSetterMonitor){
-			if(threadInterruptibleSetter==null) {
-				for(Field field : Thread.class.getDeclaredFields()) {
-					if(!Modifier.isStatic(field.getModifiers())) {
-						switch(field.getType().getName()) {
-						case "sun.nio.ch.Interruptible":
-							try {
-					            interruptible = java.lang.reflect.Proxy.newProxyInstance(
-					            		field.getType().getClassLoader(), 
-					                    new Class[] { field.getType() }, 
-					                    ThreadUtility::interruptibleInvoke);
-					        } catch (Throwable e) {
-					        }
-							threadInterruptibleSetter = ReflectionUtility.methodInvocationHandler.getFieldSetter(field);
-							break;
-						}
+	private static BiConsumer<NativeUtility.Object,Thread> threadInterruptibleSetter;
+	private static BiConsumer<NativeUtility.Object,Thread> threadInterruptibleResetter;
+	static {
+		Object interruptible = null;
+		BiConsumer<Thread,Object> setter = null;
+		for(Field field : Thread.class.getDeclaredFields()) {
+			if(!Modifier.isStatic(field.getModifiers())) {
+				switch(field.getType().getName()) {
+				case "sun.nio.ch.Interruptible":
+					try {
+			            interruptible = java.lang.reflect.Proxy.newProxyInstance(
+			            		field.getType().getClassLoader(), 
+			                    new Class[] { field.getType() }, 
+			                    (proxy, method, args) -> {
+			            			if(args!=null && args.length==1 && args[0] instanceof Thread) {
+			            	            Thread _thread = (Thread)args[0];
+			            	            if(_thread.isAlive()) {
+			            	            	try {
+			            		                QThread _qthread = QThread.thread(_thread);
+			            		                NativeUtility.Object no = _qthread;
+			            		                if(no!=null && !no.isDisposed()){
+		            			                	synchronized(NativeUtility.monitor(no)){
+		            			                		if(!_qthread.isInterruptionRequested())
+		            			                			_qthread.requestInterruption();
+		            			                    }
+			            		                }
+			            	                } catch (Throwable e) {}
+			            	            }
+			            	        }
+			            	        return null;
+			            		});
+						setter = ReflectionUtility.methodInvocationHandler.getFieldSetter(field);
+			        } catch (Throwable e) {
+			        }
+					break;
+				}
+			}
+		}
+		if(interruptible!=null && setter!=null) {
+			BiConsumer<Thread,Object> c = setter;
+			Object o = interruptible;
+			threadInterruptibleSetter = (no, t) -> {
+				if(no!=null) {
+					synchronized(NativeUtility.monitor(no)){
+						c.accept(t, o);
 					}
 				}
-				if(threadInterruptibleSetter==null) {
-					threadInterruptibleSetter = ThreadUtility::empty;
+			};
+			threadInterruptibleResetter = (no, t) -> {
+				if(no!=null) {
+					synchronized(NativeUtility.monitor(no)){
+						c.accept(t, null);
+					}
 				}
-			}
-			setter = threadInterruptibleSetter;
-		}
-		Object monitor = qthread==null ? null : NativeUtility.findInterfaceLink(qthread, true);
-		if(monitor==null){
-			setter.accept(thread, set ? interruptible : null);
+			};
 		}else {
-			synchronized(monitor){
-				setter.accept(thread, set ? interruptible : null);
-			}
+			threadInterruptibleSetter = ThreadUtility::empty;
+			threadInterruptibleResetter = ThreadUtility::empty;
+		}
+	}
+	
+	private static void empty(NativeUtility.Object qthread, Thread t) {}
+	
+	@NativeAccess
+	private static void setThreadInterruptible(QThread qthread, Thread thread, boolean set) {
+		if(set) {
+			threadInterruptibleSetter.accept(qthread, thread);
+		}else {
+			threadInterruptibleResetter.accept(qthread, thread);
 		}
 	}
 }

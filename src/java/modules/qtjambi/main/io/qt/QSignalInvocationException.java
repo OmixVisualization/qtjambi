@@ -31,6 +31,7 @@ package io.qt;
 
 /**
  * The SignalInvocationException class is thrown when a signal invocation fails.
+ * @serial exclude
  */
 public class QSignalInvocationException extends RuntimeException {
     private static final long serialVersionUID = 1L;

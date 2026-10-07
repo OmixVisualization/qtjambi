@@ -172,21 +172,15 @@
             <exclude name="io/qt/**/Test*Qt613.java" unless="${geq.qt613}"/>
             <exclude name="io/qt/**/Test*Qt614.java" unless="${geq.qt614}"/>
             <exclude name="io/qt/**/Test*Qt615.java" unless="${geq.qt615}"/>
-            <exclude name="io/qt/**/Test*Qml.java" unless="${qtjambi.qml.any.true}"/>
             <exclude name="io/qt/**/Test*ActiveX.java" unless="${qtjambi.activex.any.true}"/>
             <exclude name="io/qt/**/Test*OpenGL.java" unless="${qtjambi.opengl.any.true}"/>
             <exclude name="io/qt/**/Test*Auth.java" unless="${qtjambi.networkauth.any.true}"/>
             <exclude name="io/qt/**/Test*DBus.java" unless="${qtjambi.dbus.any.true}"/>
             <exclude name="io/qt/**/Test*Bluetooth.java" unless="${qtjambi.bluetooth.any.true}"/>
-            <exclude name="io/qt/**/Test*Script.java" unless="${qtjambi.script.any.true}"/>
-            <exclude name="io/qt/**/Test*ScriptTools.java" unless="${qtjambi.scripttools.any.true}"/>
-            <exclude name="io/qt/**/TestUnknownType.java" unless="${qtjambi.webengine.any.true}"/>
             <exclude name="io/qt/**/Test*WebEngine.java" unless="${qtjambi.webengine.any.true}"/>
-            <exclude name="io/qt/**/Test*WebView.java" unless="${qtjambi.webview.any.true}"/>
             <exclude name="io/qt/**/Test*Concurrent.java" unless="${qtjambi.concurrent.any.true}"/>
             <exclude name="io/qt/**/Test*Network.java" unless="${qtjambi.network.any.true}"/>
             <exclude name="io/qt/**/Test*Designer.java" unless="${qtjambi.designer.any.true}"/>
-            <exclude name="io/qt/**/TestUIC.java" unless="${qtjambi.designer.any.true}"/>
             <exclude name="io/qt/**/Test*Gamepad.java" unless="${qtjambi.gamepad.any.true}"/>
             <exclude name="io/qt/**/Test*UiTools.java" unless="${qtjambi.uitools.any.true}"/>
             <exclude name="io/qt/**/Test*Xml.java" unless="${qtjambi.xml.any.true}"/>
@@ -227,6 +221,9 @@
             <exclude name="io/qt/**/Test*DataVisualization.java" unless="${qtjambi.datavisualization.any.true}"/>
             <exclude name="io/qt/**/Test*SpatialAudio.java" unless="${qtjambi.spatialaudio.any.true}"/>
             <exclude name="io/qt/**/Test*HttpServer.java" unless="${qtjambi.httpserver.any.true}"/>
+            <exclude name="io/qt/**/Test*Mqtt.java" unless="${qtjambi.mqtt.any.true}"/>
+            <exclude name="io/qt/**/Test*Coap.java" unless="${qtjambi.coap.any.true}"/>
+            <exclude name="io/qt/**/Test*OpcUa.java" unless="${qtjambi.opcua.any.true}"/>
             <exclude name="io/qt/**/Test*Nfc.java" unless="${qtjambi.nfc.any.true}"/>
             <exclude name="io/qt/**/Test*Sql.java" unless="${qtjambi.sql.any.true}"/>
             <exclude name="io/qt/**/Test*SQL.java" unless="${qtjambi.sql.any.true}"/>
@@ -250,9 +247,9 @@
             <exclude name="io/qt/**/Test*SvgWidgets.java" unless="${qtjambi.svgwidgets.any.true}"/>
             <exclude name="io/qt/**/Test*TextToSpeech.java" unless="${qtjambi.texttospeech.any.true}"/>
             <exclude name="io/qt/**/Test*UITools.java" unless="${qtjambi.uitools.any.true}"/>
-            <exclude name="io/qt/**/Test*WebSockets.java" unless="${qtjambi.websockets.any.true}"/>
             <exclude name="io/qt/**/Test*WebChannel.java" unless="${qtjambi.webchannel.any.true}"/>
             <exclude name="io/qt/**/Test*WebChannelQuick.java" unless="${qtjambi.webchannelquick.any.true}"/>
+            <exclude name="io/qt/**/TestWebChannelOnEngine.java" unless="${qtjambi.webchannelquick.any.true}"/>
             <exclude name="io/qt/**/TestWebChannelOnEngine.java" unless="${qtjambi.webenginequick.any.true}"/>
             <exclude name="io/qt/**/TestWebChannelOnView.java" unless="${qtjambi.webview.any.true}"/>
             <exclude name="io/qt/**/Test*WebEngine.java" unless="${qtjambi.webengine.any.true}"/>
@@ -260,13 +257,17 @@
             <exclude name="io/qt/**/Test*WebEngineQuick.java" unless="${qtjambi.webenginequick.any.true}"/>
             <exclude name="io/qt/**/Test*WebEngineWidgets.java" unless="${qtjambi.webenginewidgets.any.true}"/>
             <exclude name="io/qt/**/Test*WebSockets.java" unless="${qtjambi.websockets.any.true}"/>
+            <exclude name="io/qt/**/Test*WebSockets.java" unless="${qtjambi.webenginequick.any.true}"/>
+            <exclude name="io/qt/**/Test*WebSockets.java" unless="${qtjambi.webchannelquick.any.true}"/>
             <exclude name="io/qt/**/TestWebSocketsOnEngine.java" unless="${qtjambi.webenginequick.any.true}"/>
             <exclude name="io/qt/**/Test*WebView.java" unless="${qtjambi.webview.any.true}"/>
+            <exclude name="io/qt/**/Test*WebView.java" unless="${qtjambi.quick.any.true}"/>
             <exclude name="io/qt/**/Test*XmlPatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
             <exclude name="io/qt/**/Test*Pdf.java" unless="${qtjambi.pdf.any.true}"/>
             <exclude name="io/qt/**/Test*PdfWidgets.java" unless="${qtjambi.pdfwidgets.any.true}"/>
             <exclude name="io/qt/**/TestActiveX*.java" unless="${qtjambi.activex.any.true}"/>
             <exclude name="io/qt/**/TestQml*.java" unless="${qtjambi.qml.any.true}"/>
+            <exclude name="io/qt/**/TestQml*.java" unless="${qtjambi.quick.any.true}"/>
             <exclude name="io/qt/**/TestOpenGL*.java" unless="${qtjambi.opengl.any.true}"/>
             <exclude name="io/qt/**/TestAuth*.java" unless="${qtjambi.networkauth.any.true}"/>
             <exclude name="io/qt/**/QtDBus*.java" unless="${qtjambi.dbus.any.true}"/>
@@ -276,10 +277,13 @@
             <exclude name="io/qt/**/TestQScript*.java" unless="${qtjambi.script.any.true}"/>
             <exclude name="io/qt/**/TestWebEngineQuickQt5.java" unless="${qtjambi.webengine.any.true}"/>
             <exclude name="io/qt/**/TestWebEngineQ*.java" unless="${qtjambi.webenginequick.any.true}"/>
+            <exclude name="io/qt/**/TestWebSockets*.java" unless="${qtjambi.webenginequick.any.true}"/>
             <exclude name="io/qt/**/TestWebSockets*.java" unless="${qtjambi.websockets.any.true}"/>
+            <exclude name="io/qt/**/TestWebSockets*.java" unless="${qtjambi.webchannelquick.any.true}"/>
             <exclude name="io/qt/**/TestWebChannel*.java" unless="${qtjambi.webchannel.any.true}"/>
             <exclude name="io/qt/**/TestWebChannelQuick*.java" unless="${qtjambi.webchannelquick.any.true}"/>
             <exclude name="io/qt/**/TestWebView*.java" unless="${qtjambi.webview.any.true}"/>
+            <exclude name="io/qt/**/TestWebView*.java" unless="${qtjambi.quick.any.true}"/>
             <exclude name="io/qt/**/TestConcurrent*.java" unless="${qtjambi.concurrent.any.true}"/>
             <exclude name="io/qt/**/TestNetwork*.java" unless="${qtjambi.network.any.true}"/>
             <exclude name="io/qt/**/TestQSsl*.java" unless="${qtjambi.network.any.true}"/>
@@ -316,7 +320,19 @@
             <exclude name="io/qt/**/TestQTest*.java" unless="${qtjambi.test.any.true}"/>
             <exclude name="io/qt/**/TestTestlib*.java" unless="${qtjambi.test.any.true}"/>
 			<exclude name="io/qt/**/TestHttpServer*.java" unless="${qtjambi.httpserver.any.true}"/>
+            <exclude name="io/qt/**/TestMqtt*.java" unless="${qtjambi.mqtt.any.true}"/>
+            <exclude name="io/qt/**/TestCoap*.java" unless="${qtjambi.coap.any.true}"/>
+            <exclude name="io/qt/**/TestOpcUa*.java" unless="${qtjambi.opcua.any.true}"/>
             <exclude name="io/qt/**/TestQQmlListProperty.java" unless="${qtjambi.quick.any.true}"/>
+            <exclude name="io/qt/**/TestNativeInterfaces*.java" unless="${qtjambi.opengl.any.true}"/>
+            <exclude name="io/qt/**/TestPaintOnWidget.java" unless="${qtjambi.opengl.any.true}"/>
+            <exclude name="io/qt/**/TestPaintOnWidget.java" unless="${qtjambi.openglwidgets.any.true}"/>
+            <exclude name="io/qt/**/TestUnknownType.java" unless="${qtjambi.quick.any.true}"/>
+            <exclude name="io/qt/**/TestUnknownType.java" unless="${qtjambi.webenginecore.any.true}"/>
+            <exclude name="io/qt/**/TestUnknownType.java" unless="${qtjambi.webenginequick.any.true}"/>
+            <exclude name="io/qt/**/TestQuickTextureVulkan*.java" unless="${qtjambi.gui.vulkan.true}"/>
+            <exclude name="io/qt/**/TestUIC.java" unless="${qtjambi.uic.any.true}"/>
+            <exclude name="io/qt/**/TestBluetoothDiscovery.java" unless="${qtjambi.uic.any.true}"/>
             <exclude name="io/qt/**/TestBluetoothDiscovery.java"/>
             <exclude name="io/qt/**/TestQuickTextureMetalQt6.java"/>
         </fileset>
@@ -384,23 +400,28 @@
 
     <target name="generate.uic">
         <if>
-            <istrue value="${qtjambi.designer.any.true}"/>
+            <istrue value="${qtjambi.uic.any.true}"/>
             <then>
                 <uic uifile="${java.srcdir}/autotests/io/qt/autotests/ui/uitest.ui"
                      targetpackage="io.qt.autotests.generated"
                      targetdirectory="${test.generator.outputdir}/java/autotests"
                      libfiles=""
                      connections=""/>
-                <uic uifile="${java.srcdir}/autotests/io/qt/autotests/ui/bluetoothdevice.ui"
-                     targetpackage="io.qt.autotests.generated"
-                     targetdirectory="${test.generator.outputdir}/java/autotests"
-                     libfiles=""
-                     connections=""/>
-                <uic uifile="${java.srcdir}/autotests/io/qt/autotests/ui/bluetoothservice.ui"
-                     targetpackage="io.qt.autotests.generated"
-                     targetdirectory="${test.generator.outputdir}/java/autotests"
-                     libfiles=""
-                     connections=""/>
+			<if>
+				<istrue value="${qtjambi.bluetooth.any.true}"/>
+				<then>
+					<uic uifile="${java.srcdir}/autotests/io/qt/autotests/ui/bluetoothdevice.ui"
+						 targetpackage="io.qt.autotests.generated"
+						 targetdirectory="${test.generator.outputdir}/java/autotests"
+						 libfiles=""
+						 connections=""/>
+					<uic uifile="${java.srcdir}/autotests/io/qt/autotests/ui/bluetoothservice.ui"
+						 targetpackage="io.qt.autotests.generated"
+						 targetdirectory="${test.generator.outputdir}/java/autotests"
+						 libfiles=""
+						 connections=""/>
+				</then>
+			</if>
             </then>
         </if>
     </target>
@@ -1448,6 +1469,7 @@
 											<jvmarg value="-Dx-verbose:class"/>
 											<env key="${SYSTEM_VERSION_COMPAT}" value="0"/>
 											<env key="QT_MULTIMEDIA_PREFERRED_PLUGINS" value="Test"/>
+											<env key="QT_VERSION" value="${qtjambi.qtversion.bundle}"/>
 											<!--env key="QML_IMPORT_PATH" value="${absQtPath}/../qml"/-->
 								<!--            <jvmarg value="-verbose"/> -->
 											<batchtest fork="yes" todir="${testdir}/${qtjambi.osname}/junitxml-${kind}${jdk-exec-version}">

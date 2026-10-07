@@ -40,7 +40,6 @@ import io.qt.*;
 import io.qt.autotests.generated.*;
 import io.qt.core.*;
 import io.qt.gui.*;
-import io.qt.qml.*;
 import io.qt.widgets.*;
 
 public class TestMetaType extends ApplicationInitializer {
@@ -791,20 +790,6 @@ interface Iface{
 }
 
 class CloneableMetaValue implements Cloneable{
-	
-	@SuppressWarnings("unused")
-	private static CloneableMetaValue create(QJSValue arguments) {
-		CloneableMetaValue value = new CloneableMetaValue();
-		if(arguments.isArray()) {
-			int length = arguments.property("length").toInt();
-			if(length==3) {
-				value.i = arguments.property(0).toInt();
-				value.d = arguments.property(1).toNumber();
-				value.s = arguments.property(2).toString();
-			}
-		}
-		return value;
-	}
 	
 	@QtPropertyMember
 	int i;

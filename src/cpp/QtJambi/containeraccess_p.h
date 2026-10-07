@@ -427,9 +427,9 @@ QMetaType registerContainerMetaType(QByteArrayView typeName,
                                     const QSharedPointer<AbstractContainerAccess>& sharedAccess);
 QSharedPointer<AbstractContainerAccess> findContainerAccess(const QMetaType& metaType);
 
-void registerContainerConverter(SequentialContainerType collectionType, const QMetaType& containerMetaType, const QMetaType& elementMetaType);
-void registerContainerConverter(AssociativeContainerType mapType, const QMetaType& containerMetaType, const QMetaType& keyMetaType, const QMetaType& valueMetaType);
-void registerContainerConverter(QSharedPointer<AbstractPairAccess> pairAccess, const QMetaType& containerMetaType);
+void registerContainerConverter(QSharedPointer<AbstractSequentialAccess>&& containerAccess, const QMetaType& containerMetaType);
+void registerContainerConverter(QSharedPointer<AbstractAssociativeAccess>&& containerAccess, const QMetaType& containerMetaType);
+void registerContainerConverter(QSharedPointer<AbstractPairAccess>&& pairAccess, const QMetaType& containerMetaType);
 void insertHashFunctionByMetaType(const QtPrivate::QMetaTypeInterface * type, const QtJambiUtils::QHashFunction& fct);
 void insertHashFunctionByMetaType(const QtPrivate::QMetaTypeInterface * type, QtJambiUtils::QHashFunction&& fct);
 void containerDisposer(AbstractContainerAccess* _access);

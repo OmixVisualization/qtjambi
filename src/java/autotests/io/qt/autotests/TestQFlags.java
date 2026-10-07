@@ -72,8 +72,6 @@ public class TestQFlags extends ApplicationInitializer {
     }
 
     private static class Flags extends QFlags<MyEnum> {
-        private static final long serialVersionUID = 1L;
-
         private Flags(MyEnum... flags) {
             super(flags);
         }
@@ -98,7 +96,7 @@ public class TestQFlags extends ApplicationInitializer {
 		}
 
         public final int value(){
-            return intValue();
+            return toInt();
         }
     }
 

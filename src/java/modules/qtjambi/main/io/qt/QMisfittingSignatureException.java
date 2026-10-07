@@ -32,6 +32,7 @@ package io.qt;
 /**
  * Exception thrown when slot does not match to signal.
  * @see io.qt.core.QObject#connect(io.qt.core.QObject, String, io.qt.core.QObject, String, io.qt.core.Qt.ConnectionType...)
+ * @serial exclude
  */
 public class QMisfittingSignatureException extends QConnectionException {
     private static final long serialVersionUID = 1L;

@@ -2342,13 +2342,13 @@ public class TestMetaProgramming extends ApplicationInitializer {
 //            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "Current property: " + e.name);
             QMetaProperty property = fop.metaObject().property(e.name);
             assertTrue(property!=null);
-            assertEquals(property.name()+" writable", e.writable, property.isWritable());
-            assertEquals(property.name()+" resettable", e.resettable, property.isResettable());
-            assertEquals(property.name()+" designable", e.designable, property.isDesignable());
-            assertEquals(property.name()+" user", e.user, property.isUser());
-            assertEquals(property.name()+" required", e.required, property.isRequired());
-            assertEquals(property.name()+" hasNotifySignal", e.hasNotifySignal, property.hasNotifySignal());
-            assertEquals(property.name()+" bindable", e.bindable, property.isBindable());
+            assertEquals("property '"+property.name()+"' writable", e.writable, property.isWritable());
+            assertEquals("property '"+property.name()+"' resettable", e.resettable, property.isResettable());
+            assertEquals("property '"+property.name()+"' designable", e.designable, property.isDesignable());
+            assertEquals("property '"+property.name()+"' user", e.user, property.isUser());
+            assertEquals("property '"+property.name()+"' required", e.required, property.isRequired());
+            assertEquals("property '"+property.name()+"' hasNotifySignal", e.hasNotifySignal, property.hasNotifySignal());
+            assertEquals("property '"+property.name()+"' bindable", e.bindable, property.isBindable());
             if(property.hasNotifySignal()) {
             	switch(property.name()) {
             	case "ordinaryProperty":

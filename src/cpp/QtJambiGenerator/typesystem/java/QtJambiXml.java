@@ -36,6 +36,14 @@ import io.qt.*;
 import io.qt.xml.*;
 
 class QDomDocument___ extends QDomDocument {
+    /**
+     * <p>This class is used to store the result of QDomDocument::setContent()</p>
+     * @deprecated Use {@link ParseResult} instead.
+     * @see QDomDocument#setContent(io.qt.core.QXmlStreamReader, boolean)
+     * @see QDomDocument#setContent(io.qt.core.QIODevice, boolean)
+     * @see QDomDocument#setContent(io.qt.core.QByteArray, boolean)
+     */
+    @Deprecated
     public static final class Result {
         private Result(boolean success, String errorMessage, int errorLine, int errorColumn) {
             this.success = success;
@@ -44,9 +52,13 @@ class QDomDocument___ extends QDomDocument {
             this.errorColumn = errorColumn;
         }
 
+        @Deprecated
         public final boolean success;
+        @Deprecated
         public final String errorMessage;
+        @Deprecated
         public final int errorLine;
+        @Deprecated
         public final int errorColumn;
     }
 }// class

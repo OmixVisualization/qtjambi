@@ -57,6 +57,11 @@ TypeSystem{
     Rejection{className: "QAbstract3DAxisPrivate"}
     Rejection{className: "QAbstract3DSeriesPrivate"}
     Rejection{className: "QAbstractDataProxyPrivate"}
+    RequiredLibrary{
+        name: "QtGraphs2DImpl"
+        mode: RequiredLibrary.ProvideOnly
+        since: [6,12]
+    }
 
     NamespaceType{
         name: "QtGraphs"
@@ -679,13 +684,14 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(%1!=null){\n"+
-                              "    if(%1==dataProxy()){\n"+
-                              "        throw new IllegalArgumentException(\"Proxy is already assigned to this series.\");\n"+
-                              "    }else if(%1.series()!=null){\n"+
-                              "        throw new IllegalArgumentException(\"Proxy is already assigned to another series.\");\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(%1!=null){
+                        if(%1==dataProxy()){
+                            throw new IllegalArgumentException("Proxy is already assigned to this series.");
+                        }else if(%1.series()!=null){
+                            throw new IllegalArgumentException("Proxy is already assigned to another series.");
+                        }
+                    }`}
             }
         }
         ModifyFunction{
@@ -819,8 +825,9 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "__rcArray = %1;\n"+
-                              "QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);"}
+                Text{content: String.raw`
+                    __rcArray = %1;
+                    QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);`}
             }
             ModifyArgument{
                 index: 1
@@ -843,8 +850,9 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "__rcArray = %1;\n"+
-                              "QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);"}
+                Text{content: String.raw`
+                    __rcArray = %1;
+                    QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);`}
             }
             ModifyArgument{
                 index: 1
@@ -883,6 +891,10 @@ TypeSystem{
     
     ObjectType{
         name: "QCategory3DAxis"
+        ModifyFunction{
+            signature: "labels()const"
+            remove: RemoveFlag.All
+        }
     }
     
     ObjectType{
@@ -922,8 +934,9 @@ TypeSystem{
                     index: 0
                     metaName: "%0"
                 }
-                Text{content: "__rcTextureData = %0;\n"+
-                              "QtJambi_LibraryUtilities.internal.registerDependentObject(__rcTextureData, this);"}
+                Text{content: String.raw`
+                    __rcTextureData = %0;
+                    QtJambi_LibraryUtilities.internal.registerDependentObject(__rcTextureData, this);`}
             }
         }
         InjectCode{
@@ -1023,13 +1036,14 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(%1!=null){\n"+
-                              "    if(%1==dataProxy()){\n"+
-                              "        throw new IllegalArgumentException(\"Proxy is already assigned to this series.\");\n"+
-                              "    }else if(%1.series()!=null){\n"+
-                              "        throw new IllegalArgumentException(\"Proxy is already assigned to another series.\");\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+                        if(%1!=null){
+                            if(%1==dataProxy()){
+                                throw new IllegalArgumentException("Proxy is already assigned to this series.");
+                            }else if(%1.series()!=null){
+                                throw new IllegalArgumentException("Proxy is already assigned to another series.");
+                            }
+                        }`}
             }
         }
         ModifyFunction{
@@ -1094,8 +1108,9 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "__rcArray = %1;\n"+
-                              "QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);"}
+                Text{content: String.raw`
+                    __rcArray = %1;
+                    QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);`}
             }
             ModifyArgument{
                 index: 1
@@ -1155,13 +1170,14 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(%1!=null){\n"+
-                              "    if(%1==dataProxy()){\n"+
-                              "        throw new IllegalArgumentException(\"Proxy is already assigned to this series.\");\n"+
-                              "    }else if(%1.series()!=null){\n"+
-                              "        throw new IllegalArgumentException(\"Proxy is already assigned to another series.\");\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+                        if(%1!=null){
+                            if(%1==dataProxy()){
+                                throw new IllegalArgumentException("Proxy is already assigned to this series.");
+                            }else if(%1.series()!=null){
+                                throw new IllegalArgumentException("Proxy is already assigned to another series.");
+                            }
+                        }`}
             }
         }
         ModifyFunction{
@@ -1254,8 +1270,9 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "__rcArray = %1;\n"+
-                              "QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);"}
+                Text{content: String.raw`
+                        __rcArray = %1;
+                        QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);`}
             }
             ModifyArgument{
                 index: 1
@@ -1884,6 +1901,54 @@ template<> QExplicitlySharedDataPointer<QGraphsLinePrivate>::~QExplicitlySharedD
                     action: ReferenceCount.Set
                 }
             }
+        }
+        ModifyFunction{
+            signature: "gradientChanged(QQuickShapeGradient *)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: String.raw`io.qt.core.@QtMetaType(name="QQuickShapeGradient*") @Nullable QObject`
+                    modifiedJavaType: "io.qt.core.QObject"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        QObject* tmp = qtjambi_cast<QObject*>(%env, %in);
+                        QQuickShapeGradient* %out = tmp ? reinterpret_cast<QQuickShapeGradient*>(tmp->qt_metacast("QQuickShapeGradient")) : nullptr;
+                        if(tmp && !%out)
+                            return false;`}
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: "%out = qtjambi_cast<jobject>(%env, reinterpret_cast<QObject*>(%in));"}
+                }
+            }
+            since: [6,11]
+        }
+        ModifyFunction{
+            signature: "selectedGradientChanged(QQuickShapeGradient *)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: String.raw`io.qt.core.@QtMetaType(name="QQuickShapeGradient*") @Nullable QObject`
+                    modifiedJavaType: "io.qt.core.QObject"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        QObject* tmp = qtjambi_cast<QObject*>(%env, %in);
+                        QQuickShapeGradient* %out = tmp ? reinterpret_cast<QQuickShapeGradient*>(tmp->qt_metacast("QQuickShapeGradient")) : nullptr;
+                        if(tmp && !%out)
+                            return false;`}
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: "%out = qtjambi_cast<jobject>(%env, reinterpret_cast<QObject*>(%in));"}
+                }
+            }
+            since: [6,11]
         }
         since: 6.8
     }

@@ -188,9 +188,10 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "#ifndef GL_MAX_LABEL_LENGTH\n"+
-                          "#define GL_MAX_LABEL_LENGTH 0x82E8\n"+
-                          "#endif"}
+            Text{content: String.raw`
+                #ifndef GL_MAX_LABEL_LENGTH
+                #define GL_MAX_LABEL_LENGTH 0x82E8
+                #endif`}
         }
         ModifyFunction{
             signature: "glDeleteBuffers(GLsizei,const GLuint*)"
@@ -1988,17 +1989,18 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                    [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                        pointer = nullptr;\n"+
-                                  "                                    },\n"+
-                                  "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                    }\n"+
-                                  "                                );\n"+
-                                  "if(%out.size()==0){\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, \"Array length is 0.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}"}
+                    Text{content: String.raw`
+JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),
+                                    [](void* & pointer,JNIEnv *, jobject){
+                                        pointer = nullptr;
+                                    },
+                                    [](JNIEnv * env, void* const& ptr) -> jobject {
+                                        return DataJBuffer(env, ptr, INT_MAX).take();
+                                    }
+                                );
+if(%out.size()==0){
+    JavaException::raiseIllegalArgumentException(%env, "Array length is 0." QTJAMBI_STACKTRACEINFO );
+}`}
                 }
             }
         }
@@ -2076,17 +2078,18 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                    [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                        pointer = nullptr;\n"+
-                                  "                                    },\n"+
-                                  "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                    }\n"+
-                                  "                                );\n"+
-                                  "if(%out.size()==0){\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, \"Array length is 0.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}"}
+                    Text{content: String.raw`
+JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),
+                                    [](void* & pointer,JNIEnv *, jobject){
+                                        pointer = nullptr;
+                                    },
+                                    [](JNIEnv * env, void* const& ptr) -> jobject {
+                                        return DataJBuffer(env, ptr, INT_MAX).take();
+                                    }
+                                );
+if(%out.size()==0){
+    JavaException::raiseIllegalArgumentException(%env, "Array length is 0." QTJAMBI_STACKTRACEINFO );
+}`}
                 }
             }
         }
@@ -2265,17 +2268,18 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                    [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                        pointer = nullptr;\n"+
-                                  "                                    },\n"+
-                                  "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                    }\n"+
-                                  "                                );\n"+
-                                  "if(%out.size()==0){\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, \"Array length is 0.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}"}
+                    Text{content: String.raw`
+JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),
+                                    [](void* & pointer,JNIEnv *, jobject){
+                                        pointer = nullptr;
+                                    },
+                                    [](JNIEnv * env, void* const& ptr) -> jobject {
+                                        return DataJBuffer(env, ptr, INT_MAX).take();
+                                    }
+                                );
+if(%out.size()==0){
+    JavaException::raiseIllegalArgumentException(%env, "Array length is 0." QTJAMBI_STACKTRACEINFO );
+}`}
                 }
             }
         }
@@ -2292,17 +2296,18 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                    [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                        pointer = nullptr;\n"+
-                                  "                                    },\n"+
-                                  "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                    }\n"+
-                                  "                                );\n"+
-                                  "if(%out.size()==0){\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, \"Array length is 0.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}"}
+                    Text{content: String.raw`
+JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),
+                                    [](void* & pointer,JNIEnv *, jobject){
+                                        pointer = nullptr;
+                                    },
+                                    [](JNIEnv * env, void* const& ptr) -> jobject {
+                                        return DataJBuffer(env, ptr, INT_MAX).take();
+                                    }
+                                );
+if(%out.size()==0){
+    JavaException::raiseIllegalArgumentException(%env, "Array length is 0." QTJAMBI_STACKTRACEINFO );
+}`}
                 }
             }
         }
@@ -2331,14 +2336,15 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                    [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                        pointer = nullptr;\n"+
-                                  "                                    },\n"+
-                                  "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                    }\n"+
-                                  ");"}
+                    Text{content: String.raw`
+JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),
+                                    [](void* & pointer,JNIEnv *, jobject){
+                                        pointer = nullptr;
+                                    },
+                                    [](JNIEnv * env, void* const& ptr) -> jobject {
+                                        return DataJBuffer(env, ptr, INT_MAX).take();
+                                    }
+);`}
                 }
             }
         }
@@ -2355,17 +2361,18 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                    [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                        pointer = nullptr;\n"+
-                                  "                                    },\n"+
-                                  "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                    }\n"+
-                                  "                                );\n"+
-                                  "if(%out.size()==0){\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, \"Array length is 0.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}"}
+                    Text{content: String.raw`
+JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),
+                                    [](void* & pointer,JNIEnv *, jobject){
+                                        pointer = nullptr;
+                                    },
+                                    [](JNIEnv * env, void* const& ptr) -> jobject {
+                                        return DataJBuffer(env, ptr, INT_MAX).take();
+                                    }
+                                );
+if(%out.size()==0){
+    JavaException::raiseIllegalArgumentException(%env, "Array length is 0." QTJAMBI_STACKTRACEINFO );
+}`}
                 }
             }
         }
@@ -2394,14 +2401,15 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                    [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                        pointer = nullptr;\n"+
-                                  "                                    },\n"+
-                                  "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                    }\n"+
-                                  ");"}
+                    Text{content: String.raw`
+JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),
+                                    [](void* & pointer,JNIEnv *, jobject){
+                                        pointer = nullptr;
+                                    },
+                                    [](JNIEnv * env, void* const& ptr) -> jobject {
+                                        return DataJBuffer(env, ptr, INT_MAX).take();
+                                    }
+);`}
                 }
             }
         }
@@ -2418,9 +2426,10 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "#ifndef GL_MAX_LABEL_LENGTH\n"+
-                          "#define GL_MAX_LABEL_LENGTH 0x82E8\n"+
-                          "#endif"}
+            Text{content: String.raw`
+                #ifndef GL_MAX_LABEL_LENGTH
+                #define GL_MAX_LABEL_LENGTH 0x82E8
+                #endif`}
         }
         ModifyFunction{
             signature: "glTransformFeedbackVaryings(GLuint, GLsizei, const GLchar *const *, GLenum)"
@@ -2467,8 +2476,9 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "GLsizei %in = 0;\n"+
-                                  "GLsizei* %out = &%in;"}
+                    Text{content: String.raw`
+                        GLsizei %in = 0;
+                        GLsizei* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -2490,17 +2500,19 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "        jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %4));\n"+
-                                  "        %env->SetObjectArrayElement(%in, 0, result);\n"+
-                                  "    });"}
+                    Text{content: String.raw`
+QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\0');
+char* %out = %out_buffer.data();
+%scope.addFinalAction([&](){
+        jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %4));
+        %env->SetObjectArrayElement(%in, 0, result);
+    });`}
                 }
             }
             InjectCode{
-                Text{content: "if (name.length < 1)\n"+
-                              "    throw new IllegalArgumentException(\"Argument 'name': Wrong number of elements in array. Found: 0, expected: 1\");"}
+                Text{content: String.raw`
+                    if (name.length < 1)
+                        throw new IllegalArgumentException("Argument 'name': Wrong number of elements in array. Found: 0, expected: 1");`}
             }
         }
         ModifyFunction{
@@ -2613,8 +2625,9 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JBufferData %out(%env, %in);\n"+
-                                  "GLsizei %3 = GLsizei(%out.size());"}
+                    Text{content: String.raw`
+                        JBufferData %out(%env, %in);
+                        GLsizei %3 = GLsizei(%out.size());`}
                 }
             }
         }
@@ -2742,8 +2755,9 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "GLsizei %in = 0;\n"+
-                                  "GLsizei* %out = &%in;"}
+                    Text{content: String.raw`
+                        GLsizei %in = 0;
+                        GLsizei* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -2753,17 +2767,19 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "        jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %3));\n"+
-                                  "        %env->SetObjectArrayElement(%in, 0, result);\n"+
-                                  "    });"}
+                    Text{content: String.raw`
+QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\0');
+char* %out = %out_buffer.data();
+%scope.addFinalAction([&](){
+        jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %3));
+        %env->SetObjectArrayElement(%in, 0, result);
+    });`}
                 }
             }
             InjectCode{
-                Text{content: "if (infoLog.length < 1)\n"+
-                              "    throw new IllegalArgumentException(\"Argument 'infoLog': Wrong number of elements in array. Found: 0, expected: 1\");"}
+                Text{content: String.raw`
+                    if (infoLog.length < 1)
+                        throw new IllegalArgumentException("Argument 'infoLog': Wrong number of elements in array. Found: 0, expected: 1");`}
             }
         }
         ModifyFunction{
@@ -2818,8 +2834,9 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "GLsizei %in = 0;\n"+
-                                  "GLsizei* %out = &%in;"}
+                    Text{content: String.raw`
+                        GLsizei %in = 0;
+                        GLsizei* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -2829,17 +2846,19 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "        jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %5));\n"+
-                                  "        %env->SetObjectArrayElement(%in, 0, result);\n"+
-                                  "    });"}
+                    Text{content: String.raw`
+QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\0');
+char* %out = %out_buffer.data();
+%scope.addFinalAction([&](){
+        jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %5));
+        %env->SetObjectArrayElement(%in, 0, result);
+    });`}
                 }
             }
             InjectCode{
-                Text{content: "if (name.length < 1)\n"+
-                              "    throw new IllegalArgumentException(\"Argument 'name': Wrong number of elements in array. Found: 0, expected: 1\");"}
+                Text{content: String.raw`
+                    if (name.length < 1)
+                        throw new IllegalArgumentException("Argument 'name': Wrong number of elements in array. Found: 0, expected: 1");`}
             }
         }
     }
@@ -2876,10 +2895,11 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "GLuint %out = GLuint(%env->GetArrayLength(jarray(%3)));\n"+
-                                  "%out = qMin(%out, GLuint(%env->GetArrayLength(jarray(%4))));\n"+
-                                  "%out = qMin(%out, GLuint(%env->GetArrayLength(jarray(%5))));\n"+
-                                  "%out = qMin(%out, GLuint(%env->GetArrayLength(jarray(%8))));"}
+                    Text{content: String.raw`
+                        GLuint %out = GLuint(%env->GetArrayLength(jarray(%3)));
+                        %out = qMin(%out, GLuint(%env->GetArrayLength(jarray(%4))));
+                        %out = qMin(%out, GLuint(%env->GetArrayLength(jarray(%5))));
+                        %out = qMin(%out, GLuint(%env->GetArrayLength(jarray(%8))));`}
                 }
             }
             ModifyArgument{
@@ -2921,8 +2941,9 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QScopedArrayPointer<GLsizei> %in(new GLsizei[__qt_%1]);\n"+
-                                  "GLsizei* %out = %in.get();"}
+                    Text{content: String.raw`
+                        QScopedArrayPointer<GLsizei> %in(new GLsizei[__qt_%1]);
+                        GLsizei* %out = %in.get();`}
                 }
             }
             ModifyArgument{
@@ -2932,21 +2953,23 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();"}
+                    Text{content: String.raw`
+                        QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\0');
+                        char* %out = %out_buffer.data();`}
                 }
             }
             ModifyArgument{
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = jint(%in);\n"+
-                                  "int offset = 0;\n"+
-                                  "for(jsize i=0; i<jsize(__qt_return_value); ++i){\n"+
-                                  "    jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(__qt_%8+offset, __qt_%7[i]));\n"+
-                                  "    offset += __qt_%7[i];\n"+
-                                  "    %env->SetObjectArrayElement(%8, i, result);\n"+
-                                  "}"}
+                    Text{content: String.raw`
+%out = jint(%in);
+int offset = 0;
+for(jsize i=0; i<jsize(__qt_return_value); ++i){
+    jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(__qt_%8+offset, __qt_%7[i]));
+    offset += __qt_%7[i];
+    %env->SetObjectArrayElement(%8, i, result);
+}`}
                 }
             }
         }
@@ -2979,8 +3002,9 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "GLsizei %in = 0;\n"+
-                                  "GLsizei* %out = &%in;"}
+                    Text{content: String.raw`
+                        GLsizei %in = 0;
+                        GLsizei* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -2990,17 +3014,19 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "        jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %3));\n"+
-                                  "        %env->SetObjectArrayElement(%in, 0, result);\n"+
-                                  "    });"}
+                    Text{content: String.raw`
+QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\0');
+char* %out = %out_buffer.data();
+%scope.addFinalAction([&](){
+        jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %3));
+        %env->SetObjectArrayElement(%in, 0, result);
+    });`}
                 }
             }
             InjectCode{
-                Text{content: "if (label.length < 1)\n"+
-                              "    throw new IllegalArgumentException(\"Argument 'label': Wrong number of elements in array. Found: 0, expected: 1\");"}
+                Text{content: String.raw`
+                    if (label.length < 1)
+                        throw new IllegalArgumentException("Argument 'label': Wrong number of elements in array. Found: 0, expected: 1");`}
             }
         }
         ModifyFunction{
@@ -3020,8 +3046,9 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "GLsizei %in = 0;\n"+
-                                  "GLsizei* %out = &%in;"}
+                    Text{content: String.raw`
+                        GLsizei %in = 0;
+                        GLsizei* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -3031,17 +3058,19 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\\0');\n"+
-                                  "char* %out = %out_buffer.data();\n"+
-                                  "%scope.addFinalAction([&](){\n"+
-                                  "        jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %4));\n"+
-                                  "        %env->SetObjectArrayElement(%in, 0, result);\n"+
-                                  "    });"}
+                    Text{content: String.raw`
+QByteArray %out_buffer(GL_MAX_LABEL_LENGTH, '\0');
+char* %out = %out_buffer.data();
+%scope.addFinalAction([&](){
+        jstring result = qtjambi_cast<jstring>(%env, QString::fromLocal8Bit(%out, %4));
+        %env->SetObjectArrayElement(%in, 0, result);
+    });`}
                 }
             }
             InjectCode{
-                Text{content: "if (label.length < 1)\n"+
-                              "    throw new IllegalArgumentException(\"Argument 'label': Wrong number of elements in array. Found: 0, expected: 1\");"}
+                Text{content: String.raw`
+                    if (label.length < 1)
+                        throw new IllegalArgumentException("Argument 'label': Wrong number of elements in array. Found: 0, expected: 1");`}
             }
         }
         ModifyFunction{
@@ -3137,14 +3166,15 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                    [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                        pointer = nullptr;\n"+
-                                  "                                    },\n"+
-                                  "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                    }\n"+
-                                  ");"}
+                    Text{content: String.raw`
+JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),
+                                    [](void* & pointer,JNIEnv *, jobject){
+                                        pointer = nullptr;
+                                    },
+                                    [](JNIEnv * env, void* const& ptr) -> jobject {
+                                        return DataJBuffer(env, ptr, INT_MAX).take();
+                                    }
+);`}
                 }
             }
         }
@@ -4028,14 +4058,15 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),\n"+
-                                  "                                    [](void* & pointer,JNIEnv *, jobject){\n"+
-                                  "                                        pointer = nullptr;\n"+
-                                  "                                    },\n"+
-                                  "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
-                                  "                                    }\n"+
-                                  ");"}
+                    Text{content: String.raw`
+JObjectArrayPointer<void*> %out(%env, jobjectArray(%in),
+                                    [](void* & pointer,JNIEnv *, jobject){
+                                        pointer = nullptr;
+                                    },
+                                    [](JNIEnv * env, void* const& ptr) -> jobject {
+                                        return DataJBuffer(env, ptr, INT_MAX).take();
+                                    }
+);`}
                 }
             }
         }
@@ -4748,11 +4779,12 @@ JObjectArrayPointer<const void*> %out(%env, jobjectArray(%in),
             implementing: "AutoCloseable"
             InjectCode{
                 target: CodeClass.Java
-                Text{content: "@Override\n"+
-                              "@QtUninvokable\n"+
-                              "public final void close(){\n"+
-                              "    dispose();\n"+
-                              "}"}
+                Text{content: String.raw`
+                    @Override
+                    @QtUninvokable
+                    public final void close(){
+                        dispose();
+                    }`}
             }
         }
     }

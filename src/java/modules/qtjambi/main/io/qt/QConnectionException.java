@@ -33,6 +33,7 @@ package io.qt;
 
 /**
  * The ConnectionException class is thrown when connecting to a signal fails.
+ * @serial exclude
  */
 public class QConnectionException extends RuntimeException {
     private static final long serialVersionUID = 1L;

@@ -401,6 +401,10 @@ class TypeEntry {
             return false;
         }
 
+        virtual bool isDirectLink() const {
+            return false;
+        }
+
         virtual const QString& ppCondition() const {
             static QString empty;
             return empty;
@@ -536,7 +540,7 @@ class TypeSystemTypeEntry : public TypeEntry {
         }
 
         void addCodeSnip(const QString& package, const CodeSnip &snip) {
-            snips[package] << snip;
+            m_snips[package] << snip;
         }
 
         void addForwardDeclaration(const QString &forwardDeclaration) {
@@ -571,7 +575,33 @@ class TypeSystemTypeEntry : public TypeEntry {
 
         bool hasFunctionCodeInjections(const QString &methodSignature, TS::Language language, const QSet<CodeSnip::Position>& positions) const;
 
-        QMap<QString,QList<CodeSnip>> snips;
+        const QString &targetName() const;
+        void setTargetName(const QString &newTargetName);
+
+        const QString& href() const;
+        void setHref(const QString &newHref);
+        const QString& since() const;
+        void setSince(const QString &newSince);
+        bool deprecated() const;
+        void setDeprecated(bool newDeprecated);
+
+        bool obsolete() const;
+        void setObsolete(bool newObsolete);
+
+        bool preliminary() const;
+        void setPreliminary(bool newPreliminary);
+
+        const QString& brief() const;
+        void setBrief(const QString &newBrief);
+
+        const QString& docName() const;
+        void setDocName(const QString &newDocName);
+        QList<CodeSnip> snips(const QString & package) const;
+        bool noPackageInfo() const;
+        void setNoPackageInfo(bool newNoPackageInfo);
+
+    private:
+        QMap<QString,QList<CodeSnip>> m_snips;
         Include m_include;
         IncludeList m_extra_includes;
         QString m_qtLibrary;
@@ -581,10 +611,16 @@ class TypeSystemTypeEntry : public TypeEntry {
         QString m_description;
         QList<QString> m_forwardDeclarations;
         FunctionModificationList m_function_mods;
-        bool m_noExports;
+        bool m_noExports = false;
         QString m_targetName;
-        const QString &targetName() const;
-        void setTargetName(const QString &newTargetName);
+        QString m_href;
+        QString m_brief;
+        QString m_since;
+        QString m_docName;
+        bool m_deprecated = false;
+        bool m_obsolete = false;
+        bool m_preliminary = false;
+        bool m_noPackageInfo = false;
 };
 
 class VoidTypeEntry : public TypeEntry {
@@ -739,10 +775,14 @@ class PrimitiveTypeEntry : public TypeEntry {
             return m_package;
         }
 
+        const QString& getCast() const;
+        void setCast(const QString &newCast);
+
     private:
         QString m_java_name;
         QString m_jni_name;
         bool m_preferred_java_type;
+        QString cast;
         QString m_package;
 };
 
@@ -857,6 +897,10 @@ class FunctionalTypeEntry : public TypeEntry {
         }
 
         bool isNativeIdBased() const override {
+            return false;
+        }
+
+        bool isDirectLink() const override {
             return false;
         }
 
@@ -1424,9 +1468,13 @@ class ComplexTypeEntry : public TypeEntry {
 
         const QMap<QString,QString>& delegatedBaseClasses() const;
 
-        virtual bool isNativeIdBased() const override;
+        bool isNativeIdBased() const override;
+
+        bool isDirectLink() const override;
 
         void disableNativeIdUsage();
+
+        void asDirectLink();
 
         void addInstantiation(const QStringList& instantiation, const ComplexTypeEntry* typeEntry = nullptr);
 
@@ -1616,6 +1664,7 @@ class ComplexTypeEntry : public TypeEntry {
             IsQAbstractItemModel = 0x1000000,
             IsQThread = 0x2000000,
             IsQFuturing = 0x4000000,
+            IsDirectLink = 0x8000000,
         };
         QFlags<ComplexAttributeFlag> m_attributes;
 
@@ -1783,8 +1832,12 @@ public:
         m_interface = entry;
     }
 
-    virtual bool isNativeIdBased() const override {
+    bool isNativeIdBased() const override {
         return m_interface==nullptr ? ComplexTypeEntry::isNativeIdBased() : m_interface->isNativeIdBased();
+    }
+
+    bool isDirectLink() const override {
+        return m_interface==nullptr ? ComplexTypeEntry::isDirectLink() : m_interface->isDirectLink();
     }
 
     bool isValueOwner() const;
@@ -1802,6 +1855,10 @@ public:
     }
 
     bool isNativeIdBased() const override {
+        return false;
+    }
+
+    bool isDirectLink() const override {
         return false;
     }
 
@@ -1865,6 +1922,10 @@ class StringTypeEntry : public ValueTypeEntry {
         bool isNativeIdBased() const override {
             return false;
         }
+
+        bool isDirectLink() const override {
+            return false;
+        }
 };
 
 class CharTypeEntry : public ValueTypeEntry {
@@ -1884,6 +1945,10 @@ class CharTypeEntry : public ValueTypeEntry {
         }
 
         bool isNativeIdBased() const override {
+            return false;
+        }
+
+        bool isDirectLink() const override {
             return false;
         }
 };
@@ -1931,6 +1996,10 @@ class VariantTypeEntry: public ValueTypeEntry {
         bool isNativeIdBased() const override {
             return false;
         }
+
+        bool isDirectLink() const override {
+            return false;
+        }
 };
 
 class SmartPointerTypeEntry: public ValueTypeEntry {
@@ -1963,6 +2032,10 @@ class SmartPointerTypeEntry: public ValueTypeEntry {
             return false;
         }
 
+        bool isDirectLink() const override {
+            return false;
+        }
+
         Type type() const { return m_type; }
 
     private:
@@ -1986,6 +2059,10 @@ class InitializerListTypeEntry: public ValueTypeEntry {
         bool isNativeIdBased() const override {
             return false;
         }
+
+        bool isDirectLink() const override {
+            return false;
+        }
     private:
 };
 
@@ -2005,6 +2082,10 @@ public:
 
     bool isNativeIdBased() const override {
         return true;
+    }
+
+    bool isDirectLink() const override {
+        return false;
     }
 private:
 };

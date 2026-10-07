@@ -1,9 +1,12 @@
 package io.qt.tools.ant;
 
-import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.PropertyHelper;
@@ -93,8 +96,15 @@ public class CreateFunctionPointerQrcTask extends Task {
 	private void write(java.io.File file, String libFormat, int qtMajorVersion, int qtMinorVersion) {
 //		System.out.println("Creating "+file.getAbsolutePath());
 		file.getParentFile().mkdirs();
-		try(FileOutputStream fos = new FileOutputStream(file);
-				PrintWriter stream = new PrintWriter(fos, false, StandardCharsets.UTF_8)){
+		byte[] currentData = null;
+		if(file.exists()) {
+			try {
+				currentData = Files.readAllBytes(file.toPath());
+			} catch (IOException e) {
+			}
+		}
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		try(PrintWriter stream = new PrintWriter(bos, false, StandardCharsets.UTF_8)){
 			stream.println("<RCC>");
 			stream.println("    <qresource prefix=\"/io/qt/qtjambi/functionpointers\">");
 //			stream.append("        <file alias=\"void(QObject*,QMetaObject::Call,int,void**)\">").append(String.format(libFormat, "StaticMetaCallFunction"));
@@ -117,7 +127,7 @@ public class CreateFunctionPointerQrcTask extends Task {
 			stream.println("</file>");
 			stream.append("        <file alias=\"float(float)\">../lib/").append(String.format(libFormat, "FloatToFloatFunction"));
 			stream.println("</file>");
-			if(qtMajorVersion>=6) {
+			{
 				stream.append("        <file alias=\"QPluginMetaData()\">../lib/").append(String.format(libFormat, "PluginMetaDataFunction"));
 				stream.println("</file>");
 				stream.append("        <file alias=\"QMetaType()\">../lib/").append(String.format(libFormat, "MetaTypeFunction"));
@@ -132,14 +142,16 @@ public class CreateFunctionPointerQrcTask extends Task {
 					stream.append("        <file alias=\"QUntypedPropertyBinding(QUntypedPropertyData*,QUntypedPropertyBinding const&amp;)\">../lib/").append(String.format(libFormat, "BindingSetterFunction"));
 					stream.println("</file>");
 				}
-			}else {
-				stream.append("        <file alias=\"QtMetaTypePrivate::VariantData(void* const*,int,unsigned int)\">../lib/").append(String.format(libFormat, "VariantDataFunction"));
-				stream.println("</file>");
 			}
 			stream.println("    </qresource>");
 			stream.println("</RCC>");
-		} catch (IOException e) {
-			throw new BuildException(e);
+		}
+		if(currentData==null || Arrays.compare(currentData, bos.toByteArray())!=0) {
+			try{
+				Files.write(file.toPath(), currentData, StandardOpenOption.CREATE);
+			} catch (IOException e) {
+				throw new BuildException(e);
+			}
 		}
 	}
 	

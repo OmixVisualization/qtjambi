@@ -90,6 +90,8 @@ HEADERS += \
         cppheadergenerator.h \
         cppimplgenerator.h \
         debuglog.h \
+    docindex/docmodule.h \
+    docindex/docpage.h \
         javagenerator.h \
         metainfogenerator.h \
 
@@ -97,6 +99,8 @@ SOURCES += \
         cppgenerator.cpp \
         cppheadergenerator.cpp \
         cppimplgenerator.cpp \
+        docindex/docmodule.cpp \
+        docindex/docpage.cpp \
         javagenerator.cpp \
         metainfogenerator.cpp
 

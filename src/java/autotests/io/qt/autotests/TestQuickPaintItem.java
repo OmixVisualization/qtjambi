@@ -95,7 +95,7 @@ public class TestQuickPaintItem extends ApplicationInitializer {
 		    QTimer timer = new QTimer();
 		    timer.setInterval(5000);
 		    timer.setSingleShot(true);
-		    timer.timeout.connect(loop::quit);
+		    timer.timeout.connect(loop, QEventLoop::quit);
 			QQuickWindow component = new QQuickWindow();
 			component.setObjectName("testQuickWindow_Painted");
 		    QSurfaceFormat format = component.format();
@@ -106,9 +106,9 @@ public class TestQuickPaintItem extends ApplicationInitializer {
 		    test.setParentItem(component.contentItem());
 		    component.contentItem().setEnabled(true);
 		    component.sceneGraphInitialized.connect(()->component.setRenderTarget(QQuickRenderTarget.fromOpenGLTexture(0, new QSize(200, 200))), Qt.ConnectionType.DirectConnection);
-		    component.sceneGraphInitialized.connect(timer::start);
+		    component.sceneGraphInitialized.connect(timer, QTimer::start);
 		    component.show();
-		    QTimer.singleShot(20000, loop::quit);
+		    QTimer.singleShot(20000, loop, QEventLoop::quit);
 		    loop.exec();
 		    test.isDisposed();
 		    timer.timeout.disconnect();

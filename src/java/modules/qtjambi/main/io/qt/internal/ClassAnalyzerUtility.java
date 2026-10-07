@@ -49,6 +49,7 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -75,8 +76,8 @@ import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;
-import io.qt.core.QPair;
 import io.qt.internal.SignalUtility.AbstractSignal;
+import io.qt.internal.CoreUtility.LambdaInfo;
 
 /**
  * @hidden
@@ -88,7 +89,7 @@ final class ClassAnalyzerUtility {
 	}
 
 	static final boolean useAnnotatedType;
-	private static final Map<Class<?>, MethodInfo> lambdaSlotHandles;
+	private static final Map<Class<?>, LambdaInfo.MethodInfo> lambdaSlotHandles;
 	static {
 		QtJambi_LibraryUtilities.initialize();
 		boolean _useAnnotatedType = false;
@@ -105,7 +106,7 @@ final class ClassAnalyzerUtility {
 	private static interface Check {
 		void check() throws Exception;
 	}
-	private static final Map<QPair<Class<? extends QtObjectInterface>, Class<?>>, Check> checkedClasses = Collections.synchronizedMap(new HashMap<>());
+	private static final Map<Map.Entry<Class<? extends QtObjectInterface>, Class<?>>, Check> checkedClasses = Collections.synchronizedMap(new HashMap<>());
 
 	private final static class Throwing implements Check {
 		public Throwing(Exception exn) {
@@ -149,19 +150,19 @@ final class ClassAnalyzerUtility {
 
 	@NativeAccess
 	private static void checkImplementation(Class<? extends QtObjectInterface> originalType, Class<?> subType) throws Exception {
-		QPair<Class<? extends QtObjectInterface>, Class<?>> _pair = new QPair<>(originalType, subType);
+		Map.Entry<Class<? extends QtObjectInterface>, Class<?>> _pair = new AbstractMap.SimpleEntry<>(originalType, subType);
 		checkedClasses.computeIfAbsent(_pair, pair -> {
-			Class<?> cls = pair.first;
-			if(pair.first.isInterface()) {
-				cls = findDefaultImplementation(pair.first);
+			Class<?> cls = pair.getKey();
+			if(cls.isInterface()) {
+				cls = findDefaultImplementation(pair.getKey());
 				if (cls == null) {
-					if(pair.first!=pair.second)
-						return new Throwing(new ClassNotFoundException("Implementation of " + pair.first.getName()));
+					if(pair.getKey()!=pair.getValue())
+						return new Throwing(new ClassNotFoundException("Implementation of " + pair.getKey().getName()));
 				}
 			}
 			List<Method> virtualProtectedMethods = new ArrayList<>();
 			List<Method> finalMethods = new ArrayList<>();
-			if(pair.first.isInterface()) {
+			if(pair.getKey().isInterface()) {
 				while (cls != null) {
 					for (Method method : cls.getDeclaredMethods()) {
 						int mod = method.getModifiers();
@@ -178,7 +179,7 @@ final class ClassAnalyzerUtility {
 						break;
 					cls = cls.getSuperclass();
 				}
-			}else if(pair.first!=pair.second && !isGeneratedClass(pair.second)){
+			}else if(pair.getKey()!=pair.getValue() && !isGeneratedClass(pair.getValue())){
 				while (cls != null) {
 					for (Method method : cls.getDeclaredMethods()) {
 						int mod = method.getModifiers();
@@ -199,21 +200,21 @@ final class ClassAnalyzerUtility {
 				List<Method> nonFinalMethods = new ArrayList<>();
 				List<Method> nonOverridableMethods = new ArrayList<>();
 				for (Method method : virtualProtectedMethods) {
-					if (findAccessibleMethod(method, pair.second) == null) {
+					if (findAccessibleMethod(method, pair.getValue()) == null) {
 						missingMethods.add(method);
 					}
 				}
 				for (Method method : finalMethods) {
-					Method implMethod = findAccessibleMethod(method, pair.second);
+					Method implMethod = findAccessibleMethod(method, pair.getValue());
 					if (Modifier.isProtected(method.getModifiers())) {
-						if (implMethod != null && implMethod.getDeclaringClass() != pair.first
+						if (implMethod != null && implMethod.getDeclaringClass() != pair.getKey()
 								&& implMethod.getDeclaringClass() != QtObjectInterface.class
 								&& !Modifier.isFinal(implMethod.getModifiers())
 								&& !nonFinalMethods.contains(implMethod)) {
 							nonFinalMethods.add(implMethod);
 						}
 					} else if (implMethod != null) {
-						if (implMethod.getDeclaringClass() != pair.first
+						if (implMethod.getDeclaringClass() != pair.getKey()
 								&& implMethod.getDeclaringClass() != QtObject.class
 								&& !isGeneratedClass(implMethod.getDeclaringClass())
 								&& !implMethod.isAnnotationPresent(QtFinalOverride.class)
@@ -256,7 +257,7 @@ final class ClassAnalyzerUtility {
 					builder.append(')');
 					return new Throwing(new QMissingVirtualOverridingException(String.format(
 							"Incomplete %1$s subtype: Class %2$s needs to implement virtual method: %3$s",
-							pair.first.getSimpleName(), pair.second.getName(), builder)));
+							pair.getKey().getSimpleName(), pair.getValue().getName(), builder)));
 				} else if (missingMethods.size() > 1) {
 					StringBuilder builder = new StringBuilder();
 					for (Method method : missingMethods) {
@@ -296,7 +297,7 @@ final class ClassAnalyzerUtility {
 					}
 					return new Throwing(new QMissingVirtualOverridingException(String.format(
 							"Incomplete %1$s subtype: Class %2$s needs to implement following virtual methods: %3$s",
-							pair.first.getSimpleName(), pair.second.getName(), builder)));
+							pair.getKey().getSimpleName(), pair.getValue().getName(), builder)));
 				}
 	
 				if (nonFinalMethods.size() == 1) {
@@ -334,7 +335,7 @@ final class ClassAnalyzerUtility {
 					builder.append(')');
 					return new Throwing(new QNonVirtualOverridingException(String.format(
 							"Malformed %1$s subtype: Following method has to be declared final in class %2$s: %3$s",
-							pair.first.getSimpleName(), pair.second.getName(), builder), true));
+							pair.getKey().getSimpleName(), pair.getValue().getName(), builder), true));
 				} else if (nonFinalMethods.size() > 1) {
 					StringBuilder builder = new StringBuilder();
 					for (Method method : nonFinalMethods) {
@@ -375,7 +376,7 @@ final class ClassAnalyzerUtility {
 					}
 					return new Throwing(new QNonVirtualOverridingException(String.format(
 							"Malformed %1$s subtype: Following methods have to be declared final in class %2$s: %3$s",
-							pair.first.getSimpleName(), pair.second.getName(), builder), true));
+							pair.getKey().getSimpleName(), pair.getValue().getName(), builder), true));
 				}
 	
 				if (nonOverridableMethods.size() == 1) {
@@ -413,7 +414,7 @@ final class ClassAnalyzerUtility {
 					builder.append(')');
 					return new Throwing(new QNonVirtualOverridingException(
 							String.format("Malformed %1$s subtype: Class %2$s overrides following final method: %3$s",
-									pair.first.getSimpleName(), pair.second.getName(), builder),
+									pair.getKey().getSimpleName(), pair.getValue().getName(), builder),
 							true));
 				} else if (nonOverridableMethods.size() > 1) {
 					StringBuilder builder = new StringBuilder();
@@ -455,7 +456,7 @@ final class ClassAnalyzerUtility {
 					}
 					return new Throwing(new QNonVirtualOverridingException(
 							String.format("Malformed %1$s subtype: Class %2$s overrides following final methods: %3$s",
-									pair.first.getSimpleName(), pair.second.getName(), builder),
+									pair.getKey().getSimpleName(), pair.getValue().getName(), builder),
 							true));
 				}
 			}
@@ -905,7 +906,7 @@ final class ClassAnalyzerUtility {
 		if (slotClass.isSynthetic()
 				//&& className.contains("Lambda$") && className.contains("/")
 				) {
-			MethodInfo methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(slotClass);
+			LambdaInfo.MethodInfo methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(slotClass);
 			SerializedLambda serializedLambda = null;
 			if(methodInfo==null) {
 				serializedLambda = serializeLambdaExpression(slotObject);
@@ -998,7 +999,7 @@ final class ClassAnalyzerUtility {
 		if (slotClass.isSynthetic()
 				//&& className.contains("Lambda$") && className.contains("/")
 				) {
-			MethodInfo methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(slotClass);
+			LambdaInfo.MethodInfo methodInfo = ClassAnalyzerUtility.lambdaSlotHandles(slotClass);
 			SerializedLambda serializedLambda = null;
 			if(methodInfo==null) {
 				serializedLambda = serializeLambdaExpression(slotObject);
@@ -1297,11 +1298,11 @@ final class ClassAnalyzerUtility {
 		return null;
 	}
 
-	static MethodInfo lambdaSlotHandles(Class<?> slotClass) {
+	static LambdaInfo.MethodInfo lambdaSlotHandles(Class<?> slotClass) {
 		return lambdaSlotHandles.get(slotClass);
 	}
 
-	static MethodInfo lambdaSlotHandles(Class<?> slotClass, SerializedLambda serializedLambda) {
+	static LambdaInfo.MethodInfo lambdaSlotHandles(Class<?> slotClass, SerializedLambda serializedLambda) {
 		return lambdaSlotHandles.computeIfAbsent(slotClass, cls -> {
 			Class<?> implClass = null;
 			MethodHandle methodHandle = null;
@@ -1382,7 +1383,7 @@ final class ClassAnalyzerUtility {
 			}
 			if (methodHandle!=null && methodHandle.isVarargsCollector())
 				methodHandle = methodHandle.asFixedArity();
-			return new MethodInfo(implClass, 
+			return new LambdaInfo.MethodInfo(implClass, 
 					LambdaTools.getCapturedArgCount(serializedLambda)>0, 
 					ownerIndex, 
 					qobjectIndex,

@@ -306,6 +306,9 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
         || (java_class->typeEntry()->isThreadAffine() && java_class->typeEntry()->threadAffinity()==QStringLiteral(u"pixmap"))){
         writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/GuiAPI")), included);
     }
+    if(java_class->isQWindow()){
+        writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/QNativeEvent")), included);
+    }
     if(java_class->hasPaintMethod())
         writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/AboutToPaint")), included);
     if(java_class->typeEntry()->isQAbstractItemModel())
@@ -570,6 +573,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
         bool needsAccess = java_class->typeEntry()->isDestructorProtected();
         QList<MetaEnum *> protectedEnums;
         QList<const MetaFunction *> publicOverrideFunctions;
+        QMap<const MetaClass*,QList<const MetaFunction *>> privateOverrideFunctions;
         QList<const MetaFunction *> virtualOverrideFunctions;
         if(java_class->generateShellClass()){
             for(MetaEnum *cpp_enum : java_class->enums()){
@@ -585,14 +589,19 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
                 }
             }
             for(const MetaFunction *function : java_class->publicOverrideFunctions()) {
-                if((functionsInTargetLang.contains(function) || signalsInTargetLang.contains(function))
-                    && !function->isProxyCall())
+                if(function->wasPrivate() && function->superFunction() && !function->superFunction()->wasPublic()){
+                    privateOverrideFunctions[function->superFunction()->implementingClass()] << function->superFunction();
+                }else if((functionsInTargetLang.contains(function) || signalsInTargetLang.contains(function))
+                           && !function->isProxyCall()){
                     publicOverrideFunctions << function;
+                }
             }
 
             // Override all virtual functions to get the decision on static/virtual call
             for(const MetaFunction *function : java_class->virtualOverrideFunctions()) {
-                if(!function->hasUnresolvedTemplateTypes()
+                if(function->wasPrivate() && function->superFunction() && !function->superFunction()->wasPublic()){
+                    privateOverrideFunctions[function->superFunction()->implementingClass()] << function->superFunction();
+                }else if(!function->hasUnresolvedTemplateTypes()
                     && !function->isRemovedFrom(java_class, TS::TargetLangCode)
                     && !function->isRemovedFrom(function->declaringClass(), TS::TargetLangCode)
                     && !function->isModifiedRemoved(TS::NativeCode)
@@ -700,6 +709,20 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
                         }
                     }
                     s << INDENT << "}" << Qt::endl;
+                }
+            }
+            s  << "};" << Qt::endl << Qt::endl;
+        }
+        for(auto iter = privateOverrideFunctions.constKeyValueBegin(), end = privateOverrideFunctions.constKeyValueEnd(); iter!=end; ++iter){
+            s << "struct " << (java_class->typeEntry()->designatedInterface() ? java_class->extractInterface()->name() : java_class->name())
+              << "_" << (iter->first->typeEntry()->designatedInterface() ? iter->first->extractInterface()->name() : iter->first->name()) << "_access"
+              << " : public " << iter->first->qualifiedCppName() << Qt::endl
+              << "{" << Qt::endl;
+            {
+                INDENTATION(INDENT);
+                // Public call throughs for protected functions
+                for(const MetaFunction *function : iter->second) {
+                    writeFunctionOverride(s, function, "__qt_");
                 }
             }
             s  << "};" << Qt::endl << Qt::endl;

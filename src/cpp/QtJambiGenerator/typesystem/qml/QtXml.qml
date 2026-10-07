@@ -139,8 +139,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString errorMsg;\n"+
-                                  "QString *%out = &errorMsg;"}
+                    Text{content: String.raw`
+                        QString errorMsg;
+                        QString *%out = &errorMsg;`}
                 }
             }
             ModifyArgument{
@@ -149,8 +150,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint errorLine = 0;\n"+
-                                  "int *%out = reinterpret_cast<int *>(&errorLine);"}
+                    Text{content: String.raw`
+                        jint errorLine = 0;
+                        int *%out = reinterpret_cast<int *>(&errorLine);`}
                 }
             }
             ModifyArgument{
@@ -159,8 +161,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint errorColumn = 0;\n"+
-                                  "int *%out = reinterpret_cast<int *>(&errorColumn);"}
+                    Text{content: String.raw`
+                        jint errorColumn = 0;
+                        int *%out = reinterpret_cast<int *>(&errorColumn);`}
                 }
             }
             ModifyArgument{
@@ -190,8 +193,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString errorMsg;\n"+
-                                  "QString *%out = &errorMsg;"}
+                    Text{content: String.raw`
+                        QString errorMsg;
+                        QString *%out = &errorMsg;`}
                 }
             }
             ModifyArgument{
@@ -200,8 +204,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint errorLine = 0;\n"+
-                                  "int *%out = reinterpret_cast<int *>(&errorLine);"}
+                    Text{content: String.raw`
+                        jint errorLine = 0;
+                        int *%out = reinterpret_cast<int *>(&errorLine);`}
                 }
             }
             ModifyArgument{
@@ -210,8 +215,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint errorColumn = 0;\n"+
-                                  "int *%out = reinterpret_cast<int *>(&errorColumn);"}
+                    Text{content: String.raw`
+                        jint errorColumn = 0;
+                        int *%out = reinterpret_cast<int *>(&errorColumn);`}
                 }
             }
             ModifyArgument{
@@ -234,8 +240,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString errorMsg;\n"+
-                                  "QString *%out = &errorMsg;"}
+                    Text{content: String.raw`
+                        QString errorMsg;
+                        QString *%out = &errorMsg;`}
                 }
             }
             ModifyArgument{
@@ -244,8 +251,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint errorLine = 0;\n"+
-                                  "int *%out = reinterpret_cast<int *>(&errorLine);"}
+                    Text{content: String.raw`
+                        jint errorLine = 0;
+                        int *%out = reinterpret_cast<int *>(&errorLine);`}
                 }
             }
             ModifyArgument{
@@ -254,8 +262,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint errorColumn = 0;\n"+
-                                  "int *%out = reinterpret_cast<int *>(&errorColumn);"}
+                    Text{content: String.raw`
+                        jint errorColumn = 0;
+                        int *%out = reinterpret_cast<int *>(&errorColumn);`}
                 }
             }
             ModifyArgument{
@@ -278,8 +287,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString errorMsg;\n"+
-                                  "QString *%out = &errorMsg;"}
+                    Text{content: String.raw`
+                        QString errorMsg;
+                        QString *%out = &errorMsg;`}
                 }
             }
             ModifyArgument{
@@ -288,8 +298,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint errorLine = 0;\n"+
-                                  "int *%out = reinterpret_cast<int *>(&errorLine);"}
+                    Text{content: String.raw`
+                        jint errorLine = 0;
+                        int *%out = reinterpret_cast<int *>(&errorLine);`}
                 }
             }
             ModifyArgument{
@@ -298,8 +309,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint errorColumn = 0;\n"+
-                                  "int *%out = reinterpret_cast<int *>(&errorColumn);"}
+                    Text{content: String.raw`
+                        jint errorColumn = 0;
+                        int *%out = reinterpret_cast<int *>(&errorColumn);`}
                 }
             }
             ModifyArgument{
@@ -322,8 +334,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString errorMsg;\n"+
-                                  "QString *%out = &errorMsg;"}
+                    Text{content: String.raw`
+                        QString errorMsg;
+                        QString *%out = &errorMsg;`}
                 }
             }
             ModifyArgument{
@@ -332,8 +345,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint errorLine = 0;\n"+
-                                  "int *%out = reinterpret_cast<int *>(&errorLine);"}
+                    Text{content: String.raw`
+                        jint errorLine = 0;
+                        int *%out = reinterpret_cast<int *>(&errorLine);`}
                 }
             }
             ModifyArgument{
@@ -342,8 +356,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint errorColumn = 0;\n"+
-                                  "int *%out = reinterpret_cast<int *>(&errorColumn);"}
+                    Text{content: String.raw`
+                        jint errorColumn = 0;
+                        int *%out = reinterpret_cast<int *>(&errorColumn);`}
                 }
             }
             ModifyArgument{
@@ -367,8 +382,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString errorMsg;\n"+
-                                  "QString *%out = &errorMsg;"}
+                    Text{content: String.raw`
+                        QString errorMsg;
+                        QString *%out = &errorMsg;`}
                 }
             }
             ModifyArgument{
@@ -377,8 +393,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint errorLine = 0;\n"+
-                                  "int *%out = reinterpret_cast<int *>(&errorLine);"}
+                    Text{content: String.raw`
+                        jint errorLine = 0;
+                        int *%out = reinterpret_cast<int *>(&errorLine);`}
                 }
             }
             ModifyArgument{
@@ -387,8 +404,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint errorColumn = 0;\n"+
-                                  "int *%out = reinterpret_cast<int *>(&errorColumn);"}
+                    Text{content: String.raw`
+                        jint errorColumn = 0;
+                        int *%out = reinterpret_cast<int *>(&errorColumn);`}
                 }
             }
             ModifyArgument{
@@ -419,8 +437,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString errorMsg;\n"+
-                                  "QString *%out = &errorMsg;"}
+                    Text{content: String.raw`
+                        QString errorMsg;
+                        QString *%out = &errorMsg;`}
                 }
             }
             ModifyArgument{
@@ -429,8 +448,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint errorLine = 0;\n"+
-                                  "int *%out = reinterpret_cast<int *>(&errorLine);"}
+                    Text{content: String.raw`
+                        jint errorLine = 0;
+                        int *%out = reinterpret_cast<int *>(&errorLine);`}
                 }
             }
             ModifyArgument{
@@ -439,8 +459,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint errorColumn = 0;\n"+
-                                  "int *%out = reinterpret_cast<int *>(&errorColumn);"}
+                    Text{content: String.raw`
+                        jint errorColumn = 0;
+                        int *%out = reinterpret_cast<int *>(&errorColumn);`}
                 }
             }
             ModifyArgument{

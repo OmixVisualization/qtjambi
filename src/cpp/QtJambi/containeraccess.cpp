@@ -2089,55 +2089,51 @@ ReferenceCountingSetContainer* ReferenceCountingSetContainer::asRCSet() { return
 ReferenceCountingMapContainer* ReferenceCountingMapContainer::asRCMap() { return this; }
 ReferenceCountingMultiMapContainer* ReferenceCountingMultiMapContainer::asRCMultiMap() { return this; }
 
-void registerContainerConverter(SequentialContainerType collectionType, const QMetaType& containerMetaType, const QMetaType& _elementMetaType){
+void registerContainerConverter(QSharedPointer<AbstractSequentialAccess>&& containerAccess, const QMetaType& containerMetaType){
     QMetaType jCollectionWrapperType = QMetaType::fromType<JCollectionWrapper>();
     QMetaType jObjectWrapperType = QMetaType::fromType<JObjectWrapper>();
-    QMetaType elementMetaType = _elementMetaType;
     if(!QMetaType::hasRegisteredConverterFunction(jCollectionWrapperType, containerMetaType)
-            || !QMetaType::hasRegisteredConverterFunction(jObjectWrapperType, containerMetaType)){
-        QMetaType::ConverterFunction converter = [collectionType,elementMetaType](const void *src, void *target) -> bool {
+        || !QMetaType::hasRegisteredConverterFunction(jObjectWrapperType, containerMetaType)){
+        bool isSpan = containerAccess->isSpan();
+        QMetaType::ConverterFunction converter = [containerAccess = std::move(containerAccess)](const void *src, void *target) -> bool {
             if(src){
                 if(JniEnvironment env{500}){
                     const JObjectWrapper* javaObject = reinterpret_cast<const JObjectWrapper*>(src);
                     jobject jobj;
-                    if(javaObject && Java::QtJambi::NativeUtility$Object::isInstanceOf(env, jobj = javaObject->object(env))){
-                        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, jobj)){
-                            if(AbstractContainerAccess* _containerAccess = link->containerAccess()){
-                                switch(collectionType){
-                                case SequentialContainerType::QStack:
-                                case SequentialContainerType::QQueue:
-                                case SequentialContainerType::QList:
-                                    if(_containerAccess->isList()){
-                                        AbstractListAccess* containerAccess = static_cast<AbstractListAccess*>(_containerAccess);
-                                        if(elementMetaType==containerAccess->elementMetaType()){
-                                            containerAccess->assign(target, link->pointer());
-                                            return true;
-                                        }
-                                    }
-                                    break;
-                                case SequentialContainerType::QSet:
-                                    if(_containerAccess->isSet()){
-                                        AbstractSetAccess* containerAccess = static_cast<AbstractSetAccess*>(_containerAccess);
-                                        if(elementMetaType==containerAccess->elementMetaType()){
-                                            containerAccess->assign(target, link->pointer());
-                                            return true;
-                                        }
-                                    }
-                                    break;
+                    if(javaObject && (jobj = javaObject->object(env))){
+                        if(Java::QtJambi::NativeUtility$Object::isInstanceOf(env, jobj)){
+                            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, jobj)){
+                                if(AbstractContainerAccess* _containerAccess = link->containerAccess()){
+                                    if((containerAccess->isList() && _containerAccess->isList())
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
-                                case SequentialContainerType::QConstSpan:
-                                case SequentialContainerType::QSpan:
-                                    if(_containerAccess->isSpan()){
-                                        AbstractSpanAccess* containerAccess = static_cast<AbstractSpanAccess*>(_containerAccess);
-                                        if(elementMetaType==containerAccess->elementMetaType()){
+                                        || (containerAccess->isSpan() && _containerAccess->isSpan())
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+                                        || (containerAccess->isSet() && _containerAccess->isSet())){
+                                        AbstractSequentialAccess* __containerAccess = static_cast<AbstractSequentialAccess*>(_containerAccess);
+                                        if(__containerAccess->elementMetaType()==containerAccess->elementMetaType()){
                                             containerAccess->assign(target, link->pointer());
                                             return true;
                                         }
                                     }
-                                    break;
-#endif //QT_VERSION >= QT_VERSION_CHECK(6,7,0)
                                 }
+                            }else{
+                                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, jobj)) QTJAMBI_STACKTRACEINFO );
                             }
+                        }
+                        if(containerAccess->isList()){
+                            jobject targetObject = QtJambiAPI::findObject(env, target);
+                            AbstractListAccess* __containerAccess = static_cast<AbstractListAccess*>(containerAccess.get());
+                            __containerAccess->clear(env, ContainerInfo{targetObject, target});
+                            ContainerAndAccessInfo other(jobj);
+                            __containerAccess->appendList(env, ContainerInfo{targetObject, target}, other);
+                            return true;
+                        }else if(containerAccess->isSet()){
+                            jobject targetObject = QtJambiAPI::findObject(env, target);
+                            AbstractSetAccess* __containerAccess = static_cast<AbstractSetAccess*>(containerAccess.get());
+                            __containerAccess->clear(env, ContainerInfo{targetObject, target});
+                            ContainerAndAccessInfo other(jobj);
+                            __containerAccess->unite(env, ContainerInfo{targetObject, target}, other);
+                            return true;
                         }
                     }
                 }
@@ -2146,69 +2142,91 @@ void registerContainerConverter(SequentialContainerType collectionType, const QM
         };
         if(!QMetaType::hasRegisteredConverterFunction(jCollectionWrapperType, containerMetaType)
 #if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
-                && collectionType!=SequentialContainerType::QConstSpan
-                && collectionType!=SequentialContainerType::QSpan
+            && !isSpan
 #endif
-                )
+            )
             QMetaType::registerConverterFunction(converter, jCollectionWrapperType, containerMetaType);
         if(!QMetaType::hasRegisteredConverterFunction(jObjectWrapperType, containerMetaType))
             QMetaType::registerConverterFunction(converter, jObjectWrapperType, containerMetaType);
     }
 }
 
-void registerContainerConverter(AssociativeContainerType mapType, const QMetaType& containerMetaType, const QMetaType& _keyMetaType, const QMetaType& _valueMetaType){
-    QMetaType jCollectionWrapperType = QMetaType::fromType<JCollectionWrapper>();
+void registerContainerConverter(QSharedPointer<AbstractAssociativeAccess>&& containerAccess, const QMetaType& containerMetaType){
+    QMetaType jCollectionWrapperType = QMetaType::fromType<JMapWrapper>();
     QMetaType jObjectWrapperType = QMetaType::fromType<JObjectWrapper>();
-    QMetaType keyMetaType = _keyMetaType;
-    QMetaType valueMetaType = _valueMetaType;
     if(!QMetaType::hasRegisteredConverterFunction(jCollectionWrapperType, containerMetaType)
-            || !QMetaType::hasRegisteredConverterFunction(jObjectWrapperType, containerMetaType)){
-        QMetaType::ConverterFunction converter = [mapType,keyMetaType,valueMetaType](const void *src, void *target) -> bool {
+        || !QMetaType::hasRegisteredConverterFunction(jObjectWrapperType, containerMetaType)){
+        QMetaType::ConverterFunction converter = [containerAccess = std::move(containerAccess)](const void *src, void *target) -> bool {
             if(src){
                 if(JniEnvironment env{500}){
                     const JObjectWrapper* javaObject = reinterpret_cast<const JObjectWrapper*>(src);
                     jobject jobj;
-                    if(javaObject && Java::QtJambi::NativeUtility$Object::isInstanceOf(env, jobj = javaObject->object(env))){
-                        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, jobj)){
-                            if(AbstractContainerAccess* _containerAccess = link->containerAccess()){
-                                switch(mapType){
-                                case AssociativeContainerType::QMap:
-                                    if(_containerAccess->isMap()){
-                                        AbstractMapAccess* containerAccess = static_cast<AbstractMapAccess*>(_containerAccess);
-                                        if(keyMetaType==containerAccess->keyMetaType() && valueMetaType==containerAccess->valueMetaType()){
+                    if(javaObject && (jobj = javaObject->object(env))){
+                        if(Java::QtJambi::NativeUtility$Object::isInstanceOf(env, jobj)){
+                            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, jobj)){
+                                if(AbstractContainerAccess* _containerAccess = link->containerAccess()){
+                                    if((containerAccess->isMap() && _containerAccess->isMap())
+                                        || (containerAccess->isHash() && _containerAccess->isHash())
+                                        || (containerAccess->isMultiMap() && _containerAccess->isMultiMap())
+                                        || (containerAccess->isMultiHash() && _containerAccess->isMultiHash())){
+                                        AbstractAssociativeAccess* __containerAccess = static_cast<AbstractAssociativeAccess*>(containerAccess.get());
+                                        if(__containerAccess->keyMetaType()==containerAccess->keyMetaType() && __containerAccess->valueMetaType()==containerAccess->valueMetaType()){
                                             containerAccess->assign(target, link->pointer());
                                             return true;
                                         }
                                     }
-                                    break;
-                                case AssociativeContainerType::QHash:
-                                    if(_containerAccess->isHash()){
-                                        AbstractHashAccess* containerAccess = static_cast<AbstractHashAccess*>(_containerAccess);
-                                        if(keyMetaType==containerAccess->keyMetaType() && valueMetaType==containerAccess->valueMetaType()){
-                                            containerAccess->assign(target, link->pointer());
-                                            return true;
+                                }
+                            }
+                        }
+                        if(Java::Runtime::Map::isInstanceOf(env, jobj)){
+                            jobject targetObject = QtJambiAPI::findObject(env, target);
+                            if(containerAccess->isMap()){
+                                AbstractMapAccess* __containerAccess = static_cast<AbstractMapAccess*>(containerAccess.get());
+                                jobject it = Java::Runtime::Iterable::iterator(env, Java::Runtime::Map::entrySet(env, jobj));
+                                while(Java::Runtime::Iterator::hasNext(env, it)){
+                                    jobject o = Java::Runtime::Iterator::next(env, it);
+                                    __containerAccess->insert(env, ContainerInfo{targetObject, target}, Java::Runtime::Map$Entry::getKey(env, o), Java::Runtime::Map$Entry::getValue(env, o));
+                                }
+                            }else if(containerAccess->isHash()){
+                                AbstractHashAccess* __containerAccess = static_cast<AbstractHashAccess*>(containerAccess.get());
+                                jobject it = Java::Runtime::Iterable::iterator(env, Java::Runtime::Map::entrySet(env, jobj));
+                                while(Java::Runtime::Iterator::hasNext(env, it)){
+                                    jobject o = Java::Runtime::Iterator::next(env, it);
+                                    __containerAccess->insert(env, ContainerInfo{targetObject, target}, Java::Runtime::Map$Entry::getKey(env, o), Java::Runtime::Map$Entry::getValue(env, o));
+                                }
+                            }else if(containerAccess->isMultiMap()){
+                                AbstractMultiMapAccess* __containerAccess = static_cast<AbstractMultiMapAccess*>(containerAccess.get());
+                                jobject it = Java::Runtime::Iterable::iterator(env, Java::Runtime::Map::entrySet(env, jobj));
+                                while(Java::Runtime::Iterator::hasNext(env, it)){
+                                    jobject o = Java::Runtime::Iterator::next(env, it);
+                                    jobject key = Java::Runtime::Map$Entry::getKey(env, o);
+                                    jobject value = Java::Runtime::Map$Entry::getValue(env, o);
+                                    if(Java::Runtime::Collection::isInstanceOf(env, value)){
+                                        jobject it2 = Java::Runtime::Iterable::iterator(env, value);
+                                        while(Java::Runtime::Iterator::hasNext(env, it2)){
+                                            jobject v = Java::Runtime::Iterator::next(env, it2);
+                                            __containerAccess->insert(env, ContainerInfo{targetObject, target}, key, v);
                                         }
+                                    }else{
+                                        __containerAccess->insert(env, ContainerInfo{targetObject, target}, key, value);
                                     }
-                                    break;
-                                case AssociativeContainerType::QMultiMap:
-                                    if(_containerAccess->isMultiMap()){
-                                        AbstractMultiMapAccess* containerAccess = static_cast<AbstractMultiMapAccess*>(_containerAccess);
-                                        if(keyMetaType==containerAccess->keyMetaType() && valueMetaType==containerAccess->valueMetaType()){
-                                            containerAccess->assign(target, link->pointer());
-                                            return true;
+                                }
+                            }else if(containerAccess->isMultiHash()){
+                                AbstractMultiHashAccess* __containerAccess = static_cast<AbstractMultiHashAccess*>(containerAccess.get());
+                                jobject it = Java::Runtime::Iterable::iterator(env, Java::Runtime::Map::entrySet(env, jobj));
+                                while(Java::Runtime::Iterator::hasNext(env, it)){
+                                    jobject o = Java::Runtime::Iterator::next(env, it);
+                                    jobject key = Java::Runtime::Map$Entry::getKey(env, o);
+                                    jobject value = Java::Runtime::Map$Entry::getValue(env, o);
+                                    if(Java::Runtime::Collection::isInstanceOf(env, value)){
+                                        jobject it2 = Java::Runtime::Iterable::iterator(env, value);
+                                        while(Java::Runtime::Iterator::hasNext(env, it2)){
+                                            jobject v = Java::Runtime::Iterator::next(env, it2);
+                                            __containerAccess->insert(env, ContainerInfo{targetObject, target}, key, v);
                                         }
+                                    }else{
+                                        __containerAccess->insert(env, ContainerInfo{targetObject, target}, key, value);
                                     }
-                                    break;
-                                case AssociativeContainerType::QMultiHash:
-                                    if(_containerAccess->isMultiHash()){
-                                        AbstractMultiHashAccess* containerAccess = static_cast<AbstractMultiHashAccess*>(_containerAccess);
-                                        if(keyMetaType==containerAccess->keyMetaType() && valueMetaType==containerAccess->valueMetaType()){
-                                            containerAccess->assign(target, link->pointer());
-                                            return true;
-                                        }
-                                    }
-                                    break;
-                                default: break;
                                 }
                             }
                         }
@@ -2224,7 +2242,7 @@ void registerContainerConverter(AssociativeContainerType mapType, const QMetaTyp
     }
 }
 
-void registerContainerConverter(QSharedPointer<AbstractPairAccess> pairAccess, const QMetaType& containerMetaType){
+void registerContainerConverter(QSharedPointer<AbstractPairAccess>&& pairAccess, const QMetaType& containerMetaType){
     QMetaType jObjectWrapperType = QMetaType::fromType<JObjectWrapper>();
     if(!QMetaType::hasRegisteredConverterFunction(jObjectWrapperType, containerMetaType)){
         QMetaType::registerConverterFunction(

@@ -151,15 +151,12 @@ public:
         }
     }
     void *pointer() const override{
-        if constexpr(is_qobject){
-            return
 #ifndef AVAILABLE_IN_DELETION
-                isInDestructor() ||
+        if constexpr(is_qobject){
+            return isInDestructor() ? nullptr : m_pointer;
+        }else
 #endif
-                !isInitialized() ? nullptr : m_pointer;
-        }else{
-            return m_pointer;
-        }
+        return m_pointer;
     }
     void *plainPointer() const override final{
         return m_pointer;

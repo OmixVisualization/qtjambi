@@ -36,6 +36,13 @@ TypeSystem{
     module: "qtjambi.texttospeech"
     description: "Provides support for accessibility features such as text-to-speech."
 
+    InjectCode{
+        target: CodeClass.Java
+        position: Position.Position4
+        Text{content: String.raw`
+            loadUtilityLibrary("plugins_texttospeech_qttexttospeech_android", LibraryRequirementMode.Optional, "android");`}
+    }
+
     ObjectType{
         name: "QTextToSpeech"
 
@@ -107,17 +114,18 @@ TypeSystem{
                     }
                     ConversionRule{
                         codeClass: CodeClass.Native
-                        Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QAudioFormat& format, const QByteArray& buffer){\n"+
-                                      "                    if(JniEnvironment env{200}){\n"+
-                                      "                        QTJAMBI_TRY{\n"+
-                                      "                            jobject _format = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &format, Java::QtMultimedia::QAudioFormat::getClass(env));\n"+
-                                      "                            jobject _buffer = qtjambi_cast<jobject>(env, buffer);\n"+
-                                      "                            Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env), _format, _buffer);\n"+
-                                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                                      "                            exn.report(env);\n"+
-                                      "                        }QTJAMBI_TRY_END\n"+
-                                      "                    }\n"+
-                                      "                };"}
+                        Text{content: String.raw`
+auto %out = [slot = JObjectWrapper(%env, %in)](const QAudioFormat& format, const QByteArray& buffer){
+                    if(JniEnvironment env{200}){
+                        QTJAMBI_TRY{
+                            jobject _format = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &format, Java::QtMultimedia::QAudioFormat::getClass(env));
+                            jobject _buffer = qtjambi_cast<jobject>(env, buffer);
+                            Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(env), _format, _buffer);
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
+                    }
+                };`}
                     }
                 }
             }
@@ -135,16 +143,17 @@ TypeSystem{
                     }
                     ConversionRule{
                         codeClass: CodeClass.Native
-                        Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QAudioBuffer& buffer){\n"+
-                                      "                    if(JniEnvironment env{200}){\n"+
-                                      "                        QTJAMBI_TRY{\n"+
-                                      "                            jobject _buffer = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &buffer, Java::QtMultimedia::QAudioBuffer::getClass(env));\n"+
-                                      "                            Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), _buffer);\n"+
-                                      "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                                      "                            exn.report(env);\n"+
-                                      "                        }QTJAMBI_TRY_END\n"+
-                                      "                    }\n"+
-                                      "                };"}
+                        Text{content: String.raw`
+auto %out = [slot = JObjectWrapper(%env, %in)](const QAudioBuffer& buffer){
+                    if(JniEnvironment env{200}){
+                        QTJAMBI_TRY{
+                            jobject _buffer = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &buffer, Java::QtMultimedia::QAudioBuffer::getClass(env));
+                            Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(env), _buffer);
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
+                    }
+                };`}
                     }
                 }
             }
@@ -166,7 +175,7 @@ TypeSystem{
             since: 6.6
             Text{content: String.raw`
 /**
- * <p>See <code><a href="@docRoot/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
+ * <p>See <a href="@docRoot/qtexttospeech.html#findVoices"><code>QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</code></a></p>
  */
 public io.qt.core.QList<QVoice> findVoices(){
     io.qt.core.QList<QVoice> voices = allVoices(null);
@@ -174,7 +183,7 @@ public io.qt.core.QList<QVoice> findVoices(){
 }
 
 /**
- * <p>See <code><a href="@docRoot/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
+ * <p>See <a href="@docRoot/qtexttospeech.html#findVoices"><code>QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</code></a></p>
  */
 public io.qt.core.QList<QVoice> findVoices(java.lang.@NonNull String name){
     io.qt.core.QList<QVoice> voices = allVoices(new io.qt.core.QLocale(name));
@@ -182,7 +191,7 @@ public io.qt.core.QList<QVoice> findVoices(java.lang.@NonNull String name){
 }
 
 /**
- * <p>See <code><a href="@docRoot/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
+ * <p>See <a href="@docRoot/qtexttospeech.html#findVoices"><code>QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</code></a></p>
  */
 public io.qt.core.QList<QVoice> findVoices(io.qt.core.@NonNull QLocale locale){
     io.qt.core.QList<QVoice> voices = allVoices(locale);
@@ -190,7 +199,7 @@ public io.qt.core.QList<QVoice> findVoices(io.qt.core.@NonNull QLocale locale){
 }
 
 /**
- * <p>See <code><a href="@docRoot/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
+ * <p>See <a href="@docRoot/qtexttospeech.html#findVoices"><code>QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</code></a></p>
  */
 public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language language){
     io.qt.core.QList<QVoice> voices = allVoices(new io.qt.core.QLocale(language));
@@ -198,7 +207,7 @@ public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language 
 }
 
 /**
- * <p>See <code><a href="@docRoot/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
+ * <p>See <a href="@docRoot/qtexttospeech.html#findVoices"><code>QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</code></a></p>
  */
 public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language language, io.qt.core.QLocale.@NonNull Country territory){
     io.qt.core.QList<QVoice> voices = allVoices(new io.qt.core.QLocale(language, territory));
@@ -206,7 +215,7 @@ public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language 
 }
 
 /**
- * <p>See <code><a href="@docRoot/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
+ * <p>See <a href="@docRoot/qtexttospeech.html#findVoices"><code>QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</code></a></p>
  */
 public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language language, io.qt.core.QLocale.@NonNull Script script){
     io.qt.core.QList<QVoice> voices = allVoices(new io.qt.core.QLocale(language, script));
@@ -214,7 +223,7 @@ public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language 
 }
 
 /**
- * <p>See <code><a href="@docRoot/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
+ * <p>See <a href="@docRoot/qtexttospeech.html#findVoices"><code>QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</code></a></p>
  */
 public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language language, io.qt.core.QLocale.@NonNull Script script, io.qt.core.QLocale.@NonNull Country territory){
     io.qt.core.QList<QVoice> voices = allVoices(new io.qt.core.QLocale(language, script, territory));
@@ -262,8 +271,9 @@ public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language 
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
+                    Text{content: String.raw`
+                        QString %in;
+                        QString* %out = &%in;`}
                 }
             }
             InjectCode{
@@ -277,9 +287,10 @@ public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language 
                     index: 3
                     metaName: "%3"
                 }
-                Text{content: "if(!%0 && !%3.isEmpty()){\n"+
-                              "    JavaException::raise<Java::QtTextToSpeech::QTextToSpeechPlugin$CreateException>(%env, %3 QTJAMBI_STACKTRACEINFO );\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(!%0 && !%3.isEmpty()){
+                        JavaException::raise<Java::QtTextToSpeech::QTextToSpeechPlugin$CreateException>(%env, %3 QTJAMBI_STACKTRACEINFO );
+                    }`}
             }
             InjectCode{
                 target: CodeClass.Shell
@@ -293,25 +304,32 @@ public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language 
                     index: 3
                     metaName: "%3"
                 }
-                Text{content: "}QTJAMBI_CATCH(const JavaException& exn){\n"+
-                              "    if(exn.isInstanceOf(%env, Java::QtTextToSpeech::QTextToSpeechPlugin$CreateException::getClass(%env))){\n"+
-                              "        if(%3){\n"+
-                              "            jstring message = Java::QtTextToSpeech::QTextToSpeechPlugin$CreateException::getMessage(%env, exn.throwable(%env));\n"+
-                              "            *%3 = qtjambi_cast<QString>(%env, message);\n"+
-                              "        }\n"+
-                              "    }else{\n"+
-                              "        exn.raise();\n"+
-                              "    }\n"+
-                              "}QTJAMBI_TRY_END"}
+                Text{content: String.raw`
+}QTJAMBI_CATCH(const JavaException& exn){
+    if(exn.isInstanceOf(%env, Java::QtTextToSpeech::QTextToSpeechPlugin$CreateException::getClass(%env))){
+        if(%3){
+            jstring message = Java::QtTextToSpeech::QTextToSpeechPlugin$CreateException::getMessage(%env, exn.throwable(%env));
+            *%3 = qtjambi_cast<QString>(%env, message);
+        }
+    }else{
+        exn.raise();
+    }
+}QTJAMBI_TRY_END`}
             }
         }
         InjectCode{
-            Text{content: "public static class CreateException extends Exception {\n"+
-                          "    private static final long serialVersionUID = 5359890019927868780L;\n"+
-                          "    public CreateException(String message) {\n"+
-                          "        super(message);\n"+
-                          "    }\n"+
-                          "}"}
+            Text{content: String.raw`
+/**
+ * Exception for unsuccessful creation
+ * @see QTextToSpeechPlugin#createTextToSpeechEngine(java.util.Map, io.qt.core.QObject)
+ * @serial exclude
+ */
+public static class CreateException extends Exception {
+    private static final long serialVersionUID = 0L;
+    public CreateException(String message) {
+        super(message);
+    }
+}`}
         }
     }
 

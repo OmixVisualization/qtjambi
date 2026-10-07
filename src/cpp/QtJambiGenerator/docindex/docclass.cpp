@@ -30,6 +30,10 @@
 ****************************************************************************/
 
 #include "docclass.h"
+#include "docfunction.h"
+#include "docvariable.h"
+#include "docproperty.h"
+#include "doctypedef.h"
 
 DocClass::DocClass(QObject* parent):DocElement(parent),
     m_variables(),

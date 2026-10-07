@@ -39,7 +39,7 @@ TypeSystem{
 
     InjectCode{
         position: Position.Position3
-        Text{content: "QtUtilities.loadQtLibrary(\"QuickTemplates2\");"}
+        Text{content: String.raw`QtUtilities.loadQtLibrary("QuickTemplates2");`}
     }
     
     NamespaceType{

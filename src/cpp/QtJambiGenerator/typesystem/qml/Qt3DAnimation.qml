@@ -172,12 +172,13 @@ TypeSystem{
             signature: "setAnimationGroups(const QVector<Qt3DAnimation::QAnimationGroup *>&)"
             InjectCode{
                 position: Position.End
-                Text{content: "if(__rcAnimationGroup!=null){\n"+
-                              "    __rcAnimationGroup.clear();\n"+
-                              "}else{\n"+
-                              "    __rcAnimationGroup = new java.util.ArrayList<>();\n"+
-                              "}\n"+
-                              "__rcAnimationGroup.addAll(animationGroups);"}
+                Text{content: String.raw`
+                        if(__rcAnimationGroup!=null){
+                            __rcAnimationGroup.clear();
+                        }else{
+                            __rcAnimationGroup = new java.util.ArrayList<>();
+                        }
+                        __rcAnimationGroup.addAll(animationGroups);`}
             }
         }
         ModifyFunction{
@@ -208,12 +209,13 @@ TypeSystem{
             signature: "setAnimations(const QVector<Qt3DAnimation::QAbstractAnimation *>&)"
             InjectCode{
                 position: Position.End
-                Text{content: "if(__rcAnimation!=null){\n"+
-                              "    __rcAnimation.clear();\n"+
-                              "}else{\n"+
-                              "    __rcAnimation = new java.util.ArrayList<>();\n"+
-                              "}\n"+
-                              "__rcAnimation.addAll(animations);"}
+                Text{content: String.raw`
+                        if(__rcAnimation!=null){
+                            __rcAnimation.clear();
+                        }else{
+                            __rcAnimation = new java.util.ArrayList<>();
+                        }
+                        __rcAnimation.addAll(animations);`}
             }
         }
         ModifyFunction{
@@ -388,12 +390,13 @@ TypeSystem{
             signature: "setKeyframes(const QVector<Qt3DCore::QTransform*>&)"
             InjectCode{
                 position: Position.End
-                Text{content: "if(__rcKeyframe!=null){\n"+
-                              "    __rcKeyframe.clear();\n"+
-                              "}else{\n"+
-                              "    __rcKeyframe = new java.util.ArrayList<>();\n"+
-                              "}\n"+
-                              "__rcKeyframe.addAll(keyframes);"}
+                Text{content: String.raw`
+                    if(__rcKeyframe!=null){
+                        __rcKeyframe.clear();
+                    }else{
+                        __rcKeyframe = new java.util.ArrayList<>();
+                    }
+                    __rcKeyframe.addAll(keyframes);`}
             }
         }
         ModifyFunction{
@@ -460,12 +463,13 @@ TypeSystem{
             signature: "setMorphTargets(const QVector<Qt3DAnimation::QMorphTarget*>&)"
             InjectCode{
                 position: Position.End
-                Text{content: "if(__rcMorphTarget!=null){\n"+
-                              "    __rcMorphTarget.clear();\n"+
-                              "}else{\n"+
-                              "    __rcMorphTarget = new java.util.ArrayList<>();\n"+
-                              "}\n"+
-                              "__rcMorphTarget.addAll(targets);"}
+                Text{content: String.raw`
+                    if(__rcMorphTarget!=null){
+                        __rcMorphTarget.clear();
+                    }else{
+                        __rcMorphTarget = new java.util.ArrayList<>();
+                    }
+                    __rcMorphTarget.addAll(targets);`}
             }
         }
         ModifyFunction{
@@ -516,12 +520,13 @@ TypeSystem{
             signature: "setAttributes(const QList<Qt3DCore::QAttribute*>&)"
             InjectCode{
                 position: Position.End
-                Text{content: "if(__rcAttribute!=null){\n"+
-                              "    __rcAttribute.clear();\n"+
-                              "}else{\n"+
-                              "    __rcAttribute = new java.util.ArrayList<>();\n"+
-                              "}\n"+
-                              "__rcAttribute.addAll(attributes);"}
+                Text{content: String.raw`
+                    if(__rcAttribute!=null){
+                        __rcAttribute.clear();
+                    }else{
+                        __rcAttribute = new java.util.ArrayList<>();
+                    }
+                    __rcAttribute.addAll(attributes);`}
             }
         }
         ModifyFunction{
@@ -565,12 +570,13 @@ TypeSystem{
             signature: "setMorphTargets(const QVector<Qt3DAnimation::QMorphTarget*>&)"
             InjectCode{
                 position: Position.End
-                Text{content: "if(__rcMorphTarget!=null){\n"+
-                              "    __rcMorphTarget.clear();\n"+
-                              "}else{\n"+
-                              "    __rcMorphTarget = new java.util.ArrayList<>();\n"+
-                              "}\n"+
-                              "__rcMorphTarget.addAll(targets);"}
+                Text{content: String.raw`
+                    if(__rcMorphTarget!=null){
+                        __rcMorphTarget.clear();
+                    }else{
+                        __rcMorphTarget = new java.util.ArrayList<>();
+                    }
+                    __rcMorphTarget.addAll(targets);`}
             }
         }
         ModifyFunction{

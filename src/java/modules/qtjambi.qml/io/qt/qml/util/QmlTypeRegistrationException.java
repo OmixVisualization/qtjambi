@@ -32,6 +32,7 @@ package io.qt.qml.util;
 
 /**
  * Is thrown when a class cannot be registered as qml type.
+ * @serial exclude
  */
 public class QmlTypeRegistrationException extends RuntimeException{
 	static {

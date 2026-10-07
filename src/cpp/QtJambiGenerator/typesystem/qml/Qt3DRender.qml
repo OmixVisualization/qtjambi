@@ -34,7 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "Qt3DRender"
     module: "qtjambi.qt3drender"
-    description: "Contains classes that enable 2D and 3D rendering"
+    description: "The Qt 3D Render module contains classes that enable 2D and 3D rendering"
     RequiredLibrary{
         name: "QtConcurrent"
     }
@@ -1446,7 +1446,9 @@ TypeSystem{
         }
         InjectCode{
             target: CodeClass.Native
-            Text{content: "QT_WARNING_DISABLE_DEPRECATED\nQT_WARNING_DISABLE_GCC(\"-Wdeprecated-declarations\")"}
+            Text{content: String.raw`
+                QT_WARNING_DISABLE_DEPRECATED
+                QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")`}
         }
         ModifyFunction{
             signature: "operator==(const Qt3DRender::QTextureGenerator &) const"
@@ -1475,7 +1477,9 @@ TypeSystem{
 
         InjectCode{
             target: CodeClass.Native
-            Text{content: "QT_WARNING_DISABLE_DEPRECATED\nQT_WARNING_DISABLE_GCC(\"-Wdeprecated-declarations\")"}
+            Text{content: String.raw`
+                QT_WARNING_DISABLE_DEPRECATED
+                QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")`}
         }
         ModifyFunction{
             signature: "operator==(const Qt3DRender::QTextureImageDataGenerator &) const"
@@ -1671,8 +1675,9 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "QT_WARNING_DISABLE_CLANG(\"-Wdeprecated-copy\")\n"+
-                          "QT_WARNING_DISABLE_GCC(\"-Wdeprecated-copy\")"}
+            Text{content: String.raw`
+                QT_WARNING_DISABLE_CLANG("-Wdeprecated-copy")
+                QT_WARNING_DISABLE_GCC("-Wdeprecated-copy")`}
         }
 
         FunctionalType{

@@ -36,7 +36,10 @@ import java.util.function.*;
 import io.qt.*;
 
 abstract class AbstractIterator<T,Container extends QtObjectInterface> extends QtObject implements Cloneable{
-	
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
+
 	private static byte HAS_NEXT = 1;
 	private static byte HAS_PREVIOUS = 2;
 	private static byte IS_END = 3;
@@ -1469,12 +1472,6 @@ abstract class AbstractIterator<T,Container extends QtObjectInterface> extends Q
     public final boolean isValid() {
     	long nativeId = QtJambi_LibraryUtilities.internal.nativeId(this);
     	return nativeId!=0 && impl.isValid(nativeId);
-    }
-    
-	private static class CoreUtility extends io.qt.internal.CoreUtility{
-		protected static <A,B> Function<A,B> functionFromMethod(Method method){
-            return io.qt.internal.CoreUtility.functionFromMethod(method);
-        }
     }
 	
     @QtUninvokable

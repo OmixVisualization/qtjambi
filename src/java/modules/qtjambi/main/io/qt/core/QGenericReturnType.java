@@ -29,7 +29,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.Objects;
+import java.util.*;
 
 /**
  * <p>Specifies a function pointer's return type.</p>

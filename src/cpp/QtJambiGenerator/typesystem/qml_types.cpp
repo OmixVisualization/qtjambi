@@ -83,6 +83,19 @@ void PrimitiveType::setPreferredJavaType(bool newPreferredJavaType)
     emit preferredJavaTypeChanged();
 }
 
+QString PrimitiveType::getCast() const
+{
+    return cast;
+}
+
+void PrimitiveType::setCast(const QString &newCast)
+{
+    if (cast == newCast)
+        return;
+    cast = newCast;
+    emit castChanged();
+}
+
 ComplexType::ComplexType(QObject *parent)
     : AbstractType{parent}
 {
@@ -659,6 +672,19 @@ void ComplexType::setNonSealed(bool newNonSealed)
         return;
     nonSealed = newNonSealed;
     emit nonSealedChanged();
+}
+
+bool ComplexType::getAsDirectLink() const
+{
+    return asDirectLink;
+}
+
+void ComplexType::setAsDirectLink(bool newAsDirectLink)
+{
+    if (asDirectLink == newAsDirectLink)
+        return;
+    asDirectLink = newAsDirectLink;
+    emit asDirectLinkChanged();
 }
 
 bool ValueType::getIsPolymorphicBase() const

@@ -35,6 +35,18 @@ TypeSystem{
     qtLibrary: "QtLocation"
     module: "qtjambi.location"
     description: "Displays map, navigation, and place content in a QML application."
+    RequiredLibrary{
+        name: "QtQuickShapes"
+        mode: RequiredLibrary.ProvideOnly
+    }
+    RequiredLibrary{
+        name: "QtNetwork"
+        mode: RequiredLibrary.Optional
+    }
+    RequiredLibrary{
+        name: "QtDBus"
+        mode: RequiredLibrary.Optional
+    }
 
     Rejection{
         className: "QGeoRoute"

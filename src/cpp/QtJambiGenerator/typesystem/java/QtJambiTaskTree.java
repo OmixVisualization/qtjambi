@@ -784,6 +784,11 @@ public Storage(io.qt.QtUtilities.@StrictNonNull Supplier<StorageStruct> supplier
     initialize_native(this, structType, java.util.Objects.requireNonNull(supplier));
 }
 
+/**
+ * Active storage
+ * @see Storage#activeStorage()
+ * @param <StorageStruct>
+ */
 public static class ActiveStorage<StorageStruct extends java.lang.Object> {
     private final io.qt.core.QVariant activeStorage;
     private final Class<StorageStruct> structType;

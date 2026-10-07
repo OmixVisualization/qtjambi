@@ -31,6 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.core"
+    noPackageInfo: true
     defaultSuperClass: "QtObject"
     qtLibrary: "QtCore"
     module: "qtjambi"
@@ -38,9 +39,9 @@ TypeSystem{
     description: String.raw
 `<p>QtJambi base module containing QtCore, QtGui and QtWidgets.</p>
 <ul>
-<li>QtCore - Core non-graphical classes used by other modules.</li>
-<li>QtGui - Base classes for graphical user interface (GUI) components. Includes OpenGL.</li>
-<li>QtWidgets - Classes to extend Qt GUI with C++ widgets.</li>
+<li><a href="https://doc.qt.io/qt/qtcore-index.html"><b>QtCore</b></a> - Core non-graphical classes used by other modules.</li>
+<li><a href="https://doc.qt.io/qt/qtgui-index.html"><b>QtGui</b></a> - Base classes for graphical user interface (GUI) components. Includes OpenGL.</li>
+<li><a href="https://doc.qt.io/qt/qtwidgets-index.html"><b>QtWidgets</b></a> - Classes to extend Qt GUI with C++ widgets.</li>
 </ul>`
     InjectCode{
         target: CodeClass.MetaInfo
@@ -206,6 +207,21 @@ if(%in){
         };
 }`
             }
+    }
+
+    CodeTemplate{
+        name: "core.non-nullable.consumer.function"
+        Text{content: String.raw`
+            Q_ASSERT(%in);
+            auto %out = [wrapper = JObjectWrapper(%env, %in)](%TYPE value){
+                            if(JniEnvironment env{200}){
+                                QTJAMBI_TRY{
+                                    Java::Runtime::Consumer::accept(env, wrapper.object(env), qtjambi_cast<jobject>(env, std::move(value)));
+                                }QTJAMBI_CATCH(const JavaException& exn){
+                                    exn.report(env);
+                                }QTJAMBI_TRY_END
+                            }
+                        };`}
     }
 
     CodeTemplate{
@@ -2344,10 +2360,6 @@ Q_UNUSED(__qt_return_value)
     }
 
     Rejection{
-        className: "QAbstractNativeEventFilter"
-    }
-
-    Rejection{
         className: "QFSFileEnginePrivate"
     }
 
@@ -3221,6 +3233,7 @@ Q_UNUSED(__qt_return_value)
             javaName: "long"
             jniName: "jlong"
             preferredConversion: false
+            cast: "reinterpret"
         }
 
         ObjectType{
@@ -3781,25 +3794,27 @@ final void notifyObservers(io.qt.core.@Nullable QUntypedPropertyData propertyDat
         }
         InjectCode{
             target: CodeClass.Java
-            Text{content: "private native static int byteOrder();\n"+
-                          "private native static int wordSize();\n"+
-                          "\n"+
-                          "public static final Endian ByteOrder = Endian.resolve(byteOrder());\n"+
-                          "\n"+
-                          "public static final int WordSize = wordSize();"}
+            Text{content: String.raw`
+private native static int byteOrder();
+private native static int wordSize();
+
+public static final Endian ByteOrder = Endian.resolve(byteOrder());
+
+public static final int WordSize = wordSize();`}
         }
         InjectCode{
             target: CodeClass.Native
-            Text{content: "extern \"C\" Q_DECL_EXPORT jint JNICALL Java_io_qt_core_QSysInfo_byteOrder__\n"+
-                          "(JNIEnv *, jclass)\n"+
-                          "{\n"+
-                          "    return jint(QSysInfo::ByteOrder);\n"+
-                          "}\n"+
-                          "extern \"C\" Q_DECL_EXPORT jint JNICALL Java_io_qt_core_QSysInfo_wordSize__\n"+
-                          "(JNIEnv *, jclass)\n"+
-                          "{\n"+
-                          "    return jint(QSysInfo::WordSize);\n"+
-                          "}"}
+            Text{content: String.raw`
+extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_core_QSysInfo_byteOrder__
+(JNIEnv *, jclass)
+{
+    return jint(QSysInfo::ByteOrder);
+}
+extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_core_QSysInfo_wordSize__
+(JNIEnv *, jclass)
+{
+    return jint(QSysInfo::WordSize);
+}`}
         }
         ModifyField{
             name: "ByteOrder"
@@ -3913,7 +3928,7 @@ final void notifyObservers(io.qt.core.@Nullable QUntypedPropertyData propertyDat
                 target: CodeClass.Native
                 position: Position.Position5
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "QtJambiAPI::copyReferenceCount(__jni_env, __jni_object, nullptr, __jni_env->NewStringUTF(\"__rcData\"), %1);"}
+                Text{content: String.raw`QtJambiAPI::copyReferenceCount(__jni_env, __jni_object, nullptr, __jni_env->NewStringUTF("__rcData"), %1);`}
             }
         }
         InjectCode{
@@ -4046,8 +4061,9 @@ final void notifyObservers(io.qt.core.@Nullable QUntypedPropertyData propertyDat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "int yearNumber(0);\n"+
-                                  "int* %out = &yearNumber;"}
+                    Text{content: String.raw`
+                        int yearNumber(0);
+                        int* %out = &yearNumber;`}
                 }
             }
         }
@@ -4249,8 +4265,9 @@ final void notifyObservers(io.qt.core.@Nullable QUntypedPropertyData propertyDat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "int yearNumber(0);\n"+
-                                  "int* %out = &yearNumber;"}
+                    Text{content: String.raw`
+                        int yearNumber(0);
+                        int* %out = &yearNumber;`}
                 }
             }
             Delegate{name: "end"}
@@ -4388,12 +4405,13 @@ final void notifyObservers(io.qt.core.@Nullable QUntypedPropertyData propertyDat
             target: CodeClass.Native
             position: Position.Beginning
             since: [6, 2]
-            Text{content: "namespace QtJambiPrivate {\n"+
-                          "template<>\n"+
-                          "struct RegistryHelper<QPointF, false>{\n"+
-                          "    static void registerHashFunction(){ RegistryAPI::registerHashFunction(typeid(QPointF), [](const void* ptr, size_t seed)->size_t{ return !ptr ? 0 : qHash(*reinterpret_cast<const QPointF*>(ptr), QHashDummyValue(), seed); }); }\n"+
-                          "};\n"+
-                          "}"}
+            Text{content: String.raw`
+namespace QtJambiPrivate {
+template<>
+struct RegistryHelper<QPointF, false>{
+    static void registerHashFunction(){ RegistryAPI::registerHashFunction(typeid(QPointF), [](const void* ptr, size_t seed)->size_t{ return !ptr ? 0 : qHash(*reinterpret_cast<const QPointF*>(ptr), QHashDummyValue(), seed); }); }
+};
+}`}
         }
     }
 
@@ -4558,7 +4576,7 @@ final void notifyObservers(io.qt.core.@Nullable QUntypedPropertyData propertyDat
                 target: CodeClass.Native
                 position: Position.Position5
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "QtJambiAPI::copyReferenceCount(__jni_env, __jni_object, nullptr, __jni_env->NewStringUTF(\"__rcData\"), %1);"}
+                Text{content: String.raw`QtJambiAPI::copyReferenceCount(__jni_env, __jni_object, nullptr, __jni_env->NewStringUTF("__rcData"), %1);`}
             }
         }
         InjectCode{
@@ -4679,10 +4697,6 @@ final void notifyObservers(io.qt.core.@Nullable QUntypedPropertyData propertyDat
     ObjectType{
         name: "QMetaObject"
         ExtraIncludes{
-            Include{
-                fileName: "io.qt.internal.*"
-                location: Include.Java
-            }
             Include{
                 fileName: "java.io.*"
                 location: Include.Java
@@ -5312,22 +5326,24 @@ final void notifyObservers(io.qt.core.@Nullable QUntypedPropertyData propertyDat
             signature: "name()const"
             InjectCode{
                 target: CodeClass.Native
-                Text{content: "bool solved = false;\n"+
-                              "if(const QHash<int,const char*>* _renamedMethods = CoreAPI::renamedMethods(__qt_this->enclosingMetaObject())){\n"+
-                              "    if(const char* newName = (*_renamedMethods)[__qt_this->methodIndex()]){\n"+
-                              "        __java_return_value = qtjambi_cast<jobject>(__jni_env, QByteArray(newName));\n"+
-                              "        solved = true;\n"+
-                              "    }\n"+
-                              "}\n"+
-                              "if(!solved){"}
+                Text{content: String.raw`
+bool solved = false;
+if(const QHash<int,const char*>* _renamedMethods = CoreAPI::renamedMethods(__qt_this->enclosingMetaObject())){
+    if(const char* newName = (*_renamedMethods)[__qt_this->methodIndex()]){
+        __java_return_value = qtjambi_cast<jobject>(__jni_env, QByteArray(newName));
+        solved = true;
+    }
+}
+if(!solved){`}
             }
             ModifyArgument{
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "    %in.detach();\n"+
-                                  "    %out = qtjambi_cast<jobject>(%env, std::move(%in));\n"+
-                                  "}"}
+                    Text{content: String.raw`
+    %in.detach();
+    %out = qtjambi_cast<jobject>(%env, std::move(%in));
+}`}
                 }
             }
         }
@@ -5340,8 +5356,32 @@ final void notifyObservers(io.qt.core.@Nullable QUntypedPropertyData propertyDat
         Rejection{functionName: "writeOnGadget"}
         ModifyFunction{
             signature: "write(QObject*,QVariant&&)const"
-            remove: RemoveFlag.All
+            ModifyArgument{
+                index: 2
+                replaceType: "java.lang.Object"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        QVariant %out = CoreAPI::convertCheckedObjectToQVariant(%env, %in, __qt_this->metaType());
+                        if(!%out.isValid())
+                            return false;`}
+                }
+            }
             since: 6.6
+        }
+        ModifyFunction{
+            signature: "write(QObject*,QVariant)const"
+            Remove{since: 6.6}
+            ModifyArgument{
+                index: 2
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        QVariant %out = CoreAPI::convertCheckedObjectToQVariant(%env, %in, __qt_this->metaType());
+                        if(!%out.isValid())
+                            return false;`}
+                }
+            }
         }
         InjectCode{
             ImportFile{
@@ -5394,8 +5434,9 @@ final void notifyObservers(io.qt.core.@Nullable QUntypedPropertyData propertyDat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
         }
@@ -5417,8 +5458,9 @@ final void notifyObservers(io.qt.core.@Nullable QUntypedPropertyData propertyDat
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
         }
@@ -6132,15 +6174,17 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -6152,15 +6196,17 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -6172,15 +6218,17 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -6193,15 +6241,17 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -6213,15 +6263,17 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
         }
     }
@@ -6242,8 +6294,9 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                     index: 1
                     metaName: "index"
                 }
-                Text{content: "if(index<0 || index>size())\n"+
-                              "    throw new IndexOutOfBoundsException(\"\"+index);"}
+                Text{content: String.raw`
+                        if(index<0 || index>size())
+                            throw new IndexOutOfBoundsException(""+index);`}
             }
         }
         ModifyFunction{
@@ -6255,8 +6308,9 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                     index: 1
                     metaName: "index"
                 }
-                Text{content: "if(index<0 || index>size())\n"+
-                              "    throw new IndexOutOfBoundsException(\"\"+index);"}
+                Text{content: String.raw`
+                        if(index<0 || index>size())
+                            throw new IndexOutOfBoundsException(""+index);`}
             }
         }
         InjectCode{
@@ -6367,8 +6421,9 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok = false;\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
         }
@@ -6537,8 +6592,9 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QCborParserError %in;\n"+
-                                  "QCborParserError* %out = &%in;"}
+                    Text{content: String.raw`
+                            QCborParserError %in;
+                            QCborParserError* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -7113,10 +7169,11 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(!%1.isDirect()) {\n"+
-                              "    throw new IllegalArgumentException(\"Can only read from direct buffers.\");\n"+
-                              "}\n"+
-                              "__rcDevice = %1;"}
+                Text{content: String.raw`
+if(!%1.isDirect()) {
+    throw new IllegalArgumentException("Can only read from direct buffers.");
+}
+__rcDevice = %1;`}
             }
         }
         ModifyFunction{
@@ -7130,10 +7187,11 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(!%1.isDirect()) {\n"+
-                              "    throw new IllegalArgumentException(\"Can only read from direct buffers.\");\n"+
-                              "}\n"+
-                              "__rcDevice = new QPair<>(__rcDevice, %1);"}
+                Text{content: String.raw`
+if(!%1.isDirect()) {
+    throw new IllegalArgumentException("Can only read from direct buffers.");
+}
+__rcDevice = new QPair<>(__rcDevice, %1);`}
             }
         }
         ModifyFunction{
@@ -7146,9 +7204,10 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "if(__qt_this->isNegativeInteger())\n"+
-                              "    __java_return_value = true;\n"+
-                              "else"}
+                Text{content: String.raw`
+if(__qt_this->isNegativeInteger())
+    __java_return_value = true;
+else`}
             }
         }
         ModifyFunction{
@@ -7156,9 +7215,10 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "if(__qt_this->isFloat16())\n"+
-                              "    __java_return_value = jfloat(__qt_this->toFloat16());\n"+
-                              "else"}
+                Text{content: String.raw`
+if(__qt_this->isFloat16())
+    __java_return_value = jfloat(__qt_this->toFloat16());
+else`}
             }
         }
         ModifyFunction{
@@ -7166,9 +7226,10 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "if(__qt_this->isFloat16())\n"+
-                              "    __java_return_value = true;\n"+
-                              "else"}
+                Text{content: String.raw`
+if(__qt_this->isFloat16())
+    __java_return_value = true;
+else`}
             }
         }
         ModifyFunction{
@@ -7182,16 +7243,18 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = toBigInteger(%env, %in, false);\n"+
-                                  "}"}
+                    Text{content: String.raw`
+    %out = toBigInteger(%env, %in, false);
+}`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "if(__qt_this->isNegativeInteger()){\n"+
-                              "    __java_return_value = toBigInteger(%env, quint64(__qt_this->toNegativeInteger()), true);\n"+
-                              "}else{"}
+                Text{content: String.raw`
+if(__qt_this->isNegativeInteger()){
+    __java_return_value = toBigInteger(%env, quint64(__qt_this->toNegativeInteger()), true);
+}else{`}
             }
         }
         ModifyFunction{
@@ -7205,9 +7268,10 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(!%1.isDirect()) {\n"+
-                              "    throw new IllegalArgumentException(\"Can only read from direct buffers.\");\n"+
-                              "}"}
+                Text{content: String.raw`
+if(!%1.isDirect()) {
+    throw new IllegalArgumentException("Can only read from direct buffers.");
+}`}
             }
         }
     }
@@ -7314,16 +7378,17 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "BigIntegerValue bigIntegerValue = fromBigInteger(%env, %in);\n"+
-                                  "if(bigIntegerValue.outOfRange){\n"+
-                                  "    JavaException::raise<Java::Runtime::ArithmeticException>(__jni_env, \"BigInteger is out of range of 64 Bit.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "    return;\n"+
-                                  "}\n"+
-                                  "if(bigIntegerValue.isNegative){\n"+
-                                  "    __qt_this->append(QCborNegativeInteger(bigIntegerValue.value));\n"+
-                                  "    return;\n"+
-                                  "}\n"+
-                                  "quint64 %out = bigIntegerValue.value;"}
+                    Text{content: String.raw`
+BigIntegerValue bigIntegerValue = fromBigInteger(%env, %in);
+if(bigIntegerValue.outOfRange){
+    JavaException::raise<Java::Runtime::ArithmeticException>(__jni_env, "BigInteger is out of range of 64 Bit." QTJAMBI_STACKTRACEINFO );
+    return;
+}
+if(bigIntegerValue.isNegative){
+    __qt_this->append(QCborNegativeInteger(bigIntegerValue.value));
+    return;
+}
+quint64 %out = bigIntegerValue.value;`}
                 }
             }
         }
@@ -7469,8 +7534,9 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QJsonParseError error;\n"+
-                                  "QJsonParseError* %out = &error;"}
+                    Text{content: String.raw`
+                            QJsonParseError error;
+                            QJsonParseError* %out = &error;`}
                 }
             }
             ModifyArgument{
@@ -8131,6 +8197,10 @@ public static final int MaxUtcOffsetSecs = +14 * 3600;`}
 
     ObjectType{
         name: "QSaveFile"
+        ModifyFunction{
+            signature: "close()"
+            throwing: "QNoImplementationException"
+        }
     }
 
 
@@ -8184,9 +8254,10 @@ public static final int MaxUtcOffsetSecs = +14 * 3600;`}
             InjectCode{
                 position: Position.End
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "Object __rcWatched = this.__rcWatched;\n"+
-                              "this.__rcWatched = %1.__rcWatched;\n"+
-                              "%1.__rcWatched = __rcWatched;"}
+                Text{content: String.raw`
+                        Object __rcWatched = this.__rcWatched;
+                        this.__rcWatched = %1.__rcWatched;
+                        %1.__rcWatched = __rcWatched;`}
             }
             since: 6.7
         }
@@ -8495,7 +8566,7 @@ if(destinationChildV<0)
             }
         }
         ModifyFunction{
-            signature: "compareData(QVariant,QVariant,const QCollator*)"
+            signature: "compareData(QVariant,QVariant,QCollator)"
             ModifyArgument{
                 index: 0
                 replaceType: "int"
@@ -8504,6 +8575,7 @@ if(destinationChildV<0)
                     Text{content: "jint %out = QtOrderingPrivate::toUnderlying(%in);"}
                 }
             }
+            since: [6,12]
         }
     }
 
@@ -8790,7 +8862,7 @@ if(destinationChildV<0)
             signature: "QByteArrayView<Byte,true>(const Byte*)"
             remove: RemoveFlag.All
             since: 6.9
-            until: [6,11]
+            until: [6,10,2]
         }
         ModifyFunction{
             signature: "QByteArrayView<Byte,true>(const Byte*,qsizetype)"
@@ -8902,8 +8974,9 @@ if(destinationChildV<0)
                     index: 1
                     metaName: "index"
                 }
-                Text{content: "if(index<0 || index>size())\n"+
-                              "    throw new IndexOutOfBoundsException(\"\"+index);"}
+                Text{content: String.raw`
+                        if(index<0 || index>size())
+                            throw new IndexOutOfBoundsException(""+index);`}
             }
         }
         ModifyFunction{
@@ -8976,15 +9049,17 @@ if(destinationChildV<0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
             since: [6, 3]
         }
@@ -8997,15 +9072,17 @@ if(destinationChildV<0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
             since: [6, 3]
         }
@@ -9018,15 +9095,17 @@ if(destinationChildV<0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
             since: [6, 3]
         }
@@ -9039,15 +9118,17 @@ if(destinationChildV<0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
             since: [6, 3]
         }
@@ -9678,15 +9759,17 @@ if(destinationChildV<0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -9698,15 +9781,17 @@ if(destinationChildV<0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -9718,15 +9803,17 @@ if(destinationChildV<0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -9738,15 +9825,17 @@ if(destinationChildV<0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -9886,8 +9975,9 @@ if(destinationChildV<0)
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(%this->size()<%this->capacity())\n"+
-                              "    PersistentDataJBuffer::setLimit(%env, __java_return_value, jsize(%this->size()));"}
+                Text{content: String.raw`
+                        if(%this->size()<%this->capacity())
+                            PersistentDataJBuffer::setLimit(%env, __java_return_value, jsize(%this->size()));`}
             }
         }
         ModifyFunction{
@@ -9955,8 +10045,9 @@ if(destinationChildV<0)
                     index: 1
                     metaName: "index"
                 }
-                Text{content: "if(index<0 || index>size())\n"+
-                              "    throw new IndexOutOfBoundsException(\"\"+index);"}
+                Text{content: String.raw`
+                        if(index<0 || index>size())
+                            throw new IndexOutOfBoundsException(""+index);`}
             }
         }
         ModifyFunction{
@@ -9968,8 +10059,9 @@ if(destinationChildV<0)
                     index: 1
                     metaName: "index"
                 }
-                Text{content: "if(index<0 || index>size())\n"+
-                              "    throw new IndexOutOfBoundsException(\"\"+index);"}
+                Text{content: String.raw`
+                        if(index<0 || index>size())
+                            throw new IndexOutOfBoundsException(""+index);`}
             }
         }
 
@@ -10141,14 +10233,15 @@ if(destinationChildV<0)
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "namespace QtJambiPrivate{\n"+
-                          "    template<>\n"+
-                          "    struct supports_less_than<QItemSelection> : std::false_type{};\n"+
-                          "    template<>\n"+
-                          "    struct supports_stream_operators<QItemSelection> : std::false_type{};\n"+
-                          "    template<>\n"+
-                          "    struct supports_streamin<QDebug&,QItemSelection> : std::false_type{};\n"+
-                          "}"}
+            Text{content: String.raw`
+namespace QtJambiPrivate{
+    template<>
+    struct supports_less_than<QItemSelection> : std::false_type{};
+    template<>
+    struct supports_stream_operators<QItemSelection> : std::false_type{};
+    template<>
+    struct supports_streamin<QDebug&,QItemSelection> : std::false_type{};
+}`}
         }
         InjectCode{
             ImportFile{
@@ -10180,8 +10273,9 @@ if(destinationChildV<0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QItemSelection result;\n"+
-                                  "QItemSelection * %out = &result;"}
+                    Text{content: String.raw`
+                            QItemSelection result;
+                            QItemSelection * %out = &result;`}
                 }
             }
         }
@@ -10495,6 +10589,231 @@ if(destinationChildV<0)
         name: "QAbstractEventDispatcherV2"
         since: 6.8
     }
+    CodeTemplate{
+        name: "nativeevent.message.property"
+        Text{content: String.raw`
+            @QtUninvokable
+            public TYPE METHOD() {
+                return METHOD(ne.__qt_directLink);
+            }
+            @QtUninvokable
+            private static native TYPE METHOD(long __this__directLink);
+            `}
+    }
+    CodeTemplate{
+        name: "nativeevent.message.static.property"
+        Text{content: String.raw`
+            @QtUninvokable
+            public static native TYPE METHOD();
+            `}
+    }
+    ObjectType{
+        name: "QNativeEvent"
+        forceFinal: true
+        noMetaType: true
+        notCloneable: true
+        notAssignable: true
+        asDirectLink: true
+        defaultSuperClass: "java.lang.Object"
+        InjectCode{
+            position: Position.CommentIntro
+            Text{content: String.raw`<p>Class representing arguments of <a href="https://doc.qt.io/qt/qabstractnativeeventfilter.html#nativeEventFilter"><code>QAbstractNativeEventFilter::<wbr/>nativeEventFilter(QByteArray,<wbr/>void*,<wbr/>qintptr*)</code></a></p>`}
+        }
+        ModifyFunction{
+            signature: "eventType()const"
+            InjectCode{
+                position: Position.Beginning
+                Text{content: String.raw`
+                    if(_qt_eventType!=null && !_qt_eventType.isDisposed())
+                        return _qt_eventType;`}
+            }
+            InjectCode{
+                position: Position.End
+                Text{content: String.raw`_qt_eventType = __qt_return_value;`}
+            }
+            InjectCode{
+                position: Position.CommentIntro
+                Text{content: String.raw`<p>See first argument of <a href="https://doc.qt.io/qt/qabstractnativeeventfilter.html#nativeEventFilter"><code>QAbstractNativeEventFilter::<wbr/>nativeEventFilter(QByteArray,<wbr/>void*,<wbr/>qintptr*)</code></a></p>`}
+            }
+        }
+        ModifyFunction{
+            signature: "setResult(qintptr)"
+            InjectCode{
+                position: Position.CommentIntro
+                Text{content: String.raw`<p>See third argument of <a href="https://doc.qt.io/qt/qabstractnativeeventfilter.html#nativeEventFilter"><code>QAbstractNativeEventFilter::<wbr/>nativeEventFilter(QByteArray,<wbr/>void*,<wbr/>qintptr*)</code></a></p>`}
+            }
+        }
+        ModifyFunction{
+            signature: "acceptsResult()const"
+            InjectCode{
+                position: Position.CommentIntro
+                Text{content: String.raw`<p>See third argument of <a href="https://doc.qt.io/qt/qabstractnativeeventfilter.html#nativeEventFilter"><code>QAbstractNativeEventFilter::<wbr/>nativeEventFilter(QByteArray,<wbr/>void*,<wbr/>qintptr*)</code></a></p>`}
+            }
+        }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QNativeEvent__"
+                quoteBeforeLine: "}// class"
+            }
+            Text{content: String.raw`
+/**
+ * <p>Java wrapper for <a href="https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-msg"><code>Windows MSG</code></a> structure</p>
+ * @see QNativeEvent#message()
+ */
+public static final class MSG{
+    private final QNativeEvent ne;
+    private MSG(QNativeEvent ne){this.ne = ne;}
+    @Override
+    public int hashCode() {
+        return ne.hashCode();
+    }
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof MSG){
+            MSG other = (MSG) obj;
+            return ne.equals(other.ne);
+        }
+        return false;
+    }
+`}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "long"} Replace{from: "METHOD"; to: "hwnd"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "int"} Replace{from: "METHOD"; to: "message"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "long"} Replace{from: "METHOD"; to: "wParam"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "long"} Replace{from: "METHOD"; to: "lParam"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "int"} Replace{from: "METHOD"; to: "time"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "@NonNull QPoint"} Replace{from: "METHOD"; to: "point"}}
+            Text{content: String.raw`
+    @QtUninvokable
+    private static native java.nio.ByteBuffer asBuffer(long __this__directLink);
+    @QtUninvokable
+    public java.nio.@NonNull ByteBuffer asBuffer(){
+         if(ne._rc_buffer==null)
+              ne._rc_buffer = asBuffer(ne.__qt_directLink);
+         return ne._rc_buffer;
+    }
+}
+
+/**
+ * <p>Java wrapper for <a href="https://developer.apple.com/documentation/appkit/nsevent"><code>MacOS NSEvent</code></a> structure</p>
+ * @see QNativeEvent#message()
+ */
+public static final class NSEvent{
+    private final QNativeEvent ne;
+    private NSEvent(QNativeEvent ne){this.ne = ne;}
+    @Override
+    public int hashCode() {
+        return ne.hashCode();
+    }
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof MSG){
+            MSG other = (MSG) obj;
+            return ne.equals(other.ne);
+        }
+        return false;
+    }
+`}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "int"} Replace{from: "METHOD"; to: "buttonNumber"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "int"} Replace{from: "METHOD"; to: "clickCount"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "long"} Replace{from: "METHOD"; to: "associatedEventsMask"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "int"} Replace{from: "METHOD"; to: "modifierFlags"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "int"} Replace{from: "METHOD"; to: "type"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "short"} Replace{from: "METHOD"; to: "subtype"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "@Nullable String"} Replace{from: "METHOD"; to: "characters"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "@Nullable String"} Replace{from: "METHOD"; to: "charactersIgnoringModifiers"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "@NonNull QPointF"} Replace{from: "METHOD"; to: "locationInWindow"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "double"} Replace{from: "METHOD"; to: "timestamp"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "long"} Replace{from: "METHOD"; to: "window"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "short"} Replace{from: "METHOD"; to: "keyCode"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "double"} Replace{from: "METHOD"; to: "deltaX"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "double"} Replace{from: "METHOD"; to: "deltaY"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "double"} Replace{from: "METHOD"; to: "deltaZ"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "boolean"} Replace{from: "METHOD"; to: "hasPreciseScrollingDeltas"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "double"} Replace{from: "METHOD"; to: "scrollingDeltaX"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "double"} Replace{from: "METHOD"; to: "scrollingDeltaY"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "int"} Replace{from: "METHOD"; to: "momentumPhase"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "boolean"} Replace{from: "METHOD"; to: "isDirectionInvertedFromDevice"}}
+            InsertTemplate{name: "nativeevent.message.property"; indents: 1; Replace{from: "TYPE"; to: "boolean"} Replace{from: "METHOD"; to: "isARepeat"}}
+            InsertTemplate{name: "nativeevent.message.static.property"; indents: 1; Replace{from: "TYPE"; to: "int"} Replace{from: "METHOD"; to: "doubleClickInterval"}}
+            InsertTemplate{name: "nativeevent.message.static.property"; indents: 1; Replace{from: "TYPE"; to: "double"} Replace{from: "METHOD"; to: "keyRepeatInterval"}}
+            InsertTemplate{name: "nativeevent.message.static.property"; indents: 1; Replace{from: "TYPE"; to: "double"} Replace{from: "METHOD"; to: "keyRepeatDelay"}}
+            InsertTemplate{name: "nativeevent.message.static.property"; indents: 1; Replace{from: "TYPE"; to: "@NonNull QPointF"} Replace{from: "METHOD"; to: "mouseLocation"}}
+            Text{content: String.raw`
+    @QtUninvokable
+    private static native java.nio.ByteBuffer asBuffer(long __this__directLink);
+    @QtUninvokable
+    public java.nio.@NonNull ByteBuffer asBuffer(){
+         if(ne._rc_buffer==null)
+              ne._rc_buffer = asBuffer(ne.__qt_directLink);
+         return ne._rc_buffer;
+    }
+}`}
+        }
+    }
+
+    ObjectType{
+        name: "QAbstractNativeEventFilter"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/QNativeEvent"
+                location: Include.Global
+            }
+        }
+        ModifyFunction{
+            signature: "nativeEventFilter(QByteArray, void *, qintptr *)"
+            noExcept: true
+            blockExceptions: true
+            ModifyArgument{
+                index: 1
+                rename: "event"
+                ReplaceType{
+                    modifiedType: "io.qt.core.QNativeEvent"
+                }
+                NoNullPointer{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: String.raw`
+                        QNativeEvent nativeEvent(%env, %in, %2, %3);
+                        jobject %out = nativeEvent;`}
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        const QNativeEvent& nativeEvent = QNativeEvent::fromJavaObject(%env, %in);
+                        const QByteArray & %out = nativeEvent.m_eventType;`}
+                }
+            }
+            ModifyArgument{
+                index: 2
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`void *%out = nativeEvent.m_message;`}
+                }
+            }
+            ModifyArgument{
+                index: 3
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`qintptr *%out = nativeEvent.m_result;`}
+                }
+            }
+        }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QAbstractNativeEventFilter__"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        InjectCode{
+            target: CodeClass.JavaConctreteWrapper
+            Text{content: String.raw`private Object _rc_filter;`}
+        }
+    }
 
     ObjectType{
         name: "QAbstractEventDispatcher"
@@ -10504,11 +10823,10 @@ if(destinationChildV<0)
                 location: Include.Global
             }
         }
-        Rejection{functionName: "installNativeEventFilter"}
-        Rejection{functionName: "removeNativeEventFilter"}
-        Rejection{functionName: "filterEvent"}
-        Rejection{functionName: "filterNativeEvent"}
-        Rejection{functionName: "setEventFilter"}
+        ModifyFunction{
+            signature: "filterNativeEvent(QByteArray,void*,qintptr*)"
+            remove: RemoveFlag.All
+        }
         ModifyFunction{
             signature: "instance(QThread*)"
             ModifyArgument{
@@ -10526,6 +10844,26 @@ if(destinationChildV<0)
         ModifyFunction{
             signature: "wakeUp()"
             threadAffinity: false
+        }
+        ModifyFunction{
+            signature: "installNativeEventFilter(QAbstractNativeEventFilter *)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcNativeEventFilters"
+                    action: ReferenceCount.Add
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "removeNativeEventFilter(QAbstractNativeEventFilter *)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcNativeEventFilters"
+                    action: ReferenceCount.Take
+                }
+            }
         }
         ModifyFunction{
             signature: "registerSocketNotifier(QSocketNotifier *)"
@@ -10581,9 +10919,10 @@ if(destinationChildV<0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(%1 < 0){\n"+
-                              "    throw new IllegalArgumentException(\"Timers cannot have negative intervals.\");\n"+
-                              "}"}
+                Text{content: String.raw`
+                        if(%1 < 0){
+                            throw new IllegalArgumentException("Timers cannot have negative intervals.");
+                        }`}
             }
         }
         ModifyFunction{
@@ -10600,21 +10939,15 @@ if(destinationChildV<0)
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "if(%2 < 0){\n"+
-                              "    throw new IllegalArgumentException(\"Timers cannot have negative intervals.\");\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(%2 < 0){
+                        throw new IllegalArgumentException("Timers cannot have negative intervals.");
+                    }`}
             }
         }
 
         ValueType{
             name: "TimerInfo"
-            CustomConstructor{
-                Text{content: "if(copy){\n"+
-                              "    return new(placement) QAbstractEventDispatcher::TimerInfo{copy->timerId, copy->interval, copy->timerType};\n"+
-                              "}else{\n"+
-                              "    return new(placement) QAbstractEventDispatcher::TimerInfo{0, 0, Qt::PreciseTimer};\n"+
-                              "}"}
-            }
             CustomConstructor{
                 type: CustomConstructor.Default
                 Text{content: "new(placement) QAbstractEventDispatcher::TimerInfo{0, 0, Qt::PreciseTimer};"}
@@ -10713,13 +11046,6 @@ if(destinationChildV<0)
 
         EnumType{
             name: "SegmentStorage"
-        }
-        CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QVersionNumber(copy->majorVersion(), copy->minorVersion(), copy->microVersion());\n"+
-                          "}else{\n"+
-                          "    return new(placement) QVersionNumber();\n"+
-                          "}"}
         }
         CustomConstructor{
             type: CustomConstructor.Copy
@@ -10831,8 +11157,9 @@ if(destinationChildV<0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
+                    Text{content: String.raw`
+                        QString %in;
+                        QString* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -11001,8 +11328,9 @@ if(destinationChildV<0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "char c(0);\n"+
-                                  "char * %out = &c;"}
+                    Text{content: String.raw`
+                            char c(0);
+                            char * %out = &c;`}
                 }
             }
         }
@@ -11320,8 +11648,9 @@ if(destinationChildV<0)
                     index: 1
                     ConversionRule{
                         codeClass: CodeClass.Native
-                        Text{content: "QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);\n"+
-                                      "%out.setFlag(QStringConverterBase::Flag::UsesIcu, false);"}
+                        Text{content: String.raw`
+                                QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);
+                                %out.setFlag(QStringConverterBase::Flag::UsesIcu, false);`}
                     }
                 }
                 since: 6.4
@@ -11371,8 +11700,9 @@ if(destinationChildV<0)
                 index: 2
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);\n"+
-                                  "%out.setFlag(QStringConverterBase::Flag::UsesIcu, false);"}
+                    Text{content: String.raw`
+                            QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);
+                            %out.setFlag(QStringConverterBase::Flag::UsesIcu, false);`}
                 }
             }
             since: 6.4
@@ -11383,8 +11713,9 @@ if(destinationChildV<0)
                 index: 2
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);\n"+
-                                  "%out.setFlag(QStringConverterBase::Flag::UsesIcu, false);"}
+                    Text{content: String.raw`
+                            QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);
+                            %out.setFlag(QStringConverterBase::Flag::UsesIcu, false);`}
                 }
             }
             since: 6.4
@@ -11396,8 +11727,9 @@ if(destinationChildV<0)
                 index: 2
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);\n"+
-                                  "%out.setFlag(QStringConverterBase::Flag::UsesIcu, false);"}
+                    Text{content: String.raw`
+                            QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);
+                            %out.setFlag(QStringConverterBase::Flag::UsesIcu, false);`}
                 }
             }
             since: 6.8
@@ -11448,8 +11780,9 @@ if(destinationChildV<0)
                 index: 2
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);\n"+
-                                  "%out.setFlag(QStringConverterBase::Flag::UsesIcu, false);"}
+                    Text{content: String.raw`
+                            QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);
+                            %out.setFlag(QStringConverterBase::Flag::UsesIcu, false);`}
                 }
             }
             since: 6.4
@@ -11460,8 +11793,9 @@ if(destinationChildV<0)
                 index: 2
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);\n"+
-                                  "%out.setFlag(QStringConverterBase::Flag::UsesIcu, false);"}
+                    Text{content: String.raw`
+                            QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);
+                            %out.setFlag(QStringConverterBase::Flag::UsesIcu, false);`}
                 }
             }
             since: 6.4
@@ -11473,8 +11807,9 @@ if(destinationChildV<0)
                 index: 2
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);\n"+
-                                  "%out.setFlag(QStringConverterBase::Flag::UsesIcu, false);"}
+                    Text{content: String.raw`
+                            QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);
+                            %out.setFlag(QStringConverterBase::Flag::UsesIcu, false);`}
                 }
             }
             since: 6.8
@@ -11668,8 +12003,9 @@ if(destinationChildV<0)
                 index: 2
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);\n"+
-                                  "%out.setFlag(QStringConverterBase::Flag::UsesIcu, false);"}
+                    Text{content: String.raw`
+                            QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);
+                            %out.setFlag(QStringConverterBase::Flag::UsesIcu, false);`}
                 }
             }
             since: 6.4
@@ -11680,8 +12016,9 @@ if(destinationChildV<0)
                 index: 2
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);\n"+
-                                  "%out.setFlag(QStringConverterBase::Flag::UsesIcu, false);"}
+                    Text{content: String.raw`
+                            QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);
+                            %out.setFlag(QStringConverterBase::Flag::UsesIcu, false);`}
                 }
             }
             since: 6.4
@@ -11693,8 +12030,9 @@ if(destinationChildV<0)
                 index: 2
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);\n"+
-                                  "%out.setFlag(QStringConverterBase::Flag::UsesIcu, false);"}
+                    Text{content: String.raw`
+                            QStringConverterBase::Flags %out = qtjambi_cast<QStringConverterBase::Flags>(%env, %in);
+                            %out.setFlag(QStringConverterBase::Flag::UsesIcu, false);`}
                 }
             }
             since: 6.8
@@ -11989,15 +12327,16 @@ if(%out){
                     index: 2
                     metaName: "dest"
                 }
-                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            slot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else slot = \"1\" + slot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(slot!=null && !slot.startsWith("1") && !slot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            slot = "2" + method.cppMethodSignature();
+        else
+            slot = "1" + method.cppMethodSignature();
+    }else slot = "1" + slot;
+}`}
             }
         }
         ModifyFunction{
@@ -12013,15 +12352,16 @@ if(%out){
                     index: 3
                     metaName: "dest"
                 }
-                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            slot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else slot = \"1\" + slot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(slot!=null && !slot.startsWith("1") && !slot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            slot = "2" + method.cppMethodSignature();
+        else
+            slot = "1" + method.cppMethodSignature();
+    }else slot = "1" + slot;
+}`}
             }
         }
         ModifyFunction{
@@ -12037,15 +12377,16 @@ if(%out){
                     index: 2
                     metaName: "dest"
                 }
-                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            slot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else slot = \"1\" + slot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(slot!=null && !slot.startsWith("1") && !slot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            slot = "2" + method.cppMethodSignature();
+        else
+            slot = "1" + method.cppMethodSignature();
+    }else slot = "1" + slot;
+}`}
             }
             ppCondition: "__has_include(<chrono>)"
             until: 6.7
@@ -12063,15 +12404,16 @@ if(%out){
                     index: 3
                     metaName: "dest"
                 }
-                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            slot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else slot = \"1\" + slot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(slot!=null && !slot.startsWith("1") && !slot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            slot = "2" + method.cppMethodSignature();
+        else
+            slot = "1" + method.cppMethodSignature();
+    }else slot = "1" + slot;
+}`}
             }
             ppCondition: "__has_include(<chrono>)"
             until: 6.7
@@ -12089,15 +12431,16 @@ if(%out){
                     index: 2
                     metaName: "dest"
                 }
-                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            slot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else slot = \"1\" + slot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(slot!=null && !slot.startsWith("1") && !slot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            slot = "2" + method.cppMethodSignature();
+        else
+            slot = "1" + method.cppMethodSignature();
+    }else slot = "1" + slot;
+}`}
             }
             ppCondition: "__has_include(<chrono>)"
             since: 6.8
@@ -12115,15 +12458,16 @@ if(%out){
                     index: 3
                     metaName: "dest"
                 }
-                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            slot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else slot = \"1\" + slot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(slot!=null && !slot.startsWith("1") && !slot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            slot = "2" + method.cppMethodSignature();
+        else
+            slot = "1" + method.cppMethodSignature();
+    }else slot = "1" + slot;
+}`}
             }
             ppCondition: "__has_include(<chrono>)"
             since: 6.8
@@ -12185,23 +12529,24 @@ if(%out){
                         index: 3
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                                  "    if(context!=null && context==object) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
+    if(context!=null && context==object) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            singleShot(dur, context, "2"+metaMethod.cppMethodSignature());
+            return;
+        case Method:
+        case Slot:
+            singleShot(dur, context, "1"+metaMethod.cppMethodSignature());
+            return;
+        default:
+            break;
+        }
+    }
+}`}
                 }
             }
             Instantiation{
@@ -12240,23 +12585,24 @@ if(%out){
                         index: 3
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                                  "    if(context!=null && context==object) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
+    if(context!=null && context==object) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            singleShot(dur, context, "2"+metaMethod.cppMethodSignature());
+            return;
+        case Method:
+        case Slot:
+            singleShot(dur, context, "1"+metaMethod.cppMethodSignature());
+            return;
+        default:
+            break;
+        }
+    }
+}`}
                 }
                 ppCondition: "__has_include(<chrono>)"
             }
@@ -12305,22 +12651,23 @@ if(%out){
                         index: 3
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    if(context instanceof QObject) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    if(context instanceof QObject) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            singleShot(dur, (QObject)context, "2"+metaMethod.cppMethodSignature());
+            return;
+        case Method:
+        case Slot:
+            singleShot(dur, (QObject)context, "1"+metaMethod.cppMethodSignature());
+            return;
+        default:
+            break;
+        }
+    }
+}`}
                 }
             }
             Instantiation{
@@ -12368,22 +12715,23 @@ if(%out){
                         index: 3
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    if(context instanceof QObject) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    if(context instanceof QObject) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            singleShot(dur, (QObject)context, "2"+metaMethod.cppMethodSignature());
+            return;
+        case Method:
+        case Slot:
+            singleShot(dur, (QObject)context, "1"+metaMethod.cppMethodSignature());
+            return;
+        default:
+            break;
+        }
+    }
+}`}
                 }
                 ppCondition: "__has_include(<chrono>)"
             }
@@ -12433,20 +12781,21 @@ if(%out){
                         index: 3
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    switch(metaMethod.methodType()) {\n"+
-                                  "    case Signal:\n"+
-                                  "        singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "        return;\n"+
-                                  "    case Method:\n"+
-                                  "    case Slot:\n"+
-                                  "        singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "        return;\n"+
-                                  "    default:\n"+
-                                  "        break;\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    switch(metaMethod.methodType()) {
+    case Signal:
+        singleShot(dur, context, "2"+metaMethod.cppMethodSignature());
+        return;
+    case Method:
+    case Slot:
+        singleShot(dur, context, "1"+metaMethod.cppMethodSignature());
+        return;
+    default:
+        break;
+    }
+}`}
                 }
             }
             Instantiation{
@@ -12495,22 +12844,23 @@ if(%out){
                         index: 3
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    if(context instanceof QObject) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    if(context instanceof QObject) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            singleShot(dur, (QObject)context, "2"+metaMethod.cppMethodSignature());
+            return;
+        case Method:
+        case Slot:
+            singleShot(dur, (QObject)context, "1"+metaMethod.cppMethodSignature());
+            return;
+        default:
+            break;
+        }
+    }
+}`}
                 }
                 ppCondition: "__has_include(<chrono>)"
             }
@@ -12559,23 +12909,24 @@ if(%out){
                         index: 4
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                                  "    if(context!=null && context==object) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, tt, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, tt, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
+    if(context!=null && context==object) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            singleShot(dur, tt, context, "2"+metaMethod.cppMethodSignature());
+            return;
+        case Method:
+        case Slot:
+            singleShot(dur, tt, context, "1"+metaMethod.cppMethodSignature());
+            return;
+        default:
+            break;
+        }
+    }
+}`}
                 }
             }
             Instantiation{
@@ -12618,23 +12969,24 @@ if(%out){
                         index: 4
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                                  "    if(context!=null && context==object) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, tt, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, tt, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
+    if(context!=null && context==object) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            singleShot(dur, tt, context, "2"+metaMethod.cppMethodSignature());
+            return;
+        case Method:
+        case Slot:
+            singleShot(dur, tt, context, "1"+metaMethod.cppMethodSignature());
+            return;
+        default:
+            break;
+        }
+    }
+}`}
                 }
                 ppCondition: "__has_include(<chrono>)"
             }
@@ -12687,22 +13039,23 @@ if(%out){
                         index: 4
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    if(context instanceof QObject) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, tt, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, tt, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    if(context instanceof QObject) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            singleShot(dur, tt, (QObject)context, "2"+metaMethod.cppMethodSignature());
+            return;
+        case Method:
+        case Slot:
+            singleShot(dur, tt, (QObject)context, "1"+metaMethod.cppMethodSignature());
+            return;
+        default:
+            break;
+        }
+    }
+}`}
                 }
             }
             Instantiation{
@@ -12754,22 +13107,23 @@ if(%out){
                         index: 4
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    if(context instanceof QObject) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, tt, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, tt, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    if(context instanceof QObject) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            singleShot(dur, tt, (QObject)context, "2"+metaMethod.cppMethodSignature());
+            return;
+        case Method:
+        case Slot:
+            singleShot(dur, tt, (QObject)context, "1"+metaMethod.cppMethodSignature());
+            return;
+        default:
+            break;
+        }
+    }
+}`}
                 }
                 ppCondition: "__has_include(<chrono>)"
             }
@@ -12828,23 +13182,24 @@ if(%out){
                         index: 3
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                                  "    if(context!=null && context==object) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
+    if(context!=null && context==object) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            singleShot(dur, context, "2"+metaMethod.cppMethodSignature());
+            return;
+        case Method:
+        case Slot:
+            singleShot(dur, context, "1"+metaMethod.cppMethodSignature());
+            return;
+        default:
+            break;
+        }
+    }
+}`}
                 }
             }
             Instantiation{
@@ -12883,23 +13238,24 @@ if(%out){
                         index: 3
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                                  "    if(context!=null && context==object) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
+    if(context!=null && context==object) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            singleShot(dur, context, "2"+metaMethod.cppMethodSignature());
+            return;
+        case Method:
+        case Slot:
+            singleShot(dur, context, "1"+metaMethod.cppMethodSignature());
+            return;
+        default:
+            break;
+        }
+    }
+}`}
                 }
                 ppCondition: "__has_include(<chrono>)"
             }
@@ -12948,22 +13304,23 @@ if(%out){
                         index: 3
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    if(context instanceof QObject) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    if(context instanceof QObject) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            singleShot(dur, (QObject)context, "2"+metaMethod.cppMethodSignature());
+            return;
+        case Method:
+        case Slot:
+            singleShot(dur, (QObject)context, "1"+metaMethod.cppMethodSignature());
+            return;
+        default:
+            break;
+        }
+    }
+}`}
                 }
             }
             Instantiation{
@@ -13011,22 +13368,23 @@ if(%out){
                         index: 3
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    if(context instanceof QObject) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    if(context instanceof QObject) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            singleShot(dur, (QObject)context, "2"+metaMethod.cppMethodSignature());
+            return;
+        case Method:
+        case Slot:
+            singleShot(dur, (QObject)context, "1"+metaMethod.cppMethodSignature());
+            return;
+        default:
+            break;
+        }
+    }
+}`}
                 }
                 ppCondition: "__has_include(<chrono>)"
             }
@@ -13210,23 +13568,24 @@ if(metaMethod!=null && metaMethod.isValid()) {
                         index: 4
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                                  "    if(context!=null && context==object) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, tt, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, tt, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
+    if(context!=null && context==object) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            singleShot(dur, tt, context, "2"+metaMethod.cppMethodSignature());
+            return;
+        case Method:
+        case Slot:
+            singleShot(dur, tt, context, "1"+metaMethod.cppMethodSignature());
+            return;
+        default:
+            break;
+        }
+    }
+}`}
                 }
             }
             Instantiation{
@@ -13269,23 +13628,24 @@ if(metaMethod!=null && metaMethod.isValid()) {
                         index: 4
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                                  "    if(context!=null && context==object) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, tt, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, tt, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
+    if(context!=null && context==object) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            singleShot(dur, tt, context, "2"+metaMethod.cppMethodSignature());
+            return;
+        case Method:
+        case Slot:
+            singleShot(dur, tt, context, "1"+metaMethod.cppMethodSignature());
+            return;
+        default:
+            break;
+        }
+    }
+}`}
                 }
                 ppCondition: "__has_include(<chrono>)"
             }
@@ -13338,22 +13698,23 @@ if(metaMethod!=null && metaMethod.isValid()) {
                         index: 4
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    if(context instanceof QObject) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, tt, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, tt, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    if(context instanceof QObject) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            singleShot(dur, tt, (QObject)context, "2"+metaMethod.cppMethodSignature());
+            return;
+        case Method:
+        case Slot:
+            singleShot(dur, tt, (QObject)context, "1"+metaMethod.cppMethodSignature());
+            return;
+        default:
+            break;
+        }
+    }
+}`}
                 }
             }
             Instantiation{
@@ -13405,22 +13766,23 @@ if(metaMethod!=null && metaMethod.isValid()) {
                         index: 4
                         metaName: "slot"
                     }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    if(context instanceof QObject) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, tt, (QObject)context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, tt, (QObject)context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
+                    Text{content: String.raw`
+io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, "Argument 'slot': null not expected."));
+if(metaMethod!=null && metaMethod.isValid()) {
+    if(context instanceof QObject) {
+        switch(metaMethod.methodType()) {
+        case Signal:
+            singleShot(dur, tt, (QObject)context, "2"+metaMethod.cppMethodSignature());
+            return;
+        case Method:
+        case Slot:
+            singleShot(dur, tt, (QObject)context, "1"+metaMethod.cppMethodSignature());
+            return;
+        default:
+            break;
+        }
+    }
+}`}
                 }
                 ppCondition: "__has_include(<chrono>)"
             }
@@ -13730,8 +14092,9 @@ inline auto convertSlot(JNIEnv* _env, QObject*& qobject, jobject _receiver, jobj
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "if(%2.value()!=io.qt.core.QIODeviceBase.OpenModeFlag.Append.value() && %2.value()!=io.qt.core.QIODeviceBase.OpenModeFlag.Truncate.value())\n"+
-                              "    throw new IllegalArgumentException(\"Argument %2: Append or Truncate expected\");"}
+                Text{content: String.raw`
+                        if(%2.value()!=io.qt.core.QIODeviceBase.OpenModeFlag.Append.value() && %2.value()!=io.qt.core.QIODeviceBase.OpenModeFlag.Truncate.value())
+                            throw new IllegalArgumentException("Argument %2: Append or Truncate expected");`}
             }
         }
         ModifyFunction{
@@ -13743,8 +14106,9 @@ inline auto convertSlot(JNIEnv* _env, QObject*& qobject, jobject _receiver, jobj
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "if(%2.value()!=io.qt.core.QIODeviceBase.OpenModeFlag.Append.value() && %2.value()!=io.qt.core.QIODeviceBase.OpenModeFlag.Truncate.value())\n"+
-                              "    throw new IllegalArgumentException(\"Argument %2: Append or Truncate expected\");"}
+                Text{content: String.raw`
+                        if(%2.value()!=io.qt.core.QIODeviceBase.OpenModeFlag.Append.value() && %2.value()!=io.qt.core.QIODeviceBase.OpenModeFlag.Truncate.value())
+                            throw new IllegalArgumentException("Argument %2: Append or Truncate expected");`}
             }
         }
         ModifyFunction{
@@ -13789,8 +14153,9 @@ inline auto convertSlot(JNIEnv* _env, QObject*& qobject, jobject _receiver, jobj
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "long long pid(0);\n"+
-                                  "long long * %out = &pid;"}
+                    Text{content: String.raw`
+                            long long pid(0);
+                            long long * %out = &pid;`}
                 }
             }
         }
@@ -13812,8 +14177,9 @@ inline auto convertSlot(JNIEnv* _env, QObject*& qobject, jobject _receiver, jobj
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "long long pid(0);\n"+
-                                  "long long * %out = &pid;"}
+                    Text{content: String.raw`
+                            long long pid(0);
+                            long long * %out = &pid;`}
                 }
             }
         }
@@ -14047,9 +14413,10 @@ if(!Java::QtCore::QThread::javaThread(%env, __this) && !__qt_this->isRunning() &
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
-                Text{content: "Thread t = javaThread();\n"+
-                              "if(t!=null && !t.isInterrupted())\n"+
-                              "    t.interrupt();"}
+                Text{content: String.raw`
+                        Thread t = javaThread();
+                        if(t!=null && !t.isInterrupted())
+                            t.interrupt();`}
             }
         }
         InjectCode{
@@ -14131,11 +14498,6 @@ if(!Java::QtCore::QThread::javaThread(%env, __this) && !__qt_this->isRunning() &
         Rejection{functionName: "connect_functor"}
         Rejection{functionName: "disconnectImpl"}
         Rejection{fieldName: "staticQtMetaObject"}
-        ModifyFunction{
-            signature: "setProperty(const char*,QVariant&&)"
-            remove: RemoveFlag.All
-            since: 6.6
-        }
 
         ModifyFunction{
             signature: "destroyed(QObject *)"
@@ -14182,7 +14544,7 @@ if(!Java::QtCore::QThread::javaThread(%env, __this) && !__qt_this->isRunning() &
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -14297,12 +14659,11 @@ try{
             InjectCode{
                 target: CodeClass.Java
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "if(%1 < 0){\n"+
-                              "    throw new IllegalArgumentException(\"Timers cannot have negative intervals.\");\n"+
-                              "}\n"+
-                              "if(QAbstractEventDispatcher.instance()==null){\n"+
-                              "    throw new RuntimeException(\"Timers can only be used with threads providing an event dispatcher.\");\n"+
-                              "}"}
+                Text{content: String.raw`
+if(%1 < 0)
+    throw new IllegalArgumentException("Timers cannot have negative intervals.");
+if(QAbstractEventDispatcher.instance()==null)
+    throw new RuntimeException("Timers can only be used with threads providing an event dispatcher.");`}
             }
         }
         ModifyFunction{
@@ -14317,14 +14678,15 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(__qt_this->isWidgetType()) {\n"+
-                              "    if(!__qt_%1 || __qt_%1->isWidgetType()) {\n"+
-                              "        Java::QtWidgets::QWidget::setParent(%env, qtjambi_cast<jobject>(%env, __qt_this), qtjambi_cast<jobject>(%env, __qt_%1));\n"+
-                              "        return;\n"+
-                              "    }else {\n"+
-                              "        JavaException::raiseIllegalArgumentException(%env, \"Cannot set non-widget object as widget's parent.\" QTJAMBI_STACKTRACEINFO );\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+if(__qt_this->isWidgetType()) {
+    if(!__qt_%1 || __qt_%1->isWidgetType()) {
+        Java::QtWidgets::QWidget::setParent(%env, qtjambi_cast<jobject>(%env, __qt_this), qtjambi_cast<jobject>(%env, __qt_%1));
+        return;
+    }else {
+        JavaException::raiseIllegalArgumentException(%env, "Cannot set non-widget object as widget's parent." QTJAMBI_STACKTRACEINFO );
+    }
+}`}
             }
         }
         ModifyFunction{
@@ -14375,14 +14737,15 @@ if (objectThread &&
             InjectCode{
                 target: CodeClass.Java
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "if(%1==null || %1.isEmpty())\n"+
-                              "    return 0;\n"+
-                              "if(!%1.startsWith(\"2\")){\n"+
-                              "    io.qt.core.QMetaMethod method = metaObject().method(%1);\n"+
-                              "    if(method!=null && method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {\n"+
-                              "        %1 = \"2\" + method.cppMethodSignature();\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+if(%1==null || %1.isEmpty())
+    return 0;
+if(!%1.startsWith("2")){
+    io.qt.core.QMetaMethod method = metaObject().method(%1);
+    if(method!=null && method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {
+        %1 = "2" + method.cppMethodSignature();
+    }
+}`}
             }
         }
         ModifyFunction{
@@ -14398,28 +14761,59 @@ if (objectThread &&
                     index: 0
                     metaName: "%0"
                 }
-                Text{content: "if(QtJambiObjectData::isRejectedUserProperty(__qt_this, __qt_%1)){\n"+
-                              "    QTJAMBI_TRY_RETURN(__java_return_value,nullptr);\n"+
-                              "}"}
+                Text{content: String.raw`
+if(QtJambiObjectData::isRejectedUserProperty(__qt_this, __qt_%1)){
+    QTJAMBI_TRY_RETURN(__java_return_value,nullptr);
+}`}
             }
+        }
+        ModifyFunction{
+            signature: "setProperty(const char*,QVariant&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 2
+                replaceType: "java.lang.Object"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        auto metaObject = __qt_this->metaObject();
+                        int pindex = metaObject->indexOfProperty(__qt_%1);
+                        if(pindex>=0){
+                            QMetaProperty property = metaObject->property(pindex);
+                            QVariant %out = CoreAPI::convertCheckedObjectToQVariant(%env, %in, property.metaType());
+                            bool result = %out.isValid() && property.write(__qt_this, std::move(%out));
+                            QTJAMBI_TRY_RETURN(__java_return_value,result);
+                        }
+                        if(QtJambiObjectData::isRejectedUserProperty(__qt_this, __qt_%1)){
+                            QTJAMBI_TRY_RETURN(__java_return_value,false);
+                        }
+                        QVariant %out = QtJambiAPI::convertJavaObjectToQVariant(%env, %in);`}
+                }
+            }
+            since: 6.6
         }
         ModifyFunction{
             signature: "setProperty(const char*,QVariant)"
             threadAffinity: true
-            InjectCode{
-                target: CodeClass.Native
-                position: Position.Beginning
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
+            Remove{since: 6.6}
+            ModifyArgument{
+                index: 2
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+                        auto metaObject = __qt_this->metaObject();
+                        int pindex = metaObject->indexOfProperty(__qt_%1);
+                        if(pindex>=0){
+                            QMetaProperty property = metaObject->property(pindex);
+                            QVariant %out = CoreAPI::convertCheckedObjectToQVariant(%env, %in, property.metaType());
+                            bool result = %out.isValid() && property.write(__qt_this, std::move(%out));
+                            QTJAMBI_TRY_RETURN(__java_return_value,result);
+                        }
+                        if(QtJambiObjectData::isRejectedUserProperty(__qt_this, __qt_%1)){
+                            QTJAMBI_TRY_RETURN(__java_return_value,false);
+                        }
+                        QVariant %out = QtJambiAPI::convertJavaObjectToQVariant(%env, %in);`}
                 }
-                ArgumentMap{
-                    index: 0
-                    metaName: "%0"
-                }
-                Text{content: "if(QtJambiObjectData::isRejectedUserProperty(__qt_this, __qt_%1)){\n"+
-                              "    QTJAMBI_TRY_RETURN(__java_return_value,false);\n"+
-                              "}"}
             }
         }
         ModifyFunction{
@@ -14428,11 +14822,12 @@ if (objectThread &&
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "for(QByteArray name : QList<QByteArray>(%in)){\n"+
-                                  "    if(QtJambiObjectData::isRejectedUserProperty(__qt_this, name))\n"+
-                                  "        %in.removeAll(name);\n"+
-                                  "}\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(%in));"}
+                    Text{content: String.raw`
+for(QByteArray name : QList<QByteArray>(%in)){
+    if(QtJambiObjectData::isRejectedUserProperty(__qt_this, name))
+        %in.removeAll(name);
+}
+%out = qtjambi_cast<jobject>(%env, std::move(%in));`}
                 }
             }
         }
@@ -14736,13 +15131,7 @@ if (objectThread &&
         isValueOwner: true
 
         Rejection{functionName: "compressEvent"}
-        Rejection{functionName: "eventFilter"}
-        Rejection{functionName: "filterEvent"}
-        Rejection{functionName: "filterNativeEvent"}
-        Rejection{functionName: "setEventFilter"}
         Rejection{functionName: "nativeInterface"}
-        Rejection{functionName: "installNativeEventFilter"}
-        Rejection{functionName: "removeNativeEventFilter"}
 
         Rejection{
             enumName: "enum_1"
@@ -14882,7 +15271,43 @@ try{
             }
             InjectCode{
                 position: Position.End
-                Text{content: "QtJambi_LibraryUtilities.internal.setReferenceCount(instance().thread(), QThread.class, \"__rcEventDispatcher\", false, false, eventDispatcher);"}
+                Text{content: String.raw`QtJambi_LibraryUtilities.internal.setReferenceCount(instance().thread(), QThread.class, "__rcEventDispatcher", false, false, eventDispatcher);`}
+            }
+        }
+        ModifyFunction{
+            signature: "installNativeEventFilter(QAbstractNativeEventFilter *)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+            InjectCode{
+                position: Position.End
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    QAbstractEventDispatcher eventDispatcher = eventDispatcher();
+                    if(eventDispatcher!=null && !QCoreApplication.testAttribute(Qt.ApplicationAttribute.AA_PluginApplication))
+                        QtJambi_LibraryUtilities.internal.addReferenceCount(eventDispatcher, QAbstractEventDispatcher.class, "__rcNativeEventFilters", false, false, %1);
+                    `}
+            }
+        }
+        ModifyFunction{
+            signature: "removeNativeEventFilter(QAbstractNativeEventFilter *)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+            InjectCode{
+                position: Position.End
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    QAbstractEventDispatcher eventDispatcher = eventDispatcher();
+                    if(eventDispatcher!=null)
+                        QtJambi_LibraryUtilities.internal.removeFromCollectionReferenceCount(eventDispatcher, QAbstractEventDispatcher.class, "__rcNativeEventFilters", false, %1);
+                    `}
             }
         }
         ExtraIncludes{
@@ -14924,9 +15349,10 @@ try{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "std::unique_ptr<ApplicationData> applicationData(ApplicationData::initialize<QCoreApplication>(%env, %in));\n"+
-                                  "char** %out = applicationData->chars();\n"+
-                                  "int& __qt_%1 = applicationData->size();"}
+                    Text{content: String.raw`
+std::unique_ptr<ApplicationData> applicationData(ApplicationData::initialize<QCoreApplication>(%env, %in));
+char** %out = applicationData->chars();
+int& __qt_%1 = applicationData->size();`}
                 }
             }
             ModifyArgument{
@@ -14936,9 +15362,10 @@ try{
             }
             InjectCode{
                 target: CodeClass.Java
-                Text{content: "if(!__qt_isInitializing){\n"+
-                              "    throw new IllegalAccessError(\"Not allowed to instantiate QCoreApplication. Please use QCoreApplication.initialize() instead.\");\n"+
-                              "}"}
+                Text{content: String.raw`
+if(!__qt_isInitializing){
+    throw new IllegalAccessError("Not allowed to instantiate QCoreApplication. Please use QCoreApplication.initialize() instead.");
+}`}
             }
             InjectCode{
                 target: CodeClass.Native
@@ -15226,25 +15653,26 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant %out = qtjambi_cast<QVariant>(%env, %in);\n"+
-                                  "if(__qt_value1.type()==QVariant::UserType){\n"+
-                                  "    if(%out.userType()==qMetaTypeId<JCollectionWrapper>()){\n"+
-                                  "        bool ok = false;\n"+
-                                  "        QStringList stringList = %out.value<JCollectionWrapper>().toStringList(&ok);\n"+
-                                  "        if(ok){\n"+
-                                  "            %out.setValue(stringList);\n"+
-                                  "        }else{\n"+
-                                  "            QList<QVariant> variantList = %out.value<JCollectionWrapper>().toList();\n"+
-                                  "            %out.setValue(variantList);\n"+
-                                  "        }\n"+
-                                  "    }else if(%out.userType()==qMetaTypeId<JMapWrapper>()){\n"+
-                                  "        bool ok = false;\n"+
-                                  "        QVariantMap stringMap = %out.value<JMapWrapper>().toStringMap(&ok);\n"+
-                                  "        if(ok){\n"+
-                                  "            %out.setValue(stringMap);\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}"}
+                    Text{content: String.raw`
+QVariant %out = qtjambi_cast<QVariant>(%env, %in);
+if(__qt_value1.type()==QVariant::UserType){
+    if(%out.userType()==qMetaTypeId<JCollectionWrapper>()){
+        bool ok = false;
+        QStringList stringList = %out.value<JCollectionWrapper>().toStringList(&ok);
+        if(ok){
+            %out.setValue(stringList);
+        }else{
+            QList<QVariant> variantList = %out.value<JCollectionWrapper>().toList();
+            %out.setValue(variantList);
+        }
+    }else if(%out.userType()==qMetaTypeId<JMapWrapper>()){
+        bool ok = false;
+        QVariantMap stringMap = %out.value<JMapWrapper>().toStringMap(&ok);
+        if(ok){
+            %out.setValue(stringMap);
+        }
+    }
+}`}
                 }
             }
             until: [6, 3]
@@ -15258,25 +15686,26 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant %out = qtjambi_cast<QVariant>(%env, %in);\n"+
-                                  "if(__qt_value1.type()==QVariant::UserType){\n"+
-                                  "    if(%out.userType()==qMetaTypeId<JCollectionWrapper>()){\n"+
-                                  "        bool ok = false;\n"+
-                                  "        QStringList stringList = %out.value<JCollectionWrapper>().toStringList(&ok);\n"+
-                                  "        if(ok){\n"+
-                                  "            %out.setValue(stringList);\n"+
-                                  "        }else{\n"+
-                                  "            QList<QVariant> variantList = %out.value<JCollectionWrapper>().toList();\n"+
-                                  "            %out.setValue(variantList);\n"+
-                                  "        }\n"+
-                                  "    }else if(%out.userType()==qMetaTypeId<JMapWrapper>()){\n"+
-                                  "        bool ok = false;\n"+
-                                  "        QVariantMap stringMap = %out.value<JMapWrapper>().toStringMap(&ok);\n"+
-                                  "        if(ok){\n"+
-                                  "            %out.setValue(stringMap);\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}"}
+                    Text{content: String.raw`
+QVariant %out = qtjambi_cast<QVariant>(%env, %in);
+if(__qt_value1.type()==QVariant::UserType){
+    if(%out.userType()==qMetaTypeId<JCollectionWrapper>()){
+        bool ok = false;
+        QStringList stringList = %out.value<JCollectionWrapper>().toStringList(&ok);
+        if(ok){
+            %out.setValue(stringList);
+        }else{
+            QList<QVariant> variantList = %out.value<JCollectionWrapper>().toList();
+            %out.setValue(variantList);
+        }
+    }else if(%out.userType()==qMetaTypeId<JMapWrapper>()){
+        bool ok = false;
+        QVariantMap stringMap = %out.value<JMapWrapper>().toStringMap(&ok);
+        if(ok){
+            %out.setValue(stringMap);
+        }
+    }
+}`}
                 }
             }
             since: [6, 4]
@@ -15711,8 +16140,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = __qt_%1;"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = __qt_%1;`}
                 }
             }
             ModifyArgument{
@@ -15741,8 +16171,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = __qt_%1;"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = __qt_%1;`}
                 }
             }
             ModifyArgument{
@@ -15788,8 +16219,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = __qt_%1;"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = __qt_%1;`}
                 }
             }
             ModifyArgument{
@@ -15835,8 +16267,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = __qt_%1;"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = __qt_%1;`}
                 }
             }
             ModifyArgument{
@@ -15861,8 +16294,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = __qt_%1;"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = __qt_%1;`}
                 }
             }
             ModifyArgument{
@@ -15887,8 +16321,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = __qt_%1;"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = __qt_%1;`}
                 }
             }
             ModifyArgument{
@@ -15920,8 +16355,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = __qt_%1;"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = __qt_%1;`}
                 }
             }
             ModifyArgument{
@@ -15946,11 +16382,12 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "if(__qt_%1){\n"+
-                                  "    %out = %env->NewStringUTF(__qt_%1);\n"+
-                                  "    delete[] __qt_%1;\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            if(__qt_%1){
+                                %out = %env->NewStringUTF(__qt_%1);
+                                delete[] __qt_%1;
+                            }`}
                 }
             }
             ModifyArgument{
@@ -16291,8 +16728,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = __qt_%1;"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = __qt_%1;`}
                 }
             }
             ModifyArgument{
@@ -16315,8 +16753,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jchar>(%env, __qt_%1);"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jchar>(%env, __qt_%1);`}
                 }
             }
             ModifyArgument{
@@ -16339,8 +16778,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = __qt_%1;"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = __qt_%1;`}
                 }
             }
             ModifyArgument{
@@ -16363,8 +16803,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = __qt_%1;"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = __qt_%1;`}
                 }
             }
             ModifyArgument{
@@ -16387,8 +16828,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = __qt_%1;"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = __qt_%1;`}
                 }
             }
             ModifyArgument{
@@ -16412,8 +16854,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, __qt_%1);`}
                 }
             }
             ModifyArgument{
@@ -16437,8 +16880,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jcoreobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jcoreobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -16461,8 +16905,9 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jstring>(%env, __qt_%1);"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jstring>(%env, __qt_%1);`}
                 }
             }
             ModifyArgument{
@@ -19548,8 +19993,9 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){\n"+
-                              "QFutureWatcherBase *__qt_this = reinterpret_cast<QFutureWatcherBase *>(ptr);"}
+                Text{content: String.raw`
+                        CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
+                        QFutureWatcherBase *__qt_this = reinterpret_cast<QFutureWatcherBase *>(ptr);`}
             }
             InjectCode{
                 target: CodeClass.Native
@@ -19678,25 +20124,26 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QRunnable* %out = nullptr;\n"+
-                                  "if(Java::QtCore::QRunnable::isInstanceOf(%env, %in)){\n"+
-                                  "    %out = qtjambi_cast<QRunnable*>(%env, %in);\n"+
-                                  "    QtJambiAPI::setCppOwnership(%env, %in);\n"+
-                                  "}else if(%in){\n"+
-                                  "    JObjectWrapper __wrapper_%in(%env, %in);\n"+
-                                  "    %out = QRunnable::create([__wrapper_%in](){\n"+
-                                  "            QTJAMBI_TRY_ANY{\n"+
-                                  "                if(JniEnvironmentExceptionHandler env{300}){\n"+
-                                  "                    jobject object = env->NewLocalRef(__wrapper_runnable0.object(env));\n"+
-                                  "                    QTJAMBI_TRY{\n"+
-                                  "                        Java::Runtime::Runnable::run(env, object);\n"+
-                                  "                    }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                                  "                        env.handleException(exn, \"QRunnable::run()\");\n"+
-                                  "                    }QTJAMBI_TRY_END\n"+
-                                  "                }\n"+
-                                  "            }QTJAMBI_CATCH_ANY{}QTJAMBI_TRY_END\n"+
-                                  "        });\n"+
-                                  "}"}
+                    Text{content: String.raw`
+QRunnable* %out = nullptr;
+if(Java::QtCore::QRunnable::isInstanceOf(%env, %in)){
+    %out = qtjambi_cast<QRunnable*>(%env, %in);
+    QtJambiAPI::setCppOwnership(%env, %in);
+}else if(%in){
+    JObjectWrapper __wrapper_%in(%env, %in);
+    %out = QRunnable::create([__wrapper_%in](){
+            QTJAMBI_TRY_ANY{
+                if(JniEnvironmentExceptionHandler env{300}){
+                    jobject object = env->NewLocalRef(__wrapper_runnable0.object(env));
+                    QTJAMBI_TRY{
+                        Java::Runtime::Runnable::run(env, object);
+                    }QTJAMBI_CATCH(const JavaException& exn){
+                        env.handleException(exn, "QRunnable::run()");
+                    }QTJAMBI_TRY_END
+                }
+            }QTJAMBI_CATCH_ANY{}QTJAMBI_TRY_END
+        });
+}`}
                 }
             }
         }
@@ -19709,25 +20156,26 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QRunnable* %out = nullptr;\n"+
-                                  "if(Java::QtCore::QRunnable::isInstanceOf(%env, %in)){\n"+
-                                  "    %out = qtjambi_cast<QRunnable*>(%env, %in);\n"+
-                                  "    QtJambiAPI::setCppOwnership(%env, %in);\n"+
-                                  "}else if(%in){\n"+
-                                  "    JObjectWrapper __wrapper_%in(%env, %in);\n"+
-                                  "    %out = QRunnable::create([__wrapper_%in](){\n"+
-                                  "            QTJAMBI_TRY_ANY{\n"+
-                                  "                if(JniEnvironmentExceptionHandler env{300}){\n"+
-                                  "                    jobject object = env->NewLocalRef(__wrapper_runnable0.object(env));\n"+
-                                  "                    QTJAMBI_TRY{\n"+
-                                  "                        Java::Runtime::Runnable::run(env, object);\n"+
-                                  "                    }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                                  "                        env.handleException(exn, \"QRunnable::run()\");\n"+
-                                  "                    }QTJAMBI_TRY_END\n"+
-                                  "                }\n"+
-                                  "            }QTJAMBI_CATCH_ANY{}QTJAMBI_TRY_END\n"+
-                                  "        });\n"+
-                                  "}"}
+                    Text{content: String.raw`
+QRunnable* %out = nullptr;
+if(Java::QtCore::QRunnable::isInstanceOf(%env, %in)){
+    %out = qtjambi_cast<QRunnable*>(%env, %in);
+    QtJambiAPI::setCppOwnership(%env, %in);
+}else if(%in){
+    JObjectWrapper __wrapper_%in(%env, %in);
+    %out = QRunnable::create([__wrapper_%in](){
+            QTJAMBI_TRY_ANY{
+                if(JniEnvironmentExceptionHandler env{300}){
+                    jobject object = env->NewLocalRef(__wrapper_runnable0.object(env));
+                    QTJAMBI_TRY{
+                        Java::Runtime::Runnable::run(env, object);
+                    }QTJAMBI_CATCH(const JavaException& exn){
+                        env.handleException(exn, "QRunnable::run()");
+                    }QTJAMBI_TRY_END
+                }
+            }QTJAMBI_CATCH_ANY{}QTJAMBI_TRY_END
+        });
+}`}
                 }
             }
             since: [6, 3]
@@ -19742,30 +20190,31 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                 NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QRunnable* %out = nullptr;\n"+
-                                  "QtJambiScope scope;\n"+
-                                  "if(Java::QtCore::QRunnable::isInstanceOf(%env, %in)){\n"+
-                                  "    %out = qtjambi_cast<QRunnable*>(%env, %in);\n"+
-                                  "    QtJambiAPI::setCppOwnership(%env, %in);\n"+
-                                  "}else{\n"+
-                                  "    JObjectWrapper __wrapper_%in(%env, %in);\n"+
-                                  "    %out = QRunnable::create([__wrapper_%in](){\n"+
-                                  "            QTJAMBI_TRY_ANY{\n"+
-                                  "                if(JniEnvironmentExceptionHandler env{300}){\n"+
-                                  "                    jobject object = env->NewLocalRef(__wrapper_runnable0.object(env));\n"+
-                                  "                    QTJAMBI_TRY{\n"+
-                                  "                        Java::Runtime::Runnable::run(env, object);\n"+
-                                  "                    }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                                  "                        env.handleException(exn, \"QRunnable::run()\");\n"+
-                                  "                    }QTJAMBI_TRY_END\n"+
-                                  "                }\n"+
-                                  "            }QTJAMBI_CATCH_ANY{}QTJAMBI_TRY_END\n"+
-                                  "        });\n"+
-                                  "    scope.addFinalAction([&](){\n"+
-                                  "        if(!__java_return_value)\n"+
-                                  "            delete %out;\n"+
-                                  "        });\n"+
-                                  "}"}
+                    Text{content: String.raw`
+QRunnable* %out = nullptr;
+QtJambiScope scope;
+if(Java::QtCore::QRunnable::isInstanceOf(%env, %in)){
+    %out = qtjambi_cast<QRunnable*>(%env, %in);
+    QtJambiAPI::setCppOwnership(%env, %in);
+}else{
+    JObjectWrapper __wrapper_%in(%env, %in);
+    %out = QRunnable::create([__wrapper_%in](){
+            QTJAMBI_TRY_ANY{
+                if(JniEnvironmentExceptionHandler env{300}){
+                    jobject object = env->NewLocalRef(__wrapper_runnable0.object(env));
+                    QTJAMBI_TRY{
+                        Java::Runtime::Runnable::run(env, object);
+                    }QTJAMBI_CATCH(const JavaException& exn){
+                        env.handleException(exn, "QRunnable::run()");
+                    }QTJAMBI_TRY_END
+                }
+            }QTJAMBI_CATCH_ANY{}QTJAMBI_TRY_END
+        });
+    scope.addFinalAction([&](){
+        if(!__java_return_value)
+            delete %out;
+        });
+}`}
                 }
             }
         }
@@ -19783,15 +20232,16 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
         }
         InjectCode{
             target: CodeClass.JavaInterface
-            Text{content: "public static QRunnable of(Runnable runnable) {\n"+
-                          "    if(runnable instanceof QRunnable) {\n"+
-                          "        return (QRunnable)runnable;\n"+
-                          "    }else if(runnable==null){\n"+
-                          "        return null;\n"+
-                          "    }else {\n"+
-                          "        return runnable::run;\n"+
-                          "    }\n"+
-                          "}"}
+            Text{content: String.raw`
+public static QRunnable of(Runnable runnable) {
+    if(runnable instanceof QRunnable) {
+        return (QRunnable)runnable;
+    }else if(runnable==null){
+        return null;
+    }else {
+        return runnable::run;
+    }
+}`}
         }
         Rejection{
             className: "QGenericRunnable"
@@ -19802,15 +20252,6 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
 
     ValueType{
         name: "QXmlStreamAttribute"
-        CustomConstructor{
-            type: CustomConstructor.Copy
-            Text{content: "if(copy->namespaceUri().isEmpty())\n"+
-                          "    new(placement) QXmlStreamAttribute(copy->qualifiedName().toString(), copy->value().toString());\n"+
-                          "else\n"+
-                          "    new(placement) QXmlStreamAttribute(copy->namespaceUri().toString(),\n"+
-                          "                                       copy->name().toString(),\n"+
-                          "                                       copy->value().toString());"}
-        }
     }
 
     ValueType{
@@ -19869,18 +20310,19 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "bool operator<(const QXmlStreamAttribute& lhs, const QXmlStreamAttribute& rhs)\n"+
-                          "{\n"+
-                          "    return qHash(lhs) < qHash(rhs);\n"+
-                          "}\n"+
-                          "namespace QtJambiPrivate{\n"+
-                          "    template<>\n"+
-                          "    struct supports_less_than<QXmlStreamAttributes> : std::false_type{};\n"+
-                          "    template<>\n"+
-                          "    struct supports_stream_operators<QXmlStreamAttributes> : std::false_type{};\n"+
-                          "    template<>\n"+
-                          "    struct supports_debugstream<QXmlStreamAttributes> : std::false_type{};\n"+
-                          "}"}
+            Text{content: String.raw`
+bool operator<(const QXmlStreamAttribute& lhs, const QXmlStreamAttribute& rhs)
+{
+    return qHash(lhs) < qHash(rhs);
+}
+namespace QtJambiPrivate{
+    template<>
+    struct supports_less_than<QXmlStreamAttributes> : std::false_type{};
+    template<>
+    struct supports_stream_operators<QXmlStreamAttributes> : std::false_type{};
+    template<>
+    struct supports_debugstream<QXmlStreamAttributes> : std::false_type{};
+}`}
         }
     }
 
@@ -20024,8 +20466,9 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "long long pid(0);\n"+
-                                  "long long* %out = &pid;"}
+                    Text{content: String.raw`
+                            long long pid(0);
+                            long long* %out = &pid;`}
                 }
             }
             ModifyArgument{
@@ -20034,8 +20477,9 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString hostname;\n"+
-                                  "QString* %out = &hostname;"}
+                    Text{content: String.raw`
+                            QString hostname;
+                            QString* %out = &hostname;`}
                 }
             }
             ModifyArgument{
@@ -20044,8 +20488,9 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString appname;\n"+
-                                  "QString* %out = &appname;"}
+                    Text{content: String.raw`
+                            QString appname;
+                            QString* %out = &appname;`}
                 }
             }
             ModifyArgument{
@@ -20107,32 +20552,6 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
             remove: RemoveFlag.All
             since: 6.8
         }
-        /*ModifyFunction{
-            signature: "hashInto(QSpan<char>, QSpan<const QByteArrayView>, QByteArrayView, QCryptographicHash::Algorithm)"
-            ModifyArgument{
-                index: 1
-                AddImplicitCall{
-                    type: "byte @NonNull[]"
-                }
-                AddImplicitCall{
-                    type: "io.qt.core.@StrictNonNull QByteArray"
-                }
-            }
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.@NonNull Iterable<io.qt.core.@NonNull QByteArrayView>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSpan<const QByteArrayView> %out = qtjambi_cast<QSpan<const QByteArrayView>>(%env, %scope, %in);"}
-                }
-                AddImplicitCall{
-                    type: "io.qt.core.@NonNull QByteArrayView @NonNull[]"
-                }
-            }
-            since: 6.8
-        }*/
     }
 
     Rejection{
@@ -20491,8 +20910,9 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "CoreAPI::preExit();\n"+
-                              "auto _qtjambi_unexit = qScopeGuard(&CoreAPI::unexit);"}
+                Text{content: String.raw`
+                    CoreAPI::preExit();
+                    auto _qtjambi_unexit = qScopeGuard(&CoreAPI::unexit);`}
             }
         }
         ModifyFunction{
@@ -20501,8 +20921,9 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "CoreAPI::preExit();\n"+
-                              "auto _qtjambi_unexit = qScopeGuard(&CoreAPI::unexit);"}
+                Text{content: String.raw`
+                    CoreAPI::preExit();
+                    auto _qtjambi_unexit = qScopeGuard(&CoreAPI::unexit);`}
             }
         }
         ModifyFunction{
@@ -20533,15 +20954,8 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
             name: "Flag"
         }
         CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QCommandLineOption(*copy);\n"+
-                          "}else{\n"+
-                          "    return new(placement) QCommandLineOption(QLatin1String(\" \"));\n"+
-                          "}"}
-        }
-        CustomConstructor{
             type: CustomConstructor.Default
-            Text{content: "new(placement) QCommandLineOption(QLatin1String(\" \"));"}
+            Text{content: String.raw`new(placement) QCommandLineOption(QLatin1String(" "));`}
         }
     }
 
@@ -20623,15 +21037,8 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
             remove: RemoveFlag.All
         }
         CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QCollatorSortKey(*copy);\n"+
-                          "}else{\n"+
-                          "    return new(placement) QCollatorSortKey(QCollator().sortKey(\"\"));\n"+
-                          "}"}
-        }
-        CustomConstructor{
             type: CustomConstructor.Default
-            Text{content: "new(placement) QCollatorSortKey(QCollator().sortKey(\"\"));"}
+            Text{content: String.raw`new(placement) QCollatorSortKey(QCollator().sortKey(""));`}
         }
     }
 
@@ -20649,13 +21056,6 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
             signature: "QOperatingSystemVersion(QOperatingSystemVersionBase)"
             remove: RemoveFlag.All
             since: 6.3
-        }
-        CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QOperatingSystemVersion(*copy);\n"+
-                          "}else{\n"+
-                          "    return new(placement) QOperatingSystemVersion(QOperatingSystemVersion::Unknown, -1);\n"+
-                          "}"}
         }
         CustomConstructor{
             type: CustomConstructor.Copy
@@ -20687,13 +21087,6 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
             signature: "QOperatingSystemVersion(QOperatingSystemVersionBase)"
             remove: RemoveFlag.All
             since: 6.3
-        }
-        CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QOperatingSystemVersion(*copy);\n"+
-                          "}else{\n"+
-                          "    return new(placement) QOperatingSystemVersion(QOperatingSystemVersion::Unknown, -1);\n"+
-                          "}"}
         }
         CustomConstructor{
             type: CustomConstructor.Copy
@@ -20868,20 +21261,11 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
             functionName: "_q_data"
         }
         CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    QDeadlineTimer* pointer = new(placement) QDeadlineTimer(copy->timerType());\n"+
-                          "    pointer->setPreciseDeadline(0, copy->deadlineNSecs(), copy->timerType());\n"+
-                          "    pointer->setPreciseRemainingTime(0, copy->remainingTimeNSecs(), copy->timerType());\n"+
-                          "    return pointer;\n"+
-                          "}else{\n"+
-                          "    return new(placement) QDeadlineTimer();\n"+
-                          "}"}
-        }
-        CustomConstructor{
             type: CustomConstructor.Copy
-            Text{content: "QDeadlineTimer* pointer = new(placement) QDeadlineTimer(copy->timerType());\n"+
-                          "pointer->setPreciseDeadline(0, copy->deadlineNSecs(), copy->timerType());\n"+
-                          "pointer->setPreciseRemainingTime(0, copy->remainingTimeNSecs(), copy->timerType());"}
+            Text{content: String.raw`
+                QDeadlineTimer* pointer = new(placement) QDeadlineTimer(copy->timerType());
+                pointer->setPreciseDeadline(0, copy->deadlineNSecs(), copy->timerType());
+                pointer->setPreciseRemainingTime(0, copy->remainingTimeNSecs(), copy->timerType());`}
         }
         ModifyFunction{
             signature: "operator+=(qint64)"
@@ -21471,8 +21855,9 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(%this->size()<%this->capacity())\n"+
-                              "    PersistentDataJBuffer::setLimit(%env, __java_return_value, jsize(%this->size()));"}
+                Text{content: String.raw`
+                    if(%this->size()<%this->capacity())
+                        PersistentDataJBuffer::setLimit(%env, __java_return_value, jsize(%this->size()));`}
             }
         }
         ModifyFunction{
@@ -21610,8 +21995,9 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                     index: 1
                     metaName: "i"
                 }
-                Text{content: "if(i<0 || i>size())\n"+
-                              "    throw new IndexOutOfBoundsException(\"\"+i);"}
+                Text{content: String.raw`
+                    if(i<0 || i>size())
+                        throw new IndexOutOfBoundsException(""+i);`}
             }
         }
         ModifyFunction{
@@ -21623,8 +22009,9 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                     index: 1
                     metaName: "index"
                 }
-                Text{content: "if(index<0 || index>size())\n"+
-                              "    throw new IndexOutOfBoundsException(\"\"+index);"}
+                Text{content: String.raw`
+                    if(index<0 || index>size())
+                        throw new IndexOutOfBoundsException(""+index);`}
             }
         }
         ModifyFunction{
@@ -21982,15 +22369,17 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -22003,15 +22392,17 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -22023,15 +22414,17 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -22043,15 +22436,17 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -22063,15 +22458,17 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.End
-                Text{content: "if(!ok)\n"+
-                              "    JavaException::raise<Java::Runtime::NumberFormatException>(%env, \"Unable to parse number.\" QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                        if(!ok)
+                            JavaException::raise<Java::Runtime::NumberFormatException>(%env, "Unable to parse number." QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -22157,8 +22554,9 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                 NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint size = jint(__qt_this->size());\n"+
-                                  "%out = qtjambi_cast<jcharArray>(%env, %scope, %in, size);"}
+                    Text{content: String.raw`
+                        jint size = jint(__qt_this->size());
+                        %out = qtjambi_cast<jcharArray>(%env, %scope, %in, size);`}
                 }
             }
         }
@@ -22172,10 +22570,11 @@ CoreAPI::invokeAndCatch(%env, __qt_this, [](void* ptr){
                 NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint size = 0;\n"+
-                                  "while(%in[size]!=0)\n"+
-                                  "    ++size;\n"+
-                                  "%out = qtjambi_cast<jshortArray>(%env, %scope, %in, size);"}
+                    Text{content: String.raw`
+                        jint size = 0;
+                        while(%in[size]!=0)
+                            ++size;
+                        %out = qtjambi_cast<jshortArray>(%env, %scope, %in, size);`}
                 }
             }
         }
@@ -22611,13 +23010,14 @@ Enum entries for string comparison.
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QJsonValue iid = %in.value(\"IID\");\n"+
-                                  "if(iid.isString()){\n"+
-                                  "    if(jclass iface = CoreAPI::getInterfaceByIID(%env, iid.toString().toUtf8())){\n"+
-                                  "        %in.insert(\"interface\", QtJambiAPI::getClassName(%env, iface));\n"+
-                                  "    }\n"+
-                                  "}\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(%in));"}
+                    Text{content: String.raw`
+QJsonValue iid = %in.value("IID");
+if(iid.isString()){
+    if(jclass iface = CoreAPI::getInterfaceByIID(%env, iid.toString().toUtf8())){
+        %in.insert("interface", QtJambiAPI::getClassName(%env, iface));
+    }
+}
+%out = qtjambi_cast<jobject>(%env, std::move(%in));`}
                 }
             }
         }
@@ -22641,10 +23041,6 @@ Enum entries for string comparison.
         ExtraIncludes{
             Include{
                 fileName: "io.qt.core.*"
-                location: Include.Java
-            }
-            Include{
-                fileName: "io.qt.internal.*"
                 location: Include.Java
             }
             Include{
@@ -22687,10 +23083,11 @@ Enum entries for string comparison.
                 NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "const char* %out = CoreAPI::getInterfaceIID(%env, %in);\n"+
-                                  "if(!%out){\n"+
-                                  "    JavaException::raiseIllegalArgumentException(%env, QStringLiteral(\"Class %\"\"1 is not registered as plugin interface.\").arg(QtJambiAPI::getClassNamePrintable(%env, %in)) QTJAMBI_STACKTRACEINFO);\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        const char* %out = CoreAPI::getInterfaceIID(%env, %in);
+                        if(!%out){
+                            JavaException::raiseIllegalArgumentException(%env, QStringLiteral("Class %""1 is not registered as plugin interface.").arg(QtJambiAPI::getClassNamePrintable(%env, %in)) QTJAMBI_STACKTRACEINFO);
+                        }`}
                 }
             }
             ModifyArgument{
@@ -22714,8 +23111,9 @@ Enum entries for string comparison.
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "if(%2==null || !%2.startsWith(\"/\"))\n"+
-                              "    throw new IllegalArgumentException(\"For historical reasons, the suffix must start with '/' (and it can't be empty)\");"}
+                Text{content: String.raw`
+                    if(%2==null || !%2.startsWith("/"))
+                        throw new IllegalArgumentException("For historical reasons, the suffix must start with '/' (and it can't be empty)");`}
             }
         }
         ModifyFunction{
@@ -22724,30 +23122,32 @@ Enum entries for string comparison.
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "for(QJsonObject& obj : %in){\n"+
-                                  "    if(obj[QStringLiteral(\"IID\")].isString()){\n"+
-                                  "        if(jclass iface = CoreAPI::getInterfaceByIID(%env, obj[QStringLiteral(\"IID\")].toString().toUtf8())){\n"+
-                                  "            obj[\"interface\"] = QtJambiAPI::getClassName(%env, iface);\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(%in));"}
+                    Text{content: String.raw`
+for(QJsonObject& obj : %in){
+    if(obj[QStringLiteral("IID")].isString()){
+        if(jclass iface = CoreAPI::getInterfaceByIID(%env, obj[QStringLiteral("IID")].toString().toUtf8())){
+            obj["interface"] = QtJambiAPI::getClassName(%env, iface);
+        }
+    }
+}
+%out = qtjambi_cast<jobject>(%env, std::move(%in));`}
                     until: [6, 2]
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "for(QPluginParsedMetaData& obj : __qt_return_value){\n"+
-                                  "    QCborMap map = obj.toCbor();\n"+
-                                  "    QCborValue iid = map.value(QStringLiteral(\"IID\"));\n"+
-                                  "    if(iid.isString()){\n"+
-                                  "        if(jclass iface = CoreAPI::getInterfaceByIID(__jni_env, iid.toString().toUtf8())){\n"+
-                                  "            map.insert(QStringLiteral(\"interface\"), QtJambiAPI::getClassName(__jni_env, iface));\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "    obj.~QPluginParsedMetaData();\n"+
-                                  "    new (&obj) QCborValue(map);\n"+
-                                  "}\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(%in));"}
+                    Text{content: String.raw`
+for(QPluginParsedMetaData& obj : __qt_return_value){
+    QCborMap map = obj.toCbor();
+    QCborValue iid = map.value(QStringLiteral("IID"));
+    if(iid.isString()){
+        if(jclass iface = CoreAPI::getInterfaceByIID(__jni_env, iid.toString().toUtf8())){
+            map.insert(QStringLiteral("interface"), QtJambiAPI::getClassName(__jni_env, iface));
+        }
+    }
+    obj.~QPluginParsedMetaData();
+    new (&obj) QCborValue(map);
+}
+%out = qtjambi_cast<jobject>(%env, std::move(%in));`}
                     since: [6, 3]
                 }
             }
@@ -22821,14 +23221,15 @@ Enum entries for string comparison.
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QJsonValue iid = %in.value(\"IID\");\n"+
-                                  "if(iid.isString()){\n"+
-                                  "    if(jclass iface = CoreAPI::getInterfaceByIID(%env, iid.toString().toUtf8())){\n"+
-                                  "        %in.take(\"IID\");\n"+
-                                  "        %in.insert(\"interface\", QJsonValue::fromVariant(QVariant::fromValue<JObjectWrapper>(JObjectWrapper(%env, iface))));\n"+
-                                  "    }\n"+
-                                  "}\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(%in));"}
+                    Text{content: String.raw`
+QJsonValue iid = %in.value("IID");
+if(iid.isString()){
+    if(jclass iface = CoreAPI::getInterfaceByIID(%env, iid.toString().toUtf8())){
+        %in.take("IID");
+        %in.insert("interface", QJsonValue::fromVariant(QVariant::fromValue<JObjectWrapper>(JObjectWrapper(%env, iface))));
+    }
+}
+%out = qtjambi_cast<jobject>(%env, std::move(%in));`}
                 }
             }
         }
@@ -22919,13 +23320,6 @@ Enum entries for string comparison.
             }
         }
 
-        CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QMetaType(copy->id());\n"+
-                          "}else{\n"+
-                          "    return new(placement) QMetaType();\n"+
-                          "}"}
-        }
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/CoreAPI"
@@ -23000,8 +23394,9 @@ Enum entries for string comparison.
                 }
                 InjectCode{
                     target: CodeClass.Java
-                    Text{content: String.raw`if(instantiations==null || instantiations.length==0){
-    instantiations = io.qt.internal.MetaTypeUtility.findSuperInstantiations(clazz);
+                    Text{content: String.raw`
+if(instantiations==null || instantiations.length==0){
+    instantiations = CoreUtility.findSuperInstantiations(clazz);
 }`}
                 }
             }
@@ -23023,8 +23418,9 @@ Enum entries for string comparison.
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "%1 = cast(javaType(), %1);\n"+
-                              "%2 = cast(javaType(), %2);"}
+                Text{content: String.raw`
+                    %1 = cast(javaType(), %1);
+                    %2 = cast(javaType(), %2);`}
             }
             ModifyArgument{
                 index: 0
@@ -23033,15 +23429,16 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "if(%in==QPartialOrdering::Less){\n"+
-                                  "    %out = -1;\n"+
-                                  "}else if(%in==QPartialOrdering::Greater){\n"+
-                                  "    %out = 1;\n"+
-                                  "}else if(%in==QPartialOrdering::Unordered){\n"+
-                                  "    %out = -127;\n"+
-                                  "}else{\n"+
-                                  "    %out = 0;\n"+
-                                  "}"}
+                    Text{content: String.raw`
+if(%in==QPartialOrdering::Less){
+    %out = -1;
+}else if(%in==QPartialOrdering::Greater){
+    %out = 1;
+}else if(%in==QPartialOrdering::Unordered){
+    %out = -127;
+}else{
+    %out = 0;
+}`}
                 }
             }
             ModifyArgument{
@@ -23051,8 +23448,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant var1 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, *__qt_this);\n"+
-                                  "const void* %out = var1.data();"}
+                    Text{content: String.raw`
+                            QVariant var1 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, *__qt_this);
+                            const void* %out = var1.data();`}
                 }
             }
             ModifyArgument{
@@ -23062,8 +23460,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant var2 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, *__qt_this);\n"+
-                                  "const void* %out = var2.data();"}
+                    Text{content: String.raw`
+                        QVariant var2 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, *__qt_this);
+                        const void* %out = var2.data();`}
                 }
             }
         }
@@ -23084,8 +23483,9 @@ Enum entries for string comparison.
                     index: 3
                     metaName: "%3"
                 }
-                Text{content: "%1 = cast(javaType(%3), %1);\n"+
-                              "%2 = cast(javaType(%3), %2);"}
+                Text{content: String.raw`
+                    %1 = cast(javaType(%3), %1);
+                    %2 = cast(javaType(%3), %2);`}
             }
             ModifyArgument{
                 index: 0
@@ -23105,8 +23505,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant var1 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%3));\n"+
-                                  "const void* %out = var1.data();"}
+                    Text{content: String.raw`
+                        QVariant var1 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%3));
+                        const void* %out = var1.data();`}
                 }
             }
             ModifyArgument{
@@ -23116,8 +23517,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant var2 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%3));\n"+
-                                  "const void* %out = var2.data();"}
+                    Text{content: String.raw`
+                        QVariant var2 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%3));
+                        const void* %out = var2.data();`}
                 }
             }
             ModifyArgument{
@@ -23126,8 +23528,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "int %in = 0;\n"+
-                                  "int* %out = &%in;"}
+                    Text{content: String.raw`
+                        int %in = 0;
+                        int* %out = &%in;`}
                 }
             }
         }
@@ -23144,8 +23547,9 @@ Enum entries for string comparison.
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "%1 = cast(javaType(), %1);\n"+
-                              "%2 = cast(javaType(), %2);"}
+                Text{content: String.raw`
+                    %1 = cast(javaType(), %1);
+                    %2 = cast(javaType(), %2);`}
             }
             ModifyArgument{
                 index: 1
@@ -23154,8 +23558,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant var1 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, *__qt_this);\n"+
-                                  "const void* %out = var1.data();"}
+                    Text{content: String.raw`
+                        QVariant var1 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, *__qt_this);
+                        const void* %out = var1.data();`}
                 }
             }
             ModifyArgument{
@@ -23165,8 +23570,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant var2 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, *__qt_this);\n"+
-                                  "const void* %out = var2.data();"}
+                    Text{content: String.raw`
+                        QVariant var2 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, *__qt_this);
+                        const void* %out = var2.data();`}
                 }
             }
         }
@@ -23187,8 +23593,9 @@ Enum entries for string comparison.
                     index: 3
                     metaName: "%3"
                 }
-                Text{content: "%1 = cast(javaType(%3), %1);\n"+
-                              "%2 = cast(javaType(%3), %2);"}
+                Text{content: String.raw`
+                    %1 = cast(javaType(%3), %1);
+                    %2 = cast(javaType(%3), %2);`}
             }
             ModifyArgument{
                 index: 0
@@ -23208,8 +23615,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant var1 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%3));\n"+
-                                  "const void* %out = var1.data();"}
+                    Text{content: String.raw`
+                        QVariant var1 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%3));
+                        const void* %out = var1.data();`}
                 }
             }
             ModifyArgument{
@@ -23219,8 +23627,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant var2 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%3));\n"+
-                                  "const void* %out = var2.data();"}
+                    Text{content: String.raw`
+                        QVariant var2 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%3));
+                        const void* %out = var2.data();`}
                 }
             }
             ModifyArgument{
@@ -23229,8 +23638,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "int %in = 0;\n"+
-                                  "int* %out = &%in;"}
+                    Text{content: String.raw`
+                        int %in = 0;
+                        int* %out = &%in;`}
                 }
             }
         }
@@ -23256,8 +23666,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "*/\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, variant);"}
+                    Text{content: String.raw`
+                            */
+                            %out = qtjambi_cast<jobject>(%env, variant);`}
                 }
             }
             ModifyArgument{
@@ -23267,8 +23678,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, *__qt_this);\n"+
-                                  "/*"}
+                    Text{content: String.raw`
+                        QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, *__qt_this);
+                        /*`}
                 }
             }
         }
@@ -23298,8 +23710,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "*/\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, variant);"}
+                    Text{content: String.raw`
+                        */
+                        %out = qtjambi_cast<jobject>(%env, variant);`}
                 }
             }
             ModifyArgument{
@@ -23309,8 +23722,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%1));\n"+
-                                  "/*"}
+                    Text{content: String.raw`
+                        QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%1));
+                        /*`}
                 }
             }
         }
@@ -23322,8 +23736,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant outVariant(*__qt_this, nullptr);\n"+
-                                  "void *%out = outVariant.data();"}
+                    Text{content: String.raw`
+                        QVariant outVariant(*__qt_this, nullptr);
+                        void *%out = outVariant.data();`}
                 }
             }
             ModifyArgument{
@@ -23345,8 +23760,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant outVariant(QMetaType(%2), nullptr);\n"+
-                                  "void *%out = outVariant.data();"}
+                    Text{content: String.raw`
+                        QVariant outVariant(QMetaType(%2), nullptr);
+                        void *%out = outVariant.data();`}
                 }
             }
             ModifyArgument{
@@ -23378,8 +23794,11 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, *__qt_this);\n"+
-                                  "const void* %out = variant.data();"}
+                    Text{content: String.raw`
+                        QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, *__qt_this);
+                        if(!variant.isValid())
+                            return false;
+                        const void* %out = variant.data();`}
                 }
             }
         }
@@ -23405,8 +23824,11 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%2));\n"+
-                                  "const void* %out = variant.data();"}
+                    Text{content: String.raw`
+                        QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%2));
+                        if(!variant.isValid())
+                            return false;
+                        const void* %out = variant.data();`}
                 }
             }
         }
@@ -23428,8 +23850,11 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, *__qt_this);\n"+
-                                  "const void* %out = variant.data();"}
+                    Text{content: String.raw`
+                        QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, *__qt_this);
+                        if(!variant.isValid())
+                            return false;
+                        const void* %out = variant.data();`}
                 }
             }
         }
@@ -23455,8 +23880,11 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%3));\n"+
-                                  "const void* %out = variant.data();"}
+                    Text{content: String.raw`
+                        QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%3));
+                        if(!variant.isValid())
+                            return false;
+                        const void* %out = variant.data();`}
                 }
             }
         }
@@ -23479,8 +23907,11 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant variant2 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, __qt_%1);\n"+
-                                  "const void * %out = variant2.data();"}
+                    Text{content: String.raw`
+                        QVariant variant2 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, __qt_%1);
+                        if(!variant2.isValid())
+                            return QtJambiAPI::newJavaOptional(%env, false, nullptr);
+                        const void* %out = variant2.data();`}
                 }
             }
             ModifyArgument{
@@ -23489,8 +23920,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant %in(__qt_%3, nullptr);\n"+
-                                  "void * %out = %in.data();"}
+                    Text{content: String.raw`
+                        QVariant %in(__qt_%3, nullptr);
+                        void * %out = %in.data();`}
                 }
             }
         }
@@ -23513,8 +23945,11 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant variant1 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%2));\n"+
-                                  "const void * %out = variant1.data();"}
+                    Text{content: String.raw`
+                        QVariant variant1 = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%2));
+                        if(!variant1.isValid())
+                            return QtJambiAPI::newJavaOptional(%env, false, nullptr);
+                        const void* %out = variant1.data();`}
                 }
             }
             ModifyArgument{
@@ -23523,8 +23958,9 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant %in(QMetaType(%4), nullptr);\n"+
-                                  "void * %out = %in.data();"}
+                    Text{content: String.raw`
+                        QVariant %in(QMetaType(%4), nullptr);
+                        void * %out = %in.data();`}
                 }
             }
         }
@@ -23601,8 +24037,9 @@ Enum entries for string comparison.
             }
             InjectCode{
                 target: CodeClass.Java
-                Text{content: String.raw`if(instantiations==null || instantiations.length==0){
-    instantiations = io.qt.internal.MetaTypeUtility.findSuperInstantiations(clazz);
+                Text{content: String.raw`
+if(instantiations==null || instantiations.length==0){
+    instantiations = CoreUtility.findSuperInstantiations(clazz);
 }`}
             }
         }
@@ -23642,8 +24079,9 @@ Enum entries for string comparison.
             }
             InjectCode{
                 target: CodeClass.Java
-                Text{content: String.raw`if(instantiations==null || instantiations.length==0){
-    instantiations = io.qt.internal.MetaTypeUtility.findSuperInstantiations(clazz);
+                Text{content: String.raw`
+if(instantiations==null || instantiations.length==0){
+    instantiations = CoreUtility.findSuperInstantiations(clazz);
 }`}
             }
         }
@@ -23786,9 +24224,10 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant variant = %in ? qtjambi_cast<QVariant>(%env, %in) : QVariant(QMetaType(QMetaType::Nullptr), nullptr);\n"+
-                                  "auto __scope = qScopeGuard([&](){reinterpret_cast<QVariant*>(__qtjambi_ptr)->swap(variant);});\n"+
-                                  "QMetaType %out(QMetaType::UnknownType);"}
+                    Text{content: String.raw`
+                            QVariant variant = %in ? qtjambi_cast<QVariant>(%env, %in) : QVariant(QMetaType(QMetaType::Nullptr), nullptr);
+                            auto __scope = qScopeGuard([&](){reinterpret_cast<QVariant*>(__qtjambi_ptr)->swap(variant);});
+                            QMetaType %out(QMetaType::UnknownType);`}
                 }
             }
             InjectCode{
@@ -23806,10 +24245,11 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, __qt_%1);\n"+
-                                  "auto __scope = qScopeGuard([&](){reinterpret_cast<QVariant*>(__qtjambi_ptr)->swap(variant);});\n"+
-                                  "__qt_%1 = QMetaType(QMetaType::UnknownType);\n"+
-                                  "const void * %out = nullptr;"}
+                    Text{content: String.raw`
+                            QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, __qt_%1);
+                            auto __scope = qScopeGuard([&](){reinterpret_cast<QVariant*>(__qtjambi_ptr)->swap(variant);});
+                            __qt_%1 = QMetaType(QMetaType::UnknownType);
+                            const void * %out = nullptr;`}
                 }
             }
         }
@@ -23827,7 +24267,8 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant __qt_return_value = CoreAPI::convertCheckedObjectToQVariant(%env, %in, __qt_%1);"}
+                    Text{content: String.raw`
+                        QVariant __qt_return_value = CoreAPI::convertCheckedObjectToQVariant(%env, %in, __qt_%1);`}
                 }
             }
             ModifyArgument{
@@ -23928,15 +24369,16 @@ Enum entries for string comparison.
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "if(%in==QPartialOrdering::Less){\n"+
-                                  "    %out = -1;\n"+
-                                  "}else if(%in==QPartialOrdering::Greater){\n"+
-                                  "    %out = 1;\n"+
-                                  "}else if(%in==QPartialOrdering::Unordered){\n"+
-                                  "    %out = -127;\n"+
-                                  "}else{\n"+
-                                  "    %out = 0;\n"+
-                                  "}"}
+                    Text{content: String.raw`
+if(%in==QPartialOrdering::Less){
+    %out = -1;
+}else if(%in==QPartialOrdering::Greater){
+    %out = 1;
+}else if(%in==QPartialOrdering::Unordered){
+    %out = -127;
+}else{
+    %out = 0;
+}`}
                 }
             }
         }
@@ -23984,8 +24426,9 @@ else
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant %in(QMetaType(%1), nullptr);\n"+
-                                  "void * %out = %in.data();"}
+                    Text{content: String.raw`
+                        QVariant %in(QMetaType(%1), nullptr);
+                        void * %out = %in.data();`}
                 }
             }
         }
@@ -24011,8 +24454,9 @@ else
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%1));\n"+
-                                  "const void* %out = variant.data();"}
+                    Text{content: String.raw`
+                        QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, QMetaType(%1));
+                        const void* %out = variant.data();`}
                 }
             }
         }
@@ -24038,8 +24482,9 @@ else
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, __qt_%1);\n"+
-                                  "const void* %out = variant.data();"}
+                    Text{content: String.raw`
+                        QVariant variant = CoreAPI::convertCheckedObjectToQVariant(%env, %in, __qt_%1);
+                        const void* %out = variant.data();`}
                 }
             }
             since: 6.1
@@ -24147,7 +24592,7 @@ else
                                         || clazz==QScopedArrayPointer.class)
                                     throw new IllegalArgumentException("Cannot convert variant to smart pointer class "+clazz.getSimpleName());
                         if(instantiations==null || instantiations.length==0){
-                            instantiations = io.qt.internal.MetaTypeUtility.findSuperInstantiations(clazz);
+                            instantiations = CoreUtility.findSuperInstantiations(clazz);
                         }
                         `}
                 }
@@ -24365,9 +24810,10 @@ else
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(!%1.isDirect()){\n"+
-                              "    throw new IllegalArgumentException(\"Only direct buffers allowed.\");\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(!%1.isDirect()){
+                        throw new IllegalArgumentException("Only direct buffers allowed.");
+                    }`}
             }
             InjectCode{
                 target: CodeClass.Java
@@ -24380,9 +24826,10 @@ else
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(%0){\n"+
-                              "    registeredBuffers.add(%1);\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(%0){
+                        registeredBuffers.add(%1);
+                    }`}
             }
             ModifyArgument{
                 index: 1
@@ -24401,9 +24848,10 @@ else
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(!%1.isDirect()){\n"+
-                              "    throw new IllegalArgumentException(\"Only direct buffers allowed.\");\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(!%1.isDirect()){
+                        throw new IllegalArgumentException("Only direct buffers allowed.");
+                    }`}
             }
             InjectCode{
                 target: CodeClass.Java
@@ -24416,9 +24864,10 @@ else
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(%0){\n"+
-                              "    registeredBuffers.remove(%1);\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(%0){
+                        registeredBuffers.remove(%1);
+                    }`}
             }
             ModifyArgument{
                 index: 1
@@ -24484,9 +24933,10 @@ else
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
-                Text{content: "if(__qt_return_value){\n"+
-                              "    __qt_accessMode = mode;\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(__qt_return_value){
+                        __qt_accessMode = mode;
+                    }`}
             }
         }
         ModifyFunction{
@@ -24494,9 +24944,10 @@ else
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
-                Text{content: "if(__qt_return_value){\n"+
-                              "    __qt_accessMode = mode;\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(__qt_return_value){
+                        __qt_accessMode = mode;
+                    }`}
             }
         }
         InjectCode{
@@ -24914,8 +25365,9 @@ this.__rcSemaphore = %1.__rcSemaphore;
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(iface()!=null && %1!=null && !io.qt.core.QProperty.checkType(iface().metaType(), %1.valueMetaType()))\n"+
-                              "    return false;"}
+                Text{content: String.raw`
+                    if(iface()!=null && %1!=null && !io.qt.core.QProperty.checkType(iface().metaType(), %1.valueMetaType()))
+                        return false;`}
             }
         }
         ModifyFunction{
@@ -25113,8 +25565,9 @@ final void registerDependency(io.qt.core.@Nullable QUntypedPropertyData data){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArray* _byte_%out = qtjambi_cast<QByteArray*>(%env, %in);\n"+
-                                  "const char* %out = _byte_%out ? _byte_%out->data() : nullptr;"}
+                    Text{content: String.raw`
+                        QByteArray* _byte_%out = qtjambi_cast<QByteArray*>(%env, %in);
+                        const char* %out = _byte_%out ? _byte_%out->data() : nullptr;`}
                 }
             }
             InjectCode{
@@ -25393,18 +25846,19 @@ static FilterResetter resetter(%0);
                 target: CodeClass.Native
                 position: Position.Position5
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "QtJambiAPI::copyReferenceCount(__jni_env, __jni_object, nullptr, __jni_env->NewStringUTF(\"__rcDevice\"), %1);"}
+                Text{content: String.raw`QtJambiAPI::copyReferenceCount(__jni_env, __jni_object, nullptr, __jni_env->NewStringUTF("__rcDevice"), %1);`}
             }
         }
         ModifyFunction{
             signature: "swap(QDebug&)"
             InjectCode{
-                Text{content: "Object __rcDevice = this.__rcDevice;\n"+
-                              "this.__rcDevice = other.__rcDevice;\n"+
-                              "other.__rcDevice = __rcDevice;\n"+
-                              "boolean disabled = this.disabled;\n"+
-                              "this.disabled = other.disabled;\n"+
-                              "other.disabled = disabled;\n"}
+                Text{content: String.raw`
+                    Object __rcDevice = this.__rcDevice;
+                    this.__rcDevice = other.__rcDevice;
+                    other.__rcDevice = __rcDevice;
+                    boolean disabled = this.disabled;
+                    this.disabled = other.disabled;
+                    other.disabled = disabled;`}
             }
         }
         ModifyFunction{

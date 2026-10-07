@@ -39,19 +39,11 @@ import io.qt.*;
  */
 public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> implements NavigableMap<Key,List<T>>, Cloneable
 {
-	static {
-    	QtJambi_LibraryUtilities.initialize();
-    }
-    
     /**
      * <p>Java wrapper for Qt class <code>QMap::iterator</code></p>
      */
     public static final class Iterator<Key,T> extends QAssociativeIterator<Key,T,QMultiMap<Key,T>>
     {
-        static {
-            QtJambi_LibraryUtilities.initialize();
-        }
-        
         /**
          * Creates and returns a copy of this object.
          */
@@ -78,10 +70,6 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      */
     public static final class ConstIterator<Key,T> extends QAssociativeConstIterator<Key,T,QMultiMap<Key,T>>
     {
-        static {
-            QtJambi_LibraryUtilities.initialize();
-        }
-        
         /**
          * Creates and returns a copy of this object.
          */
@@ -112,10 +100,6 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      */
     public static final class KeyIterator<Key> extends QSequentialConstIterator<Key,QMultiMap<Key,?>>
     {
-        static {
-            QtJambi_LibraryUtilities.initialize();
-        }
-        
         /**
          * Creates and returns a copy of this object.
          */
@@ -150,10 +134,6 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      */
     public static final class KeyValueIterator<Key,T> extends QSequentialPairIterator<Key,T,QMultiMap<Key,T>>
     {
-        static {
-            QtJambi_LibraryUtilities.initialize();
-        }
-        
         /**
          * Creates and returns a copy of this object.
          */
@@ -184,10 +164,6 @@ public class QMultiMap<Key,T> extends AbstractMultiAssociativeContainer<Key,T> i
      */
     public static final class ConstKeyValueIterator<Key,T> extends QSequentialConstPairIterator<Key,T,QMultiMap<Key,T>>
     {
-        static {
-            QtJambi_LibraryUtilities.initialize();
-        }
-        
         /**
          * Creates and returns a copy of this object.
          */

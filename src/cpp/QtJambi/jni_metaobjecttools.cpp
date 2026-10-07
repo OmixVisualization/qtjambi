@@ -31,7 +31,7 @@
 
 #include "pch_p.h"
 
-extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_PropertyUtility_getPropertyForField(JNIEnv *env, jclass, jobject jmetaObject, jobject reflectField){
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_MetaObjectUtility_getPropertyForField(JNIEnv *env, jclass, jobject jmetaObject, jobject reflectField){
     const QMetaObject* metaObject = qtjambi_cast<const QMetaObject*>(env, jmetaObject);
     if(metaObject){
         jfieldID field = env->FromReflectedField(reflectField);
@@ -49,7 +49,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_io_qt_internal_PropertyUtility_getProp
     return nullptr;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_PropertyUtility_registerPropertyField(JNIEnv *env, jclass, QtJambiNativeID metaPropertyId, jobject reflectField){
+extern "C" JNIEXPORT void JNICALL Java_io_qt_internal_MetaObjectUtility_registerPropertyField(JNIEnv *env, jclass, QtJambiNativeID metaPropertyId, jobject reflectField){
     QMetaProperty property = qtjambi_cast<QMetaProperty>(metaPropertyId);
     if(property.isValid()){
         if(const QtJambiMetaObject* dynamicMetaObject = QtJambiMetaObject::cast(property.enclosingMetaObject())){

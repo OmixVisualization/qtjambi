@@ -40,20 +40,11 @@ import io.qt.*;
  */
 public class QList<T> extends AbstractList<T> implements Cloneable
 {
-
-    static {
-        QtJambi_LibraryUtilities.initialize();
-    }
-    
     /**
      * <p>Java wrapper for Qt class <code>QList::iterator</code></p>
      */
     public static final class Iterator<T> extends io.qt.core.QSequentialIterator<T,QList<T>> implements Comparable<@NonNull Iterator<T>>
     {
-        static {
-            QtJambi_LibraryUtilities.initialize();
-        }
-        
         /**
          * Creates and returns a copy of this object.
          */
@@ -104,10 +95,6 @@ public class QList<T> extends AbstractList<T> implements Cloneable
      */
     public static final class ConstIterator<T> extends io.qt.core.QSequentialConstIterator<T,QList<T>> implements Comparable<@NonNull ConstIterator<T>>
     {
-		static {
-            QtJambi_LibraryUtilities.initialize();
-        }
-        
         /**
          * Creates and returns a copy of this object.
          */
@@ -162,10 +149,6 @@ public class QList<T> extends AbstractList<T> implements Cloneable
      */
     public static final class ReverseIterator<T> extends io.qt.core.QSequentialIterator<T,QList<T>> implements Comparable<@NonNull ReverseIterator<T>>
     {
-        static {
-            QtJambi_LibraryUtilities.initialize();
-        }
-        
         /**
          * Creates and returns a copy of this object.
          */
@@ -216,10 +199,6 @@ public class QList<T> extends AbstractList<T> implements Cloneable
      */
     public static final class ConstReverseIterator<T> extends io.qt.core.QSequentialConstIterator<T,QList<T>> implements Comparable<@NonNull ConstReverseIterator<T>>
     {
-        static {
-            QtJambi_LibraryUtilities.initialize();
-        }
-        
         /**
          * Creates and returns a copy of this object.
          */

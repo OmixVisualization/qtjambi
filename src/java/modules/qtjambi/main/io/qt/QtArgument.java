@@ -30,11 +30,13 @@
 package io.qt;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * <p>QtArgument is used to initialize an interface type or a set of inherited interface types with their 
@@ -61,6 +63,9 @@ import java.util.Objects;
  * @see QtUtilities#initializeNativeObject(QtObjectInterface, Stream)
  */
 public final class QtArgument {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	private QtArgument(){}
 	public static Stream begin(Class<?> type) {
 		return new Stream(type);
@@ -129,7 +134,7 @@ public final class QtArgument {
 			return this;
 		}
 		private void beginImpl(Class<?> type) {
-			currentList = arguments.computeIfAbsent(type, Utility.arrayListFactory());
+			currentList = arguments.computeIfAbsent(type, key->new ArrayList<>());
 		}
 		Map<Class<?>, List<Map.Entry<Object,Object>>> arguments() {
 			return Collections.unmodifiableMap(arguments);

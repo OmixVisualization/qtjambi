@@ -1,6 +1,5 @@
 package io.qt.autotests;
 
-import java.lang.reflect.Method;
 import java.util.List;
 
 import org.junit.Assert;
@@ -10,7 +9,6 @@ import org.junit.Test;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QFile;
 import io.qt.core.QIODevice;
-import io.qt.core.QLibraryInfo;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QPluginLoader;
@@ -20,8 +18,6 @@ import io.qt.designer.QDesignerCustomWidgetInterface;
 import io.qt.designer.QFormBuilder;
 import io.qt.internal.TestUtility;
 import io.qt.multimedia.widgets.QVideoWidget;
-import io.qt.quick.QQuickWindow;
-import io.qt.quick.QSGRendererInterface;
 import io.qt.widgets.QWidget;
 
 public class TestDesignerMultimedia extends ApplicationInitializer {
@@ -29,8 +25,6 @@ public class TestDesignerMultimedia extends ApplicationInitializer {
 	@BeforeClass
 	public static void testInitialize() throws Exception {
 		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
-		Method mtd = QQuickWindow.class.getMethod(QLibraryInfo.version().majorVersion()>5 ? "setGraphicsApi" : "setSceneGraphBackend", QSGRendererInterface.GraphicsApi.class);
-		mtd.invoke(null, QSGRendererInterface.GraphicsApi.OpenGLRhi);
 		ApplicationInitializer.testInitializeWithWidgets();
 	}
 	

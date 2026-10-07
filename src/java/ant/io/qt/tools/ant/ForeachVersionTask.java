@@ -416,7 +416,7 @@ public class ForeachVersionTask extends Task {
 					boolean containsTestReport = false;
 					if(!"true".equals(AntUtil.getPropertyAsString(propertyHelper, "skip.report"))) {
 						for(String target : targets) {
-							if((target.startsWith("tests.") && target.contains(".run"))) {
+							if((target.startsWith("run.") || target.startsWith("run-") || target.equals("run"))) {
 								containsTestReport = true;
 								break;
 							}
@@ -542,7 +542,7 @@ public class ForeachVersionTask extends Task {
 						boolean containsTestReport = false;
 						if(!"true".equals(AntUtil.getPropertyAsString(propertyHelper, "skip.report"))) {
 							for(String target : targets) {
-								if((target.startsWith("tests.") && target.contains(".run"))) {
+								if((target.startsWith("run.") || target.startsWith("run-") || target.equals("run"))) {
 									containsTestReport = true;
 									break;
 								}

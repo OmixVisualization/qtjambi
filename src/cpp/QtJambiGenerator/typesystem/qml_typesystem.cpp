@@ -154,6 +154,19 @@ void TypeSystem::setPrecompiledHeader(const QString &newPrecompiledHeader)
     emit precompiledHeaderChanged();
 }
 
+bool TypeSystem::getNoPackageInfo() const
+{
+    return noPackageInfo;
+}
+
+void TypeSystem::setNoPackageInfo(bool newNoPackageInfo)
+{
+    if (noPackageInfo == newNoPackageInfo)
+        return;
+    noPackageInfo = newNoPackageInfo;
+    emit noPackageInfoChanged();
+}
+
 Module::Module(QObject *parent)
     : AbstractObject{parent}
 {

@@ -34,7 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtQmlDesignSupport"
     module: "qtjambi.qmldesignsupport"
-    description: ""
+    description: "The Qt Qml Design Support module provides support for design tooling with a set of types for registering and referencing objects in QML."
     LoadTypeSystem{name: "QtQml"; unless: "QTJAMBI_NO_QML"}
     ObjectType{
         name: "QAbstractObjectRegistryRef"

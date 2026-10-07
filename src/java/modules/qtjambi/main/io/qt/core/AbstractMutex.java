@@ -29,9 +29,13 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtObject;
+import io.qt.*;
 
 abstract class AbstractMutex extends QtObject {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
+    
 	AbstractMutex(QPrivateConstructor p) {
 		super(p);
 	}

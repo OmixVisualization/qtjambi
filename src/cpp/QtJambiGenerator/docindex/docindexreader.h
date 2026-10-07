@@ -45,10 +45,12 @@ private:
     void analyzeNamespace(const QDir& subdir, DocModel* model, const QString& url, const QDomElement& element);
     void analyzeClass(const QDir& subdir, DocModel* model, const QString& url, const QDomElement& element);
     void analyzeEnum(const QDir& subdir, DocModel* model, const QString& url, const QDomElement& element);
+    void analyzeModule(const QDir& subdir, DocModel* model, const QString& url, const QDomElement& element);
+    void analyzePage(const QDir& subdir, DocModel* model, const QString& url, const QDomElement& element);
     template<class DocFunctionOwner>
     void analyzeFunction(const QDir& subdir, DocFunctionOwner* owner, const QString& url, const QDomElement& element);
     void analyzeVariable(const QDir& subdir, DocClass* cls, const QString& url, const QDomElement& element);
-    void analyzeTypeDef(const QDir& subdir, DocClass* cls, const QString& url, const QDomElement& element);
+    void analyzeTypeDef(const QDir& subdir, DocModel* model, DocClass* cls, const QString& url, const QDomElement& element);
     void analyzeProperty(const QDir& subdir, DocClass* cls, const QString& url, const QDomElement& element);
 };
 

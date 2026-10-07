@@ -34,10 +34,6 @@
     <property name="qtjambi-module-name" value="qtjambi.designer"/>
     <property name="qtjambi-module-name2" value="qtjambi.help"/>
     <property name="qtjambi.required.modules" value="qtjambi,
-                                                qtjambi.xml,
-                                                qtjambi.sql,
-                                                qtjambi.opengl,
-                                                qtjambi.openglwidgets,
                                                 qtjambi.designer,
                                                 qtjambi.help"/>
     <target name="build">

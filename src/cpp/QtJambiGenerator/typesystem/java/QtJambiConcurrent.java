@@ -53,7 +53,7 @@ class QtConcurrent___ extends QtConcurrent {
     /**
      * An implemetation of this interface is given one to QtConcurrent's map() methods.
      * The map() method of this interface is called for each object in a java.util.Collection.
-     *
+     * @serial exclude
      */
     @FunctionalInterface
     public interface MapFunctor<T> extends io.qt.core.QtFuture.Runnable1<T>{
@@ -63,6 +63,7 @@ class QtConcurrent___ extends QtConcurrent {
      * Implement this interface to perform a mapped operation. An implementation of the interface is sendt
      * to ome of the mapped methods of QtConcurrent, which applies the MappedFunctor.map() method to all elements in a collection,
      * and returns the result.
+     * @serial exclude
      */
     @FunctionalInterface
     public interface MappedFunctor<U, T> extends io.qt.core.QtFuture.@StrictNonNull Callable1<U,T>{
@@ -71,7 +72,7 @@ class QtConcurrent___ extends QtConcurrent {
     /**
      * An implementation of this interface is given to one of QtConcurrent's filtered() methods.
      * The filter method if this interface is called for each item in a java.util.Collection.
-     *
+     * @serial exclude
      */
      @FunctionalInterface
     public interface KeepFunctor<T> extends io.qt.core.QtFuture.Predicate1<T>{
@@ -82,6 +83,7 @@ class QtConcurrent___ extends QtConcurrent {
      * <p>
      * The reduce method will be called once per intermediate result (the result of the mapping of the data)
      * and the very first time the reduce() method is called for the particular data set.
+     * @serial exclude
      */
     @FunctionalInterface
     public interface ReduceFunctor<U, T> extends io.qt.core.QtFuture.Callable2<U, U, T>, java.io.Serializable{

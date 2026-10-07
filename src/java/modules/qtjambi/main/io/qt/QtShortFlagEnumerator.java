@@ -40,7 +40,7 @@ public interface QtShortFlagEnumerator extends QtShortEnumerator, QtAbstractFlag
      */
 	public default short value() {
 		int o = ordinal();
-		if(!QtJambi_LibraryUtilities.internal.isSmallEnum(this))
+		if(!EnumUtility.isSmallEnum(this))
 			return (short)o;
 		return (short)(o==0 ? 0 : 0x01 << (o-1));
 	}

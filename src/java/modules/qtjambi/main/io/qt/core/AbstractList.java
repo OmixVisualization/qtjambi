@@ -29,12 +29,8 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.NoSuchElementException;
-
-import io.qt.NonNull;
-import io.qt.QtUninvokable;
+import java.util.*;
+import io.qt.*;
 
 abstract class AbstractList<T> extends AbstractSequentialContainer<T> implements java.util.List<T> {
 	

@@ -32,10 +32,8 @@ package io.qt.autotests;
 import static io.qt.autotests.generated.ContainerFactory.*;
 import static org.junit.Assert.*;
 
-import java.util.List;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.*;
+import java.util.concurrent.atomic.*;
 
 import org.junit.*;
 
@@ -1004,5 +1002,69 @@ public class TestInterfaces extends ApplicationInitializer {
 		assertFalse(object.isDisposed());
 		testInterface.dispose();
 		assertTrue(object.isDisposed());
+	}
+	
+	@Test
+	public void test_MultiInterfaceImpl() {
+		class MultiImpl extends QtObject implements QLayoutItem, QPaintDevice, QEasingCurve.EasingFunction, QTextDocument.ResourceProvider, QSettings.ReadFunc{
+			@Override
+			public Object apply(QUrl arg__1){
+				return null;
+			}
+			@Override
+			public double applyAsDouble(double v) {
+				return v;
+			}
+			
+			@Override
+			public boolean test(QIODevice device, Map<String, ? extends Object> map){
+				return false;
+			}
+
+			@Override
+			public Qt.Orientations expandingDirections() {
+				return new Qt.Orientations(0);
+			}
+
+			@Override
+			public QRect geometry() {
+				return new QRect();
+			}
+
+			@Override
+			public boolean isEmpty() {
+				return false;
+			}
+
+			@Override
+			public QSize maximumSize() {
+				return new QSize();
+			}
+
+			@Override
+			public QSize minimumSize() {
+				return new QSize();
+			}
+
+			@Override
+			public void setGeometry(QRect arg__1) {
+			}
+
+			@Override
+			public QSize sizeHint() {
+				return new QSize();
+			}
+
+			@Override
+			public QPaintEngine paintEngine() {
+				return null;
+			}
+		}
+		MultiImpl object = new MultiImpl();
+		Assert.assertFalse(object.isDisposed());
+		object.alignment();
+		object.paintingActive();
+		object.dispose();
+		Assert.assertTrue("object not destroyed.", TestUtility.tryIsObjectDisposed(object));
 	}
 }

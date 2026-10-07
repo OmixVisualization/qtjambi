@@ -31,6 +31,7 @@ package io.qt;
 
 /**
  * This exception is thrown when a method has no implementation and only exists for compatibility reason.
+ * @serial exclude
  */
 public class QNoImplementationException extends RuntimeException
 {

@@ -64,9 +64,9 @@ Finally, find all Java libraries in directory `<qtjambiversion>/deployment` and 
 
 You can call ant with additional properties as listed below. Therefore use the `-D` command line argument: `ant -Dkey=value all`.
 
-* `qt` - specify comma-separated Qt versions to be used, e.g. `-Dqt="6.8,6.10,6.11"`.
+* `qt` - specify comma-separated Qt versions to be used, e.g. `-Dqt="6.8,6.10,6.11,6.12"`.
 * `qtbase` - specify Qt installer's base directory, e.g. `-Dqtbase=/var/Qt`. Can be combined with `qt`.
-* `qtdir` - specify Qt version and platform directory, e.g. `-Dqtdir=/var/Qt/6.8.3/macos`. This option allows multiple directories separated by path separator. (If this option is specified `qt` and `qtbase` have no effect.)
+* `qtdir` - specify Qt version and platform directory, e.g. `-Dqtdir=/var/Qt/6.12.0/macos`. This option allows multiple directories separated by path separator. (If this option is specified `qt` and `qtbase` have no effect.)
 * `qmake` - specify a path to a `qmake` program to be used for building QtJambi. (If this option is specified `qt`, `qtbase` and `qtdir` have no effect.)
 * `android` - specify `true` to build QtJambi for Android. Therefore, Qt for Android has to be installed. By specify `-Dandroid=only` ant skips building QtJambi for the build platform. When compiling for Android all required NDK and SDK components are downloaded automatically. Alternatively, specify the Android NDK install path with `-Dndk=...`.
 
@@ -92,7 +92,7 @@ Find unit test results in directory `TestResults`.
 After building QtJambi for the running operation system you can additionally cross-compile QtJambi for other platforms.
 For instance if you want to build for Linux arm:
 
-`> ant -Dqmake=/opt/Qt/6.8.3/arm-gnueabi/bin/qmake library.native`
+`> ant -Dqmake=/opt/Qt/6.12.0/arm-gnueabi/bin/qmake library.native`
 
 Just specify the third-platform cross-compiled qmake with `-Dqmake=path`.
 

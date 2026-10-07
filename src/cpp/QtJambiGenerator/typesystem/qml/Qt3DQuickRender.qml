@@ -33,7 +33,7 @@ TypeSystem{
     packageName: "io.qt.qt3d.render.quick"
     defaultSuperClass: "QtObject"
     module: "qtjambi.qt3dquickrender"
-    description: ""
+    description: "Qt 3D Quick Render module"
 
     NamespacePrefix{
         prefix: "Qt3DRender::Render::Quick"

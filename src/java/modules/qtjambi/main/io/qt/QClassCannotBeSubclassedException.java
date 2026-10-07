@@ -33,6 +33,7 @@ package io.qt;
 
 /**
  * Exception thrown when a class is not intended to be subclassed, and attempts to do so will lead to run time errors.
+ * @serial exclude
  */
 public class QClassCannotBeSubclassedException extends Exception {
 

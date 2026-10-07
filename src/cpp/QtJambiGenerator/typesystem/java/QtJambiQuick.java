@@ -60,6 +60,11 @@ class QSGGeometry__{
 
     private static native void setPoint2D(long pointer, int index, Point2D value);
 
+    /**
+     * Vertex data
+     * @see QSGGeometry#vertexCount()
+     * @param <T>
+     */
     public static class VertexData<T extends QtObjectInterface>{
         public VertexData(long pointer, int size) {
             super();
@@ -81,6 +86,10 @@ class QSGGeometry__{
         }
     }
 
+    /**
+     * Vertex data as ColoredPoint2D
+     * @see QSGGeometry#vertexCount()
+     */
     public static class ColoredPoint2DVertexData extends VertexData<ColoredPoint2D>{
         public ColoredPoint2DVertexData(long pointer, int size) {
             super(pointer, size);
@@ -101,6 +110,10 @@ class QSGGeometry__{
         }
     }
 
+    /**
+     * Vertex data as TexturedPoint2D
+     * @see QSGGeometry#vertexCount()
+     */
     public static class TexturedPoint2DVertexData extends VertexData<TexturedPoint2D>{
         public TexturedPoint2DVertexData(long pointer, int size) {
             super(pointer, size);
@@ -121,6 +134,10 @@ class QSGGeometry__{
         }
     }
 
+    /**
+     * Vertex data as Point2D
+     * @see QSGGeometry#vertexCount()
+     */
     public static class Point2DVertexData extends VertexData<Point2D>{
         public Point2DVertexData(long pointer, int size) {
             super(pointer, size);

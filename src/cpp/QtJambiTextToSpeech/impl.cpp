@@ -29,11 +29,6 @@
 
 #include <QtCore/QMutex>
 #include "utils_p.h"
-#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
-#include <QtJambi/JObjectWrapper>
-#include <QtTextToSpeech/QTextToSpeech>
-#include <QtJambi/Cast>
-#endif
 
 namespace Java{
     namespace QtTextToSpeech{

@@ -31,6 +31,7 @@ package io.qt;
 
 /**
  * This exception is thrown when a certain value cannot be resolved as Qt enum.
+ * @serial exclude
  */
 public class QNoSuchEnumValueException extends RuntimeException {
     private static final long serialVersionUID = 1L;

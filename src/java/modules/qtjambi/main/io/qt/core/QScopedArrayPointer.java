@@ -59,6 +59,9 @@ import io.qt.QtObjectInterface;
  * 
  */
 public final class QScopedArrayPointer<O> implements AutoCloseable, SmartPointer<O[]> {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	
 	private static class Data<O>{
 		private O[] data;

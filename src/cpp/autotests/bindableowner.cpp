@@ -34,7 +34,7 @@
 #include <QtJambi/QtJambiAPI>
 
 struct FutureException : public QException {
-    void raise() const override {
+    [[noreturn]] void raise() const override {
         FutureException e = *this;
         throw e;
     }
@@ -43,7 +43,7 @@ struct FutureException : public QException {
     }
 };
 struct FutureError : public QException {
-    void raise() const override {
+    [[noreturn]] void raise() const override {
         FutureError e = *this;
         throw e;
     }

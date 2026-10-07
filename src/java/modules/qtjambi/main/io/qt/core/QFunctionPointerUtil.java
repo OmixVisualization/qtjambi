@@ -29,31 +29,16 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
-import java.nio.Buffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import io.qt.NativeAccess;
-import io.qt.QNativePointer;
-import io.qt.QtMetaType;
-import io.qt.QtObjectInterface;
-import io.qt.QtPointerType;
-import io.qt.QtReferenceType;
-import io.qt.QtUtilities;
+import java.lang.invoke.*;
+import java.lang.reflect.*;
+import java.nio.*;
+import java.util.*;
+import io.qt.*;
 
 final class QFunctionPointerUtil {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	private QFunctionPointerUtil() {}
 	
 	@NativeAccess
@@ -301,15 +286,6 @@ final class QFunctionPointerUtil {
 				}
 			}
 			return null;
-		}
-	}
-	
-	private static class CoreUtility extends io.qt.internal.CoreUtility{
-		protected static Object invokeInterfaceDefaultMethod(Method method, Object object, Object... args) throws Throwable {
-			return io.qt.internal.CoreUtility.invokeInterfaceDefaultMethod(method, object, args);
-		}
-		protected static MethodHandle getMethodHandle(Method method) throws IllegalAccessException {
-			return io.qt.internal.CoreUtility.getMethodHandle(method);
 		}
 	}
 	

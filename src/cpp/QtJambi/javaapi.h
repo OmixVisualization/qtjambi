@@ -457,14 +457,14 @@ namespace QtCore{
     QTJAMBI_REPOSITORY_DECLARE_EXPORTED_CLASS(QFutureWatcher,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
                                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(future)
-                                     QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(futureSetter)
-                                     QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(futureResult)
-                                     QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(futureGetter)
-                                     QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(futureInterfaceGetter)
+                                     QTJAMBI_REPOSITORY_DECLARE_LONG_WRITABLE_FIELD(futureSetter)
+                                     QTJAMBI_REPOSITORY_DECLARE_LONG_WRITABLE_FIELD(futureResult)
+                                     QTJAMBI_REPOSITORY_DECLARE_LONG_WRITABLE_FIELD(futureGetter)
+                                     QTJAMBI_REPOSITORY_DECLARE_LONG_WRITABLE_FIELD(futureInterfaceGetter)
                                      )
 
     QTJAMBI_REPOSITORY_DECLARE_EXPORTED_CLASS(QThread,
-        QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(javaThread))
+        QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(javaThread))
 
     QTJAMBI_REPOSITORY_DECLARE_EXPORTED_CLASS(QMetaObject$Method10,
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(invoke))
@@ -511,7 +511,7 @@ namespace QtCore{
     QTJAMBI_REPOSITORY_DECLARE_EXPORTED_CLASS(QMetaObject$Slot0,
                   QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(invoke))
 
-    QTJAMBI_REPOSITORY_DECLARE_EXPORTED_CLASS(QMetaType$GenericValue, QTJAMBI_REPOSITORY_DECLARE_INT_FIELD(type))
+    QTJAMBI_REPOSITORY_DECLARE_EXPORTED_CLASS(QMetaType$GenericValue, QTJAMBI_REPOSITORY_DECLARE_INT_WRITABLE_FIELD(type))
 
     QTJAMBI_REPOSITORY_DECLARE_EXPORTED_CLASS(QBindable,
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(createBinding)
@@ -730,8 +730,8 @@ namespace QtGui{
 QTJAMBI_REPOSITORY_DECLARE_EXPORTED_CLASS(GLsync,)
 QTJAMBI_REPOSITORY_DECLARE_EXPORTED_CLASS(QValidator$QValidationData,
               QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
-              QTJAMBI_REPOSITORY_DECLARE_STRING_FIELD(string)
-              QTJAMBI_REPOSITORY_DECLARE_INT_FIELD(position))
+              QTJAMBI_REPOSITORY_DECLARE_STRING_WRITABLE_FIELD(string)
+              QTJAMBI_REPOSITORY_DECLARE_INT_WRITABLE_FIELD(position))
 }
 
 namespace QtJambi {

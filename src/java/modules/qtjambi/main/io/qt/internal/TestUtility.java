@@ -30,12 +30,10 @@
 
 package io.qt.internal;
 
-import java.io.File;
+import java.io.*;
 
-import io.qt.QtObjectInterface;
-import io.qt.core.QMetaMethod;
-import io.qt.core.QMetaObject;
-import io.qt.internal.NativeUtility.NativeLink;
+import io.qt.*;
+import io.qt.core.*;
 import io.qt.internal.QtMocConstants.*;
 
 /**
@@ -54,8 +52,14 @@ public abstract class TestUtility {
 	 * Testing method...
 	 */
 	public static boolean tryIsObjectDisposed(QtObjectInterface object) {
-		NativeLink lnk = NativeUtility.findInterfaceLink(object, false);
-		return lnk == null || lnk.isDisposed();
+		return NativeUtility.tryIsObjectDisposed(object);
+	}
+
+	/**
+	 * Testing method...
+	 */
+	public static boolean tryIsObjectDisposed(QtObject object) {
+		return NativeUtility.tryIsObjectDisposed(object);
 	}
 
 	private native static boolean isSharedPointer(long nativeId);

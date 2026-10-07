@@ -34,7 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtCanvasPainter"
     module: "qtjambi.canvaspainter"
-    description: ""
+    description: "Provides classes for Qt Canvas Painter application development."
     LoadTypeSystem{name: "QtQuick"}
     RequiredPackage{
         name: "io.qt.qml"
@@ -127,138 +127,16 @@ TypeSystem{
         }
         until: [6, 11]
     }
-    ValueType{
+    ObjectType{
         name: "QCanvasBrush"
         EnumType{
             name: "BrushType"
             extensible: true
         }
         Rejection{fieldName: "baseData"}
-        ModifyFunction{
-            signature: "as()const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "as<T>()const"
-            Instantiation{
-                Argument{
-                    type: "QCanvasBoxShadow"
-                }
-                rename: "asBoxShadow"
-                InjectCode{
-                    Text{content: String.raw`
-                        if(type() != QCanvasBrush.BrushType.BoxShadow)
-                            throw new IllegalStateException("Brush is not BoxShadow");`}
-                }
-            }
-            Instantiation{
-                Argument{
-                    type: "QCanvasCustomBrush"
-                }
-                rename: "asCustomBrush"
-                InjectCode{
-                    Text{content: String.raw`
-                        if(type().ordinal() >= QCanvasBrush.BrushType.Custom.ordinal())
-                            throw new IllegalStateException("Brush is not Custom");`}
-                }
-            }
-            Instantiation{
-                Argument{
-                    type: "QCanvasGridPattern"
-                }
-                rename: "asGridPattern"
-                InjectCode{
-                    Text{content: String.raw`
-                        if(type() != QCanvasBrush.BrushType.GridPattern)
-                            throw new IllegalStateException("Brush is not GridPattern");`}
-                }
-            }
-            Instantiation{
-                Argument{
-                    type: "QCanvasImagePattern"
-                }
-                rename: "asImagePattern"
-                InjectCode{
-                    Text{content: String.raw`
-                        if(type() != QCanvasBrush.BrushType.ImagePattern)
-                            throw new IllegalStateException("Brush is not ImagePattern");`}
-                }
-            }
-            Instantiation{
-                Argument{
-                    type: "QCanvasBoxGradient"
-                }
-                rename: "asBoxGradient"
-                InjectCode{
-                    Text{content: String.raw`
-                        if(type() != QCanvasBrush.BrushType.BoxGradient)
-                            throw new IllegalStateException("Brush is not BoxGradient");`}
-                }
-            }
-            Instantiation{
-                Argument{
-                    type: "QCanvasLinearGradient"
-                }
-                rename: "asLinearGradient"
-                InjectCode{
-                    Text{content: String.raw`
-                        if(type() != QCanvasBrush.BrushType.LinearGradient)
-                            throw new IllegalStateException("Brush is not LinearGradient");`}
-                }
-            }
-            Instantiation{
-                Argument{
-                    type: "QCanvasRadialGradient"
-                }
-                rename: "asRadialGradient"
-                InjectCode{
-                    Text{content: String.raw`
-                        if(type() != QCanvasBrush.BrushType.RadialGradient)
-                            throw new IllegalStateException("Brush is not RadialGradient");`}
-                }
-            }
-            Instantiation{
-                Argument{
-                    type: "QCanvasConicalGradient"
-                }
-                rename: "asConicalGradient"
-                InjectCode{
-                    Text{content: String.raw`
-                        if(type() != QCanvasBrush.BrushType.ConicalGradient)
-                            throw new IllegalStateException("Brush is not ConicalGradient");`}
-                }
-            }
-        }
-        InjectCode{
-            Text{content: String.raw`
-                /**
-                 * <p>See <code>QCanvasBrush::<wbr/>as&lt;T&gt;()const</code></p>
-                 * @return
-                 */
-                @QtUninvokable
-                public final <T> @NonNull T as(Class<T> type){
-                    if(type==QCanvasBoxGradient.class)
-                        return type.cast(asBoxGradient());
-                    if(type==QCanvasBoxShadow.class)
-                        return type.cast(asBoxShadow());
-                    if(type==QCanvasRadialGradient.class)
-                        return type.cast(asRadialGradient());
-                    if(type==QCanvasLinearGradient.class)
-                        return type.cast(asLinearGradient());
-                    if(type==QCanvasConicalGradient.class)
-                        return type.cast(asConicalGradient());
-                    if(type==QCanvasImagePattern.class)
-                        return type.cast(asImagePattern());
-                    if(type==QCanvasGridPattern.class)
-                        return type.cast(asGridPattern());
-                    if(type==QCanvasCustomBrush.class)
-                        return type.cast(asCustomBrush());
-                    throw new IllegalArgumentException(type.getTypeName() + " is not a supported brush type");
-                }`}
-        }
         since: [6, 12]
     }
-    ValueType{
+    ObjectType{
         name: "QCanvasBoxShadow"
         ModifyFunction{
             signature: "operator QCanvasBrush()const"
@@ -266,7 +144,7 @@ TypeSystem{
         }
         since: [6, 12]
     }
-    ValueType{
+    ObjectType{
         name: "QCanvasCustomBrush"
         ModifyFunction{
             signature: "operator QCanvasBrush()const"
@@ -304,7 +182,7 @@ TypeSystem{
         Rejection{fieldName: "m_cachedBrush"}
         since: [6, 12]
     }
-    ValueType{
+    ObjectType{
         name: "QCanvasGridPattern"
         ModifyFunction{
             signature: "operator QCanvasBrush()const"
@@ -312,7 +190,7 @@ TypeSystem{
         }
         since: [6, 12]
     }
-    ValueType{
+    ObjectType{
         name: "QCanvasImagePattern"
         ModifyFunction{
             signature: "operator QCanvasBrush()const"
@@ -320,7 +198,7 @@ TypeSystem{
         }
         since: [6, 12]
     }
-    ValueType{
+    ObjectType{
         name: "QCanvasBoxGradient"
         ModifyFunction{
             signature: "operator QCanvasBrush()const"
@@ -328,7 +206,7 @@ TypeSystem{
         }
         since: [6, 12]
     }
-    ValueType{
+    ObjectType{
         name: "QCanvasLinearGradient"
         ModifyFunction{
             signature: "operator QCanvasBrush()const"
@@ -336,7 +214,7 @@ TypeSystem{
         }
         since: [6, 12]
     }
-    ValueType{
+    ObjectType{
         name: "QCanvasRadialGradient"
         ModifyFunction{
             signature: "operator QCanvasBrush()const"
@@ -344,7 +222,7 @@ TypeSystem{
         }
         since: [6, 12]
     }
-    ValueType{
+    ObjectType{
         name: "QCanvasConicalGradient"
         ModifyFunction{
             signature: "operator QCanvasBrush()const"
@@ -422,9 +300,10 @@ TypeSystem{
                     index: 1
                     metaName: "rhi"
                 }
-                Text{content: "if(__qt_return_value!=null){\n"+
-                              "    __qt_return_value.__rcRhi = rhi;\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(__qt_return_value!=null){
+                        __qt_return_value.__rcRhi = rhi;
+                    }`}
             }
         }
         ModifyFunction{
@@ -432,9 +311,10 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
-                Text{content: "if(__qt_return_value!=null){\n"+
-                              "    __qt_return_value.__rcRhi = __rcRhi;\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(__qt_return_value!=null){
+                        __qt_return_value.__rcRhi = __rcRhi;
+                    }`}
             }
         }
         ModifyFunction{
@@ -457,9 +337,10 @@ TypeSystem{
                     index: 1
                     metaName: "rhi"
                 }
-                Text{content: "if(__qt_return_value!=null){\n"+
-                              "    __qt_return_value.__rcRhi = rhi;\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(__qt_return_value!=null){
+                        __qt_return_value.__rcRhi = rhi;
+                    }`}
             }
         }
     }
@@ -516,4 +397,5 @@ TypeSystem{
     }
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QCanvasGradient' set to non-final, as it is extended by other classes"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QCanvasPainter::setStencilClip(const QVectorPath&) -> void', unmatched parameter type 'const QVectorPath&'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Class 'QCanvas*' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."}
 }

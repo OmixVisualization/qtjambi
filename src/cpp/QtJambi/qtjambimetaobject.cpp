@@ -3586,7 +3586,7 @@ void QtJambiMetaObject::resolveSignals(JNIEnv *env, jobject java_object, const Q
                                     for (decltype(parameterTypeInfos.size()) i=1; i<parameterTypeInfos.size(); ++i){
                                         env->SetObjectArrayElement(signalParameterClasses, jsize(i-1), parameterTypeInfos[i].javaClass());
                                     }
-                                    env->SetObjectArrayElement(signalParameterTypes, jsize(i), QtJambiMetaObject::getSignalTypes(env, Java::QtCore::QPair::newInstance(env, multiSignal, signalParameterClasses), metaMethod));
+                                    env->SetObjectArrayElement(signalParameterTypes, jsize(i), QtJambiMetaObject::getSignalTypes(env, Java::Runtime::AbstractMap$SimpleImmutableEntry::newInstance(env, multiSignal, signalParameterClasses), metaMethod));
                                     methodIndexesPtr.pointer()[i] = signal_method_index;
                                     metaObjectsPtr.pointer()[i] = jlong(metaMethod.enclosingMetaObject());
                                 }

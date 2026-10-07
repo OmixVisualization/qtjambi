@@ -141,10 +141,15 @@ class AbstractGenerator : public QObject {
         }
 
         static QString annotationFreeTypeName(QString typeName);
+        QString docsUrl() const;
+        void setDocsUrl(const QString &newDocsUrl);
+
     protected:
         void writeInclude(QTextStream &s, const TS::Include &inc, QSet<QString> &dedupe);
         void verifyDirectoryFor(const QFile &file);
         static bool isCharSequenceSubstitute(const MetaType* type);
+
+        QString m_docsUrl;
 
         MetaClassList m_classes;
         int m_num_generated;

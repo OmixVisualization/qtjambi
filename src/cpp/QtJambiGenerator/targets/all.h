@@ -82,6 +82,7 @@
 #undef Q_OS_WIN
 #include <QtJambiCore/hashes.h>
 #include <QtJambiCore/utils.h>
+#include <QtJambi/QNativeEvent>
 
 // opengl:
 #define GL_TEXTURE_2D                     0x0DE1
@@ -99,8 +100,10 @@
 #   undef QSCREEN_PLATFORM_H
 typedef struct __GLsync *GLsync;
 #   include <QtGui/QtGui>
-#   include <QtGui/QVulkanFunctions>
-#   include <QtGui/QVulkanWindow>
+#ifndef QTJAMBI_NO_VULKAN
+#   include <QtGui/qvulkanwindow.h>
+#   include <QtGui/qvulkaninstance.h>
+#endif
 typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
 
 #   undef QACCESSIBLE_H
@@ -484,6 +487,18 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #   include <QtInsightTracker/QtInsightTracker>
 #endif
 
+#if !defined(QTJAMBI_NO_COAP)
+#   include <QtCoAP/QtCoAP>
+#endif
+
+#if !defined(QTJAMBI_NO_MQTT)
+#   include <QtMqtt/QtMqtt>
+#endif
+
+#if !defined(QTJAMBI_NO_OPCUA)
+#   include <QtOpcUa/QtOpcUa>
+#endif
+
 #ifndef QTJAMBI_NO_OPENGLWIDGETS
 #   include <QtOpenGLWidgets/QtOpenGLWidgets>
 #endif
@@ -501,7 +516,6 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 
 #ifndef QTJAMBI_NO_CANVASPAINTER
 #   include <QtCanvasPainter/QtCanvasPainter>
-#   include <QtJambiCanvasPainter/hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_OPENAPI

@@ -1,7 +1,6 @@
 package io.qt.core;
 
-import io.qt.NonNull;
-import io.qt.Nullable;
+import io.qt.*;
 
 /**
  * <p>Allows monitoring a QFuture using signals and slots</p>

@@ -111,8 +111,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
+                    Text{content: String.raw`
+                        QString %in;
+                        QString* %out = &%in;`}
                 }
             }
             InjectCode{
@@ -126,9 +127,10 @@ TypeSystem{
                     index: 3
                     metaName: "%3"
                 }
-                Text{content: "if(!%0 && !%3.isEmpty()){\n"+
-                              "    JavaException::raise<Java::QtSerialBus::QCanBusException>(%env, %3 QTJAMBI_STACKTRACEINFO );\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(!%0 && !%3.isEmpty()){
+                        JavaException::raise<Java::QtSerialBus::QCanBusException>(%env, %3 QTJAMBI_STACKTRACEINFO );
+                    }`}
             }
             InjectCode{
                 target: CodeClass.Shell
@@ -142,16 +144,17 @@ TypeSystem{
                     index: 3
                     metaName: "%3"
                 }
-                Text{content: "}QTJAMBI_CATCH(const JavaException& exn){\n"+
-                              "    if(exn.isInstanceOf(%env, Java::QtSerialBus::QCanBusException::getClass(%env))){\n"+
-                              "        if(%3){\n"+
-                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.throwable(%env));\n"+
-                              "            *%3 = qtjambi_cast<QString>(%env, message);\n"+
-                              "        }\n"+
-                              "    }else{\n"+
-                              "        exn.raise();\n"+
-                              "    }\n"+
-                              "}QTJAMBI_TRY_END"}
+                Text{content: String.raw`
+}QTJAMBI_CATCH(const JavaException& exn){
+    if(exn.isInstanceOf(%env, Java::QtSerialBus::QCanBusException::getClass(%env))){
+        if(%3){
+            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.throwable(%env));
+            *%3 = qtjambi_cast<QString>(%env, message);
+        }
+    }else{
+        exn.raise();
+    }
+}QTJAMBI_TRY_END`}
             }
         }
         ModifyFunction{
@@ -163,8 +166,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
+                    Text{content: String.raw`
+                        QString %in;
+                        QString* %out = &%in;`}
                 }
             }
             InjectCode{
@@ -174,9 +178,10 @@ TypeSystem{
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "if(!%2.isEmpty()){\n"+
-                              "    JavaException::raise<Java::QtSerialBus::QCanBusException>(%env, %2 QTJAMBI_STACKTRACEINFO );\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(!%2.isEmpty()){
+                        JavaException::raise<Java::QtSerialBus::QCanBusException>(%env, %2 QTJAMBI_STACKTRACEINFO );
+                    }`}
             }
             InjectCode{
                 target: CodeClass.Shell
@@ -190,16 +195,17 @@ TypeSystem{
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "}QTJAMBI_CATCH(const JavaException& exn){\n"+
-                              "    if(exn.isInstanceOf(%env, Java::QtSerialBus::QCanBusException::getClass(%env))){\n"+
-                              "        if(%2){\n"+
-                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.throwable(%env));\n"+
-                              "            *%2 = qtjambi_cast<QString>(%env, message);\n"+
-                              "        }\n"+
-                              "    }else{\n"+
-                              "        exn.raise();\n"+
-                              "    }\n"+
-                              "}QTJAMBI_TRY_END"}
+                Text{content: String.raw`
+}QTJAMBI_CATCH(const JavaException& exn){
+    if(exn.isInstanceOf(%env, Java::QtSerialBus::QCanBusException::getClass(%env))){
+        if(%2){
+            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.throwable(%env));
+            *%2 = qtjambi_cast<QString>(%env, message);
+        }
+    }else{
+        exn.raise();
+    }
+}QTJAMBI_TRY_END`}
             }
         }
     }
@@ -275,25 +281,14 @@ TypeSystem{
             }
         }
         CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QCanBusDeviceInfo(*copy);\n"+
-                          "}else{\n"+
-                          "    struct CanBusDevice : QCanBusDevice{\n"+
-                          "        static QCanBusDeviceInfo createDeviceInfo(){\n"+
-                          "        return QCanBusDevice::createDeviceInfo({});\n"+
-                          "    }\n"+
-                          "};\n"+
-                          "return new(placement) QCanBusDeviceInfo(CanBusDevice::createDeviceInfo());\n"+
-                          "}"}
-        }
-        CustomConstructor{
             type: CustomConstructor.Default
-            Text{content: "struct CanBusDevice : QCanBusDevice{\n"+
-                          "    static QCanBusDeviceInfo createDeviceInfo(){\n"+
-                          "        return QCanBusDevice::createDeviceInfo({}, {}, false, false);\n"+
-                          "    }\n"+
-                          "};\n"+
-                          "new(placement) QCanBusDeviceInfo(CanBusDevice::createDeviceInfo());"}
+            Text{content: String.raw`
+                struct CanBusDevice : QCanBusDevice{
+                    static QCanBusDeviceInfo createDeviceInfo(){
+                        return QCanBusDevice::createDeviceInfo({}, {}, false, false);
+                    }
+                };
+                new(placement) QCanBusDeviceInfo(CanBusDevice::createDeviceInfo());`}
         }
     }
     
@@ -325,8 +320,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
+                    Text{content: String.raw`
+                        QString %in;
+                        QString* %out = &%in;`}
                 }
             }
             InjectCode{
@@ -340,9 +336,10 @@ TypeSystem{
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "if(!%0 && !%2.isEmpty()){\n"+
-                              "    JavaException::raise<Java::QtSerialBus::QCanBusException>(%env, %2 QTJAMBI_STACKTRACEINFO );\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(!%0 && !%2.isEmpty()){
+                        JavaException::raise<Java::QtSerialBus::QCanBusException>(%env, %2 QTJAMBI_STACKTRACEINFO );
+                    }`}
             }
             InjectCode{
                 target: CodeClass.Shell
@@ -356,16 +353,17 @@ TypeSystem{
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "}QTJAMBI_CATCH(const JavaException& exn){\n"+
-                              "    if(exn.isInstanceOf(%env, Java::QtSerialBus::QCanBusException::getClass(%env))){\n"+
-                              "        if(%2){\n"+
-                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.throwable(%env));\n"+
-                              "            *%2 = qtjambi_cast<QString>(%env, message);\n"+
-                              "        }\n"+
-                              "    }else{\n"+
-                              "        exn.raise();\n"+
-                              "    }\n"+
-                              "}QTJAMBI_TRY_END"}
+                Text{content: String.raw`
+                    }QTJAMBI_CATCH(const JavaException& exn){
+                        if(exn.isInstanceOf(%env, Java::QtSerialBus::QCanBusException::getClass(%env))){
+                            if(%2){
+                                jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.throwable(%env));
+                                *%2 = qtjambi_cast<QString>(%env, message);
+                            }
+                        }else{
+                            exn.raise();
+                        }
+                    }QTJAMBI_TRY_END`}
             }
         }
         ModifyFunction{
@@ -377,8 +375,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
+                    Text{content: String.raw`
+                        QString %in;
+                        QString* %out = &%in;`}
                 }
             }
             InjectCode{
@@ -388,9 +387,10 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(!%1.isEmpty()){\n"+
-                              "    JavaException::raise<Java::QtSerialBus::QCanBusException>(%env, %1 QTJAMBI_STACKTRACEINFO );\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(!%1.isEmpty()){
+                        JavaException::raise<Java::QtSerialBus::QCanBusException>(%env, %1 QTJAMBI_STACKTRACEINFO );
+                    }`}
             }
             InjectCode{
                 target: CodeClass.Shell
@@ -404,16 +404,17 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "}QTJAMBI_CATCH(const JavaException& exn){\n"+
-                              "    if(exn.isInstanceOf(%env, Java::QtSerialBus::QCanBusException::getClass(%env))){\n"+
-                              "        if(%1){\n"+
-                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.throwable(%env));\n"+
-                              "            *%1 = qtjambi_cast<QString>(%env, message);\n"+
-                              "        }\n"+
-                              "    }else{\n"+
-                              "        exn.raise();\n"+
-                              "    }\n"+
-                              "}QTJAMBI_TRY_END"}
+                Text{content: String.raw`
+                    }QTJAMBI_CATCH(const JavaException& exn){
+                        if(exn.isInstanceOf(%env, Java::QtSerialBus::QCanBusException::getClass(%env))){
+                            if(%1){
+                                jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.throwable(%env));
+                                *%1 = qtjambi_cast<QString>(%env, message);
+                            }
+                        }else{
+                            exn.raise();
+                        }
+                    }QTJAMBI_TRY_END`}
             }
             since: [6, 2]
         }
@@ -496,13 +497,10 @@ TypeSystem{
             name: "FunctionCode"
         }
         CustomConstructor{
-            Text{content: "void* create_QModbusPdu(void* placement, const void * copy);\n"+
-                          "return create_QModbusPdu(placement, copy);"}
-        }
-        CustomConstructor{
             type: CustomConstructor.Copy
-            Text{content: "void* create_QModbusPdu(void* placement, const void * copy);\n"+
-                          "create_QModbusPdu(placement, copy);"}
+            Text{content: String.raw`
+                void* create_QModbusPdu(void* placement, const void * copy);
+                create_QModbusPdu(placement, copy);`}
         }
         ModifyFunction{
             signature: "operator<<(QDataStream &,QModbusPdu)"
@@ -521,78 +519,11 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         InjectCode{
-            Text{content: "@QtUninvokable\n"+
-                          "public void encodeData(Number...data) {\n"+
-                          "    io.qt.core.QByteArray byteArray = new io.qt.core.QByteArray(data());\n"+
-                          "    io.qt.core.QDataStream stream = new io.qt.core.QDataStream(byteArray, io.qt.core.QIODevice.OpenModeFlag.WriteOnly);\n"+
-                          "    for (Number s : data) {\n"+
-                          "        if(s instanceof Byte) {\n"+
-                          "            stream.writeByte((Byte)s);\n"+
-                          "        }else if(s instanceof Short){\n"+
-                          "            stream.writeShort((Short)s);\n"+
-                          "        }else {\n"+
-                          "            throw new IllegalArgumentException(\"Only byte and short supported.\");\n"+
-                          "        }\n"+
-                          "    }\n"+
-                          "    stream.dispose();\n"+
-                          "    setData(byteArray);\n"+
-                          "}\n"+
-                          "\n"+
-                          "@QtUninvokable\n"+
-                          "public void encodeData(short...data) {\n"+
-                          "    io.qt.core.QByteArray byteArray = new io.qt.core.QByteArray(data());\n"+
-                          "    io.qt.core.QDataStream stream = new io.qt.core.QDataStream(byteArray, io.qt.core.QIODevice.OpenModeFlag.WriteOnly);\n"+
-                          "    for (short s : data) {\n"+
-                          "        stream.writeShort(s);\n"+
-                          "    }\n"+
-                          "    stream.dispose();\n"+
-                          "    setData(byteArray);\n"+
-                          "}\n"+
-                          "\n"+
-                          "@QtUninvokable\n"+
-                          "public void encodeData(byte...data) {\n"+
-                          "    io.qt.core.QByteArray byteArray = new io.qt.core.QByteArray(data());\n"+
-                          "    io.qt.core.QDataStream stream = new io.qt.core.QDataStream(byteArray, io.qt.core.QIODevice.OpenModeFlag.WriteOnly);\n"+
-                          "    for (byte s : data) {\n"+
-                          "        stream.writeByte(s);\n"+
-                          "    }\n"+
-                          "    stream.dispose();\n"+
-                          "    setData(byteArray);\n"+
-                          "}\n"+
-                          "\n"+
-                          "@QtUninvokable\n"+
-                          "public void decodeData(byte[] data) {\n"+
-                          "    io.qt.core.QDataStream stream = new io.qt.core.QDataStream(data(), io.qt.core.QIODevice.OpenModeFlag.ReadOnly);\n"+
-                          "    for (int i = 0; i < data.length; ++i) {\n"+
-                          "        data[i] = stream.readByte();\n"+
-                          "    }\n"+
-                          "    stream.dispose();\n"+
-                          "}\n"+
-                          "\n"+
-                          "@QtUninvokable\n"+
-                          "public void decodeData(short[] data) {\n"+
-                          "    io.qt.core.QDataStream stream = new io.qt.core.QDataStream(data(), io.qt.core.QIODevice.OpenModeFlag.ReadOnly);\n"+
-                          "    for (int i = 0; i < data.length; ++i) {\n"+
-                          "        data[i] = stream.readShort();\n"+
-                          "    }\n"+
-                          "    stream.dispose();\n"+
-                          "}\n"+
-                          "\n"+
-                          "@QtUninvokable\n"+
-                          "public void decodeData(Number[][] data) {\n"+
-                          "    io.qt.core.QDataStream stream = new io.qt.core.QDataStream(data(), io.qt.core.QIODevice.OpenModeFlag.ReadOnly);\n"+
-                          "    for (int i = 0; i < data.length; ++i) {\n"+
-                          "        if(data[i] instanceof Byte[]) {\n"+
-                          "            ((Byte[])data[i])[0] = stream.readByte();\n"+
-                          "        }else if(data[i] instanceof Short[]) {\n"+
-                          "            ((Short[])data[i])[0] = stream.readShort();\n"+
-                          "        }else {\n"+
-                          "            stream.dispose();\n"+
-                          "            throw new IllegalArgumentException(\"Only byte and short supported.\");\n"+
-                          "        }\n"+
-                          "    }\n"+
-                          "    stream.dispose();\n"+
-                          "}"}
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiSerialBus.java"
+                quoteAfterLine: "class QModbusPdu__"
+                quoteBeforeLine: "}// class"
+            }
         }
     }
     

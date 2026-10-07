@@ -183,7 +183,7 @@ public class TestQThread extends ApplicationInitializer{
 				if(event.type().value()==eventype){
 					reached.set(true);
 					event.accept();
-					((QThread)QThread.currentThread()).quit();
+					QThread.currentThread().quit();
 					dispose();
 					return true;
 				}
@@ -561,6 +561,7 @@ public class TestQThread extends ApplicationInitializer{
 			loop.exec();
 			timer.dispose();
 		}
+		loop.dispose();
 		QThread remaining = reference.get();
 		if(remaining!=null && !remaining.isDisposed()) {
 			Assert.assertEquals("QThread reference is not null and existing with parent", null, remaining.parent());
@@ -645,6 +646,7 @@ public class TestQThread extends ApplicationInitializer{
 			loop.exec();
 			timer.dispose();
 		}
+		loop.dispose();
 		QThread remaining = reference.get();
 		Assert.assertTrue("QThread reference is not null and existing", remaining==null || remaining.isDisposed());
 		Assert.assertTrue("QThread reference is not null but disposed", null==remaining);
@@ -729,6 +731,7 @@ public class TestQThread extends ApplicationInitializer{
 			loop.exec();
 			timer.dispose();
 		}
+		loop.dispose();
 		QThread remaining = reference.get();
 		if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
 			Assert.assertTrue("QThread reference is not null and existing", remaining==null || remaining.isDisposed());
@@ -811,6 +814,7 @@ public class TestQThread extends ApplicationInitializer{
 			loop.exec();
 			timer.dispose();
 		}
+		loop.dispose();
 		Thread javaThread = jreference.get();
 		if(javaThread!=null && javaThread.getState()!=Thread.State.TERMINATED) {
 			javaThread.interrupt();
@@ -896,6 +900,7 @@ public class TestQThread extends ApplicationInitializer{
 			loop.exec();
 			timer.dispose();
 		}
+		loop.dispose();
 		if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
 			Assert.assertTrue("Thread has not been deleted", threadCleaned.get());
 		}

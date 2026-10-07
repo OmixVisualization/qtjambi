@@ -244,6 +244,7 @@ void QmlTypeSystemReaderPrivate::parseTypeSystem(TypeSystem* typeSystem, const Q
             entry->setTargetName(typeSystem->getTargetName());
             entry->setNoExports(noExports);
             entry->setDescription(description);
+            entry->setNoPackageInfo(typeSystem->getNoPackageInfo());
             entry->setCodeGeneration(m_generate | TypeEntry::InheritedByTypeSystem);
             //qDebug()<<"Adding element->entry (root)"<<element->entry->name();
             ReportHandler::debugTypes("Adding to TypeDatabase(3): " + entry->name());
@@ -621,6 +622,7 @@ void QmlTypeSystemReaderPrivate::parseInsertTemplate(InsertTemplate* element, co
     if (checkQtVersion(element)){
         QString name = element->getName();
         std::unique_ptr<TemplateInstance> templateInstance(new TemplateInstance(name));
+        templateInstance->setIndents(element->getIndents());
         const QList<AbstractObject*>& childrenList = element->childrenList();
         for(int i=0; i<childrenList.size(); ++i){
             AbstractObject* item = childrenList[i];
@@ -815,6 +817,7 @@ void QmlTypeSystemReaderPrivate::parsePrimitiveType(const QString& nameSpace, Pr
             entry->setCodeGeneration(m_generate | TypeEntry::InheritedByTypeSystem);
             entry->setTargetLangName(java_name);
             entry->setJniName(jni_name);
+            entry->setCast(element->getCast());
 
             entry->setPreferredConversion(element->getPreferredConversion());
             entry->setPreferredTargetLangType(element->getPreferredJavaType());
@@ -877,6 +880,8 @@ void QmlTypeSystemReaderPrivate::parseAttributesOfComplexType(ComplexType* eleme
     ctype->setSkipMetaTypeRegistration(element->getNoMetaType());
     if (element->getDisableNativeIdUsage())
         ctype->disableNativeIdUsage();
+    if (element->getAsDirectLink())
+        ctype->asDirectLink();
     if (element->getForceAbstract())
         ctype->setForceAbstract();
     if (element->getForceFriendly())

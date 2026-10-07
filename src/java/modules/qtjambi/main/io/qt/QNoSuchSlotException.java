@@ -39,6 +39,7 @@ import io.qt.core.QObject;
  * This exception is thrown when a string-based slot representation cannot be resolved in a class.
  * @see QObject#connect(QObject, String, QObject, String, io.qt.core.Qt.ConnectionType...)
  * @see QObject#disconnect(QObject, String, QObject, String)
+ * @serial exclude
  */
 public class QNoSuchSlotException extends QConnectionException {
     private static final long serialVersionUID = 1L;

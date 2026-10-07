@@ -29,12 +29,15 @@
 ****************************************************************************/
 package io.qt.gui.gl;
 
-import io.qt.QtObject;
+import io.qt.*;
 
 /**
  * <p>Java wrapper for native type <code>GLsync</code></p>
  */
 public final class GLsync extends QtObject {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	private GLsync(QPrivateConstructor c) {
 		super(c);
 	}

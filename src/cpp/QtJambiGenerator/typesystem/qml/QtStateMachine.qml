@@ -230,7 +230,7 @@ TypeSystem{
                     index: 3
                     metaName: "%3"
                 }
-                Text{content: "QtJambi_LibraryUtilities.internal.addReferenceCount(%0, QAbstractTransition.class, \"__rcTargetStates\", false, false, %3);"}
+                Text{content: String.raw`QtJambi_LibraryUtilities.internal.addReferenceCount(%0, QAbstractTransition.class, "__rcTargetStates", false, false, %3);`}
             }
         }
         ModifyFunction{
@@ -254,7 +254,7 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "QtJambi_LibraryUtilities.internal.addReferenceCount(%0, QAbstractTransition.class, \"__rcTargetStates\", false, false, %1);"}
+                Text{content: String.raw`QtJambi_LibraryUtilities.internal.addReferenceCount(%0, QAbstractTransition.class, "__rcTargetStates", false, false, %1);`}
             }
         }
         InjectCode{
@@ -383,7 +383,7 @@ TypeSystem{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "QtJambi_LibraryUtilities.internal.addReferenceCount(defaultTransition(), QAbstractTransition.class, \"__rcTargetStates\", false, false, %1);"}
+                Text{content: String.raw`QtJambi_LibraryUtilities.internal.addReferenceCount(defaultTransition(), QAbstractTransition.class, "__rcTargetStates", false, false, %1);`}
             }
         }
     }

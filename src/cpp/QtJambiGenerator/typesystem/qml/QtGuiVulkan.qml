@@ -31,6 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.gui.vulkan"
+    noPackageInfo: true
     defaultSuperClass: "QtObject"
     targetName: "QtJambiGuiVulkan"
     module: "qtjambi"
@@ -2200,6 +2201,25 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
+            signature: "create()"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                Text{content: String.raw`
+                    if(__java_return_value)
+                        QtJambiAPI::setJavaOwnership(%env, __this_nativeId);`}
+            }
+        }
+        ModifyFunction{
+            signature: "destroy()"
+            remove: RemoveFlag.All
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.End
+                Text{content: String.raw`QtJambiAPI::setDefaultOwnership(%env, __this_nativeId);`}
+            }
+        }
+        ModifyFunction{
             signature: "supportedExtensions()const"
             remove: RemoveFlag.All
         }
@@ -2244,16 +2264,50 @@ TypeSystem{
     }
     ObjectType{
         name: "QVulkanWindow"
+        ExtraIncludes{
+            Include{
+                fileName: "QtGui/qvulkaninstance.h"
+                location: Include.Global
+                suppressed: true
+            }
+        }
         ppCondition: "QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)"
         ModifyFunction{
             signature: "flags()const"
             rename: "vulkanFlags"
+        }
+        ModifyFunction{
+            signature: "createRenderer()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
         }
         Rejection{functionName: "setEnabledFeaturesModifier"}
         Rejection{functionName: "setQueueCreateInfoModifier"}
     }
     InterfaceType{
         name: "QVulkanWindowRenderer"
+        ExtraIncludes{
+            Include{
+                fileName: "QtGui/qvulkaninstance.h"
+                location: Include.Global
+                suppressed: true
+            }
+            Include{
+                fileName: "QtGui/qvulkanwindow.h"
+                location: Include.Global
+                suppressed: true
+            }
+            Include{
+                fileName: "QtGui/QVulkanWindow"
+                location: Include.Global
+                ckeckAvailability: true
+            }
+        }
         ppCondition: "QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)"
     }
 }

@@ -33,12 +33,10 @@
 #define DOCCLASS_H
 
 #include "docelement.h"
-#include "docenum.h"
 #include "docfunction.h"
+#include "doctypedef.h"
 #include "docvariable.h"
 #include "docproperty.h"
-#include "doctypedef.h"
-
 
 class DocClass: public DocElement
 {

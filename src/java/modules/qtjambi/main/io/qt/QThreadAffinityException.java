@@ -37,6 +37,7 @@ import io.qt.core.*;
  * @see QObject#thread()
  * @see QObject#moveToThread(QThread)
  * @see QCoreApplication#notify(QObject, QEvent)
+ * @serial exclude
  */
 public class QThreadAffinityException extends RuntimeException {
 

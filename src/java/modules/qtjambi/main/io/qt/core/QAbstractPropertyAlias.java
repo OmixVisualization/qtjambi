@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.Objects;
-
+import java.util.*;
 import io.qt.*;
 
 @Deprecated

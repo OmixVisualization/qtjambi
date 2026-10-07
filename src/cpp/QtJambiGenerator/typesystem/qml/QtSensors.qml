@@ -540,8 +540,9 @@ TypeSystem{
                     index: 3
                     metaName: "%3"
                 }
-                Text{content: "io.qt.core.QPair<io.qt.core.QByteArray,io.qt.core.QByteArray> key = new io.qt.core.QPair<>(%1, %2);\n"+
-                              "__rcBackends.put(key, %3);"}
+                Text{content: String.raw`
+                    io.qt.core.QPair<io.qt.core.QByteArray,io.qt.core.QByteArray> key = new io.qt.core.QPair<>(%1, %2);
+                    __rcBackends.put(key, %3);`}
             }
         }
         ModifyFunction{
@@ -555,17 +556,14 @@ TypeSystem{
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "io.qt.core.QPair<io.qt.core.QByteArray,io.qt.core.QByteArray> key = new io.qt.core.QPair<>(%1, %2);\n"+
-                              "__rcBackends.remove(key);"}
+                Text{content: String.raw`
+                    io.qt.core.QPair<io.qt.core.QByteArray,io.qt.core.QByteArray> key = new io.qt.core.QPair<>(%1, %2);
+                    __rcBackends.remove(key);`}
             }
         }
         InjectCode{
             Text{content: "private final static java.util.Map<io.qt.core.QPair<io.qt.core.QByteArray,io.qt.core.QByteArray>,QSensorBackendFactory> __rcBackends = java.util.Collections.synchronizedMap(new java.util.HashMap<>());"}
         }
-    }
-    
-    InterfaceType{
-        name: "QLightFilter"
     }
     
     InterfaceType{
@@ -591,77 +589,213 @@ TypeSystem{
             }
         }
     }
-    
+
     InterfaceType{
-        name: "QAccelerometerFilter"
+        name: "QLightFilter"
+        ModifyFunction{
+            signature: "filter(QSensorReading*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    if(%1 instanceof QLightReading)
+                        throw new IllegalArgumentException("QLightReading required");`}
+            }
+        }
     }
     
     InterfaceType{
-        name: "QAltimeterFilter"
+        name: "QAccelerometerFilter"
+        ModifyFunction{
+            signature: "filter(QSensorReading*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    if(%1 instanceof QAccelerometerReading)
+                        throw new IllegalArgumentException("QAccelerometerReading required");`}
+            }
+        }
     }
     
     InterfaceType{
         name: "QAmbientLightFilter"
+        ModifyFunction{
+            signature: "filter(QSensorReading*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    if(%1 instanceof QAmbientLightReading)
+                        throw new IllegalArgumentException("QAmbientLightReading required");`}
+            }
+        }
     }
     
     InterfaceType{
         name: "QAmbientTemperatureFilter"
+        ModifyFunction{
+            signature: "filter(QSensorReading*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    if(%1 instanceof QAmbientTemperatureReading)
+                        throw new IllegalArgumentException("QAmbientTemperatureReading required");`}
+            }
+        }
     }
     
     InterfaceType{
         name: "QCompassFilter"
-    }
-    
-    InterfaceType{
-        name: "QDistanceFilter"
+        ModifyFunction{
+            signature: "filter(QSensorReading*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    if(%1 instanceof QCompassReading)
+                        throw new IllegalArgumentException("QCompassReading required");`}
+            }
+        }
     }
     
     InterfaceType{
         name: "QGyroscopeFilter"
-    }
-    
-    InterfaceType{
-        name: "QHolsterFilter"
+        ModifyFunction{
+            signature: "filter(QSensorReading*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    if(%1 instanceof QGyroscopeReading)
+                        throw new IllegalArgumentException("QGyroscopeReading required");`}
+            }
+        }
     }
     
     InterfaceType{
         name: "QHumidityFilter"
+        ModifyFunction{
+            signature: "filter(QSensorReading*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    if(%1 instanceof QHumidityReading)
+                        throw new IllegalArgumentException("QHumidityReading required");`}
+            }
+        }
     }
     
     InterfaceType{
         name: "QIRProximityFilter"
+        ModifyFunction{
+            signature: "filter(QSensorReading*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    if(%1 instanceof QIRProximityReading)
+                        throw new IllegalArgumentException("QIRProximityReading required");`}
+            }
+        }
     }
     
     InterfaceType{
         name: "QLidFilter"
+        ModifyFunction{
+            signature: "filter(QSensorReading*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    if(%1 instanceof QLidReading)
+                        throw new IllegalArgumentException("QLidReading required");`}
+            }
+        }
     }
     
     InterfaceType{
         name: "QMagnetometerFilter"
+        ModifyFunction{
+            signature: "filter(QSensorReading*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    if(%1 instanceof QMagnetometerReading)
+                        throw new IllegalArgumentException("QMagnetometerReading required");`}
+            }
+        }
     }
     
     InterfaceType{
         name: "QOrientationFilter"
+        ModifyFunction{
+            signature: "filter(QSensorReading*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    if(%1 instanceof QOrientationReading)
+                        throw new IllegalArgumentException("QOrientationReading required");`}
+            }
+        }
     }
     
     InterfaceType{
         name: "QPressureFilter"
+        ModifyFunction{
+            signature: "filter(QSensorReading*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    if(%1 instanceof QPressureReading)
+                        throw new IllegalArgumentException("QPressureReading required");`}
+            }
+        }
     }
     
     InterfaceType{
         name: "QProximityFilter"
+        ModifyFunction{
+            signature: "filter(QSensorReading*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    if(%1 instanceof QProximityReading)
+                        throw new IllegalArgumentException("QProximityReading required");`}
+            }
+        }
     }
     
     InterfaceType{
         name: "QRotationFilter"
+        ModifyFunction{
+            signature: "filter(QSensorReading*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    if(%1 instanceof QRotationReading)
+                        throw new IllegalArgumentException("QRotationReading required");`}
+            }
+        }
     }
     
     InterfaceType{
         name: "QTapFilter"
+        ModifyFunction{
+            signature: "filter(QSensorReading*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    if(%1 instanceof QTapReading)
+                        throw new IllegalArgumentException("QTapReading required");`}
+            }
+        }
     }
     
     InterfaceType{
         name: "QTiltFilter"
+        ModifyFunction{
+            signature: "filter(QSensorReading*)"
+            InjectCode{
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+                    if(%1 instanceof QTiltReading)
+                        throw new IllegalArgumentException("QTiltReading required");`}
+            }
+        }
     }
     
     InterfaceType{

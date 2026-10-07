@@ -633,8 +633,9 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
             }
             ConversionRule{
                 codeClass: CodeClass.NativeGetter
-                Text{content: "%out = %in ? %env->NewDirectByteBuffer(%in, jlong(__qt_this->buffer_length)) : nullptr;\n"+
-                              "JavaException::check(%env QTJAMBI_STACKTRACEINFO );"}
+                Text{content: String.raw`
+                    %out = %in ? %env->NewDirectByteBuffer(%in, jlong(__qt_this->buffer_length)) : nullptr;
+                    JavaException::check(%env QTJAMBI_STACKTRACEINFO );`}
             }
         }
     }

@@ -39,8 +39,8 @@ namespace QtNetwork{
                                      QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
 
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QHostAddress$HostInfo,
-                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(address)
-                                     QTJAMBI_REPOSITORY_DECLARE_SHORT_FIELD(port))
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(address)
+                                     QTJAMBI_REPOSITORY_DECLARE_SHORT_WRITABLE_FIELD(port))
 }
 }
 

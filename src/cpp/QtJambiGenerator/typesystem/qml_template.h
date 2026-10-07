@@ -76,12 +76,19 @@ public:
     const QString &getName() const;
     void setName(const QString &newName);
 
+    uint getIndents() const;
+    void setIndents(uint newIndents);
+
 signals:
     void nameChanged();
 
+    void indentsChanged();
+
 private:
     QString name;
+    uint indents = 0;
     Q_PROPERTY(QString name READ getName WRITE setName NOTIFY nameChanged)
+    Q_PROPERTY(uint indents READ getIndents WRITE setIndents NOTIFY indentsChanged FINAL)
 };
 
 class Replace : public AbstractObject

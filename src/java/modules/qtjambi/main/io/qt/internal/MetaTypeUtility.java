@@ -40,12 +40,9 @@ import io.qt.core.*;
 /**
  * @hidden
  */
-public final class MetaTypeUtility {
+final class MetaTypeUtility {
 	static {
 		QtJambi_LibraryUtilities.initialize();
-	}
-
-	public interface SmartPointer {
 	}
 	
 	private MetaTypeUtility() {
@@ -83,7 +80,7 @@ public final class MetaTypeUtility {
 		readWriteHandles = Collections.synchronizedMap(new HashMap<>());
 	}
 	
-	public static <T> void registerDataStreamOperators(int metaType, Class<?> classType, java.util.function.BiConsumer<QDataStream, T> datastreamInFn, java.util.function.Function<QDataStream, T> datastreamOutFn) {
+	protected static <T> void registerDataStreamOperators(int metaType, Class<?> classType, java.util.function.BiConsumer<QDataStream, T> datastreamInFn, java.util.function.Function<QDataStream, T> datastreamOutFn) {
 		boolean isCustomValueType = isCustomValueType(metaType);
 		if(!isObjectWrapperType(metaType)) {
 			if(isCustomValueType) {
@@ -103,7 +100,7 @@ public final class MetaTypeUtility {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static <T> void registerDebugStreamOperator(int metaType, Class<?> classType, java.util.function.BiConsumer<QDebug, T> debugstreamFn) {
+	protected static <T> void registerDebugStreamOperator(int metaType, Class<?> classType, java.util.function.BiConsumer<QDebug, T> debugstreamFn) {
 		boolean isCustomValueType = isCustomValueType(metaType);
 		if(!isObjectWrapperType(metaType)) {
 			if(isCustomValueType) {
@@ -122,7 +119,7 @@ public final class MetaTypeUtility {
 			registerCustomDebugStreamOperator(metaType);
 	}
 	
-	public static native boolean registerConverter(int metaType1, Class<?> classType1, int metaType2, Class<?> classType2, java.util.function.Function<?,?> converterFn);
+	protected static native boolean registerConverter(int metaType1, Class<?> classType1, int metaType2, Class<?> classType2, java.util.function.Function<?,?> converterFn);
 	
 	private static native boolean isObjectWrapperType(int metaType);
 	
@@ -517,7 +514,7 @@ public final class MetaTypeUtility {
     	return registerMetaType(parameter.getType(), parameter.getParameterizedType(), annotatedParameterType, false, false);
 	}
 
-	public static int registerMetaType(Class<?> clazz, Type genericType, AnnotatedElement annotatedType, boolean isPointer, boolean isReference) {
+	protected static int registerMetaType(Class<?> clazz, Type genericType, AnnotatedElement annotatedType, boolean isPointer, boolean isReference) {
 		QtUtilities.initializePackage(clazz);
 		QtReferenceType referenceType = null;
 		QtPointerType pointerType = null;
@@ -716,42 +713,11 @@ public final class MetaTypeUtility {
 		return registerRefMetaType(QMetaType.qRegisterMetaType(clazz), isPointer, isReference);
 	}
 
-	public static int objectMetaTypeId(Object o) {
-		if (o == null) {
-			return QMetaType.Type.Nullptr.value();
-		} else {
-			return QMetaType.qMetaTypeId(AccessUtility.instance.getClass(o));
-		}
-	}
-
-	public static int nextMetaTypeId(Class<?> clazz) {
-		int id = QMetaType.Type.UnknownType.value();
-		if (QtObjectInterface.class.isAssignableFrom(clazz)) {
-			QtUtilities.initializePackage(clazz);
-			id = QMetaType.qMetaTypeId(clazz);
-			if (QMetaType.Type.UnknownType.value() == id) {
-				if (!clazz.isInterface())
-					id = nextMetaTypeId(clazz.getSuperclass());
-				if (QMetaType.Type.UnknownType.value() == id) {
-					for (Class<?> iclass : clazz.getInterfaces()) {
-						id = nextMetaTypeId(iclass);
-						if (QMetaType.Type.UnknownType.value() != id) {
-							break;
-						}
-					}
-				}
-			}
-		} else {
-			id = QMetaType.qMetaTypeId(clazz);
-		}
-		return id;
-	}
-
-	public static String internalNameOfArgumentType(Class<? extends Object> cls) {
+	protected static String internalNameOfArgumentType(Class<? extends Object> cls) {
 		return internalTypeNameOfClass(cls, cls, null);
 	}
 
-	public static String internalTypeNameOfClass(Class<? extends Object> cls, Type genericType, AnnotatedElement annotatedType) {
+	protected static String internalTypeNameOfClass(Class<? extends Object> cls, Type genericType, AnnotatedElement annotatedType) {
 		try {
 			if (isQQmlListProperty(cls) && genericType instanceof ParameterizedType) {
 				ParameterizedType ptype = (ParameterizedType) genericType;
@@ -947,7 +913,7 @@ public final class MetaTypeUtility {
 	
 	native static String internalTypeNameByClass(Class<?> cls);
 	
-	public native static String internalTypeName(String s, ClassLoader classLoader);
+	protected native static String internalTypeName(String s, ClassLoader classLoader);
 
 	private static Class<?> qmlListPropertiesClass;
 	private static boolean qmlListPropertiesClassResolved;
@@ -1004,7 +970,11 @@ public final class MetaTypeUtility {
         				return QMetaType.Type.QVariantList;
         			}else if(isSequentialContainerType(clazz)) {
     					return String.format("%1$s<%2$s>", clazz.getSimpleName(), instantiations[0].name());
-        			}else if(SmartPointer.class.isAssignableFrom(clazz)) {
+        			}else if(io.qt.core.QPointer.class.isAssignableFrom(clazz)
+        					|| io.qt.core.QWeakPointer.class.isAssignableFrom(clazz)
+        					|| io.qt.core.QScopedPointer.class.isAssignableFrom(clazz)
+        					|| io.qt.core.QScopedArrayPointer.class.isAssignableFrom(clazz)
+        					|| io.qt.core.QSharedPointer.class.isAssignableFrom(clazz)) {
         				if(instantiations[0].name().endsWith("*"))
         					return String.format("%1$s<%2$s>", clazz.getSimpleName(), instantiations[0].name().toString().substring(0, instantiations[0].name().length()-1));
         				else
@@ -1076,7 +1046,7 @@ public final class MetaTypeUtility {
         return null;
 	}
     
-    public static QMetaType[] findSuperInstantiations(Class<?> clazz){
+    protected static QMetaType[] findSuperInstantiations(Class<?> clazz){
     	if(clazz!=null && ((QList.class.isAssignableFrom(clazz) && clazz!=QList.class)
 							|| (QSet.class.isAssignableFrom(clazz) && clazz!=QSet.class)
 							|| (QMap.class.isAssignableFrom(clazz) && clazz!=QMap.class)

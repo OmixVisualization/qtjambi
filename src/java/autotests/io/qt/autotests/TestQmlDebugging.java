@@ -6,6 +6,7 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.core.QCoreApplication;
 import io.qt.core.QLibraryInfo;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QTimer;
@@ -17,6 +18,7 @@ public class TestQmlDebugging extends ApplicationInitializer{
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
+		Assume.assumeFalse("Does not work on Android batched tests", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android) || QCoreApplication.instance()==null);
 		Assume.assumeFalse("Cannot run with Qt >= 6.11", QLibraryInfo.version().compareTo(new int[]{6,11,0})>=0);
 		System.setProperty("io.qt.enabled-qml-debugging", "true");
     	ApplicationInitializer.testInitializeWithGui();

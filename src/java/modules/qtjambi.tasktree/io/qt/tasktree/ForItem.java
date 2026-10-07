@@ -5,7 +5,13 @@ import java.util.function.*;
 
 import io.qt.*;
 
+/**
+ * <p>Java wrapper for Qt class <code>QtTaskTree::ForItem</code></p>
+ */
 public final class ForItem {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	ForItem(long count) {
 		super();
 		this.iterator = new RepeatIterator(count);

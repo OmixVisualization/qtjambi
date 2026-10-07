@@ -34,7 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "Qt3DQuickScene2D"
     module: "qtjambi.qt3dquickscene2d"
-    description: "Qt 3D Scene2D Module"
+    description: "Qt 3D Scene2D module"
 
     RequiredPackage{
         name: "io.qt.qml"

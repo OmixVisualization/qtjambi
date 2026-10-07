@@ -32,6 +32,8 @@
 #ifndef RANGE_P_H
 #define RANGE_P_H
 
+#include "pch_p.h"
+
 #if QT_VERSION >= QT_VERSION_CHECK(6,10,0)
 #include <type_traits>
 #include "utils_p.h"
@@ -134,6 +136,10 @@ private:
     static void callImpl(size_t index, QtPrivate::QQuasiVirtualInterface<QRangeModelImplBase> &intf, void *ret, void *args);
     void initializeTable(QRangeModel *itemModel, GenericTable&& table);
     void initializeTree(QRangeModel *itemModel, GenericTable&& table);
+#if QT_VERSION >= QT_VERSION_CHECK(6,11,0)
+    void initializeTableItemAccess(QRangeModel *itemModel, GenericTable&& table);
+    void initializeTreeItemAccess(QRangeModel *itemModel, GenericTable&& table);
+#endif
     template<bool is_mutable_tree,
              bool is_mutable_range,
              bool is_mutable_row,

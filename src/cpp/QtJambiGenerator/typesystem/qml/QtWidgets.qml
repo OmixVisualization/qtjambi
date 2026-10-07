@@ -31,6 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.widgets"
+    noPackageInfo: true
     defaultSuperClass: "QtObject"
     qtLibrary: "QtWidgets"
     module: "qtjambi"
@@ -1859,12 +1860,6 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
             }
         }
         CustomConstructor{
-            Text{content: "if(copy)\n"+
-                          "    return new(placement) QColormap(*copy);\n"+
-                          "else\n"+
-                          "    return new(placement) QColormap(QColormap::instance());"}
-        }
-        CustomConstructor{
             type: CustomConstructor.Default
             Text{content: "new(placement) QColormap(QColormap::instance());"}
         }
@@ -1916,8 +1911,9 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
         }
         InjectCode{
             position: Position.End
-            Text{content: "@QtUninvokable\n"+
-                          "static native boolean hasWidgetItemV2(QWidget widget);"}
+            Text{content: String.raw`
+                @QtUninvokable
+                static native boolean hasWidgetItemV2(QWidget widget);`}
         }
     }
     
@@ -1971,7 +1967,7 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -1986,7 +1982,7 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -2001,7 +1997,7 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -2016,7 +2012,7 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -2031,7 +2027,7 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -2081,7 +2077,7 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -2103,7 +2099,7 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -2118,7 +2114,7 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -2133,7 +2129,7 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -2148,7 +2144,7 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -2163,7 +2159,7 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -2178,7 +2174,7 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -2193,7 +2189,7 @@ public final @Nullable QAction addAction(%EXTRA @NonNull String text %INFIX_EXTR
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -2245,7 +2241,7 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -2313,8 +2309,9 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (%1 != null)\n"+
-                              "    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);"}
+                Text{content: String.raw`
+                    if (%1 != null)
+                        QtJambi_LibraryUtilities.internal.setCppOwnership(%this);`}
             }
         }
         ModifyFunction{
@@ -2329,8 +2326,9 @@ try{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool okHolder = false;\n"+
-                                  "bool *%out = &okHolder;"}
+                    Text{content: String.raw`
+                        bool okHolder = false;
+                        bool *%out = &okHolder;`}
                 }
             }
             ModifyArgument{
@@ -2363,10 +2361,11 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (%1 == null && oldGroup != null && oldGroup.parentItem() == null)\n"+
-                              "    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%this);\n"+
-                              "else\n"+
-                              "    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);"}
+                Text{content: String.raw`
+                    if (%1 == null && oldGroup != null && oldGroup.parentItem() == null)
+                        QtJambi_LibraryUtilities.internal.setDefaultOwnership(%this);
+                    else
+                        QtJambi_LibraryUtilities.internal.setCppOwnership(%this);`}
             }
         }
         ModifyFunction{
@@ -2385,10 +2384,11 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (%1 == null)\n"+
-                              "    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%this);\n"+
-                              "else\n"+
-                              "    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);"}
+                Text{content: String.raw`
+                    if (%1 == null)
+                        QtJambi_LibraryUtilities.internal.setDefaultOwnership(%this);
+                    else
+                        QtJambi_LibraryUtilities.internal.setCppOwnership(%this);`}
             }
         }
         ModifyFunction{
@@ -2399,8 +2399,9 @@ try{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QGraphicsItem * modalPanel = nullptr;\n"+
-                                  "QGraphicsItem ** %out = &modalPanel;"}
+                    Text{content: String.raw`
+                        QGraphicsItem * modalPanel = nullptr;
+                        QGraphicsItem ** %out = &modalPanel;`}
                 }
             }
             ModifyArgument{
@@ -2639,9 +2640,10 @@ try{
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
-                Text{content: "// setModel() creates a new selection model for the object\n"+
-                              "io.qt.core.QItemSelectionModel selectionModel = selectionModel();\n"+
-                              "QtJambi_LibraryUtilities.internal.setReferenceCount(this, io.qt.widgets.QAbstractItemView.class, \"__rcItemSelectionModel\", false, false, QtJambi_LibraryUtilities.internal.needsReferenceCounting(selectionModel) ? selectionModel : null);"}
+                Text{content: String.raw`
+                    // setModel() creates a new selection model for the object
+                    io.qt.core.QItemSelectionModel selectionModel = selectionModel();
+                    QtJambi_LibraryUtilities.internal.setReferenceCount(this, io.qt.widgets.QAbstractItemView.class, "__rcItemSelectionModel", false, false, QtJambi_LibraryUtilities.internal.needsReferenceCounting(selectionModel) ? selectionModel : null);`}
             }
         }
         ModifyFunction{
@@ -2895,12 +2897,13 @@ try{
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
-                Text{content: "if(changedSignal!=null && !changedSignal.isEmpty()) {\n"+
-                              "    io.qt.core.QMetaMethod sig = widget.metaObject().method(changedSignal);\n"+
-                              "    if(sig.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {\n"+
-                              "        changedSignal = \"2\"+sig.cppMethodSignature().toString();\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+if(changedSignal!=null && !changedSignal.isEmpty()) {
+    io.qt.core.QMetaMethod sig = widget.metaObject().method(changedSignal);
+    if(sig.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {
+        changedSignal = "2"+sig.cppMethodSignature().toString();
+    }
+}`}
             }
         }
     }
@@ -2942,7 +2945,7 @@ try{
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
-                Text{content: "if(!member.startsWith(\"1\") || !member.startsWith(\"2\")) member = '1'+member;"}
+                Text{content: String.raw`if(!member.startsWith("1") || !member.startsWith("2")) member = '1'+member;`}
             }
         }
         ModifyFunction{
@@ -2961,8 +2964,9 @@ try{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
         }
@@ -2982,8 +2986,9 @@ try{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
             ModifyArgument{
@@ -3159,8 +3164,9 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (!isCppOwnership && (%1.toGraphicsObject()==null || %1.toGraphicsObject().parent() == null) )\n"+
-                              "    QtJambi_LibraryUtilities.internal.setCppOwnership(%1);"}
+                Text{content: String.raw`
+                    if (!isCppOwnership && (%1.toGraphicsObject()==null || %1.toGraphicsObject().parent() == null) )
+                        QtJambi_LibraryUtilities.internal.setCppOwnership(%1);`}
             }
         }
         ModifyFunction{
@@ -3179,8 +3185,9 @@ try{
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (%1!=null && %1.parentItem() == null && (%1.toGraphicsObject()==null || %1.toGraphicsObject().parent() == null) )\n"+
-                              "    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%1);"}
+                Text{content: String.raw`
+                    if (%1!=null && %1.parentItem() == null && (%1.toGraphicsObject()==null || %1.toGraphicsObject().parent() == null) )
+                        QtJambi_LibraryUtilities.internal.setDefaultOwnership(%1);`}
             }
         }
     }
@@ -4275,8 +4282,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             signature: "clear()"
             InjectCode{
                 position: Position.End
-                Text{content: "if(__rcMenus!=null)__rcMenus.clear();\n"+
-                              "    QtJambi_LibraryUtilities.internal.clearReferenceCount(this, QWidget.class, \"__rcActions\", false);"}
+                Text{content: String.raw`
+                    if(__rcMenus!=null)__rcMenus.clear();
+                        QtJambi_LibraryUtilities.internal.clearReferenceCount(this, QWidget.class, "__rcActions", false);`}
             }
         }
     }
@@ -4446,8 +4454,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             signature: "clear()"
             InjectCode{
                 position: Position.End
-                Text{content: "if(__rcMenus!=null)__rcMenus.clear();\n"+
-                              "    QtJambi_LibraryUtilities.internal.clearReferenceCount(this, QWidget.class, \"__rcActions\", false);"}
+                Text{content: String.raw`
+                    if(__rcMenus!=null)__rcMenus.clear();
+                        QtJambi_LibraryUtilities.internal.clearReferenceCount(this, QWidget.class, "__rcActions", false);`}
             }
         }
     }
@@ -5198,7 +5207,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
-                Text{content: "if(!member.startsWith(\"1\") || !member.startsWith(\"2\")) member = '1'+member;"}
+                Text{content: String.raw`if(!member.startsWith("1") || !member.startsWith("2")) member = '1'+member;`}
             }
         }
     }
@@ -5319,9 +5328,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 0
                     metaName: "%item"
                 }
-                Text{content: "if(%item != null){\n"+
-                              "    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%item);\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(%item != null){
+                        QtJambi_LibraryUtilities.internal.setDefaultOwnership(%item);
+                    }`}
             }
         }
         ModifyFunction{
@@ -5345,8 +5355,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(QWidgetItem.hasWidgetItemV2(%1))\n"+
-                              "    throw new IllegalArgumentException(\"Widget is already a layout member.\");"}
+                Text{content: String.raw`
+                    if(QWidgetItem.hasWidgetItemV2(%1))
+                        throw new IllegalArgumentException("Widget is already a layout member.");`}
             }
         }
         ModifyFunction{
@@ -5373,9 +5384,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
-                Text{content: "if(widget!=null && widget.parent()==null){\n"+
-                              "    QtJambi_LibraryUtilities.internal.addReferenceCount(this, io.qt.widgets.QLayout.class, \"__rcLayoutedObjects\", false, false, widget);\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(widget!=null && widget.parent()==null){
+                        QtJambi_LibraryUtilities.internal.addReferenceCount(this, io.qt.widgets.QLayout.class, "__rcLayoutedObjects", false, false, widget);
+                    }`}
             }
         }
         ModifyFunction{
@@ -5400,9 +5412,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
-                Text{content: "if(widget!=null && __rcLayoutedObjects!=null){\n"+
-                              "    __rcLayoutedObjects.remove(widget);\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(widget!=null && __rcLayoutedObjects!=null){
+                        __rcLayoutedObjects.remove(widget);
+                    }`}
             }
         }
         ModifyFunction{
@@ -5507,9 +5520,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 0
                     metaName: "%item"
                 }
-                Text{content: "if(%item != null){\n"+
-                              "    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%item);\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(%item != null){
+                        QtJambi_LibraryUtilities.internal.setDefaultOwnership(%item);
+                    }`}
             }
         }
         ModifyFunction{
@@ -5548,8 +5562,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "if(QWidgetItem.hasWidgetItemV2(%2))\n"+
-                              "    throw new IllegalArgumentException(\"Widget is already a layout member.\");"}
+                Text{content: String.raw`
+                    if(QWidgetItem.hasWidgetItemV2(%2))
+                        throw new IllegalArgumentException("Widget is already a layout member.");`}
             }
         }
         ModifyFunction{
@@ -5571,17 +5586,19 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%item"
                 }
-                Text{content: "if(widget==null){\n"+
-                              "    throw new IllegalArgumentException(\"Only widgets can be added to QStackedLayout. Use QWidgetItem instead.\");\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(widget==null){
+                        throw new IllegalArgumentException("Only widgets can be added to QStackedLayout. Use QWidgetItem instead.");
+                    }`}
             }
         }
         InjectCode{
             position: Position.End
-            Text{content: "@QtUninvokable\n"+
-                          "void add_widget(QWidget widget){\n"+
-                          "    stackWidget(widget);\n"+
-                          "}"}
+            Text{content: String.raw`
+                @QtUninvokable
+                void add_widget(QWidget widget){
+                    stackWidget(widget);
+                }`}
         }
     }
     
@@ -5698,9 +5715,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 0
                     metaName: "%item"
                 }
-                Text{content: "if(%item != null){\n"+
-                              "QtJambi_LibraryUtilities.internal.setDefaultOwnership(%item);\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(%item != null){
+                        QtJambi_LibraryUtilities.internal.setDefaultOwnership(%item);
+                    }`}
             }
         }
         ModifyFunction{
@@ -5727,9 +5745,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
-                Text{content: "if(widget!=null && widget.parent()==null){\n"+
-                              "    QtJambi_LibraryUtilities.internal.addReferenceCount(this, io.qt.widgets.QLayout.class, \"__rcLayoutedObjects\", false, false, widget);\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(widget!=null && widget.parent()==null){
+                        QtJambi_LibraryUtilities.internal.addReferenceCount(this, io.qt.widgets.QLayout.class, "__rcLayoutedObjects", false, false, widget);
+                    }`}
             }
         }
         ModifyFunction{
@@ -5757,8 +5776,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(QWidgetItem.hasWidgetItemV2(%1))\n"+
-                              "    throw new IllegalArgumentException(\"Widget is already a layout member.\");"}
+                Text{content: String.raw`
+                    if(QWidgetItem.hasWidgetItemV2(%1))
+                        throw new IllegalArgumentException("Widget is already a layout member.");`}
             }
         }
         ModifyFunction{
@@ -5779,8 +5799,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "if(QWidgetItem.hasWidgetItemV2(%2))\n"+
-                              "    throw new IllegalArgumentException(\"Widget is already a layout member.\");"}
+                Text{content: String.raw`
+                    if(QWidgetItem.hasWidgetItemV2(%2))
+                        throw new IllegalArgumentException("Widget is already a layout member.");`}
             }
         }
     }
@@ -5849,9 +5870,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 0
                     metaName: "%item"
                 }
-                Text{content: "if(%item != null){\n"+
-                              "    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%item);\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(%item != null){
+                        QtJambi_LibraryUtilities.internal.setDefaultOwnership(%item);
+                    }`}
             }
         }
         ModifyFunction{
@@ -5872,8 +5894,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(QWidgetItem.hasWidgetItemV2(%1))\n"+
-                              "    throw new IllegalArgumentException(\"Widget is already a layout member.\");"}
+                Text{content: String.raw`
+                    if(QWidgetItem.hasWidgetItemV2(%1))
+                        throw new IllegalArgumentException("Widget is already a layout member.");`}
             }
         }
         ModifyFunction{
@@ -5894,8 +5917,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(QWidgetItem.hasWidgetItemV2(%1))\n"+
-                              "    throw new IllegalArgumentException(\"Widget is already a layout member.\");"}
+                Text{content: String.raw`
+                    if(QWidgetItem.hasWidgetItemV2(%1))
+                        throw new IllegalArgumentException("Widget is already a layout member.");`}
             }
         }
         ModifyFunction{
@@ -5951,9 +5975,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
-                Text{content: "if(widget!=null && widget.parent()==null){\n"+
-                              "    QtJambi_LibraryUtilities.internal.addReferenceCount(this, io.qt.widgets.QLayout.class, \"__rcLayoutedObjects\", false, false, widget);\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(widget!=null && widget.parent()==null){
+                        QtJambi_LibraryUtilities.internal.addReferenceCount(this, io.qt.widgets.QLayout.class, "__rcLayoutedObjects", false, false, widget);
+                    }`}
             }
         }
         ModifyFunction{
@@ -5964,8 +5989,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint %in;\n"+
-                                  "int* %out = reinterpret_cast<int*>(&%in);"}
+                    Text{content: String.raw`
+                            jint %in;
+                            int* %out = reinterpret_cast<int*>(&%in);`}
                 }
             }
             ModifyArgument{
@@ -5974,8 +6000,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint %in;\n"+
-                                  "int* %out = reinterpret_cast<int*>(&%in);"}
+                    Text{content: String.raw`
+                            jint %in;
+                            int* %out = reinterpret_cast<int*>(&%in);`}
                 }
             }
             ModifyArgument{
@@ -5984,8 +6011,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint %in;\n"+
-                                  "int* %out = reinterpret_cast<int*>(&%in);"}
+                    Text{content: String.raw`
+                            jint %in;
+                            int* %out = reinterpret_cast<int*>(&%in);`}
                 }
             }
             ModifyArgument{
@@ -5994,8 +6022,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint %in;\n"+
-                                  "int* %out = reinterpret_cast<int*>(&%in);"}
+                    Text{content: String.raw`
+                            jint %in;
+                            int* %out = reinterpret_cast<int*>(&%in);`}
                 }
             }
             ModifyArgument{
@@ -6097,9 +6126,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 0
                     metaName: "%item"
                 }
-                Text{content: "if(%item != null){\n"+
-                              "QtJambi_LibraryUtilities.internal.setDefaultOwnership(%item);\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(%item != null){
+                        QtJambi_LibraryUtilities.internal.setDefaultOwnership(%item);
+                    }`}
             }
         }
         ModifyFunction{
@@ -6123,8 +6153,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint %in;\n"+
-                                  "int* %out = reinterpret_cast<int*>(&%in);"}
+                    Text{content: String.raw`
+                            jint %in;
+                            int* %out = reinterpret_cast<int*>(&%in);`}
                 }
             }
             ModifyArgument{
@@ -6133,8 +6164,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint %in;\n"+
-                                  "QFormLayout::ItemRole* %out = reinterpret_cast<QFormLayout::ItemRole*>(&%in);"}
+                    Text{content: String.raw`
+                        jint %in;
+                        QFormLayout::ItemRole* %out = reinterpret_cast<QFormLayout::ItemRole*>(&%in);`}
                 }
             }
             ModifyArgument{
@@ -6157,8 +6189,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint %in;\n"+
-                                  "int* %out = reinterpret_cast<int*>(&%in);"}
+                    Text{content: String.raw`
+                            jint %in;
+                            int* %out = reinterpret_cast<int*>(&%in);`}
                 }
             }
             ModifyArgument{
@@ -6167,8 +6200,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint %in;\n"+
-                                  "QFormLayout::ItemRole* %out = reinterpret_cast<QFormLayout::ItemRole*>(&%in);"}
+                    Text{content: String.raw`
+                        jint %in;
+                        QFormLayout::ItemRole* %out = reinterpret_cast<QFormLayout::ItemRole*>(&%in);`}
                 }
             }
             ModifyArgument{
@@ -6191,8 +6225,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint %in;\n"+
-                                  "int* %out = reinterpret_cast<int*>(&%in);"}
+                    Text{content: String.raw`
+                            jint %in;
+                            int* %out = reinterpret_cast<int*>(&%in);`}
                 }
             }
             ModifyArgument{
@@ -6201,8 +6236,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint %in;\n"+
-                                  "QFormLayout::ItemRole* %out = reinterpret_cast<QFormLayout::ItemRole*>(&%in);"}
+                    Text{content: String.raw`
+                        jint %in;
+                        QFormLayout::ItemRole* %out = reinterpret_cast<QFormLayout::ItemRole*>(&%in);`}
                 }
             }
             ModifyArgument{
@@ -6235,16 +6271,18 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 3
                     metaName: "%item"
                 }
-                Text{content: "if (itemAt(row, role)!=null)\n"+
-                              "    throw new IllegalArgumentException(\"Cell in form layout is already occupied\");\n"+
-                              "QWidget widget = %item.widget();"}
+                Text{content: String.raw`
+                    if (itemAt(row, role)!=null)
+                        throw new IllegalArgumentException("Cell in form layout is already occupied");
+                    QWidget widget = %item.widget();`}
             }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
-                Text{content: "if(widget!=null && widget.parent()==null){\n"+
-                              "    QtJambi_LibraryUtilities.internal.addReferenceCount(this, io.qt.widgets.QLayout.class, \"__rcLayoutedObjects\", false, false, widget);\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(widget!=null && widget.parent()==null){
+                        QtJambi_LibraryUtilities.internal.addReferenceCount(this, io.qt.widgets.QLayout.class, "__rcLayoutedObjects", false, false, widget);
+                    }`}
             }
         }
         ModifyFunction{
@@ -6282,10 +6320,11 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "if(QWidgetItem.hasWidgetItemV2(%1))\n"+
-                              "    throw new IllegalArgumentException(\"Widget is already a layout member.\");\n"+
-                              "if(QWidgetItem.hasWidgetItemV2(%2))\n"+
-                              "    throw new IllegalArgumentException(\"Widget is already a layout member.\");"}
+                Text{content: String.raw`
+                    if(QWidgetItem.hasWidgetItemV2(%1))
+                        throw new IllegalArgumentException("Widget is already a layout member.");
+                    if(QWidgetItem.hasWidgetItemV2(%2))
+                        throw new IllegalArgumentException("Widget is already a layout member.");`}
             }
         }
         ModifyFunction{
@@ -6354,8 +6393,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(QWidgetItem.hasWidgetItemV2(%1))\n"+
-                              "    throw new IllegalArgumentException(\"Widget is already a layout member.\");"}
+                Text{content: String.raw`
+                    if(QWidgetItem.hasWidgetItemV2(%1))
+                        throw new IllegalArgumentException("Widget is already a layout member.");`}
             }
         }
         ModifyFunction{
@@ -6378,8 +6418,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(QWidgetItem.hasWidgetItemV2(%1))\n"+
-                              "    throw new IllegalArgumentException(\"Widget is already a layout member.\");"}
+                Text{content: String.raw`
+                    if(QWidgetItem.hasWidgetItemV2(%1))
+                        throw new IllegalArgumentException("Widget is already a layout member.");`}
             }
         }
         ModifyFunction{
@@ -6441,8 +6482,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "if(QWidgetItem.hasWidgetItemV2(%2))\n"+
-                              "    throw new IllegalArgumentException(\"Widget is already a layout member.\");"}
+                Text{content: String.raw`
+                    if(QWidgetItem.hasWidgetItemV2(%2))
+                        throw new IllegalArgumentException("Widget is already a layout member.");`}
             }
         }
         ModifyFunction{
@@ -6467,8 +6509,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "if(QWidgetItem.hasWidgetItemV2(%2))\n"+
-                              "    throw new IllegalArgumentException(\"Widget is already a layout member.\");"}
+                Text{content: String.raw`
+                    if(QWidgetItem.hasWidgetItemV2(%2))
+                        throw new IllegalArgumentException("Widget is already a layout member.");`}
             }
             ModifyArgument{
                 index: 2
@@ -6504,10 +6547,11 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "if(QWidgetItem.hasWidgetItemV2(%3))\n"+
-                              "    throw new IllegalArgumentException(\"Widget is already a layout member.\");\n"+
-                              "if(QWidgetItem.hasWidgetItemV2(%2))\n"+
-                              "    throw new IllegalArgumentException(\"Widget is already a layout member.\");"}
+                Text{content: String.raw`
+                    if(QWidgetItem.hasWidgetItemV2(%2))
+                        throw new IllegalArgumentException("Widget is already a layout member.");
+                    if(QWidgetItem.hasWidgetItemV2(%3))
+                        throw new IllegalArgumentException("Widget is already a layout member.");`}
             }
             ModifyArgument{
                 index: 2
@@ -6541,8 +6585,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 2
                     metaName: "%2"
                 }
-                Text{content: "if(QWidgetItem.hasWidgetItemV2(%2))\n"+
-                              "    throw new IllegalArgumentException(\"Widget is already a layout member.\");"}
+                Text{content: String.raw`
+                    if(QWidgetItem.hasWidgetItemV2(%2))
+                        throw new IllegalArgumentException("Widget is already a layout member.");`}
             }
             ModifyArgument{
                 index: 2
@@ -6578,8 +6623,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 3
                     metaName: "%3"
                 }
-                Text{content: "if(QWidgetItem.hasWidgetItemV2(%3))\n"+
-                              "    throw new IllegalArgumentException(\"Widget is already a layout member.\");"}
+                Text{content: String.raw`
+                    if(QWidgetItem.hasWidgetItemV2(%3))
+                        throw new IllegalArgumentException("Widget is already a layout member.");`}
             }
             ModifyArgument{
                 index: 3
@@ -6639,8 +6685,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 3
                     metaName: "%3"
                 }
-                Text{content: "if(QWidgetItem.hasWidgetItemV2(%3))\n"+
-                              "    throw new IllegalArgumentException(\"Widget is already a layout member.\");"}
+                Text{content: String.raw`
+                    if(QWidgetItem.hasWidgetItemV2(%3))
+                        throw new IllegalArgumentException("Widget is already a layout member.");`}
             }
             ModifyArgument{
                 index: 3
@@ -6781,7 +6828,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
-                Text{content: "if(!member.startsWith(\"1\") || !member.startsWith(\"2\")) member = '1'+member;"}
+                Text{content: String.raw`if(!member.startsWith("1") || !member.startsWith("2")) member = '1'+member;`}
             }
         }
         ModifyFunction{
@@ -6803,8 +6850,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
         }
@@ -6827,8 +6875,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
         }
@@ -6851,8 +6900,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
         }
@@ -6875,8 +6925,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
         }
@@ -6899,8 +6950,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool ok(false);\n"+
-                                  "bool* %out = &ok;"}
+                    Text{content: String.raw`
+                        bool ok(false);
+                        bool* %out = &ok;`}
                 }
             }
         }
@@ -6948,7 +7000,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -6964,7 +7016,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -6980,7 +7032,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -6996,7 +7048,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -7036,7 +7088,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -7052,7 +7104,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -7068,7 +7120,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -7084,7 +7136,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -7100,7 +7152,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -7116,7 +7168,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -7132,7 +7184,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -7148,7 +7200,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -7164,7 +7216,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -7193,7 +7245,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -7209,7 +7261,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -7651,6 +7703,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
         name: "QTreeWidget"
         implementing: "Iterable<io.qt.widgets.QTreeWidgetItem>"
         ModifyFunction{
+            signature: "setModel(QAbstractItemModel *)"
+            throwing: "QNoImplementationException"
+        }
+        ModifyFunction{
             signature: "setSelectionModel(QItemSelectionModel*)"
             ModifyArgument{
                 index: 1
@@ -7677,7 +7733,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (%1.treeWidget() == null) QtJambi_LibraryUtilities.internal.setDefaultOwnership(%1);"}
+                Text{content: String.raw`
+                    if(%1.treeWidget() != null){
+                        QtJambi_LibraryUtilities.internal.setDefaultOwnership(%1);
+                    }`}
             }
         }
         ModifyFunction{
@@ -8376,6 +8435,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
     ObjectType{
         name: "QListWidget"
         ModifyFunction{
+            signature: "setModel(QAbstractItemModel *)"
+            throwing: "QNoImplementationException"
+        }
+        ModifyFunction{
             signature: "mimeData(const QList<QListWidgetItem *>)const"
             ModifyArgument{
                 index: 1
@@ -9064,7 +9127,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9080,7 +9143,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9096,7 +9159,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9176,7 +9239,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9192,7 +9255,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9208,7 +9271,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9232,7 +9295,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9248,7 +9311,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9264,7 +9327,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9280,7 +9343,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9329,7 +9392,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9345,7 +9408,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -9601,10 +9664,11 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (QMessageBox* box = dynamic_cast<QMessageBox*>(__qt_this)) {\n"+
-                              "    box->setWindowTitle(__qt_%1);\n"+
-                              "    return;\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if (QMessageBox* box = dynamic_cast<QMessageBox*>(__qt_this)) {
+                        box->setWindowTitle(__qt_%1);
+                        return;
+                    }`}
             }
         }
         ModifyFunction{
@@ -9617,10 +9681,11 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (QMessageBox* box = dynamic_cast<QMessageBox*>(__qt_this)) {\n"+
-                              "    box->setWindowModality(__qt_%1);\n"+
-                              "    return;\n"+
-                              "}"}
+                Text{content: String.raw`
+                        if (QMessageBox* box = dynamic_cast<QMessageBox*>(__qt_this)) {
+                            box->setWindowModality(__qt_%1);
+                            return;
+                        }`}
             }
         }
         ModifyFunction{
@@ -10204,7 +10269,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
-                Text{content: "if(!member.startsWith(\"1\") || !member.startsWith(\"2\")) member = '1'+member;"}
+                Text{content: String.raw`if(!member.startsWith("1") || !member.startsWith("2")) member = '1'+member;`}
             }
         }
         ModifyFunction{
@@ -10238,8 +10303,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
+                    Text{content: String.raw`
+                        QString %in;
+                        QString* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -10250,9 +10316,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 comment: "file name including selected filter. Returns <code>null</code> if dialog was canceled."
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "if(!%in.isEmpty()){\n"+
-                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jstring>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        if(!%in.isEmpty()){
+                            %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jstring>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));
+                        }`}
                 }
             }
         }
@@ -10265,8 +10332,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
+                    Text{content: String.raw`
+                        QString %in;
+                        QString* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -10277,9 +10345,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 comment: "file names including selected filter. Returns <code>null</code> if dialog was canceled."
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "if(!%in.isEmpty()){\n"+
-                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        if(!%in.isEmpty()){
+                            %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));
+                        }`}
                 }
             }
         }
@@ -10292,8 +10361,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
+                    Text{content: String.raw`
+                        QString %in;
+                        QString* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -10304,9 +10374,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 comment: "file name including selected filter. Returns <code>null</code> if dialog was canceled."
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "if(!%in.isEmpty()){\n"+
-                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jstring>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        if(!%in.isEmpty()){
+                            %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jstring>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));
+                        }`}
                 }
             }
         }
@@ -10319,8 +10390,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
+                    Text{content: String.raw`
+                        QString %in;
+                        QString* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -10331,9 +10403,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 comment: "file url including selected filter. Returns <code>null</code> if dialog was canceled."
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "if(!%in.isEmpty()){\n"+
-                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        if(!%in.isEmpty()){
+                            %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));
+                        }`}
                 }
             }
         }
@@ -10346,8 +10419,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
+                    Text{content: String.raw`
+                        QString %in;
+                        QString* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -10358,9 +10432,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 comment: "file urls including selected filter. Returns <code>null</code> if dialog was canceled."
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "if(!%in.isEmpty()){\n"+
-                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        if(!%in.isEmpty()){
+                            %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));
+                        }`}
                 }
             }
         }
@@ -10373,8 +10448,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QString %in;\n"+
-                                  "QString* %out = &%in;"}
+                    Text{content: String.raw`
+                        QString %in;
+                        QString* %out = &%in;`}
                 }
             }
             ModifyArgument{
@@ -10385,9 +10461,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 comment: "file url including selected filter. Returns <code>null</code> if dialog was canceled."
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "if(!%in.isEmpty()){\n"+
-                                  "    %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));\n"+
-                                  "}"}
+                    Text{content: String.raw`
+                        if(!%in.isEmpty()){
+                            %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast<jobject>(%env, %in), qtjambi_cast<jobject>(%env, std::move(%5)));
+                        }`}
                 }
             }
         }
@@ -10405,20 +10482,21 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 comment: "Consumer processing file name and file content"
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "std::function<void(const QString&,const QByteArray&)> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    %out = [wrapper = JObjectWrapper(%env, %in)](const QString& value1,const QByteArray& value2){\n"+
-                                  "                    if(JniEnvironment env{200}){\n"+
-                                  "                        QTJAMBI_TRY{\n"+
-                                  "                            jstring _value1 = qtjambi_cast<jstring>(env, value1);\n"+
-                                  "                            jobject _value2 = qtjambi_cast<jobject>(env, value2);\n"+
-                                  "                            Java::Runtime::BiConsumer::accept(env, wrapper.object(env), _value1, _value2);\n"+
-                                  "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                                  "                            exn.report(env);\n"+
-                                  "                        }QTJAMBI_TRY_END\n"+
-                                  "                    }\n"+
-                                  "                };\n"+
-                                  "}"}
+                    Text{content: String.raw`
+std::function<void(const QString&,const QByteArray&)> %out;
+if(%in){
+    %out = [wrapper = JObjectWrapper(%env, %in)](const QString& value1,const QByteArray& value2){
+                    if(JniEnvironment env{200}){
+                        QTJAMBI_TRY{
+                            jstring _value1 = qtjambi_cast<jstring>(env, value1);
+                            jobject _value2 = qtjambi_cast<jobject>(env, value2);
+                            Java::Runtime::BiConsumer::accept(env, wrapper.object(env), _value1, _value2);
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
+                    }
+                };
+}`}
                 }
             }
             until: 6.6
@@ -10434,20 +10512,21 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 comment: "Consumer processing file name and file content"
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "std::function<void(const QString&,const QByteArray&)> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    %out = [wrapper = JObjectWrapper(%env, %in)](const QString& value1,const QByteArray& value2){\n"+
-                                  "                    if(JniEnvironment env{200}){\n"+
-                                  "                        QTJAMBI_TRY{\n"+
-                                  "                            jstring _value1 = qtjambi_cast<jstring>(env, value1);\n"+
-                                  "                            jobject _value2 = qtjambi_cast<jobject>(env, value2);\n"+
-                                  "                            Java::Runtime::BiConsumer::accept(env, wrapper.object(env), _value1, _value2);\n"+
-                                  "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                                  "                            exn.report(env);\n"+
-                                  "                        }QTJAMBI_TRY_END\n"+
-                                  "                    }\n"+
-                                  "                };\n"+
-                                  "}"}
+                    Text{content: String.raw`
+std::function<void(const QString&,const QByteArray&)> %out;
+if(%in){
+    %out = [wrapper = JObjectWrapper(%env, %in)](const QString& value1,const QByteArray& value2){
+                    if(JniEnvironment env{200}){
+                        QTJAMBI_TRY{
+                            jstring _value1 = qtjambi_cast<jstring>(env, value1);
+                            jobject _value2 = qtjambi_cast<jobject>(env, value2);
+                            Java::Runtime::BiConsumer::accept(env, wrapper.object(env), _value1, _value2);
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
+                    }
+                };
+}`}
                 }
             }
             ModifyArgument{
@@ -10649,7 +10728,7 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ExtraIncludes{
@@ -10709,6 +10788,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
     
     ObjectType{
         name: "QTableWidget"
+        ModifyFunction{
+            signature: "setModel(QAbstractItemModel *)"
+            throwing: "QNoImplementationException"
+        }
         ModifyFunction{
             signature: "mimeData(const QList<QTableWidgetItem*>)const"
             ModifyArgument{
@@ -10910,8 +10993,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint %in;\n"+
-                                  "int* %out = reinterpret_cast<int*>(&%in);"}
+                    Text{content: String.raw`
+                            jint %in;
+                            int* %out = reinterpret_cast<int*>(&%in);`}
                 }
             }
             ModifyArgument{
@@ -10920,8 +11004,9 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jint %in;\n"+
-                                  "int* %out = reinterpret_cast<int*>(&%in);"}
+                    Text{content: String.raw`
+                            jint %in;
+                            int* %out = reinterpret_cast<int*>(&%in);`}
                 }
             }
             ModifyArgument{
@@ -11394,9 +11479,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "QLineEdit lineEdit = lineEdit();\n" +
-                              "if(lineEdit!=null)\n" +
-                              "    QtJambi_LibraryUtilities.internal.setReferenceCount(lineEdit, QLineEdit.class, \"__rcCompleter\", false, false, QtJambi_LibraryUtilities.internal.needsReferenceCounting(%1) ? %1 : null);"}
+                Text{content: String.raw`
+                    QLineEdit lineEdit = lineEdit();
+                    if(lineEdit!=null)
+                        QtJambi_LibraryUtilities.internal.setReferenceCount(lineEdit, QLineEdit.class, "__rcCompleter", false, false, QtJambi_LibraryUtilities.internal.needsReferenceCounting(%1) ? %1 : null);`}
             }
         }
         ModifyFunction{
@@ -11414,9 +11500,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "QLineEdit lineEdit = lineEdit();\n" +
-                              "if(lineEdit!=null)\n" +
-                              "    QtJambi_LibraryUtilities.internal.setReferenceCount(lineEdit, QLineEdit.class, \"__rcValidator\", false, false, QtJambi_LibraryUtilities.internal.needsReferenceCounting(%1) ? %1 : null);"}
+                Text{content: String.raw`
+                    QLineEdit lineEdit = lineEdit();
+                    if(lineEdit!=null)
+                        QtJambi_LibraryUtilities.internal.setReferenceCount(lineEdit, QLineEdit.class, "__rcValidator", false, false, QtJambi_LibraryUtilities.internal.needsReferenceCounting(%1) ? %1 : null);`}
             }
         }
         ModifyFunction{
@@ -11683,10 +11770,11 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "if(!Java::QtCore::QCoreApplication::__qt_isInitializing(%env)){\n"+
-                              "    JavaException::raise<Java::Runtime::IllegalAccessError>(%env, \"Not allowed to instantiate QApplication. Please use QGuiApplication.initialize() instead.\" QTJAMBI_STACKTRACEINFO );\n"+
-                              "    return;\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(!Java::QtCore::QCoreApplication::__qt_isInitializing(%env)){
+                        JavaException::raise<Java::Runtime::IllegalAccessError>(%env, "Not allowed to instantiate QApplication. Please use QGuiApplication.initialize() instead." QTJAMBI_STACKTRACEINFO );
+                        return;
+                    }`}
             }
             ModifyArgument{
                 index: 1
@@ -11704,9 +11792,10 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_widgets_QMenu_setAsOSXDockMenu(JNIE
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "std::unique_ptr<ApplicationData> applicationData(ApplicationData::initialize<QApplication>(%env, %in));\n"+
-                                  "char** %out = applicationData->chars();\n"+
-                                  "int& __qt_%1 = applicationData->size();"}
+                    Text{content: String.raw`
+                        std::unique_ptr<ApplicationData> applicationData(ApplicationData::initialize<QApplication>(%env, %in));
+                        char** %out = applicationData->chars();
+                        int& __qt_%1 = applicationData->size();`}
                 }
             }
             ModifyArgument{
@@ -11749,9 +11838,10 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
         }
         CodeTemplate{
             name: "gui.application_char_pointer_function"
-            Text{content: "public static %RETURN_TYPE %FUNCTION_NAME(%PRE_ARGUMENTS %COMMA QByteArray className) {\n"+
-                          "    return %FUNCTION_NAME(%PRE_CALL_ARGUMENTS %COMMA className == null ? null : className.data());\n"+
-                          "}"}
+            Text{content: String.raw`
+                public static %RETURN_TYPE %FUNCTION_NAME(%PRE_ARGUMENTS %COMMA QByteArray className) {
+                    return %FUNCTION_NAME(%PRE_CALL_ARGUMENTS %COMMA className == null ? null : className.data());
+                }`}
         }
         ModifyFunction{
             signature: "setFont(QFont,const char*)"
@@ -11796,8 +11886,9 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(%env, %in);\n"+
-                                  "const char* %out = info.name;"}
+                    Text{content: String.raw`
+                        CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(%env, %in);
+                        const char* %out = info.name;`}
                 }
             }
             ModifyArgument{
@@ -11894,8 +11985,9 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (%1 instanceof QGraphicsWidget)\n"+
-                              "QtJambi_LibraryUtilities.internal.setCppOwnership(%this);"}
+                Text{content: String.raw`
+                    if (%1 instanceof QGraphicsWidget)
+                        QtJambi_LibraryUtilities.internal.setCppOwnership(%this);`}
             }
         }
         ModifyFunction{
@@ -11930,7 +12022,7 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -11966,8 +12058,9 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (%1 instanceof QGraphicsWidget)\n"+
-                              "QtJambi_LibraryUtilities.internal.setCppOwnership(%this);"}
+                Text{content: String.raw`
+                        if (%1 instanceof QGraphicsWidget)
+                            QtJambi_LibraryUtilities.internal.setCppOwnership(%this);`}
             }
         }
         ModifyFunction{
@@ -11982,13 +12075,10 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
             }
             InjectCode{
                 position: Position.End
-                ArgumentMap{
-                    index: 1
-                    metaName: "%1"
-                }
-                Text{content: "if(__item != null){\n"+
-                              "QtJambi_LibraryUtilities.internal.setDefaultOwnership(__item);\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(__item != null){
+                        QtJambi_LibraryUtilities.internal.setDefaultOwnership(__item);
+                    }`}
             }
         }
         ModifyFunction{
@@ -12106,8 +12196,9 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (%1 instanceof QGraphicsWidget)\n"+
-                              "    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);"}
+                Text{content: String.raw`
+                    if (%1 instanceof QGraphicsWidget)
+                        QtJambi_LibraryUtilities.internal.setCppOwnership(%this);`}
             }
         }
         ModifyFunction{
@@ -12125,10 +12216,11 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (%1 instanceof QGraphicsWidget)\n"+
-                              "    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);\n"+
-                              "else\n"+
-                              "    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%this);"}
+                Text{content: String.raw`
+                    if (%1 instanceof QGraphicsWidget)
+                        QtJambi_LibraryUtilities.internal.setCppOwnership(%this);
+                    else
+                        QtJambi_LibraryUtilities.internal.setDefaultOwnership(%this);`}
             }
         }
 
@@ -12206,15 +12298,16 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(oldValue!=%1) {\n"+
-                              "    if(%1) {\n"+
-                              "        if(this.parentLayoutItem()!=null && QtJambi_LibraryUtilities.internal.isJavaOwnership(this)) {\n"+
-                              "            QtJambi_LibraryUtilities.internal.setCppOwnership(this);\n"+
-                              "        }\n"+
-                              "    }else {\n"+
-                              "        QtJambi_LibraryUtilities.internal.setDefaultOwnership(this);\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(oldValue!=%1) {
+                        if(%1) {
+                            if(this.parentLayoutItem()!=null && QtJambi_LibraryUtilities.internal.isJavaOwnership(this)) {
+                                QtJambi_LibraryUtilities.internal.setCppOwnership(this);
+                            }
+                        }else {
+                            QtJambi_LibraryUtilities.internal.setDefaultOwnership(this);
+                        }
+                    }`}
             }
         }
         ModifyFunction{
@@ -12339,8 +12432,9 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (%1 instanceof QGraphicsWidget)\n"+
-                              "    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);"}
+                Text{content: String.raw`
+                    if (%1 instanceof QGraphicsWidget)
+                        QtJambi_LibraryUtilities.internal.setCppOwnership(%this);`}
             }
         }
     }
@@ -12435,8 +12529,9 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (%1 instanceof QGraphicsWidget)\n"+
-                              "    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);"}
+                Text{content: String.raw`
+                    if (%1 instanceof QGraphicsWidget)
+                        QtJambi_LibraryUtilities.internal.setCppOwnership(%this);`}
             }
         }
     }
@@ -12746,7 +12841,7 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -12762,7 +12857,7 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -12778,7 +12873,7 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -12794,7 +12889,7 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -12810,7 +12905,7 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -12826,7 +12921,7 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -12850,7 +12945,7 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -12866,7 +12961,7 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -12882,7 +12977,7 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -12898,7 +12993,7 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -12914,7 +13009,7 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+                Text{content: String.raw`java.util.Objects.requireNonNull(%1, "Argument '%1': null not expected.");`}
             }
         }
         ModifyFunction{
@@ -12946,9 +13041,10 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(layout!=null && layout.parentLayoutItem()!=null && layout.parentLayoutItem()!=this) {\n"+
-                              "    throw new IllegalArgumentException(\"Layout is already in use.\");\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(layout!=null && layout.parentLayoutItem()!=null && layout.parentLayoutItem()!=this) {
+                        throw new IllegalArgumentException("Layout is already in use.");
+                    }`}
             }
         }
         ModifyFunction{
@@ -13021,7 +13117,7 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if(%1.length<4) throw new IllegalArgumentException(\"An array of length 4 expected.\");"}
+                Text{content: String.raw`if(%1.length<4) throw new IllegalArgumentException("An array of length 4 expected.");`}
             }
             ModifyArgument{
                 index: 1
@@ -13031,8 +13127,9 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jsize %out_size = 4;\n"+
-                                  "qreal* %out = qtjambi_cast<qreal*>(%env, %scope, %in, %out_size);"}
+                    Text{content: String.raw`
+                        jsize %out_size = 4;
+                        qreal* %out = qtjambi_cast<qreal*>(%env, %scope, %in, %out_size);`}
                 }
             }
             ModifyArgument{
@@ -13656,10 +13753,11 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                     index: 1
                     metaName: "%1"
                 }
-                Text{content: "if (%1 == null)\n"+
-                              "    throw new NullPointerException(\"Argument '%1': null not expected.\");\n"+
-                              "else if(%1.treeWidget()==null)\n"+
-                              "    throw new IllegalArgumentException(\"Item does not belong to a tree widget.\");"}
+                Text{content: String.raw`
+                    if (%1 == null)
+                        throw new NullPointerException("Argument '%1': null not expected.");
+                    else if(%1.treeWidget()==null)
+                        throw new IllegalArgumentException("Item does not belong to a tree widget.");`}
             }
             InjectCode{
                 position: Position.End
@@ -13685,8 +13783,9 @@ else if(QThreadData::get2(objectThread)->eventLoops.size()>0)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(%in)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, current);"}
+                    Text{content: String.raw`
+                        Q_UNUSED(%in)
+                        %out = qtjambi_cast<jobject>(%env, current);`}
                 }
             }
         }

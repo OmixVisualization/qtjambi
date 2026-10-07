@@ -188,7 +188,7 @@ public class MakeTask extends Task {
         			break;
         		}
         	}
-        	if(!hasJArg&& !makeName.endsWith("nmake.exe") && Runtime.getRuntime().availableProcessors()>1) {
+        	if(!hasJArg && !makeName.endsWith("nmake") && !makeName.endsWith("nmake.exe") && Runtime.getRuntime().availableProcessors()>1) {
         		commandArray.add("-j"+Runtime.getRuntime().availableProcessors());
         	}
         }

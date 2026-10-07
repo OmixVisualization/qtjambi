@@ -36,6 +36,9 @@ import io.qt.QtUninvokable;
  * <p>Java class representing Qt class <a href="https://doc.qt.io/qt/qsharedpointer.html">QSharedPointer</a>.</p>
  */
 public final class QSharedPointer<O extends QtObjectInterface> implements SmartPointer<O> {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	private QSharedPointer() {
 	}
 

@@ -167,15 +167,16 @@ TypeSystem{
                     index: 4
                     metaName: "member"
                 }
-                Text{content: "if(member!=null && !member.startsWith(\"1\") && !member.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod _method = object.metaObject().method(member);\n"+
-                              "    if(_method!=null && _method.isValid()) {\n"+
-                              "        if(_method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            member = \"2\" + _method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            member = \"1\" + _method.cppMethodSignature();\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+if(member!=null && !member.startsWith("1") && !member.startsWith("2")) {
+    io.qt.core.QMetaMethod _method = object.metaObject().method(member);
+    if(_method!=null && _method.isValid()) {
+        if(_method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            member = "2" + _method.cppMethodSignature();
+        else
+            member = "1" + _method.cppMethodSignature();
+    }
+}`}
             }
         }
         ModifyFunction{
@@ -195,41 +196,43 @@ TypeSystem{
                     index: 5
                     metaName: "errorSlot"
                 }
-                Text{content: "if(member!=null && !member.startsWith(\"1\") && !member.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod _method = object.metaObject().method(member);\n"+
-                              "    if(_method!=null && _method.isValid()) {\n"+
-                              "        if(_method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            member = \"2\" + _method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            member = \"1\" + _method.cppMethodSignature();\n"+
-                              "    }\n"+
-                              "}\n"+
-                              "if(errorSlot!=null && !errorSlot.startsWith(\"1\") && !errorSlot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod _method = object.metaObject().method(errorSlot);\n"+
-                              "    if(_method!=null && _method.isValid()) {\n"+
-                              "        if(_method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            errorSlot = \"2\" + _method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            errorSlot = \"1\" + _method.cppMethodSignature();\n"+
-                              "    }\n"+
-                              "}"}
+                Text{content: String.raw`
+if(member!=null && !member.startsWith("1") && !member.startsWith("2")) {
+    io.qt.core.QMetaMethod _method = object.metaObject().method(member);
+    if(_method!=null && _method.isValid()) {
+        if(_method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            member = "2" + _method.cppMethodSignature();
+        else
+            member = "1" + _method.cppMethodSignature();
+    }
+}
+if(errorSlot!=null && !errorSlot.startsWith("1") && !errorSlot.startsWith("2")) {
+    io.qt.core.QMetaMethod _method = object.metaObject().method(errorSlot);
+    if(_method!=null && _method.isValid()) {
+        if(_method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            errorSlot = "2" + _method.cppMethodSignature();
+        else
+            errorSlot = "1" + _method.cppMethodSignature();
+    }
+}`}
             }
         }
         InjectCode{
-            Text{content: "@QtUninvokable\n"+
-                          "public final io.qt.dbus.QDBusPendingCall asyncCall(java.lang.String method, java.lang.Object... args){\n"+
-                          "    return asyncCallWithArgumentList(method, java.util.Arrays.asList(args));\n"+
-                          "}\n"+
-                          "\n"+
-                          "@QtUninvokable\n"+
-                          "public final io.qt.dbus.QDBusMessage call(io.qt.dbus.QDBus.CallMode mode, java.lang.String method, java.lang.Object... args){\n"+
-                          "    return callWithArgumentList(mode, method, java.util.Arrays.asList(args));\n"+
-                          "}\n"+
-                          "\n"+
-                          "@QtUninvokable\n"+
-                          "public final io.qt.dbus.QDBusMessage call(java.lang.String method, java.lang.Object... args){\n"+
-                          "    return callWithArgumentList(io.qt.dbus.QDBus.CallMode.AutoDetect, method, java.util.Arrays.asList(args));\n"+
-                          "}"}
+            Text{content: String.raw`
+@QtUninvokable
+public final io.qt.dbus.QDBusPendingCall asyncCall(java.lang.String method, java.lang.Object... args){
+    return asyncCallWithArgumentList(method, java.util.Arrays.asList(args));
+}
+
+@QtUninvokable
+public final io.qt.dbus.QDBusMessage call(io.qt.dbus.QDBus.CallMode mode, java.lang.String method, java.lang.Object... args){
+    return callWithArgumentList(mode, method, java.util.Arrays.asList(args));
+}
+
+@QtUninvokable
+public final io.qt.dbus.QDBusMessage call(java.lang.String method, java.lang.Object... args){
+    return callWithArgumentList(io.qt.dbus.QDBus.CallMode.AutoDetect, method, java.util.Arrays.asList(args));
+}`}
         }
     }
     
@@ -297,19 +300,21 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "void qtjambi_dbus_check_write_argument(JNIEnv *,const QDBusArgument *);\n"+
-                          "void qtjambi_dbus_check_read_argument(JNIEnv *,const QDBusArgument *);\n"+
-                          "bool qtjambi_dbus_is_read_argument(const QDBusArgument *);"}
+            Text{content: String.raw`
+                void qtjambi_dbus_check_write_argument(JNIEnv *,const QDBusArgument *);
+                void qtjambi_dbus_check_read_argument(JNIEnv *,const QDBusArgument *);
+                bool qtjambi_dbus_is_read_argument(const QDBusArgument *);`}
         }
         ModifyFunction{
             signature: "beginMapEntry()"
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "if(qtjambi_dbus_is_read_argument(__qt_this)){\n"+
-                              "    const_cast<const QDBusArgument *>(__qt_this)->beginMapEntry();\n"+
-                              "    return;\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(qtjambi_dbus_is_read_argument(__qt_this)){
+                        const_cast<const QDBusArgument *>(__qt_this)->beginMapEntry();
+                        return;
+                    }`}
             }
         }
         ModifyFunction{
@@ -317,10 +322,11 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "if(qtjambi_dbus_is_read_argument(__qt_this)){\n"+
-                              "    const_cast<const QDBusArgument *>(__qt_this)->beginStructure();\n"+
-                              "    return;\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(qtjambi_dbus_is_read_argument(__qt_this)){
+                        const_cast<const QDBusArgument *>(__qt_this)->beginStructure();
+                        return;
+                    }`}
             }
         }
         ModifyFunction{
@@ -328,10 +334,11 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "if(qtjambi_dbus_is_read_argument(__qt_this)){\n"+
-                              "    const_cast<const QDBusArgument *>(__qt_this)->endStructure();\n"+
-                              "    return;\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(qtjambi_dbus_is_read_argument(__qt_this)){
+                        const_cast<const QDBusArgument *>(__qt_this)->endStructure();
+                        return;
+                    }`}
             }
         }
         ModifyFunction{
@@ -339,10 +346,11 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "if(qtjambi_dbus_is_read_argument(__qt_this)){\n"+
-                              "    const_cast<const QDBusArgument *>(__qt_this)->endArray();\n"+
-                              "    return;\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(qtjambi_dbus_is_read_argument(__qt_this)){
+                        const_cast<const QDBusArgument *>(__qt_this)->endArray();
+                        return;
+                    }`}
             }
         }
         ModifyFunction{
@@ -350,10 +358,11 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "if(qtjambi_dbus_is_read_argument(__qt_this)){\n"+
-                              "    const_cast<const QDBusArgument *>(__qt_this)->endMap();\n"+
-                              "    return;\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(qtjambi_dbus_is_read_argument(__qt_this)){
+                        const_cast<const QDBusArgument *>(__qt_this)->endMap();
+                        return;
+                    }`}
             }
         }
         ModifyFunction{
@@ -361,10 +370,11 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "if(qtjambi_dbus_is_read_argument(__qt_this)){\n"+
-                              "    const_cast<const QDBusArgument *>(__qt_this)->endMapEntry();\n"+
-                              "    return;\n"+
-                              "}"}
+                Text{content: String.raw`
+                    if(qtjambi_dbus_is_read_argument(__qt_this)){
+                        const_cast<const QDBusArgument *>(__qt_this)->endMapEntry();
+                        return;
+                    }`}
             }
         }
         ModifyFunction{
@@ -574,8 +584,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jbyte __java_return_value;\n"+
-                                  "uchar& %out = *reinterpret_cast<uchar*>(&__java_return_value);"}
+                    Text{content: String.raw`
+                        jbyte __java_return_value;
+                        uchar& %out = *reinterpret_cast<uchar*>(&__java_return_value);`}
                 }
             }
         }
@@ -603,8 +614,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "bool __java_return_value;\n"+
-                                  "bool& %out = __java_return_value;"}
+                    Text{content: String.raw`
+                        bool __java_return_value;
+                        bool& %out = __java_return_value;`}
                 }
             }
         }
@@ -632,8 +644,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jshort __java_return_value;\n"+
-                                  "short& %out = *reinterpret_cast<short*>(&__java_return_value);"}
+                    Text{content: String.raw`
+                        jshort __java_return_value;
+                        short& %out = *reinterpret_cast<short*>(&__java_return_value);`}
                 }
             }
         }
@@ -661,8 +674,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "int __java_return_value;\n"+
-                                  "int& %out = __java_return_value;"}
+                    Text{content: String.raw`
+                        int __java_return_value;
+                        int& %out = __java_return_value;`}
                 }
             }
         }
@@ -690,8 +704,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jlong __java_return_value;\n"+
-                                  "long long& %out = *reinterpret_cast<long long*>(&__java_return_value);"}
+                    Text{content: String.raw`
+                        jlong __java_return_value;
+                        long long& %out = *reinterpret_cast<long long*>(&__java_return_value);`}
                 }
             }
         }
@@ -719,8 +734,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jdouble __java_return_value;\n"+
-                                  "double& %out = __java_return_value;"}
+                    Text{content: String.raw`
+                        jdouble __java_return_value;
+                        double& %out = __java_return_value;`}
                 }
             }
         }
@@ -739,8 +755,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jstring>(%env, __qt_%1);"}
+                    Text{content: String.raw`
+                        Q_UNUSED(__qt_return_value)
+                        %out = qtjambi_cast<jstring>(%env, __qt_%1);`}
                 }
             }
             ModifyArgument{
@@ -768,8 +785,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jcoreobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                        Q_UNUSED(__qt_return_value)
+                        %out = qtjambi_cast<jcoreobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -797,8 +815,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -826,8 +845,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -855,8 +875,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -884,8 +905,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -913,8 +935,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -942,8 +965,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -975,8 +999,9 @@ TypeSystem{
                 target: CodeClass.Native
                 position: Position.Beginning
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
-                              "QDate __qt_%1;"}
+                Text{content: String.raw`
+                    qtjambi_dbus_check_read_argument(%env, __qt_this);
+                    QDate __qt_%1;`}
             }
             ModifyArgument{
                 index: 0
@@ -985,8 +1010,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -1002,8 +1028,9 @@ TypeSystem{
                 target: CodeClass.Native
                 position: Position.Beginning
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
-                              "QDateTime __qt_%1;"}
+                Text{content: String.raw`
+                    qtjambi_dbus_check_read_argument(%env, __qt_this);
+                    QDateTime __qt_%1;`}
             }
             ModifyArgument{
                 index: 0
@@ -1012,8 +1039,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -1029,8 +1057,9 @@ TypeSystem{
                 target: CodeClass.Native
                 position: Position.Beginning
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
-                              "QLine __qt_%1;"}
+                Text{content: String.raw`
+                    qtjambi_dbus_check_read_argument(%env, __qt_this);
+                    QLine __qt_%1;`}
             }
             ModifyArgument{
                 index: 0
@@ -1039,8 +1068,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -1056,8 +1086,9 @@ TypeSystem{
                 target: CodeClass.Native
                 position: Position.Beginning
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
-                              "QLineF __qt_%1;"}
+                Text{content: String.raw`
+                    qtjambi_dbus_check_read_argument(%env, __qt_this);
+                    QLineF __qt_%1;`}
             }
             ModifyArgument{
                 index: 0
@@ -1066,8 +1097,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -1083,8 +1115,9 @@ TypeSystem{
                 target: CodeClass.Native
                 position: Position.Beginning
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
-                              "QPoint __qt_%1;"}
+                Text{content: String.raw`
+                    qtjambi_dbus_check_read_argument(%env, __qt_this);
+                    QPoint __qt_%1;`}
             }
             ModifyArgument{
                 index: 0
@@ -1093,8 +1126,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -1110,8 +1144,9 @@ TypeSystem{
                 target: CodeClass.Native
                 position: Position.Beginning
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
-                              "QPointF __qt_%1;"}
+                Text{content: String.raw`
+                    qtjambi_dbus_check_read_argument(%env, __qt_this);
+                    QPointF __qt_%1;`}
             }
             ModifyArgument{
                 index: 0
@@ -1120,8 +1155,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -1137,8 +1173,9 @@ TypeSystem{
                 target: CodeClass.Native
                 position: Position.Beginning
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
-                              "QRect __qt_%1;"}
+                Text{content: String.raw`
+                    qtjambi_dbus_check_read_argument(%env, __qt_this);
+                    QRect __qt_%1;`}
             }
             ModifyArgument{
                 index: 0
@@ -1147,8 +1184,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -1164,8 +1202,9 @@ TypeSystem{
                 target: CodeClass.Native
                 position: Position.Beginning
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
-                              "QRectF __qt_%1;"}
+                Text{content: String.raw`
+                    qtjambi_dbus_check_read_argument(%env, __qt_this);
+                    QRectF __qt_%1;`}
             }
             ModifyArgument{
                 index: 0
@@ -1174,8 +1213,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -1191,8 +1231,9 @@ TypeSystem{
                 target: CodeClass.Native
                 position: Position.Beginning
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
-                              "QSize __qt_%1;"}
+                Text{content: String.raw`
+                    qtjambi_dbus_check_read_argument(%env, __qt_this);
+                    QSize __qt_%1;`}
             }
             ModifyArgument{
                 index: 0
@@ -1201,8 +1242,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -1218,8 +1260,9 @@ TypeSystem{
                 target: CodeClass.Native
                 position: Position.Beginning
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
-                              "QSizeF __qt_%1;"}
+                Text{content: String.raw`
+                    qtjambi_dbus_check_read_argument(%env, __qt_this);
+                    QSizeF __qt_%1;`}
             }
             ModifyArgument{
                 index: 0
@@ -1228,8 +1271,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -1245,8 +1289,9 @@ TypeSystem{
                 target: CodeClass.Native
                 position: Position.Beginning
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
-                              "QTime __qt_%1;"}
+                Text{content: String.raw`
+                    qtjambi_dbus_check_read_argument(%env, __qt_this);
+                    QTime __qt_%1;`}
             }
             ModifyArgument{
                 index: 0
@@ -1255,8 +1300,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -1272,8 +1318,9 @@ TypeSystem{
                 target: CodeClass.Native
                 position: Position.Beginning
                 ArgumentMap{index: 1; metaName: "%1"}
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
-                              "QVariant __qt_%1;"}
+                Text{content: String.raw`
+                    qtjambi_dbus_check_read_argument(%env, __qt_this);
+                    QVariant __qt_%1;`}
             }
             ModifyArgument{
                 index: 0
@@ -1282,8 +1329,9 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
-                                  "%out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));"}
+                    Text{content: String.raw`
+                            Q_UNUSED(__qt_return_value)
+                            %out = qtjambi_cast<jobject>(%env, std::move(__qt_%1));`}
                 }
             }
             ModifyArgument{
@@ -1342,17 +1390,9 @@ TypeSystem{
         EnumType{
             name: "ServiceReplacementOption"
         }
-
-        CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QDBusConnection(*copy);\n"+
-                          "}else{\n"+
-                          "    return new(placement) QDBusConnection(\"\");\n"+
-                          "}"}
-        }
         CustomConstructor{
             type: CustomConstructor.Default
-            Text{content: "new(placement) QDBusConnection(\"\");"}
+            Text{content: String.raw`new(placement) QDBusConnection("");`}
         }
         ModifyFunction{
             signature: "interface() const"
@@ -1379,24 +1419,25 @@ TypeSystem{
                     index: 4
                     metaName: "errorSlot"
                 }
-                Text{content: "if(member!=null && !member.startsWith(\"1\") && !member.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = object.metaObject().method(member);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            member = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            member = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else member = \"1\" + member;\n"+
-                              "}\n"+
-                              "if(errorSlot!=null && !errorSlot.startsWith(\"1\") && !errorSlot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = object.metaObject().method(errorSlot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            errorSlot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            errorSlot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else errorSlot = \"1\" + errorSlot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(member!=null && !member.startsWith("1") && !member.startsWith("2")) {
+    io.qt.core.QMetaMethod method = object.metaObject().method(member);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            member = "2" + method.cppMethodSignature();
+        else
+            member = "1" + method.cppMethodSignature();
+    }else member = "1" + member;
+}
+if(errorSlot!=null && !errorSlot.startsWith("1") && !errorSlot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = object.metaObject().method(errorSlot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            errorSlot = "2" + method.cppMethodSignature();
+        else
+            errorSlot = "1" + method.cppMethodSignature();
+    }else errorSlot = "1" + errorSlot;
+}`}
             }
         }
         ModifyFunction{
@@ -1412,15 +1453,16 @@ TypeSystem{
                     index: 3
                     metaName: "slot"
                 }
-                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = object.metaObject().method(slot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            slot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else slot = \"1\" + slot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(slot!=null && !slot.startsWith("1") && !slot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = object.metaObject().method(slot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            slot = "2" + method.cppMethodSignature();
+        else
+            slot = "1" + method.cppMethodSignature();
+    }else slot = "1" + slot;
+}`}
             }
         }
         ModifyFunction{
@@ -1436,15 +1478,16 @@ TypeSystem{
                     index: 6
                     metaName: "slot"
                 }
-                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = object.metaObject().method(slot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            slot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else slot = \"1\" + slot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(slot!=null && !slot.startsWith("1") && !slot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = object.metaObject().method(slot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            slot = "2" + method.cppMethodSignature();
+        else
+            slot = "1" + method.cppMethodSignature();
+    }else slot = "1" + slot;
+}`}
             }
         }
         ModifyFunction{
@@ -1460,15 +1503,16 @@ TypeSystem{
                     index: 7
                     metaName: "slot"
                 }
-                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = object.metaObject().method(slot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            slot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else slot = \"1\" + slot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(slot!=null && !slot.startsWith("1") && !slot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = object.metaObject().method(slot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            slot = "2" + method.cppMethodSignature();
+        else
+            slot = "1" + method.cppMethodSignature();
+    }else slot = "1" + slot;
+}`}
             }
         }
         ModifyFunction{
@@ -1484,15 +1528,16 @@ TypeSystem{
                     index: 8
                     metaName: "slot"
                 }
-                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = object.metaObject().method(slot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            slot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else slot = \"1\" + slot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(slot!=null && !slot.startsWith("1") && !slot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = object.metaObject().method(slot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            slot = "2" + method.cppMethodSignature();
+        else
+            slot = "1" + method.cppMethodSignature();
+    }else slot = "1" + slot;
+}`}
             }
         }
         ModifyFunction{
@@ -1508,15 +1553,16 @@ TypeSystem{
                     index: 6
                     metaName: "slot"
                 }
-                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = object.metaObject().method(slot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            slot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else slot = \"1\" + slot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(slot!=null && !slot.startsWith("1") && !slot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = object.metaObject().method(slot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            slot = "2" + method.cppMethodSignature();
+        else
+            slot = "1" + method.cppMethodSignature();
+    }else slot = "1" + slot;
+}`}
             }
         }
         ModifyFunction{
@@ -1532,15 +1578,16 @@ TypeSystem{
                     index: 7
                     metaName: "slot"
                 }
-                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = object.metaObject().method(slot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            slot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else slot = \"1\" + slot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(slot!=null && !slot.startsWith("1") && !slot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = object.metaObject().method(slot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            slot = "2" + method.cppMethodSignature();
+        else
+            slot = "1" + method.cppMethodSignature();
+    }else slot = "1" + slot;
+}`}
             }
         }
         ModifyFunction{
@@ -1556,15 +1603,16 @@ TypeSystem{
                     index: 8
                     metaName: "slot"
                 }
-                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
-                              "    io.qt.core.QMetaMethod method = object.metaObject().method(slot);\n"+
-                              "    if(method!=null && method.isValid()) {\n"+
-                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
-                              "            slot = \"2\" + method.cppMethodSignature();\n"+
-                              "        else\n"+
-                              "            slot = \"1\" + method.cppMethodSignature();\n"+
-                              "    }else slot = \"1\" + slot;\n"+
-                              "}"}
+                Text{content: String.raw`
+if(slot!=null && !slot.startsWith("1") && !slot.startsWith("2")) {
+    io.qt.core.QMetaMethod method = object.metaObject().method(slot);
+    if(method!=null && method.isValid()) {
+        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+            slot = "2" + method.cppMethodSignature();
+        else
+            slot = "1" + method.cppMethodSignature();
+    }else slot = "1" + slot;
+}`}
             }
         }
     }
@@ -1595,10 +1643,11 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Java
             position: Position.Beginning
-            Text{content: "private static void checkCalledFromDBus(QDBusContext instance){\n"+
-                          "    if(!instance.calledFromDBus())\n"+
-                          "        throw new IllegalStateException(\"QDBusContext has not ben called from DBus.\");\n"+
-                          "}"}
+            Text{content: String.raw`
+private static void checkCalledFromDBus(QDBusContext instance){
+    if(!instance.calledFromDBus())
+        throw new IllegalStateException("QDBusContext has not ben called from DBus.");
+}`}
         }
         ModifyFunction{
             signature: "connection() const"
@@ -1702,12 +1751,6 @@ TypeSystem{
     InterfaceType{
         name: "QDBusPendingCall"
         isValue: true
-        CustomConstructor{
-            Text{content: "if(copy)\n"+
-                          "    return new(placement) QDBusPendingCall(*copy);\n"+
-                          "else\n"+
-                          "    return new(placement) QDBusPendingCall(QDBusPendingCall::fromCompletedCall(QDBusMessage()));"}
-        }
         CustomConstructor{
             type: CustomConstructor.Default
             Text{content: "new(placement) QDBusPendingCall(QDBusPendingCall::fromCompletedCall(QDBusMessage()));"}

@@ -119,7 +119,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			_moduleInfos.put("opengl", new ModuleInfo("QTJAMBI_NO_OPENGL", "QtOpenGL"));
 			_moduleInfos.put("widgets", new ModuleInfo("QTJAMBI_NO_WIDGETS", "QtWidgets", ModuleInfo.Headers.Private));
 			_moduleInfos.put("qml", new ModuleInfo("QTJAMBI_NO_QML", "QtQml", ModuleInfo.Headers.Private));
-			_moduleInfos.put("quick", new ModuleInfo("QTJAMBI_NO_QUICK", "QtQuick", ModuleInfo.Headers.Private));
+			_moduleInfos.put("quick", new ModuleInfo("QTJAMBI_NO_QUICK", "QtQuick", ModuleInfo.Headers.PrivateOptional));
 			_moduleInfos.put("quicktest", new ModuleInfo("QTJAMBI_NO_QUICKTEST", "QtQuickTest"));
 			_moduleInfos.put("quickcontrols", new ModuleInfo("QTJAMBI_NO_QUICKCONTROLS2", "QtQuickControls2"));
 			_moduleInfos.put("quickwidgets", new ModuleInfo("QTJAMBI_NO_QUICKWIDGETS", "QtQuickWidgets"));
@@ -129,7 +129,6 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			_moduleInfos.put("sql", new ModuleInfo("QTJAMBI_NO_SQL", "QtSql"));
 			_moduleInfos.put("printsupport", new ModuleInfo("QTJAMBI_NO_PRINTSUPPORT", "QtPrintSupport"));
 			_moduleInfos.put("networkauth", new ModuleInfo("QTJAMBI_NO_NETWORKAUTH", "QtNetworkAuth"));
-//			_moduleInfos.put("xmlpatterns", new ModuleInfo("QTJAMBI_NO_XMLPATTERNS", "QtXmlPatterns"));
 			_moduleInfos.put("virtualkeyboard", new ModuleInfo("QTJAMBI_NO_VIRTUAL_KEYBOARD", "QtVirtualKeyboard"));
 			_moduleInfos.put("serialport", new ModuleInfo("QTJAMBI_NO_SERIALPORT", "QtSerialPort"));
 			_moduleInfos.put("serialbus", new ModuleInfo("QTJAMBI_NO_SERIALBUS", "QtSerialBus"));
@@ -137,11 +136,9 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			_moduleInfos.put("location", new ModuleInfo("QTJAMBI_NO_LOCATION", "QtLocation"));
 			_moduleInfos.put("positioning", new ModuleInfo("QTJAMBI_NO_POSITIONING", "QtPositioning"));
 			_moduleInfos.put("bluetooth", new ModuleInfo("QTJAMBI_NO_BLUETOOTH", "QtBluetooth"));
-//			_moduleInfos.put("script", new ModuleInfo("QTJAMBI_NO_SCRIPT", "QtScript"));
-//			_moduleInfos.put("scripttools", new ModuleInfo("QTJAMBI_NO_SCRIPTTOOLS", "QtScriptTools"));
 			_moduleInfos.put("multimedia", new ModuleInfo("QTJAMBI_NO_MULTIMEDIA", "QtMultimedia"));
 			_moduleInfos.put("svg", new ModuleInfo("QTJAMBI_NO_SVG", "QtSvg"));
-			_moduleInfos.put("dbus", new ModuleInfo("QTJAMBI_NO_DBUS", "QtDBus", ModuleInfo.Headers.Private));
+			_moduleInfos.put("dbus", new ModuleInfo("QTJAMBI_NO_DBUS", "QtDBus", ModuleInfo.Headers.PrivateOptional));
 			_moduleInfos.put("test", new ModuleInfo("QTJAMBI_NO_TEST", "QtTest"));
 			_moduleInfos.put("help", new ModuleInfo("QTJAMBI_NO_HELP", "QtHelp"));
 			_moduleInfos.put("qt3dcore", new ModuleInfo("QTJAMBI_NO_QT3DCORE", "Qt3DCore"));
@@ -164,11 +161,9 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			_moduleInfos.put("bodymovin", new ModuleInfo("QTJAMBI_NO_LOTTIE", "QtBodymovin"));
 			_moduleInfos.put("datavisualization", new ModuleInfo("QTJAMBI_NO_DATA_VISUALIZATION", "QtDataVisualization"));
 			_moduleInfos.put("charts", new ModuleInfo("QTJAMBI_NO_CHARTS", "QtCharts"));
-	//		modules.put("uiplugin",new ModuleInfo("QTJAMBI_NO_UIPLUGIN", "QtUiPlugin"));
 			_moduleInfos.put("designer", new ModuleInfo("QTJAMBI_NO_DESIGNER", "QtDesigner"));
-			_moduleInfos.put("ui4", new ModuleInfo("QTJAMBI_NO_UI4", "QtDesigner", ModuleInfo.Headers.Private));
+			_moduleInfos.put("uic", new ModuleInfo("QTJAMBI_NO_UI4", "QtDesigner", ModuleInfo.Headers.Private));
 			_moduleInfos.put("remoteobjects", new ModuleInfo("QTJAMBI_NO_REMOTEOBJECTS", "QtRemoteObjects"));
-//			_moduleInfos.put("gamepad", new ModuleInfo("QTJAMBI_NO_GAMEPAD", "QtGamepad"));
 			_moduleInfos.put("scxml", new ModuleInfo("QTJAMBI_NO_SCXML", "QtScxml"));
 			_moduleInfos.put("nfc", new ModuleInfo("QTJAMBI_NO_NFC", "QtNfc"));
 			_moduleInfos.put("texttospeech", new ModuleInfo("QTJAMBI_NO_TEXTTOSPEECH", "QtTextToSpeech"));
@@ -182,10 +177,13 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			_moduleInfos.put("insighttracker", new ModuleInfo("QTJAMBI_NO_INSIGHTTRACKER", "QtInsightTracker"));
 			_moduleInfos.put("openglwidgets", new ModuleInfo("QTJAMBI_NO_OPENGLWIDGETS", "QtOpenGLWidgets"));
 			_moduleInfos.put("svgwidgets", new ModuleInfo("QTJAMBI_NO_SVGWIDGETS", "QtSvgWidgets"));
-			_moduleInfos.put("webenginequick", new ModuleInfo("QTJAMBI_NO_WEBENGINEQUICK", "QtWebEngineQuick", ModuleInfo.Headers.Private));
+			_moduleInfos.put("webenginequick", new ModuleInfo("QTJAMBI_NO_WEBENGINEQUICK", "QtWebEngineQuick", ModuleInfo.Headers.PrivateOptional));
 			_moduleInfos.put("statemachine", new ModuleInfo("QTJAMBI_NO_STATEMACHINE", "QtStateMachine"));
+			_moduleInfos.put("coap", new ModuleInfo("QTJAMBI_NO_COAP", "QtCoap"));
+			_moduleInfos.put("mqtt", new ModuleInfo("QTJAMBI_NO_MQTT", "QtMqtt"));
+			_moduleInfos.put("opcua", new ModuleInfo("QTJAMBI_NO_OPCUA", "QtOpcUa"));
 			if((qtMajorVersion==6 && qtMinorVersion>=4) || qtMajorVersion>=7) {
-				_moduleInfos.put("httpserver", new ModuleInfo("QTJAMBI_NO_HTTPSERVER", "QtHttpServer", ModuleInfo.Headers.Private));
+				_moduleInfos.put("httpserver", new ModuleInfo("QTJAMBI_NO_HTTPSERVER", "QtHttpServer"));
 				_moduleInfos.put("spatialaudio", new ModuleInfo("QTJAMBI_NO_SPATIALAUDIO", "QtSpatialAudio"));
 			}
 			if((qtMajorVersion==6 && qtMinorVersion>=5) || qtMajorVersion>=7) {
@@ -1341,6 +1339,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		
 		mySetProperty(-1, Constants.GENERATOR_PREPROC_DEFINES, null, listJoinToString(generatorPreProcDefinesList, ","), true);
 		mySetProperty(-1, Constants.GENERATOR_STATICLIBS, null, listJoinToString(generatorStaticLibsList, ","), true);
+		mySetProperty(-1, "skipped.qtjambi.modules", null, listJoinToString(skippedModules, ","), true);
 		
 		int threads = 1;
 		{
@@ -1397,7 +1396,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 	}
 
 	private String detectConfiguration(OSInfo osInfo, String wantedConfiguration) {
-		System.out.println("InitializeBuildTask.detectConfiguration("+wantedConfiguration+")");
+//		System.out.println("InitializeBuildTask.detectConfiguration("+wantedConfiguration+")");
 		String dsoName = "QtCore";
 		boolean isStatic = false;
 		String dsoPath = doesQtLibExist(osInfo, dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, Boolean.FALSE, false);
@@ -1687,7 +1686,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		File includePath = new File(AntUtil.getPropertyAsString(propertyHelper, Constants.INCLUDEDIR));
 		Map<String, ModuleInfo> moduleInfos = moduleInfos();
 		List<String> modules = new ArrayList<>();
-		File headersdir = new File(generatorOutputdir, "missing-headers");
+		File headersdir = new File(generatorOutputdir, "missing-headers").getAbsoluteFile();
 		for (String module : moduleInfos.keySet()) {
 			ModuleInfo info = moduleInfos.get(module);
 			if (Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi." + module + ".any.true"))) {
@@ -1710,6 +1709,39 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 					if((!privateHeaders.exists() || !privateHeaders.isDirectory()) 
 							&& osInfo.crossOS()==OSInfo.OperationSystem.MacOS && useQtFramework) {
 						privateHeaders = new File(libPath, info.libraryName+".framework/Versions/A/Headers/" + version + "/" + info.libraryName + "/private");
+					}
+					if(!privateHeaders.exists() || !privateHeaders.isDirectory()){
+						File publicHeaders = new File(includePath + "/" + info.libraryName);
+						if((!publicHeaders.exists() || !publicHeaders.isDirectory()) 
+								&& osInfo.crossOS()==OSInfo.OperationSystem.MacOS && useQtFramework) {
+							publicHeaders = new File(libPath, info.libraryName+".framework/Versions/A/Headers");
+						}
+						if(publicHeaders.isDirectory()) {
+							for(File content : publicHeaders.listFiles()) {
+								if(content.isDirectory()) {
+									File _privateHeaders = new File(content, info.libraryName + "/private");
+									if(_privateHeaders.isDirectory()) {
+										privateHeaders = _privateHeaders;
+										break;
+									}
+								}
+							}
+						}
+						if((!privateHeaders.exists() || !privateHeaders.isDirectory())
+								&& osInfo.crossOS()==OSInfo.OperationSystem.MacOS && useQtFramework){
+							publicHeaders = new File(libPath, info.libraryName+".framework/Versions/A/Headers");
+							if(publicHeaders.isDirectory()) {
+								for(File content : publicHeaders.listFiles()) {
+									if(content.isDirectory()) {
+										File _privateHeaders = new File(content, info.libraryName + "/private");
+										if(_privateHeaders.isDirectory()) {
+											privateHeaders = _privateHeaders;
+											break;
+										}
+									}
+								}
+							}
+						}
 					}
 					if(!privateHeaders.exists() || !privateHeaders.isDirectory()) {
 						if(osInfo.crossOS().isUnixLike()) {
@@ -1840,6 +1872,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 				}
 			}
 		}
+		boolean hasVulkan = false;
 		AntUtil.setProperty(propertyHelper, Constants.QTJAMBI_MODULES, String.join(",", modules), false);
 		if(((qtMajorVersion==6 && qtMinorVersion>=5) || qtMajorVersion>6) && qtsources!=null) {
 			if(!headersdir.isDirectory()) {
@@ -1917,19 +1950,44 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 						}
 					}
 				}
-				moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "gui" + File.separator + "vulkan");
-				if (moduleDir.isDirectory()) {
-					File file = new File(moduleDir, "qvulkaninstance.h");
-					if(file.exists() && !new File(originalIncludeDir, file.getName()).exists()) {
-						try {
-							guidir.mkdirs();
-							Files.copy(file.toPath(), new File(guidir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
-						} catch (IOException e) {
-							e.printStackTrace();
+				hasVulkan = new File(originalIncludeDir, "qvulkaninstance.h").exists();
+				System.out.println("test 3: "+new File(originalIncludeDir, "qvulkaninstance.h"));
+				if(!hasVulkan) {
+					moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "gui" + File.separator + "vulkan");
+					if (moduleDir.isDirectory()) {
+						for(String name : Arrays.asList("qvulkaninstance.h", "qvulkanwindow.h")) {
+							File file = new File(moduleDir, name);
+							if(file.exists()) {
+								try {
+									guidir.mkdirs();
+									Files.copy(file.toPath(), new File(guidir, name).toPath(), StandardCopyOption.REPLACE_EXISTING);
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							}							
 						}
 					}
+					File file = new File(guidir, "qvulkaninstance.h");
+					hasVulkan = file.exists();
 				}
 			}
+		}
+		if(!hasVulkan){
+			File originalIncludeDir = new File(includePath, "QtGui");
+			if((!originalIncludeDir.exists() || !originalIncludeDir.isDirectory()) 
+					&& osInfo.crossOS()==OSInfo.OperationSystem.MacOS && useQtFramework) {
+				originalIncludeDir = new File(libPath, "QtGui.framework/Versions/A/Headers");
+			}
+			hasVulkan = new File(originalIncludeDir, "qvulkaninstance.h").exists();
+		}
+		if(!hasVulkan){
+			File file = new File(new File(headersdir, "QtGui"), "qvulkaninstance.h");
+			hasVulkan = file.exists();
+		}
+		if(!hasVulkan) {
+			generatorPreProcDefinesList.add("QTJAMBI_NO_VULKAN");
+		}else {
+			AntUtil.setProperty(propertyHelper, "qtjambi.gui.vulkan.true", "true");
 		}
 		if(((qtMajorVersion==6 && qtMinorVersion>=12) || qtMajorVersion>6) && qtsources!=null) {
 			if(!headersdir.isDirectory()) {
@@ -2022,6 +2080,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			filename = CreateNativeDeploymentTask.formatQtName(osInfo, name, infix, thisDebug, majorVersion, minorVersion, -1,
 					staticLib);
 			testForFile = new File(new File(path), filename);
+			getProject().log(this, "Checking " + testForFile + " " + testForFile.exists(), Project.MSG_VERBOSE);
 			if(testForFile.exists()) {
 				if(Files.isSymbolicLink(testForFile.toPath())) {
 					try {
@@ -2033,6 +2092,54 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 					return testForFile.getCanonicalPath();
 				} catch (IOException e) {
 					return testForFile.getAbsolutePath();
+				}
+			}else {
+				filename = CreateNativeDeploymentTask.formatQtName(osInfo, name, infix, thisDebug, majorVersion, -1, -1, staticLib);
+				testForFile = new File(new File(path), filename);
+				getProject().log(this, "Checking " + testForFile + " " + testForFile.exists(), Project.MSG_VERBOSE);
+				if(testForFile.exists()) {
+					if(Files.isSymbolicLink(testForFile.toPath())) {
+						try {
+							testForFile = testForFile.toPath().toRealPath().toFile();
+						} catch (Exception e) {
+						}
+					}
+					try {
+						return testForFile.getCanonicalPath();
+					} catch (IOException e) {
+						return testForFile.getAbsolutePath();
+					}
+				}else {
+					filename = CreateNativeDeploymentTask.formatQtName(osInfo, name, infix, thisDebug, -1, -1, -1, staticLib);
+					testForFile = new File(new File(path), filename);
+					getProject().log(this, "Checking " + testForFile + " " + testForFile.exists(), Project.MSG_VERBOSE);
+					if(testForFile.exists()) {
+						if(Files.isSymbolicLink(testForFile.toPath())) {
+							try {
+								testForFile = testForFile.toPath().toRealPath().toFile();
+							} catch (Exception e) {
+							}
+						}
+						try {
+							return testForFile.getCanonicalPath();
+						} catch (IOException e) {
+							return testForFile.getAbsolutePath();
+						}
+					}else {
+						filename = CreateNativeDeploymentTask.formatQtName(osInfo, name, infix, thisDebug, majorVersion, -1, -1, staticLib);
+						try {
+							for(File f : new File(path).listFiles()) {
+								if(f.getName().startsWith(filename+".")) {
+									try {
+										return f.getCanonicalPath();
+									} catch (IOException e) {
+										return f.getAbsolutePath();
+									}
+								}
+							}
+						} catch (Exception e) {
+						}
+					}
 				}
 			}
 		}
@@ -2086,16 +2193,22 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			if (skippedModules.contains(addQtConfig)) {
 				return false;
 			} else if (addQtConfig.startsWith("qt3d") && skippedModules.contains("qt3d")) {
+				skippedModules.add(addQtConfig);
 				return false;
 			} else if (addQtConfig.startsWith("multimedia") && skippedModules.contains("multimedia")) {
+				skippedModules.add(addQtConfig);
 				return false;
 			} else if (addQtConfig.startsWith("webengine") && skippedModules.contains("webengine")) {
+				skippedModules.add(addQtConfig);
 				return false;
 			} else if (addQtConfig.startsWith("pdf") && skippedModules.contains("pdf")) {
+				skippedModules.add(addQtConfig);
 				return false;
-			} else if (addQtConfig.startsWith("quick") && (skippedModules.contains("quick") || skippedModules.contains("qml"))) {
+			} else if ((addQtConfig.startsWith("quick") || addQtConfig.endsWith("quick")) && (skippedModules.contains("quick") || skippedModules.contains("qml"))) {
+				skippedModules.add(addQtConfig);
 				return false;
 			} else if (addQtConfig.startsWith("svg") && skippedModules.contains("svg")) {
+				skippedModules.add(addQtConfig);
 				return false;
 			}
 		}

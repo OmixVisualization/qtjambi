@@ -911,3 +911,66 @@ bool threadAffineEventNotify(void **data)
     }
     return false;
 }
+
+namespace Java{
+namespace QtCore{
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QNativeEvent,
+    QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+    QTJAMBI_REPOSITORY_DECLARE_LONG_WRITABLE_FIELD(__qt_directLink)
+    QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(dispose))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QNativeEvent,
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(J)
+    QTJAMBI_REPOSITORY_DEFINE_LONG_FIELD(__qt_directLink)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(dispose,()V)
+    )
+}
+}
+
+QNativeEvent::QNativeEvent(
+    JNIEnv* env,
+    const QByteArray & eventType,
+    void *message,
+    qintptr *result)
+:
+    m_env(env),
+    m_javaObject(Java::QtCore::QNativeEvent::newInstance(env, jlong(this))),
+    m_eventType(eventType),
+    m_message(message),
+    m_result(result) {
+}
+
+QNativeEvent::~QNativeEvent(){
+    QTJAMBI_TRY {
+        Java::QtCore::QNativeEvent::dispose(m_env, m_javaObject);
+        Java::QtCore::QNativeEvent::set___qt_directLink(m_env, m_javaObject, 0);
+    } QTJAMBI_CATCH(const JavaException& exn) {
+        exn.raiseInJava(m_env);
+    } QTJAMBI_TRY_END
+}
+
+const QNativeEvent& QNativeEvent::fromJavaObject(JNIEnv* env, jobject object){
+    const QNativeEvent* ne = reinterpret_cast<const QNativeEvent*>(Java::QtCore::QNativeEvent::__qt_directLink(env, object));
+    QtJambiAPI::checkNullPointer(env, ne);
+    return *ne;
+}
+
+QNativeEvent::operator jobject() const{
+    return m_javaObject;
+}
+
+void QNativeEvent::setResult(qintptr result)
+{
+    if(m_result)
+        *m_result = result;
+}
+
+bool QNativeEvent::acceptsResult() const
+{
+    return m_result;
+}
+
+QByteArrayView QNativeEvent::eventType() const
+{
+    return m_eventType;
+}
+

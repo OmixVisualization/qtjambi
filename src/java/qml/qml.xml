@@ -91,7 +91,7 @@
         </if>
     </target>
     <target name="compile-qml" depends="jar_init">
-        <dependencies-to-classpath property="qtjambi.dependencies" jarversion="${qtjambi.jar.version}" dependencies="${qtjambi.required.modules}"/>
+        <dependencies-to-classpath property="qtjambi.dependencies" jarversion="${qtjambi.jar.version}" dependencies="${qtjambi.required.modules}" module="${module}"/>
         <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
         <pathconvert pathsep=","
             property="multiroot.basedirs">

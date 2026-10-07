@@ -981,29 +981,29 @@ final class LibraryUtility {
 	            if(dontSearchDeploymentSpec && !"debug".equals(System.getProperty("io.qt.debug")) && debugInfoDeployment) {
 	            	debuginfosByURL = new HashMap<>();
 	            	List<URL> foundURLs = new ArrayList<>();
-	            	Map<String,QPair<URL,URL>> urlsByFileName = new TreeMap<>();
+	            	Map<String,URL[]> urlsByFileName = new TreeMap<>();
 		            for(URL _url : specsFound) {
 		            	String url = _url.toString();
 		            	if(url.startsWith("jar:file:") && url.endsWith(DEPLOY_XML_IN_JAR)) {
 		            		url = url.substring(4, url.length()-DEPLOY_XML_IN_JAR.length());
 		            		File jar = new File(url);
-		            		Function<String,QPair<URL,URL>> pairFactory = n->new QPair<>(null, null);
+		            		Function<String,URL[]> pairFactory = n->new URL[2];
 		            		if(jar.getName().contains("-native-")) {
-		            			QPair<URL,URL> pair = urlsByFileName.computeIfAbsent(jar.getName(), pairFactory);
-		            			pair.first = _url;
+		            			URL[] pair = urlsByFileName.computeIfAbsent(jar.getName(), pairFactory);
+		            			pair[0] = _url;
 		            			foundURLs.add(_url);
 		            		}else if(jar.getName().contains("-debuginfo-")) {
-		            			QPair<URL,URL> pair = urlsByFileName.computeIfAbsent(jar.getName().replace("-debuginfo-", "-native-"), pairFactory);
-		            			pair.second = _url;
+		            			URL[] pair = urlsByFileName.computeIfAbsent(jar.getName().replace("-debuginfo-", "-native-"), pairFactory);
+		            			pair[1] = _url;
 		            		}
 		            	}
 		            }
-		            for(QPair<URL,URL> pair : urlsByFileName.values()) {
-		            	if(pair.first!=null) {
-		            		if(pair.second!=null) {
-		            			debuginfosByURL.put(pair.first, pair.second);
+		            for(URL[] pair : urlsByFileName.values()) {
+		            	if(pair[0]!=null) {
+		            		if(pair[1]!=null) {
+		            			debuginfosByURL.put(pair[0], pair[1]);
 		            		}else {
-		            			String url = pair.first.toString();
+		            			String url = pair[0].toString();
 		            			url = url.substring(4, url.length()-DEPLOY_XML_IN_JAR.length());
 			            		File jar = new File(url);
 		            			File debuginfo = new File(jar.getParentFile(), jar.getName().replace("-native-", "-debuginfo-"));
@@ -1014,7 +1014,7 @@ final class LibraryUtility {
 			            			debuginfo = new File(jar.getParent().replace(File.separator+"native"+File.separator, File.separator+"debuginfo"+File.separator), jar.getName().replace("-native-", "-debuginfo-"));
 			            		}
 			            		if(debuginfo.exists()) {
-			            			debuginfosByURL.put(pair.first, CoreUtility.createURL("jar:"+debuginfo.toURI()+DEPLOY_XML_IN_JAR));
+			            			debuginfosByURL.put(pair[0], CoreUtility.createURL("jar:"+debuginfo.toURI()+DEPLOY_XML_IN_JAR));
 			            		}
 		            		}
 		            	}
@@ -1896,6 +1896,17 @@ final class LibraryUtility {
 				dontUseQtFrameworks = Boolean.FALSE;
 			}
 		}
+    	switch (operatingSystem) {
+    	case Android:{
+	    		Availability guiAvailability = getLibraryAvailability("Qt", "Gui", LIBINFIX, null, configuration, null, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+	    		loadNativeLibrary(Object.class, guiAvailability, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+	    		guiAvailability = getLibraryAvailability(null, "plugins_platforms_qtforandroid", LIBINFIX, null, configuration, null, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+	    		loadNativeLibrary(Object.class, guiAvailability, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+	    	}
+			break;
+		default:
+			break;
+    	}
     	Availability[] qtjambiOrigin = {null};
     	java.io.File qtjambiLib;
         try{
@@ -3013,28 +3024,28 @@ final class LibraryUtility {
                 if(idx>0) {
                 	urlBase = urlBase.substring(0, idx+2);
                 }
-	            for(QPair<String,Boolean> pair : spec.files()) {
+	            for(Map.Entry<String,Boolean> pair : spec.files()) {
 	            	final File outFile;
-	            	if(pair.first.startsWith("sources/")) {
+	            	if(pair.getKey().startsWith("sources/")) {
 	            		if(jambiSourcesDir!=null) {
-	            			outFile = new File(jambiSourcesDir, pair.first.replace('/', File.separatorChar));
+	            			outFile = new File(jambiSourcesDir, pair.getKey().replace('/', File.separatorChar));
 	            		}else {
 	            			continue;
 	            		}
-                	}else if(pair.first.startsWith("include/")
-                			|| (operatingSystem==OperatingSystem.MacOS && pair.first.contains("/Headers/"))) {
+                	}else if(pair.getKey().startsWith("include/")
+                			|| (operatingSystem==OperatingSystem.MacOS && pair.getKey().contains("/Headers/"))) {
 	            		if(jambiHeadersDir!=null) {
-	            			outFile = new File(jambiHeadersDir, pair.first.replace('/', File.separatorChar));
+	            			outFile = new File(jambiHeadersDir, pair.getKey().replace('/', File.separatorChar));
 	            		}else {
 	            			continue;
 	            		}
                 	}else {
-                		outFile = new File(tmpDir, pair.first.replace('/', File.separatorChar));
+                		outFile = new File(tmpDir, pair.getKey().replace('/', File.separatorChar));
                 	}
 	                if(!outFile.exists()) {
-	                	logger.log(Level.FINEST, ()->String.format(" - adding extractor for %1$s", pair.first));
-	                	Library.ExtractionFunction extractor = getLibraryExtractor(urlBase, pair.first, outFile, Boolean.TRUE.equals(pair.second), isDebug, false, specVersion.qtMajorVersion, specVersion.qtMinorVersion, specVersion.qtJambiPatch);
-	                	if(pair.first.startsWith("qml/")) {
+	                	logger.log(Level.FINEST, ()->String.format(" - adding extractor for %1$s", pair.getKey()));
+	                	Library.ExtractionFunction extractor = getLibraryExtractor(urlBase, pair.getKey(), outFile, Boolean.TRUE.equals(pair.getValue()), isDebug, false, specVersion.qtMajorVersion, specVersion.qtMinorVersion, specVersion.qtJambiPatch);
+	                	if(pair.getKey().startsWith("qml/")) {
 	                		qmlExtractionFunctions.add(extractor);
 	                	}else {
 	                		utilExtractionFunctions.add(extractor);
@@ -3048,27 +3059,27 @@ final class LibraryUtility {
                 if(idx>0) {
                 	debuginfoUrlBase = debuginfoUrlBase.substring(0, idx+2);
                 }
-            	for(QPair<String,Boolean> pair : debuginfoSpec.files()) {
+            	for(Map.Entry<String,Boolean> pair : debuginfoSpec.files()) {
             		final File outFile;
-	            	if(pair.first.startsWith("sources/")) {
+	            	if(pair.getKey().startsWith("sources/")) {
 	            		if(jambiSourcesDir!=null) {
-	            			outFile = new File(jambiSourcesDir, pair.first.replace('/', File.separatorChar));
+	            			outFile = new File(jambiSourcesDir, pair.getKey().replace('/', File.separatorChar));
 	            		}else {
 	            			continue;
 	            		}
-                	}else if(pair.first.startsWith("include/")
-                			|| (operatingSystem==OperatingSystem.MacOS && pair.first.contains("/Headers/"))) {
+                	}else if(pair.getKey().startsWith("include/")
+                			|| (operatingSystem==OperatingSystem.MacOS && pair.getKey().contains("/Headers/"))) {
 	            		if(jambiHeadersDir!=null) {
-	            			outFile = new File(jambiHeadersDir, pair.first.replace('/', File.separatorChar));
+	            			outFile = new File(jambiHeadersDir, pair.getKey().replace('/', File.separatorChar));
 	            		}else {
 	            			continue;
 	            		}
                 	}else {
-                		outFile = new File(tmpDir, pair.first.replace('/', File.separatorChar));
+                		outFile = new File(tmpDir, pair.getKey().replace('/', File.separatorChar));
                 	}
                     if(!outFile.exists()) {
-                    	Library.ExtractionFunction extractor = getLibraryExtractor(debuginfoUrlBase, pair.first, outFile, Boolean.TRUE.equals(pair.second), isDebug, false, specVersion.qtMajorVersion, specVersion.qtMinorVersion, specVersion.qtJambiPatch);
-                    	if(pair.first.startsWith("qml/")) {
+                    	Library.ExtractionFunction extractor = getLibraryExtractor(debuginfoUrlBase, pair.getKey(), outFile, Boolean.TRUE.equals(pair.getValue()), isDebug, false, specVersion.qtMajorVersion, specVersion.qtMinorVersion, specVersion.qtJambiPatch);
+                    	if(pair.getKey().startsWith("qml/")) {
                     		qmlExtractionFunctions.add(extractor);
                     	}else {
                     		utilExtractionFunctions.add(extractor);

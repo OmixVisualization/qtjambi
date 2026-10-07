@@ -49,10 +49,6 @@ import io.qt.*;
  * @see #iterator()
  */
 public class QSequentialConstPairIterator<Key,T,Container extends QtObjectInterface> extends AbstractIterator<T,Container> implements Iterable<QPair<Key,T>>, Supplier<QPair<Key,T>> {
-
-	static {
-    	QtJambi_LibraryUtilities.initialize();
-    }
     
 	@NativeAccess
 	protected QSequentialConstPairIterator(QtConstructInPlace p) { 

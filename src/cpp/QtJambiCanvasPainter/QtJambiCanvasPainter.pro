@@ -31,14 +31,9 @@
 
 include(../QtJambi/configure.pri)
 
-QT = core canvaspainter quick gui-private canvaspainter-private
+QT = core gui gui-private canvaspainter quick
+
 CONFIG+=no_private_qt_headers_warning
-
-HEADERS += \
-    hashes.h
-
-SOURCES += \
-    impl.cpp
 
 macx : greaterThan(QT_MAJOR_VERSION, 5) : {
     INCLUDEPATH += $(QTDIR)/include

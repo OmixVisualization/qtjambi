@@ -29,34 +29,37 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import static io.qt.QtUtilities.loadUtilityLibrary;
 
-import org.junit.Assert;
-import org.junit.Test;
+import java.util.*;
 
-import io.qt.QtUtilities;
-import io.qt.autotests.generated.General;
-import io.qt.core.QLibraryInfo;
-import io.qt.core.QObject;
-import io.qt.core.QOperatingSystemVersion;
-import io.qt.core.QPluginLoader;
-import io.qt.location.QGeoCodingManagerEngine;
-import io.qt.location.QGeoRoutingManagerEngine;
-import io.qt.location.QGeoServiceProvider;
-import io.qt.location.QGeoServiceProviderFactory;
-import io.qt.location.QGeoServiceProviderFactory.Result;
-import io.qt.location.QPlaceManagerEngine;
+import org.junit.*;
 
-public class TestLocationInjectedCode extends ApplicationInitializer {
+import io.qt.*;
+import io.qt.QtUtilities.LibraryRequirementMode;
+import io.qt.autotests.generated.*;
+import io.qt.core.*;
+import io.qt.location.*;
+import io.qt.location.QGeoServiceProviderFactory.*;
+import io.qt.positioning.*;
+
+public class TestLocation extends ApplicationInitializer {
 	
-	static {
-		QtUtilities.initializePackage(io.qt.location.QGeoServiceProviderFactory.class);
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+		QtUtilities.initializePackage(io.qt.location.QPlace.class);
+		try{
+            loadUtilityLibrary("plugins_geoservices_qtgeoservices_itemsoverlay", LibraryRequirementMode.Mandatory, "android");
+        }catch(Throwable t){t.printStackTrace();}
+		try{
+            loadUtilityLibrary("plugins_geoservices_qtgeoservices_osm", LibraryRequirementMode.Mandatory, "android");
+        }catch(Throwable t){t.printStackTrace();}
+    	ApplicationInitializer.testInitializeWithWidgets();
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Test
-    public void test()
+    public void testLibraries()
     {
 		int found = 0;
 		String errorString = "";
@@ -258,4 +261,44 @@ public class TestLocationInjectedCode extends ApplicationInitializer {
 			Assert.assertTrue(errorString, found>0);
     	}
     }
+	
+	@Test
+    public void testLocation() {
+		System.out.println(QGeoServiceProvider.availableServiceProviders());
+		for(String mng : QGeoServiceProvider.availableServiceProviders()) {
+			QGeoServiceProvider provider = new QGeoServiceProvider(mng);
+			QPlaceManager manager = provider.placeManager();
+			if(manager!=null) {
+				QPlaceSearchRequest searchRequest = new QPlaceSearchRequest();
+				searchRequest.setSearchTerm("hospital");
+				searchRequest.setSearchArea(new QGeoCircle(new QGeoCoordinate(12.34, 56.78)));
+				QPlaceSearchReply searchReply = manager.search(searchRequest);
+				searchReply.finished.connect(() -> {
+				    switch(searchReply.error()) {
+				    case NoError:
+				        for (QPlaceSearchResult result : searchReply.results()) {
+				            if (result.type() == QPlaceSearchResult.SearchResultType.PlaceResult) {
+				                QPlaceResult placeResult = new QPlaceResult(result);
+				                System.out.println("Name: " + placeResult.place().name());
+				                System.out.println("Coordinate " + placeResult.place().location().coordinate().toString());
+				                System.out.println("Street: " + placeResult.place().location().address().street());
+				                System.out.println("Distance: " + placeResult.distance());
+				            }
+				        }
+				        break;
+			        default:
+				    	System.out.println(searchReply.error()+": "+searchReply.errorString());
+				        break;
+				    }
+				    QCoreApplication.quit();
+				});
+				QTimer.singleShot(5000, QCoreApplication::quit);
+				QCoreApplication.exec();
+				searchReply.abort();
+				searchReply.disposeLater();
+			}else {
+				System.out.println("No such manager: "+mng);
+			}
+		}
+	}
 }

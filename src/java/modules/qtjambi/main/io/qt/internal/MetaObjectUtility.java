@@ -30,10 +30,7 @@
 
 package io.qt.internal;
 
-import static io.qt.internal.EnumUtility.*;
 import static io.qt.internal.MetaTypeUtility.*;
-import static io.qt.internal.NativeUtility.arrayListFactory;
-import static io.qt.internal.PropertyUtility.*;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -53,6 +50,8 @@ import io.qt.internal.QtMocConstants.*;
 final class MetaObjectUtility{
 	
 	private final static Logger logger = Logger.getLogger("io.qt.internal");
+
+	final static Map<Class<?>, List<PropertyIndex>> propertyFieldsByClasses = Collections.synchronizedMap(new HashMap<>());
     
     private MetaObjectUtility() { throw new RuntimeException();}
     
@@ -93,6 +92,10 @@ final class MetaObjectUtility{
 		}
     	hasGetNestMembers = _hasGetNestMembers;
     }
+    
+    static boolean isValidBindable(Method method) {
+    	return method.getParameterCount()==0 && QUntypedBindable.class.isAssignableFrom(method.getReturnType());
+    }
 	
     /**
      * this method analyzes the given class for meta object data.
@@ -131,7 +134,6 @@ final class MetaObjectUtility{
             Map<String, List<Method>> propertyWriters = new TreeMap<>();
             Map<String, Boolean> propertyDesignableResolvers = new TreeMap<>();
             Map<String, Boolean> propertyScriptableResolvers = new TreeMap<>();
-            Map<String, Boolean> propertyEditableResolvers = new TreeMap<>();
             Map<String, Boolean> propertyStoredResolvers = new TreeMap<>();
             Map<String, Boolean> propertyUserResolvers = new TreeMap<>();
             Map<String, Boolean> propertyRequiredResolvers = new TreeMap<>();
@@ -534,7 +536,7 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	            			if(member.enabled()) {
 	            				metaObjectData.hasExplicitMembers = true;
     	            			String property = member.name();
-	            				if(isQObject && isValidQProperty(declaredField)) {
+	            				if(isQObject && MetaObjectUtility.isValidQProperty(declaredField)) {
 	            					if (!Modifier.isFinal(declaredField.getModifiers())) {
 	            						if(!Boolean.getBoolean("qtjambi.allow-nonfinal-qproperties") && !Boolean.getBoolean("io.qt.allow-nonfinal-qproperties")) {
 	                            			logger.severe(String.format("Missing modifier 'final' at property field %1$s.%2$s. Specify JVM argument -Dqtjambi.allow-nonfinal-qproperties=true to disable this error.", declaredField.getDeclaringClass().getSimpleName(), declaredField.getName()));
@@ -547,13 +549,12 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	    	                	}
             					propertyDesignableResolvers.put(property, isDesignable(declaredField, clazz));
                                 propertyScriptableResolvers.put(property, isScriptable(declaredField, clazz));
-                                propertyEditableResolvers.put(property, isEditable(declaredField, clazz));
                                 propertyStoredResolvers.put(property, isStored(declaredField, clazz));
                                 propertyUserResolvers.put(property, isUser(declaredField, clazz));
                                 propertyRequiredResolvers.put(property, isRequired(declaredField));
                                 propertyConstantResolvers.put(property, isConstant(declaredField));
 	            			}
-	            		}else if(isQObject && isValidQProperty(declaredField)) {
+	            		}else if(isQObject && MetaObjectUtility.isValidQProperty(declaredField)) {
         					if (!Modifier.isFinal(declaredField.getModifiers())) {
         						if(!Boolean.getBoolean("qtjambi.allow-nonfinal-qproperties") && !Boolean.getBoolean("io.qt.allow-nonfinal-qproperties")) {
                         			logger.severe(String.format("Missing modifier 'final' at property field %1$s.%2$s. Specify JVM argument -Dqtjambi.allow-nonfinal-qproperties=true to disable this error.", declaredField.getDeclaringClass().getSimpleName(), declaredField.getName()));
@@ -564,7 +565,6 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	                		propertyQPropertyFields.put(property, declaredField);
         					propertyDesignableResolvers.put(property, isDesignable(declaredField, clazz));
                             propertyScriptableResolvers.put(property, isScriptable(declaredField, clazz));
-                            propertyEditableResolvers.put(property, isEditable(declaredField, clazz));
                             propertyStoredResolvers.put(property, isStored(declaredField, clazz));
                             propertyUserResolvers.put(property, isUser(declaredField, clazz));
                             propertyRequiredResolvers.put(property, isRequired(declaredField));
@@ -575,7 +575,6 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 		                		propertyMembers.put(property, declaredField);
 	        					propertyDesignableResolvers.put(property, isDesignable(declaredField, clazz));
 	                            propertyScriptableResolvers.put(property, isScriptable(declaredField, clazz));
-	                            propertyEditableResolvers.put(property, isEditable(declaredField, clazz));
 	                            propertyStoredResolvers.put(property, isStored(declaredField, clazz));
 	                            propertyUserResolvers.put(property, isUser(declaredField, clazz));
 	                            propertyRequiredResolvers.put(property, isRequired(declaredField));
@@ -761,7 +760,7 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
 	            declaredMethods = Collections.unmodifiableSet(set);
 	            sortedMethods = Collections.unmodifiableMap(map);
             }
-            List<QPair<String,Method>> possibleReaders = Collections.emptyList();
+            List<Map.Entry<String,Method>> possibleReaders = Collections.emptyList();
             Set<Method> usedGetters = new HashSet<>();
             for (Method declaredMethod : declaredMethods) {
                 if(declaredMethod.isSynthetic() 
@@ -808,7 +807,6 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
                         propertyDesignableResolvers.put(name, isDesignable(declaredMethod, clazz));
                                                                                                    
                         propertyScriptableResolvers.put(name, isScriptable(declaredMethod, clazz));
-                        propertyEditableResolvers.put(name, isEditable(declaredMethod, clazz));
                         propertyStoredResolvers.put(name, isStored(declaredMethod, clazz));
                         propertyUserResolvers.put(name, isUser(declaredMethod, clazz));
                         propertyRequiredResolvers.put(name, isRequired(declaredMethod));
@@ -883,7 +881,7 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
 	                                + declaredMethodName.substring(offset+1);
 	            			if(possibleReaders.isEmpty())
 	            				possibleReaders = new ArrayList<>();
-	            			possibleReaders.add(new QPair<>(propertyName, declaredMethod));
+	            			possibleReaders.add(new AbstractMap.SimpleImmutableEntry<>(propertyName, declaredMethod));
             			}
             		}
                 }
@@ -915,16 +913,16 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
                 }
             }
             
-            for(QPair<String,Method> pair : possibleReaders) {
-            	if (!propertyReaders.containsKey(pair.first) && !usedGetters.contains(pair.second)) {
-            		Field signalField = signals.get(pair.first);
-                    if(signalField!=null && SignalUtility.AbstractSignal.class.isAssignableFrom(pair.second.getReturnType()))
+            for(Map.Entry<String,Method> pair : possibleReaders) {
+            	if (!propertyReaders.containsKey(pair.getKey()) && !usedGetters.contains(pair.getValue())) {
+            		Field signalField = signals.get(pair.getKey());
+                    if(signalField!=null && SignalUtility.AbstractSignal.class.isAssignableFrom(pair.getValue().getReturnType()))
                     	continue;
-            		propertyReaders.put(pair.first, pair.second);
-            		propertyDesignableResolvers.put(pair.first, isDesignable(pair.second, clazz));
-                    propertyScriptableResolvers.put(pair.first, isScriptable(pair.second, clazz));
-                    propertyUserResolvers.put(pair.first, isUser(pair.second, clazz));
-                    propertyRequiredResolvers.put(pair.first, isRequired(pair.second));
+            		propertyReaders.put(pair.getKey(), pair.getValue());
+            		propertyDesignableResolvers.put(pair.getKey(), isDesignable(pair.getValue(), clazz));
+                    propertyScriptableResolvers.put(pair.getKey(), isScriptable(pair.getValue(), clazz));
+                    propertyUserResolvers.put(pair.getKey(), isUser(pair.getValue(), clazz));
+                    propertyRequiredResolvers.put(pair.getKey(), isRequired(pair.getValue()));
             	}
             }
             
@@ -935,7 +933,7 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
             		if (propertyReaders.containsKey(propertyName) || propertyWriters.containsKey(propertyName)) {
             			propertyBindables.put(propertyName, possibleBindable);
             		}else {
-            			QPropertyTypeInfo typeInfo = getQPropertyTypeInfo(possibleBindable);
+            			QPropertyTypeInfo typeInfo = MetaObjectUtility.getQPropertyTypeInfo(possibleBindable);
             			if(typeInfo!=null) {
 	            			Class<?> paramType = typeInfo.propertyType;
 	            			Method readerMethod = findPropertyReader(getDeclaredMethod(sortedMethods, propertyName), propertyName, paramType);
@@ -1282,7 +1280,7 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
                         				propertyNotifies.put(property, signalInfo.field);
                         			}
                     			}else if((propertyField = propertyMembers.get(property))!=null) {
-                    				if(isValidQProperty(propertyField)) {
+                    				if(MetaObjectUtility.isValidQProperty(propertyField)) {
                     					MetaObjectUtility.QPropertyTypeInfo pinfo = getQPropertyTypeInfo(propertyField);
                     					if(signalInfo.signalTypes.get(0).type.isAssignableFrom(getBoxedType(pinfo.propertyType))) {
                             				propertyNotifies.put(property, signalInfo.field);
@@ -1364,7 +1362,7 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
                     metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(entry.getValue()));		intdataDescriptions.add("classinfo: value");
                 }
                 
-                HashMap<Object,Integer> paramIndexOfMethods = new HashMap<Object,Integer>();
+                HashMap<Object,Integer> paramIndexOfMethods = new HashMap<>();
                 HashMap<Field,Integer> signalIndexes = new HashMap<>();
                 
                 //
@@ -1395,7 +1393,7 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
                         // signals: name, argc, parameters, tag, flags, initial metatype offsets
                         metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(signalInfo.field.getName()));		intdataDescriptions.add("signal[%1%s]: name", i);
                         metaObjectData.intData.add(argc);		intdataDescriptions.add("signal[%1%s]: argc", i);
-                    	paramIndexOfMethods.put(new QPair<>(signalInfo.field, argc), metaObjectData.intData.size());
+                    	paramIndexOfMethods.put(new AbstractMap.SimpleImmutableEntry<>(signalInfo.field, argc), metaObjectData.intData.size());
                         metaObjectData.intData.add(0);		intdataDescriptions.add("signal[%1%s]: parameters", i);
                         metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(""));		intdataDescriptions.add("signal[%1%s]: tag", i);
                         metaObjectData.intData.add(flags);		intdataDescriptions.add("signal[%1%s]: flags", i);
@@ -1481,7 +1479,7 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
                 	MetaObjectData.SignalInfo signalInfo = metaObjectData.signalInfos.get(i);
                 	List<ParameterInfo> signalParameterInfos = allSignalParameterInfos.get(i);
                     // signals: parameters
-                    int METHOD_PARAMETER_INDEX = paramIndexOfMethods.get(new QPair<>(signalInfo.field, signalInfo.signalMetaTypes.length));
+                    int METHOD_PARAMETER_INDEX = paramIndexOfMethods.get(new AbstractMap.SimpleImmutableEntry<>(signalInfo.field, signalInfo.signalMetaTypes.length));
                     metaObjectData.intData.set(METHOD_PARAMETER_INDEX, metaObjectData.intData.size());
                     metaObjectData.intData.set(METHOD_PARAMETER_INDEX+3, metaObjectData.metaTypes.size());
                     metaObjectData.intData.add(QMetaType.Type.Void.value());		intdataDescriptions.add("signal[%1%s].returnType", i);
@@ -1640,8 +1638,8 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
                 int metaObjectFlags = 0;
                 
                 if(!propertyReaders.isEmpty()){
-                    if(!isQObject && PropertyAccessInStaticMetaCall!=null) {
-                        metaObjectFlags |= PropertyAccessInStaticMetaCall.value();
+                    if(!isQObject) {
+                        metaObjectFlags |= MetaObjectFlag.PropertyAccessInStaticMetaCall.value();
                     }
                     metaObjectData.intData.set(PROPERTY_METADATA_INDEX, metaObjectData.intData.size());
                     int i=0;
@@ -1674,7 +1672,7 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
                         	isReference = referenceType!=null && !referenceType.isConst();
                         	metaTypeDecl = annotatedPropertyType==null ? null : annotatedPropertyType.getAnnotation(QtMetaType.class);
                         }else if(propertyMemberField!=null) {
-                        	if(isValidQProperty(propertyMemberField)) {
+                        	if(MetaObjectUtility.isValidQProperty(propertyMemberField)) {
                         		qPropertyField = propertyMemberField;
                         		propertyMemberField = null;
                         		QPropertyTypeInfo info = getQPropertyTypeInfo(qPropertyField);
@@ -1769,11 +1767,10 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
                         Method resetter = propertyResetters.get(propertyName);
                         Field notify = propertyNotifies.get(propertyName);
                         Method bindable = propertyBindables.get(propertyName);
-                        Object designableVariant = propertyDesignableResolvers.get(propertyName);
-                        Object scriptableVariant = propertyScriptableResolvers.get(propertyName);
-                        Object editableVariant = propertyEditableResolvers.get(propertyName);
-                        Object storedVariant = propertyStoredResolvers.get(propertyName);
-                        Object userVariant = propertyUserResolvers.get(propertyName);
+                        Boolean designableVariant = propertyDesignableResolvers.get(propertyName);
+                        Boolean scriptableVariant = propertyScriptableResolvers.get(propertyName);
+                        Boolean storedVariant = propertyStoredResolvers.get(propertyName);
+                        Boolean userVariant = propertyUserResolvers.get(propertyName);
                         Boolean requiredVariant = propertyRequiredResolvers.get(propertyName);
                         Boolean constantVariant = propertyConstantResolvers.get(propertyName);
                         Boolean finalVariant = propertyFinalResolvers.get(propertyName);
@@ -1846,73 +1843,36 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
                             flags |= PropertyFlags.Readable.value();
                         if (resetter!=null)
                             flags |= PropertyFlags.Resettable.value();
-                        if ((bindable!=null || isMemberBindable) && Bindable!=null)
-                            flags |= Bindable.value();
+                        if ((bindable!=null || isMemberBindable))
+                            flags |= PropertyFlags.Bindable.value();
                         
                         if (designableVariant instanceof Boolean) {
                             if ((boolean)designableVariant)
                                 flags |= PropertyFlags.Designable.value();
-                            metaObjectData.propertyDesignableResolvers.add(null);
-                        } else if (designableVariant instanceof Method) {
-                            metaObjectData.propertyDesignableResolvers.add((Method) designableVariant);
-                            if(ResolveDesignable!=null)
-                            	flags |= ResolveDesignable.value();
                         }else {
-                            metaObjectData.propertyDesignableResolvers.add(null);
-                            // Designable by default
+                        	// Designable by default
                             flags |= PropertyFlags.Designable.value();
                         }
                         
                         if (scriptableVariant instanceof Boolean) {
                             if ((boolean)scriptableVariant)
                                 flags |= PropertyFlags.Scriptable.value();
-                            metaObjectData.propertyScriptableResolvers.add(null);
-                        } else if (scriptableVariant instanceof Method) {
-                            if(ResolveScriptable!=null)
-                            	flags |= ResolveScriptable.value();
-                            metaObjectData.propertyScriptableResolvers.add((Method) scriptableVariant);
                         }else {
-                            metaObjectData.propertyScriptableResolvers.add(null);
-                            // Scriptable by default
+                        	// Scriptable by default
                             flags |= PropertyFlags.Scriptable.value();
-                        }
-                        
-                        if (editableVariant instanceof Boolean) {
-                            if ((boolean)editableVariant && Editable!=null)
-                                flags |= Editable.value();
-                            metaObjectData.propertyEditableResolvers.add(null);
-                        } else if (editableVariant instanceof Method) {
-                            if(ResolveEditable!=null)
-                            	flags |= ResolveEditable.value();
-                            metaObjectData.propertyEditableResolvers.add((Method) editableVariant);
-                        }else {
-                            metaObjectData.propertyEditableResolvers.add(null);
                         }
                         
                         if (storedVariant instanceof Boolean) {
                             if ((boolean)storedVariant)
                                 flags |= PropertyFlags.Stored.value();
-                            metaObjectData.propertyStoredResolvers.add(null);
-                        } else if (storedVariant instanceof Method) {
-                            if(ResolveStored!=null)
-                            	flags |= ResolveStored.value();
-                            metaObjectData.propertyStoredResolvers.add((Method) storedVariant);
                         }else {
-                            metaObjectData.propertyStoredResolvers.add(null);
-                            // Stored by default
+                        	// Stored by default
                             flags |= PropertyFlags.Stored.value();
                         }
                                
                         if (userVariant instanceof Boolean) {
                             if ((boolean)userVariant)
                                 flags |= PropertyFlags.User.value();
-                            metaObjectData.propertyUserResolvers.add(null);
-                        } else if (userVariant instanceof Method) {
-                            if(ResolveUser!=null)
-                            	flags |= ResolveUser.value();
-                            metaObjectData.propertyUserResolvers.add((Method) userVariant);
-                        }else {
-                            metaObjectData.propertyUserResolvers.add(null);
                         }
                         
                         if (Boolean.TRUE.equals(constantVariant)) {
@@ -1926,17 +1886,13 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
                             flags |= PropertyFlags.Constant.value();
                         }
                         
-                        if (Boolean.TRUE.equals(requiredVariant) && Required!=null) {
-                            flags |= Required.value();
+                        if (Boolean.TRUE.equals(requiredVariant)) {
+                            flags |= PropertyFlags.Required.value();
                         }
 
                         if (Boolean.TRUE.equals(finalVariant))
                             flags |= PropertyFlags.Final.value();
                          
-                        
-                        if (notify!=null && Notify!=null)
-                            flags |= Notify.value();
-                        
                      // properties: name, type, flags
                         metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(propertyName));
                         intdataDescriptions.add("property[%1%s].name", i);
@@ -2327,12 +2283,22 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
         }
         
         static PropertyAnnotation bindableAnnotation(Method method) {
-        	AnnotationInfo bindable = analyzeBindableAnnotation(method);
-            return bindable == null ? null : new PropertyAnnotation(bindable.name, method, bindable.enabled, AnnotationType.Bindable);
+        	QtPropertyBindable bindable = method.getAnnotation(QtPropertyBindable.class);
+            return bindable == null ? null : new PropertyAnnotation(bindable.name(), method, bindable.enabled(), AnnotationType.Bindable);
         }
     }
     
-    private static Method findPropertyReader(Method method, String propertyName, Class<?> paramType) {
+    static class PropertyIndex{
+		PropertyIndex(Field field, int propertyIndex) {
+			super();
+			this.field = field;
+			this.propertyIndex = propertyIndex;
+		}
+		final Field field;
+		final int propertyIndex;
+	}
+
+	private static Method findPropertyReader(Method method, String propertyName, Class<?> paramType) {
         if (method == null)
             return null;
 
@@ -2428,6 +2394,15 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
             return false;
         return true;
     }
+    
+    private static Class<?> getEnumForQFlags(Class<?> flagsType) {
+        Type t = flagsType.getGenericSuperclass();
+        if (t instanceof ParameterizedType) {
+            Type typeArguments[] = ((ParameterizedType)t).getActualTypeArguments();
+            return ((Class<?>) typeArguments[0]);
+        }
+        return null;
+    }
 
     private static Boolean isDesignable(AccessibleObject member, Class<?> clazz) {
         QtPropertyDesignable designable = member.getAnnotation(QtPropertyDesignable.class);
@@ -2475,10 +2450,6 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
         return null;
     }
     
-    private static Boolean isEditable(AccessibleObject member, Class<?> clazz) {
-        return Boolean.TRUE;
-    }
-
     private static boolean isValidSetter(Method declaredMethod) {
         return (declaredMethod.getParameterCount() == 1
                 && declaredMethod.getReturnType() == Void.TYPE);
@@ -2722,6 +2693,342 @@ cloop:          	for(Constructor<?> constructor : declaredConstructors){
                     && "setParentRow".equals(declaredMethodName)
                     && QtJambi_LibraryUtilities.TreeRowInterfaceClass.isAssignableFrom(paramType);
     }
+
+	static QPropertyTypeInfo getQPropertyTypeInfo(Method method) {
+		if(method.getReturnType()==QBooleanBindable.class) {
+			return new QPropertyTypeInfo(boolean.class, boolean.class, null, false, false, method.getReturnType()==QBooleanBindable.class);
+		}else if(method.getReturnType()==QByteBindable.class) {
+			return new QPropertyTypeInfo(byte.class, byte.class, null, false, false, method.getReturnType()==QByteBindable.class);
+		}else if(method.getReturnType()==QIntBindable.class) {
+			return new QPropertyTypeInfo(int.class, int.class, null, false, false, method.getReturnType()==QIntBindable.class);
+		}else if(method.getReturnType()==QShortBindable.class) {
+			return new QPropertyTypeInfo(short.class, short.class, null, false, false, method.getReturnType()==QShortBindable.class);
+		}else if(method.getReturnType()==QLongBindable.class) {
+			return new QPropertyTypeInfo(long.class, long.class, null, false, false, method.getReturnType()==QLongBindable.class);
+		}else if(method.getReturnType()==QFloatBindable.class) {
+			return new QPropertyTypeInfo(float.class, float.class, null, false, false, method.getReturnType()==QFloatBindable.class);
+		}else if(method.getReturnType()==QDoubleBindable.class) {
+			return new QPropertyTypeInfo(double.class, double.class, null, false, false, method.getReturnType()==QDoubleBindable.class);
+		}else if(method.getReturnType()==QCharBindable.class) {
+			return new QPropertyTypeInfo(char.class, char.class, null, false, false, method.getReturnType()==QCharBindable.class);
+		}else if(method.getReturnType()==QBindable.class) {
+			if(ClassAnalyzerUtility.useAnnotatedType) {
+	        	AnnotatedElement t = method.getAnnotatedReturnType();
+	        	if (t instanceof AnnotatedParameterizedType) {
+	            	AnnotatedParameterizedType p = (AnnotatedParameterizedType) t;
+	            	AnnotatedElement actualTypes[] = p.getAnnotatedActualTypeArguments();
+	            	if(actualTypes.length==1) {
+	            		AnnotatedElement actualType = actualTypes[0];
+	                	boolean isPrimitive = actualType.isAnnotationPresent(QtPrimitiveType.class);
+	                	boolean isPointer = actualType.isAnnotationPresent(QtPointerType.class);
+	                	QtReferenceType referenceType = actualType.getAnnotation(QtReferenceType.class);
+	                	boolean isReference = !isPointer && referenceType!=null && !referenceType.isConst();
+	                	if(!isPrimitive) {
+	                		AnnotatedElement annotatedOwnerType = RetroHelper.getAnnotatedOwnerType(actualType);
+	                		if(annotatedOwnerType!=null) {
+	                			isPrimitive = annotatedOwnerType.isAnnotationPresent(QtPrimitiveType.class);
+	                		}
+	                	}
+	                	Type type = ((java.lang.reflect.AnnotatedType)actualType).getType();
+	                    Class<?> rawType;
+	                    if (type instanceof Class) {
+	                        rawType = (Class<?>) type;
+	                    }else if (type instanceof ParameterizedType) {
+	                    	ParameterizedType ptype = (ParameterizedType)type;
+	                        rawType = (Class<?>)ptype.getRawType();
+	                    } else {
+	                    	return null;
+	                    }
+	                    if(isPrimitive) {
+	                    	if(rawType==Integer.class) {
+	                    		rawType = int.class;
+	                    		type = int.class;
+	                    	}else if(rawType==Short.class) {
+	                    		rawType = short.class;
+	                    		type = short.class;
+	                    	}else if(rawType==Byte.class) {
+	                    		rawType = byte.class;
+	                    		type = byte.class;
+	                    	}else if(rawType==Long.class) {
+	                    		rawType = long.class;
+	                    		type = long.class;
+	                    	}else if(rawType==Double.class) {
+	                    		rawType = double.class;
+	                    		type = double.class;
+	                    	}else if(rawType==Float.class) {
+	                    		rawType = float.class;
+	                    		type = float.class;
+	                    	}else if(rawType==Boolean.class) {
+	                    		rawType = boolean.class;
+	                    		type = boolean.class;
+	                    	}else if(rawType==Character.class) {
+	                    		rawType = char.class;
+	                    		type = char.class;
+	                    	}
+	                    }
+	                    return new QPropertyTypeInfo(rawType, type, actualType, isPointer, isReference, method.getReturnType()==QBindable.class);
+	            	}
+	        	}
+			}else {
+				Type t = method.getGenericReturnType();
+	        	if (t instanceof ParameterizedType) {
+	            	ParameterizedType p = (ParameterizedType) t;
+	            	Type actualTypes[] = p.getActualTypeArguments();
+	            	if(actualTypes.length==1) {
+	            		Type type = actualTypes[0];
+	                    Class<?> rawType;
+	                    if (type instanceof Class) {
+	                        rawType = (Class<?>) type;
+	                    }else if (type instanceof ParameterizedType) {
+	                    	ParameterizedType ptype = (ParameterizedType)type;
+	                        rawType = (Class<?>)ptype.getRawType();
+	                    } else {
+	                    	return null;
+	                    }
+	                    if(rawType==Integer.class) {
+	                		rawType = int.class;
+	                		type = int.class;
+	                	}else if(rawType==Short.class) {
+	                		rawType = short.class;
+	                		type = short.class;
+	                	}else if(rawType==Byte.class) {
+	                		rawType = byte.class;
+	                		type = byte.class;
+	                	}else if(rawType==Long.class) {
+	                		rawType = long.class;
+	                		type = long.class;
+	                	}else if(rawType==Double.class) {
+	                		rawType = double.class;
+	                		type = double.class;
+	                	}else if(rawType==Float.class) {
+	                		rawType = float.class;
+	                		type = float.class;
+	                	}else if(rawType==Boolean.class) {
+	                		rawType = boolean.class;
+	                		type = boolean.class;
+	                	}else if(rawType==Character.class) {
+	                		rawType = char.class;
+	                		type = char.class;
+	                	}
+	                    return new QPropertyTypeInfo(rawType, type, null, false, false, method.getReturnType()==QBindable.class);
+	            	}
+	        	}
+			}
+		}
+		return null;
+	}
+
+	static QPropertyTypeInfo getQPropertyTypeInfo(Field field) {
+		if(field.getType()==QObject.QBooleanProperty.class
+				|| field.getType()==QObject.QComputedBooleanProperty.class) {
+			return new QPropertyTypeInfo(boolean.class, boolean.class, null, false, false, field.getType()==QObject.QBooleanProperty.class);
+		}else if(field.getType()==QObject.QByteProperty.class
+				|| field.getType()==QObject.QComputedByteProperty.class) {
+			return new QPropertyTypeInfo(byte.class, byte.class, null, false, false, field.getType()==QObject.QByteProperty.class);
+		}else if(field.getType()==QObject.QIntProperty.class
+				|| field.getType()==QObject.QComputedIntProperty.class) {
+			return new QPropertyTypeInfo(int.class, int.class, null, false, false, field.getType()==QObject.QIntProperty.class);
+		}else if(field.getType()==QObject.QShortProperty.class
+				|| field.getType()==QObject.QComputedShortProperty.class) {
+			return new QPropertyTypeInfo(short.class, short.class, null, false, false, field.getType()==QObject.QShortProperty.class);
+		}else if(field.getType()==QObject.QLongProperty.class
+				|| field.getType()==QObject.QComputedLongProperty.class) {
+			return new QPropertyTypeInfo(long.class, long.class, null, false, false, field.getType()==QObject.QLongProperty.class);
+		}else if(field.getType()==QObject.QFloatProperty.class
+				|| field.getType()==QObject.QComputedFloatProperty.class) {
+			return new QPropertyTypeInfo(float.class, float.class, null, false, false, field.getType()==QObject.QFloatProperty.class);
+		}else if(field.getType()==QObject.QDoubleProperty.class
+				|| field.getType()==QObject.QComputedDoubleProperty.class) {
+			return new QPropertyTypeInfo(double.class, double.class, null, false, false, field.getType()==QObject.QDoubleProperty.class);
+		}else if(field.getType()==QObject.QCharProperty.class
+				|| field.getType()==QObject.QComputedCharProperty.class) {
+			return new QPropertyTypeInfo(char.class, char.class, null, false, false, field.getType()==QObject.QCharProperty.class);
+		}else if(field.getType()==QObject.QProperty.class
+				|| field.getType()==QObject.QComputedProperty.class) {
+			if(ClassAnalyzerUtility.useAnnotatedType) {
+	        	AnnotatedElement t = field.getAnnotatedType();
+	        	if (t instanceof AnnotatedParameterizedType) {
+	            	AnnotatedParameterizedType p = (AnnotatedParameterizedType) t;
+	            	AnnotatedElement actualTypes[] = p.getAnnotatedActualTypeArguments();
+	            	if(actualTypes.length==1) {
+	            		AnnotatedElement actualType = actualTypes[0];
+	                	boolean isPrimitive = actualType.isAnnotationPresent(QtPrimitiveType.class);
+	                	boolean isPointer = actualType.isAnnotationPresent(QtPointerType.class);
+	                	QtReferenceType referenceType = actualType.getAnnotation(QtReferenceType.class);
+	                	boolean isReference = !isPointer && referenceType!=null && !referenceType.isConst();
+	                	if(!isPrimitive) {
+	                		AnnotatedElement annotatedOwnerType = RetroHelper.getAnnotatedOwnerType(actualType);
+	                		if(annotatedOwnerType!=null) {
+	                			isPrimitive = annotatedOwnerType.isAnnotationPresent(QtPrimitiveType.class);
+	                		}
+	                	}
+	                	Type type = ((java.lang.reflect.AnnotatedType)actualType).getType();
+	                    Class<?> rawType;
+	                    if (type instanceof Class) {
+	                        rawType = (Class<?>) type;
+	                    }else if (type instanceof ParameterizedType) {
+	                    	ParameterizedType ptype = (ParameterizedType)type;
+	                        rawType = (Class<?>)ptype.getRawType();
+	                    } else {
+	                    	return null;
+	                    }
+	                    if(isPrimitive) {
+	                    	if(rawType==Integer.class) {
+	                    		rawType = int.class;
+	                    		type = int.class;
+	                    	}else if(rawType==Short.class) {
+	                    		rawType = short.class;
+	                    		type = short.class;
+	                    	}else if(rawType==Byte.class) {
+	                    		rawType = byte.class;
+	                    		type = byte.class;
+	                    	}else if(rawType==Long.class) {
+	                    		rawType = long.class;
+	                    		type = long.class;
+	                    	}else if(rawType==Double.class) {
+	                    		rawType = double.class;
+	                    		type = double.class;
+	                    	}else if(rawType==Float.class) {
+	                    		rawType = float.class;
+	                    		type = float.class;
+	                    	}else if(rawType==Boolean.class) {
+	                    		rawType = boolean.class;
+	                    		type = boolean.class;
+	                    	}else if(rawType==Character.class) {
+	                    		rawType = char.class;
+	                    		type = char.class;
+	                    	}
+	                    }
+	                    return new QPropertyTypeInfo(rawType, type, actualType, isPointer, isReference, field.getType()==QObject.QProperty.class);
+	            	}
+	        	}
+			}else {
+				Type t = field.getGenericType();
+	        	if (t instanceof ParameterizedType) {
+	            	ParameterizedType p = (ParameterizedType) t;
+	            	Type actualTypes[] = p.getActualTypeArguments();
+	            	if(actualTypes.length==1) {
+	            		Type type = actualTypes[0];
+	                    Class<?> rawType;
+	                    if (type instanceof Class) {
+	                        rawType = (Class<?>) type;
+	                    }else if (type instanceof ParameterizedType) {
+	                    	ParameterizedType ptype = (ParameterizedType)type;
+	                        rawType = (Class<?>)ptype.getRawType();
+	                    } else {
+	                    	return null;
+	                    }
+	                    if(rawType==Integer.class) {
+	                		rawType = int.class;
+	                		type = int.class;
+	                	}else if(rawType==Short.class) {
+	                		rawType = short.class;
+	                		type = short.class;
+	                	}else if(rawType==Byte.class) {
+	                		rawType = byte.class;
+	                		type = byte.class;
+	                	}else if(rawType==Long.class) {
+	                		rawType = long.class;
+	                		type = long.class;
+	                	}else if(rawType==Double.class) {
+	                		rawType = double.class;
+	                		type = double.class;
+	                	}else if(rawType==Float.class) {
+	                		rawType = float.class;
+	                		type = float.class;
+	                	}else if(rawType==Boolean.class) {
+	                		rawType = boolean.class;
+	                		type = boolean.class;
+	                	}else if(rawType==Character.class) {
+	                		rawType = char.class;
+	                		type = char.class;
+	                	}
+	                    return new QPropertyTypeInfo(rawType, type, null, false, false, field.getType()==QObject.QProperty.class);
+	            	}
+	        	}
+			}
+		}
+		return null;
+	}
+
+	static boolean isValidQProperty(Field field) {
+		return QObject.class==field.getType().getEnclosingClass()
+				&& QUntypedPropertyData.class.isAssignableFrom(field.getType());
+	}
+    
+    static native @Nullable QMetaProperty getPropertyForField(QMetaObject metaObject, Field field);
+    
+    static native void registerPropertyField(long metaPropertyId, java.lang.reflect.Field field);
+
+	protected static <PI> PI analyzeProperty(QObject containingObject, QtObject property, BiFunction<Field, QMetaType, PI> fun1, BiFunction<Field, QMetaProperty, PI> fun2) {
+		List<PropertyIndex> propertyFields = propertyFieldsByClasses.computeIfAbsent(AccessUtility.instance.getClass(containingObject), cls->{
+			List<PropertyIndex> fields = Collections.emptyList();
+			while (QObject.class.isAssignableFrom(cls)) {
+				QMetaObject metaObject = QMetaObject.forType(cls);
+	            for (Field field : cls.getDeclaredFields()) {
+	                if (!Modifier.isStatic(field.getModifiers())
+	        			&& isValidQProperty(field)) {
+	                	QMetaProperty metaProperty = getPropertyForField(metaObject, field);
+	                	PropertyIndex info = new PropertyIndex(field, metaProperty!=null ? metaProperty.propertyIndex() : -1);
+						if(fields.isEmpty()) {
+	        				fields = Collections.singletonList(info);
+	        			} else {
+	        				if(fields.size()==1)
+		        				fields = new ArrayList<>(fields);
+	        				fields.add(info);
+	        			}
+	                }
+	            }
+	            cls = cls.getSuperclass();
+	        }
+			if(fields.isEmpty()) {
+				return Collections.emptyList();
+			}else if(fields.size()==1){
+				return fields;
+			}else {
+				return Collections.synchronizedList(fields);
+			}
+		});
+		
+		Field foundField = null;
+		QList<QMetaProperty> remainingProperties = containingObject.metaObject().properties();
+		for (PropertyIndex info : propertyFields) {
+			try {
+				if(ReflectionUtility.readField(containingObject, info.field)==property) {
+					if(info.propertyIndex>=0) {
+						QMetaProperty metaProperty = containingObject.metaObject().properties().at(info.propertyIndex);
+						remainingProperties.removeOne(metaProperty);
+	        			if(!Modifier.isFinal(info.field.getModifiers())) {
+	        				if(!Boolean.getBoolean("qtjambi.allow-nonfinal-qproperties") && !Boolean.getBoolean("io.qt.allow-nonfinal-qproperties")) {
+	                			java.util.logging.Logger.getLogger("io.qt.internal").severe(String.format("Missing modifier 'final' at property field %1$s.%2$s. Specify JVM argument -Dqtjambi.allow-nonfinal-qproperties=true to disable this error.", info.field.getDeclaringClass().getSimpleName(), info.field.getName()));
+	                			throw new QPropertyDeclarationException(String.format("Missing modifier 'final' at property field %1$s.%2$s.", info.field.getDeclaringClass().getSimpleName(), info.field.getName()));
+	                		}
+	        			}
+	    				return fun2.apply(info.field, metaProperty);
+					}else {
+						foundField = info.field;
+					}
+					break;
+				}
+			} catch (QPropertyDeclarationException e) {
+				throw e;
+			} catch (Throwable e) {}
+	    }
+		if(foundField==null)
+			throw new QPropertyDeclarationException("Cannot find member field belonging to QProperty instance.");
+		QPropertyTypeInfo pinfo = getQPropertyTypeInfo(foundField);
+		int t = MetaTypeUtility.registerMetaType(
+				pinfo.propertyType, 
+				pinfo.genericPropertyType, 
+				pinfo.annotatedPropertyType,
+				pinfo.isPointer,
+				pinfo.isReference);
+		return fun1.apply(foundField, new QMetaType(t));
+	}
+
+	private static <K,V> Function<K, ArrayList<V>> arrayListFactory(){
+		return key->new ArrayList<>();
+	}
 }
 
 @NativeAccess
@@ -2816,11 +3123,6 @@ class MetaObjectData {
     final @NativeAccess List<Method>  propertyBindables = new ArrayList<>();
     final @NativeAccess List<Field>   propertyQPropertyFields = new ArrayList<>();
     final @NativeAccess List<Field>   propertyMemberFields = new ArrayList<>();
-    final @NativeAccess List<Method>  propertyDesignableResolvers = new ArrayList<>();
-    final @NativeAccess List<Method>  propertyScriptableResolvers = new ArrayList<>();
-    final @NativeAccess List<Method>  propertyEditableResolvers = new ArrayList<>();
-    final @NativeAccess List<Method>  propertyStoredResolvers = new ArrayList<>();
-    final @NativeAccess List<Method>  propertyUserResolvers = new ArrayList<>();
     final @NativeAccess List<MetaTypeInfo[]>   propertyMetaTypes = new ArrayList<>();
     final @NativeAccess List<Class<?>>   propertyClassTypes = new ArrayList<>();
     final @NativeAccess List<MetaTypeInfo[]>   enumMetaTypes = new ArrayList<>();

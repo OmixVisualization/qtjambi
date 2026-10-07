@@ -33,12 +33,13 @@
 #define QDOCMODEL_H
 
 #include <QObject>
+#include <QMap>
+#include "docenum.h"
 #include "docclass.h"
+#include "doctypedef.h"
+#include "docmodule.h"
 #include "docnamespace.h"
-
-class DocNamespace;
-class DocEnum;
-class DocClass;
+#include "docpage.h"
 
 class DocModel: public QObject
 {
@@ -50,9 +51,15 @@ public:
     QList<QString> namespaces() const;
     bool isEmpty() const;
     void addClass(const DocClass*);
+    void addTypeDef(const DocTypeDef*);
     void addEnum(const DocEnum*);
+    void addModule(const DocModule*);
+    void addPage(const DocPage*);
     const DocClass* getClass(const QString& name) const;
+    const DocTypeDef* getTypeDef(const QString& name) const;
     const DocEnum* getEnum(const QString& name) const;
+    const DocModule* getModule(const QString& name) const;
+    const DocPage* getPage(const QString& name) const;
     QList<QString> classes() const;
     const QString& url() const;
     void setUrl(const QString& url);
@@ -61,6 +68,9 @@ private:
     QMap<QString,DocNamespace*> m_namespaces;
     QMap<QString,const DocEnum*> m_enums;
     QMap<QString,const DocClass*> m_classes;
+    QMap<QString,const DocTypeDef*> m_typedefs;
+    QMap<QString,const DocModule*> m_modules;
+    QMap<QString,const DocPage*> m_pages;
 };
 
 #endif // QDOCMODEL_H

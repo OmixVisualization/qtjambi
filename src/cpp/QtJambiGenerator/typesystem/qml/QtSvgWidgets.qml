@@ -68,8 +68,9 @@ TypeSystem{
             }
             InjectCode{
                 position: Position.End
-                Text{content: "if (oldRenderer != null)\n"+
-                              "    QtJambi_LibraryUtilities.internal.setDefaultOwnership(oldRenderer);"}
+                Text{content: String.raw`
+                    if (oldRenderer != null)
+                        QtJambi_LibraryUtilities.internal.setDefaultOwnership(oldRenderer);`}
             }
         }
         ModifyFunction{

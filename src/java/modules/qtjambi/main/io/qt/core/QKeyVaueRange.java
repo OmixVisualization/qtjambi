@@ -36,6 +36,9 @@ import java.util.function.Supplier;
  * A range object that allows iteration over this hash as key/value pairs.
  */
 public final class QKeyVaueRange<Key,T> implements Iterable<QPair<Key,T>>{
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	
 	private Supplier<QSequentialConstPairIterator<Key,T,?>> beginSupplier;
 

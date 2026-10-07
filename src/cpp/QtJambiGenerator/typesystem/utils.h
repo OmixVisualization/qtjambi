@@ -69,11 +69,15 @@ namespace TS {
             void setIndent(const QString& indent){
                 m_indent = indent;
             }
+            void setIndents(uint indents){
+                m_indents = indents;
+            }
 
         private:
             const QString m_name;
             QMap<QString, QString> replaceRules;
             QString m_indent;
+            uint m_indents;
     };
 
     enum Language {

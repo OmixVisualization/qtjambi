@@ -39,42 +39,6 @@ TypeSystem{
     Description{
         text: "Provides public API shared by both modules {@code qtjambi.webenginequick} and {@code qtjambi.webenginewidgets}."
     }
-
-    CodeTemplate{
-        name: "webc.comsumer.function"
-        Text{content: String.raw`
-std::function<void(%TYPE)> %out;
-if(%in){
-    %out = [wrapper = JObjectWrapper(%env, %in)](%TYPE value){
-                    if(JniEnvironment env{200}){
-                        QTJAMBI_TRY{
-                            jobject _value = qtjambi_cast<jobject>(env, value);
-                            Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);
-                        }QTJAMBI_CATCH(const JavaException& exn){
-                            exn.report(env);
-                        }QTJAMBI_TRY_END
-                    }
-                };
-}`}
-    }
-
-    CodeTemplate{
-        name: "webc.comsumer2.function"
-        Text{content: String.raw`
-            Q_ASSERT(%in);
-            auto %out = [wrapper = JObjectWrapper(%env, %in)](%TYPE value){
-                            if(JniEnvironment env{200}){
-                                QTJAMBI_TRY{
-                                    jobject _value = qtjambi_cast<jobject>(env, value);
-                                    Java::Runtime::Consumer::accept(env, wrapper.object(env), _value);
-                                }QTJAMBI_CATCH(const JavaException& exn){
-                                    exn.report(env);
-                                }QTJAMBI_TRY_END
-                            }
-                        };`}
-    }
-    
-    
     
     RequiredLibrary{
         name: "QtQuick"
@@ -459,7 +423,7 @@ if(%in){
                 ConversionRule{
                     codeClass: CodeClass.Native
                     InsertTemplate{
-                        name: "webc.comsumer.function"
+                        name: "core.consumer.function"
                         Replace{
                             from: "%TYPE"
                             to: "const QWebEngineFindTextResult &"
@@ -478,7 +442,7 @@ if(%in){
                 ConversionRule{
                     codeClass: CodeClass.Native
                     InsertTemplate{
-                        name: "webc.comsumer.function"
+                        name: "core.consumer.function"
                         Replace{
                             from: "%TYPE"
                             to: "const QString &"
@@ -497,7 +461,7 @@ if(%in){
                 ConversionRule{
                     codeClass: CodeClass.Native
                     InsertTemplate{
-                        name: "webc.comsumer.function"
+                        name: "core.consumer.function"
                         Replace{
                             from: "%TYPE"
                             to: "const QString &"
@@ -516,7 +480,7 @@ if(%in){
                 ConversionRule{
                     codeClass: CodeClass.Native
                     InsertTemplate{
-                        name: "webc.comsumer.function"
+                        name: "core.consumer.function"
                         Replace{
                             from: "%TYPE"
                             to: "const QVariant &"
@@ -536,7 +500,7 @@ if(%in){
                 ConversionRule{
                     codeClass: CodeClass.Native
                     InsertTemplate{
-                        name: "webc.comsumer.function"
+                        name: "core.consumer.function"
                         Replace{
                             from: "%TYPE"
                             to: "const QVariant &"
@@ -572,7 +536,7 @@ if(%in){
                     ConversionRule{
                         codeClass: CodeClass.Native
                         InsertTemplate{
-                            name: "webc.comsumer2.function"
+                            name: "core.non-nullable.consumer.function"
                             Replace{
                                 from: "%TYPE"
                                 to: "const QVariant &"
@@ -603,7 +567,7 @@ if(%in){
                     ConversionRule{
                         codeClass: CodeClass.Native
                         InsertTemplate{
-                            name: "webc.comsumer2.function"
+                            name: "core.non-nullable.consumer.function"
                             Replace{
                                 from: "%TYPE"
                                 to: "const QVariant &"
@@ -729,7 +693,7 @@ if(%in){
                 ConversionRule{
                     codeClass: CodeClass.Native
                     InsertTemplate{
-                        name: "webc.comsumer.function"
+                        name: "core.consumer.function"
                         Replace{
                             from: "%TYPE"
                             to: "const QByteArray &"
@@ -795,7 +759,7 @@ if(%in){
                     ConversionRule{
                         codeClass: CodeClass.Native
                         InsertTemplate{
-                            name: "webc.comsumer2.function"
+                            name: "core.non-nullable.consumer.function"
                             Replace{
                                 from: "%TYPE"
                                 to: "const QByteArray &"
@@ -1345,7 +1309,7 @@ bool operator==(const QWebEngineFullScreenRequest& arg1, const QWebEngineFullScr
                 ConversionRule{
                     codeClass: CodeClass.Native
                     InsertTemplate{
-                        name: "webc.comsumer.function"
+                        name: "core.consumer.function"
                         Replace{
                             from: "%TYPE"
                             to: "const QVariant &"
@@ -1365,7 +1329,7 @@ bool operator==(const QWebEngineFullScreenRequest& arg1, const QWebEngineFullScr
                 ConversionRule{
                     codeClass: CodeClass.Native
                     InsertTemplate{
-                        name: "webc.comsumer.function"
+                        name: "core.consumer.function"
                         Replace{
                             from: "%TYPE"
                             to: "const QVariant &"
@@ -1401,7 +1365,7 @@ bool operator==(const QWebEngineFullScreenRequest& arg1, const QWebEngineFullScr
                     ConversionRule{
                         codeClass: CodeClass.Native
                         InsertTemplate{
-                            name: "webc.comsumer2.function"
+                            name: "core.non-nullable.consumer.function"
                             Replace{
                                 from: "%TYPE"
                                 to: "const QVariant &"
@@ -1432,7 +1396,7 @@ bool operator==(const QWebEngineFullScreenRequest& arg1, const QWebEngineFullScr
                     ConversionRule{
                         codeClass: CodeClass.Native
                         InsertTemplate{
-                            name: "webc.comsumer2.function"
+                            name: "core.non-nullable.consumer.function"
                             Replace{
                                 from: "%TYPE"
                                 to: "const QVariant &"
@@ -1455,7 +1419,7 @@ bool operator==(const QWebEngineFullScreenRequest& arg1, const QWebEngineFullScr
                 ConversionRule{
                     codeClass: CodeClass.Native
                     InsertTemplate{
-                        name: "webc.comsumer.function"
+                        name: "core.consumer.function"
                         Replace{
                             from: "%TYPE"
                             to: "const QByteArray &"
@@ -1505,7 +1469,7 @@ bool operator==(const QWebEngineFullScreenRequest& arg1, const QWebEngineFullScr
                     ConversionRule{
                         codeClass: CodeClass.Native
                         InsertTemplate{
-                            name: "webc.comsumer2.function"
+                            name: "core.non-nullable.consumer.function"
                             Replace{
                                 from: "%TYPE"
                                 to: "const QByteArray &"

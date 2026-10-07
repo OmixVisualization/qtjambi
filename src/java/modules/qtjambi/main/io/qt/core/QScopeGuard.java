@@ -49,6 +49,9 @@ import io.qt.QtUninvokable;
  * </code>
  */
 public final class QScopeGuard implements AutoCloseable {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	
 	private final QScopedPointer.Data<Runnable> data = new QScopedPointer.Data<Runnable>();
 	

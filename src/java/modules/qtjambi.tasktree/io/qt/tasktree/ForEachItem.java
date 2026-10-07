@@ -6,7 +6,13 @@ import java.util.function.*;
 import io.qt.*;
 import io.qt.core.*;
 
+/**
+ * <p>Java wrapper for Qt class <code>QtTaskTree::ForEachItem</code></p>
+ */
 public final class ForEachItem<T> {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	ForEachItem(QList<T> list) {
 		super();
 		this.iterator = new ListIterator<>(list);

@@ -34,11 +34,6 @@
     <property name="qtjambi-module-name" value="qtjambi.designer"/>
     <property name="qtjambi-module-name2" value="qtjambi.multimedia"/>
     <property name="qtjambi.required.modules" value="qtjambi,
-                                             qtjambi.xml,
-                                             qtjambi.sql,
-                                             qtjambi.network,
-                                             qtjambi.opengl,
-                                             qtjambi.openglwidgets,
                                              qtjambi.designer,
                                              qtjambi.multimedia,
                                              qtjambi.multimediawidgets"/>
@@ -47,6 +42,7 @@
             <and>
 				<istrue value="${qtjambi.designer.any.true}"/>
 				<istrue value="${qtjambi.multimedia.any.true}"/>
+				<istrue value="${qtjambi.multimediawidgets.any.true}"/>
                 <available file="${qtjambi.generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
                 <available file="${qtjambi.generator.outputdir}/java/${qtjambi-module-name2}" type="dir"/>
             </and>

@@ -29,16 +29,6 @@
 ****************************************************************************/
 package io.qt;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import io.qt.QtUtilities.LibraryRequirementMode;
-import io.qt.core.QMetaObject;
-
 /**
  * Super class of all native types provided by QtJambi.
  * The native counterpart is owned by the object if it has been constructed in Java.
@@ -96,7 +86,7 @@ public abstract class QtObject extends Utility.Object implements QtObjectInterfa
     @QtUninvokable
 	@Override
     public final boolean isDisposed() {
-    	return Utility.isObjectDisposed(this);
+    	return super.isDisposed();
     }
     
     /**
@@ -112,99 +102,4 @@ public abstract class QtObject extends Utility.Object implements QtObjectInterfa
     public boolean equals(java.lang.Object other) {
     	return super.equals(other);
     }
-}
-
-class Utility extends io.qt.internal.NativeUtility{
-	static abstract class Object extends io.qt.internal.NativeUtility.Object{
-		Object() {
-			super();
-		}
-		Object(java.lang.Object privateConstructor){
-			super(privateConstructor);
-		}
-	}
-	
-	protected static <K,V> Function<K, ArrayList<V>> arrayListFactory(){
-		return io.qt.internal.NativeUtility.arrayListFactory();
-	}
-	
-	protected static void disposeObject(QtObjectInterface object) {
-		io.qt.internal.NativeUtility.disposeObject(object);
-	}
-
-	protected static boolean isObjectDisposed(QtObjectInterface object) {
-		return io.qt.internal.NativeUtility.isObjectDisposed(object);
-	}
-	
-	static Boolean areObjectsEquals(Utility.Object object, java.lang.Object other) {
-		return io.qt.internal.NativeUtility.areObjectsEquals(object, other);
-	}
-		
-	protected static void initializeNativeObject(Class<?> declaringClass, QtObjectInterface object, Map<Class<?>, List<Map.Entry<java.lang.Object,java.lang.Object>>> arguments) {
-		io.qt.internal.NativeUtility.initializeNativeObject(declaringClass, object, arguments);
-	}
-	
-	protected static QMetaObject.DisposedSignal getSignalOnDispose(QtObjectInterface object, boolean forceCreation){
-		return io.qt.internal.NativeUtility.getSignalOnDispose(object, forceCreation);
-	}
-	
-	protected static void loadQtJambiLibrary(Class<?> callerClass, String library) {
-		io.qt.internal.NativeUtility.loadQtJambiLibrary(callerClass, library);
-	}
-	
-	protected static void loadJambiLibrary(Class<?> callerClass, String library) {
-		io.qt.internal.NativeUtility.loadJambiLibrary(callerClass, library);
-	}
-
-	protected static boolean isAvailableQtLibrary(Class<?> callerClass, String library) {
-		return io.qt.internal.NativeUtility.isAvailableQtLibrary(callerClass, library);
-	}
-
-	protected static boolean isAvailableLibrary(String library, String version) {
-		return io.qt.internal.NativeUtility.isAvailableLibrary(library, version);
-	}
-
-	protected static void loadQtLibrary(Class<?> callerClass, String library, LibraryRequirementMode libraryRequirementMode, String...platforms) {
-		io.qt.internal.NativeUtility.loadQtLibrary(callerClass, library, libraryRequirementMode, platforms);
-	}
-
-	protected static void loadUtilityLibrary(String library, String version, LibraryRequirementMode libraryRequirementMode, String...platforms) {
-		io.qt.internal.NativeUtility.loadUtilityLibrary(library, version, libraryRequirementMode, platforms);
-	}
-
-	protected static void loadLibrary(String lib) {
-		io.qt.internal.NativeUtility.loadLibrary(lib);
-	}
-	
-	protected static void useAsGadget(Class<?> clazz) {
-		io.qt.internal.NativeUtility.useAsGadget(clazz);
-    }
-    
-	protected static void usePackageContentAsGadgets(String _package) {
-		io.qt.internal.NativeUtility.usePackageContentAsGadgets(_package);
-    }
-
-	protected static File jambiDeploymentDir() {
-		return io.qt.internal.NativeUtility.jambiDeploymentDir();
-	}
-	
-	protected static Supplier<Class<?>> callerClassProvider() {
-		return io.qt.internal.NativeUtility.callerClassProvider();
-	}
-
-	protected static int majorVersion() {
-		return io.qt.internal.NativeUtility.majorVersion();
-	}
-	
-	protected static int minorVersion() {
-		return io.qt.internal.NativeUtility.minorVersion();
-	}
-	
-	protected static int qtjambiPatchVersion() {
-		return io.qt.internal.NativeUtility.qtjambiPatchVersion();
-	}
-	
-	protected static boolean initializePackage(ClassLoader classLoader, String packagePath) {
-		return io.qt.internal.NativeUtility.initializePackage(classLoader, packagePath);
-	}
 }

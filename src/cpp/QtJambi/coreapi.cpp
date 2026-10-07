@@ -28,6 +28,7 @@
 ****************************************************************************/
 
 #include "pch_p.h"
+#include <QtCore/QMetaSequence>
 
 #define EXCLUDE_GT_END(strg) strg //.endsWith(">") ? strg+" " : strg
 
@@ -3030,6 +3031,19 @@ QVariant CoreAPI::convertCheckedObjectToQVariant(JNIEnv *env, jobject object, co
                 internalTypeName = internalTypeName.chopped(1).trimmed();
             t = getTypeByQtName(internalTypeName);
             if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object)){
+                if(link->isQObject()){
+                    if(auto metaObject = metaType.metaObject()){
+                        if(QObject* o = link->qobject()){
+                            if(void* p = o->qt_metacast(metaObject->className())){
+                                return QVariant(metaType, &p);
+                            }else{
+                                return QVariant();
+                                //JavaException::raise<Java::Runtime::ClassCastException>(env, QStringLiteral("Unable to convert object of type %1 to %2").arg(o->metaObject()->className(), metaObject->className()) QTJAMBI_STACKTRACEINFO );
+                            }
+                        }
+                        return QVariant(metaType, nullptr);
+                    }
+                }
                 void* ptr = t ? link->typedPointer(*t) : link->pointer();
                 return QVariant(metaType, &ptr);
             }else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, object))
@@ -3108,24 +3122,87 @@ QVariant CoreAPI::convertCheckedObjectToQVariant(JNIEnv *env, jobject object, co
                 }
                 return QVariant(metaType);
             }
-            t = getTypeByQtName(internalTypeName);
-            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object)){
-                void* ptr = t ? link->typedPointer(*t) : link->pointer();
-                return QVariant(metaType, ptr);
-            }else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, object))
-                JavaException::raise<Java::QtJambi::QNoNativeResourcesException>(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassNamePrintable(env, object)) QTJAMBI_STACKTRACEINFO );
         }
     }
     QVariant variant = QtJambiAPI::convertJavaObjectToQVariant(env, object);
     if(variant.metaType()!=metaType){
-        if(variant.convert(metaType)){
-            return variant;
+        if(variant.canConvert(metaType)){
+            if(!variant.convert(metaType)){
+                JavaException::raiseIllegalArgumentException(env, QStringLiteral("Object of type %1 incompatible with meta type %2.").arg(QtJambiAPI::getObjectClassNamePrintable(env, object), QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
+                variant = QVariant();
+            }
+        }else{
+            if(Java::Runtime::Collection::isInstanceOf(env, object)){
+                QSharedPointer<AbstractContainerAccess> containerAccess = findContainerAccess(metaType);
+                if(containerAccess && (containerAccess->isList() || containerAccess->isSet())){
+                    registerContainerConverter(containerAccess.staticCast<AbstractSequentialAccess>(), metaType);
+                    if(!variant.convert(metaType)){
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Object of type %1 incompatible with meta type %2.").arg(QtJambiAPI::getObjectClassNamePrintable(env, object), QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
+                        variant = QVariant();
+                    }
+                }
+                if(variant.metaType()!=metaType){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 11, 0)
+#define QSequentialIterable QMetaSequence::Iterable
+#endif
+                    if(QMetaType::canConvert(metaType, QMetaType::fromType<QSequentialIterable>())){
+                        variant = QVariant(metaType);
+                        QSequentialIterable sequence = variant.value<QSequentialIterable>();
+                        jobject it = Java::Runtime::Iterable::iterator(env, object);
+                        while(Java::Runtime::Iterator::hasNext(env, it)){
+                            jobject o = Java::Runtime::Iterator::next(env, it);
+                            QVariant vo = convertCheckedObjectToQVariant(env, o, sequence.metaContainer().valueMetaType());
+#if QT_VERSION >= QT_VERSION_CHECK(6, 11, 0)
+                            sequence.append(vo);
+#else
+                            sequence.addValue(vo, QSequentialIterable::AtEnd);
+#endif
+                        }
+                    }else{
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Object of type %1 incompatible with meta type %2.").arg(QtJambiAPI::getObjectClassNamePrintable(env, object), QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
+                        variant = QVariant();
+                    }
+                }
+            }else if(Java::Runtime::Map::isInstanceOf(env, object)){
+                QSharedPointer<AbstractContainerAccess> containerAccess = findContainerAccess(metaType);
+                if(containerAccess && containerAccess->isAssociative()){
+                    registerContainerConverter(containerAccess.staticCast<AbstractAssociativeAccess>(), metaType);
+                    if(!variant.convert(metaType)){
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Object of type %1 incompatible with meta type %2.").arg(QtJambiAPI::getObjectClassNamePrintable(env, object), QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
+                        variant = QVariant();
+                    }
+                }
+                if(variant.metaType()!=metaType){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 11, 0)
+#define QAssociativeIterable QMetaAssociation::Iterable
+#endif
+                    if(QMetaType::canConvert(metaType, QMetaType::fromType<QAssociativeIterable>())){
+                        variant = QVariant(metaType);
+                        QAssociativeIterable sequence = variant.value<QAssociativeIterable>();
+                        jobject set = Java::Runtime::Map::entrySet(env, object);
+                        jobject it = Java::Runtime::Iterable::iterator(env, set);
+                        while(Java::Runtime::Iterator::hasNext(env, it)){
+                            jobject o = Java::Runtime::Iterator::next(env, it);
+                            QVariant ko = convertCheckedObjectToQVariant(env, Java::Runtime::Map$Entry::getKey(env, o), sequence.metaContainer().keyMetaType());
+                            QVariant vo = convertCheckedObjectToQVariant(env, Java::Runtime::Map$Entry::getValue(env, o), sequence.metaContainer().mappedMetaType());
+                            sequence.insertKey(ko);
+                            sequence.setValue(ko, vo);
+                        }
+                    }else{
+                        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Object of type %1 incompatible with meta type %2.").arg(QtJambiAPI::getObjectClassNamePrintable(env, object), QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
+                        variant = QVariant();
+                    }
+                }
+            }
         }
-        JavaException::raiseIllegalArgumentException(env, QStringLiteral("Object of type %1 incompatible with meta type %2.").arg(QtJambiAPI::getObjectClassNamePrintable(env, object), QLatin1String(metaType.name())) QTJAMBI_STACKTRACEINFO );
-        return QVariant();
-    }else{
-        return variant;
     }
+    return variant;
+}
+
+QVariant convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, bool allowWrappers);
+
+QVariant CoreAPI::convertJavaObjectToQVariant(JNIEnv *env, jobject java_object){
+    return ::convertJavaObjectToQVariant(env, java_object, false);
 }
 
 size_t CoreAPI::computeHash(const QMetaType& metaType, const void* ptr, size_t seed, bool* success)
@@ -3159,6 +3236,23 @@ bool CoreAPI::isJObjectWrappedMetaType(const QMetaType& metaType){
 bool CoreAPI::isNativeWrapperMetaType(const QMetaType& metaType){
     return ::isNativeWrapperMetaType(metaType);
 }
+
+struct ForwardedEventFilterPrivate{
+    QSharedPointer<QtJambiLink> link;
+    ForwardedEventFilterPrivate(QSharedPointer<QtJambiLink>&& _link) : link(std::move(_link)){
+
+    }
+};
+
+ForwardedEventFilter::ForwardedEventFilter(QtJambiNativeID nativeId)
+    : d(new ForwardedEventFilterPrivate{QtJambiLink::fromNativeId(nativeId)}) {}
+ForwardedEventFilter::~ForwardedEventFilter(){
+    delete d;
+}
+QAbstractNativeEventFilter* ForwardedEventFilter::filter() const{
+    return reinterpret_cast<QAbstractNativeEventFilter*>(d->link->pointer());
+}
+
 
 ManagedSpan::ManagedSpan() = default;
 ManagedSpan::ManagedSpan(const ManagedSpan&) = default;

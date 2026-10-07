@@ -662,8 +662,8 @@ public class TestSignals extends ApplicationInitializer{
     	});
     }
     
-	@SuppressWarnings("serial")
 	public static class NotifyingList<T> extends ArrayList<T> implements QtSignalEmitterInterface, QInstanceMemberSignals {
+		private static final long serialVersionUID = 0L;
 		public final PrivateSignal1<T> added = new PrivateSignal1<>(this);
 
 		public boolean add(T t) {

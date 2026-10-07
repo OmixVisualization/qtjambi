@@ -91,57 +91,70 @@ class MetaAttributes {
         MetaAttributes() : m_attributes(0), m_originalAttributes(0), m_href(), m_brief() { }
 
         enum Attribute {
-            None                        = 0x00000000,
+            None                        = 0x000000000,
 
-            Private                     = 0x00000001,
-            Protected                   = 0x00000002,
-            Public                      = 0x00000004,
-            Friendly                    = 0x00000008,
-            Visibility                  = 0x0000000f,
+            Private                     = 0x000000001,
+            Protected                   = 0x000000002,
+            Public                      = 0x000000004,
+            Friendly                    = 0x000000008,
+            Visibility                  = 0x00000000f,
 
-            Native                      = 0x00000010,
-            Abstract                    = 0x00000020,
-            Static                      = 0x00000040,
+            Native                      = 0x000000010,
+            Abstract                    = 0x000000020,
+            Static                      = 0x000000040,
 
-            FinalInTargetLang           = 0x00000080,
-            FinalInCpp                  = 0x00000100,
-            ForceShellImplementation    = 0x00000200,
+            FinalInTargetLang           = 0x000000080,
+            FinalInCpp                  = 0x000000100,
+            ForceShellImplementation    = 0x000000200,
 
-            GetterFunction              = 0x00000400,
-            SetterFunction              = 0x00000800,
+            GetterFunction              = 0x000000400,
+            SetterFunction              = 0x000000800,
 
-            FinalOverload               = 0x00001000,
-            InterfaceFunction           = 0x00002000,
+            FinalOverload               = 0x000001000,
+            InterfaceFunction           = 0x000002000,
 
-            PropertyReader              = 0x00004000,
-            PropertyWriter              = 0x00008000,
-            PropertyResetter            = 0x00010000,
-            PropertyNotify              = 0x00400000,
-            PropertyBindable            = 0x02000000,
+            PropertyReader              = 0x000004000,
+            PropertyWriter              = 0x000008000,
+            PropertyResetter            = 0x000010000,
+            PropertyNotify              = 0x000400000,
+            PropertyBindable            = 0x002000000,
 
-            Fake                        = 0x00020000,
+            Fake                        = 0x000020000,
 
-            Invokable                   = 0x00040000,
+            Invokable                   = 0x000040000,
 
-            PullProtectedMethodsDown    = 0x00080000,
+            PullProtectedMethodsDown    = 0x000080000,
 
-            DeclaredFinalInCpp          = 0x00100000,
+            DeclaredFinalInCpp          = 0x000100000,
 
-            Annonymous                  = 0x00200000,
+            Annonymous                  = 0x000200000,
 
-            Deprecated                  = 0x01000000,
+            Deprecated                  = 0x001000000,
 
-            ConstExpr                   = 0x04000000,
+            ConstExpr                   = 0x004000000,
 
-            Comment                     = 0x00800000,
+            Comment                     = 0x000800000,
 
-            Override                    = 0x08000000,
+            Override                    = 0x008000000,
 
-            BracketCall                 = 0x10000000,
+            BracketCall                 = 0x010000000,
 
-            IsUnion                     = 0x20000000,
+            IsUnion                     = 0x020000000,
 
             Final                       = FinalInTargetLang | FinalInCpp
+        };
+
+        enum Status{
+            Active,
+            Obsolete,
+            StatusDeprecated,
+            Ignored,
+            Preliminary
+        };
+        enum Threadsafety{
+            NoneReentrant,
+            Reentrant,
+            ThreadSafe
         };
 
         uint attributes() const { return m_attributes; }
@@ -194,12 +207,20 @@ class MetaAttributes {
         const QString& brief() const {return m_brief;}
         const QString& since() const {return m_since;}
 
+        Status status() const;
+        void setStatus(Status newStatus);
+
+        Threadsafety threadsafety() const;
+        void setThreadsafety(Threadsafety newThreadsafety);
+
     private:
         uint m_attributes;
         uint m_originalAttributes;
         QString m_href;
         QString m_brief;
         QString m_since;
+        Status m_status = Active;
+        Threadsafety m_threadsafety = NoneReentrant;
 };
 
 
@@ -812,6 +833,9 @@ class MetaFunction : public MetaAttributes {
     uint isTextStreamFormat() const;
     void setIsTextStreamFormat(uint newIsTextStreamFormat);
 
+    MetaFunction *superFunction() const;
+    void setSuperFunction(MetaFunction *newSuperFunction);
+
 private:
     QString m_name;
     QString m_original_name;
@@ -845,6 +869,7 @@ private:
     QPair<MetaFunction*,FunctionModification> m_functionTemplate;
     int m_returnScopeIndex = -1;
     QString m_returnValueComment;
+    MetaFunction* m_superFunction = nullptr;
 };
 
 class MetaEnum;
@@ -1190,7 +1215,13 @@ class MetaClass : public MetaAttributes {
 
         const ComplexTypeEntry *typeEntry() const { return m_type_entry; }
         ComplexTypeEntry *typeEntry() { return m_type_entry; }
-        void setTypeEntry(ComplexTypeEntry *type) { m_type_entry = type; }
+        void setTypeEntry(ComplexTypeEntry *type) {
+            m_type_entry = type;
+#if !defined (QT_NO_DEBUG)
+            if(type)
+                m_className = type->qualifiedCppName();
+#endif
+        }
 
         bool hasHashFunction() const;
 
@@ -1316,6 +1347,9 @@ class MetaClass : public MetaAttributes {
         QSet<QString> getAllUnimplmentablePureVirtualFunctions() const;
 
     private:
+#if !defined (QT_NO_DEBUG)
+    QString m_className;
+#endif
     uint m_namespace : 1;
     uint m_qobject : 1;
     uint m_has_virtuals : 1;

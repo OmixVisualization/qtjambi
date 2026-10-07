@@ -51,8 +51,9 @@ TypeSystem{
         }
         InjectCode{
             target: CodeClass.Java
-            Text{content: "public static final float DistanceScaleCentimeter = 1.f;\n"+
-                          "public static final float DistanceScaleMeter = 100.f;"}
+            Text{content: String.raw`
+                public static final float DistanceScaleCentimeter = 1.f;
+                public static final float DistanceScaleMeter = 100.f;`}
         }
     }
     

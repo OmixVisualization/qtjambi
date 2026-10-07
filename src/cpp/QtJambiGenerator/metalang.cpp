@@ -268,6 +268,16 @@ void MetaFunction::setIsTextStreamFormat(uint newIsTextStreamFormat)
     m_isTextStreamFormat = newIsTextStreamFormat;
 }
 
+MetaFunction *MetaFunction::superFunction() const
+{
+    return m_superFunction;
+}
+
+void MetaFunction::setSuperFunction(MetaFunction *newSuperFunction)
+{
+    m_superFunction = newSuperFunction;
+}
+
 QString MetaFunction::name() const { return m_name; }
 
 QString MetaFunction::originalName() const { return m_original_name.isEmpty() ? name() : m_original_name; }
@@ -292,7 +302,9 @@ void MetaFunction::setDeclaringClass(const MetaClass *cls) { m_declaring_class =
 
 // The class that actually implements this function
 const MetaClass *MetaFunction::implementingClass() const { return m_implementing_class; }
-void MetaFunction::setImplementingClass(const MetaClass *cls) { m_implementing_class = cls; }
+void MetaFunction::setImplementingClass(const MetaClass *cls) {
+    m_implementing_class = cls;
+}
 
 const MetaArgumentList& MetaFunction::arguments() const { return m_arguments; }
 
@@ -336,8 +348,7 @@ bool MetaFunction::needsCallThrough() const {
             || isConstructor()
             || (((ownerClass()->typeEntry()->designatedInterface() && !this->isAbstract())
              || implementingClass()->typeEntry()->isNativeIdBased()
-             || implementingClass()->typeEntry()->isQMetaObjectType()
-             || implementingClass()->typeEntry()->isQMessageLogContextType()) && !isStatic()))
+             || implementingClass()->typeEntry()->isDirectLink()) && !isStatic()))
         return true;
     if(this->isSelfReturningFunction() && implementingClass()->typeEntry()->isNativeIdBased())
         return true;
@@ -2771,21 +2782,17 @@ MetaFunctionList MetaClass::functionsInTargetLang() const {
     // Interfaces don't implement functions
     default_flags |= isInterface() ? 0 : ClassImplements;
 
-    // Only public functions in final classes
-    // default_flags |= isFinal() ? WasPublic : 0;
-    uint public_flags = isFinal() ? WasPublic : 0;
-
     // Constructors
-    MetaFunctionList returned = queryFunctions(Constructors | default_flags | public_flags);
+    MetaFunctionList returned = queryFunctions(Constructors | default_flags);
 
     // Final functions
-    returned += queryFunctions(FinalInTargetLangFunctions | NonStaticFunctions | default_flags | public_flags);
+    returned += queryFunctions(FinalInTargetLangFunctions | NonStaticFunctions | default_flags);
 
     // Virtual functions
-    returned += queryFunctions(VirtualInTargetLangFunctions | NonStaticFunctions | default_flags | public_flags);
+    returned += queryFunctions(VirtualInTargetLangFunctions | NonStaticFunctions | default_flags);
 
     // Static functions
-    returned += queryFunctions(StaticFunctions | default_flags | public_flags);
+    returned += queryFunctions(StaticFunctions | default_flags);
 
     // Empty, private functions, since they aren't caught by the other ones
     returned += queryFunctions(Empty | Invisible);
@@ -3804,7 +3811,8 @@ MetaFunctionList MetaClass::queryFunctions(uint query) const {
         }
 
         if ((query & Visible) && f->isPrivate() && !f->isAbstract()) {
-            continue;
+            if(!f->superFunction() || !f->superFunction()->isPrivate())
+                continue;
         }
 
         if ((query & VirtualInTargetLangFunctions) && f->isFinalInTargetLang()) {
@@ -3820,15 +3828,18 @@ MetaFunctionList MetaClass::queryFunctions(uint query) const {
         }
 
         if ((query & WasPublic) && !f->wasPublic() && !f->isInGlobalScope()) {
-            continue;
+            if(!f->superFunction() || !f->superFunction()->wasPublic())
+                continue;
         }
 
         if ((query & WasVisible) && f->wasPrivate() && !f->isAbstract()) {
-            continue;
+            if(!f->superFunction() || !f->superFunction()->wasPrivate())
+                continue;
         }
 
         if ((query & WasProtected) && (!f->wasProtected() || f->isInGlobalScope())) {
-            continue;
+            if(!f->superFunction() || !f->superFunction()->wasProtected())
+                continue;
         }
 
         if ((query & ClassImplements) && f->ownerClass() != f->implementingClass()) {
@@ -4389,7 +4400,7 @@ QSet<QString> MetaClass::getAllUnimplmentablePureVirtualFunctions()const{
                 functions << this->templateBaseClass()->m_functions;
                 functions << this->templateBaseClass()->m_invalidfunctions;
             }
-            for(MetaFunction* function : functions){
+            for(MetaFunction* function : std::as_const(functions)){
                 if(!function->isConstructor() &&
                         !function->isDestructor() &&
                         !function->isAbstract()){
@@ -4418,3 +4429,26 @@ uint MetaClass::returnScopeRequired() const
 }
 
 QPropertySpec *MetaFunction::propertySpec() const { return m_property_spec; }
+
+MetaAttributes::Status MetaAttributes::status() const
+{
+    return m_status;
+}
+
+void MetaAttributes::setStatus(Status newStatus)
+{
+    m_status = newStatus;
+    if(newStatus==StatusDeprecated){
+        *this += Deprecated;
+    }
+}
+
+MetaAttributes::Threadsafety MetaAttributes::threadsafety() const
+{
+    return m_threadsafety;
+}
+
+void MetaAttributes::setThreadsafety(Threadsafety newThreadsafety)
+{
+    m_threadsafety = newThreadsafety;
+}

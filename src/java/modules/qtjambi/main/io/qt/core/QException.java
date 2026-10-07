@@ -32,8 +32,12 @@ package io.qt.core;
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qexception.html">QException</a></p>
  * <p>The <code>QException</code> class provides a base class for exceptions that can be transferred across threads.</p>
+ * @serial exclude
  */
 public class QException extends RuntimeException {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	private static final long serialVersionUID = 8761466728092827817L;
 
 	QException(String message) {

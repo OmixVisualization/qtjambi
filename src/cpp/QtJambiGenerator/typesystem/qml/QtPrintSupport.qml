@@ -75,13 +75,14 @@ TypeSystem{
         InjectCode{
             target: CodeClass.ShellDeclaration
             position: Position.End
-            Text{content: "#if !defined(Q_NO_USING_KEYWORD)\n"+
-                          "    using QDialog::accepted;\n"+
-                          "#else\n"+
-                          "    inline void accepted(){\n"+
-                          "        QDialog::accepted();\n"+
-                          "    }\n"+
-                          "#endif"}
+            Text{content: String.raw`
+                #if !defined(Q_NO_USING_KEYWORD)
+                    using QDialog::accepted;
+                #else
+                    inline void accepted(){
+                        QDialog::accepted();
+                    }
+                #endif`}
         }
     }
     
@@ -168,16 +169,18 @@ TypeSystem{
             signature: "QPrinter(QPrinter::PrinterMode)"
             InjectCode{
                 position: Position.Beginning
-                Text{content: "if(io.qt.core.QCoreApplication.instance()==null)\n"+
-                              "    throw new IllegalStateException(\"Cannot create QPrinter before initializing QCoreApplication.\");"}
+                Text{content: String.raw`
+                    if(io.qt.core.QCoreApplication.instance()==null)
+                        throw new IllegalStateException("Cannot create QPrinter before initializing QCoreApplication.");`}
             }
         }
         ModifyFunction{
             signature: "QPrinter(QPrinterInfo,QPrinter::PrinterMode)"
             InjectCode{
                 position: Position.Beginning
-                Text{content: "if(io.qt.core.QCoreApplication.instance()==null)\n"+
-                              "    throw new IllegalStateException(\"Cannot create QPrinter before initializing QCoreApplication.\");"}
+                Text{content: String.raw`
+                    if(io.qt.core.QCoreApplication.instance()==null)
+                        throw new IllegalStateException("Cannot create QPrinter before initializing QCoreApplication.");`}
             }
         }
         ModifyFunction{

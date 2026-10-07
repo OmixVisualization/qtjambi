@@ -91,6 +91,7 @@
         <file alias="QtJambiWebEngineQuick.java">typesystem/java/QtJambiWebEngineQuick.java</file>
         <file alias="QtJambiWidgets.java">typesystem/java/QtJambiWidgets.java</file>
         <file alias="QtJambiStateMachine.java">typesystem/java/QtJambiStateMachine.java</file>
+        <file alias="QtJambiSerialBus.java">typesystem/java/QtJambiSerialBus.java</file>
         <file alias="QtJambiXml.java">typesystem/java/QtJambiXml.java</file>
         <file alias="QtProtobuf.qml">typesystem/qml/QtProtobuf.qml</file>
         <file alias="QtGrpc.qml">typesystem/qml/QtGrpc.qml</file>
@@ -104,6 +105,9 @@
         <file alias="QtGuiVulkan.qml">typesystem/qml/QtGuiVulkan.qml</file>
         <file alias="QtQmlDesignSupport.qml">typesystem/qml/QtQmlDesignSupport.qml</file>
         <file alias="QtLabsStyleKit.qml">typesystem/qml/QtQtLabsStyleKit.qml</file>
+        <file alias="QtCoap.qml">typesystem/qml/QtCoap.qml</file>
+        <file alias="QtMqtt.qml">typesystem/qml/QtMqtt.qml</file>
+        <file alias="QtOpcUa.qml">typesystem/qml/QtOpcUa.qml</file>
     </qresource>
     <qresource prefix="/io/qtjambi/generator/targets">
         <file alias="all.qml">targets/all.qml</file>

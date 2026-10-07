@@ -29,19 +29,10 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.LongBuffer;
-import java.nio.ShortBuffer;
-import java.util.function.Supplier;
-
-import io.qt.QtObject;
-import io.qt.QtObjectInterface;
-import io.qt.QtUninvokable;
+import java.lang.reflect.*;
+import java.nio.*;
+import java.util.function.*;
+import io.qt.*;
 
 abstract class AbstractSpan<T> extends AbstractContainer<T> implements java.lang.Iterable<T>{
 	

@@ -262,6 +262,7 @@ TypeSystem{
                 content: String.raw`
                 /**
                  * Callback for setNetworkRequestModifier.
+                 * @serial exclude
                  */
                 public interface Callback extends java.util.function.@StrictNonNull BiConsumer<io.qt.network.@StrictNonNull QNetworkRequest, io.qt.network.auth.QAbstractOAuth.@NonNull Stage>, java.io.Serializable{
                 }
@@ -272,19 +273,20 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "auto convertBiConsumer(JNIEnv* _env, jobject _consumer){\n"+
-                          "    return [consumer = JObjectWrapper(_env, _consumer)](QNetworkRequest& request,QAbstractOAuth::Stage stage){\n"+
-                          "                    if(JniEnvironment env{200}){\n"+
-                          "                        QTJAMBI_TRY{\n"+
-                          "                            jobject _request = qtjambi_cast<jobject>(env, &request);\n"+
-                          "                            InvalidateAfterUse inv(env, _request);\n"+
-                          "                            Java::Runtime::BiConsumer::accept(env, consumer.object(env), _request, qtjambi_cast<jobject>(env, stage));\n"+
-                          "                        }QTJAMBI_CATCH(const JavaException& exn){\n"+
-                          "                            exn.report(env);\n"+
-                          "                        }QTJAMBI_TRY_END\n"+
-                          "                    }\n"+
-                          "                };\n"+
-                          "}"}
+            Text{content: String.raw`
+auto convertBiConsumer(JNIEnv* _env, jobject _consumer){
+    return [consumer = JObjectWrapper(_env, _consumer)](QNetworkRequest& request,QAbstractOAuth::Stage stage){
+                    if(JniEnvironment env{200}){
+                        QTJAMBI_TRY{
+                            jobject _request = qtjambi_cast<jobject>(env, &request);
+                            InvalidateAfterUse inv(env, _request);
+                            Java::Runtime::BiConsumer::accept(env, consumer.object(env), _request, qtjambi_cast<jobject>(env, stage));
+                        }QTJAMBI_CATCH(const JavaException& exn){
+                            exn.report(env);
+                        }QTJAMBI_TRY_END
+                    }
+                };
+}`}
             since: 6.9
         }
     }

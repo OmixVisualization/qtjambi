@@ -87,6 +87,9 @@
         <condition property="retroversion" value="11" else="8">
             <istrue value="${java.module.based}"/>
         </condition>
+		<condition property="vulkan.excludes" value="" else="io/qt/gui/vulkan/**">
+            <available file="${qtjambi.generator.outputdir}/java/${module}/io/qt/gui/vulkan/QVulkanInstance.java" type="file"/>
+        </condition>
         <condition property="jsr305-dir" value="non-jsr305" else="jsr305">
             <istrue value="${qtjambi.no.jsr305}"/>
         </condition>
@@ -131,8 +134,8 @@
             </then>
         </if>
         <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build-impl">
-            <property name="jar.excludes" value=""/>
-            <property name="module.excludes" value=""/>
+            <property name="jar.excludes" value="${vulkan.excludes}"/>
+            <property name="module.excludes" value="${vulkan.excludes}"/>
         </ant>
         <if>
             <and>

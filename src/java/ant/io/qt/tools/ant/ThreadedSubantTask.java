@@ -2,8 +2,10 @@ package io.qt.tools.ant;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -158,16 +160,31 @@ public class ThreadedSubantTask extends Task {
 		try {
 			ThreadedSubantTask task = threadedSubantTasks.get();
 			if(task!=null) {
-				while(!moduleList.isEmpty()) {
+				int moduleListSize;
+				synchronized(moduleList) {
+					moduleListSize = moduleList.size();
+				}
+				while(moduleListSize>0) {
+					Set<String> keys;
 					synchronized(task.finishedModules) {
 						for(String mod : moduleList) {
 							BuildException exception = task.finishedModules.get(mod);
 							if(exception!=null)
 								throw new InterruptedException();
 						}
-						moduleList.removeAll(task.finishedModules.keySet());
-						if(!moduleList.isEmpty())
+						keys = new HashSet<>(task.finishedModules.keySet());
+					}
+					synchronized(moduleList) {
+						moduleList.removeAll(keys);
+						moduleListSize = moduleList.size();
+					}
+					if(moduleListSize>0) {
+						synchronized(task.finishedModules) {
 							task.finishedModules.wait();
+						}
+						synchronized(moduleList) {
+							moduleListSize = moduleList.size();
+						}
 					}
 				}
 			}

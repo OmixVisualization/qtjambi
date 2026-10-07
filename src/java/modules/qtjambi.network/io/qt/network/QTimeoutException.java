@@ -33,6 +33,7 @@ package io.qt.network;
  * The QTimeoutException class is thrown when initializing server connections.
  * @see QTcpServer#waitForNewConnection(int)
  * @see QLocalServer#waitForNewConnection(int)
+ * @serial exclude
  */
 public class QTimeoutException extends RuntimeException {
     private static final long serialVersionUID = 1L;

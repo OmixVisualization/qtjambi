@@ -96,9 +96,10 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(in)\n"+
-                                  "JavaException::raise<Java::Runtime::IllegalAccessException>(%env, \"Calling signal downloadRequested from Java not allowed.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "QQuickWebEngineDownloadRequest* %out{nullptr};"}
+                    Text{content: String.raw`
+                        Q_UNUSED(in)
+                        JavaException::raise<Java::Runtime::IllegalAccessException>(%env, "Calling signal downloadRequested from Java not allowed." QTJAMBI_STACKTRACEINFO );
+                        QQuickWebEngineDownloadRequest* %out{nullptr};`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -116,9 +117,10 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(in)\n"+
-                                  "JavaException::raise<Java::Runtime::IllegalAccessException>(%env, \"Calling signal downloadFinished from Java not allowed.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "QQuickWebEngineDownloadRequest* %out{nullptr};"}
+                    Text{content: String.raw`
+                        Q_UNUSED(in)
+                        JavaException::raise<Java::Runtime::IllegalAccessException>(%env, "Calling signal downloadFinished from Java not allowed." QTJAMBI_STACKTRACEINFO );
+                        QQuickWebEngineDownloadRequest* %out{nullptr};`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell

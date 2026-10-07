@@ -45,11 +45,6 @@ public class TestFlagsAndEnumParametersQt69 extends ApplicationInitializer{
 	}
 	
 	private static class AutoFlags extends QLongFlags<AutoFlag>{
-		private static final long serialVersionUID = 1297668415339650986L;
-
-		long value() {
-			return super.longValue();
-		}
 	}
 	
 	@Test

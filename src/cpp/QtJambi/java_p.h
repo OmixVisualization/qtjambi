@@ -49,7 +49,7 @@
 namespace Java{
     namespace QtQml{
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QQmlListProperty,
-                                 QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(elementType))
+                                 QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(elementType))
         namespace Internal{
             QTJAMBI_REPOSITORY_DECLARE_CLASS(QmlTypes$JarImport,
                                              QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
@@ -94,7 +94,7 @@ namespace Java{
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(registerCleanup))
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QFunctionPointerUtil$CppToJavaInvocationHandler,
                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(proxy)
-                                         QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(peer))
+                                         QTJAMBI_REPOSITORY_DECLARE_LONG_WRITABLE_FIELD(peer))
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QGenericArgumentType,
                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(metaType)
                                          QTJAMBI_REPOSITORY_DECLARE_CLASS_FIELD(classType)
@@ -220,8 +220,8 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaType$GenericTypeInterface, QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(metaType))
 
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaType$GenericObject, QTJAMBI_REPOSITORY_DECLARE_INT_FIELD(type))
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaType$GenericGadget, QTJAMBI_REPOSITORY_DECLARE_INT_FIELD(type))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaType$GenericObject, QTJAMBI_REPOSITORY_DECLARE_INT_WRITABLE_FIELD(type))
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaType$GenericGadget, QTJAMBI_REPOSITORY_DECLARE_INT_WRITABLE_FIELD(type))
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaType$GenericEnumerator,QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaType$GenericByteEnumerator,QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaType$GenericShortEnumerator,QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
@@ -261,7 +261,7 @@ namespace Java{
                                          QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(metaTypeID)
                                          )
         QTJAMBI_REPOSITORY_DECLARE_CLASS(AbstractContainer,
-                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(__rcContainer)
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(__rcContainer)
                                          )
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(SmartPointer,
@@ -353,6 +353,9 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(TreeSet,
                        QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(AbstractMap$SimpleImmutableEntry,
+            QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(Map$Entry,
             QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getKey)
@@ -558,9 +561,6 @@ namespace Java{
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(extractContainerAccessLib)
                                          )
 
-        QTJAMBI_REPOSITORY_DECLARE_CLASS(EnumUtility,
-            QTJAMBI_REPOSITORY_DECLARE_STATIC_CLASS_METHOD(getEnumForQFlags)
-        )
         QTJAMBI_REPOSITORY_DECLARE_CLASS(ReferenceUtility$RCList,
                       QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 
@@ -583,7 +583,8 @@ namespace Java{
                       QTJAMBI_REPOSITORY_DECLARE_CLASS_FIELD(type))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(MetaObjectUtility,
-                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(analyze))
+                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(analyze)
+                      QTJAMBI_REPOSITORY_DECLARE_STATIC_CLASS_METHOD(getEnumForQFlags))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(MetaObjectData$SignalInfo,
                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(field)
@@ -641,7 +642,7 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConstructInPlace,
                                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
-                                         QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(native_id))
+                                         QTJAMBI_REPOSITORY_DECLARE_LONG_WRITABLE_FIELD(native_id))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QtEnumerator,
                                          QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(value)
@@ -658,15 +659,15 @@ namespace Java{
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(comparator))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QFlags,
-                                         QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(intValue)
-                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setIntValue))
+                                         QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(toInt)
+                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setValue))
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QFlags$ConcreteWrapper,
                                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,9,0)
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QLongFlags,
-                                         QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(longValue)
-                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setLongValue))
+                                         QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(value)
+                                         QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setValue))
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QLongFlags$ConcreteWrapper,
                                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 #endif
@@ -726,7 +727,7 @@ namespace Java{
                       QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(pointer))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QtGadget,
-                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(staticMetaObject)
+                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(staticMetaObject)
         )
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QInstanceMemberSignals$Signal0,

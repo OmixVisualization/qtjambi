@@ -67,6 +67,9 @@ public:
     QString getPrecompiledHeader() const;
     void setPrecompiledHeader(const QString &newPrecompiledHeader);
 
+    bool getNoPackageInfo() const;
+    void setNoPackageInfo(bool newNoPackageInfo);
+
 signals:
     void packageNameChanged();
 
@@ -86,6 +89,8 @@ signals:
 
     void precompiledHeaderChanged();
 
+    void noPackageInfoChanged();
+
 private:
     QString packageName;
     QString targetName;
@@ -96,6 +101,7 @@ private:
     QString description;
     QString defaultPPCondition;
     QString precompiledHeader;
+    bool noPackageInfo = false;
     Q_PROPERTY(QString packageName READ getPackageName WRITE setPackageName NOTIFY packageNameChanged)
     Q_PROPERTY(QString defaultSuperClass READ getDefaultSuperClass WRITE setDefaultSuperClass NOTIFY defaultSuperClassChanged)
     Q_PROPERTY(QString qtLibrary READ getQtLibrary WRITE setQtLibrary NOTIFY qtLibraryChanged)
@@ -105,6 +111,7 @@ private:
     Q_PROPERTY(QString targetName READ getTargetName WRITE setTargetName NOTIFY targetNameChanged)
     Q_PROPERTY(QString defaultPPCondition READ getDefaultPPCondition WRITE setDefaultPPCondition NOTIFY defaultPPConditionChanged FINAL)
     Q_PROPERTY(QString precompiledHeader READ getPrecompiledHeader WRITE setPrecompiledHeader NOTIFY precompiledHeaderChanged FINAL)
+    Q_PROPERTY(bool noPackageInfo READ getNoPackageInfo WRITE setNoPackageInfo NOTIFY noPackageInfoChanged FINAL)
 };
 
 class Module : public AbstractObject{

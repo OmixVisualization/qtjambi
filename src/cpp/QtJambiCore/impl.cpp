@@ -55,6 +55,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtJambi/Template1Cast>
 #include <QtJambi/ContainerCast>
 #include <QtJambi/Template2Cast>
+#include <QtJambi/QNativeEvent>
 #include <QtJambi/QMap>
 #include <QtJambi/QHash>
 #include "future_p.h"
@@ -81,6 +82,9 @@ QT_WARNING_DISABLE_DEPRECATED
 #endif
 #endif
 
+#if defined(Q_OS_WIN)
+#include <windows.h>
+#endif
 
 #include <QtJambi/Cast>
 
@@ -4851,6 +4855,515 @@ extern "C" JNIEXPORT void JNICALL Java_io_qt_core_QCoreApplication_requestPermis
 
 #endif
 #endif
+
+extern "C" JNIEXPORT jint JNICALL Java_io_qt_core_QNativeEvent_messageType
+    (JNIEnv * __jni_env, jclass, const QNativeEvent *__qt_this)
+{
+    jint result{0};
+    QTJAMBI_NATIVE_METHOD_CALL("QNativeEvent::messageType()")
+    QTJAMBI_TRY{
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+#if defined(Q_OS_WIN)
+        if(__qt_this->m_eventType=="windows_generic_MSG")
+            result = 1;
+        else if(__qt_this->m_eventType=="windows_dispatcher_MSG")
+            result = 2;
+#elif defined(Q_OS_MACOS)
+        if(__qt_this->m_eventType=="mac_generic_NSEvent")
+            result = 3;
+        else if(__qt_this->m_eventType=="NSEvent")
+            result = 4;
+#elif defined(Q_OS_X11)
+        if(__qt_this->m_eventType=="xcb_generic_event_t")
+            result = 5;
+#endif
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QNativeEvent_messagePointer
+    (JNIEnv * __jni_env, jclass, const QNativeEvent *__qt_this)
+{
+    jobject result{0};
+    QTJAMBI_NATIVE_METHOD_CALL("QNativeEvent::message")
+    QTJAMBI_TRY{
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        result = QtJambiAPI::convertNativeToQNativePointer(__jni_env, __qt_this->m_message, QNativePointer::Type::Pointer, -1, 1);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+#if defined(Q_OS_WIN)
+#define MSG_USAGE(...) __VA_ARGS__
+#else
+#define MSG_USAGE(...) JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
+#endif
+
+#define MSG_METHOD(type,name)\
+extern "C" JNIEXPORT type JNICALL Java_io_qt_core_QNativeEvent_00024MSG_##name\
+    (JNIEnv * __jni_env, jclass, const QNativeEvent *__qt_this)\
+{\
+    type result{0};\
+    QTJAMBI_NATIVE_METHOD_CALL("MSG::" #name)\
+    QTJAMBI_TRY{\
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);\
+        MSG_USAGE(\
+        MSG* msg = static_cast<MSG*>(__qt_this->m_message);\
+        QtJambiAPI::checkNullPointer(__jni_env, msg);\
+        result = type(msg->name);)\
+    }QTJAMBI_CATCH(const JavaException& exn){\
+        exn.raiseInJava(__jni_env);\
+    }QTJAMBI_TRY_END\
+    return result;\
+}
+
+MSG_METHOD(jint,message)
+MSG_METHOD(jlong,wParam)
+MSG_METHOD(jlong,lParam)
+MSG_METHOD(jint,time)
+MSG_METHOD(jlong,hwnd)
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QNativeEvent_00024MSG_point
+    (JNIEnv * __jni_env, jclass, const QNativeEvent *__qt_this)
+{
+    jobject result{0};
+    QTJAMBI_NATIVE_METHOD_CALL("MSG::pt")
+    QTJAMBI_TRY{
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+#if defined(Q_OS_WIN)
+        MSG* msg = static_cast<MSG*>(__qt_this->m_message);
+        QtJambiAPI::checkNullPointer(__jni_env, msg);
+        result = qtjambi_cast<jobject>(__jni_env, QPoint{msg->pt.x, msg->pt.y});
+#endif
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QNativeEvent_00024MSG_asBuffer
+    (JNIEnv * __jni_env, jclass, const QNativeEvent *__qt_this)
+{
+    jobject result{0};
+    QTJAMBI_NATIVE_METHOD_CALL("MSG::asBuffer()")
+    QTJAMBI_TRY{
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+#if defined(Q_OS_WIN)
+        MSG* msg = static_cast<MSG*>(__qt_this->m_message);
+        QtJambiAPI::checkNullPointer(__jni_env, msg);
+        result = __jni_env->NewDirectByteBuffer(msg, sizeof(MSG));
+#endif
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+#if defined(Q_OS_MACOS)
+jint nse_type(void* message);
+jobject nse_asBuffer(JNIEnv * __jni_env, void* message);
+#define MM_DECL(...) __VA_ARGS__
+#define MM_USAGE(...) __VA_ARGS__
+#else
+#define MM_DECL(...)
+#define MM_USAGE(...) JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
+#endif
+
+#define NS_EVENT_STATIC_METHOD(type,name)\
+MM_DECL(type nse_##name(JNIEnv * __jni_env);)\
+extern "C" JNIEXPORT type JNICALL Java_io_qt_core_QNativeEvent_00024NSEvent_##name\
+    (JNIEnv * __jni_env, jclass)\
+{\
+    type result{0};\
+    QTJAMBI_NATIVE_METHOD_CALL("NSEvent::" #name)\
+    QTJAMBI_TRY{\
+        MM_USAGE(result = nse_##name(__jni_env);)\
+    }QTJAMBI_CATCH(const JavaException& exn){\
+        exn.raiseInJava(__jni_env);\
+    }QTJAMBI_TRY_END\
+    return result;\
+}
+
+#define NS_EVENT_METHOD(type,name)\
+MM_DECL(type nse_##name(JNIEnv * __jni_env, void* message);)\
+extern "C" JNIEXPORT type JNICALL Java_io_qt_core_QNativeEvent_00024NSEvent_##name\
+    (JNIEnv * __jni_env, jclass, const QNativeEvent *__qt_this)\
+{\
+    type result{0};\
+    QTJAMBI_NATIVE_METHOD_CALL("NSEvent::" #name)\
+    QTJAMBI_TRY{\
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);\
+        MM_USAGE(result = nse_##name(__jni_env, __qt_this->m_message);)\
+    }QTJAMBI_CATCH(const JavaException& exn){\
+        exn.raiseInJava(__jni_env);\
+    }QTJAMBI_TRY_END\
+    return result;\
+}
+
+NS_EVENT_METHOD(jint,buttonNumber)
+NS_EVENT_METHOD(jint,clickCount)
+NS_EVENT_METHOD(jlong,associatedEventsMask)
+NS_EVENT_METHOD(jint,modifierFlags)
+NS_EVENT_METHOD(jint,type)
+NS_EVENT_METHOD(jshort,subtype)
+NS_EVENT_METHOD(jstring,characters)
+NS_EVENT_METHOD(jstring,charactersIgnoringModifiers)
+NS_EVENT_METHOD(jobject,locationInWindow)
+NS_EVENT_METHOD(double,timestamp)
+NS_EVENT_METHOD(jlong,window)
+NS_EVENT_METHOD(jshort,keyCode)
+NS_EVENT_METHOD(double,deltaX)
+NS_EVENT_METHOD(double,deltaY)
+NS_EVENT_METHOD(double,deltaZ)
+NS_EVENT_METHOD(jboolean,hasPreciseScrollingDeltas)
+NS_EVENT_METHOD(double,scrollingDeltaX)
+NS_EVENT_METHOD(double,scrollingDeltaY)
+NS_EVENT_METHOD(jint,momentumPhase)
+NS_EVENT_METHOD(jboolean,isDirectionInvertedFromDevice)
+NS_EVENT_METHOD(jboolean,isARepeat)
+NS_EVENT_STATIC_METHOD(jint,doubleClickInterval)
+NS_EVENT_STATIC_METHOD(jobject,mouseLocation)
+NS_EVENT_STATIC_METHOD(double,keyRepeatInterval)
+NS_EVENT_STATIC_METHOD(double,keyRepeatDelay)
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QNativeEvent_00024NSEvent_asBuffer
+    (JNIEnv * __jni_env, jclass, const QNativeEvent *__qt_this)
+{
+    jobject result{0};
+    QTJAMBI_NATIVE_METHOD_CALL("NSEvent::asBuffer()")
+    QTJAMBI_TRY{
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        MM_USAGE(result = nse_asBuffer(__jni_env, __qt_this->m_message);)
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+struct TypeEventFilter : ForwardedEventFilter{
+    QByteArray m_eventType;
+    TypeEventFilter(QtJambiNativeID nativeId, const QByteArray& eventType)
+        : ForwardedEventFilter(nativeId), m_eventType(eventType) {}
+
+    bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override {
+        if(eventType==m_eventType){
+            if(auto filter = ForwardedEventFilter::filter())
+                return filter->nativeEventFilter(eventType, message, result);
+        }
+        return false;
+    }
+};
+
+struct TypesEventFilter : ForwardedEventFilter{
+    QSet<QByteArray> m_eventTypes;
+    TypesEventFilter(QtJambiNativeID nativeId, const QSet<QByteArray>& eventTypes)
+        : ForwardedEventFilter(nativeId), m_eventTypes(eventTypes) {}
+    TypesEventFilter(QtJambiNativeID nativeId, QSet<QByteArray>&& eventTypes)
+        : ForwardedEventFilter(nativeId), m_eventTypes(std::move(eventTypes)) {}
+
+    bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override {
+        if(m_eventTypes.contains(eventType)){
+            if(auto filter = ForwardedEventFilter::filter())
+                return filter->nativeEventFilter(eventType, message, result);
+        }
+        return false;
+    }
+};
+
+#if defined(Q_OS_WIN)
+struct WindowsMSGEventFilter : ForwardedEventFilter{
+    WindowsMSGEventFilter(QtJambiNativeID nativeId)
+        : ForwardedEventFilter(nativeId) {}
+
+    bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override {
+        if(eventType=="windows_generic_MSG" || eventType=="windows_dispatcher_MSG"){
+            if(auto filter = ForwardedEventFilter::filter())
+                return filter->nativeEventFilter(eventType, message, result);
+        }
+        return false;
+    }
+};
+
+struct WindowsMSGMessageEventFilter : ForwardedEventFilter{
+    quint32 m_message;
+    WindowsMSGMessageEventFilter(QtJambiNativeID nativeId, quint32 message)
+        : ForwardedEventFilter(nativeId), m_message(message) {}
+
+    bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override {
+        if(eventType=="windows_generic_MSG" || eventType=="windows_dispatcher_MSG"){
+            MSG* msg = static_cast<MSG*>(message);
+            if(msg && m_message==msg->message){
+                if(auto filter = ForwardedEventFilter::filter())
+                    return filter->nativeEventFilter(eventType, message, result);
+            }
+        }
+        return false;
+    }
+};
+
+struct WindowsMSGMessagesEventFilter : ForwardedEventFilter{
+    QSet<quint32> m_messages;
+    WindowsMSGMessagesEventFilter(QtJambiNativeID nativeId, const QSet<quint32>& messages)
+        : ForwardedEventFilter(nativeId), m_messages(messages) {}
+    WindowsMSGMessagesEventFilter(QtJambiNativeID nativeId, QSet<quint32>&& messages)
+        : ForwardedEventFilter(nativeId), m_messages(std::move(messages)) {}
+
+    bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override {
+        if(eventType=="windows_generic_MSG" || eventType=="windows_dispatcher_MSG"){
+            MSG* msg = static_cast<MSG*>(message);
+            if(msg && m_messages.contains(msg->message)){
+                if(auto filter = ForwardedEventFilter::filter())
+                    return filter->nativeEventFilter(eventType, message, result);
+            }
+        }
+        return false;
+    }
+};
+#elif defined(Q_OS_MACOS)
+struct MacNSEventFilter : ForwardedEventFilter{
+    MacNSEventFilter(QtJambiNativeID nativeId)
+        : ForwardedEventFilter(nativeId) {}
+
+    bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override {
+        if(eventType=="mac_generic_NSEvent" || eventType=="NSEvent"){
+            if(auto filter = ForwardedEventFilter::filter())
+                return filter->nativeEventFilter(eventType, message, result);
+        }
+        return false;
+    }
+};
+
+struct MacNSTypeEventFilter : ForwardedEventFilter{
+    qint32 m_type;
+    MacNSTypeEventFilter(QtJambiNativeID nativeId, qint32 type)
+        : ForwardedEventFilter(nativeId), m_type(type) {}
+
+    bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override {
+        if(eventType=="mac_generic_NSEvent" || eventType=="NSEvent"){
+            if(message && m_type==nse_type(message)){
+                if(auto filter = ForwardedEventFilter::filter())
+                    return filter->nativeEventFilter(eventType, message, result);
+            }
+        }
+        return false;
+    }
+};
+
+struct MacNSTypesEventFilter : ForwardedEventFilter{
+    QSet<qint32> m_types;
+    MacNSTypesEventFilter(QtJambiNativeID nativeId, const QSet<qint32>& types)
+        : ForwardedEventFilter(nativeId), m_types(types) {}
+    MacNSTypesEventFilter(QtJambiNativeID nativeId, QSet<qint32>&& types)
+        : ForwardedEventFilter(nativeId), m_types(std::move(types)) {}
+
+    bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override {
+        if(eventType=="mac_generic_NSEvent" || eventType=="NSEvent"){
+            if(message && m_types.contains(nse_type(message))){
+                if(auto filter = ForwardedEventFilter::filter())
+                    return filter->nativeEventFilter(eventType, message, result);
+            }
+        }
+        return false;
+    }
+};
+#endif
+
+namespace Java{
+namespace QtCore
+{
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QAbstractNativeEventFilter$ConcreteWrapper,
+                             QTJAMBI_REPOSITORY_DECLARE_OBJECT_WRITABLE_FIELD(_rc_filter))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QAbstractNativeEventFilter$ConcreteWrapper,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(_rc_filter,Ljava/lang/Object;)
+                                )
+}
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QAbstractNativeEventFilter_asSelectiveEventFilterEventType
+    (JNIEnv *__jni_env,
+        jclass,
+        QtJambiNativeID filter, QtJambiNativeID eventType)
+{
+    jobject result{nullptr};
+    QTJAMBI_NATIVE_METHOD_CALL("QAbstractNativeEventFilter::asSelectiveEventFilterEventType(...)")
+    QTJAMBI_TRY {
+        const QByteArray& __qt_eventType = qtjambi_cast<const QByteArray&>(__jni_env, eventType);
+        QAbstractNativeEventFilter * __qt_result = new TypeEventFilter(filter, __qt_eventType);
+        result = qtjambi_cast<jobject>(__jni_env, __qt_result);
+        QtJambiAPI::setJavaOwnership(__jni_env, result);
+        Java::QtCore::QAbstractNativeEventFilter$ConcreteWrapper::set__rc_filter(__jni_env, result, CoreAPI::javaObject(filter, __jni_env));
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QAbstractNativeEventFilter_asSelectiveEventFilterEventTypes
+    (JNIEnv *__jni_env,
+        jclass,
+        QtJambiNativeID filter, QtJambiNativeID eventTypes)
+{
+    jobject result{nullptr};
+    QTJAMBI_NATIVE_METHOD_CALL("QAbstractNativeEventFilter::asSelectiveEventFilterEventTypes(...)")
+    QTJAMBI_TRY {
+        QSet<QByteArray>& __qt_eventTypes = qtjambi_cast<QSet<QByteArray>&>(__jni_env, eventTypes);
+        QAbstractNativeEventFilter * __qt_result = new TypesEventFilter(filter, std::move(__qt_eventTypes));
+        result = qtjambi_cast<jobject>(__jni_env, __qt_result);
+        QtJambiAPI::setJavaOwnership(__jni_env, result);
+        Java::QtCore::QAbstractNativeEventFilter$ConcreteWrapper::set__rc_filter(__jni_env, result, CoreAPI::javaObject(filter, __jni_env));
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+    return result;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QAbstractNativeEventFilter_asSelectiveWindowsMSGEventFilter
+    (JNIEnv *__jni_env,
+        jclass,
+        QtJambiNativeID filter)
+{
+    jobject result{nullptr};
+#if defined(Q_OS_WIN)
+    QTJAMBI_NATIVE_METHOD_CALL("QAbstractNativeEventFilter::asSelectiveWindowsMSGEventFilter(...)")
+    QTJAMBI_TRY {
+        QAbstractNativeEventFilter * __qt_result = new WindowsMSGEventFilter(filter);
+        result = qtjambi_cast<jobject>(__jni_env, __qt_result);
+        QtJambiAPI::setJavaOwnership(__jni_env, result);
+        Java::QtCore::QAbstractNativeEventFilter$ConcreteWrapper::set__rc_filter(__jni_env, result, CoreAPI::javaObject(filter, __jni_env));
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+#else
+    Q_UNUSED(__jni_env)
+    Q_UNUSED(filter)
+#endif
+    return result;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QAbstractNativeEventFilter_asSelectiveWindowsMSGEventFilterMessage
+    (JNIEnv *__jni_env,
+        jclass,
+        QtJambiNativeID filter, jint message)
+{
+    jobject result{nullptr};
+#if defined(Q_OS_WIN)
+    QTJAMBI_NATIVE_METHOD_CALL("QAbstractNativeEventFilter::asSelectiveWindowsMSGEventFilterMessage(...)")
+    QTJAMBI_TRY {
+        QAbstractNativeEventFilter * __qt_result = new WindowsMSGMessageEventFilter(filter, message);
+        result = qtjambi_cast<jobject>(__jni_env, __qt_result);
+        QtJambiAPI::setJavaOwnership(__jni_env, result);
+        Java::QtCore::QAbstractNativeEventFilter$ConcreteWrapper::set__rc_filter(__jni_env, result, CoreAPI::javaObject(filter, __jni_env));
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+#else
+    Q_UNUSED(__jni_env)
+    Q_UNUSED(filter)
+    Q_UNUSED(message)
+#endif
+    return result;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QAbstractNativeEventFilter_asSelectiveWindowsMSGEventFilterMessages
+    (JNIEnv *__jni_env,
+        jclass,
+        QtJambiNativeID filter, QtJambiNativeID messages)
+{
+    jobject result{nullptr};
+#if defined(Q_OS_WIN)
+    QTJAMBI_NATIVE_METHOD_CALL("QAbstractNativeEventFilter::asSelectiveWindowsMSGEventFilterMessages(...)")
+    QTJAMBI_TRY {
+        QSet<quint32>& __qt_messages = qtjambi_cast<QSet<quint32>&>(__jni_env, messages);
+        QAbstractNativeEventFilter * __qt_result = new WindowsMSGMessagesEventFilter(filter, std::move(__qt_messages));
+        result = qtjambi_cast<jobject>(__jni_env, __qt_result);
+        QtJambiAPI::setJavaOwnership(__jni_env, result);
+        Java::QtCore::QAbstractNativeEventFilter$ConcreteWrapper::set__rc_filter(__jni_env, result, CoreAPI::javaObject(filter, __jni_env));
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+#else
+    Q_UNUSED(__jni_env)
+    Q_UNUSED(filter)
+    Q_UNUSED(messages)
+#endif
+    return result;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QAbstractNativeEventFilter_asSelectiveMacNSEventFilter
+    (JNIEnv *__jni_env,
+        jclass,
+        QtJambiNativeID filter)
+{
+    jobject result{nullptr};
+#if defined(Q_OS_MACOS)
+    QTJAMBI_NATIVE_METHOD_CALL("QAbstractNativeEventFilter::asSelectiveMacNSEventFilter(...)")
+    QTJAMBI_TRY {
+        QAbstractNativeEventFilter * __qt_result = new MacNSEventFilter(filter);
+        result = qtjambi_cast<jobject>(__jni_env, __qt_result);
+        QtJambiAPI::setJavaOwnership(__jni_env, result);
+        Java::QtCore::QAbstractNativeEventFilter$ConcreteWrapper::set__rc_filter(__jni_env, result, CoreAPI::javaObject(filter, __jni_env));
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+#else
+    Q_UNUSED(__jni_env)
+    Q_UNUSED(filter)
+#endif
+    return result;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QAbstractNativeEventFilter_asSelectiveMacNSEventFilterType
+    (JNIEnv *__jni_env,
+        jclass,
+        QtJambiNativeID filter, jint type)
+{
+    jobject result{nullptr};
+#if defined(Q_OS_MACOS)
+    QTJAMBI_NATIVE_METHOD_CALL("QAbstractNativeEventFilter::asSelectiveMacNSEventFilterType(...)")
+    QTJAMBI_TRY {
+        QAbstractNativeEventFilter * __qt_result = new MacNSTypeEventFilter(filter, type);
+        result = qtjambi_cast<jobject>(__jni_env, __qt_result);
+        QtJambiAPI::setJavaOwnership(__jni_env, result);
+        Java::QtCore::QAbstractNativeEventFilter$ConcreteWrapper::set__rc_filter(__jni_env, result, CoreAPI::javaObject(filter, __jni_env));
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+#else
+    Q_UNUSED(__jni_env)
+    Q_UNUSED(filter)
+    Q_UNUSED(type)
+#endif
+    return result;
+}
+
+extern "C" JNIEXPORT jobject JNICALL Java_io_qt_core_QAbstractNativeEventFilter_asSelectiveMacNSEventFilterTypes
+    (JNIEnv *__jni_env,
+        jclass,
+        QtJambiNativeID filter, QtJambiNativeID types)
+{
+    jobject result{nullptr};
+#if defined(Q_OS_MACOS)
+    QTJAMBI_NATIVE_METHOD_CALL("QAbstractNativeEventFilter::asSelectiveMacNSEventFilterTypes(...)")
+    QTJAMBI_TRY {
+        QSet<qint32>& __qt_messages = qtjambi_cast<QSet<qint32>&>(__jni_env, types);
+        QAbstractNativeEventFilter * __qt_result = new MacNSTypesEventFilter(filter, std::move(__qt_messages));
+        result = qtjambi_cast<jobject>(__jni_env, __qt_result);
+        QtJambiAPI::setJavaOwnership(__jni_env, result);
+        Java::QtCore::QAbstractNativeEventFilter$ConcreteWrapper::set__rc_filter(__jni_env, result, CoreAPI::javaObject(filter, __jni_env));
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+#else
+    Q_UNUSED(__jni_env)
+    Q_UNUSED(filter)
+    Q_UNUSED(types)
+#endif
+    return result;
+}
 
 struct Dummy{
     QVariantAnimation::Interpolator func;

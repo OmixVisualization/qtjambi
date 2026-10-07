@@ -310,16 +310,48 @@ class QCamera__{
 }// class
 
 class QAudioSink__{
+    /**
+     * 32 bit floating point data processor for this source.
+     * @see QAudioSink#start(FloatConsumer)
+     */
     public interface FloatConsumer extends java.util.function.Consumer<io.qt.core.@NonNull QSpan<Float>>{}
+    /**
+     * 32 bit integer data processor for this source.
+     * @see QAudioSink#start(IntConsumer)
+     */
     public interface IntConsumer extends java.util.function.Consumer<io.qt.core.@NonNull QSpan<Integer>>{}
+    /**
+     * 16 bit integer data processor for this source.
+     * @see QAudioSink#start(ShortConsumer)
+     */
     public interface ShortConsumer extends java.util.function.Consumer<io.qt.core.@NonNull QSpan<Short>>{}
+    /**
+     * 8 bit integer data processor for this source.
+     * @see QAudioSink#start(ByteConsumer)
+     */
     public interface ByteConsumer extends java.util.function.Consumer<io.qt.core.@NonNull QSpan<Byte>>{}
 }// class
 
 class QAudioSource__{
+    /**
+     * 32 bit floating point data processor for this source.
+     * @see QAudioSource#start(FloatConsumer)
+     */
     public interface FloatConsumer extends java.util.function.Consumer<io.qt.core.@NonNull QConstSpan<Float>>{}
+    /**
+     * 32 bit integer data processor for this source.
+     * @see QAudioSource#start(IntConsumer)
+     */
     public interface IntConsumer extends java.util.function.Consumer<io.qt.core.@NonNull QConstSpan<Integer>>{}
+    /**
+     * 16 bit integer data processor for this source.
+     * @see QAudioSource#start(ShortConsumer)
+     */
     public interface ShortConsumer extends java.util.function.Consumer<io.qt.core.@NonNull QConstSpan<Short>>{}
+    /**
+     * 8 bit integer data processor for this source.
+     * @see QAudioSource#start(ByteConsumer)
+     */
     public interface ByteConsumer extends java.util.function.Consumer<io.qt.core.@NonNull QConstSpan<Byte>>{}
 }// class
 

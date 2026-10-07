@@ -60,13 +60,40 @@ void DocModel::addClass(const DocClass* cls){
     m_classes.insert(cls->fullName(), cls);
 }
 
+void DocModel::addTypeDef(const DocTypeDef* cls){
+    Q_ASSERT(cls);
+    m_typedefs.insert(cls->fullName(), cls);
+}
+
 void DocModel::addEnum(const DocEnum* enm){
     Q_ASSERT(enm);
     m_enums[enm->fullName()] = enm;
 }
 
+void DocModel::addModule(const DocModule* md){
+    Q_ASSERT(md);
+    m_modules[md->fullName()] = md;
+}
+
+void DocModel::addPage(const DocPage* md){
+    Q_ASSERT(md);
+    m_pages[md->fullName()] = md;
+}
+
+const DocTypeDef* DocModel::getTypeDef(const QString& name) const{
+    return m_typedefs[name];
+}
+
 const DocClass* DocModel::getClass(const QString& name) const{
     return m_classes[name];
+}
+
+const DocModule* DocModel::getModule(const QString& name) const{
+    return m_modules[name];
+}
+
+const DocPage* DocModel::getPage(const QString& name) const{
+    return m_pages[name];
 }
 
 const DocEnum* DocModel::getEnum(const QString& name) const{

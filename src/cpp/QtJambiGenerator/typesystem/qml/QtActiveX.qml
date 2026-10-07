@@ -79,10 +79,11 @@ TypeSystem{
     InjectCode{
         target: CodeClass.MetaInfo
         position: Position.End
-        Text{content: "#if defined(Q_OS_WIN)\n"+
-                      "RegistryAPI::registerMetaType<HRESULT>(\"HRESULT\");\n"+
-                      "RegistryAPI::registerPrimitiveTypeInfo<HRESULT>(\"HRESULT\", \"int\");\n"+
-                      "#endif"}
+        Text{content: String.raw`
+            #if defined(Q_OS_WIN)
+            RegistryAPI::registerMetaType<HRESULT>("HRESULT");
+            RegistryAPI::registerPrimitiveTypeInfo<HRESULT>("HRESULT", "int");
+            #endif`}
     }
     
     RequiredLibrary{

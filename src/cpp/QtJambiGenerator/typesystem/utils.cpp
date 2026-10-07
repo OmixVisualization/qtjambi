@@ -174,10 +174,14 @@ QString TemplateInstance::expandCode() const {
             }
         }
         int sp = -1;
+        QString indents;
+        for(uint i = 0; i<m_indents; ++i) {
+            indents += "    ";
+        }
         QString spaces;
         QString cleanedCode;
         QTextStream s(&cleanedCode);
-        s << m_indent << "// TEMPLATE - " << m_name << " - START" << Qt::endl;
+        //s << indents << m_indent << "// TEMPLATE - " << m_name << " - START" << Qt::endl;
         for(QString line : lines) {
             if(!line.isEmpty() && line[0]==QLatin1Char('\r')){
                 line = line.mid(1);
@@ -206,10 +210,10 @@ QString TemplateInstance::expandCode() const {
             if(!QString(line).trimmed().isEmpty() || sp>=0){
                 if(line.startsWith(spaces))
                     line = line.mid(sp);
-                s << m_indent << line << Qt::endl;
+                s << indents << m_indent << line << Qt::endl;
             }
         }
-        s << m_indent << "// TEMPLATE - " << m_name << " - END";
+        //s << indents << m_indent << "// TEMPLATE - " << m_name << " - END" << Qt::endl;
         return cleanedCode;
     } else {
         ReportHandler::warning("insert-template referring to non-existing template '" + m_name + "'");

@@ -32,7 +32,11 @@
 #ifndef ITERATORS_P_H
 #define ITERATORS_P_H
 
+#include <QtJambi/QtJambiAPI>
 #include <QtJambi/ContainerAPI>
+#include <QtCore/QVersionNumber>
+#include <QtCore/QJsonArray>
+#include <QtCore/QJsonObject>
 #include <QtCore/QCborMap>
 #include <QtCore/QCborArray>
 

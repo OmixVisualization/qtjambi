@@ -4972,11 +4972,11 @@ QVariant int_for_QtEnumerator_or_QFlags(JNIEnv* env, jobject enum_value) {
     QVariant result;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
     if (Java::QtJambi::QLongFlags::isInstanceOf(env, enum_value)) {
-        result = QVariant::fromValue<qint64>(Java::QtJambi::QLongFlags::longValue(env,enum_value));
+        result = QVariant::fromValue<qint64>(Java::QtJambi::QLongFlags::value(env,enum_value));
     }else
 #endif
     if (Java::QtJambi::QFlags::isInstanceOf(env, enum_value)) {
-        result = QVariant::fromValue<qint32>(Java::QtJambi::QFlags::intValue(env,enum_value));
+        result = QVariant::fromValue<qint32>(Java::QtJambi::QFlags::toInt(env,enum_value));
     }else if (Java::QtJambi::QtEnumerator::isInstanceOf(env, enum_value)) {
         result = QVariant::fromValue<qint32>(Java::QtJambi::QtEnumerator::value(env,enum_value));
     }else if (Java::QtJambi::QtShortEnumerator::isInstanceOf(env, enum_value)) {

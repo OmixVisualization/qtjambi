@@ -5056,23 +5056,37 @@ QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const QObject *qt_object, q
                 }
             }
         }
-        while(!polymorphicHandlers.isEmpty()){
-            QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>> _polymorphicHandlers;
-            polymorphicHandlers.swap(_polymorphicHandlers);
-            void *_object = const_cast<QObject *>(qt_object);
-            for(const QExplicitlySharedDataPointer<const PolymorphicIdHandler>& handler : qAsConst(_polymorphicHandlers)){
-                Q_ASSERT(handler->m_polymorphyHandler);
-                _offset = 0;
-                if(handler->m_polymorphyHandler(_object, _offset)) {
-                    if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, handler->m_targetTypeId)){
-                        _typeId = &handler->m_targetTypeId;
-                        offset += _offset;
-                        if(typeEntry->isPolymorphic()){
-                            if(const PolymorphicTypeEntryInterface* pt = dynamic_cast<const PolymorphicTypeEntryInterface*>(typeEntry.data())){
-                                polymorphicHandlers = QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>(pt->polymorphicIdHandlers()) << polymorphicHandlers;
+        if(!polymorphicHandlers.isEmpty()){
+            bool noRtti = false;
+            try{
+                const std::type_info* typeId = &typeid(*qt_object);
+                if(!typeId)
+                    noRtti = true;
+            }catch(const std::bad_typeid&){
+                noRtti = true;
+            }catch(...){
+                noRtti = true;
+            }
+            if(!noRtti){
+                while(!polymorphicHandlers.isEmpty()){
+                    QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>> _polymorphicHandlers;
+                    polymorphicHandlers.swap(_polymorphicHandlers);
+                    void *_object = const_cast<QObject *>(qt_object);
+                    for(const QExplicitlySharedDataPointer<const PolymorphicIdHandler>& handler : qAsConst(_polymorphicHandlers)){
+                        Q_ASSERT(handler->m_polymorphyHandler);
+                        _offset = 0;
+                        if(handler->m_polymorphyHandler(_object, _offset)) {
+                            if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, handler->m_targetTypeId)){
+                                _typeId = &handler->m_targetTypeId;
+                                offset += _offset;
+                                if(typeEntry->isPolymorphic()){
+                                    if(const PolymorphicTypeEntryInterface* pt = dynamic_cast<const PolymorphicTypeEntryInterface*>(typeEntry.data())){
+                                        polymorphicHandlers = QList<QExplicitlySharedDataPointer<const PolymorphicIdHandler>>(pt->polymorphicIdHandlers()) << polymorphicHandlers;
+                                    }
+                                }
+                                break;
                             }
                         }
-                        break;
                     }
                 }
             }
@@ -5923,9 +5937,9 @@ bool FlagsTypeEntry::convertToNative(JNIEnv *env, jobject input, void * output) 
         if(value){
             try{
                 if(Java::QtJambi::QLongFlags::isInstanceOf(env, input))
-                    *value = Java::QtJambi::QLongFlags::longValue(env, input);
+                    *value = Java::QtJambi::QLongFlags::value(env, input);
                 else if(Java::QtJambi::QFlags::isInstanceOf(env, input))
-                    *value = Java::QtJambi::QFlags::intValue(env, input);
+                    *value = Java::QtJambi::QFlags::toInt(env, input);
                 else if(env->IsSameObject(nullptr, input))
                     *value = 0;
                 else
@@ -5945,7 +5959,7 @@ bool FlagsTypeEntry::convertToNative(JNIEnv *env, jobject input, void * output) 
         int* value = reinterpret_cast<int*>(output);
         if(value){
             try{
-                *value = !input ? 0 : Java::QtJambi::QFlags::intValue(env, input);
+                *value = !input ? 0 : Java::QtJambi::QFlags::toInt(env, input);
             }catch(...){
                 if(Java::Runtime::Number::isInstanceOf(env,input))
                     *value = Java::Runtime::Number::intValue(env, input);

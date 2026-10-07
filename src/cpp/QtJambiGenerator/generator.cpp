@@ -102,13 +102,6 @@ extern "C" JNIEXPORT int JNICALL Java_io_qt_qtjambi_generator_Main_invoke(JNIEnv
     }
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_io_qt_qtjambi_generator_GeneratorApplication_initialize(JNIEnv *,jclass){
-    static int argc = 1;
-    static char *argv = const_cast<char*>("QtJambiGenerator");
-    void* ptr = new GeneratorApplication(argc, &argv);
-    return jlong(ptr);
-}
-
 using namespace TS;
 
 void ReportHandler_message_handler(const std::string &str) {
@@ -723,6 +716,7 @@ int GeneratorApplication::generate() {
             if (!m_noMetainfo) {
                 metainfo = new MetaInfoGenerator(priGenerator);
                 metainfo->setStaticLibraries(m_staticLibraries);
+                metainfo->setDocsUrl(m_docsUrl);
                 if (!m_cppOutputDirectory.isNull())
                     metainfo->setCppOutputDirectory(m_cppOutputDirectory);
                 if (!m_javaOutputDirectory.isNull())

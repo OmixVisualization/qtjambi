@@ -60,6 +60,9 @@ import io.qt.StrictNonNull;
  * 
  */
 public final class QScopedPointer<O> implements AutoCloseable, SmartPointer<O> {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 	
 	static final Logger logger = Logger.getLogger("io.qt");
 	

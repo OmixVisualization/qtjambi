@@ -41,6 +41,9 @@ import io.qt.QtUninvokable;
   * QPair keeps two generic values accessible by <code>first</code> and <code>second</code>.
   */
 public class QPair <T, S> implements Cloneable {
+    static {
+    	QtJambi_LibraryUtilities.initialize();
+    }
 
     /** First value of the pair. */
 	@NativeAccess public T first;

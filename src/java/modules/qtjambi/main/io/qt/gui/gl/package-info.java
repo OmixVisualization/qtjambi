@@ -1,11 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 1992-2009 Nokia. All rights reserved.
 ** Copyright (C) 2009-2026 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
-** $BEGIN_LICENSE$
+** ** $BEGIN_LICENSE$
 ** GNU Lesser General Public License Usage
 ** This file may be used under the terms of the GNU Lesser
 ** General Public License version 2.1 as published by the Free Software
@@ -27,14 +26,9 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
-package io.qt.autotests;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-public class TestInitializationScriptTools extends UnitTestInitializer {
-    @Test
-    public void initialize() {
-    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.script.tools"));
-    }
-}
+/**
+ * This package contains GLsync pointer.
+ * @see <a href="https://doc.qt.io/qt/qtgui-overview.html#opengl-and-opengl-es-integration">OpenGL integration</a>
+ */
+package io.qt.gui.gl;

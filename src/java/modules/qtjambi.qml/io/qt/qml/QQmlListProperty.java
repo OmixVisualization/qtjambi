@@ -43,7 +43,6 @@ import io.qt.core.*;
 public final class QQmlListProperty<T extends QtObjectInterface> extends QtObject
     implements java.lang.Cloneable
 {
-
     static {
         io.qt.qml.QtJambi_LibraryUtilities.initialize();
     }

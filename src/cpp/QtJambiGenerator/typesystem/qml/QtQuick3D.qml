@@ -188,84 +188,86 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "//conversion-rule-shell\n"+
-                                  "jobject %out = nullptr;\n"+
-                                  "switch(%1){\n"+
-                                  "case QQuick3DObject::ItemChildAddedChange:      // value.item\n"+
-                                  "case QQuick3DObject::ItemChildRemovedChange:    // value.item\n"+
-                                  "case QQuick3DObject::ItemParentHasChanged:      // value.item\n"+
-                                  "    {\n"+
-                                  "        %out = qtjambi_cast<jobject>(%env, %in.item);\n"+
-                                  "    }\n"+
-                                  "    break;\n"+
-                                  "case QQuick3DObject::ItemSceneChange:           // value.sceneManager\n"+
-                                  "    {\n"+
-                                  "        %out = nullptr;//qtjambi_cast<jobject>(%env, %in.sceneManager);\n"+
-                                  "    }\n"+
-                                  "    break;\n"+
-                                  "case QQuick3DObject::ItemVisibleHasChanged:     // value.boolValue\n"+
-                                  "case QQuick3DObject::ItemActiveFocusHasChanged: // value.boolValue\n"+
-                                  "case QQuick3DObject::ItemAntialiasingHasChanged: // value.boolValue\n"+
-                                  "case QQuick3DObject::ItemEnabledHasChanged:      // value.boolValue\n"+
-                                  "    {\n"+
-                                  "        %out = qtjambi_cast<jobject>(%env, %in.boolValue);\n"+
-                                  "    }\n"+
-                                  "    break;\n"+
-                                  "case QQuick3DObject::ItemOpacityHasChanged:     // value.realValue\n"+
-                                  "case QQuick3DObject::ItemRotationHasChanged:    // value.realValue\n"+
-                                  "case QQuick3DObject::ItemDevicePixelRatioHasChanged: // value.realValue\n"+
-                                  "    {\n"+
-                                  "        %out = qtjambi_cast<jobject>(%env, double(%in.realValue));\n"+
-                                  "    }\n"+
-                                  "    break;\n"+
-                                  "default:\n"+
-                                  "    break;\n"+
-                                  "}"}
+                    Text{content: String.raw`
+//conversion-rule-shell
+jobject %out = nullptr;
+switch(%1){
+case QQuick3DObject::ItemChildAddedChange:      // value.item
+case QQuick3DObject::ItemChildRemovedChange:    // value.item
+case QQuick3DObject::ItemParentHasChanged:      // value.item
+    {
+        %out = qtjambi_cast<jobject>(%env, %in.item);
+    }
+    break;
+case QQuick3DObject::ItemSceneChange:           // value.sceneManager
+    {
+        %out = nullptr;//qtjambi_cast<jobject>(%env, %in.sceneManager);
+    }
+    break;
+case QQuick3DObject::ItemVisibleHasChanged:     // value.boolValue
+case QQuick3DObject::ItemActiveFocusHasChanged: // value.boolValue
+case QQuick3DObject::ItemAntialiasingHasChanged: // value.boolValue
+case QQuick3DObject::ItemEnabledHasChanged:      // value.boolValue
+    {
+        %out = qtjambi_cast<jobject>(%env, %in.boolValue);
+    }
+    break;
+case QQuick3DObject::ItemOpacityHasChanged:     // value.realValue
+case QQuick3DObject::ItemRotationHasChanged:    // value.realValue
+case QQuick3DObject::ItemDevicePixelRatioHasChanged: // value.realValue
+    {
+        %out = qtjambi_cast<jobject>(%env, double(%in.realValue));
+    }
+    break;
+default:
+    break;
+}`}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "//conversion-rule-native\n"+
-                                  "QQuick3DObject::ItemChangeData %out(false);\n"+
-                                  "switch(__qt_%1){\n"+
-                                  "case QQuick3DObject::ItemChildAddedChange:      // value.item\n"+
-                                  "case QQuick3DObject::ItemChildRemovedChange:    // value.item\n"+
-                                  "case QQuick3DObject::ItemParentHasChanged:      // value.item\n"+
-                                  "    {\n"+
-                                  "        if(%in && !Java::QtQuick3D::QQuick3DObject::isInstanceOf(%env, %in)){\n"+
-                                  "            JavaException::raiseIllegalArgumentException(%env, \"Object of type QQuick3DObject expected.\" QTJAMBI_STACKTRACEINFO);\n"+
-                                  "        }\n"+
-                                  "        %out.item = qtjambi_cast<QQuick3DObject*>(%env, %in);\n"+
-                                  "    }\n"+
-                                  "    break;\n"+
-                                  "case QQuick3DObject::ItemSceneChange:           // value.window\n"+
-                                  "    {\n"+
-                                  "        %out.sceneManager = nullptr;\n"+
-                                  "    }\n"+
-                                  "    break;\n"+
-                                  "case QQuick3DObject::ItemVisibleHasChanged:     // value.boolValue\n"+
-                                  "case QQuick3DObject::ItemActiveFocusHasChanged: // value.boolValue\n"+
-                                  "case QQuick3DObject::ItemAntialiasingHasChanged: // value.boolValue\n"+
-                                  "case QQuick3DObject::ItemEnabledHasChanged:      // value.boolValue\n"+
-                                  "    {\n"+
-                                  "        if(%in && !Java::Runtime::Boolean::isInstanceOf(%env, %in)){\n"+
-                                  "            JavaException::raiseIllegalArgumentException(%env, \"Boolean value expected.\" QTJAMBI_STACKTRACEINFO);\n"+
-                                  "        }\n"+
-                                  "        %out.boolValue = qtjambi_cast<bool>(%env, %in);\n"+
-                                  "    }\n"+
-                                  "break;\n"+
-                                  "case QQuick3DObject::ItemOpacityHasChanged:     // value.realValue\n"+
-                                  "case QQuick3DObject::ItemRotationHasChanged:    // value.realValue\n"+
-                                  "case QQuick3DObject::ItemDevicePixelRatioHasChanged: // value.realValue\n"+
-                                  "    {\n"+
-                                  "        if(%in && !Java::Runtime::Number::isInstanceOf(%env, %in)){\n"+
-                                  "            JavaException::raiseIllegalArgumentException(%env, \"Number value expected.\" QTJAMBI_STACKTRACEINFO);\n"+
-                                  "        }\n"+
-                                  "        %out.realValue = qtjambi_cast<double>(%env, %in);\n"+
-                                  "    }\n"+
-                                  "    break;\n"+
-                                  "default:\n"+
-                                  "    break;\n"+
-                                  "}"}
+                    Text{content: String.raw`
+//conversion-rule-native
+QQuick3DObject::ItemChangeData %out(false);
+switch(__qt_%1){
+case QQuick3DObject::ItemChildAddedChange:      // value.item
+case QQuick3DObject::ItemChildRemovedChange:    // value.item
+case QQuick3DObject::ItemParentHasChanged:      // value.item
+    {
+        if(%in && !Java::QtQuick3D::QQuick3DObject::isInstanceOf(%env, %in)){
+            JavaException::raiseIllegalArgumentException(%env, "Object of type QQuick3DObject expected." QTJAMBI_STACKTRACEINFO);
+        }
+        %out.item = qtjambi_cast<QQuick3DObject*>(%env, %in);
+    }
+    break;
+case QQuick3DObject::ItemSceneChange:           // value.window
+    {
+        %out.sceneManager = nullptr;
+    }
+    break;
+case QQuick3DObject::ItemVisibleHasChanged:     // value.boolValue
+case QQuick3DObject::ItemActiveFocusHasChanged: // value.boolValue
+case QQuick3DObject::ItemAntialiasingHasChanged: // value.boolValue
+case QQuick3DObject::ItemEnabledHasChanged:      // value.boolValue
+    {
+        if(%in && !Java::Runtime::Boolean::isInstanceOf(%env, %in)){
+            JavaException::raiseIllegalArgumentException(%env, "Boolean value expected." QTJAMBI_STACKTRACEINFO);
+        }
+        %out.boolValue = qtjambi_cast<bool>(%env, %in);
+    }
+break;
+case QQuick3DObject::ItemOpacityHasChanged:     // value.realValue
+case QQuick3DObject::ItemRotationHasChanged:    // value.realValue
+case QQuick3DObject::ItemDevicePixelRatioHasChanged: // value.realValue
+    {
+        if(%in && !Java::Runtime::Number::isInstanceOf(%env, %in)){
+            JavaException::raiseIllegalArgumentException(%env, "Number value expected." QTJAMBI_STACKTRACEINFO);
+        }
+        %out.realValue = qtjambi_cast<double>(%env, %in);
+    }
+    break;
+default:
+    break;
+}`}
                 }
             }
         }

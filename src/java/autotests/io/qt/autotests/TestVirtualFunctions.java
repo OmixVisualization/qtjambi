@@ -39,7 +39,6 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.QNoImplementationException;
 import io.qt.autotests.generated.AbstractClass;
 import io.qt.autotests.generated.AnotherNonAbstractSubclass;
 import io.qt.autotests.generated.FunctionalTest;
@@ -362,13 +361,8 @@ public class TestVirtualFunctions extends ApplicationInitializer {
         AnotherNonAbstractSubclass obj = new AnotherNonAbstractSubclass();
 
         obj.setS("a string");
-        try {
-            obj.abstractFunction("a super-string");
-            assertTrue(false); // we should never get here
-        } catch (QNoImplementationException e) {
-            obj.setS("a non-super string");
-        }
-        assertEquals(obj.getS(), "a non-super string");
+        obj.abstractFunction("a abstract super-string");
+        assertEquals(obj.getS(), "Not a abstract super-string");
 
         obj.doVirtualCall(obj, "a super-string");
         assertEquals(obj.getS(), "Not a super-string");

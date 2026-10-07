@@ -308,10 +308,8 @@ public class TestFlagsAndEnumParameters extends ApplicationInitializer{
 	}
 	
 	private static class AutoFlags extends QFlags<AutoFlag>{
-		private static final long serialVersionUID = 1297668415339650986L;
-
 		int value() {
-			return super.intValue();
+			return super.toInt();
 		}
 	}
 	
@@ -350,8 +348,6 @@ public class TestFlagsAndEnumParameters extends ApplicationInitializer{
 	
 	public static class MyFlags extends QFlags<TestEnum2>{
 
-		private static final long serialVersionUID = 5669819378912505068L;
-
 		public MyFlags(TestEnum2... args) {
 			super(0);
 			set(args);
@@ -381,11 +377,11 @@ public class TestFlagsAndEnumParameters extends ApplicationInitializer{
 		}
 
         public final int value(){
-            return intValue();
+            return toInt();
         }
 
         public final void setValue(int value){
-            setIntValue(value);
+            super.setValue(value);
         }
 	}
 }

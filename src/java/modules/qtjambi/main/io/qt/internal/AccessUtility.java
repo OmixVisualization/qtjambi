@@ -53,14 +53,8 @@ import java.util.function.Supplier;
 
 import io.qt.InternalAccess;
 import io.qt.NativeAccess;
-import io.qt.QFlags;
-import io.qt.QtAbstractFlagEnumerator;
-import io.qt.QtByteEnumerator;
-import io.qt.QtEnumerator;
-import io.qt.QtLongEnumerator;
 import io.qt.QtObject;
 import io.qt.QtObjectInterface;
-import io.qt.QtShortEnumerator;
 import io.qt.core.QMetaObject.Method3;
 import io.qt.core.QMetaObject.Method4;
 import io.qt.core.QMetaObject.Method5;
@@ -78,7 +72,7 @@ class AccessUtility implements io.qt.InternalAccess{
 											?  new AccessUtility() : new AccessUtility(){
 													@SuppressWarnings("unchecked")
 													@Override
-													public <T> Class<T> getClass(T object) {
+													public <T> Class<? extends T> getClass(T object) {
 														if(object==null)
 															return null;
 														return (Class<T>)object.getClass();
@@ -402,15 +396,14 @@ class AccessUtility implements io.qt.InternalAccess{
 	
 	@Override
 	public <Q extends QtObjectInterface,M extends io.qt.MemberAccess<Q>> M findMemberAccess(Q ifc, Class<Q> interfaceClass, Class<M> accessClass) {
-		NativeUtility.NativeLink link = NativeUtility.findInterfaceLink(ifc, true);
-		return accessClass.cast(link.getMemberAccess(interfaceClass));
+		return NativeUtility.findMemberAccess(ifc, interfaceClass, accessClass);
 	}
 	
 	/**
 	 * Class.getClass() lead to recursive calls on android when using inside of interface default methods.
 	 */
 	@Override
-	public native <T> Class<T> getClass(T object);
+	public native <T> Class<? extends T> getClass(T object);
 
 	@Override
 	public int registerMetaType(Parameter parameter) {
@@ -470,26 +463,6 @@ class AccessUtility implements io.qt.InternalAccess{
 	@Override
 	public Class<?> toClass(Type type) {
 		return ClassAnalyzerUtility.toClass(type);
-	}
-
-	@Override
-	public <E extends Enum<E> & QtEnumerator> E resolveEnum(Class<E> cl, int value, String name) {
-		return EnumUtility.resolveEnum(cl, value, name);
-	}
-
-	@Override
-	public <E extends Enum<E> & QtByteEnumerator> E resolveEnum(Class<E> cl, byte value, String name) {
-		return EnumUtility.resolveEnum(cl, value, name);
-	}
-
-	@Override
-	public <E extends Enum<E> & QtShortEnumerator> E resolveEnum(Class<E> cl, short value, String name) {
-		return EnumUtility.resolveEnum(cl, value, name);
-	}
-
-	@Override
-	public <E extends Enum<E> & QtLongEnumerator> E resolveEnum(Class<E> cl, long value, String name) {
-		return EnumUtility.resolveEnum(cl, value, name);
 	}
 
 	@Override
@@ -598,21 +571,6 @@ class AccessUtility implements io.qt.InternalAccess{
 	@Override
 	public <C extends QtObject & Iterable<Double>> DoubleBuffer mutableDataD(C list) {
 		return NativeUtility.mutableDataD(list);
-	}
-
-	@Override
-	public <T extends QtAbstractFlagEnumerator> T[] flagConstants(QFlags<T> flags) {
-		return EnumUtility.flagConstants(flags);
-	}
-
-	@Override
-	public QFlags<?> asFlags(QtAbstractFlagEnumerator flag) {
-		return EnumUtility.asFlags(flag);
-	}
-
-	@Override
-	public boolean isSmallEnum(QtAbstractFlagEnumerator enm) {
-		return EnumUtility.isSmallEnum(enm);
 	}
 	
 	@Override
