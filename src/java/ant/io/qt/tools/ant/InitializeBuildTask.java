@@ -36,6 +36,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -1678,7 +1682,13 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 									.listFiles().length > 0) {
 				qtsources = new File(new File(qtdir), ".." + File.separator + "Src").getAbsolutePath();
 				AntUtil.setProperty(propertyHelper, "qtsources", qtsources, false);
+			}else {
+				qtsources = null;
 			}
+		}
+		String qtsourcesUrl = AntUtil.getPropertyAsString(propertyHelper, "qt.sources.url");
+		if(qtsourcesUrl==null || qtsourcesUrl.isEmpty()) {
+			qtsourcesUrl = "https://raw.githubusercontent.com/qt/%1$s/refs/heads/%2$s/%3$s/%4$s";
 		}
 		String generatorExtraIncludes = AntUtil.getPropertyAsString(propertyHelper, "generator.extra.includes");
 		String version = AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION);
@@ -1872,148 +1882,127 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 				}
 			}
 		}
-		boolean hasVulkan = false;
 		AntUtil.setProperty(propertyHelper, Constants.QTJAMBI_MODULES, String.join(",", modules), false);
-		if(((qtMajorVersion==6 && qtMinorVersion>=5) || qtMajorVersion>6) && qtsources!=null) {
-			if(!headersdir.isDirectory()) {
-				headersdir.mkdirs();
+		class MissingHeader{
+			private MissingHeader(String module, boolean required, String base, String... sourcePath) {
+				super();
+				this.module = module;
+				this.required = required;
+				this.base = base;
+				this.sourcePath = sourcePath;
 			}
-			File opengldir = new File(headersdir, "QtOpenGL");
-			if(!opengldir.isDirectory()) {
-				File originalIncludeDir = new File(includePath, "QtOpenGL");
+			final String module;
+			final boolean required;
+			final String base;
+			final String[] sourcePath;
+			boolean available;
+			File resolve(String qtsources, String header) {
+				File file = new File(qtsources);
+				file = new File(file, base);
+				for (String p : sourcePath) {
+					file = new File(file, p);
+				}
+				return new File(file, header);
+			}
+			URL resolveURL(String urlBase, String version, String header) throws MalformedURLException {
+				return URI.create(String.format(urlBase, base, version, String.join("/", sourcePath), header)).toURL();
+			}
+		}
+		
+		Map<String,MissingHeader> sourcePaths = new TreeMap<>();
+		sourcePaths.put("qvulkaninstance", new MissingHeader("QtGui", false, "qtbase","src","gui","vulkan"));
+		sourcePaths.put("qvulkanwindow", new MissingHeader("QtGui", false, "qtbase","src","gui","vulkan"));
+		sourcePaths.put("qopenglfunctions_es2", new MissingHeader("QtOpenGL", false, "qtbase","src","opengl"));
+		for(int i=0; i<=5; ++i) {
+			sourcePaths.put("qopenglfunctions_1_"+i, new MissingHeader("QtOpenGL", false, "qtbase","src","opengl"));
+			if(i==0 || i==1) {
+				sourcePaths.put("qopenglfunctions_2_"+i, new MissingHeader("QtOpenGL", false, "qtbase","src","opengl"));
+				sourcePaths.put("qopenglfunctions_3_"+i, new MissingHeader("QtOpenGL", false, "qtbase","src","opengl"));
+			}
+			if(i==2 || i==3) {
+				sourcePaths.put("qopenglfunctions_3_"+i+"_core", new MissingHeader("QtOpenGL", false, "qtbase","src","opengl"));
+				sourcePaths.put("qopenglfunctions_3_"+i+"_compatibility", new MissingHeader("QtOpenGL", false, "qtbase","src","opengl"));					
+			}
+			sourcePaths.put("qopenglfunctions_4_"+i+"_core", new MissingHeader("QtOpenGL", false, "qtbase","src","opengl"));
+			sourcePaths.put("qopenglfunctions_4_"+i+"_compatibility", new MissingHeader("QtOpenGL", false, "qtbase","src","opengl"));
+		}
+		
+		if((qtMajorVersion==6 && qtMinorVersion>=5) || qtMajorVersion>6) {
+			sourcePaths.put("qpermissions", new MissingHeader("QtCore", true, "qtbase","src","corelib","kernel"));
+			sourcePaths.put("qutimimeconverter", new MissingHeader("QtGui", false, "qtbase","src","gui","platform","darwin"));
+			sourcePaths.put("qwindowsmimeconverter", new MissingHeader("QtGui", false, "qtbase","src","gui","platform","windows"));
+			if(((qtMajorVersion==6 && qtMinorVersion>=12) || qtMajorVersion>6)) {
+				sourcePaths.put("qcustomseriescanvasrenderer", new MissingHeader("QtGraphs", true, "qtgraphs","src","graphs2d","qsgrenderer"));
+			}
+			
+			boolean needsSources = false;
+			for(Map.Entry<String,MissingHeader> entry : sourcePaths.entrySet()) {
+				MissingHeader missingHeader = entry.getValue();
+				File originalIncludeDir = new File(includePath, missingHeader.module);
 				if((!originalIncludeDir.exists() || !originalIncludeDir.isDirectory()) 
 						&& osInfo.crossOS()==OSInfo.OperationSystem.MacOS && useQtFramework) {
-					originalIncludeDir = new File(libPath, "QtOpenGL.framework/Versions/A/Headers");
+					originalIncludeDir = new File(libPath, missingHeader.module+".framework/Versions/A/Headers");
 				}
-				File moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "opengl");
-				if (moduleDir.isDirectory()) {
-					for(File file : moduleDir.listFiles(f->f.getName().startsWith("qopenglfunctions_") && f.getName().endsWith(".h"))) {
-						if(!new File(originalIncludeDir, file.getName()).exists()) {
+				String fileName = entry.getKey()+".h";
+				if(!(missingHeader.available = new File(originalIncludeDir, fileName).exists())) {
+					File target = new File(new File(headersdir, missingHeader.module), fileName);
+					if(!(missingHeader.available = target.exists())) {
+						if(qtsources!=null) {
+							File file = missingHeader.resolve(qtsources, fileName);
+							if(file.exists()) {
+								try {
+									target.getParentFile().mkdirs();
+									Files.copy(file.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+									missingHeader.available = true;
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							}
+						}else {
 							try {
-								opengldir.mkdirs();
-								Files.copy(file.toPath(), new File(opengldir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+								URL url = missingHeader.resolveURL(qtsourcesUrl, version, fileName);
+								URLConnection connection = url.openConnection();
+								connection.setDoInput(true);
+								if(connection.getContentLengthLong()<=0) {
+									url = missingHeader.resolveURL(qtsourcesUrl, "dev", fileName);
+									connection = url.openConnection();
+									connection.setDoInput(true);
+								}
+								if(connection.getContentLengthLong()>0) {
+									target.getParentFile().mkdirs();
+									try(InputStream in = connection.getInputStream()){
+										getProject().log(this, "Downloading "+url+"...", Project.MSG_INFO);
+										Files.copy(in, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+									}
+									missingHeader.available = true;
+								}
 							} catch (IOException e) {
 								e.printStackTrace();
+								needsSources = true;
 							}
 						}
 					}
 				}
 			}
-			File coredir = new File(headersdir, "QtCore");
-			if(!coredir.isDirectory()) {
-				File originalIncludeDir = new File(includePath, "QtCore");
-				if((!originalIncludeDir.exists() || !originalIncludeDir.isDirectory()) 
-						&& osInfo.crossOS()==OSInfo.OperationSystem.MacOS && useQtFramework) {
-					originalIncludeDir = new File(libPath, "QtCore.framework/Versions/A/Headers");
+			if(needsSources)
+				getProject().log(this, "Unable to detect missing headers. Please specify Qt source code directory by setting property 'qtsources'.", Project.MSG_WARN);
+		}
+		for(Map.Entry<String,MissingHeader> entry : sourcePaths.entrySet()) {
+			if(entry.getValue().required) {
+				if(entry.getValue().available) {
+					AntUtil.setProperty(propertyHelper, "qtjambi.header."+entry.getKey()+".true", "true");
+				}else {
+					throw new BuildException(String.format("Unable to detect missing header '%1$s.h'. Please specify Qt source code directory by setting property 'qtsources'.", entry.getKey()));
 				}
-				File moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "corelib" + File.separator + "kernel");
-				if (moduleDir.isDirectory()) {
-					File file = new File(moduleDir, "qpermissions.h");
-					if(file.exists() && !new File(originalIncludeDir, file.getName()).exists()) {
-						try {
-							coredir.mkdirs();
-							Files.copy(file.toPath(), new File(coredir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-			}
-			File guidir = new File(headersdir, "QtGui");
-			if(!guidir.isDirectory()) {
-				File originalIncludeDir = new File(includePath, "QtGui");
-				if((!originalIncludeDir.exists() || !originalIncludeDir.isDirectory()) 
-						&& osInfo.crossOS()==OSInfo.OperationSystem.MacOS && useQtFramework) {
-					originalIncludeDir = new File(libPath, "QtGui.framework/Versions/A/Headers");
-				}
-				File moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "gui" + File.separator + "platform" + File.separator + "darwin");
-				if (moduleDir.isDirectory()) {
-					File file = new File(moduleDir, "qutimimeconverter.h");
-					if(file.exists() && !new File(originalIncludeDir, file.getName()).exists()) {
-						try {
-							guidir.mkdirs();
-							Files.copy(file.toPath(), new File(guidir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-				moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "gui" + File.separator + "platform" + File.separator + "windows");
-				if (moduleDir.isDirectory()) {
-					File file = new File(moduleDir, "qwindowsmimeconverter.h");
-					if(file.exists() && !new File(originalIncludeDir, file.getName()).exists()) {
-						try {
-							guidir.mkdirs();
-							Files.copy(file.toPath(), new File(guidir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-				hasVulkan = new File(originalIncludeDir, "qvulkaninstance.h").exists();
-				System.out.println("test 3: "+new File(originalIncludeDir, "qvulkaninstance.h"));
-				if(!hasVulkan) {
-					moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "gui" + File.separator + "vulkan");
-					if (moduleDir.isDirectory()) {
-						for(String name : Arrays.asList("qvulkaninstance.h", "qvulkanwindow.h")) {
-							File file = new File(moduleDir, name);
-							if(file.exists()) {
-								try {
-									guidir.mkdirs();
-									Files.copy(file.toPath(), new File(guidir, name).toPath(), StandardCopyOption.REPLACE_EXISTING);
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-							}							
-						}
-					}
-					File file = new File(guidir, "qvulkaninstance.h");
-					hasVulkan = file.exists();
+			}else if("qvulkaninstance".equals(entry.getKey())){
+				if(entry.getValue().available) {
+					AntUtil.setProperty(propertyHelper, "qtjambi.gui.vulkan.true", "true");
+				}else {
+					generatorPreProcDefinesList.add("QTJAMBI_NO_VULKAN");
 				}
 			}
 		}
-		if(!hasVulkan){
-			File originalIncludeDir = new File(includePath, "QtGui");
-			if((!originalIncludeDir.exists() || !originalIncludeDir.isDirectory()) 
-					&& osInfo.crossOS()==OSInfo.OperationSystem.MacOS && useQtFramework) {
-				originalIncludeDir = new File(libPath, "QtGui.framework/Versions/A/Headers");
-			}
-			hasVulkan = new File(originalIncludeDir, "qvulkaninstance.h").exists();
-		}
-		if(!hasVulkan){
-			File file = new File(new File(headersdir, "QtGui"), "qvulkaninstance.h");
-			hasVulkan = file.exists();
-		}
-		if(!hasVulkan) {
-			generatorPreProcDefinesList.add("QTJAMBI_NO_VULKAN");
-		}else {
-			AntUtil.setProperty(propertyHelper, "qtjambi.gui.vulkan.true", "true");
-		}
-		if(((qtMajorVersion==6 && qtMinorVersion>=12) || qtMajorVersion>6) && qtsources!=null) {
-			if(!headersdir.isDirectory()) {
-				headersdir.mkdirs();
-			}
-			File graphsdir = new File(headersdir, "QtGraphs");
-			if(!graphsdir.isDirectory()) {
-				File originalIncludeDir = new File(includePath, "QtGraphs");
-				if((!originalIncludeDir.exists() || !originalIncludeDir.isDirectory()) 
-						&& osInfo.crossOS()==OSInfo.OperationSystem.MacOS && useQtFramework) {
-					originalIncludeDir = new File(libPath, "QtGraphs.framework/Versions/A/Headers");
-				}
-				File moduleDir = new File(new File(qtsources), "qtgraphs" + File.separator + "src" + File.separator + "graphs2d" + File.separator + "qsgrenderer");
-				if (moduleDir.isDirectory()) {
-					File file = new File(moduleDir, "qcustomseriescanvasrenderer.h");
-					if(file.exists() && !new File(originalIncludeDir, file.getName()).exists()) {
-						try {
-							graphsdir.mkdirs();
-							Files.copy(file.toPath(), new File(graphsdir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-			}
-		}
+		
 		if(headersdir.isDirectory()) {
 			if (generatorExtraIncludes == null)
 				generatorExtraIncludes = "";
