@@ -492,7 +492,7 @@ int GeneratorApplication::generate() {
                     docDirectoryAvailable.release();
                 }
                 ReportHandler::setContext("Typesystem");
-                m_database.setDefined([this](const QString& name)->bool{
+                m_database.setDefined([this](QStringView name)->bool{
                     for(const DefineUndefine& ddf : std::as_const(m_defineUndefineList)){
                         if(ddf.isSet() && ddf.name()==name){
                             return true;

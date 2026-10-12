@@ -50,7 +50,7 @@ namespace TS{
 
 class TypeDatabase {
 public:
-    typedef std::function<bool(const QString& name)> DefinedPtr;
+    typedef std::function<bool(QStringView name)> DefinedPtr;
 
     TypeDatabase();
 
@@ -157,7 +157,7 @@ public:
 
     bool parseFile(QQmlEngine* engine, const QString &filename, const QStringList &importInputDirectoryList, const QStringList &typeystemDirectoryList, bool generate = true, bool optional = false);
 
-    bool defined(QString name);
+    bool defined(QStringView name);
 
     void setDefined(DefinedPtr&& function);
 

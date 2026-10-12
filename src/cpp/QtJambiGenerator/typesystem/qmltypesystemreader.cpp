@@ -363,7 +363,17 @@ void QmlTypeSystemReaderPrivate::parseTypeSystem(TypeSystem* typeSystem, const Q
 
 bool QmlTypeSystemReaderPrivate::checkQtVersion(AbstractObject* object){
     if(object->since()<=m_qtVersion && object->until()>=m_qtVersion){
-        return object->getUnless().isEmpty() || !TypeDatabase::instance()->defined(object->getUnless());
+        if(!object->getUnless().isEmpty()){
+            QStringView unless = object->getUnless();
+            if(unless.startsWith('!')){
+                unless = unless.chopped(1).trimmed();
+                return TypeDatabase::instance()->defined(unless);
+            }else{
+                if(TypeDatabase::instance()->defined(unless))
+                    return false;
+            }
+        }
+        return true;
     }else{
         return false;
     }

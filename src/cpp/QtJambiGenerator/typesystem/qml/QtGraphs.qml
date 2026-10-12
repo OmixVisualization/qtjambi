@@ -2164,6 +2164,9 @@ template<> QExplicitlySharedDataPointer<QGraphsLinePrivate>::~QExplicitlySharedD
                     ownership: Ownership.Cpp
                 }
             }
+            Remove{
+                unless: "!QTJAMBI_NO_HEADER_qcustomseriescanvasrenderer"
+            }
             since: [6,12]
         }
         since: [6,11]
@@ -2177,6 +2180,7 @@ template<> QExplicitlySharedDataPointer<QGraphsLinePrivate>::~QExplicitlySharedD
     ObjectType{
         name: "QCustomSeriesCanvasRenderer"
         ppCondition: "QT_CONFIG(graphs_2d_high_performance_backend)"
+        unless: "QTJAMBI_NO_HEADER_qcustomseriescanvasrenderer"
         since: [6,12]
     }
     

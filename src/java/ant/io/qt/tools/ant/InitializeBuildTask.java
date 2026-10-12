@@ -1960,18 +1960,36 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 							}
 						}else {
 							try {
-								URL url = missingHeader.resolveURL(qtsourcesUrl, version, fileName);
-								URLConnection connection = url.openConnection();
-								connection.setDoInput(true);
-								if(connection.getContentLengthLong()<=0) {
-									url = missingHeader.resolveURL(qtsourcesUrl, "dev", fileName);
+								URLConnection connection = null;
+								if(qtsourcesUrl.contains("/refs/heads/")) {
+									qtsourcesUrl.replace("/refs/heads/", "/refs/tags/v");
+									URL url = missingHeader.resolveURL(qtsourcesUrl, version, fileName);
 									connection = url.openConnection();
 									connection.setDoInput(true);
+									if(connection.getContentLengthLong()<=0)
+										connection = null;
 								}
-								if(connection.getContentLengthLong()>0) {
+								if(connection==null) {
+									URL url = missingHeader.resolveURL(qtsourcesUrl, version, fileName);
+									connection = url.openConnection();
+									connection.setDoInput(true);
+									if(connection.getContentLengthLong()<=0) {
+										url = missingHeader.resolveURL(qtsourcesUrl, String.format("%1$s.%2$s", qtMajorVersion, qtMinorVersion), fileName);
+										connection = url.openConnection();
+										connection.setDoInput(true);
+										if(connection.getContentLengthLong()<=0) {
+											url = missingHeader.resolveURL(qtsourcesUrl, "dev", fileName);
+											connection = url.openConnection();
+											connection.setDoInput(true);
+											if(connection.getContentLengthLong()<=0)
+												connection = null;
+										}
+									}
+								}
+								if(connection!=null) {
 									target.getParentFile().mkdirs();
 									try(InputStream in = connection.getInputStream()){
-										getProject().log(this, "Downloading "+url+"...", Project.MSG_INFO);
+										getProject().log(this, "Downloading "+connection.getURL()+"...", Project.MSG_INFO);
 										Files.copy(in, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
 									}
 									missingHeader.available = true;
@@ -1992,7 +2010,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 				if(entry.getValue().available) {
 					AntUtil.setProperty(propertyHelper, "qtjambi.header."+entry.getKey()+".true", "true");
 				}else {
-					throw new BuildException(String.format("Unable to detect missing header '%1$s.h'. Please specify Qt source code directory by setting property 'qtsources'.", entry.getKey()));
+					generatorPreProcDefinesList.add("QTJAMBI_NO_HEADER_"+entry.getKey());
 				}
 			}else if("qvulkaninstance".equals(entry.getKey())){
 				if(entry.getValue().available) {

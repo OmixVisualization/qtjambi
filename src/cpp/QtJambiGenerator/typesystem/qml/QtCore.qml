@@ -15542,6 +15542,7 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
             name: "Availability"
         }
         defaultSuperClass: "QPermission"
+        unless: "QTJAMBI_NO_HEADER_qpermissions"
         since: [6, 5]
     }
 
@@ -15551,6 +15552,7 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
             name: "AccessMode"
         }
         defaultSuperClass: "QPermission"
+        unless: "QTJAMBI_NO_HEADER_qpermissions"
         since: [6, 5]
     }
 
@@ -15560,18 +15562,21 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
             name: "AccessMode"
         }
         defaultSuperClass: "QPermission"
+        unless: "QTJAMBI_NO_HEADER_qpermissions"
         since: [6, 5]
     }
 
     ValueType{
         name: "QCameraPermission"
         defaultSuperClass: "QPermission"
+        unless: "QTJAMBI_NO_HEADER_qpermissions"
         since: [6, 5]
     }
 
     ValueType{
         name: "QMicrophonePermission"
         defaultSuperClass: "QPermission"
+        unless: "QTJAMBI_NO_HEADER_qpermissions"
         since: [6, 5]
     }
 
@@ -15581,6 +15586,7 @@ const QPermission& %out = *reinterpret_cast<const QPermission*>(&permission);`}
         EnumType{
             name: "CommunicationMode"
         }
+        unless: "QTJAMBI_NO_HEADER_qpermissions"
         since: [6, 5]
     }
 

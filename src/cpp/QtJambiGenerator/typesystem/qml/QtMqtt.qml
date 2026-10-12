@@ -101,6 +101,12 @@ TypeSystem{
     }
     ValueType{
         name: "QMqttStringPair"
+        ExtraIncludes{
+            Include{
+                fileName: "hashes.h"
+                location: Include.Local
+            }
+        }
     }
     ObjectType{
         name: "QMqttSubscription"
@@ -133,6 +139,12 @@ TypeSystem{
     }
     ValueType{
         name: "QMqttUserProperties"
+        ExtraIncludes{
+            Include{
+                fileName: "hashes.h"
+                location: Include.Local
+            }
+        }
     }
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: duplicate enum values: QMqtt::ReasonCode, *"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Class 'QMqtt*' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."}

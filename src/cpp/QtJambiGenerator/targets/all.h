@@ -493,6 +493,7 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 
 #if !defined(QTJAMBI_NO_MQTT)
 #   include <QtMqtt/QtMqtt>
+#   include <QtJambiMqtt/hashes.h>
 #endif
 
 #if !defined(QTJAMBI_NO_OPCUA)

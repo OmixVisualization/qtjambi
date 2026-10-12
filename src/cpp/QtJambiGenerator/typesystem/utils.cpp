@@ -60,7 +60,7 @@ QString strings_jobjectArray = QLatin1String("jobjectArray");
 
 namespace TS{
 
-bool TypeDatabase::defined(QString name){
+bool TypeDatabase::defined(QStringView name){
     return m_defined && m_defined(name);
 }
 
