@@ -31,6 +31,10 @@
 
 include(../QtJambi/configure.pri)
 
-QT += core network mqtt
+QT = core network mqtt
+
+greaterThan(QT_MAJOR_VERSION, 6) | greaterThan(QT_MINOR_VERSION, 9){
+QT += websockets
+}
 
 HEADERS += hashes.h
