@@ -110,6 +110,9 @@ Following Qt modules are provided by QtJambi:
 * [QtGraphsWidgets](https://doc.qt.io/qt-6/qtgraphswidgets-index.html) in module **qtjambi-graphswidgets**
 * [QtTaskTree](https://doc.qt.io/qt-6/qttasktree-index.html) in module **qtjambi-tasktree**
 * [QtCanvasPainter](https://doc.qt.io/qt-6/qtcanvaspainter-index.html) in module **qtjambi-canvaspainter**
+* [QtCoap](https://doc.qt.io/qt-6/qtcoap-index.html) in module **qtjambi-coap**
+* [QtMqtt](https://doc.qt.io/qt-6/qtmqtt-index.html) in module **qtjambi-mqtt**
+* [QtOpcUa](https://doc.qt.io/qt-6/qtopcua-index.html) in module **qtjambi-opcua**
 * [QtLabsStyleKit](https://doc.qt.io/qt-6/qtlabsstylekit-index.html) in module **qtjambi-labsstylekit**
 * [QtQmlDesignSupport](https://doc.qt.io/qt-6/qtqmldesignsupport-index.html) in module **qtjambi-qmldesignsupport**
 

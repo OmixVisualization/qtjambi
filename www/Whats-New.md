@@ -2,6 +2,7 @@
 
 * Full support for native event filters
 * Removing deprecated serializability from QFlags
+* Support for Qtr's CoAP, MQTT and OpcUA modules
 
 # History
 
