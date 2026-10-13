@@ -488,7 +488,7 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #endif
 
 #if !defined(QTJAMBI_NO_COAP)
-#   include <QtCoAP/QtCoAP>
+#   include <QtCoap/QtCoap>
 #endif
 
 #if !defined(QTJAMBI_NO_MQTT)

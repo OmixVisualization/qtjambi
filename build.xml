@@ -738,65 +738,65 @@ Further options:
 
     <target name="run" depends="tests.import"
            description="Runs tests and generates report in TestReport subdir">
-        <foreach-version targets="run-impl-test"/>
+        <foreach-version targets="autotests.run-impl-test"/>
     </target>
-	<target name="run-impl-test" depends="init.build">
+	<target name="autotests.run-impl-test" depends="init.build">
         <antcall target="tests.run-impl"/>
     </target>
 	
     <target name="run.all" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
-        <foreach-version targets="run.all-impl"/>
+        <foreach-version targets="autotests.run.all-impl"/>
     </target>
-    <target name="run.all-impl" depends="init.build">
+    <target name="autotests.run.all-impl" depends="init.build">
         <antcall target="tests.run.all-impl"/>
     </target>
 
     <target name="run.release" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
-        <foreach-version targets="release.run-impl"/>
+        <foreach-version targets="autotests.release.run-impl"/>
     </target>
-	<target name="release.run-impl" depends="init.build">
+	<target name="autotests.release.run-impl" depends="init.build">
         <antcall target="tests.release.run-impl"/>
     </target>
 
     <target name="run.debug" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
-        <foreach-version targets="debug.run-impl"/>
+        <foreach-version targets="autotests.debug.run-impl"/>
     </target>
-	<target name="debug.run-impl" depends="init.build">
+	<target name="autotests.debug.run-impl" depends="init.build">
         <antcall target="tests.debug.run-impl"/>
     </target>
 
     <target name="run.release8" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
-        <foreach-version targets="release.run8-impl"/>
+        <foreach-version targets="autotests.release.run8-impl"/>
     </target>
-	<target name="release.run8-impl" depends="init.build">
+	<target name="autotests.release.run8-impl" depends="init.build">
         <antcall target="tests.release.run8-impl"/>
     </target>
 
     <target name="run.debug8" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
-        <foreach-version targets="debug.run8-impl"/>
+        <foreach-version targets="autotests.debug.run8-impl"/>
     </target>
-	<target name="debug.run8-impl" depends="init.build">
+	<target name="autotests.debug.run8-impl" depends="init.build">
         <antcall target="tests.debug.run8-impl"/>
     </target>
     
     <target name="run.release.all" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
-        <foreach-version targets="release.run.all-impl"/>
+        <foreach-version targets="autotests.release.run.all-impl"/>
     </target>
-	<target name="release.run.all-impl" depends="init.build">
+	<target name="autotests.release.run.all-impl" depends="init.build">
         <antcall target="tests.release.run.all-impl"/>
     </target>
     
     <target name="run.debug.all" depends="tests.import"
             description="Runs tests and generates report in TestReport subdir">
-        <foreach-version targets="debug.run.all-impl"/>
+        <foreach-version targets="autotests.debug.run.all-impl"/>
     </target>
-	<target name="debug.run.all-impl" depends="init.build">
+	<target name="autotests.debug.run.all-impl" depends="init.build">
         <antcall target="tests.debug.run.all-impl"/>
     </target>
     <target name="report" depends="tests.import"
