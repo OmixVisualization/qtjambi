@@ -33,6 +33,7 @@ Outgreyed version numbers are not published as Maven artifact.
 |      14 | v6.5.0            |                                            |                                            |                                            |                                            |                                            |                                            |                                            |                             6.5.0          |
 
 ¹unpublished
+
 ²published with Qt 6.11.3
 
 ## Linux
