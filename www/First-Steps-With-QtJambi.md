@@ -60,19 +60,19 @@ environment (`LD_LIBRARY_PATH` on Linux, `DYLD_FRAMEWORK_PATH` on macOS) or the 
 The example program can be executed this way on Windows:
 
 ``` powershell
-java -cp qtjambi-6.12.0.jar;qtjambi-native-windows-x64-6.12.0.jar;. -Djava.library.path=C:\Qt\6.8.3\msvc2022_64\bin Test
+java -cp qtjambi-6.12.0.jar;qtjambi-native-windows-x64-6.12.0.jar;. -Djava.library.path=C:\Qt\6.12.0\msvc2022_64\bin Test
 ```
 
 On Linux it looks this way:
 
 ``` bash
-java -cp qtjambi-6.12.0.jar:qtjambi-native-linux-x64-6.12.0.jar:. -Djava.library.path=<path to>/Qt/6.8.3/gcc_64/lib Test
+java -cp qtjambi-6.12.0.jar:qtjambi-native-linux-x64-6.12.0.jar:. -Djava.library.path=<path to>/Qt/6.12.0/gcc_64/lib Test
 ```
 
 On macOS you additionally need to use the start parameter -XstartOnFirstThread:
 
 ``` bash
-java -cp qtjambi-6.12.0.jar:qtjambi-native-macos-6.12.0.jar:. -Djava.library.path=<path to>/Qt/6.8.3/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.12.0.jar:qtjambi-native-macos-6.12.0.jar:. -Djava.library.path=<path to>/Qt/6.12.0/macos/lib -XstartOnFirstThread Test
 ```
 
 On Linux, if your distribution provides Qt (of correct version) as system library you don't need to specify library path at all.
