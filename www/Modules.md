@@ -11,7 +11,7 @@ QtJambi is available for Qt6. All modules are published as Maven Artifact. Add t
   <version>$VERSION</version>
 </dependency>
 ```
-Here, exchange `$VERSION` either by `6.8.12`, `6.11.3` or `6.12.0` or any other published version. Exchange `$MODULE` by *QtJambi* module name as listed below.
+Here, exchange `$VERSION` either by `6.8.12` or `6.12.0` or any other published version. Exchange `$MODULE` by *QtJambi* module name as listed below.
 
 Alternatively, you can download corresponding QtJambi modules as JAR file from [Maven Central Repository](https://search.maven.org/search?q=io.qtjambi).
 
@@ -29,9 +29,7 @@ Search for qtjambi modules by name in Maven repository. Each java module require
 Info files for native debugging can be found in **<module>-debuginfo-windows**, **<module>-debuginfo-linux** and **<module>-debuginfo-macos**.
 **By default, the native components of only essential modules are made available on Maven. Please make a request via [issues](/../../issues) if you require native components not yet available.**
 
-QtJambi 6.11.3 requires Qt 6.11.x whereas x can be any patch version greater or equals 0.
 QtJambi 6.12.0 requires Qt 6.12.x whereas x can be any patch version greater or equals 0.
-QtJambi 6.11.3 release has been built with Qt 6.11.3. Compatibility to higher versions is unknown.
 QtJambi 6.12.0 release has been built with Qt 6.12.0. Compatibility to higher versions is unknown.
 
 In any case, **qtjambi-activex** native binaries are only compatible to the exact Qt version they have been built with.

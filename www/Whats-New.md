@@ -1,4 +1,4 @@
-# What's new in QtJambi 6.11.3 / 6.12.0
+# What's new in QtJambi 6.12.0
 
 * Full support for native event filters
 * Removing deprecated serializability from QFlags
