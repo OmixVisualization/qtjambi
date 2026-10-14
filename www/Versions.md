@@ -5,8 +5,6 @@ The following table shows the incarnations of QtJambi and their relation to Qt.
 A QtJambi release is published as specific source code tag. QtJambi is always based upon the latest Qt release with backward compatibility to Qt LTS versions.
 The patch number always increases with the new release. Different QtJambi versions in the same row represent builds against different Qt versions but based upon the same source code.
 
-Outgreyed version numbers are not published as Maven artifact.
-
 | Release |  Source Tag       |                                    Qt 6.12 |                                    Qt 6.11 |                                    Qt 6.10 |                                     Qt 6.9 |                                     Qt 6.8 |                                     Qt 6.7 |                                     Qt 6.6 |                                     Qt 6.5 |
 | ------- | ----------------- | ------------------------------------------ | ------------------------------------------ | ------------------------------------------ | ------------------------------------------ | ------------------------------------------ | ------------------------------------------ | ------------------------------------------ | ------------------------------------------ |
 |      35 | v6.12.0           |                             6.12.0         |                             6.11.3²        | <span style="color:#EEEEEE">6.10.6¹</span> | <span style="color:#EEEEEE">6.9.9¹</span>  |                             6.8.12         | <span style="color:#EEEEEE">6.7.15¹</span> | <span style="color:#EEEEEE">6.6.18¹</span> | <span style="color:#EEEEEE">6.5.21¹</span> |
@@ -32,7 +30,7 @@ Outgreyed version numbers are not published as Maven artifact.
 |      15 | v6.5.1            |                                            |                                            |                                            |                                            |                                            |                                            |                                            |                             6.5.1          |
 |      14 | v6.5.0            |                                            |                                            |                                            |                                            |                                            |                                            |                                            |                             6.5.0          |
 
-¹unpublished
+¹not published as Maven artifact
 
 ²published with Qt 6.11.3
 
